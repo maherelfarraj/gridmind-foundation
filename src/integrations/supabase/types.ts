@@ -130,26 +130,26 @@ export type Database = {
     }
     Enums: {
       app_role:
-        | "platform_admin"
-        | "company_owner"
+        | "super_admin"
         | "company_admin"
-        | "project_manager"
-        | "project_engineer"
-        | "site_engineer"
-        | "procurement_manager"
-        | "finance_manager"
-        | "accountant"
-        | "safety_officer"
-        | "quality_manager"
-        | "commissioning_engineer"
-        | "om_manager"
-        | "om_technician"
+        | "billing_admin"
+        | "project_admin"
+        | "engineering_admin"
+        | "procurement_admin"
+        | "construction_admin"
+        | "hse_admin"
+        | "finance_admin"
+        | "legal_admin"
+        | "om_admin"
+        | "scada_admin"
+        | "engineer"
+        | "sales"
+        | "procurement_officer"
+        | "foreman"
         | "field_technician"
-        | "partner_contractor"
-        | "sales_manager"
-        | "crm_user"
-        | "viewer"
-        | "guest"
+        | "client_viewer"
+        | "investor_viewer"
+        | "lender_viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -278,26 +278,26 @@ export const Constants = {
   public: {
     Enums: {
       app_role: [
-        "platform_admin",
-        "company_owner",
+        "super_admin",
         "company_admin",
-        "project_manager",
-        "project_engineer",
-        "site_engineer",
-        "procurement_manager",
-        "finance_manager",
-        "accountant",
-        "safety_officer",
-        "quality_manager",
-        "commissioning_engineer",
-        "om_manager",
-        "om_technician",
+        "billing_admin",
+        "project_admin",
+        "engineering_admin",
+        "procurement_admin",
+        "construction_admin",
+        "hse_admin",
+        "finance_admin",
+        "legal_admin",
+        "om_admin",
+        "scada_admin",
+        "engineer",
+        "sales",
+        "procurement_officer",
+        "foreman",
         "field_technician",
-        "partner_contractor",
-        "sales_manager",
-        "crm_user",
-        "viewer",
-        "guest",
+        "client_viewer",
+        "investor_viewer",
+        "lender_viewer",
       ],
     },
   },
