@@ -57,124 +57,6 @@ export type Database = {
           scopes?: string[]
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "api_keys_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "api_keys_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_log_retention_policies: {
-        Row: {
-          company_id: string
-          created_at: string
-          entity: string
-          id: string
-          retention_days: number
-          updated_at: string
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          entity: string
-          id?: string
-          retention_days?: number
-          updated_at?: string
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          entity?: string
-          id?: string
-          retention_days?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_log_retention_policies_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_logs: {
-        Row: {
-          action: string
-          actor_id: string | null
-          company_id: string
-          created_at: string
-          entity: string
-          entity_id: string | null
-          id: string
-          metadata: Json
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          company_id: string
-          created_at?: string
-          entity: string
-          entity_id?: string | null
-          id?: string
-          metadata?: Json
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          company_id?: string
-          created_at?: string
-          entity?: string
-          entity_id?: string | null
-          id?: string
-          metadata?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      companies: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          plan_tier: string
-          slug: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          plan_tier?: string
-          slug: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          plan_tier?: string
-          slug?: string
-          updated_at?: string
-        }
         Relationships: []
       }
       currencies: {
@@ -289,105 +171,7 @@ export type Database = {
           token_hash?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "invites_accepted_by_fkey"
-            columns: ["accepted_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invites_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invites_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      module_access_rules: {
-        Row: {
-          company_id: string
-          created_at: string
-          enabled: boolean
-          id: string
-          module: string
-          updated_at: string
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          enabled?: boolean
-          id?: string
-          module: string
-          updated_at?: string
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          enabled?: boolean
-          id?: string
-          module?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "module_access_rules_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          company_id: string
-          created_at: string
-          email: string | null
-          full_name: string | null
-          id: string
-          locale: string
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          company_id: string
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id: string
-          locale?: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          company_id?: string
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          locale?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       rate_limit_buckets: {
         Row: {
@@ -412,45 +196,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      user_roles: {
-        Row: {
-          company_id: string
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       webhook_deliveries: {
         Row: {
@@ -500,13 +245,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "webhook_deliveries_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
             columns: ["endpoint_id"]
             isOneToOne: false
@@ -552,22 +290,7 @@ export type Database = {
           updated_at?: string
           url?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "webhook_endpoints_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "webhook_endpoints_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
