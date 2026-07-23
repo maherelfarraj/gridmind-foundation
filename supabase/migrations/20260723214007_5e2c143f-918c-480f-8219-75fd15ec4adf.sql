@@ -1,0 +1,1 @@
+delete from public.rate_limit_buckets where key = 'test-key';
