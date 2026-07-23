@@ -13,7 +13,6 @@ import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiTestThrowRouteImport } from './routes/api/test-throw'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
@@ -35,11 +34,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTestThrowRoute = ApiTestThrowRouteImport.update({
-  id: '/api/test-throw',
-  path: '/api/test-throw',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -51,14 +45,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/api/test-throw': typeof ApiTestThrowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/api/test-throw': typeof ApiTestThrowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,13 +59,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/api/test-throw': typeof ApiTestThrowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/design-system' | '/dashboard' | '/api/test-throw'
+  fullPaths: '/' | '/auth' | '/design-system' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/design-system' | '/dashboard' | '/api/test-throw'
+  to: '/' | '/auth' | '/design-system' | '/dashboard'
   id:
     | '__root__'
     | '/'
@@ -81,7 +72,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/design-system'
     | '/_authenticated/dashboard'
-    | '/api/test-throw'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -89,7 +79,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DesignSystemRoute: typeof DesignSystemRoute
-  ApiTestThrowRoute: typeof ApiTestThrowRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,13 +111,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/test-throw': {
-      id: '/api/test-throw'
-      path: '/api/test-throw'
-      fullPath: '/api/test-throw'
-      preLoaderRoute: typeof ApiTestThrowRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -155,7 +137,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DesignSystemRoute: DesignSystemRoute,
-  ApiTestThrowRoute: ApiTestThrowRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
