@@ -534,6 +534,14 @@ export type Database = {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
         Returns: boolean
       }
+      create_invite: {
+        Args: {
+          p_company_id: string
+          p_email: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
       has_company_role: {
         Args: { p_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
