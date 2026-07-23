@@ -181,29 +181,23 @@ export type Database = {
         Row: {
           code: string
           created_at: string
-          is_active: boolean
           minor_unit: number
           name: string
           symbol: string
-          updated_at: string
         }
         Insert: {
           code: string
           created_at?: string
-          is_active?: boolean
           minor_unit?: number
           name: string
           symbol: string
-          updated_at?: string
         }
         Update: {
           code?: string
           created_at?: string
-          is_active?: boolean
           minor_unit?: number
           name?: string
           symbol?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -216,7 +210,6 @@ export type Database = {
           quote_code: string
           rate: number
           source: string
-          updated_at: string
         }
         Insert: {
           as_of: string
@@ -226,7 +219,6 @@ export type Database = {
           quote_code: string
           rate: number
           source?: string
-          updated_at?: string
         }
         Update: {
           as_of?: string
@@ -236,7 +228,6 @@ export type Database = {
           quote_code?: string
           rate?: number
           source?: string
-          updated_at?: string
         }
         Relationships: [
           {
