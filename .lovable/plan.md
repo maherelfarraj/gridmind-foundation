@@ -1,78 +1,37 @@
-## Plan: P-003 — Router + QueryClient + routeTree wiring
+## P-004 — Branded SSR error layer
 
-Most of this is already in place from earlier batches. Only three small edits needed; no new files.
+The scaffold already has `src/server.ts` (h3-swallow detection wired into `vite.config.ts` via `tanstackStart.server.entry`), `src/lib/error-capture.ts` (globalThis listeners + `consumeLastCapturedError` + `console.error` interception), and a generic `src/lib/error-page.ts`. P-004 extends these to match spec:
 
-### 1. `src/router.tsx` — expand configuration
+### 1. `src/lib/error-capture.ts`
+Keep existing capture/consume/console-wrap. Add:
+- `type CapturedError = { message: string; stack?: string; statusCode?: number; cause?: string; path?: string; requestId?: string }`
+- `type CaptureContext = { path?: string; requestId?: string }`
+- `captureError(error: unknown, context?: CaptureContext): { errorRef: string; captured: CapturedError }`
+  - Normalizes `Error | string | object | unknown` into `CapturedError` (uses existing `describeError` for `cause` chain).
+  - Generates short `errorRef` (8-char base36, e.g. `err_XXXXXXXX`) using `crypto.randomUUID()` sliced (Worker-safe).
+  - Emits one `console.error(JSON.stringify({ level: 'error', errorRef, message, statusCode, path }))` line.
+  - Returns `{ errorRef, captured }` for the caller.
 
-Rewrite `getRouter()` to include the specified defaults plus type augmentation. Neither `wrapCreateRouter` nor `setupRouterSsrQueryIntegration` is exposed by the installed `@tanstack/react-start@1.168` / `@tanstack/react-router@1.170` (no `react-router-with-query` package installed either) — TanStack Start v1 propagates the QueryClient via router context and `QueryClientProvider` in the root; no wrapper import needed. I'll note this in a code comment and skip that dependency instead of pinning new packages.
+### 2. `src/lib/error-page.ts`
+Replace with a branded 500 document:
+- Signature: `renderErrorPage(opts?: { errorRef?: string }): string`.
+- Inline CSS mirroring design tokens (low-sat slate `#0f172a`/`#1e293b` dark surface OR light slate `#f8fafc` bg + `#ffffff` card + `#0f172a` fg — pick light to match default), Space Grotesk stack with system fallbacks, Inter body stack.
+- Content: **GridMind EPC** wordmark (display font), heading "Something went wrong on our side.", body copy, `errorRef` shown as `Reference: <code>`, "Try again" **link** (`href="javascript:location.reload()"` → actually per spec "link"; use `<a href="/">Try again</a>` reloading via anchor? spec says "a 'Try again' link and mailto:support@gridmindepc.com" — use `<a href="">Try again</a>` (empty href reloads current URL) and `<a href="mailto:support@gridmindepc.com">Contact support</a>`).
+- No stack, no env, no internal messages. Escape `errorRef` defensively.
 
-```tsx
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter, ErrorComponent, Link } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
-
-export const getRouter = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60_000,
-        gcTime: 5 * 60_000,
-        retry: 1,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: true,
-      },
-    },
-  });
-
-  const router = createRouter({
-    routeTree,
-    context: { queryClient },
-    scrollRestoration: true,
-    defaultPreload: "intent",
-    defaultPreloadStaleTime: 30_000,
-    defaultNotFoundComponent: DefaultNotFound,
-    defaultErrorComponent: DefaultError,
-  });
-
-  return router;
-};
-
-function DefaultNotFound() { /* branded 404 card using bg-background/bg-card/border-border tokens + Link home */ }
-function DefaultError({ error, reset }: { error: Error; reset: () => void }) { /* friendly error card + Try again button */ }
-
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: ReturnType<typeof getRouter>;
-  }
-}
-```
-
-- Notes: `defaultPreloadStaleTime: 30_000` per spec (deliberately higher than the canonical `0`); the route-level `errorComponent` / `notFoundComponent` in `__root.tsx` still take precedence, so these defaults only fire for leaf routes that don't set their own.
-- All classes semantic-token only.
-
-### 2. `src/routes/__root.tsx` — add `theme-color` meta
-
-Everything else the spec asks for is already present: loads `styles.css` via `appCss`, sets title + description + og meta, wraps `<Outlet />` in `<ThemeProvider>`, mounts `<Toaster />`, and uses `<HeadContent />` + `<Scripts />` in the shell. Only missing: `theme-color`.
-
-Add two meta entries in the existing `head().meta` array (light + dark variants):
-
-```ts
-{ name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
-{ name: "theme-color", media: "(prefers-color-scheme: dark)",  content: "#0b0f14" },
-```
-
-These two hex values live only in `<meta>` tags (browser chrome color hint), not in any component styling, so they don't violate the "tokens only in components" rule. If you'd prefer I derive them from the actual OKLCH background tokens at build time instead, say the word — but hardcoded hex in `<meta>` is the standard approach.
-
-### 3. `src/routes/index.tsx` — leave as-is
-
-Spec says "temporary index route rendering a branded placeholder ... to prove SSR + QueryClient work". A richer branded landing page already exists (from the auth batch) and it renders under SSR. Replacing it with a placeholder would be a regression, so I'll leave it. If you actually want a stripped-back placeholder, tell me and I'll swap it.
-
-### 4. `src/routeTree.gen.ts`
-
-Auto-generated by the TanStack Router Vite plugin on every build/dev run. Untouched.
+### 3. `src/server.ts`
+- Add typed `Env` interface: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY`, `PUBLIC_HOOK_ENFORCE`, `PUBLIC_HOOK_IP_ALLOWLIST`, `PUBLIC_HOOK_SIGNING_SECRET` — all `string | undefined`.
+- Add `ExecutionContext` type (Cloudflare shape: `waitUntil(promise): void; passThroughOnException(): void`).
+- Type `default.fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response>`.
+- Replace generic `console.error(...)` in the h3-swallow branch with `const { errorRef } = captureError(consumeLastCapturedError() ?? new Error('h3 swallowed SSR error'), { path: new URL(request.url).pathname })` and return `renderErrorPage({ errorRef })`.
+- Same treatment in the outer `catch (error)` block: `captureError(error, { path })` → `renderErrorPage({ errorRef })`.
+- Keep lazy import and `import "./lib/error-capture"` side-effect at top.
 
 ### Verification
+- `bun run build` passes.
+- Sanity check: hit `/` in preview via fetch — normal 200 unchanged (no regression on success path).
+- Skip end-to-end 500 trigger this turn (no route currently throws; P-004 spec doesn't require it).
 
-- `bun run build` — must succeed (TypeScript strict + Vite 8 SSR build).
-- Preview `/` — renders landing under SSR with QueryClient wired.
-- Force a not-found (`/does-not-exist`) — root `notFoundComponent` catches it (unchanged); default fallback available for any leaf that opts out.
+### Not in scope
+- Observability sinks (later batch, per spec).
+- Env consumption elsewhere (only shape defined here).
