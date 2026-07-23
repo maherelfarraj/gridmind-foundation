@@ -48,6 +48,11 @@ function brandedErrorResponse(errorRef: string): Response {
   });
 }
 
+function shouldBypassBranding(pathname: string | undefined): boolean {
+  if (!pathname) return false;
+  return pathname.startsWith("/lovable/") || pathname === "/email/unsubscribe";
+}
+
 // h3 swallows in-handler throws into a normal 500 Response with body
 // {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
 async function normalizeCatastrophicSsrResponse(
@@ -55,6 +60,8 @@ async function normalizeCatastrophicSsrResponse(
   request: Request,
 ): Promise<Response> {
   if (response.status < 500) return response;
+  const path = safePath(request);
+  if (shouldBypassBranding(path)) return response;
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
 
@@ -62,7 +69,7 @@ async function normalizeCatastrophicSsrResponse(
   if (!isH3SwallowedErrorBody(body)) return response;
 
   const original = consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`);
-  const { errorRef } = captureError(original, { path: safePath(request) });
+  const { errorRef } = captureError(original, { path });
   return brandedErrorResponse(errorRef);
 }
 
