@@ -110,6 +110,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Energy Performance Certificate management powered by GridMind." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
+      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: "#0b0f14" },
     ],
     links: [
       {
