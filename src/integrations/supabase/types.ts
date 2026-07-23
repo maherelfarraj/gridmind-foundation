@@ -396,9 +396,9 @@ export type Database = {
     Functions: {
       assert_can_grant_role: {
         Args: {
-          company_id: string
-          role: Database["public"]["Enums"]["app_role"]
-          target_user_id: string
+          p_company_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_target_user_id: string
         }
         Returns: undefined
       }
@@ -415,7 +415,7 @@ export type Database = {
         Returns: string
       }
       has_company_role: {
-        Args: { role: Database["public"]["Enums"]["app_role"] }
+        Args: { p_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
       has_module_access: {
@@ -423,11 +423,14 @@ export type Database = {
         Returns: boolean
       }
       has_role: {
-        Args: { role: Database["public"]["Enums"]["app_role"]; user_id: string }
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
         Returns: boolean
       }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
-      is_company_member: { Args: { company_id: string }; Returns: boolean }
+      is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
       verify_api_key: {
         Args: { p_raw_key: string }
