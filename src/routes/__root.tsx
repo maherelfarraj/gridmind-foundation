@@ -15,6 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+const themeInitScript = `(function(){try{var s=localStorage.getItem('gridmind-theme');var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=s==='dark'||((!s||s==='system')&&m);var r=document.documentElement;if(d)r.classList.add('dark');r.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
 
 type AuthContextValue = {
   user: User | null;
@@ -126,6 +130,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         {children}
@@ -195,13 +200,13 @@ function Header() {
         <Link to="/" className="text-lg font-semibold tracking-tight text-foreground">
           GridMind EPC
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {!isLoading && user ? (
             <>
               <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground">
                 Dashboard
               </Link>
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
               <Button variant="outline" size="sm" onClick={signOut}>
                 Sign out
               </Button>
@@ -211,6 +216,7 @@ function Header() {
               <Button size="sm">Sign in</Button>
             </Link>
           )}
+          <ThemeToggle />
         </div>
       </div>
     </header>
@@ -222,11 +228,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Header />
-        <Outlet />
-        <Toaster />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Header />
+          <Outlet />
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

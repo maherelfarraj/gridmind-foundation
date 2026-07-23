@@ -1,38 +1,53 @@
-Plan: Connect and wire Lovable Cloud / Supabase
+## Plan: GridMind EPC Design System
 
-1. Verify backend connection
-   - Confirm Lovable Cloud is healthy and reachable.
-   - Check existing auto-generated Supabase integration files (client, middleware, attacher) and ensure `src/start.ts` registers the bearer-token middleware.
+### 1. Rewrite `src/styles.css`
+- Keep `@import "tailwindcss" source(none);`, `@source "../src";`, `@import "tw-animate-css";`.
+- Add Fontsource imports (top of file, before `@theme`):
+  - `@fontsource/inter/400.css`, `/500.css`, `/600.css`, `/700.css`
+  - `@fontsource/space-grotesk/500.css`, `/700.css`
+  - `@fontsource/dm-sans/400.css`, `/500.css`
+- Keep `@custom-variant dark (&:is(.dark *));`.
+- `@theme inline` block: keep existing `--color-*` mappings; add font tokens:
+  - `--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;`
+  - `--font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;`
+  - `--font-alt: "DM Sans", ui-sans-serif, system-ui, sans-serif;`
+- Rewrite `:root` and `.dark` OKLCH values to an industrial EPC palette:
+  - Light: near-white desaturated slate background, deep muted blue primary (~oklch(0.35 0.08 250)), muted green accent (~oklch(0.55 0.09 155)), muted red destructive (~oklch(0.55 0.15 25)), slate neutrals for muted/border/input/ring, plus matching sidebar tokens.
+  - Dark: deep desaturated slate background (~oklch(0.18 0.02 250)), foreground near-white, brighter muted blue primary (~oklch(0.65 0.10 250)), green accent (~oklch(0.62 0.10 155)), same-family destructive, elevated slate card/popover.
+  - `--chart-1..5`: blue, green, amber, slate, teal — all low saturation.
+  - `--radius: 0.5rem`.
+- Add a `body { font-family: var(--font-sans); }` base rule so Inter is the default body font.
 
-2. Configure authentication providers
-   - Enable email/password auth in Cloud Auth settings.
-   - Enable Google sign-in via the managed social auth flow.
-   - Keep email confirmation enabled (no auto-confirm unless the user later asks).
+### 2. Theme provider — `src/components/theme-provider.tsx`
+- `type Theme = "light" | "dark" | "system"`.
+- `ThemeProvider` sets a `<html class="dark">` toggle:
+  - Initial resolution: `localStorage.getItem("gridmind-theme")` → else `prefers-color-scheme`.
+  - Persist to `localStorage` on change.
+  - Subscribe to `matchMedia('(prefers-color-scheme: dark)')` when in `system` mode.
+  - SSR-safe: apply class in a `useEffect`; provide a small inline script via `__root.tsx` head to set the class before hydration to avoid flash (optional but recommended).
+- Export `useTheme()` returning `{ theme, resolvedTheme, setTheme }`.
 
-3. Create the starter database schema
-   - Add a migration that creates a `public.profiles` table with:
-     - `id` (UUID, primary key)
-     - `user_id` (UUID, references `auth.users(id)` on delete cascade)
-     - `display_name`, `avatar_url`, `role`, `preferences`
-     - `created_at`, `updated_at`
-   - Add GRANT statements for `authenticated` and `service_role`.
-   - Enable RLS and create policies so users can read/update their own profile.
-   - Add a trigger that auto-creates a profile row when a user signs up.
+### 3. Wire provider in `src/routes/__root.tsx`
+- Wrap the existing `AuthProvider`/app tree inside `<ThemeProvider>`.
+- Add a small `<script>` tag in root `head` that reads localStorage and sets `document.documentElement.classList` early (no-flash).
 
-4. Add auth-aware UI routes
-   - Create `src/routes/auth.tsx` with email/password sign-in and sign-up, plus a Google sign-in button.
-   - Create a public landing page at `src/routes/index.tsx` with a sign-in CTA and session-aware header.
-   - Create a protected `src/routes/_authenticated/dashboard.tsx` as the signed-in home.
-   - Wire `onAuthStateChange` in `src/routes/__root.tsx` to invalidate router and queries on sign-in/out.
+### 4. Header theme toggle
+- Add a `ThemeToggle` button (lucide `Sun`/`Moon`) to the existing header in `__root.tsx` — cycles light ↔ dark. Uses only semantic classes.
 
-5. Add session-aware header affordance
-   - Replace the static placeholder with a header that shows the signed-in user's email/display name and a sign-out button when signed in, or a sign-in link when signed out.
+### 5. Demo page — `src/routes/design-system.tsx`
+- Route showcasing:
+  - Color swatches for every semantic token (background/foreground/card/primary/secondary/muted/accent/destructive/border/sidebar/chart-1..5).
+  - Font samples for `font-sans`, `font-display`, `font-alt`.
+  - Buttons using existing shadcn `Button` variants.
+  - A prominent `ThemeToggle` at the top to prove switching works.
+  - `head()` with unique title/description/OG metadata.
 
-6. Verify the build
-   - Run the test suite and a local build check to ensure no type errors, missing routes, or duplicate route paths.
+### 6. Guardrails
+- Do not touch generated files (`routeTree.gen.ts`, supabase integration).
+- All new/edited components use semantic classes only — no hex, `rgb()`, or arbitrary color values.
 
-Technical notes
-- All database schema changes go through a single migration using the migration tool.
-- Auth uses the Lovable managed broker (`@/integrations/lovable` if generated, or the documented `lovable.auth.signInWithOAuth` for Google).
-- `requireSupabaseAuth` server functions will be used for profile reads/writes; the bearer-token `functionMiddleware` is already in place.
-- No Supabase Edge Functions are created; server logic stays in `createServerFn` and TanStack server routes.
+### Verification
+- `bun run build` succeeds.
+- Preview `/` renders with new palette; `/design-system` toggle flips light/dark and persists across reload.
+
+No new dependencies needed — Fontsource packages and lucide-react are already installed.
