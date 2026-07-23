@@ -37,10 +37,10 @@ function LandingPage() {
               </Link>
             ) : (
               <>
-                <Link to="/auth">
+                <Link to="/login">
                   <Button size="lg">Get started</Button>
                 </Link>
-                <Link to="/auth">
+                <Link to="/login">
                   <Button size="lg" variant="outline">
                     Sign in
                   </Button>
