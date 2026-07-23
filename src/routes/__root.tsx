@@ -215,7 +215,7 @@ function Header() {
               </Button>
             </>
           ) : (
-            <Link to="/auth">
+            <Link to="/login">
               <Button size="sm">Sign in</Button>
             </Link>
           )}
