@@ -1,29 +1,34 @@
-# Welcome to your Lovable project
+# GridMind EPC
 
-This project was built with [Lovable](https://lovable.dev).
+Built with [Lovable](https://lovable.dev). Package manager: **bun**.
 
-## Build with Lovable
+## Stack
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- Vite 8, React 19, TypeScript 5.8
+- TanStack Start v1 + TanStack Router v1 + TanStack Query v5
+- Tailwind CSS v4
+- Nitro 3 (beta) — Cloudflare Workers edge runtime for SSR
+- Vitest 4, ESLint 9, Prettier
+- Supabase JS client
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+Server logic runs as `createServerFn` RPC and HTTP routes under `src/routes/api/`. There is no separate Node server.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
 
-## Built with
+## Scripts
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+```sh
+bun run dev         # start dev server
+bun run build       # production build
+bun run preview     # preview production build
+bun run lint        # eslint
+bun run format      # prettier --write .
+bun run test        # unit suite (vitest.config.ts)
+bun run test:unit   # unit suite (vitest.config.ts)
+bun run test:all    # full suite: unit + api + rls (vitest.config.all.ts)
+```
