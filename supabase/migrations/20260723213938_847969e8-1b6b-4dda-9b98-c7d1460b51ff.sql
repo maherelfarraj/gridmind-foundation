@@ -1,0 +1,1 @@
+grant execute on function public.consume_rate_limit(text, int, numeric) to supabase_read_only_user;
