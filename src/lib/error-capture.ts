@@ -79,3 +79,73 @@ export function consumeLastCapturedError(): unknown {
   lastCapturedError = undefined;
   return error;
 }
+
+export type CapturedError = {
+  message: string;
+  stack?: string;
+  statusCode?: number;
+  cause?: string;
+  path?: string;
+  requestId?: string;
+};
+
+export type CaptureContext = {
+  path?: string;
+  requestId?: string;
+};
+
+function generateErrorRef(): string {
+  try {
+    const uuid = crypto.randomUUID().replace(/-/g, "");
+    return `err_${uuid.slice(0, 8)}`;
+  } catch {
+    return `err_${Math.random().toString(36).slice(2, 10)}`;
+  }
+}
+
+function normalizeError(error: unknown): { message: string; stack?: string; statusCode?: number; cause?: string } {
+  if (error instanceof Error) {
+    const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
+    const code = typeof statusCode === "number" ? statusCode : typeof status === "number" ? status : undefined;
+    const causeStr = error.cause != null ? describeError(error.cause) : undefined;
+    return { message: error.message || error.name || "Error", stack: error.stack, statusCode: code, cause: causeStr };
+  }
+  if (typeof error === "string") return { message: error };
+  if (error && typeof error === "object") {
+    const obj = error as { message?: unknown; statusCode?: unknown; status?: unknown };
+    const message = typeof obj.message === "string" ? obj.message : safeStringify(error);
+    const code =
+      typeof obj.statusCode === "number" ? obj.statusCode : typeof obj.status === "number" ? obj.status : undefined;
+    return { message, statusCode: code };
+  }
+  return { message: String(error ?? "Unknown error") };
+}
+
+export function captureError(
+  error: unknown,
+  context: CaptureContext = {},
+): { errorRef: string; captured: CapturedError } {
+  const errorRef = generateErrorRef();
+  const normalized = normalizeError(error);
+  const captured: CapturedError = {
+    message: normalized.message,
+    stack: normalized.stack,
+    statusCode: normalized.statusCode,
+    cause: normalized.cause,
+    path: context.path,
+    requestId: context.requestId,
+  };
+
+  originalConsoleError(
+    JSON.stringify({
+      level: "error",
+      errorRef,
+      message: captured.message,
+      statusCode: captured.statusCode,
+      path: captured.path,
+    }),
+  );
+
+  return { errorRef, captured };
+}
+
