@@ -117,6 +117,84 @@ export type Database = {
         }
         Relationships: []
       }
+      currencies: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          minor_unit: number
+          name: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          minor_unit?: number
+          name: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          minor_unit?: number
+          name?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fx_rates: {
+        Row: {
+          as_of: string
+          base_code: string
+          created_at: string
+          id: string
+          quote_code: string
+          rate: number
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          as_of: string
+          base_code: string
+          created_at?: string
+          id?: string
+          quote_code: string
+          rate: number
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          as_of?: string
+          base_code?: string
+          created_at?: string
+          id?: string
+          quote_code?: string
+          rate?: number
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fx_rates_base_code_fkey"
+            columns: ["base_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "fx_rates_quote_code_fkey"
+            columns: ["quote_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accepted_at: string | null
