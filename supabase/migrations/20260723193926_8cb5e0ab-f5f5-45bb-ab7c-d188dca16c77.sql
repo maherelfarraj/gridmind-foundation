@@ -1,17 +1,7 @@
-## Migration 0001 — tenancy core (revised)
-
-Applies the three corrections: `companies.slug` added, no GRANTs / no RLS in this migration (both land in 0003), and `user_roles.user_id` FKs `public.profiles(id)`.
-
-### File
-`supabase/migrations/0001_tenancy_core.sql` — idempotent, single migration.
-
-### SQL outline
-
-```sql
 -- 1. Extension
 create extension if not exists pgcrypto;
 
--- 2. Drop legacy profiles shape (old table has 0 rows; trigger + fn go too)
+-- 2. Drop legacy profiles shape
 drop trigger  if exists on_auth_user_created on auth.users;
 drop function if exists public.handle_new_user();
 drop table    if exists public.profiles;
@@ -42,7 +32,7 @@ create table if not exists public.companies (
   updated_at  timestamptz not null default now()
 );
 
--- 5. profiles (id = auth.users.id)
+-- 5. profiles
 create table if not exists public.profiles (
   id          uuid primary key
               references auth.users(id) on delete cascade,
@@ -55,7 +45,7 @@ create table if not exists public.profiles (
   updated_at  timestamptz not null default now()
 );
 
--- 6. user_roles (user_id → profiles.id per correction)
+-- 6. user_roles
 create table if not exists public.user_roles (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references public.profiles(id) on delete cascade,
@@ -65,22 +55,8 @@ create table if not exists public.user_roles (
   unique (user_id, company_id, role)
 );
 
--- 7. Lookup indexes (RLS in 0003 filters on these every request)
+-- 7. Lookup indexes
 create index if not exists idx_profiles_company_id
   on public.profiles (company_id);
 create index if not exists idx_user_roles_user_company
   on public.user_roles (user_id, company_id);
-```
-
-### Explicitly NOT in this migration
-- No `GRANT` statements — 0003 adds grants together with RLS so the tables are never reachable through PostgREST without policies.
-- No `enable row level security` and no policies — 0003.
-- No `handle_new_user` trigger — profile rows come from the invite-acceptance flow in a later batch.
-- No `updated_at` triggers — deferred (not in P-009 spec).
-
-### Follow-up (post-approval, after the migration runs)
-- Regenerated `src/integrations/supabase/types.ts` will reflect the new shape; no component reads `profiles` fields today, so nothing to rewire.
-- The 20-role enum values above are my proposal — say the word to swap any names before I file the migration.
-
-### Confirm to proceed
-Reply "go" (or paste replacement role names) and I'll call `supabase--migration` with the SQL above.
