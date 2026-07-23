@@ -1,86 +1,60 @@
-## Migration 0001 — tenancy core (revised)
+## Plan — Fix 0001 enum, then P-010 (0002 RLS helpers)
 
-Applies the three corrections: `companies.slug` added, no GRANTs / no RLS in this migration (both land in 0003), and `user_roles.user_id` FKs `public.profiles(id)`.
+Migration 0001 was applied with the wrong `app_role` enum values. Since all three tables (`companies`, `profiles`, `user_roles`) are empty, we drop and recreate cleanly, then land the RLS helpers.
 
-### File
-`supabase/migrations/0001_tenancy_core.sql` — idempotent, single migration.
+### Step 1 — Rewrite `supabase/migrations/0001_tenancy_core.sql`
 
-### SQL outline
+Same file, same structure (pgcrypto, companies with slug, profiles with `id = auth.users(id)` + `company_id NOT NULL`, user_roles with `unique(user_id, company_id, role)`, two lookup indexes, no GRANT, no RLS). Only the enum body changes to the correct 20 values in this exact order:
 
-```sql
--- 1. Extension
-create extension if not exists pgcrypto;
-
--- 2. Drop legacy profiles shape (old table has 0 rows; trigger + fn go too)
-drop trigger  if exists on_auth_user_created on auth.users;
-drop function if exists public.handle_new_user();
-drop table    if exists public.profiles;
-
--- 3. app_role enum (guarded)
-do $$ begin
-  if not exists (select 1 from pg_type where typname = 'app_role') then
-    create type public.app_role as enum (
-      'platform_admin','company_owner','company_admin',
-      'project_manager','project_engineer','site_engineer',
-      'procurement_manager','finance_manager','accountant',
-      'safety_officer','quality_manager','commissioning_engineer',
-      'om_manager','om_technician','field_technician',
-      'partner_contractor','sales_manager','crm_user',
-      'viewer','guest'
-    );
-  end if;
-end $$;
-
--- 4. companies
-create table if not exists public.companies (
-  id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  slug        text not null unique,
-  plan_tier   text not null default 'starter'
-              check (plan_tier in ('starter','growth','enterprise')),
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
-);
-
--- 5. profiles (id = auth.users.id)
-create table if not exists public.profiles (
-  id          uuid primary key
-              references auth.users(id) on delete cascade,
-  company_id  uuid not null references public.companies(id) on delete restrict,
-  full_name   text,
-  email       text,
-  locale      text not null default 'en',
-  avatar_url  text,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
-);
-
--- 6. user_roles (user_id → profiles.id per correction)
-create table if not exists public.user_roles (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references public.profiles(id) on delete cascade,
-  company_id  uuid not null references public.companies(id) on delete cascade,
-  role        public.app_role not null,
-  created_at  timestamptz not null default now(),
-  unique (user_id, company_id, role)
-);
-
--- 7. Lookup indexes (RLS in 0003 filters on these every request)
-create index if not exists idx_profiles_company_id
-  on public.profiles (company_id);
-create index if not exists idx_user_roles_user_company
-  on public.user_roles (user_id, company_id);
+```
+super_admin, company_admin, billing_admin, project_admin,
+engineering_admin, procurement_admin, construction_admin,
+hse_admin, finance_admin, legal_admin, om_admin, scada_admin,
+engineer, sales, procurement_officer, foreman, field_technician,
+client_viewer, investor_viewer, lender_viewer
 ```
 
-### Explicitly NOT in this migration
-- No `GRANT` statements — 0003 adds grants together with RLS so the tables are never reachable through PostgREST without policies.
-- No `enable row level security` and no policies — 0003.
-- No `handle_new_user` trigger — profile rows come from the invite-acceptance flow in a later batch.
-- No `updated_at` triggers — deferred (not in P-009 spec).
+Prepend a reset block (safe: tables are empty):
 
-### Follow-up (post-approval, after the migration runs)
-- Regenerated `src/integrations/supabase/types.ts` will reflect the new shape; no component reads `profiles` fields today, so nothing to rewire.
-- The 20-role enum values above are my proposal — say the word to swap any names before I file the migration.
+```sql
+drop table if exists public.user_roles;
+drop table if exists public.profiles cascade;
+drop table if exists public.companies cascade;
+drop type  if exists public.app_role;
+```
 
-### Confirm to proceed
-Reply "go" (or paste replacement role names) and I'll call `supabase--migration` with the SQL above.
+Apply via `supabase--migration`. Then verify with `supabase--read_query`:
+
+```sql
+select enumlabel from pg_enum e
+join pg_type t on t.oid = e.enumtypid
+where t.typname = 'app_role'
+order by e.enumsortorder;
+```
+
+Paste the result back for your check. Only proceed to Step 2 once the list matches exactly.
+
+### Step 2 — Create `supabase/migrations/0002_rls_helpers.sql`
+
+Four helpers, all `security definer set search_path = public`. Read helpers `stable`; the assert function `plpgsql`, returns `void`.
+
+**`has_role(user_id uuid, role app_role) returns boolean`** — stable sql. `exists (select 1 from public.user_roles ur where ur.user_id = has_role.user_id and ur.role = has_role.role)`.
+
+**`has_company_role(role app_role) returns boolean`** — stable sql. Resolves the caller's company from `auth.jwt() -> 'app_metadata' ->> 'company_id'`, falling back to `(select company_id from public.profiles where id = auth.uid())`. Returns true iff a matching `user_roles` row exists for `(auth.uid(), resolved_company_id, role)`.
+
+**`is_company_member(company_id uuid) returns boolean`** — stable sql. True iff `auth.uid()` has any `user_roles` row for that `company_id`, OR their `profiles.company_id` equals it.
+
+**`assert_can_grant_role(target_user_id uuid, company_id uuid, role app_role) returns void`** — plpgsql. Validation only, no insert:
+- Raise `exception` if `target_user_id`'s `profiles.company_id` differs from the passed `company_id` (block cross-company grants).
+- Raise `exception` if `role = 'super_admin'` and the caller (`auth.uid()`) does not already have `super_admin` via `has_role`.
+
+**Privileges:** `revoke execute ... from public, anon;` `grant execute ... to authenticated, service_role;` for all four.
+
+Apply via `supabase--migration`.
+
+### Not in scope
+
+- No GRANTs / no RLS on tables (that's migration 0003).
+- No changes to app code — `src/integrations/supabase/types.ts` regenerates after each migration; the stale enum in `src/lib/permissions.ts` is a Batch 03 concern, not P-010.
+
+Reply "go" to run Step 1.
