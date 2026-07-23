@@ -14,35 +14,112 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          plan_tier: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          plan_tier?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          plan_tier?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          company_id: string
           created_at: string
-          display_name: string | null
+          email: string | null
+          full_name: string | null
           id: string
-          preferences: Json
+          locale: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          company_id: string
           created_at?: string
-          display_name?: string | null
-          id?: string
-          preferences?: Json
+          email?: string | null
+          full_name?: string | null
+          id: string
+          locale?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           avatar_url?: string | null
+          company_id?: string
           created_at?: string
-          display_name?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
-          preferences?: Json
+          locale?: string
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -52,7 +129,27 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "platform_admin"
+        | "company_owner"
+        | "company_admin"
+        | "project_manager"
+        | "project_engineer"
+        | "site_engineer"
+        | "procurement_manager"
+        | "finance_manager"
+        | "accountant"
+        | "safety_officer"
+        | "quality_manager"
+        | "commissioning_engineer"
+        | "om_manager"
+        | "om_technician"
+        | "field_technician"
+        | "partner_contractor"
+        | "sales_manager"
+        | "crm_user"
+        | "viewer"
+        | "guest"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -179,6 +276,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "platform_admin",
+        "company_owner",
+        "company_admin",
+        "project_manager",
+        "project_engineer",
+        "site_engineer",
+        "procurement_manager",
+        "finance_manager",
+        "accountant",
+        "safety_officer",
+        "quality_manager",
+        "commissioning_engineer",
+        "om_manager",
+        "om_technician",
+        "field_technician",
+        "partner_contractor",
+        "sales_manager",
+        "crm_user",
+        "viewer",
+        "guest",
+      ],
+    },
   },
 } as const
