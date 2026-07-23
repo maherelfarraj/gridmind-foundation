@@ -59,6 +59,33 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          plan_tier: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          plan_tier?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          plan_tier?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       currencies: {
         Row: {
           code: string
@@ -170,6 +197,47 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_id: string
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          locale: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_id: string
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          locale?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          locale?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -193,6 +261,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_roles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       webhook_deliveries: {
         Row: {
@@ -302,6 +412,13 @@ export type Database = {
         Args: { p_company_id: string; p_module: string }
         Returns: boolean
       }
+      has_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
@@ -315,6 +432,27 @@ export type Database = {
       }
     }
     Enums: {
+      app_role:
+        | "super_admin"
+        | "company_admin"
+        | "billing_admin"
+        | "project_admin"
+        | "engineering_admin"
+        | "procurement_admin"
+        | "construction_admin"
+        | "hse_admin"
+        | "finance_admin"
+        | "legal_admin"
+        | "om_admin"
+        | "scada_admin"
+        | "engineer"
+        | "sales"
+        | "procurement_officer"
+        | "foreman"
+        | "field_technician"
+        | "client_viewer"
+        | "investor_viewer"
+        | "lender_viewer"
       delivery_status: "pending" | "success" | "failed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
     }
@@ -444,6 +582,28 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "super_admin",
+        "company_admin",
+        "billing_admin",
+        "project_admin",
+        "engineering_admin",
+        "procurement_admin",
+        "construction_admin",
+        "hse_admin",
+        "finance_admin",
+        "legal_admin",
+        "om_admin",
+        "scada_admin",
+        "engineer",
+        "sales",
+        "procurement_officer",
+        "foreman",
+        "field_technician",
+        "client_viewer",
+        "investor_viewer",
+        "lender_viewer",
+      ],
       delivery_status: ["pending", "success", "failed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
     },
