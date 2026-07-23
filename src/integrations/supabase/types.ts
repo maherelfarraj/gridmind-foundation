@@ -117,6 +117,73 @@ export type Database = {
         }
         Relationships: []
       }
+      invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["invite_status"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["invite_status"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["invite_status"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_access_rules: {
         Row: {
           company_id: string
@@ -245,6 +312,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_invite: {
+        Args: {
+          p_company_id: string
+          p_email: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
       has_company_role: {
         Args: { role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
@@ -259,6 +334,7 @@ export type Database = {
       }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { company_id: string }; Returns: boolean }
+      redeem_invite: { Args: { p_token: string }; Returns: string }
       write_audit_log: {
         Args: {
           p_action: string
@@ -291,6 +367,7 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
+      invite_status: "pending" | "accepted" | "revoked" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -440,6 +517,7 @@ export const Constants = {
         "investor_viewer",
         "lender_viewer",
       ],
+      invite_status: ["pending", "accepted", "revoked", "expired"],
     },
   },
 } as const
