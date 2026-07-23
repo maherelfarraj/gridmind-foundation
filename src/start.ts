@@ -25,6 +25,7 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   try {
     pathname = request ? new URL(request.url).pathname : undefined;
   } catch {}
+  console.log("[errmw] pathname=", pathname, "url=", request?.url);
 
   if (shouldBypass(pathname)) {
     return next();
