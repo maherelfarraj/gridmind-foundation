@@ -1,0 +1,1 @@
+update auth.users set email_confirmed_at = now() where email = 'demo-admin@gridmindepc.com' and email_confirmed_at is null;
