@@ -225,6 +225,7 @@ function RootComponent() {
       <AuthProvider>
         <Header />
         <Outlet />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
