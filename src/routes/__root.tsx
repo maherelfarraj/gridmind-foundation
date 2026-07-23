@@ -184,7 +184,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    router.navigate({ to: "/auth", replace: true });
+    router.navigate({ to: "/login", replace: true });
   };
 
   return (
@@ -215,7 +215,7 @@ function Header() {
               </Button>
             </>
           ) : (
-            <Link to="/auth">
+            <Link to="/login">
               <Button size="sm">Sign in</Button>
             </Link>
           )}
