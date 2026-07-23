@@ -1,68 +1,83 @@
-## P-011 — Migration 0003: Tenancy RLS + GRANTs
+## P-012 — Migration 0004: audit_logs + retention + write helper
 
-Create `supabase/migrations/0003_tenancy_rls.sql` (idempotent) that locks down `companies`, `profiles`, `user_roles`.
+Create `supabase/migrations/0004_audit.sql` (idempotent) implementing an append-only audit trail and per-company retention policies for GridMind EPC.
 
-### 1. Internal helper (avoid user_roles recursion)
+### 1. `public.audit_logs` (append-only)
+
+Columns:
+- `id uuid pk default gen_random_uuid()`
+- `company_id uuid not null` (tenant scope)
+- `actor_id uuid references public.profiles(id) on delete set null` (nullable so profile deletes don't break history)
+- `action text not null`
+- `entity text not null`
+- `entity_id uuid`
+- `metadata jsonb not null default '{}'::jsonb`
+- `created_at timestamptz not null default now()`
+- **no `updated_at`** — rows are immutable
+
+Indexes: `(company_id, created_at desc)`, `(company_id, entity, entity_id)`.
+
+### 2. `public.audit_log_retention_policies`
+
+Columns:
+- `id uuid pk`
+- `company_id uuid not null references public.companies(id) on delete cascade`
+- `entity text not null`
+- `retention_days int not null default 2555 check (retention_days >= 90)`
+- `created_at`, `updated_at` (+ `update_updated_at_column` trigger)
+- `unique (company_id, entity)`
+
+### 3. GRANTs (before RLS)
 
 ```sql
-create or replace function public.is_company_admin(_company_id uuid)
-returns boolean
-language sql stable security definer
-set search_path = public
+revoke all on public.audit_logs, public.audit_log_retention_policies from anon, public;
+grant select, insert on public.audit_logs to authenticated;         -- no UPDATE/DELETE
+grant select, insert, update, delete on public.audit_log_retention_policies to authenticated;
+grant all on public.audit_logs, public.audit_log_retention_policies to service_role;
+```
+
+Explicit `revoke update, delete on public.audit_logs from authenticated, anon, public` for belt-and-braces immutability — retention cleanup runs as `service_role`.
+
+### 4. `write_audit_log` helper (SECURITY DEFINER)
+
+```sql
+create or replace function public.write_audit_log(
+  p_action text, p_entity text, p_entity_id uuid, p_metadata jsonb default '{}'::jsonb
+) returns uuid
+language plpgsql security definer set search_path = public
 as $$
-  select exists (
-    select 1 from public.user_roles ur
-    where ur.user_id = auth.uid()
-      and ur.company_id = _company_id
-      and ur.role = 'company_admin'::public.app_role
-  );
-$$;
-revoke execute on function public.is_company_admin(uuid) from public, anon;
-grant execute on function public.is_company_admin(uuid) to authenticated, service_role;
+declare v_company uuid; v_actor uuid := auth.uid(); v_id uuid;
+begin
+  if v_actor is null then
+    raise exception 'write_audit_log: no authenticated user' using errcode = '28000';
+  end if;
+  select company_id into v_company from public.profiles where id = v_actor;
+  if v_company is null then
+    raise exception 'write_audit_log: actor % has no profile', v_actor using errcode = 'P0001';
+  end if;
+  insert into public.audit_logs(company_id, actor_id, action, entity, entity_id, metadata)
+  values (v_company, v_actor, p_action, p_entity, p_entity_id, coalesce(p_metadata, '{}'::jsonb))
+  returning id into v_id;
+  return v_id;
+end$$;
+
+revoke execute on function public.write_audit_log(text, text, uuid, jsonb) from public, anon;
+grant execute on function public.write_audit_log(text, text, uuid, jsonb) to authenticated, service_role;
 ```
 
-### 2. GRANTs (before enabling RLS)
+Actor and company are resolved from `auth.uid()` — callers cannot spoof either.
 
-```sql
-revoke all on public.companies, public.profiles, public.user_roles from anon;
-grant select, insert, update, delete on public.companies to authenticated;
-grant select, insert, update, delete on public.profiles  to authenticated;
-grant select, insert, update, delete on public.user_roles to authenticated;
-grant all on public.companies, public.profiles, public.user_roles to service_role;
-```
+### 5. Enable RLS + policies (idempotent `drop policy if exists` + `create policy`, scoped `to authenticated`)
 
-No `anon` grants — tenancy is auth-only.
-
-### 3. Enable RLS + drop-if-exists policies (idempotent)
-
-```sql
-alter table public.companies  enable row level security;
-alter table public.profiles   enable row level security;
-alter table public.user_roles enable row level security;
-```
-
-### 4. Policy matrix
-
-**companies**
-- SELECT: `is_company_member(id)`
-- UPDATE: `has_company_role('company_admin')` (using + check both scoped to `id`)
-- INSERT: `has_role(auth.uid(), 'super_admin')`
-- DELETE: `has_role(auth.uid(), 'super_admin')`
-
-**profiles**
+**audit_logs**
 - SELECT: `is_company_member(company_id)`
-- INSERT: `id = auth.uid()` OR `has_role(auth.uid(), 'super_admin')`
-- UPDATE (self): `id = auth.uid()` with check `id = auth.uid() and company_id = (select company_id from profiles where id = auth.uid())` (prevent company jump)
-- UPDATE (admin): `has_company_role('company_admin') and is_company_member(company_id)`
+- INSERT: `is_company_member(company_id) and actor_id = auth.uid()` (defense in depth; the helper is the intended write path)
+- UPDATE / DELETE: no policy (privilege already revoked)
 
-**user_roles** (uses `is_company_admin`, never selects from `user_roles`)
+**audit_log_retention_policies**
 - SELECT: `is_company_member(company_id)`
-- INSERT: `is_company_admin(company_id)` OR `has_role(auth.uid(), 'super_admin')`
-- UPDATE: same as INSERT
-- DELETE: same as INSERT
+- INSERT / UPDATE / DELETE: `is_company_admin(company_id) or has_role(auth.uid(), 'super_admin')`
 
-All policies wrapped in `drop policy if exists ... ; create policy ...` for idempotency, scoped `to authenticated`.
+### 6. Deliverable
 
-### 5. Deliverable
-
-Single migration file applied via `supabase--migration`. No code changes elsewhere. Linter warnings for the three tables should clear; the four SECURITY DEFINER helper warnings from P-010 remain (intentional).
+Single migration applied via `supabase--migration`. Linter warnings for the two new tables should clear; the five SECURITY DEFINER helper warnings (P-010 + `is_company_admin` from P-011 + new `write_audit_log`) are intentional.
