@@ -338,6 +338,30 @@ export type Database = {
           },
         ]
       }
+      rate_limit_buckets: {
+        Row: {
+          capacity: number
+          key: string
+          refill_per_sec: number
+          tokens: number
+          updated_at: string
+        }
+        Insert: {
+          capacity: number
+          key: string
+          refill_per_sec: number
+          tokens: number
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          key?: string
+          refill_per_sec?: number
+          tokens?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           company_id: string
@@ -389,6 +413,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: undefined
+      }
+      consume_rate_limit: {
+        Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
+        Returns: boolean
       }
       create_invite: {
         Args: {
