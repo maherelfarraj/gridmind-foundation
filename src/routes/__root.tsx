@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -225,14 +226,40 @@ function Header() {
   );
 }
 
+// Authenticated routes render their own chrome via <AppShell />; hide the
+// public marketing header on those paths so the header isn't doubled.
+const AUTHED_PATH_PREFIXES = [
+  "/dashboard",
+  "/crm",
+  "/engineering",
+  "/procurement",
+  "/planning",
+  "/field",
+  "/commissioning",
+  "/om",
+  "/partners",
+  "/green-h2",
+  "/admin",
+  "/profile",
+  "/settings",
+];
+
+function isAuthedPath(pathname: string): boolean {
+  return AUTHED_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const showPublicHeader = !isAuthedPath(pathname);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Header />
+          {showPublicHeader && <Header />}
           <Outlet />
           <Toaster />
         </AuthProvider>
