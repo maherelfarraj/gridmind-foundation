@@ -126,7 +126,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      assert_can_grant_role: {
+        Args: {
+          company_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
+      has_company_role: {
+        Args: { role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      has_role: {
+        Args: { role: Database["public"]["Enums"]["app_role"]; user_id: string }
+        Returns: boolean
+      }
+      is_company_member: { Args: { company_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
