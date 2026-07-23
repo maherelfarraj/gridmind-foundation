@@ -1,53 +1,15 @@
-## Plan: GridMind EPC Design System
+## Acceptance check — GridMind EPC design system
 
-### 1. Rewrite `src/styles.css`
-- Keep `@import "tailwindcss" source(none);`, `@source "../src";`, `@import "tw-animate-css";`.
-- Add Fontsource imports (top of file, before `@theme`):
-  - `@fontsource/inter/400.css`, `/500.css`, `/600.css`, `/700.css`
-  - `@fontsource/space-grotesk/500.css`, `/700.css`
-  - `@fontsource/dm-sans/400.css`, `/500.css`
-- Keep `@custom-variant dark (&:is(.dark *));`.
-- `@theme inline` block: keep existing `--color-*` mappings; add font tokens:
-  - `--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;`
-  - `--font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;`
-  - `--font-alt: "DM Sans", ui-sans-serif, system-ui, sans-serif;`
-- Rewrite `:root` and `.dark` OKLCH values to an industrial EPC palette:
-  - Light: near-white desaturated slate background, deep muted blue primary (~oklch(0.35 0.08 250)), muted green accent (~oklch(0.55 0.09 155)), muted red destructive (~oklch(0.55 0.15 25)), slate neutrals for muted/border/input/ring, plus matching sidebar tokens.
-  - Dark: deep desaturated slate background (~oklch(0.18 0.02 250)), foreground near-white, brighter muted blue primary (~oklch(0.65 0.10 250)), green accent (~oklch(0.62 0.10 155)), same-family destructive, elevated slate card/popover.
-  - `--chart-1..5`: blue, green, amber, slate, teal — all low saturation.
-  - `--radius: 0.5rem`.
-- Add a `body { font-family: var(--font-sans); }` base rule so Inter is the default body font.
+All five criteria pass. No code changes needed.
 
-### 2. Theme provider — `src/components/theme-provider.tsx`
-- `type Theme = "light" | "dark" | "system"`.
-- `ThemeProvider` sets a `<html class="dark">` toggle:
-  - Initial resolution: `localStorage.getItem("gridmind-theme")` → else `prefers-color-scheme`.
-  - Persist to `localStorage` on change.
-  - Subscribe to `matchMedia('(prefers-color-scheme: dark)')` when in `system` mode.
-  - SSR-safe: apply class in a `useEffect`; provide a small inline script via `__root.tsx` head to set the class before hydration to avoid flash (optional but recommended).
-- Export `useTheme()` returning `{ theme, resolvedTheme, setTheme }`.
+### Results
 
-### 3. Wire provider in `src/routes/__root.tsx`
-- Wrap the existing `AuthProvider`/app tree inside `<ThemeProvider>`.
-- Add a small `<script>` tag in root `head` that reads localStorage and sets `document.documentElement.classList` early (no-flash).
+- [x] **Tailwind v4 `@import` + `@theme` with full token list** — `src/styles.css` uses `@import "tailwindcss"` plus `@theme inline` mapping every required token: `--background`, `--foreground`, `--card(-foreground)`, `--popover(-foreground)`, `--primary(-foreground)`, `--secondary(-foreground)`, `--muted(-foreground)`, `--accent(-foreground)`, `--destructive(-foreground)`, `--border`, `--input`, `--ring`, sidebar tokens (`--sidebar-background/-foreground/-primary/-accent/-border` + primary-foreground/accent-foreground/ring), `--chart-1..5`, and `--radius`.
+- [x] **Low-saturation palette + `.dark` remap** — chroma held at 0.02–0.15 across the palette (slate/blue neutrals, deep-blue primary `oklch(0.38 0.08 252)`, green accent `oklch(0.55 0.09 155)`, muted red destructive `oklch(0.55 0.15 25)`). `.dark` block remaps every token to dark equivalents.
+- [x] **Fontsource + font tokens** — `@fontsource/inter` (400/500/600/700), `@fontsource/space-grotesk` (500/700), `@fontsource/dm-sans` (400/500) imported at the top of `styles.css`; `@theme` defines `--font-sans` (Inter), `--font-display` (Space Grotesk), `--font-alt` (DM Sans), enabling `font-sans` / `font-display` / `font-alt` utilities.
+- [x] **Theme toggle: localStorage + prefers-color-scheme** — `src/components/theme-provider.tsx` reads `gridmind-theme` from localStorage, falls back to `matchMedia('(prefers-color-scheme: dark)')`, subscribes to system changes while in `system` mode, and persists on change. `__root.tsx` runs a pre-hydration inline script to apply the class before first paint (no-flash).
+- [x] **No raw hex/rgb in component code** — repo-wide scan of `src/**/*.tsx` returns only shadcn's `src/components/ui/chart.tsx`, where `#ccc` / `#fff` appear inside attribute selectors (`[stroke='#ccc']`) matching Recharts' own inline DOM attributes; the applied utilities are semantic (`stroke-border`, `stroke-transparent`, `fill-muted`). Not a token violation.
 
-### 4. Header theme toggle
-- Add a `ThemeToggle` button (lucide `Sun`/`Moon`) to the existing header in `__root.tsx` — cycles light ↔ dark. Uses only semantic classes.
+### Proposed action
 
-### 5. Demo page — `src/routes/design-system.tsx`
-- Route showcasing:
-  - Color swatches for every semantic token (background/foreground/card/primary/secondary/muted/accent/destructive/border/sidebar/chart-1..5).
-  - Font samples for `font-sans`, `font-display`, `font-alt`.
-  - Buttons using existing shadcn `Button` variants.
-  - A prominent `ThemeToggle` at the top to prove switching works.
-  - `head()` with unique title/description/OG metadata.
-
-### 6. Guardrails
-- Do not touch generated files (`routeTree.gen.ts`, supabase integration).
-- All new/edited components use semantic classes only — no hex, `rgb()`, or arbitrary color values.
-
-### Verification
-- `bun run build` succeeds.
-- Preview `/` renders with new palette; `/design-system` toggle flips light/dark and persists across reload.
-
-No new dependencies needed — Fontsource packages and lucide-react are already installed.
+None — everything is green. Approve this plan and I'll leave the design system as-is.
