@@ -14,6 +14,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as Lovable_probeBoomRouteImport } from './routes/lovable/__probe.boom'
+import { Route as Api_probeBoomRouteImport } from './routes/api/__probe.boom'
+import { Route as Api_probe401RouteImport } from './routes/api/__probe.401'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
@@ -39,18 +42,39 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const Lovable_probeBoomRoute = Lovable_probeBoomRouteImport.update({
+  id: '/lovable/__probe/boom',
+  path: '/lovable/boom',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Api_probeBoomRoute = Api_probeBoomRouteImport.update({
+  id: '/api/__probe/boom',
+  path: '/api/boom',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Api_probe401Route = Api_probe401RouteImport.update({
+  id: '/api/__probe/401',
+  path: '/api/401',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/401': typeof Api_probe401Route
+  '/api/boom': typeof Api_probeBoomRoute
+  '/lovable/boom': typeof Lovable_probeBoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/401': typeof Api_probe401Route
+  '/api/boom': typeof Api_probeBoomRoute
+  '/lovable/boom': typeof Lovable_probeBoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +83,29 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/design-system': typeof DesignSystemRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/__probe/401': typeof Api_probe401Route
+  '/api/__probe/boom': typeof Api_probeBoomRoute
+  '/lovable/__probe/boom': typeof Lovable_probeBoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/design-system' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/design-system'
+    | '/dashboard'
+    | '/api/401'
+    | '/api/boom'
+    | '/lovable/boom'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/design-system' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/design-system'
+    | '/dashboard'
+    | '/api/401'
+    | '/api/boom'
+    | '/lovable/boom'
   id:
     | '__root__'
     | '/'
@@ -72,6 +113,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/design-system'
     | '/_authenticated/dashboard'
+    | '/api/__probe/401'
+    | '/api/__probe/boom'
+    | '/lovable/__probe/boom'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -79,6 +123,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  Api_probe401Route: typeof Api_probe401Route
+  Api_probeBoomRoute: typeof Api_probeBoomRoute
+  Lovable_probeBoomRoute: typeof Lovable_probeBoomRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -118,6 +165,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/__probe/boom': {
+      id: '/lovable/__probe/boom'
+      path: '/lovable/boom'
+      fullPath: '/lovable/boom'
+      preLoaderRoute: typeof Lovable_probeBoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/__probe/boom': {
+      id: '/api/__probe/boom'
+      path: '/api/boom'
+      fullPath: '/api/boom'
+      preLoaderRoute: typeof Api_probeBoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/__probe/401': {
+      id: '/api/__probe/401'
+      path: '/api/401'
+      fullPath: '/api/401'
+      preLoaderRoute: typeof Api_probe401RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -137,7 +205,20 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DesignSystemRoute: DesignSystemRoute,
+  Api_probe401Route: Api_probe401Route,
+  Api_probeBoomRoute: Api_probeBoomRoute,
+  Lovable_probeBoomRoute: Lovable_probeBoomRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
