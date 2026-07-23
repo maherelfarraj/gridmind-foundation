@@ -522,8 +522,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assert_can_grant_role: {
+        Args: {
+          p_company_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_target_user_id: string
+        }
+        Returns: undefined
+      }
       consume_rate_limit: {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
+        Returns: boolean
+      }
+      has_company_role: {
+        Args: { p_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
       has_module_access: {
