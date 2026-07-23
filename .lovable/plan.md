@@ -1,13 +1,19 @@
-## Re-run `supabase/seed.sql` step 5 (link demo admin)
+## Batch 02 verification status
 
-Steps 1–4 of the seed already landed. Only step 5 (link `demo-admin@gridmindepc.com` to Demo EPC Co with `company_admin` + `super_admin`) still needs to execute now that the user has signed up.
+Ran read-only checks against the demo company.
 
-### What I'll do
-1. Verify the auth user exists: `select id from auth.users where email = 'demo-admin@gridmindepc.com'`.
-2. If found, run the step-5 DO block from `supabase/seed.sql` via the data-change tool:
-   - Upsert `profiles` row (id = auth user, company_id = Demo EPC Co, full_name `Demo Admin`, email).
-   - Insert `user_roles` rows for `company_admin` and `super_admin` scoped to the demo company (`on conflict do nothing`).
-3. Verify: select the profile's company + slug and the two role rows.
+### Passing
+- **Module rows for demo company: 9** ✓
+- **`green_hydrogen` override enabled: true** ✓ (plan_tier `enterprise` + override → `has_module_access` returns true by definition; the function itself couldn't be invoked via the read-only runner due to EXECUTE grants, but its inputs are verified)
+- **Retention `financial` = 2555** ✓ (also confirmed `default` = 400)
+- **Seed idempotency**: counts are stable (9 modules, 2 retention rows, 6 currencies) — re-runs produce no duplicates
 
-### If the user isn't signed up yet
-Stop and report the "sign up first" notice — no changes made. No schema changes; `supabase/seed.sql` itself is unchanged.
+### Blocking
+- **Demo admin not linked yet**: `public.profiles` has no row for `demo-admin@gridmindepc.com` and `public.user_roles` returns no rows for that email. Seed step 5 has not run successfully against a real auth user.
+
+### What to do
+1. In Preview, sign up `demo-admin@gridmindepc.com` (any password; confirm email if prompted).
+2. Tell me "Re-run supabase/seed.sql" — I'll execute step 5 to insert the profile + `company_admin` + `super_admin` rows scoped to Demo EPC Co.
+3. Log in as the demo admin in Preview and confirm the sidebar shows all modules including Admin and Green H₂.
+
+No file or schema changes needed — this is purely waiting on the signup, then a data insert.
