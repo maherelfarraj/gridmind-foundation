@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -7,10 +7,31 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, createContext, useContext, type ReactNode } from "react";
+import type { User, Session } from "@supabase/supabase-js";
 
 import appCss from "../styles.css?url";
+import { supabase } from "@/integrations/supabase/client";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Button } from "@/components/ui/button";
+
+type AuthContextValue = {
+  user: User | null;
+  session: Session | null;
+  isLoading: boolean;
+  signOut: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  session: null,
+  isLoading: true,
+  signOut: async () => {},
+});
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
 function NotFoundComponent() {
   return (
@@ -77,14 +98,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "GridMind EPC" },
+      { name: "description", content: "Energy Performance Certificate management powered by GridMind." },
+      { name: "author", content: "GridMind EPC" },
+      { property: "og:title", content: "GridMind EPC" },
+      { property: "og:description", content: "Energy Performance Certificate management powered by GridMind." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -114,13 +134,97 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (
+        event !== "SIGNED_IN" &&
+        event !== "SIGNED_OUT" &&
+        event !== "USER_UPDATED"
+      ) {
+        return;
+      }
+
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      router.invalidate();
+
+      if (event !== "SIGNED_OUT") {
+        queryClient.invalidateQueries();
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, queryClient]);
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    router.navigate({ to: "/auth", replace: true });
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+function Header() {
+  const { user, isLoading, signOut } = useAuth();
+
+  return (
+    <header className="border-b bg-background">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="text-lg font-semibold tracking-tight text-foreground">
+          GridMind EPC
+        </Link>
+        <div className="flex items-center gap-4">
+          {!isLoading && user ? (
+            <>
+              <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                Dashboard
+              </Link>
+              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button size="sm">Sign in</Button>
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthProvider>
+        <Header />
+        <Outlet />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
