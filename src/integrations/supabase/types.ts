@@ -59,6 +59,33 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          plan_tier: string
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          plan_tier?: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          plan_tier?: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       currencies: {
         Row: {
           code: string
@@ -173,6 +200,44 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -196,6 +261,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_roles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       webhook_deliveries: {
         Row: {
