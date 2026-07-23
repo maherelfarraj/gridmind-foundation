@@ -560,6 +560,7 @@ export type Database = {
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
+      storage_company_id: { Args: { p_name: string }; Returns: string }
       verify_api_key: {
         Args: { p_raw_key: string }
         Returns: {
