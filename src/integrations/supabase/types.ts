@@ -117,6 +117,41 @@ export type Database = {
         }
         Relationships: []
       }
+      module_access_rules: {
+        Row: {
+          company_id: string
+          created_at: string
+          enabled: boolean
+          id: string
+          module: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          module: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          module?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_access_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -212,6 +247,10 @@ export type Database = {
       }
       has_company_role: {
         Args: { role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      has_module_access: {
+        Args: { p_company_id: string; p_module: string }
         Returns: boolean
       }
       has_role: {
