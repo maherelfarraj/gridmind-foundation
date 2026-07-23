@@ -340,15 +340,6 @@ export type Database = {
           scopes: string[]
         }[]
       }
-      write_audit_log: {
-        Args: {
-          p_action: string
-          p_entity: string
-          p_entity_id: string
-          p_metadata?: Json
-        }
-        Returns: string
-      }
     }
     Enums: {
       app_role:
