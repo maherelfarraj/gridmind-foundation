@@ -84,12 +84,14 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const path = safePath(request);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response, request);
     } catch (error) {
-      const { errorRef } = captureError(error, { path: safePath(request) });
+      if (shouldBypassBranding(path)) throw error;
+      const { errorRef } = captureError(error, { path });
       return brandedErrorResponse(errorRef);
     }
   },
