@@ -1,33 +1,97 @@
-## No-op: migration 0006 already applied
+## P-015 — Migration 0007: currencies + fx_rates + seed
 
-The invites migration landed in the previous turn via `supabase--migration`. All P-014 objects are in the database:
+Create `supabase/migrations/0007_currencies_fx.sql` (idempotent) — global reference data for multi-currency support. Deliberately no `company_id`; tenancy expressed via RLS (all authenticated read, super_admin write). Apply via `supabase--migration`.
 
-- `public.invite_status` enum (`pending`, `accepted`, `revoked`, `expired`)
-- `public.invites` table with `token_hash`, 7-day `expires_at` default, `accepted_at`, `accepted_by`
-- Partial unique index `invites_one_pending_per_email` on `(company_id, email) where status = 'pending'`
-- Supporting indexes on `company_id` and `(email, status)`
-- `update_invites_updated_at` trigger
-- GRANTs: revoked from `anon`/`public`; full CRUD to `authenticated`; `all` to `service_role`
-- RLS enabled with four policies: admin select / self select / admin insert / admin update / admin delete
-- `create_invite(uuid, citext, app_role) returns text` — SECURITY DEFINER, returns raw token once, writes `invite.created` audit
-- `redeem_invite(text) returns uuid` — SECURITY DEFINER, expires-on-touch, email match, upserts profile + role, writes `invite.accepted` audit
-- EXECUTE revoked from `public`/`anon`; granted to `authenticated`/`service_role`
+### 1. `public.currencies`
 
-## Verification I'll run in build mode (read-only)
+Columns:
+- `code text primary key` — ISO 4217, e.g. `'USD'`
+- `name text not null`
+- `symbol text not null`
+- `minor_unit int not null default 2 check (minor_unit >= 0 and minor_unit <= 6)`
+- `is_active boolean not null default true`
+- `created_at`, `updated_at timestamptz not null default now()`
+- Trigger: `update_updated_at_column` before update
 
-Quick psql check confirming presence of the objects, then report back — no schema changes.
+### 2. `public.fx_rates`
+
+Columns:
+- `id uuid primary key default gen_random_uuid()`
+- `base_code text not null references public.currencies(code) on update cascade on delete restrict`
+- `quote_code text not null references public.currencies(code) on update cascade on delete restrict`
+- `rate numeric(20,8) not null check (rate > 0)`
+- `as_of date not null`
+- `source text not null default 'manual'`
+- `created_at`, `updated_at timestamptz not null default now()`
+- `unique (base_code, quote_code, as_of)`
+- `check (base_code <> quote_code)`
+- Trigger: `update_updated_at_column` before update
+
+Indexes:
+- `fx_rates_latest_idx (base_code, quote_code, as_of desc)` — for "latest rate" lookups by the future rate-feed job.
+
+### 3. GRANTs (before RLS)
 
 ```sql
-select tablename from pg_tables where schemaname='public' and tablename='invites';
-select typname from pg_type where typname='invite_status';
-select proname from pg_proc
-  where pronamespace = 'public'::regnamespace
-    and proname in ('create_invite','redeem_invite');
-select indexname from pg_indexes
-  where schemaname='public' and tablename='invites';
-select polname from pg_policies where schemaname='public' and tablename='invites';
+revoke all on public.currencies from anon, public;
+revoke all on public.fx_rates  from anon, public;
+
+grant select on public.currencies to authenticated;
+grant select on public.fx_rates  to authenticated;
+
+grant all on public.currencies to service_role;
+grant all on public.fx_rates  to service_role;
 ```
 
-## Next step
+No anon access. Only super_admin can write via policies below; the production rate-feed job uses `service_role`, which bypasses RLS.
 
-Approve this and I'll run the verification query, confirm the objects, then move on to P-015.
+### 4. RLS
+
+```sql
+alter table public.currencies enable row level security;
+alter table public.fx_rates  enable row level security;
+```
+
+Policies (idempotent `drop policy if exists` + `create policy`, `to authenticated`):
+
+- `currencies_all_read` — SELECT, `using (true)`
+- `currencies_super_admin_write` — ALL (insert/update/delete), `using (public.has_role(auth.uid(),'super_admin'))` and same `with check`
+- `fx_rates_all_read` — SELECT, `using (true)`
+- `fx_rates_super_admin_write` — ALL, `using (public.has_role(auth.uid(),'super_admin'))` and same `with check`
+
+(No `authenticated` INSERT/UPDATE/DELETE beyond the super_admin path.)
+
+### 5. Seed — currencies
+
+`insert into public.currencies (code, name, symbol, minor_unit) values (...) on conflict (code) do nothing`, seeding exactly:
+
+| code | name                  | symbol | minor_unit |
+| ---- | --------------------- | ------ | ---------- |
+| USD  | US Dollar             | $      | 2          |
+| EUR  | Euro                  | €      | 2          |
+| MAD  | Moroccan Dirham       | DH     | 2          |
+| JOD  | Jordanian Dinar       | JD     | 3          |
+| AED  | UAE Dirham            | د.إ    | 2          |
+| CNY  | Chinese Yuan Renminbi | ¥      | 2          |
+
+### 6. Seed — fx_rates (USD-quoted, `as_of = current_date`, `source = 'seed'`)
+
+Insert a starter set so finance screens work before the real rate feed exists. Indicative placeholders only.
+
+Rows (`base_code`, `quote_code`, `rate`):
+- `USD → USD` — skipped (violates `base <> quote`); code must never store a self-pair.
+- `EUR → USD` — `1.08`
+- `MAD → USD` — `0.10`
+- `JOD → USD` — `1.41`
+- `AED → USD` — `0.27`
+- `CNY → USD` — `0.14`
+
+`insert ... on conflict (base_code, quote_code, as_of) do nothing` so re-running the migration is safe.
+
+### 7. Expected linter output
+
+No new SECURITY DEFINER functions introduced; the existing `has_role` helper is reused. Any pre-existing linter warnings from earlier migrations remain unchanged.
+
+### Deliverable
+
+Single migration file `supabase/migrations/0007_currencies_fx.sql` applied via `supabase--migration`. No frontend code changes in this prompt.
