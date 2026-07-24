@@ -61,7 +61,7 @@ const metSchema = z.object({
 const otherSchema = z.object({
   category: z.literal("other"),
   title: z.string().trim().min(1).max(200),
-  notes: z.string().trim().max(500).default(""),
+  notes: z.string().trim().max(500),
 });
 
 type SurveyForm = z.infer<typeof surveySchema>;
