@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Database } from "@/integrations/supabase/types";
-import type { ProjectBasics } from "@/lib/schemas/project-wizard";
+import type { ProjectBasics, ProjectSelection } from "@/lib/schemas/project-wizard";
 
 export type ProjectArchetype =
   Database["public"]["Enums"]["project_archetype"];
@@ -11,7 +11,8 @@ export type ProjectArchetype =
 export type ProjectDraft = {
   archetype?: ProjectArchetype;
   basics?: ProjectBasics;
-  // Steps 3–4 append fields here.
+  selection?: ProjectSelection;
+  // Step 4 appends fields here.
 };
 
 const STORAGE_KEY = "gridmind:project-draft:v1";

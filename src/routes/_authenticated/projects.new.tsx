@@ -14,10 +14,19 @@ import {
   ArchetypePickerSkeleton,
 } from "@/components/wizard/archetype-picker";
 import { ProjectBasicsForm } from "@/components/wizard/project-basics-form";
+import { ProjectSelectionForm } from "@/components/wizard/project-selection-form";
+import { TemplatePickerSkeleton } from "@/components/wizard/template-picker";
+import { WizardErrorPanel } from "@/components/wizard/error-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getProjectCreationAccess } from "@/lib/projects.functions";
-import type { ProjectBasics } from "@/lib/schemas/project-wizard";
+import {
+  getProjectCreationAccess,
+  listProjectTemplates,
+} from "@/lib/projects.functions";
+import type {
+  ProjectBasics,
+  ProjectSelection,
+} from "@/lib/schemas/project-wizard";
 import { useProjectDraft, type ProjectArchetype } from "@/lib/wizard-draft";
 
 const searchSchema = z.object({
@@ -54,7 +63,10 @@ function NewProjectPage() {
   const { activeCompanyId } = useActiveCompany();
   const { draft, setDraft, clear, hydrated } = useProjectDraft();
 
+  const currentStep = Math.min(4, Math.max(1, search.step));
+
   const getAccessFn = useServerFn(getProjectCreationAccess);
+  const listTemplatesFn = useServerFn(listProjectTemplates);
 
   const accessQuery = useQuery({
     queryKey: ["project-creation-access", activeCompanyId, search.forceError],
@@ -68,7 +80,28 @@ function NewProjectPage() {
     retry: false,
   });
 
-  const currentStep = Math.min(4, Math.max(1, search.step));
+  const templatesQuery = useQuery({
+    queryKey: [
+      "project-templates",
+      activeCompanyId,
+      draft.archetype,
+      search.forceError,
+    ],
+    queryFn: async () => {
+      if (search.forceError) {
+        throw new Error("Simulated failure — remove ?forceError=1 to retry.");
+      }
+      return listTemplatesFn({
+        data: {
+          companyId: activeCompanyId!,
+          archetype: draft.archetype!,
+        },
+      });
+    },
+    enabled: !!activeCompanyId && !!draft.archetype && currentStep === 3,
+    retry: false,
+  });
+
 
   // Redirect to step 1 if a later step is opened without an archetype in the draft.
   useEffect(() => {
@@ -101,12 +134,19 @@ function NewProjectPage() {
     void navigate({ to: "/projects/new", search: { step: 3 } });
   };
 
+  const handleSelectionSubmit = (values: ProjectSelection) => {
+    setDraft({ selection: values });
+    void navigate({ to: "/projects/new", search: { step: 4 } });
+  };
+
   const stepSubtitle =
     currentStep === 1
       ? "Pick the archetype that best describes what you're building. It drives the templates, configuration, and lifecycle we'll set up for you."
       : currentStep === 2
         ? "Tell us the basics: name, capacity, site, and target COD."
-        : "More wizard steps ship in the next batch.";
+        : currentStep === 3
+          ? "Choose a template, then tune the gates, budget, and departments."
+          : "More wizard steps ship in the next batch.";
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -182,20 +222,45 @@ function NewProjectPage() {
             }
           />
         )
+      ) : currentStep === 3 ? (
+        !hydrated || !draft.archetype || !activeCompanyId ? (
+          <TemplatePickerSkeleton />
+        ) : templatesQuery.isPending ? (
+          <TemplatePickerSkeleton />
+        ) : templatesQuery.isError ? (
+          <WizardErrorPanel
+            title="Could not load templates"
+            message={
+              templatesQuery.error instanceof Error
+                ? templatesQuery.error.message
+                : "Unexpected error"
+            }
+            onRetry={() => void templatesQuery.refetch()}
+          />
+        ) : (
+          <ProjectSelectionForm
+            templates={templatesQuery.data}
+            defaultValues={draft.selection}
+            onSubmit={handleSelectionSubmit}
+            onBack={() =>
+              void navigate({ to: "/projects/new", search: { step: 2 } })
+            }
+          />
+        )
       ) : (
         <Card className="flex flex-col gap-2 border-border bg-card p-6">
           <div className="font-medium text-foreground">Coming soon</div>
           <p className="text-sm text-muted-foreground">
-            Step {currentStep} ships in the next wizard batch (P-035).
+            Step {currentStep} ships in the next wizard batch (P-036).
           </p>
           <div>
             <Button
               variant="outline"
               onClick={() =>
-                void navigate({ to: "/projects/new", search: { step: 2 } })
+                void navigate({ to: "/projects/new", search: { step: 3 } })
               }
             >
-              Back to basics
+              Back to selection
             </Button>
           </div>
         </Card>
