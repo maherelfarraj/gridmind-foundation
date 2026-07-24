@@ -362,7 +362,7 @@ export const createProposal = createServerFn({ method: "POST" })
         contingency_pct: 0,
         total: 0,
         created_by: context.user.id,
-      })
+      } as any)
       .select("id")
       .single();
     if (error) throw new Error(error.message);
