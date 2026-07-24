@@ -22,6 +22,7 @@ import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
+import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
@@ -111,6 +112,11 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
+  id: '/api/webhooks/esign',
+  path: '/api/webhooks/esign',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByTo {
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -344,6 +352,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -382,6 +391,7 @@ export interface FileRouteTypes {
     | '/settings/permissions-simulator'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/webhooks/esign'
     | '/projects/'
     | '/proposals/'
     | '/admin/tenants/$companyId'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/settings/permissions-simulator'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/webhooks/esign'
     | '/projects'
     | '/proposals'
     | '/admin/tenants/$companyId'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/permissions-simulator'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
+    | '/api/webhooks/esign'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
@@ -476,6 +488,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/webhooks/esign': {
+      id: '/api/webhooks/esign'
+      path: '/api/webhooks/esign'
+      fullPath: '/api/webhooks/esign'
+      preLoaderRoute: typeof ApiWebhooksEsignRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings/users': {
       id: '/_authenticated/settings/users'
@@ -869,6 +889,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
+  ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
