@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import {
   Atom,
+  Building2,
   CalendarRange,
   ClipboardCheck,
   HardHat,
