@@ -102,22 +102,42 @@ export function rfqProjectsQueryOptions(
 // ---------------------------------------------------------------------------
 // mutations
 // ---------------------------------------------------------------------------
+export interface SaveRfqDraftInput {
+  id?: string | null;
+  projectId: string;
+  title: string;
+  description?: string | null;
+  currencyCode: string;
+  issueDate?: string | null;
+  dueDate?: string | null;
+  terms?: string | null;
+  lines: Array<{
+    line_no: number;
+    description: string;
+    spec?: string | null;
+    qty: number;
+    uom: string;
+    target_price?: number | null;
+    site_need_date?: string | null;
+  }>;
+}
+
 export function useSaveRfqDraft() {
   const qc = useQueryClient();
   const fn = useServerFn(saveRfqDraft);
   return useMutation({
-    mutationFn: (input: Parameters<typeof fn>[0]["data"]) =>
-      fn({ data: input as any }),
+    mutationFn: (input: SaveRfqDraftInput) => fn({ data: input as any }),
     onSuccess: (_res, vars) => {
       qc.invalidateQueries({ queryKey: ["rfqs"] });
-      if ((vars as any)?.id) {
-        qc.invalidateQueries({ queryKey: ["rfq", (vars as any).id] });
+      if (vars?.id) {
+        qc.invalidateQueries({ queryKey: ["rfq", vars.id] });
       }
       toast.success("RFQ saved");
     },
     onError: (err) => toast.error(errorMessage(err)),
   });
 }
+
 
 export function useInviteVendors(rfqId: string) {
   const qc = useQueryClient();
