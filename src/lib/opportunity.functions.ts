@@ -151,7 +151,7 @@ export const getOpportunity = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("opportunities")
       .select(
-        "id, company_id, name, account_name, archetype, capacity_mw, estimated_value, currency_code, expected_decision_date, stage, probability, competitor, loss_reason, notes, owner_id, created_at, updated_at, won_at, lost_at",
+        "id, company_id, name, account_name, archetype, capacity_mw, estimated_value, currency_code, expected_decision_date, stage, probability, competitor, loss_reason, notes, owner_id, created_at, updated_at, won_at, lost_at, converted_intake_id",
       )
       .eq("id", data.id)
       .maybeSingle();
