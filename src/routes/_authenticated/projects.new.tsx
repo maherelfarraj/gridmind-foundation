@@ -64,6 +64,7 @@ function NewProjectPage() {
   const { draft, setDraft, clear, hydrated } = useProjectDraft();
 
   const getAccessFn = useServerFn(getProjectCreationAccess);
+  const listTemplatesFn = useServerFn(listProjectTemplates);
 
   const accessQuery = useQuery({
     queryKey: ["project-creation-access", activeCompanyId, search.forceError],
@@ -74,6 +75,28 @@ function NewProjectPage() {
       return getAccessFn({ data: { companyId: activeCompanyId! } });
     },
     enabled: !!activeCompanyId,
+    retry: false,
+  });
+
+  const templatesQuery = useQuery({
+    queryKey: [
+      "project-templates",
+      activeCompanyId,
+      draft.archetype,
+      search.forceError,
+    ],
+    queryFn: async () => {
+      if (search.forceError) {
+        throw new Error("Simulated failure — remove ?forceError=1 to retry.");
+      }
+      return listTemplatesFn({
+        data: {
+          companyId: activeCompanyId!,
+          archetype: draft.archetype!,
+        },
+      });
+    },
+    enabled: !!activeCompanyId && !!draft.archetype && currentStep === 3,
     retry: false,
   });
 
