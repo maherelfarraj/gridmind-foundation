@@ -264,6 +264,80 @@ export type Database = {
           },
         ]
       }
+      baseline_snapshots: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          locked: boolean
+          locked_at: string | null
+          locked_by: string | null
+          name: string
+          notes: string | null
+          project_id: string
+          snapshot: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          locked?: boolean
+          locked_at?: string | null
+          locked_by?: string | null
+          name: string
+          notes?: string | null
+          project_id: string
+          snapshot?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          locked?: boolean
+          locked_at?: string | null
+          locked_by?: string | null
+          name?: string
+          notes?: string | null
+          project_id?: string
+          snapshot?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baseline_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "baseline_snapshots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "baseline_snapshots_locked_by_fkey"
+            columns: ["locked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "baseline_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bom_lines: {
         Row: {
           buffer_pct: number
@@ -3550,6 +3624,197 @@ export type Database = {
           },
         ]
       }
+      risks: {
+        Row: {
+          category: string
+          closed_at: string | null
+          company_id: string
+          contingency_amount: number | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          id: string
+          identified_at: string
+          impact: number
+          mitigation: string | null
+          owner_id: string | null
+          probability: number
+          project_id: string
+          score: number | null
+          status: Database["public"]["Enums"]["risk_status"]
+          target_close_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          closed_at?: string | null
+          company_id: string
+          contingency_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          identified_at?: string
+          impact: number
+          mitigation?: string | null
+          owner_id?: string | null
+          probability: number
+          project_id: string
+          score?: number | null
+          status?: Database["public"]["Enums"]["risk_status"]
+          target_close_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          closed_at?: string | null
+          company_id?: string
+          contingency_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          identified_at?: string
+          impact?: number
+          mitigation?: string | null
+          owner_id?: string | null
+          probability?: number
+          project_id?: string
+          score?: number | null
+          status?: Database["public"]["Enums"]["risk_status"]
+          target_close_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risks_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "risks_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_tasks: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          discipline: string | null
+          end_date: string
+          id: string
+          is_milestone: boolean
+          name: string
+          predecessor_ids: string[]
+          progress_pct: number
+          project_id: string
+          sort_order: number
+          start_date: string
+          status: Database["public"]["Enums"]["schedule_task_status"]
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          discipline?: string | null
+          end_date: string
+          id?: string
+          is_milestone?: boolean
+          name: string
+          predecessor_ids?: string[]
+          progress_pct?: number
+          project_id: string
+          sort_order?: number
+          start_date: string
+          status?: Database["public"]["Enums"]["schedule_task_status"]
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          discipline?: string | null
+          end_date?: string
+          id?: string
+          is_milestone?: boolean
+          name?: string
+          predecessor_ids?: string[]
+          progress_pct?: number
+          project_id?: string
+          sort_order?: number
+          start_date?: string
+          status?: Database["public"]["Enums"]["schedule_task_status"]
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_tasks_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spare_parts: {
         Row: {
           category: Database["public"]["Enums"]["material_category"]
@@ -4045,6 +4310,99 @@ export type Database = {
           },
         ]
       }
+      wbs_items: {
+        Row: {
+          budgeted_amount: number | null
+          code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          discipline: string | null
+          id: string
+          ifc_package_ref: string | null
+          item_type: Database["public"]["Enums"]["wbs_item_type"]
+          name: string
+          parent_id: string | null
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          budgeted_amount?: number | null
+          code: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          discipline?: string | null
+          id?: string
+          ifc_package_ref?: string | null
+          item_type?: Database["public"]["Enums"]["wbs_item_type"]
+          name: string
+          parent_id?: string | null
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          budgeted_amount?: number | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          discipline?: string | null
+          id?: string
+          ifc_package_ref?: string | null
+          item_type?: Database["public"]["Enums"]["wbs_item_type"]
+          name?: string
+          parent_id?: string | null
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wbs_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wbs_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wbs_items_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "wbs_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wbs_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_deliveries: {
         Row: {
           attempts: number
@@ -4357,6 +4715,13 @@ export type Database = {
         | "rejected"
         | "withdrawn"
       rfq_status: "draft" | "issued" | "closed" | "awarded" | "cancelled"
+      risk_status: "open" | "mitigating" | "realized" | "closed"
+      schedule_task_status:
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | "on_hold"
+        | "cancelled"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -4367,6 +4732,7 @@ export type Database = {
         | "award_announcement"
         | "other"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
+      wbs_item_type: "phase" | "package" | "discipline" | "task_group"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4634,6 +5000,14 @@ export const Constants = {
         "withdrawn",
       ],
       rfq_status: ["draft", "issued", "closed", "awarded", "cancelled"],
+      risk_status: ["open", "mitigating", "realized", "closed"],
+      schedule_task_status: [
+        "not_started",
+        "in_progress",
+        "completed",
+        "on_hold",
+        "cancelled",
+      ],
       tender_event_type: [
         "pre_bid_meeting",
         "site_visit",
@@ -4645,6 +5019,7 @@ export const Constants = {
         "other",
       ],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
+      wbs_item_type: ["phase", "package", "discipline", "task_group"],
     },
   },
 } as const

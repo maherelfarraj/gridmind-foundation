@@ -1,60 +1,33 @@
-## P-070 — Material Price Alerts + Spare Parts
+## P-071 — Planning baseline migration (WBS, schedule, baselines, risks)
 
-Two procurement utilities behind one migration, following P-068/P-069 conventions.
+Single migration + RLS test stub. No UI, no server functions yet (those land in P-072/P-073).
 
-### 1. Migration `0031_procurement_extras.sql`
-(0030 is taken by expediting; renumber to 0031.)
-- Guarded `do` block for `material_category` enum.
-- `material_price_alerts` and `spare_parts` tables per spec (schema, FKs, unique constraints, `sp_company_idx`).
-- GRANTs to `authenticated`, `ALL` to `service_role`.
-- RLS enable + policies (`mpa_select`/`mpa_write`, `sp_select`/`sp_write`) exactly as specified.
-- Attach `set_updated_at()` BEFORE UPDATE triggers on both tables.
+### 1. Migration `supabase/migrations/0032_planning_baseline.sql`
 
-### 2. Pure rules — `src/lib/procurement-extras-rules.ts`
-- `computeChangePct(prev, next)`, `shouldTrigger(changePct, threshold)`.
-- `isLowStock(qtyOnHand, reorderPoint)`.
-- `applyStockDelta(qty, delta)` with non-negative guard.
-- Zod schemas: `priceObservationSchema`, `alertSubscriptionSchema`, `sparePartSchema`, `stockAdjustSchema` (reason required, min length 3).
+(0031 is taken by procurement extras; renumber to 0032.)
 
-### 3. Server functions
-`src/lib/price-alerts.functions.ts`
-- `listPriceAlerts`, `upsertPriceAlertSubscription` (category+region+threshold), `recordPriceObservation` (computes change_pct vs previous_price, sets triggered when |change_pct| ≥ threshold), `acknowledgePriceAlert` (clears triggered).
-- Audits: `price_alert.subscribe`, `price_alert.observe`, `price_alert.acknowledge`.
-- Role gate: procurement_admin | procurement_officer | company_admin.
+Idempotent SQL block:
+- Guarded `do` blocks creating enums `wbs_item_type`, `schedule_task_status`, `risk_status`.
+- `create table if not exists` for `wbs_items`, `schedule_tasks`, `baseline_snapshots`, `risks` — schemas exactly as specified (FKs to `companies`, `projects`, `profiles`, `currencies`; CHECKs on schedule dates/progress and risk P×I; `risks.score` as `generated always as (probability * impact) stored`).
+- Attach existing `public.set_updated_at()` BEFORE UPDATE trigger to all four tables (guarded with `drop trigger if exists`).
+- `alter table ... enable row level security` for all four.
+- Policies exactly as specified: `wbs_select/wbs_write`, `sched_select/sched_write`, `baseline_select/baseline_write`, `risks_select/risks_write` — all using `is_company_member` + `has_company_role(...)` combinations.
+- GRANTs: `SELECT` on all four to `authenticated`; `INSERT, UPDATE, DELETE` on `wbs_items` and `schedule_tasks`; `INSERT, UPDATE` only on `baseline_snapshots` and `risks` (no DELETE — append-only guarantee). `GRANT ALL` on all four to `service_role`.
+- Indexes: `wbs_project_idx`, `sched_project_idx`, `sched_wbs_idx`, `baseline_project_idx`, `risks_project_idx`.
 
-`src/lib/spare-parts.functions.ts`
-- `listSpareParts` (server search + category filter), `createSparePart`, `updateSparePart`, `deleteSparePart`, `adjustStock` (reason mandatory).
-- Audits: `spare_part.create|update|delete|stock_adjust`.
-- Role gate adds `om_admin`.
+All `create policy` statements wrapped with `drop policy if exists` so re-running is clean.
 
-### 4. Query helpers
-`src/lib/price-alerts-query.ts`, `src/lib/spare-parts-query.ts` with `queryOptions` factories.
+### 2. RLS test stub `tests/rls/planning-baseline.rls.test.ts`
 
-### 5. UI
-`src/routes/_authenticated/procurement.price-alerts.tsx`
-- Header: "Subscribe" dialog (category, region, unit, currency, threshold %); "Record observation" dialog per row (new index price + optional source).
-- KPI strip: total subs, triggered count, avg change %.
-- Table: category, region, latest price (Intl currency), change % chip (green/destructive), threshold, triggered badge, actions (Record, Acknowledge).
-- Triggered banner + sonner toast on new observation crossing threshold.
-- Skeleton / empty / error / CSV export.
+Vitest skeleton mirroring `tests/rls/rfq-core.rls.test.ts` — `describe.skip` blocks for cross-tenant SELECT = 0 rows on each of the four tables, so future wiring has a shape to fill in.
 
-`src/routes/_authenticated/procurement.spare-parts.tsx`
-- Header: "Add part" dialog (react-hook-form + zod), search input, category filter.
-- KPI strip: total parts, "N parts below reorder point" (destructive tone when >0), total on-hand value.
-- Table: part #, name, category, preferred vendor, qty on hand, reorder point, safety stock, lead time, location, low-stock destructive badge, actions (Edit, Adjust stock, Delete).
-- `AdjustStockDialog` with delta (+/−) and mandatory reason.
-- Skeleton / empty / error / CSV export.
+### 3. Verification checklist
 
-Add both routes to `src/lib/nav-map.ts` under Procurement (`TrendingUp` for price alerts, `Package` for spare parts).
+- Migration runs twice cleanly (guarded enums/policies/triggers).
+- `supabase--linter` clean for the new tables.
+- Read-query sanity: RLS enabled on all 4; `unique(project_id, code)` on `wbs_items`; no DELETE grant on `baseline_snapshots`/`risks`; `risks.score` is a generated column (insert P=4/I=3 sample → 12, then rollback).
+- Types file regenerated after apply.
 
-### 6. Tests
-`tests/unit/procurement-extras-rules.test.ts` — change % math, threshold trigger boundaries, low-stock predicate, stock delta guard, zod validators (reason required).
-
-### 7. Verification
-- Typecheck; unit tests green.
-- Manual acceptance list from prompt: migration idempotent, RLS cross-tenant blocked, module 0.120→0.131 triggers at 5%, acknowledge clears + audited, inverter-fan reorder=5/qty=3 shows destructive badge + KPI "1 part below reorder point", stock adjust requires reason and audits, both pages have skeleton/empty/error + CSV.
-
-### Technical notes
-- Migration file numbered `0031` to avoid clash with `0030_expediting.sql`.
-- Reuse existing `writeAuditLog`, `requireSupabaseAuth`, `has_company_role`, `is_company_member`.
-- Semantic tokens only; Intl for currency; date-fns for timestamps.
+### Deferred to later prompts (per spec)
+- WBS builder UI → P-072.
+- Server functions (`createServerFn` + zod + `requireSupabaseAuth` + `writeAuditLog` for `wbs.create`, `schedule_task.update`, `baseline.lock`, `risk.create`), cycle validation for `predecessor_ids`, locked-baseline immutability check → P-073.
