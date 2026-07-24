@@ -557,7 +557,7 @@ export const listProjects = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => listProjectsInput.parse(input))
   .handler(async ({ data, context }): Promise<ListProjectsResult> => {
     requireSupabaseAuth(context);
-    await assertCompanyMember(context, data.companyId);
+    await assertCompanyMember(context.supabase, data.companyId);
 
     // Department semi-join: prefetch project ids that have the requested dept.
     let deptIdFilter: string[] | null = null;
@@ -620,7 +620,7 @@ export const exportProjectsCsv = createServerFn({ method: "GET" })
   .handler(
     async ({ data, context }): Promise<{ filename: string; csv: string }> => {
       requireSupabaseAuth(context);
-      await assertCompanyMember(context, data.companyId);
+      await assertCompanyMember(context.supabase, data.companyId);
 
       let deptIdFilter: string[] | null = null;
       if (data.department) {
