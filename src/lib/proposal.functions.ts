@@ -641,7 +641,7 @@ export const runYieldStub = createServerFn({ method: "POST" })
 
     const { error: upErr } = await context.supabase
       .from("proposals")
-      .update({ yield_result: yieldResult })
+      .update({ yield_result: yieldResult as any })
       .eq("id", data.proposalId);
     if (upErr) throw new Error(upErr.message);
 
