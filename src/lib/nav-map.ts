@@ -15,6 +15,7 @@ import {
   Shield,
   SlidersHorizontal,
   Truck,
+  UserCircle,
   Users,
   Wrench,
   type LucideIcon,
@@ -57,6 +58,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Administration",
     items: [
+      { moduleKey: "admin", label: "Profile", url: "/settings/profile", icon: UserCircle },
       { moduleKey: "admin", label: "Company", url: "/settings/company", icon: Settings2 },
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
