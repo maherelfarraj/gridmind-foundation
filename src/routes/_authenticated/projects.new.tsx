@@ -63,6 +63,8 @@ function NewProjectPage() {
   const { activeCompanyId } = useActiveCompany();
   const { draft, setDraft, clear, hydrated } = useProjectDraft();
 
+  const currentStep = Math.min(4, Math.max(1, search.step));
+
   const getAccessFn = useServerFn(getProjectCreationAccess);
   const listTemplatesFn = useServerFn(listProjectTemplates);
 
