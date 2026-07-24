@@ -20,6 +20,12 @@ import {
   PRICING_ENTITY,
   PRICING_RULE_KEY,
 } from "@/lib/pricing-rules";
+import { assertExportAllowed } from "@/lib/export-guard";
+import {
+  getEsignProvider,
+  isEsignConfigured,
+  type EsignEvent,
+} from "@/lib/esign/provider";
 
 const inputSchema = z.object({ proposalId: z.string().uuid() });
 
