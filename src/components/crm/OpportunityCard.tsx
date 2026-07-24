@@ -1,6 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
+import { Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { GripVertical } from "lucide-react";
+import { ExternalLink, GripVertical } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

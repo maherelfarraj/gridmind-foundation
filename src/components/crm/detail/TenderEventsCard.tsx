@@ -1,5 +1,5 @@
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlarmClock,
   CalendarClock,
@@ -59,20 +59,15 @@ export function TenderEventsCard({
   const [editing, setEditing] = useState<TenderEventRow | null>(null);
   const del = useDeleteTenderEvent(opportunityId);
 
-  // React to external open request from header
-  useState(() => {
-    /* placeholder */
-  });
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  // we open imperatively via effect
-  if (openTrigger && !open && canWrite) {
-    // schedule
-    setTimeout(() => {
+  useEffect(() => {
+    if (openTrigger && canWrite) {
       setEditing(null);
       setOpen(true);
       onOpenConsumed?.();
-    }, 0);
-  }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openTrigger]);
+
 
   const openNew = () => {
     setEditing(null);
