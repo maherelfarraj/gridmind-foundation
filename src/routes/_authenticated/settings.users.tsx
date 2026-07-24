@@ -338,6 +338,51 @@ function UsersPage() {
     );
   }, [members, search]);
 
+  const memberEmails = useMemo(
+    () =>
+      new Set(
+        members
+          .map((m) => (m.email ?? "").toLowerCase())
+          .filter((e) => e.length > 0),
+      ),
+    [members],
+  );
+  const pendingEmails = useMemo(
+    () =>
+      new Set(
+        invites
+          .filter((i) => i.status === "pending")
+          .map((i) => i.email.toLowerCase()),
+      ),
+    [invites],
+  );
+
+  const derivedInvites = useMemo(
+    () =>
+      invites.map((i) => {
+        const isExpired =
+          i.status === "pending" &&
+          new Date(i.expires_at).getTime() < Date.now();
+        return {
+          ...i,
+          derivedStatus: isExpired
+            ? ("expired" as const)
+            : (i.status as "pending" | "accepted" | "expired" | "revoked"),
+        };
+      }),
+    [invites],
+  );
+
+  const filteredInvites = useMemo(() => {
+    const q = inviteSearch.trim().toLowerCase();
+    return derivedInvites.filter((i) => {
+      if (inviteFilter !== "all" && i.derivedStatus !== inviteFilter)
+        return false;
+      if (q && !i.email.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [derivedInvites, inviteSearch, inviteFilter]);
+
   const managedMember = useMemo(
     () => members.find((m) => m.userId === manageUserId) ?? null,
     [members, manageUserId],
