@@ -36,12 +36,14 @@ import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
+import { Route as AuthenticatedProcurementReceiptsRouteImport } from './routes/_authenticated/procurement.receipts'
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
 import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/_authenticated/procurement.rfqs.index'
+import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './routes/_authenticated/procurement.receipts.index'
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
@@ -56,6 +58,8 @@ import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementVendorsVendorIdRouteImport } from './routes/_authenticated/procurement.vendors.$vendorId'
 import { Route as AuthenticatedProcurementRfqsNewRouteImport } from './routes/_authenticated/procurement.rfqs.new'
 import { Route as AuthenticatedProcurementRfqsRfqIdRouteImport } from './routes/_authenticated/procurement.rfqs.$rfqId'
+import { Route as AuthenticatedProcurementReceiptsNewRouteImport } from './routes/_authenticated/procurement.receipts.new'
+import { Route as AuthenticatedProcurementReceiptsGrnIdRouteImport } from './routes/_authenticated/procurement.receipts.$grnId'
 import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
@@ -219,6 +223,12 @@ const AuthenticatedProcurementRfqsRoute =
     path: '/procurement/rfqs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProcurementReceiptsRoute =
+  AuthenticatedProcurementReceiptsRouteImport.update({
+    id: '/procurement/receipts',
+    path: '/procurement/receipts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProcurementPosRoute =
   AuthenticatedProcurementPosRouteImport.update({
     id: '/procurement/pos',
@@ -254,6 +264,12 @@ const AuthenticatedProcurementRfqsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedProcurementRfqsRoute,
+  } as any)
+const AuthenticatedProcurementReceiptsIndexRoute =
+  AuthenticatedProcurementReceiptsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProcurementReceiptsRoute,
   } as any)
 const AuthenticatedProcurementPosIndexRoute =
   AuthenticatedProcurementPosIndexRouteImport.update({
@@ -338,6 +354,18 @@ const AuthenticatedProcurementRfqsRfqIdRoute =
     id: '/$rfqId',
     path: '/$rfqId',
     getParentRoute: () => AuthenticatedProcurementRfqsRoute,
+  } as any)
+const AuthenticatedProcurementReceiptsNewRoute =
+  AuthenticatedProcurementReceiptsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedProcurementReceiptsRoute,
+  } as any)
+const AuthenticatedProcurementReceiptsGrnIdRoute =
+  AuthenticatedProcurementReceiptsGrnIdRouteImport.update({
+    id: '/$grnId',
+    path: '/$grnId',
+    getParentRoute: () => AuthenticatedProcurementReceiptsRoute,
   } as any)
 const AuthenticatedProcurementPosPoIdRoute =
   AuthenticatedProcurementPosPoIdRouteImport.update({
@@ -449,6 +477,7 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
+  '/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -467,6 +496,8 @@ export interface FileRoutesByFullPath {
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
+  '/procurement/receipts/$grnId': typeof AuthenticatedProcurementReceiptsGrnIdRoute
+  '/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -481,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
+  '/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
   '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -524,6 +556,8 @@ export interface FileRoutesByTo {
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
+  '/procurement/receipts/$grnId': typeof AuthenticatedProcurementReceiptsGrnIdRoute
+  '/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -537,6 +571,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
+  '/procurement/receipts': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsIndexRoute
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -569,6 +604,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
+  '/_authenticated/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -587,6 +623,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
+  '/_authenticated/procurement/receipts/$grnId': typeof AuthenticatedProcurementReceiptsGrnIdRoute
+  '/_authenticated/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/_authenticated/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/_authenticated/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/_authenticated/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -601,6 +639,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
+  '/_authenticated/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/_authenticated/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
   '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -633,6 +672,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/crm/pipeline'
     | '/procurement/pos'
+    | '/procurement/receipts'
     | '/procurement/rfqs'
     | '/procurement/vendors'
     | '/projects/$projectId'
@@ -651,6 +691,8 @@ export interface FileRouteTypes {
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/procurement/pos/$poId'
+    | '/procurement/receipts/$grnId'
+    | '/procurement/receipts/new'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
@@ -665,6 +707,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/admin/tenants/'
     | '/procurement/pos/'
+    | '/procurement/receipts/'
     | '/procurement/rfqs/'
     | '/procurement/vendors/'
     | '/projects/$projectId/'
@@ -708,6 +751,8 @@ export interface FileRouteTypes {
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/procurement/pos/$poId'
+    | '/procurement/receipts/$grnId'
+    | '/procurement/receipts/new'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
@@ -721,6 +766,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/admin/tenants'
     | '/procurement/pos'
+    | '/procurement/receipts'
     | '/procurement/rfqs'
     | '/procurement/vendors'
     | '/projects/$projectId'
@@ -752,6 +798,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/procurement/pos'
+    | '/_authenticated/procurement/receipts'
     | '/_authenticated/procurement/rfqs'
     | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
@@ -770,6 +817,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
     | '/_authenticated/procurement/pos/$poId'
+    | '/_authenticated/procurement/receipts/$grnId'
+    | '/_authenticated/procurement/receipts/new'
     | '/_authenticated/procurement/rfqs/$rfqId'
     | '/_authenticated/procurement/rfqs/new'
     | '/_authenticated/procurement/vendors/$vendorId'
@@ -784,6 +833,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/procurement/pos/'
+    | '/_authenticated/procurement/receipts/'
     | '/_authenticated/procurement/rfqs/'
     | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
@@ -1002,6 +1052,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementRfqsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/procurement/receipts': {
+      id: '/_authenticated/procurement/receipts'
+      path: '/procurement/receipts'
+      fullPath: '/procurement/receipts'
+      preLoaderRoute: typeof AuthenticatedProcurementReceiptsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/procurement/pos': {
       id: '/_authenticated/procurement/pos'
       path: '/procurement/pos'
@@ -1043,6 +1100,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/rfqs/'
       preLoaderRoute: typeof AuthenticatedProcurementRfqsIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementRfqsRoute
+    }
+    '/_authenticated/procurement/receipts/': {
+      id: '/_authenticated/procurement/receipts/'
+      path: '/'
+      fullPath: '/procurement/receipts/'
+      preLoaderRoute: typeof AuthenticatedProcurementReceiptsIndexRouteImport
+      parentRoute: typeof AuthenticatedProcurementReceiptsRoute
     }
     '/_authenticated/procurement/pos/': {
       id: '/_authenticated/procurement/pos/'
@@ -1141,6 +1205,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/rfqs/$rfqId'
       preLoaderRoute: typeof AuthenticatedProcurementRfqsRfqIdRouteImport
       parentRoute: typeof AuthenticatedProcurementRfqsRoute
+    }
+    '/_authenticated/procurement/receipts/new': {
+      id: '/_authenticated/procurement/receipts/new'
+      path: '/new'
+      fullPath: '/procurement/receipts/new'
+      preLoaderRoute: typeof AuthenticatedProcurementReceiptsNewRouteImport
+      parentRoute: typeof AuthenticatedProcurementReceiptsRoute
+    }
+    '/_authenticated/procurement/receipts/$grnId': {
+      id: '/_authenticated/procurement/receipts/$grnId'
+      path: '/$grnId'
+      fullPath: '/procurement/receipts/$grnId'
+      preLoaderRoute: typeof AuthenticatedProcurementReceiptsGrnIdRouteImport
+      parentRoute: typeof AuthenticatedProcurementReceiptsRoute
     }
     '/_authenticated/procurement/pos/$poId': {
       id: '/_authenticated/procurement/pos/$poId'
@@ -1314,6 +1392,27 @@ const AuthenticatedProcurementPosRouteWithChildren =
     AuthenticatedProcurementPosRouteChildren,
   )
 
+interface AuthenticatedProcurementReceiptsRouteChildren {
+  AuthenticatedProcurementReceiptsGrnIdRoute: typeof AuthenticatedProcurementReceiptsGrnIdRoute
+  AuthenticatedProcurementReceiptsNewRoute: typeof AuthenticatedProcurementReceiptsNewRoute
+  AuthenticatedProcurementReceiptsIndexRoute: typeof AuthenticatedProcurementReceiptsIndexRoute
+}
+
+const AuthenticatedProcurementReceiptsRouteChildren: AuthenticatedProcurementReceiptsRouteChildren =
+  {
+    AuthenticatedProcurementReceiptsGrnIdRoute:
+      AuthenticatedProcurementReceiptsGrnIdRoute,
+    AuthenticatedProcurementReceiptsNewRoute:
+      AuthenticatedProcurementReceiptsNewRoute,
+    AuthenticatedProcurementReceiptsIndexRoute:
+      AuthenticatedProcurementReceiptsIndexRoute,
+  }
+
+const AuthenticatedProcurementReceiptsRouteWithChildren =
+  AuthenticatedProcurementReceiptsRoute._addFileChildren(
+    AuthenticatedProcurementReceiptsRouteChildren,
+  )
+
 interface AuthenticatedProcurementRfqsRouteChildren {
   AuthenticatedProcurementRfqsRfqIdRoute: typeof AuthenticatedProcurementRfqsRfqIdRoute
   AuthenticatedProcurementRfqsNewRoute: typeof AuthenticatedProcurementRfqsNewRoute
@@ -1471,6 +1570,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
+  AuthenticatedProcurementReceiptsRoute: typeof AuthenticatedProcurementReceiptsRouteWithChildren
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
   AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -1494,6 +1594,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedProcurementPosRoute:
     AuthenticatedProcurementPosRouteWithChildren,
+  AuthenticatedProcurementReceiptsRoute:
+    AuthenticatedProcurementReceiptsRouteWithChildren,
   AuthenticatedProcurementRfqsRoute:
     AuthenticatedProcurementRfqsRouteWithChildren,
   AuthenticatedProcurementVendorsRoute:

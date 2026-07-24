@@ -1033,6 +1033,96 @@ export type Database = {
           },
         ]
       }
+      goods_receipts: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          defects_count: number
+          grn_number: string
+          id: string
+          lines: Json
+          notes: string | null
+          photos: Json
+          po_id: string
+          project_id: string
+          received_at: string | null
+          received_by: string | null
+          status: Database["public"]["Enums"]["grn_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          defects_count?: number
+          grn_number: string
+          id?: string
+          lines?: Json
+          notes?: string | null
+          photos?: Json
+          po_id: string
+          project_id: string
+          received_at?: string | null
+          received_by?: string | null
+          status?: Database["public"]["Enums"]["grn_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          defects_count?: number
+          grn_number?: string
+          id?: string
+          lines?: Json
+          notes?: string | null
+          photos?: Json
+          po_id?: string
+          project_id?: string
+          received_at?: string | null
+          received_by?: string | null
+          status?: Database["public"]["Enums"]["grn_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goods_receipts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goods_receipts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goods_receipts_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goods_receipts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goods_receipts_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ifc_release_signoffs: {
         Row: {
           company_id: string
@@ -3789,6 +3879,7 @@ export type Database = {
         | "survey"
         | "general"
       drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
+      grn_status: "draft" | "confirmed" | "has_defects" | "closed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       lead_source:
         | "referral"
@@ -4038,6 +4129,7 @@ export const Constants = {
         "general",
       ],
       drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
+      grn_status: ["draft", "confirmed", "has_defects", "closed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       lead_source: [
         "referral",
