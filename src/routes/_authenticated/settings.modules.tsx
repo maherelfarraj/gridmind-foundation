@@ -39,7 +39,11 @@ function SettingsModulesPage() {
           adjustment.
         </p>
       </div>
-      <ModuleAccessTable companyId={activeCompanyId} canEdit={false} />
+      {activeCompanyId ? (
+        <ModuleAccessTable companyId={activeCompanyId} canEdit={false} />
+      ) : (
+        <p className="text-sm text-muted-foreground">Loading company…</p>
+      )}
     </div>
   );
 }

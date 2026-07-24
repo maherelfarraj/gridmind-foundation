@@ -193,17 +193,20 @@ function UsersPage() {
 
   const snapshotQuery = useQuery({
     queryKey: ["company-admin-snapshot", activeCompanyId],
-    queryFn: () => snapshotFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => snapshotFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const membersQuery = useQuery({
     queryKey: membersKey,
-    queryFn: () => membersFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => membersFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const invitesQuery = useQuery({
     queryKey: ["invites", activeCompanyId],
-    queryFn: () => listFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => listFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const invalidate = () => {
@@ -218,7 +221,7 @@ function UsersPage() {
     mutationFn: (vars: FormValues) =>
       createFn({
         data: {
-          companyId: activeCompanyId,
+          companyId: activeCompanyId!,
           email: vars.email,
           role: vars.role,
         },
@@ -284,7 +287,7 @@ function UsersPage() {
     }) => {
       const payload = {
         data: {
-          companyId: activeCompanyId,
+          companyId: activeCompanyId!,
           targetUserId: vars.targetUserId,
           role: vars.role,
         },
@@ -547,14 +550,16 @@ function UsersPage() {
                 )}
               </DialogContent>
             </Dialog>
-            <BulkInviteDialog
-              open={bulkOpen}
-              onOpenChange={setBulkOpen}
-              companyId={activeCompanyId}
-              memberEmails={memberEmails}
-              pendingEmails={pendingEmails}
-              onSuccess={invalidate}
-            />
+            {activeCompanyId ? (
+              <BulkInviteDialog
+                open={bulkOpen}
+                onOpenChange={setBulkOpen}
+                companyId={activeCompanyId}
+                memberEmails={memberEmails}
+                pendingEmails={pendingEmails}
+                onSuccess={invalidate}
+              />
+            ) : null}
           </div>
         )}
       </div>
