@@ -357,7 +357,7 @@ export const estimateYieldScenario = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!row) httpError(404, "scenario_not_found");
 
-    const params = (row.params ?? {}) as YieldParams;
+    const params = (row.params ?? {}) as unknown as YieldParams;
     if (!params.losses_pct) {
       httpError(400, "scenario_missing_params", "Save scenario params first");
     }
