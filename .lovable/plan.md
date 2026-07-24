@@ -1,89 +1,87 @@
-# P-063 — RFQ builder + bid tabulation with TCO leveling
+## P-064 — Award Flow, PO Generation & CFO Approval Gate
 
-Adds Procurement RFQ authoring, bid capture, and TCO-leveled tabulation on top of the P-062 schema. Mirrors the vendor module's file/pattern conventions.
+### 1. Migration `0026_purchase_orders.sql`
+- Guarded `create type po_status as enum (...)`.
+- `alter table companies add column if not exists po_approval_threshold numeric(14,2) not null default 50000`.
+- Create `public.purchase_orders` per spec (jsonb `lines`, totals, `share_token`, `pdf_path`, approval fields, `unique(company_id, po_number)`).
+- GRANTs → `authenticated` (select/insert/update), `service_role` (all).
+- Enable RLS + policies:
+  - `pos_select`: `is_company_member(company_id)`
+  - `pos_write` (ALL): company member AND role ∈ {procurement_admin, procurement_officer, finance_admin, company_admin}
+- Indexes: `pos_company_project_idx`, unique `pos_share_token_idx`.
+- Attach `set_updated_at()` trigger.
 
-## 1. Server layer
+### 2. Server modules (splitting-safe: helpers in `.server.ts`, RPCs in `.functions.ts`)
 
-### `src/lib/rfq.functions.ts` (thin wrapper — helpers in `rfq-rules.ts`)
+**`src/lib/po-rules.ts`** (pure helpers, unit-tested):
+- `formatPoNumber(n)` / `parsePoNumber(s)` / `nextPoNumber(existing)` (mirrors RFQ pattern).
+- `buildPoLinesFromAwards(rfqLines, awards)` → merges award qty/price with RFQ spec/description/uom.
+- `computePoTotals(lines, taxPct)` → `{subtotal, tax_amount, total_amount}` with rounding at 2 dp.
+- `PO_STATUSES` const + `PoStatus` type.
 
-All handlers `createServerFn` + `.middleware([requireSupabaseAuth])` + zod input, and every mutation calls `writeAuditLog` via `context.supabase.rpc('write_audit_log', ...)`.
+**`src/lib/po.functions.ts`**:
+- `getPoWriteAccess` → `{ canAuthor, canApprove }` via `has_company_role` for the four roles.
+- `awardRfqLine({ rfqId, lineNo, bidId, awardedQty?, awardNote? })`: procurement_admin/company_admin only. Validates bid belongs to RFQ, line exists on RFQ, computes `awarded_amount = qty * unit_price` from the bid line, inserts with `unique(rfq_id, line_no)` → 23505 mapped to `line_already_awarded`. Audit `rfq.award`.
+- `unawardRfqLine({ awardId })`: same roles, only allowed while no PO has been generated yet for that vendor/rfq (i.e. no purchase_orders row references the rfq for this vendor). Audit `rfq.unaward`.
+- `generatePosFromAwards({ rfqId })`: requires every RFQ line awarded; groups awards by `rfq_bid.vendor_id`; for each vendor creates one `purchase_orders` row with:
+  - `po_number = PO-####` per company (single retry on 23505),
+  - `lines` built via `buildPoLinesFromAwards`,
+  - totals via `computePoTotals` (default `tax_pct = 0`),
+  - vendor payment_terms/incoterms/currency copied from vendors table,
+  - `project_id`, `currency_code`, `required_by_date` = max(site_need_date),
+  - status `draft`.
+  - Idempotent: skips vendor if a PO already exists for this rfq+vendor.
+  - Audit `po.create` per PO.
+- `listPos({ projectId?, status?, search? })` + `getPo({ poId })`.
+- `submitPoForApproval({ poId, note? })`: procurement roles; if `total_amount > companies.po_approval_threshold` → `pending_approval`; else auto-set `approved` with system note "Auto-approved (below threshold)" and stamps `approved_at`. Audit `po.submit`.
+- `approvePo({ poId, note })`: finance_admin/company_admin only; requires `pending_approval`; note trimmed non-empty; sets `approved`, `approved_by`, `approved_at`, `approval_note`. Audit `po.approve`.
+- `rejectPo({ poId, note })`: same roles; requires `pending_approval`; note mandatory; sets back to `draft` with `approval_note`. Audit `po.reject`.
+- `setPoApprovalThreshold({ threshold })`: company_admin only, updates `companies.po_approval_threshold`. Audit `company.po_threshold_update`.
 
-Reads:
-- `listRfqs({ search?, status?, projectId? })` — RLS-filtered list joined with `projects.name` for the table.
-- `getRfq({ rfqId })` — one RFQ + its `rfq_bids` (all statuses) + `vendors` join for names.
-- `getRfqWriteAccess()` — returns `{ canAuthor: boolean, canAward: boolean }` from `has_company_role` (author = procurement_admin | procurement_officer | company_admin; award = procurement_admin | company_admin, used later by P-064 but exposed now for UI gating).
-- `listRfqEligibleVendors({ search? })` — active vendors in current company for the invite picker.
-- `listProjectsForRfq()` — id/name/currency for the project select.
+### 3. TanStack Query wrappers `src/lib/po-query.ts`
+- `posListQueryOptions`, `poDetailQueryOptions`, `poWriteAccessQueryOptions`.
+- Mutations: `useAwardLine`, `useUnawardLine`, `useGeneratePos`, `useSubmitPoForApproval`, `useApprovePo`, `useRejectPo`, `useSetPoThreshold`.
+- All invalidate `["pos"]`, `["po", id]`, and the parent `["rfq", rfqId]` cache.
 
-Writes:
-- `saveRfqDraft({ id?, title, projectId, currencyCode, issueDate?, dueDate?, terms?, description?, lines })` — upsert while `status='draft'`; lines validated by `rfqLineSchema` (line_no ≥ 1 unique, qty > 0, uom, target_price ≥ 0 nullable). Audit `rfq.create` on insert, `rfq.update` on edit.
-- `inviteRfqVendors({ rfqId, vendorIds })` — insert `rfq_bids` rows `status='invited'`; conflict-safe on `(rfq_id, vendor_id)`; audit `rfq.invite` with `{ vendor_ids }`.
-- `removeRfqInvite({ bidId })` — only if bid still `invited`; audit `rfq.uninvite`.
-- `issueRfq({ rfqId })` — guards ≥1 line and ≥1 invited bid, generates `rfq_number` via `nextRfqNumber(supabase, companyId)` (SELECT max sequence for `RFQ-####` per company → format zero-padded to 4; retry once on unique violation), sets `status='issued'`, `issue_date = today`. Audit `rfq.issue`.
-- `submitBid({ bidId, lines, totalPrice?, currencyCode?, leadTimeDays?, validityDate?, attachments? })` — validates each line's `line_no` exists on the parent RFQ (join integrity), positive prices/qty; sets `status='submitted'`, `submitted_at = now()`. Audit `rfq.bid_submit`.
+### 4. UI
 
-### `src/lib/rfq-rules.ts` (pure helpers — no `createServerFn` here per `tanstack-serverfn-splitting`)
+**Tabulation tab (`procurement.rfqs.$rfqId.tsx`)**
+- Add per-line "Award" button (icon in the winning highlighted cell) opening a small popover: preselect current TCO winner bid, editable awarded qty (defaults to RFQ line qty), optional note, submit.
+- Show award badge on cells that are awarded (line locked; "Unaward" for procurement_admin when no PO yet).
+- Header banner: "3 / 3 lines awarded — Generate POs" button when all lines awarded and no POs yet. On success toasts count + navigates to `/procurement/pos`.
+- All controls gated on `canAward` from existing RFQ access + `canAuthor` PO access.
 
-- `RfqLine`, `BidLine`, `RfqStatus`, `BidStatus` types + zod schemas.
-- `nextRfqNumber(supabase, companyId)` — reads existing `rfq_number` values, extracts numeric suffix, returns `RFQ-XXXX`.
-- `formatRfqNumber(n)` / `parseRfqNumber(s)`.
-- `computeTco({ bidLines, rfqLines, minLeadDays, config })` where `config = { delayCostPctPerDay, logisticsPct, defectRiskPct }` — returns `{ perLine: [{ line_no, extended, tco, priceVarianceVsTarget, compliant }], vendorTotal, missingLines[], expired }`.
-- `RfqComplianceIssue` union used by the tabulation UI.
-- Vitest at `tests/unit/rfq-rules.test.ts` covering: TCO winner flips as delay cost varies, missing-line detection, target-variance signs, RFQ number generation edges (empty, gap, malformed rows).
+**New routes**
+- `src/routes/_authenticated/procurement.pos.tsx` (Outlet).
+- `src/routes/_authenticated/procurement.pos.index.tsx`: list POs (columns: PO #, project, vendor, status badge, total, created, issued). KPI strip: **Total POs**, **Pending approval**, **Avg PO cycle time (days created→issued)**. Search + status filter, CSV export, skeleton, empty state.
+- `src/routes/_authenticated/procurement.pos.$poId.tsx`: minimal detail (P-065 delivers PDF/share). Shows header (PO #, vendor, project, status badge, totals), lines table, threshold banner, and action bar:
+  - `Submit for approval` (draft → pending_approval|approved based on threshold),
+  - `Approve` / `Reject` (both open a dialog with required `approval_note`) for finance_admin/company_admin when `pending_approval`,
+  - `Issue` (approved → issued, stamps `issued_at`) so KPI has data.
+- `src/routes/_authenticated/settings.procurement.tsx`: PO approval threshold form (company_admin only). Adds nav entry under Administration.
+- Add `Procurement > POs` nav item (icon `Receipt`).
 
-### `src/lib/rfq-query.ts`
+**Reusable components** under `src/components/procurement/`:
+- `po-status-badge.tsx`
+- `award-line-dialog.tsx`
+- `po-approval-dialog.tsx`
+- `po-cycle-time-kpi.tsx` (computes on the client from list rows: avg of `issued_at - created_at` in days across POs where both stamps exist; excludes null).
 
-TanStack Query wrappers mirroring `vendors-query.ts`: `rfqsListQueryOptions`, `rfqDetailQueryOptions`, `rfqWriteAccessQueryOptions`, `rfqEligibleVendorsQueryOptions`, `rfqProjectsQueryOptions`, plus `useSaveRfqDraft`, `useInviteVendors`, `useRemoveInvite`, `useIssueRfq`, `useSubmitBid` — each with sonner success/error toasts and invalidation of `["rfqs"]` list + detail keys.
+### 5. Unit tests
+`tests/unit/po-rules.test.ts` covers:
+- PO numbering (`PO-0001`, increments, ignores malformed).
+- `computePoTotals` — subtotal + tax rounding, zero tax.
+- `buildPoLinesFromAwards` merges spec/desc/uom and preserves qty/price from award; sorts by `line_no`.
 
-## 2. Routes (dot-separated files under `_authenticated`, matching vendor module)
+### 6. Manual verification checklist (money chain)
+1. Award all 3 lines split across 2 vendors → **Generate POs** → 2 POs with correct per-vendor totals.
+2. Attempt double-award same line → server returns `line_already_awarded`, toast surfaces, UI stays clean.
+3. PO with total > $50k → status `pending_approval`, Issue disabled; approve as finance_admin with note → `approved`; below-threshold PO auto-approves.
+4. Reject dialog blocks submit until note filled; verify audit rows for `rfq.award`, `po.create`, `po.approve`, `po.reject` via `audit_logs` read query.
+5. Confirm PO cycle-time KPI tile renders on `/procurement/pos` (with two issued POs of differing durations to show non-zero average).
 
-- `procurement.rfqs.tsx` — layout returning `<Outlet />`, `head()` sets "RFQs — GridMind".
-- `procurement.rfqs.index.tsx` — server-filtered table: number, title, project name, status badge, due date, actions. Search + status Select + "New RFQ" button + CSV export (client-side from cached rows). Skeleton / empty ("No RFQs yet — draft your first request") / error retry states.
-- `procurement.rfqs.new.tsx` — creates a draft then redirects to `$rfqId`.
-- `procurement.rfqs.$rfqId.tsx` — detail with header (number, status badge, project, due date, "Issue RFQ" primary action when draft) and shadcn `Tabs`:
-  - **Lines** — `RfqLineEditor` (react-hook-form array field). Disabled once `status !== 'draft'`.
-  - **Invited Vendors** — `InvitedVendorList` + `InviteVendorDialog` (Command search of active vendors). Remove only when bid still `invited`.
-  - **Bids** — per-bid card showing status, submitted_at, `SubmitBidDialog` for procurement to record vendor's per-line prices (line_no locked from RFQ lines), lead time, validity, attachments.
-  - **Tabulation** — `BidTabulationTable` (see below).
+### 7. Notes / forward-compat
+- Approval fields (`approved_by`, `approved_at`, `approval_note`) match the eventual `approval_instances` schema names so the Batch-12 engine can shim in without a rename.
+- `share_token` and `pdf_path` are populated in P-065; this batch leaves them null but preserves the columns and unique index.
 
-## 3. Components (`src/components/procurement/`)
-
-- `rfq-status-badge.tsx`, `bid-status-badge.tsx` — semantic-token variants.
-- `rfq-line-editor.tsx` — controlled table of line_no/description/spec/qty/uom/target_price/site_need_date; add/remove rows; blocks duplicate line_no; auto-renumbers on delete only via explicit button (line_no is a stable join key).
-- `invite-vendor-dialog.tsx` — Command-based vendor picker fed by `listRfqEligibleVendors`, excludes already-invited.
-- `submit-bid-dialog.tsx` — react-hook-form with a bid-line row per RFQ line (line_no + description read-only), unit_price, qty (default = RFQ qty), lead_time_days, exceptions; totals computed live; attachment paths captured (upload deferred to a follow-up — dialog accepts existing paths and shows a note).
-- `bid-tabulation-table.tsx` — the leveling matrix:
-  - Sticky top controls (component state, defaults from spec): delay cost `0.05` %/day, logistics `3` %, defect risk `1` %; number inputs with unit labels.
-  - Header row: RFQ lines with `target_price` shown; body rows: vendors × cells `{ unit_price, extended = unit_price × qty, tco, Δ vs target }`.
-  - `bg-primary/10` background on the TCO-lowest **compliant** bid per line.
-  - Non-compliant vendors get an `AlertTriangle` badge listing issues (missing lines, expired validity, withdrawn/rejected status).
-  - Footer row per vendor: vendor total TCO + vendor-level winner highlight.
-  - KPI strip on top: overall lowest-TCO vendor, average price variance vs target, count of non-compliant bids.
-  - Loading skeleton, empty state "No bids submitted yet", inline error banner + sonner toast on TCO recompute failure.
-
-## 4. Navigation
-
-Add "RFQs" entry under the Procurement section in `src/lib/nav-map.ts` alongside the existing "Vendors" link (`/procurement/rfqs`).
-
-## 5. Design tokens & UX
-
-- Semantic tokens only (`bg-primary/10`, `text-destructive`, `border-border`, etc.).
-- Sonner toasts on every mutation success + failure.
-- CSV export uses `Blob` + `application/csv;charset=utf-8;`.
-
-## Verification after build
-
-1. Type check: `bunx tsgo --noEmit`.
-2. Run `tests/unit/rfq-rules.test.ts` — asserts TCO winner flip and RFQ number generator.
-3. Manual flow (matches acceptance list):
-   - Draft "PV Modules 175 MWp" with 3 lines → issue blocked with 0 vendors (button disabled + toast) → invite 2 vendors → issue succeeds → confirm `rfq_number` = `RFQ-0001` via `supabase--read_query`.
-   - Enter 2 bids with different price/lead-time trade-offs.
-   - Toggle delay cost in Tabulation from 0.05% → 0.5% and confirm the highlighted winner flips.
-   - Confirm `audit_logs` has rows for `rfq.create`, `rfq.issue`, `rfq.bid_submit`.
-
-## Deferred to P-064
-
-- Line award writes to `rfq_line_awards`.
-- CFO approval gate + PO generation.
-
-Award-role detection is exposed via `getRfqWriteAccess` so the Tabulation tab can render "Award" affordances as disabled placeholders now, wired up in P-064.
+When green, respond with **next → P-065**.
