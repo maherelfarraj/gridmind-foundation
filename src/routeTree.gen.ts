@@ -41,6 +41,7 @@ import { Route as AuthenticatedProjectsProjectIdFinanceRouteImport } from './rou
 import { Route as AuthenticatedProjectsProjectIdEngineeringRouteImport } from './routes/_authenticated/projects.$projectId.engineering'
 import { Route as AuthenticatedProjectsProjectIdConstructionRouteImport } from './routes/_authenticated/projects.$projectId.construction'
 import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
+import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
@@ -222,6 +223,12 @@ const AuthenticatedProjectsProjectIdConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
   } as any)
+const AuthenticatedCrmOpportunitiesOpportunityIdRoute =
+  AuthenticatedCrmOpportunitiesOpportunityIdRouteImport.update({
+    id: '/crm/opportunities/$opportunityId',
+    path: '/crm/opportunities/$opportunityId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminTenantsCompanyIdRoute =
   AuthenticatedAdminTenantsCompanyIdRouteImport.update({
     id: '/$companyId',
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRoute
@@ -282,6 +290,7 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRoute
@@ -318,6 +327,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/_authenticated/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/_authenticated/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRoute
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/projects/'
     | '/admin/tenants/$companyId'
+    | '/crm/opportunities/$opportunityId'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/engineering'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/projects'
     | '/admin/tenants/$companyId'
+    | '/crm/opportunities/$opportunityId'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/engineering'
@@ -419,6 +431,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/users'
     | '/_authenticated/projects/'
     | '/_authenticated/admin/tenants/$companyId'
+    | '/_authenticated/crm/opportunities/$opportunityId'
     | '/_authenticated/projects/$projectId/config'
     | '/_authenticated/projects/$projectId/construction'
     | '/_authenticated/projects/$projectId/engineering'
@@ -665,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdConfigRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
     }
+    '/_authenticated/crm/opportunities/$opportunityId': {
+      id: '/_authenticated/crm/opportunities/$opportunityId'
+      path: '/crm/opportunities/$opportunityId'
+      fullPath: '/crm/opportunities/$opportunityId'
+      preLoaderRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/tenants/$companyId': {
       id: '/_authenticated/admin/tenants/$companyId'
       path: '/$companyId'
@@ -774,6 +794,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedCrmOpportunitiesOpportunityIdRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -791,6 +812,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedCrmOpportunitiesOpportunityIdRoute:
+    AuthenticatedCrmOpportunitiesOpportunityIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

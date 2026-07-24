@@ -1,6 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
+import { Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { GripVertical } from "lucide-react";
+import { ExternalLink, GripVertical } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +78,16 @@ export function OpportunityCard({ opp, readOnly }: Props) {
             <p className="truncate text-xs text-muted-foreground">{opp.account_name}</p>
           )}
         </div>
+        <Link
+          to="/crm/opportunities/$opportunityId"
+          params={{ opportunityId: opp.id }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 rounded p-1 text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground group-hover:opacity-100"
+          aria-label={`Open ${opp.name}`}
+        >
+          <ExternalLink size={12} aria-hidden />
+        </Link>
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
