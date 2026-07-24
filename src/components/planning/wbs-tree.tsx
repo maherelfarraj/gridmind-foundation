@@ -203,13 +203,13 @@ function TreeRow({
           ) : null}
         </button>
 
-        {onDragStart && (
+        {onDragStart ? (
           <GripVertical
             size={12}
             className="text-muted-foreground opacity-0 group-hover:opacity-100"
             aria-hidden
           />
-        )}
+        ) : null}
 
         <button
           type="button"
