@@ -144,24 +144,30 @@ export type Database = {
       }
       companies: {
         Row: {
+          contact_email: string | null
           created_at: string
           id: string
+          legal_name: string | null
           name: string
           plan_tier: string
           slug: string
           updated_at: string
         }
         Insert: {
+          contact_email?: string | null
           created_at?: string
           id?: string
+          legal_name?: string | null
           name: string
           plan_tier?: string
           slug: string
           updated_at?: string
         }
         Update: {
+          contact_email?: string | null
           created_at?: string
           id?: string
+          legal_name?: string | null
           name?: string
           plan_tier?: string
           slug?: string

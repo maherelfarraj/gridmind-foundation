@@ -1,4 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import {
   Atom,
   CalendarRange,
@@ -40,6 +43,7 @@ interface NavItem {
   label: string;
   url: string;
   icon: LucideIcon;
+  requiresSuperAdmin?: boolean;
 }
 
 interface NavSection {
@@ -71,7 +75,13 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Administration",
     items: [
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
-      { moduleKey: "admin", label: "Admin", url: "/admin", icon: Shield },
+      {
+        moduleKey: "admin",
+        label: "Tenants",
+        url: "/admin/tenants",
+        icon: Shield,
+        requiresSuperAdmin: true,
+      },
     ],
   },
 ];
@@ -85,6 +95,14 @@ export function AppSidebar() {
     DEV_SESSION_CONTEXT.role,
     DEV_SESSION_CONTEXT.planTier,
   );
+
+  const rolesFn = useServerFn(getCurrentUserRoles);
+  const rolesQuery = useQuery({
+    queryKey: ["me", "roles"],
+    queryFn: () => rolesFn(),
+    staleTime: 60_000,
+  });
+  const isSuperAdmin = (rolesQuery.data ?? []).some((r) => r.role === "super_admin");
 
   const isActive = (url: string) =>
     pathname === url || pathname.startsWith(`${url}/`);
@@ -111,7 +129,11 @@ export function AppSidebar() {
 
       <SidebarContent>
         {NAV_SECTIONS.map((section) => {
-          const items = section.items.filter((item) => visibleModules.has(item.moduleKey));
+          const items = section.items.filter(
+            (item) =>
+              visibleModules.has(item.moduleKey) &&
+              (!item.requiresSuperAdmin || isSuperAdmin),
+          );
           if (items.length === 0) return null;
 
           return (
@@ -123,7 +145,7 @@ export function AppSidebar() {
                     const active = isActive(item.url);
                     const Icon = item.icon;
                     return (
-                      <SidebarMenuItem key={item.moduleKey}>
+                      <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton
                           asChild
                           isActive={active}

@@ -1,46 +1,58 @@
-## Corrective migration for `public.invites`
+## P-023 — Super Admin console (tenants list / create / detail)
 
-Fixes the schema gap found in the audit and installs the admin management policy per the original 0006 spec. Also adopts the new standing verification rule.
-
-### Migration SQL
+### 1. Additive migration (`companies`)
 
 ```sql
--- 1. Add missing role column (table is empty, safe to NOT NULL immediately)
-alter table public.invites add column if not exists role public.app_role;
-alter table public.invites alter column role set not null;
+alter table public.companies add column if not exists legal_name text;
+alter table public.companies add column if not exists contact_email text;
+update public.companies set legal_name = name where legal_name is null;
 
--- 2. Replace admin policy: full management (needed for revoke = UPDATE status)
-drop policy if exists invites_admin_all on public.invites;
-create policy invites_admin_all on public.invites
+-- Full super_admin management policy (member-read policy stays intact)
+drop policy if exists companies_super_admin_all on public.companies;
+create policy companies_super_admin_all on public.companies
   for all to authenticated
-  using (public.is_company_admin(company_id) or public.has_role(auth.uid(),'super_admin'))
-  with check (public.is_company_admin(company_id) or public.has_role(auth.uid(),'super_admin'));
-
--- 3. Leave invites_self_select untouched
+  using (public.has_role(auth.uid(),'super_admin'))
+  with check (public.has_role(auth.uid(),'super_admin'));
 ```
 
-`accepted_by` column is kept as-is (harmless).
+After apply: show columns + all `pg_policies` rows for `public.companies` (per standing rule).
 
-### Post-migration verification (shown unprompted)
+### 2. Server functions — `src/lib/tenants.functions.ts`
 
-Run and display:
-- Column list of `public.invites` (name, type, nullable, default) via `information_schema.columns`
-- Full policy list of `public.invites` via `pg_policies` (name, cmd, roles, using, with check)
+All `.middleware([attachSupabaseAuth])`, `requireSupabaseAuth`, then gate with `has_role(auth.uid(),'super_admin')` via `context.supabase.rpc('has_role', ...)`. Throw `Object.assign(new Error('Forbidden'), { statusCode: 403 })` on failure so `errorMiddleware` surfaces 403.
 
-### New standing rule (adopted)
+- `listTenants({ search? })` → id, name (slug), legal_name, contact_email, plan_tier, created_at, member_count (aggregate via 2nd query on `profiles` grouped by company_id — or per-row count via `profiles(count)` embed). Server-side filter by ilike on legal_name/name/contact_email.
+- `createTenant({ legalName, slug, contactEmail, planTier })` — zod validates slug ≤ 20, email valid, planTier enum. Insert companies (name=slug, legal_name, contact_email, plan_tier), then `write_audit_log('tenant.created','companies', id, {...})`.
+- `getTenantDetail({ companyId })` → company row + memberCount, adminCount (user_roles where role in company_admin/super_admin), inviteCount (invites where status='pending').
+- `updateTenantPlan({ companyId, planTier })` — read current plan, update, audit `tenant.plan_changed` with `{ from, to }`.
 
-After every migration, I will show the columns and RLS policies of every affected table, unprompted — no more "table exists" as sole verification.
+### 3. Routes
 
-### P-022 live checklist (after migration is green)
+- `src/routes/_authenticated/admin.tsx` — pathless layout with `<Outlet/>`; `beforeLoad` calls `getCurrentUserRoles` and throws 404 (`notFound()`) if user lacks super_admin. Simple heading "Platform admin".
+- `src/routes/_authenticated/admin.tenants.tsx` — list page: search input (debounced), shadcn Table, plan badge (starter=secondary, growth=default, enterprise=accent), skeleton (5 rows), empty state, error state with retry (`router.invalidate()`), "Create tenant" dialog (react-hook-form + zod). Row click → detail.
+- `src/routes/_authenticated/admin.tenants.$companyId.tsx` — header (legal name + plan badge), Tenant ID card (mono UUID + Copy button using `navigator.clipboard.writeText`, sonner toast), plan editor (Select + Save, disabled while pending, audits), stats grid (members/admins/invites).
 
-1. Sign in preview as `demo-admin@gridmindepc.com`.
-2. Navigate to `/settings/users`, open Invite dialog, invite a second email (you provide) with role `project_manager` (or your choice, excluding super_admin).
-3. Verify: row appears in `public.invites` with correct role/company/status=pending, and `audit_logs` has `invite.created` entry.
-4. Open the accept link in a fresh session, complete enrollment, redeem.
-5. Verify: `invites.status='accepted'`, `user_roles` row created, `audit_logs` has `invite.accepted`.
-6. Report results; if green → `next → P-023`.
+Both list & detail: `errorComponent` + `notFoundComponent` per route rules; loaders use `context.queryClient.ensureQueryData` + `useSuspenseQuery`.
 
-### What I need from you
+### 4. Sidebar gating
 
-- Approve this plan so I can apply the migration.
-- The second email address to use for the live invite test.
+Replace the hardcoded "Admin" nav item behavior in `src/components/app-sidebar.tsx`:
+- Add a small hook `useIsSuperAdmin()` that runs `useQuery({ queryFn: getCurrentUserRoles })` (returns bool). Render the "Admin" item only when true, pointing to `/admin/tenants`. "Users" item stays as-is.
+
+Client hiding is UX only — every RPC re-checks super_admin server-side.
+
+### 5. Negative test (server-side auth)
+
+After live checks, invoke `listTenants` while signed in as a non-super_admin (temporarily sign in as demo-pm@ or similar); expect 403 from the RPC (not just hidden nav). Report the raw response.
+
+### 6. Live checklist (as demo-admin, who has super_admin)
+
+- [ ] Admin > Tenants nav visible; lists Demo EPC Co with enterprise badge + member count
+- [ ] Create "Test Co B" (starter) → row appears, audit_logs has `tenant.created`
+- [ ] Detail page: copy Tenant ID; change starter → growth; audit_logs has `tenant.plan_changed` `{ from:'starter', to:'growth' }`
+- [ ] Loading skeleton / empty / error states verified
+- [ ] Non-super_admin call to listTenants returns 403
+
+Design tokens only; no raw hex.
+
+Then: `next → P-024`.
