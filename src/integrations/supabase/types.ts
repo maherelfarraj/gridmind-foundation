@@ -59,6 +59,128 @@ export type Database = {
         }
         Relationships: []
       }
+      approval_instances: {
+        Row: {
+          company_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          entity: string
+          entity_id: string
+          id: string
+          metadata: Json
+          requested_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          entity: string
+          entity_id: string
+          id?: string
+          metadata?: Json
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          entity?: string
+          entity_id?: string
+          id?: string
+          metadata?: Json
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_instances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_instances_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_instances_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approvals: {
+        Row: {
+          approver_id: string
+          comment: string | null
+          company_id: string
+          created_at: string
+          decided_at: string | null
+          id: string
+          instance_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approver_id: string
+          comment?: string | null
+          company_id: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          instance_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string
+          comment?: string | null
+          company_id?: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          instance_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log_retention_policies: {
         Row: {
           company_id: string
@@ -789,6 +911,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "gates_approval_fk"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_phase_gates_approved_by_fkey"
             columns: ["approved_by"]
