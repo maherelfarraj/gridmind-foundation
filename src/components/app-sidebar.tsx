@@ -2,6 +2,9 @@ import { useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
+import { listModuleAccess } from "@/lib/modules.functions";
+import { useActiveCompany } from "@/components/company-switcher";
+
 import {
   Atom,
   Building2,
@@ -12,11 +15,13 @@ import {
   MailPlus,
   PencilRuler,
   Shield,
+  SlidersHorizontal,
   Truck,
   Users,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+
 
 
 import {
@@ -59,16 +64,16 @@ const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm", icon: Handshake },
       { moduleKey: "engineering", label: "Engineering", url: "/engineering", icon: PencilRuler },
       { moduleKey: "procurement", label: "Procurement", url: "/procurement", icon: Truck },
-      { moduleKey: "planning", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
-      { moduleKey: "field", label: "Build / Field", url: "/field", icon: HardHat },
+      { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
+      { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
       {
         moduleKey: "commissioning",
         label: "Commission & Turnover",
         url: "/commissioning",
         icon: ClipboardCheck,
       },
-      { moduleKey: "om", label: "Operate O&M", url: "/om", icon: Wrench },
-      { moduleKey: "partners", label: "Client & Partners", url: "/partners", icon: Users },
+      { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om", icon: Wrench },
+      { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
       { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
     ],
   },
@@ -77,6 +82,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
+      { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
       {
         moduleKey: "admin",
         label: "Tenants",
@@ -87,6 +93,7 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
 ];
+
 
 
 export function AppSidebar() {
