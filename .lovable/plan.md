@@ -1,66 +1,62 @@
-# P-028 — Permission Simulator
 
-Read-only preview tool at `/settings/permissions-simulator` for company admins and super admins to answer "what can role X see and do?" — no mutations, no audit writes.
+# P-029 — Company settings + branding editor
 
-## Extend `src/lib/permissions.ts`
+Single page at `/settings/company` with two sections: Company details and Branding. All company members read; only `company_admin` writes. Mutations via `createServerFn` + zod + `requireSupabaseAuth`, audited with `writeAuditLog`.
 
-Add two typed constants alongside `ROLE_TO_MODULES` (which today only covers 5 roles — the new maps cover all `GrantableRole` values, i.e. every `app_role` except `super_admin`, grouped by `ROLE_GROUPS` from `role-groups.ts`):
+## 1. Migration (additive)
 
-- `ROLE_MODULE_MAP: Record<GrantableRole, ModuleKey[]>` — full per-role module visibility. Department admins get their own department's module plus related read modules; operational roles get their working modules; external viewers get portal + read-only relevant modules; `company_admin` / `billing_admin` / `project_admin` get all core modules + `admin`.
-- `ROLE_ACTION_MATRIX: Record<GrantableRole, Partial<Record<ModuleKey, Set<Action>>>>` where `Action = "view" | "create" | "edit" | "approve" | "export"`. Rules:
-  - `client_viewer` / `investor_viewer` / `lender_viewer` — `view` only, on their visible modules.
-  - Operational roles — `view` + `create` + `edit` on their modules; no `approve`.
-  - Department admins — full set (`view`/`create`/`edit`/`approve`/`export`) on their own department's module, `view` on peer modules.
-  - `company_admin`, `billing_admin`, `project_admin` — full set on all modules they see.
+Migration `0013_company_branding.sql`:
 
-Also export helper `getActionsFor(role, moduleKey): Set<Action>`.
+- `ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS phone text, ADD COLUMN IF NOT EXISTS address text;`
+- `CREATE TABLE IF NOT EXISTS public.company_branding` with columns from the spec (`company_id` PK FK → companies ON DELETE CASCADE, `logo_url`, `primary_color` default `'#1e40af'`, `accent_color` default `'#0d9488'`, `footer_text`, `created_at`, `updated_at`).
+- `GRANT SELECT, INSERT, UPDATE, DELETE ON public.company_branding TO authenticated; GRANT ALL ON public.company_branding TO service_role;`
+- `ALTER TABLE public.company_branding ENABLE ROW LEVEL SECURITY;`
+- Policies exactly as in prompt: `members read branding` (SELECT via `is_company_member`), `admins write branding` (ALL via `has_company_role('company_admin')`).
+- `updated_at` trigger via existing `set_updated_at()`.
 
-## New route `src/routes/_authenticated/settings.permissions-simulator.tsx`
+Post-migration verification query: confirm columns, policies, trigger exist.
 
-Layout: two-column responsive grid (stacks on mobile).
+## 2. Server functions — `src/lib/company.functions.ts`
 
-**Left panel (`bg-card border-border` card):**
-- Header: "Permission simulator" + muted explainer "Preview only — actual access is enforced by RLS and `has_role()` on every request."
-- Primary role `Select` grouped by `ROLE_GROUPS` (Administration / Department admins / Operational / External viewers), `super_admin` excluded.
-- "Compare with" toggle → shows a second `Select` with the same options plus a "Clear" button.
-- Header chips: selected role badge(s) + active tenant plan tier badge (from `listModuleAccess` response, which already returns `planTier`).
+All use `attachSupabaseAuth` + `requireSupabaseAuth`. Resolve caller's `company_id` from `profiles`; verify `has_company_role('company_admin')` for writes.
 
-**Right panel — three stacked cards, all recompute on selection:**
+- `getCompanySettings()` → returns `{ company: {id, name, legal_name, contact_email, phone, address, plan_tier}, branding: {...} | null, logoSignedUrl: string | null }`. Generates 5-minute signed URL from `documents` bucket when `logo_url` set.
+- `updateCompanyDetails({ legal_name, contact_email, phone, address })` — zod validated; diff old vs new; write `company.updated` audit with `{changed_fields}` metadata.
+- `upsertCompanyBranding({ primary_color, accent_color, footer_text })` — hex color regex `/^#[0-9a-fA-F]{6}$/`; upsert; audit `branding.updated` with changed fields.
+- `getLogoUploadTarget()` → returns `{ bucket: 'documents', path: '{company_id}/branding/logo' }` so the browser can upload directly using the user's session (storage RLS accepts because path prefix is company UUID and user is a member).
+- `setCompanyLogo({ path })` — validates path starts with caller's `{company_id}/branding/`; upserts branding row with `logo_url = path`; audits `branding.logo_updated`.
+- `removeCompanyLogo()` — deletes object from storage (server-side using per-request client, RLS admin-only DELETE satisfied by `company_admin`), sets `logo_url = null`, audits `branding.logo_removed`.
 
-1. **Visible modules** — for each `ModuleKey` in `MODULE_REGISTRY`, show label (correct spelling from registry: "O&M & SCADA", "Green H₂", "Field, HSE & QA/QC"):
-   - Role has it AND tenant rule enabled → check icon + label.
-   - Role has it AND tenant rule disabled → check + "off by plan" muted suffix (not hidden).
-   - Role doesn't have it → dash icon, muted label.
-   - Compare mode: two columns per module.
+Client uploads via `supabase.storage.from('documents').upload('{company_id}/branding/logo', file, { upsert: true, contentType })` using the browser Supabase client — storage `INSERT` policy already gates on `is_company_member`. Then calls `setCompanyLogo` to persist and audit.
 
-2. **Visible routes** — tree derived from the sidebar `NAV_SECTIONS` map (extract to `src/lib/nav-map.ts` shared by `AppSidebar` and the simulator so they can't drift). Group by section header; render `/route/path` in mono. Filter by same rule as sidebar (module in role map AND enabled in tenant rules; `admin` items require `company_admin`/`billing_admin`/`project_admin`). Compare mode = side-by-side.
+## 3. UI — `src/routes/_authenticated/settings.company.tsx`
 
-3. **Allowed actions** — table with rows = modules the role can see, columns = View / Create / Edit / Approve / Export. Cells = check or em-dash from `ROLE_ACTION_MATRIX`. Compare mode = two stacked tables labelled by role, or a merged table with two icon columns per action (pick stacked — cleaner).
+Two `<Card>` sections in one route:
 
-**States:**
-- No role selected → empty state prompting "Pick a role to preview its access."
-- `modulesQuery.isLoading` → skeleton rows in all three cards.
-- `modulesQuery.error` → error state with retry.
+**Company details form** (react-hook-form + zod):
+- Fields: Legal name, Contact email, Phone, Address (textarea).
+- Save button disabled unless dirty; sonner toast on success; inline errors.
+- Read-only for non-admins (inputs disabled + hint text).
 
-**Data:**
-- `listModuleAccess({ data: { companyId: activeCompanyId } })` — reuses the existing RPC; zero writes.
-- `useActiveCompany()` for the tenant.
-- No new server function.
+**Branding editor**:
+- Logo: current preview from signed URL, drag/drop or file input, max 2 MB, accept `image/*`, client-side size + type check, live preview before upload, Upload + Remove buttons.
+- Primary color + Accent color: shadcn `<Input type="color">` alongside hex text input, synchronized via RHF.
+- Footer text: textarea.
+- Helper copy under section title: *"Branding is applied to proposal PDF/PPTX exports."*
+- Save button audits `branding.updated`.
 
-**Access gate:** loader/component queries `getCurrentUserRoles`; if user is not `company_admin` / `super_admin` in the active company, render an "Access denied" card (server-side enforcement is unchanged — this is a UI-only tool with no mutations, so it can't leak anything).
+**States**: skeleton cards while loading; sonner toast on save; inline zod errors; error `<Card>` with Retry button on fetch failure. Uses semantic tokens only (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`). Color hex values live in DB only — never render brand colors as component styling.
 
-## Nav
+## 4. Navigation
 
-Add "Permissions simulator" entry to `AppSidebar`'s Administration section (`admin` module, `Eye` icon, url `/settings/permissions-simulator`).
+Add "Company" entry under Settings in `src/lib/nav-map.ts` (visible to all authenticated members). `AppSidebar` picks it up automatically.
 
-## Route metadata
+## 5. Verification (post-build, live as demo-admin via Playwright)
 
-`head()` — title "Permissions simulator · GridMind EPC", description "Preview which modules, routes, and actions a role can access on this tenant.", `robots: noindex` (admin tool). No OG image.
+- Save details → row updated, `company.updated` audit row with `changed_fields`.
+- Upload logo → object present at `documents/{company-uuid}/branding/logo`, `logo_url` persisted, preview renders via signed URL, survives reload.
+- Colors + footer persist in `company_branding`; `branding.updated` audit written.
+- RLS check: query as non-admin member — SELECT works, UPDATE denied.
+- Negative storage test: attempt upload to `other-uuid/branding/logo` → 403 from storage RLS.
 
-## Technical details
-
-- Design tokens only: `bg-card`, `bg-muted`, `text-muted-foreground`, `border-border`, `text-foreground`. No raw hex, no arbitrary colors. Check/dash icons via `lucide-react` (`Check`, `Minus`).
-- `humanizeRole()` from `role-groups.ts` for role display labels.
-- Extract `NAV_SECTIONS` from `app-sidebar.tsx` into `src/lib/nav-map.ts` and re-import from both places — prevents drift.
-- Compile-time exhaustiveness check on `ROLE_MODULE_MAP` keys against `GrantableRole` (same pattern as `_ExhaustiveCheck` in `role-groups.ts`).
-- No `createServerFn` needed; zero writes means zero audit rows by construction.
+Then say `next` for P-030.
