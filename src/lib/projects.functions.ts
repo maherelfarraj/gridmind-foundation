@@ -729,13 +729,34 @@ export type ProjectDetailDepartment = {
   lead_name: string | null;
 };
 
+export type GateChecklistItem = {
+  key: string;
+  label: string;
+  required: boolean;
+  done: boolean;
+  done_by?: string | null;
+  done_at?: string | null;
+  done_by_name?: string | null;
+};
+
 export type ProjectDetailGate = {
   id: string;
   phase: (typeof PROJECT_PHASES)[number];
   name: string;
   status: string;
   sort_order: number;
+  checklist: GateChecklistItem[];
+  approval_instance_id: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  approval?: {
+    instance_id: string;
+    instance_status: string;
+    my_approval_id: string | null;
+    my_approval_status: string | null;
+  } | null;
 };
+
 
 export type ProjectDetail = {
   id: string;
