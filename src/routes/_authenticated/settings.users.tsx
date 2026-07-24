@@ -547,14 +547,16 @@ function UsersPage() {
                 )}
               </DialogContent>
             </Dialog>
-            <BulkInviteDialog
-              open={bulkOpen}
-              onOpenChange={setBulkOpen}
-              companyId={activeCompanyId}
-              memberEmails={memberEmails}
-              pendingEmails={pendingEmails}
-              onSuccess={invalidate}
-            />
+            {activeCompanyId ? (
+              <BulkInviteDialog
+                open={bulkOpen}
+                onOpenChange={setBulkOpen}
+                companyId={activeCompanyId}
+                memberEmails={memberEmails}
+                pendingEmails={pendingEmails}
+                onSuccess={invalidate}
+              />
+            ) : null}
           </div>
         )}
       </div>
