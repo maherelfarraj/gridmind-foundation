@@ -676,8 +676,18 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
       },
     );
 
+    // Auto-close the completed review round when we promoted to IFC.
+    if (autoCloseRoundId) {
+      await context.supabase
+        .from("drawing_review_rounds")
+        .update({ status: "closed" } as any)
+        .eq("id", autoCloseRoundId)
+        .eq("status", "open");
+    }
+
     return { ok: true, toStatus: data.toStatus, revisionId: rev.id };
   });
+
 
 // ---------------------------------------------------------------------------
 // Sign-off workflow (approval_instances entity='drawing')
