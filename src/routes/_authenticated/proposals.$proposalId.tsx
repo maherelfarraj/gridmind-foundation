@@ -6,6 +6,7 @@ import { ArrowLeft, GitBranch, RefreshCw } from "lucide-react";
 
 import { ArrayConfigForm } from "@/components/proposals/ArrayConfigForm";
 import { LineItemsGrid } from "@/components/proposals/LineItemsGrid";
+import { PricingApprovalCard } from "@/components/proposals/PricingApprovalCard";
 import { ProposalHeaderForm } from "@/components/proposals/ProposalHeaderForm";
 import { YieldSimulationCard } from "@/components/proposals/YieldSimulationCard";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +71,7 @@ function ProposalBuilderPage() {
   const roles = new Set((rolesQuery.data ?? []).map((r) => r.role));
   const canWrite =
     roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
+  const isFinanceAdmin = roles.has("finance_admin") || roles.has("super_admin");
   const isReadOnlyStatus =
     proposal && !["draft", "in_review"].includes(proposal.status);
   const readOnly = !canWrite || !!isReadOnlyStatus;
@@ -145,6 +147,11 @@ function ProposalBuilderPage() {
       <LineItemsGrid proposal={proposal} readOnly={readOnly} />
       <ArrayConfigForm proposal={proposal} readOnly={readOnly} />
       <YieldSimulationCard proposal={proposal} readOnly={readOnly} />
+      <PricingApprovalCard
+        proposalId={proposalId}
+        canWrite={canWrite}
+        isFinanceAdmin={isFinanceAdmin}
+      />
     </div>
   );
 }

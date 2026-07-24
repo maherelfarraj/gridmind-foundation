@@ -10,12 +10,15 @@ import { toast } from "sonner";
 import {
   createProposal,
   createProposalVersion,
+  decidePricingApproval,
+  getPricingChecklist,
   getProposal,
   listProposals,
   runYieldStub,
   saveArrayConfig,
   saveLineItems,
   saveProposalHeader,
+  submitPricingApproval,
 } from "@/lib/proposal.functions";
 
 export function proposalDetailQueryOptions(
@@ -140,5 +143,55 @@ export function useCreateProposalVersion(id: string) {
     },
     onError: (err) =>
       toast.error(err instanceof Error ? err.message : "Version failed"),
+  });
+}
+
+export function pricingChecklistQueryOptions(
+  fn: ReturnType<typeof useServerFn<typeof getPricingChecklist>>,
+  id: string,
+) {
+  return queryOptions({
+    queryKey: ["pricing-checklist", id],
+    queryFn: () => fn({ data: { proposalId: id } }),
+    staleTime: 5_000,
+  });
+}
+
+function useInvalidateChecklist(id: string) {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["pricing-checklist", id] });
+    qc.invalidateQueries({ queryKey: ["proposal", id] });
+  };
+}
+
+export function useSubmitPricingApproval(id: string) {
+  const fn = useServerFn(submitPricingApproval);
+  const invalidate = useInvalidateChecklist(id);
+  return useMutation({
+    mutationFn: () => fn({ data: { proposalId: id } }),
+    onSuccess: () => {
+      toast.success("Submitted to CFO for approval");
+      invalidate();
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Submit failed"),
+  });
+}
+
+export function useDecidePricingApproval(id: string) {
+  const fn = useServerFn(decidePricingApproval);
+  const invalidate = useInvalidateChecklist(id);
+  return useMutation({
+    mutationFn: (vars: { decision: "approve" | "reject"; comment?: string }) =>
+      fn({ data: { proposalId: id, ...vars } }),
+    onSuccess: (_r, vars) => {
+      toast.success(
+        vars.decision === "approve" ? "Pricing approved" : "Pricing rejected",
+      );
+      invalidate();
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Action failed"),
   });
 }
