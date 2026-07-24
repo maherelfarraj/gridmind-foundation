@@ -4,10 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 import {
+  buildKickoffPack,
+  convertOpportunityToIntake,
   deleteContact,
   deleteTenderEvent,
+  getKickoffPackDownloadUrl,
   getOpportunity,
   getOpportunityActivity,
+  getWinConversionPrefill,
   listContacts,
   listTenderEvents,
   postOpportunityNote,
@@ -15,6 +19,7 @@ import {
   saveTenderEvent,
   updateOpportunity,
 } from "@/lib/opportunity.functions";
+
 
 // ---- Query options ---------------------------------------------------------
 export function opportunityDetailQueryOptions(
