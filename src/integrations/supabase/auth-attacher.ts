@@ -1,20 +1,21 @@
-// NOTE: This file was originally auto-generated. P-005 extends it with a
-// server-side stub context and a `requireSupabaseAuth` guard. Real session
-// wiring lands in a later batch.
+// Real per-request Supabase auth attacher (P-021).
+// Runs on every createServerFn RPC:
+//   .client(): attaches Authorization: Bearer <access_token> from the browser session.
+//   .server(): resolves the user via a per-request server client. Never throws —
+//     public RPCs must work. Callers that require a session use requireSupabaseAuth().
+// Never uses the service-role key.
 import { createMiddleware } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import { supabase } from './client'
+import { createServerSupabaseClient } from './server'
+import type { Database } from './types'
 
 export type AuthContext = {
   user: User | null
-  supabase: SupabaseClient | null
+  supabase: SupabaseClient<Database>
 }
 
-// Registered as a global `functionMiddleware` in `src/start.ts`.
-// .client(): attaches the Supabase bearer token to every serverFn RPC.
-// .server(): stub — attaches { user: null, supabase: null } context so
-// downstream handlers can type against AuthContext today. Real session
-// resolution lands in a later batch.
 export const attachSupabaseAuth = createMiddleware({ type: 'function' })
   .client(async ({ next }) => {
     const { data } = await supabase.auth.getSession()
@@ -24,16 +25,30 @@ export const attachSupabaseAuth = createMiddleware({ type: 'function' })
     })
   })
   .server(async ({ next }) => {
-    const context: AuthContext = { user: null, supabase: null }
+    const request = getRequest()
+    const supabaseServer = createServerSupabaseClient(request)
+    let user: User | null = null
+    try {
+      const { data, error } = await supabaseServer.auth.getUser()
+      if (!error) user = data.user ?? null
+    } catch {
+      user = null
+    }
+    const context: AuthContext = { user, supabase: supabaseServer }
     return next({ context })
   })
 
-// Throws a 401 with a numeric `statusCode`, which start.ts re-throws
-// untouched so h3 serves the intended status instead of the branded 500.
+// Throws a 401 with a numeric statusCode + JSON body. src/start.ts's
+// errorMiddleware detects `statusCode` and serves the body verbatim
+// instead of the branded HTML 500 page.
 export function requireSupabaseAuth(
   context: AuthContext,
 ): asserts context is AuthContext & { user: User } {
   if (context.user == null) {
-    throw Object.assign(new Error('Unauthorized'), { statusCode: 401 })
+    throw Object.assign(new Error('Unauthorized'), {
+      statusCode: 401,
+      body: JSON.stringify({ error: 'unauthorized' }),
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+    })
   }
 }
