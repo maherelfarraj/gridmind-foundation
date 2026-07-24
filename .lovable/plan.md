@@ -1,50 +1,45 @@
-## P-043 — Opportunity Detail
+## P-044 — Proposals schema + versioning RPC
 
-Route `/crm/opportunities/$opportunityId` with header, contacts, competitor intel, tender events, and audit-driven activity timeline.
+### Migration (single call, applied via migration tool)
+Contents match spec exactly, plus the omitted-for-brevity boilerplate:
 
-### Route + loader
-- `src/routes/_authenticated/crm.opportunities.$opportunityId.tsx`
-- Loader: `context.queryClient.ensureQueryData(opportunityDetailQueryOptions(id))`
-- Loader fetches opportunity via `getOpportunity(id)` server fn; throws `notFound()` if RLS returns 0 rows
-- `notFoundComponent`: branded "Opportunity not found" card (design tokens)
-- `errorComponent`: branded error card with `router.invalidate() + reset()` retry
-- Also add nav wire-up: opportunity cards on pipeline board link here
+1. `create type proposal_status` (guarded by `do $$ ... duplicate_object`).
+2. `create table public.proposals` with version chain, financial fields, e-sign block, jsonb configs.
+3. `create table public.proposal_line_items` with category check + numeric guards.
+4. Two indexes as specified.
+5. `proposals_guard_immutable()` trigger — blocks pricing edits once status leaves `draft`/`in_review`.
+6. `set_updated_at` BEFORE UPDATE triggers on both tables (uses existing `public.set_updated_at()`).
+7. `GRANT SELECT, INSERT, UPDATE, DELETE ON public.proposals, public.proposal_line_items TO authenticated;` + `GRANT ALL ... TO service_role;` (no anon — every policy scopes to company membership).
+8. `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on both.
+9. Four policies per table, matching P-041 CRM pattern:
+   - `select` — `is_company_member(company_id)`
+   - `insert` — `is_company_member(company_id) AND (has_role(auth.uid(),'sales') OR has_role(auth.uid(),'company_admin'))`
+   - `update` — same as insert (both USING and WITH CHECK)
+   - `delete` — `is_company_member(company_id) AND has_role(auth.uid(),'company_admin')`
 
-### Server functions — `src/lib/opportunity.functions.ts` (new)
-All `.middleware([requireSupabaseAuth])`, zod validation, `writeAuditLog` with `metadata.opportunity_id`.
-- `getOpportunity({id})` → opportunity + owner profile (full_name)
-- `updateOpportunity({id, patch})` — name, account, capacity_mw, estimated_value, currency_code, expected_decision_date, competitor, loss_reason, notes; audit `opportunity.updated`. Stage changes still go through existing `moveOpportunityStage` (reused).
-- `listContacts({opportunityId})`, `saveContact({id?, opportunityId, full_name, title?, email?, phone?, is_primary, notes?})` — when `is_primary=true`, single SQL update demotes siblings for that opportunity_id before insert/update; audit `contact.saved`.
-- `deleteContact({id})` — company_admin only (server-side role check via `has_role`); audit `contact.deleted`.
-- `listTenderEvents({opportunityId})`, `saveTenderEvent({id?, opportunityId, event_type, title, event_at, location?, notes?})`; audit `tender_event.saved`.
-- `deleteTenderEvent({id})` — company_admin only; audit `tender_event.deleted`.
-- `postOpportunityNote({opportunityId, body})` — body 1..2000, writes `writeAuditLog('opportunity.note','opportunity', id, {opportunity_id, body})` only (no separate table).
-- `getOpportunityActivity({opportunityId})` — returns unified `ActivityItem[]` sorted desc, merging:
-  - `audit_logs` where `entity='opportunity' AND entity_id=:id` OR `metadata->>'opportunity_id' = :id`, joined to `profiles` for actor `full_name`
-  - `tender_events` for this opportunity (type: `tender_event`)
-  - `proposals` if table exists; wrap query in try/catch on Postgres `42P01` (proposals may not exist until P-044) — treat as empty
-  - Each item: `{ id, kind, at, actor?, label, meta }` where `kind ∈ 'audit'|'tender'|'proposal'`
+### Server function — `createProposalVersion`
+File: `src/lib/proposal.functions.ts` (new).
 
-### Query layer — `src/lib/opportunity-query.ts` (new)
-- `opportunityDetailQueryOptions(id)`, `contactsQueryOptions(id)`, `tenderEventsQueryOptions(id)`, `activityQueryOptions(id)`
-- Mutation hooks invalidate the relevant key + `activity` (so timeline refreshes in one turn)
-- Optimistic UI on save-contact / save-tender-event / stage change / decision-date change
+- `createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator(z.object({ proposalId: z.string().uuid() }).parse).handler(...)`
+- Loads source proposal + all its `proposal_line_items` under RLS via `context.supabase`.
+- Inserts a new proposal row copying every field except: `id` (new), `version = old.version + 1`, `previous_version_id = old.id`, `status = 'draft'`, `esign_provider/envelope_id/status/history/sent_at/completed_at`, `signed_copy_path`, `pricing_lock`, `sent_at`, `accepted_at` all reset; `created_by = context.userId`.
+- Bulk-inserts copied line items with the new `proposal_id`, preserving `sort_order`, `category`, `description`, `qty`, `unit`, `unit_price`, `line_total`.
+- Updates old row: `status = 'superseded'` (allowed only if old.status not already superseded/accepted; otherwise raise).
+- Calls `writeAuditLog('proposal.version_created','proposal', newId, { opportunity_id, from_version: old.version })` via `supabase.rpc('write_audit_log', ...)`.
+- Returns `{ id, version }`.
 
-### Components — `src/components/crm/detail/`
-- `OpportunityHeaderCard.tsx` — name (inline edit), account, archetype badge, capacity MW, stage `<Select>` (probability shown next to it, updates via `moveOpportunityStage`; loss dialog reused when → lost), est. value (Intl.NumberFormat + currency_code, inline edit), decision date (shadcn DatePicker with `pointer-events-auto`, date-fns `format`), owner. Actions: "New proposal" (nav placeholder → `/crm/opportunities/$id/proposals/new`, disabled until P-044 with tooltip), "Mark as won" (calls moveOpportunityStage→won), "Add tender event" (opens tender dialog).
-- `ContactsCard.tsx` + `ContactDialog.tsx` — table rows with primary star; add/edit dialogs; delete only rendered for company_admin; empty state.
-- `CompetitorIntelCard.tsx` — inline-edit `competitor`, `loss_reason` (only shown when `stage='lost'`), `notes` textareas; single "Save" per card.
-- `TenderEventsCard.tsx` + `TenderEventDialog.tsx` — sorted chronologically, lucide icon per type, countdown badge (`formatDistanceToNow`) for future, `text-destructive` for past events without `reminder_sent_at`; datetime picker (DatePicker + time input).
-- `ActivityTimeline.tsx` — vertical timeline, actor avatar/name, relative time, per-kind label & icon; skeleton + empty state; sticky note composer at top (textarea + "Post note" button).
+### Verification (post-migration)
+Direct SQL queries via psql:
+- Confirm both tables + all columns exist and RLS enabled (`pg_tables.rowsecurity`).
+- Immutability test: insert a proposal at status `sent`, attempt `update proposals set total=999`, expect `proposal ... is sent — create a new version to change pricing`. Clean up.
+- Second migration apply is a no-op (all `if not exists` / `create or replace` / `drop trigger if exists`).
 
-### Permissions
-- `canWrite = roles ∈ {sales, company_admin}`; finance_admin renders read-only (no dialogs, buttons hidden). Reuse existing role source used on pipeline route.
-- Delete actions gated to `company_admin` in both UI and server fn.
+Version-chain live test (`createProposalVersion` → v2 draft, v1 superseded, audit row) will be exercised in P-045 when the builder UI exists; called out here so we don't build a throwaway harness.
 
-### Verification (post-build)
-- Playwright: open the seeded "Aqaba Solar+BESS", add contact + set primary (verify sibling demote in DB), add tender event dated +7 days (countdown badge), post note, change stage — confirm all four appear in timeline
-- DB: `SELECT action FROM audit_logs WHERE metadata->>'opportunity_id'=...` shows contact.saved, tender_event.saved, opportunity.note, opportunity.stage_changed
-- Screenshot overdue tender event in destructive color
-- Cross-company UUID → branded not-found
+### Not in scope
+- Proposal builder UI, line-item editor, PDF/DOCX rendering, e-sign wiring — all P-045+.
+- Query hooks (`proposal-query.ts`) — added alongside the builder in P-045.
 
-No migrations. No schema changes.
+### Files touched
+- `supabase/migrations/0016_proposals.sql` (via migration tool; Cloud auto-prefixes timestamp).
+- `src/lib/proposal.functions.ts` (new).
