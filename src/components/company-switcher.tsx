@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,43 +13,51 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { listMyCompanies } from "@/lib/user-roles.functions";
 
 export interface Company {
   id: string;
   name: string;
 }
 
-// Stub companies; Batch 03 replaces this with the caller's real memberships.
-const STUB_COMPANIES: Company[] = [
-  { id: "acme-solar", name: "Acme Solar Group" },
-  { id: "brightgrid", name: "BrightGrid EPC" },
-  { id: "helios-wind", name: "Helios Wind Partners" },
-];
-
 const STORAGE_KEY = "gridmind:active-company";
 
 interface ActiveCompanyContextValue {
   companies: Company[];
-  activeCompanyId: string;
-  activeCompany: Company;
+  activeCompanyId: string | null;
+  activeCompany: Company | null;
   setActiveCompanyId: (id: string) => void;
 }
 
 const ActiveCompanyContext = createContext<ActiveCompanyContextValue | null>(null);
 
 export function ActiveCompanyProvider({ children }: { children: ReactNode }) {
-  const [activeCompanyId, setActiveCompanyIdState] = useState<string>(STUB_COMPANIES[0].id);
+  const { data: companies = [] } = useQuery({
+    queryKey: ["my-companies"],
+    queryFn: () => listMyCompanies({ data: {} }),
+    staleTime: 60_000,
+  });
 
+  const [activeCompanyId, setActiveCompanyIdState] = useState<string | null>(null);
+
+  // Hydrate from storage once companies load; drop stale (non-UUID / unknown) values.
   useEffect(() => {
+    if (companies.length === 0) return;
+    let next: string | null = null;
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored && STUB_COMPANIES.some((c) => c.id === stored)) {
-        setActiveCompanyIdState(stored);
-      }
+      if (stored && companies.some((c) => c.id === stored)) next = stored;
     } catch {
-      // ignore storage access failures
+      // ignore
     }
-  }, []);
+    if (!next) next = companies[0]!.id;
+    setActiveCompanyIdState(next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // ignore
+    }
+  }, [companies]);
 
   const setActiveCompanyId = useCallback((id: string) => {
     setActiveCompanyIdState(id);
@@ -60,15 +69,14 @@ export function ActiveCompanyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<ActiveCompanyContextValue>(() => {
-    const active =
-      STUB_COMPANIES.find((c) => c.id === activeCompanyId) ?? STUB_COMPANIES[0];
+    const active = companies.find((c) => c.id === activeCompanyId) ?? null;
     return {
-      companies: STUB_COMPANIES,
-      activeCompanyId: active.id,
+      companies,
+      activeCompanyId: active?.id ?? null,
       activeCompany: active,
       setActiveCompanyId,
     };
-  }, [activeCompanyId, setActiveCompanyId]);
+  }, [companies, activeCompanyId, setActiveCompanyId]);
 
   return (
     <ActiveCompanyContext.Provider value={value}>
@@ -76,6 +84,7 @@ export function ActiveCompanyProvider({ children }: { children: ReactNode }) {
     </ActiveCompanyContext.Provider>
   );
 }
+
 
 export function useActiveCompany(): ActiveCompanyContextValue {
   const ctx = useContext(ActiveCompanyContext);
