@@ -190,12 +190,31 @@ export const revokeInvite = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
+    const { data: existing, error: readErr } = await context.supabase
+      .from("invites")
+      .select("company_id, email, role")
+      .eq("id", data.inviteId)
+      .maybeSingle<{ company_id: string; email: string; role: AppRole }>();
+    if (readErr) throw readErr;
+    if (!existing) throw new Error("Invite not found");
+
     const { error } = await context.supabase
       .from("invites")
       .update({ status: "revoked" })
       .eq("id", data.inviteId)
       .eq("status", "pending");
     if (error) throw error;
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: "invite.revoked",
+      p_entity: "invites",
+      p_entity_id: data.inviteId,
+      p_metadata: {
+        email: existing.email,
+        role: existing.role,
+        company_id: existing.company_id,
+      },
+    });
     return { ok: true };
   });
 
@@ -231,7 +250,170 @@ export const resendInvite = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     if (!token) throw new Error("create_invite returned no token");
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: "invite.resent",
+      p_entity: "invites",
+      p_entity_id: data.inviteId,
+      p_metadata: {
+        email: existing.email,
+        role: existing.role,
+        company_id: existing.company_id,
+      },
+    });
     return { token, acceptUrl: acceptUrlFor(token) };
+  });
+
+export type BulkInviteSkipReason =
+  | "no_admin_yet"
+  | "already_member"
+  | "already_pending"
+  | "duplicate";
+
+export type BulkInviteResult = {
+  created: Array<{ email: string; role: AppRole; acceptUrl: string }>;
+  skipped: Array<{ email: string; role: AppRole; reason: BulkInviteSkipReason }>;
+  failed: Array<{ email: string; role: AppRole; error: string }>;
+};
+
+const bulkRowSchema = z.object({
+  email: emailSchema,
+  role: appRoleSchema.refine((r) => r !== "super_admin", {
+    message: "super_admin cannot be granted through this UI",
+  }),
+});
+
+export const bulkCreateInvites = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        companyId: uuidSchema,
+        rows: z.array(bulkRowSchema).min(1).max(100),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<BulkInviteResult> => {
+    requireSupabaseAuth(context);
+
+    // Defense in depth on top of create_invite's own gate.
+    const { data: isAdmin, error: adminErr } = await context.supabase.rpc(
+      "is_company_admin",
+      { _company_id: data.companyId },
+    );
+    if (adminErr) throw new Error(adminErr.message);
+    if (!isAdmin) {
+      throw Object.assign(new Error("Only company admins can bulk invite."), {
+        statusCode: 403,
+      });
+    }
+
+    // De-dupe on (email, role) preserving first occurrence.
+    const seen = new Set<string>();
+    const skipped: BulkInviteResult["skipped"] = [];
+    const deduped: Array<{ email: string; role: AppRole }> = [];
+    for (const row of data.rows) {
+      const key = `${row.email}::${row.role}`;
+      if (seen.has(key)) {
+        skipped.push({ email: row.email, role: row.role, reason: "duplicate" });
+      } else {
+        seen.add(key);
+        deduped.push(row);
+      }
+    }
+
+    // Tenancy: without any company_admin, only company_admin rows are allowed.
+    const { count: adminCount, error: countErr } = await context.supabase
+      .from("user_roles")
+      .select("user_id", { count: "exact", head: true })
+      .eq("company_id", data.companyId)
+      .eq("role", "company_admin");
+    if (countErr) throw countErr;
+
+    let survivors = deduped;
+    if ((adminCount ?? 0) === 0) {
+      const kept: typeof deduped = [];
+      for (const r of deduped) {
+        if (r.role === "company_admin") kept.push(r);
+        else skipped.push({ ...r, reason: "no_admin_yet" });
+      }
+      survivors = kept;
+    }
+
+    // Pre-load existing members + pending invites for the company.
+    const [
+      { data: existingMembers, error: memErr },
+      { data: pending, error: pendErr },
+    ] = await Promise.all([
+      context.supabase
+        .from("profiles")
+        .select("email")
+        .eq("company_id", data.companyId)
+        .returns<Array<{ email: string | null }>>(),
+      context.supabase
+        .from("invites")
+        .select("email")
+        .eq("company_id", data.companyId)
+        .eq("status", "pending")
+        .returns<Array<{ email: string }>>(),
+    ]);
+    if (memErr) throw memErr;
+    if (pendErr) throw pendErr;
+
+    const memberEmails = new Set(
+      (existingMembers ?? [])
+        .map((p) => (p.email ?? "").toLowerCase())
+        .filter(Boolean),
+    );
+    const pendingEmails = new Set(
+      (pending ?? []).map((p) => p.email.toLowerCase()),
+    );
+
+    const created: BulkInviteResult["created"] = [];
+    const failed: BulkInviteResult["failed"] = [];
+    for (const row of survivors) {
+      if (memberEmails.has(row.email)) {
+        skipped.push({ ...row, reason: "already_member" });
+        continue;
+      }
+      if (pendingEmails.has(row.email)) {
+        skipped.push({ ...row, reason: "already_pending" });
+        continue;
+      }
+      const { data: token, error } = await context.supabase.rpc(
+        "create_invite",
+        {
+          p_company_id: data.companyId,
+          p_email: row.email,
+          p_role: row.role,
+        },
+      );
+      if (error || !token) {
+        failed.push({
+          ...row,
+          error: error?.message ?? "create_invite returned no token",
+        });
+        continue;
+      }
+      // Prevent later rows in the same batch from re-inviting.
+      pendingEmails.add(row.email);
+      created.push({ ...row, acceptUrl: acceptUrlFor(token) });
+    }
+
+    if (created.length > 0) {
+      await context.supabase.rpc("write_audit_log", {
+        p_action: "invite.bulk_sent",
+        p_entity: "invites",
+        p_entity_id: null as unknown as string,
+        p_metadata: {
+          company_id: data.companyId,
+          count: created.length,
+          roles: Array.from(new Set(created.map((r) => r.role))),
+        },
+      });
+    }
+
+    return { created, skipped, failed };
   });
 
 export const redeemInviteRpc = createServerFn({ method: "POST" })

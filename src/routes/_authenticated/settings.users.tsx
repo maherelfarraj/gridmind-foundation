@@ -11,9 +11,11 @@ import {
   Copy,
   Download,
   Loader2,
+  RefreshCw,
   RotateCcw,
   Settings2,
   Trash2,
+  Users as UsersIcon,
 } from "lucide-react";
 
 import {
@@ -83,6 +85,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BulkInviteDialog } from "@/components/bulk-invite-dialog";
 
 export const Route = createFileRoute("/_authenticated/settings/users")({
   head: () => ({
@@ -176,6 +180,14 @@ function UsersPage() {
   const [search, setSearch] = useState("");
   const [manageUserId, setManageUserId] = useState<string | null>(null);
   const [pendingRole, setPendingRole] = useState<GrantableRole | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"members" | "invitations">(
+    "members",
+  );
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [inviteFilter, setInviteFilter] = useState<
+    "all" | "pending" | "accepted" | "expired" | "revoked"
+  >("all");
 
   const membersKey = ["company-members", activeCompanyId] as const;
 
@@ -326,6 +338,51 @@ function UsersPage() {
     );
   }, [members, search]);
 
+  const memberEmails = useMemo(
+    () =>
+      new Set(
+        members
+          .map((m) => (m.email ?? "").toLowerCase())
+          .filter((e) => e.length > 0),
+      ),
+    [members],
+  );
+  const pendingEmails = useMemo(
+    () =>
+      new Set(
+        invites
+          .filter((i) => i.status === "pending")
+          .map((i) => i.email.toLowerCase()),
+      ),
+    [invites],
+  );
+
+  const derivedInvites = useMemo(
+    () =>
+      invites.map((i) => {
+        const isExpired =
+          i.status === "pending" &&
+          new Date(i.expires_at).getTime() < Date.now();
+        return {
+          ...i,
+          derivedStatus: isExpired
+            ? ("expired" as const)
+            : (i.status as "pending" | "accepted" | "expired" | "revoked"),
+        };
+      }),
+    [invites],
+  );
+
+  const filteredInvites = useMemo(() => {
+    const q = inviteSearch.trim().toLowerCase();
+    return derivedInvites.filter((i) => {
+      if (inviteFilter !== "all" && i.derivedStatus !== inviteFilter)
+        return false;
+      if (q && !i.email.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [derivedInvites, inviteSearch, inviteFilter]);
+
   const managedMember = useMemo(
     () => members.find((m) => m.userId === manageUserId) ?? null,
     [members, manageUserId],
@@ -369,113 +426,136 @@ function UsersPage() {
           </p>
         </div>
         {isAdmin && (
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
-          >
-            <DialogTrigger asChild>
-              <Button>Invite member</Button>
-            </DialogTrigger>
-            <DialogContent>
-              {issuedLink ? (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>Invitation link</DialogTitle>
-                    <DialogDescription>
-                      Share this link with the recipient. It will only be shown
-                      once.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex items-center gap-2">
-                    <Input readOnly value={issuedLink} />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => copyLink(issuedLink)}
-                      aria-label="Copy link"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <DialogFooter>
-                    <Button type="button" onClick={closeDialog}>
-                      I&apos;ve shared it
-                    </Button>
-                  </DialogFooter>
-                </>
-              ) : (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>Invite a teammate</DialogTitle>
-                    <DialogDescription>
-                      They&apos;ll receive a one-time link to join{" "}
-                      {snapshotQuery.data ? "your company" : "the workspace"}.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Form {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="teammate@company.com"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="role"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Role</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setBulkOpen(true)}
+            >
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Bulk invite
+            </Button>
+            <Dialog
+              open={dialogOpen}
+              onOpenChange={(open) =>
+                open ? setDialogOpen(true) : closeDialog()
+              }
+            >
+              <DialogTrigger asChild>
+                <Button>Invite member</Button>
+              </DialogTrigger>
+              <DialogContent>
+                {issuedLink ? (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Invitation link</DialogTitle>
+                      <DialogDescription>
+                        Share this link with the recipient. It will only be
+                        shown once.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center gap-2">
+                      <Input readOnly value={issuedLink} />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => copyLink(issuedLink)}
+                        aria-label="Copy link"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" onClick={closeDialog}>
+                        I&apos;ve shared it
+                      </Button>
+                    </DialogFooter>
+                  </>
+                ) : (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Invite a teammate</DialogTitle>
+                      <DialogDescription>
+                        They&apos;ll receive a one-time link to join{" "}
+                        {snapshotQuery.data ? "your company" : "the workspace"}.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
+                                <Input
+                                  type="email"
+                                  placeholder="teammate@company.com"
+                                  {...field}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                {INVITE_ROLE_OPTIONS.map((role) => (
-                                  <SelectItem key={role} value={role}>
-                                    {humanizeRole(role)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <DialogFooter>
-                        <Button type="submit" disabled={createMut.isPending}>
-                          {createMut.isPending && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <FormMessage />
+                            </FormItem>
                           )}
-                          Create invite
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
-                </>
-              )}
-            </DialogContent>
-          </Dialog>
+                        />
+                        <FormField
+                          control={form.control}
+                          name="role"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Role</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a role" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {INVITE_ROLE_OPTIONS.map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {humanizeRole(role)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <DialogFooter>
+                          <Button
+                            type="submit"
+                            disabled={createMut.isPending}
+                          >
+                            {createMut.isPending && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Create invite
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
+            <BulkInviteDialog
+              open={bulkOpen}
+              onOpenChange={setBulkOpen}
+              companyId={activeCompanyId}
+              memberEmails={memberEmails}
+              pendingEmails={pendingEmails}
+              onSuccess={invalidate}
+            />
+          </div>
         )}
       </div>
 
@@ -491,12 +571,25 @@ function UsersPage() {
         </div>
       )}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Members
-          </h2>
-          <div className="flex items-center gap-2">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "members" | "invitations")}
+        className="flex flex-col gap-4"
+      >
+        <TabsList>
+          <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="invitations">
+            Invitations
+            {invites.filter((i) => i.status === "pending").length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {invites.filter((i) => i.status === "pending").length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="members" className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -514,197 +607,243 @@ function UsersPage() {
               Export CSV
             </Button>
           </div>
-        </div>
-        <div className="rounded-lg border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12" />
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Roles</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {membersQuery.isLoading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={`sk-${i}`}>
+          <div className="rounded-lg border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12" />
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Roles</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {membersQuery.isLoading &&
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={`sk-${i}`}>
+                      <TableCell>
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-48" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell />
+                    </TableRow>
+                  ))}
+                {membersQuery.isError && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-destructive"
+                    >
+                      {membersQuery.error instanceof Error
+                        ? membersQuery.error.message
+                        : "Failed to load members"}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {membersQuery.data && filteredMembers.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="py-10 text-center text-muted-foreground"
+                    >
+                      {members.length === 0
+                        ? "No members yet."
+                        : "No members match your search."}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredMembers.map((m) => (
+                  <TableRow key={m.userId}>
                     <TableCell>
-                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Avatar className="h-8 w-8">
+                        {m.avatarUrl ? (
+                          <AvatarImage src={m.avatarUrl} alt="" />
+                        ) : null}
+                        <AvatarFallback>{initialsOf(m)}</AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {m.fullName ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {m.email ?? "—"}
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-4 w-32" />
+                      <div className="flex flex-wrap gap-1">
+                        {m.roles.length === 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            No roles
+                          </span>
+                        )}
+                        {m.roles.map((r) => (
+                          <Badge key={r} variant="outline">
+                            {humanizeRole(r)}
+                          </Badge>
+                        ))}
+                      </div>
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-48" />
+                    <TableCell className="text-right">
+                      {isAdmin && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setManageUserId(m.userId)}
+                        >
+                          <Settings2 className="mr-2 h-4 w-4" />
+                          Manage roles
+                        </Button>
+                      )}
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-40" />
-                    </TableCell>
-                    <TableCell />
                   </TableRow>
                 ))}
-              {membersQuery.isError && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-destructive">
-                    {membersQuery.error instanceof Error
-                      ? membersQuery.error.message
-                      : "Failed to load members"}
-                  </TableCell>
-                </TableRow>
-              )}
-              {membersQuery.data && filteredMembers.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                    {members.length === 0
-                      ? "No members yet."
-                      : "No members match your search."}
-                  </TableCell>
-                </TableRow>
-              )}
-              {filteredMembers.map((m) => (
-                <TableRow key={m.userId}>
-                  <TableCell>
-                    <Avatar className="h-8 w-8">
-                      {m.avatarUrl ? (
-                        <AvatarImage src={m.avatarUrl} alt="" />
-                      ) : null}
-                      <AvatarFallback>{initialsOf(m)}</AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {m.fullName ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {m.email ?? "—"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {m.roles.length === 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          No roles
-                        </span>
-                      )}
-                      {m.roles.map((r) => (
-                        <Badge key={r} variant="outline">
-                          {humanizeRole(r)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {isAdmin && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setManageUserId(m.userId)}
-                      >
-                        <Settings2 className="mr-2 h-4 w-4" />
-                        Manage roles
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Invitations
-        </h2>
-        <div className="rounded-lg border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invitesQuery.isLoading && (
+        <TabsContent value="invitations" className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Input
+              value={inviteSearch}
+              onChange={(e) => setInviteSearch(e.target.value)}
+              placeholder="Search by email"
+              className="h-9 w-64"
+            />
+            <Select
+              value={inviteFilter}
+              onValueChange={(v) =>
+                setInviteFilter(
+                  v as "all" | "pending" | "accepted" | "expired" | "revoked",
+                )
+              }
+            >
+              <SelectTrigger className="h-9 w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="revoked">Revoked</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="rounded-lg border border-border bg-card">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Loading invites…
-                  </TableCell>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              )}
-              {invitesQuery.isError && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-destructive">
-                    {invitesQuery.error instanceof Error
-                      ? invitesQuery.error.message
-                      : "Failed to load invites"}
-                  </TableCell>
-                </TableRow>
-              )}
-              {invitesQuery.data && invites.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                    No invites sent yet.
-                    {isAdmin && (
-                      <> Click <span className="text-foreground">Invite member</span> to get started.</>
-                    )}
-                  </TableCell>
-                </TableRow>
-              )}
-              {invites.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="font-medium">{row.email}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {humanizeRole(row.role)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(row.status)}>{row.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(row.expires_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="inline-flex gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={
-                          !isAdmin ||
-                          row.status !== "pending" ||
-                          resendMut.isPending
-                        }
-                        onClick={() => resendMut.mutate(row.id)}
-                        aria-label="Resend"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={
-                          !isAdmin ||
-                          row.status !== "pending" ||
-                          revokeMut.isPending
-                        }
-                        onClick={() => revokeMut.mutate(row.id)}
-                        aria-label="Revoke"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+              </TableHeader>
+              <TableBody>
+                {invitesQuery.isLoading && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center text-muted-foreground"
+                    >
+                      Loading invites…
+                    </TableCell>
+                  </TableRow>
+                )}
+                {invitesQuery.isError && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center text-destructive"
+                    >
+                      {invitesQuery.error instanceof Error
+                        ? invitesQuery.error.message
+                        : "Failed to load invites"}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {invitesQuery.data && filteredInvites.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="py-10 text-center text-muted-foreground"
+                    >
+                      {invites.length === 0
+                        ? "No invites sent yet."
+                        : "No invites match your filter."}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredInvites.map((row) => {
+                  const canAct = row.derivedStatus === "pending";
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-medium">
+                        {row.email}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {humanizeRole(row.role)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariant(row.derivedStatus)}>
+                          {row.derivedStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(row.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(row.expires_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="inline-flex gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={!isAdmin || !canAct || resendMut.isPending}
+                            onClick={() => resendMut.mutate(row.id)}
+                            aria-label="Resend"
+                          >
+                            {resendMut.isPending &&
+                            resendMut.variables === row.id ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RotateCcw className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={!isAdmin || !canAct || revokeMut.isPending}
+                            onClick={() => revokeMut.mutate(row.id)}
+                            aria-label="Revoke"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Sheet
         open={manageUserId !== null}
