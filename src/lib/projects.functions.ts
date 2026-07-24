@@ -540,16 +540,16 @@ function escapeIlike(v: string): string {
 }
 
 async function assertCompanyMember(
-  context: { supabase: NonNullable<ReturnType<typeof requireSupabaseAuth>>["supabase"] } | { supabase: any },
+  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> },
   companyId: string,
 ): Promise<void> {
-  const { data: ok, error } = await (context as any).supabase.rpc(
-    "is_company_member",
-    { p_company_id: companyId },
-  );
+  const { data: ok, error } = await supabase.rpc("is_company_member", {
+    p_company_id: companyId,
+  });
   if (error) throw error;
   if (ok !== true) httpError(403, "forbidden");
 }
+
 
 export const listProjects = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
