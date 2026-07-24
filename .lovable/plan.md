@@ -1,82 +1,81 @@
-# P-066 — Goods Receipts (GRN)
+# P-067 — Three-Way Match
 
-Build goods receiving against issued POs with lot tracking, defects, and photo capture. Mobile-friendly for site crews. All mutations through `createServerFn + zod + requireSupabaseAuth`, RLS-scoped via `is_company_member` + role checks in `user_roles`, every state change audited.
+Payment gatekeeper: match vendor invoices against PO and GRN totals; block payment when variance exceeds tolerance; allow finance-admin override with mandatory note.
 
-## 1. Migration — `goods_receipts` table
+## 1. Migration — `0029_three_way_match.sql`
 
-New migration creating:
+Note: numbering as `0029` since `0028_goods_receipts.sql` was used in P-066 (spec's "0028" name is superseded by this project's sequence).
 
-- `grn_status` enum (`draft`, `confirmed`, `has_defects`, `closed`) — guarded `do $$ ... $$` block so re-runs are safe.
-- `public.goods_receipts` per the spec: `company_id`, `po_id` (cascade), `project_id`, `grn_number`, `status`, `lines jsonb` (`[{po_line_no, description, qty_ordered, qty_received, lot_ids[], condition, defect_notes}]`), `defects_count`, `photos jsonb` (paths in `photos` bucket), `notes`, `received_by/at`, `created_by/at`, `updated_at`, unique `(company_id, grn_number)`.
-- Grants: `select, insert, update` to `authenticated`; `all` to `service_role`.
-- RLS enabled + policies:
-  - `grn_select` — any company member.
-  - `grn_write` — company member AND one of `procurement_admin | procurement_officer | foreman | field_technician | company_admin`.
-- Indexes: `(po_id)`, `(company_id, project_id, status)`.
+- Guarded `do $$` block creating `match_status` enum: `pending | matched | variance_blocked | approved_with_variance`.
+- `public.three_way_matches` table per spec (company_id, po_id, goods_receipt_id nullable, `invoice_id uuid` with **no FK** — Batch 08/P-080 will add it, vendor_invoice_number, invoice_date, invoice_amount `numeric(14,2)`, invoice_currency_code → `currencies(code)`, invoice_file_path, status, `qty_variance_pct/price_variance_pct` numeric(6,2), `amount_variance` numeric(14,2), `variance_threshold_pct` numeric(5,2) default 5.00, `payment_release_blocked` bool, resolution_note, matched_by/matched_at, created_by, created_at/updated_at).
+- Ordered exactly: CREATE TABLE → GRANT select/insert/update to authenticated + ALL to service_role → ENABLE RLS → policies `twm_select` (any company member) and `twm_write` (member AND `procurement_admin | finance_admin | company_admin`).
+- Indexes `(po_id, status)` and `(company_id, status)`.
 - Attach existing `set_updated_at()` BEFORE UPDATE trigger.
 
-## 2. Server logic
+## 2. Pure logic — `src/lib/match-rules.ts`
 
-**`src/lib/grn-rules.ts`** (pure, unit-testable)
-- Zod schemas for GRN line, confirm payload (`qty_received >= 0` and `<= qty_ordered - previously_received`).
-- `nextGrnNumber(existing: string[])` → `GRN-0001` sequence.
-- `computePoStatusAfterGrn(poLines, allConfirmedGrnLines)` → returns `partially_received | received` (or unchanged).
-- `deriveGrnStatus(lines)` → `has_defects` if any `condition !== 'ok'` or short-ship, else `confirmed`.
+Unit-testable, no I/O.
+- Types: `MatchStatus`, `MatchInputs { poTotal, poQtyByLine, poUnitPriceByLine, grnQtyByLine, invoiceAmount, invoiceQtyByLine?, invoiceUnitPriceByLine? }`.
+- `computeVariances(inputs)` → `{ qty_variance_pct, price_variance_pct, amount_variance }`. Uses max abs line-level pct across lines for qty & price; amount_variance = `invoiceAmount − poTotal`.
+- `deriveMatchStatus({ variances, thresholdPct })` → `matched` when all abs pcts ≤ threshold, else `variance_blocked`.
+- Zod schemas: `matchCreatePayload` (vendor_invoice_number required non-empty ≤ 120, invoice_date optional ISO, invoice_amount > 0, currency ISO 4217 ≤ 8, threshold 0–100, optional line invoice qty/price arrays), `matchOverridePayload` (`resolution_note` trimmed min 5, max 2000).
 
-**`src/lib/grn.functions.ts`** (server fns w/ `requireSupabaseAuth`)
-- `listGrns({ projectId?, poId?, status?, search? })` — server-filtered list joined with PO number + vendor name.
-- `getGrn({ grnId })` — full row + PO lines + photo signed URLs.
-- `getReceivableLinesForPo({ poId })` — PO lines with `qty_ordered - sum(previously_received)` remaining.
-- `createDraftGrn({ poId })` — role-gated; requires PO status in `issued | partially_received`; returns id.
-- `updateGrnDraft({ grnId, lines, notes, photos })` — validates qty ≤ remaining, sanitizes lot_ids.
-- `confirmGrn({ grnId })`:
-  - Re-validate against fresh PO totals (server-side over-receipt guard).
-  - Generate `grn_number` via row lock on company sequence.
-  - Set `received_by`, `received_at`, derived `status` + `defects_count`.
-  - Update PO status via `computePoStatusAfterGrn`.
-  - `writeAuditLog('grn.confirm', ...)` and additional `grn.defect` when defects present.
-- `addGrnPhoto({ grnId, path })` / `removeGrnPhoto` — enforce path prefix `{company_id}/grn/{grn_id}/…` server-side before persisting to `photos` jsonb.
+## 3. Server fns — `src/lib/match.functions.ts`
 
-**Query hooks:** `src/lib/grn-query.ts` — `useGrnList`, `useGrn`, `useReceivableLines`, and mutations wired to `useServerFn` with sonner toasts + `queryClient.invalidateQueries` on PO detail keys.
+All with `requireSupabaseAuth`, role checks via `context.supabase` + `has_company_role`, `writeAuditLog` for every mutation. Currency defaults to PO's `currency_code`.
 
-## 3. UI
+- `listMatches({ status?, poId?, search? })` — joined with PO number, vendor name, GRN number.
+- `getMatch({ matchId })` — full row + PO snapshot + GRN snapshot + signed invoice URL.
+- `getMatchContextForPo({ poId })` — returns PO lines/totals + summed confirmed GRN qty by line for pre-filling the form.
+- `createMatch({ poId, grnId?, payload })` — role: `procurement_admin | finance_admin | company_admin`. Server recomputes variances from PO + GRN, ignores any client-supplied variance fields, derives status, sets `payment_release_blocked = (status === 'variance_blocked')`, stores `invoice_file_path` when provided. Audit `match.create`; add `match.block` when blocked.
+- `uploadInvoiceFile` helper path guard: enforce prefix `{company_id}/invoices/{match_id}/…`. Actual upload uses existing client-side storage helper; server persists the path only after validation. Draft-first pattern: `createMatch` returns id so client can upload then call `attachInvoiceFile({ matchId, path })`.
+- `overrideMatchVariance({ matchId, resolution_note })` — role: `finance_admin | company_admin` only; requires non-empty note; only valid when `status = variance_blocked`; sets `status = approved_with_variance`, `payment_release_blocked = false`, `matched_by/matched_at`. Audit `match.override` with `{ from_status, note }`.
+- `updateMatchThreshold({ matchId, threshold_pct })` — `finance_admin | company_admin`; recomputes status & block from stored variances. Audit `match.threshold_update`.
+- `getMatchVarianceKpi()` — avg absolute `amount_variance / po_total` % for matches created in current quarter (company-scoped). Returned as `{ avgPct, count }`.
 
-**`/procurement/receipts` (list)** — `src/routes/_authenticated/procurement.receipts.tsx` + `.index.tsx`
-- Table: GRN #, PO # (link), project, status badge, defects count, received_at.
-- Search, status filter, CSV export, skeleton, empty ("No goods receipts yet"), error+retry.
-- "New receipt" CTA (opens PO picker if no `?po=`).
+Payment release integration: exposes `payment_release_blocked` for Batch 08 to consume — no code from this batch touches invoice/pay flows.
 
-**`/procurement/receipts/new?po=<id>`** — `procurement.receipts.new.tsx`
-- Loads receivable lines. Pre-fills a form line per open PO line with `qty_remaining`.
-- Per-line inputs: `qty_received` (numeric, zod ≤ remaining), lot/serial IDs as chip input (`Enter` to add, optional camera button using `getUserMedia` + `BarcodeDetector` when available, graceful manual fallback), condition select (`ok | damaged | partial`), defect notes (textarea, required when condition ≠ ok).
-- Photo capture panel: up to 10 photos → upload to `photos` bucket at `{company_id}/grn/{grn_id}/{uuid}.jpg` (creates draft GRN first so `{grn_id}` exists), thumbnails with remove.
-- Sticky footer with "Save draft" and "Confirm receipt" actions; disabled while over-receipt errors exist.
-- Mobile-first layout: single-column, large tap targets, bottom-anchored actions.
+## 4. Query hooks — `src/lib/match-query.ts`
 
-**`/procurement/receipts/$grnId`** — detail view for confirmed/draft GRNs; read-only after confirm; shows lot IDs, photos gallery (signed URLs), audit trail excerpt.
+`useMatchList`, `useMatch`, `useMatchContextForPo`, `useMatchVarianceKpi`, mutations `useCreateMatch`, `useAttachInvoiceFile`, `useOverrideMatch`, `useUpdateMatchThreshold`. Invalidate `["matches"]`, `["match", id]`, `["po", poId]`, `["match-kpi"]`. Sonner toasts, `errorMessage` helper reused from GRN pattern.
 
-**Nav update:** add "Receipts" under Procurement in `AppShell`.
+## 5. UI routes
 
-## 4. Storage
+- `src/routes/_authenticated/procurement.matches.tsx` — `<Outlet />`.
+- `procurement.matches.index.tsx` — KPI tile (avg variance % this quarter), table (PO#, GRN#, vendor invoice #, invoice amount, PO amount, variance % badge — semantic `default/warning/destructive` via existing Badge variants, status badge, blocked indicator), status filter, search, CSV export, skeleton/empty ("No invoices matched yet")/error+retry.
+- `procurement.matches.new.tsx` — accepts `?po=<id>`; PO picker if missing. Loads context, pre-fills PO total & GRN qty summary, form: vendor invoice #, date, amount (with currency read-only from PO), optional invoice PDF upload (creates match first for `{match_id}` path), threshold override input gated to `finance_admin/company_admin`. On submit shows live client-side variance preview using `computeVariances`; server is source of truth. Sticky action bar.
+- `procurement.matches.$matchId.tsx` — detail view: PO/GRN summary cards, invoice card with signed PDF link, variance breakdown (qty/price/amount with tolerance line), status stepper `pending → matched | variance_blocked → approved_with_variance`, destructive banner "Payment release blocked" when `payment_release_blocked`, "Approve with variance" dialog (finance-admin only, mandatory `resolution_note` textarea min 5 chars), threshold editor (finance-admin), audit trail excerpt.
 
-Reuse existing `photos` bucket. Server functions require path prefix `{company_id}/grn/{grn_id}/…` (matches storage RLS policy using `storage_company_id`). Signed URLs generated server-side for display.
+## 6. `MatchStatusBadge` component
 
-## 5. Tests
+`src/components/procurement/match-status-badge.tsx` — semantic variant map: matched=default, pending=secondary, variance_blocked=destructive, approved_with_variance=outline.
 
-- `tests/unit/grn-rules.test.ts` — `nextGrnNumber`, `computePoStatusAfterGrn` (partial → full lifecycle), `deriveGrnStatus` (defect + short-ship cases), zod over-receipt rejection.
-- `tests/rls/grn.rls.test.ts` — stub asserting non-member is blocked and non-privileged roles cannot insert.
+## 7. Nav
+
+`src/lib/nav-map.ts`: add "Invoice Matching" under Procurement with a suitable lucide icon (e.g. `Scale`).
+
+## 8. Storage
+
+Reuse `documents` bucket. Path prefix `{company_id}/invoices/{match_id}/{uuid}.pdf` — server validates prefix before persisting. Signed URL generated server-side.
+
+## 9. Tests
+
+- `tests/unit/match-rules.test.ts` — variance math (exact match → 0/0/0 → matched; +8% amount → variance_blocked; per-line qty/price pcts; threshold edge cases), zod rejects empty invoice # / negative amount / short override note.
+- `tests/rls/three-way-match.rls.test.ts` — stub: non-member blocked; `procurement_officer` cannot insert; `finance_admin` can override.
 
 ## Acceptance verification
 
-- Receive full qty on line 1 + partial line 2 → PO flips `partially_received`; complete rest → `received`.
-- Over-receive attempt blocked client + server.
-- 3 lot IDs + 2 photos → thumbnails + paths under `{company}/grn/{grn_id}/…`.
-- Damaged pallet defect → `has_defects`, `defects_count++`, `grn.defect` audited.
-- Mobile viewport (390px): form usable, no horizontal scroll.
+- Invoice = PO total → `matched`.
+- Invoice 8% above PO → `variance_blocked`, destructive banner, `payment_release_blocked = true`.
+- Override without note → server rejects (zod); with note as `finance_admin` → `approved_with_variance`, block cleared, `match.override` audited.
+- Variance math verified in unit tests (qty vs GRN, price vs PO, amount = invoice − PO).
+- `procurement_officer` write denied by RLS; `match.create/block/override` all in audit_logs.
+- KPI tile renders avg abs amount-variance % for current quarter.
 
 ## Technical notes
 
-- No changes to `po.functions.ts` PO transitions API — GRN confirm calls a small internal helper that updates PO status via `supabaseAdmin` inside a transaction after role check via `context.supabase`.
-- All colors via semantic tokens; status badges use existing `Badge` variants map.
-- `getUserMedia` behind capability check; SSR-safe (`useEffect`).
-- Currency N/A on GRN; qty formatting via `Intl.NumberFormat` with PO's UoM label.
+- No `invoice_id` FK yet — column is `uuid` nullable; Batch 08/P-080 will add `references invoices(id)` in its own migration.
+- Currency: single-currency match keyed to PO currency; cross-currency variance out of scope for this batch.
+- All numeric formatting via `Intl.NumberFormat` using PO's `currency_code`.
+- Design tokens only; badges via existing variant map (no raw colors).
+- No changes to `po.functions.ts`; downstream payment flow reads `payment_release_blocked` in P-080.
