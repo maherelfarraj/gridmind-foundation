@@ -176,10 +176,8 @@ function ExpeditingPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: (vars: {
-      id: string;
-      patch: Parameters<typeof updateFn>[0]["data"]["patch"];
-    }) => updateFn({ data: vars }),
+    mutationFn: (vars: { id: string; patch: Record<string, unknown> }) =>
+      updateFn({ data: vars as any }),
     onSuccess: () => {
       invalidate();
       toast.success("Updated");
