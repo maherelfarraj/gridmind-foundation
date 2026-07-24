@@ -1725,35 +1725,47 @@ export type Database = {
       }
       project_sld_config: {
         Row: {
+          bus_config: string | null
           company_id: string
           created_at: string
           hv_voltage_kv: number | null
           id: string
           lv_voltage_kv: number | null
+          metering_points: Json | null
           mv_voltage_kv: number | null
+          notes: string | null
           project_id: string
+          protection_scheme: string | null
           updated_at: string
           voltage_levels: Json
         }
         Insert: {
+          bus_config?: string | null
           company_id: string
           created_at?: string
           hv_voltage_kv?: number | null
           id?: string
           lv_voltage_kv?: number | null
+          metering_points?: Json | null
           mv_voltage_kv?: number | null
+          notes?: string | null
           project_id: string
+          protection_scheme?: string | null
           updated_at?: string
           voltage_levels?: Json
         }
         Update: {
+          bus_config?: string | null
           company_id?: string
           created_at?: string
           hv_voltage_kv?: number | null
           id?: string
           lv_voltage_kv?: number | null
+          metering_points?: Json | null
           mv_voltage_kv?: number | null
+          notes?: string | null
           project_id?: string
+          protection_scheme?: string | null
           updated_at?: string
           voltage_levels?: Json
         }

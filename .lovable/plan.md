@@ -1,75 +1,52 @@
-## P-053 — Drawing register UI: revisions, status, markup viewer
+## P-054 — SLD Gallery + `project_sld_config` Editor
 
-Build the engineering drawing register (list + detail) with governed status transitions, revision uploads, and a canvas markup viewer. All mutations use `createServerFn` + zod + `requireSupabaseAuth`; RLS is second-layer. Design tokens only.
+### 1. Migration `0019_sld_config_extend.sql` (idempotent)
+Extend `public.project_sld_config` with the missing columns (idempotent `ADD COLUMN IF NOT EXISTS`):
+- `bus_config text default 'single'` (values enforced app-side: `single | single_sectionalized | double | ring`)
+- `metering_points jsonb default '[]'`
+- `protection_scheme text`
+- `notes text`
 
-### 1. Server functions — `src/lib/drawings.functions.ts`
+`voltage_levels jsonb default '[]'` already exists — skip. RLS, grants, and `updated_at` trigger unchanged.
 
-Roles: writers = `engineering_admin | engineer | project_admin` (+ super_admin). `company_admin`, `client_viewer`, `lender_viewer` = read-only (filtered UI-side; RLS already blocks writes).
+**Drawing tagging** — `drawing_register` has no `tags` column. Rather than adding one just for SLD (out of scope), tag SLDs by prefixing `drawing_number` with `SLD-` on creation and filtering `discipline='electrical' AND drawing_number ILIKE 'SLD-%'`. Documented in the "New SLD" dialog.
 
-- `listDrawings({ projectId, search?, discipline?, status?, limit=100, offset=0 })` — server-side filtered query on `drawing_register` joined to the current revision (`drawing_revisions` via `current_revision_id`) for `issued_at` + `revision_code`. Returns rows + `total`.
-- `getDrawing({ drawingId })` — header + full revision timeline (ordered by `created_at`), each revision joined with `profiles` (issued_by / created_by names).
-- `createDrawing({ projectId, drawingNumber, title, discipline })` — insert into `drawing_register`; unique (project_id, drawing_number) violation → 409 `drawing_number_taken`.
-- `uploadDrawingRevision` — 2-step like site-data:
-  - `getRevisionUploadUrl({ drawingId, fileName, fileSize, mimeType })` → signed upload URL at `drawings/{company_id}/{project_id}/drawings/{drawing_id}/{uuid}-{safeName}`; returns `suggestedRevisionCode` (next letter A→Z from existing revisions; if numeric scheme detected, next number).
-  - `registerDrawingRevision({ drawingId, revisionCode, storagePath, fileName, fileSize, mimeType, issueReason? })` — inserts revision (status=`draft`), sets `drawing_register.current_revision_id`. Audit `drawing.revision_added`.
-- `transitionDrawingStatus({ drawingId, revisionId, toStatus })` — enforces:
-  - Allowed transitions: draft→IFD, IFD→IFC, IFC→as_built, any→superseded.
-  - **IFC governance** (409 `ifc_requires_ifd_signoff`, clear message):
-    1. At least one revision on this drawing has `status='IFD'` (either current or historical).
-    2. All `document_markups` for revisions of this drawing where `status IN ('open','rejected')` — must be 0 (all resolved/accepted).
-    3. A sign-off record exists: `approval_instances` row with `entity='drawing'`, `entity_id=drawing_id`, `status='approved'`.
-  - On success: updates `drawing_revisions.status`, `drawing_register.current_status` (+ `locked=true` when IFC/as_built), sets `issued_by`/`issued_at` on the revision, writes `drawing.status_changed` audit with `{from, to, revision_id}`.
-- `requestIfcSignoff({ drawingId, note? })` — creates `approval_instances` (entity='drawing', status='pending') if none pending; audit `drawing.signoff_requested`. (Writer role.)
-- `decideIfcSignoff({ instanceId, decision: 'approved'|'rejected', comment? })` — role `engineering_admin | project_admin` only; updates instance + inserts `approvals` row; audit `drawing.signoff_decided`.
-- `listMarkups({ revisionId })` / `createMarkup({ revisionId, pageNumber, annotation, reviewerOrg })` / `updateMarkupStatus({ markupId, status, resolutionNote? })` — status change gated to markup author OR `engineering_admin`; audit `drawing.markup_status_changed` on every update.
-- `getDrawingFileUrl({ revisionId })` — 15-min signed URL from `drawings` bucket.
+### 2. Server functions — `src/lib/sld.functions.ts`
+All `createServerFn` + zod + `requireSupabaseAuth`:
+- `getSldConfig({ projectId })` — returns row or defaults; company member read.
+- `saveSldConfig({ projectId, bus_config, voltage_levels[], metering_points[], protection_scheme?, notes? })` — writes row (upsert on `project_id`); role gate `engineering_admin | engineer | project_admin` via `has_role`; writes `audit_logs` action `engineering.sld_config_saved` with changed field diff.
+- `listSldDrawings({ projectId })` — selects `drawing_register` where `discipline='electrical' AND drawing_number ILIKE 'SLD-%'`, joins current revision + markup count.
+- `createSldDrawing({ projectId, drawing_number, title })` — prefixes `SLD-` if missing, delegates to existing `createDrawing` logic.
 
-### 2. Query hooks — `src/lib/drawings-query.ts`
+Zod: `kv > 0 && kv <= 500`, `voltage_levels.length >= 1`, `bus_config` enum, string caps 200/2000.
 
-Query options + `useMutation` wrappers with cache invalidation (`['drawings', projectId, filters]`, `['drawing', drawingId]`, `['markups', revisionId]`).
+### 3. Query hooks — `src/lib/sld-query.ts`
+`sldConfigQueryOptions`, `sldDrawingsQueryOptions`, `useSaveSldConfig` (optimistic + invalidate), `useCreateSldDrawing`.
 
-### 3. Routes
+### 4. Route — `src/routes/_authenticated/projects.$projectId.engineering.sld.tsx`
+Tabs (shadcn `Tabs`): **Gallery** | **Configuration**.
 
-- `src/routes/_authenticated/projects.$projectId.engineering.drawings.tsx` — add sub-nav entry (Overview / Site data / Drawings) in the engineering layout.
-- `src/routes/_authenticated/projects.$projectId.engineering.drawings.index.tsx`
-  - `validateSearch` (zod): `{ q?, discipline?, status?, page? }`.
-  - `loaderDeps` → `ensureQueryData`.
-  - Renders `DrawingRegisterTable` with toolbar, CSV export (client-side from current page rows), "New drawing" dialog.
-- `src/routes/_authenticated/projects.$projectId.engineering.drawings.$drawingId.tsx`
-  - Loader primes drawing + revisions.
-  - Renders `DrawingDetail` (header + tabs: Revisions | Markups | Sign-off).
+Add `"sld"` to `SUB_TABS` in the engineering layout file.
 
-### 4. Components — `src/components/engineering/`
+### 5. Components — `src/components/engineering/`
+- `sld-gallery.tsx` — grid of cards (thumbnail from first revision file signed URL via `<iframe>` for PDF / `<img>` for image, matching P-053 pattern; placeholder icon on error), drawing number, current revision code, status badge, markup count. Click → `/projects/$projectId/engineering/drawings/$drawingId`. Empty state + "New SLD" dialog (number auto-prefixed `SLD-`, title). Non-write roles: hide "New SLD".
+- `sld-config-form.tsx` — react-hook-form + zod:
+  - bus_config `Select`
+  - voltage-level list editor (`useFieldArray`): rows of `{ kv: number, type: 'collection'|'export'|'auxiliary' }` with add/remove
+  - metering-points list editor: rows of `{ location: string, purpose: string }`
+  - `protection_scheme` textarea, `notes` textarea
+  - Save button disabled for read-only roles; sonner toast on success; inline zod errors
+- `sld-hierarchy-preview.tsx` — read-only card computing sorted voltage-level chain e.g. `"33 kV collection → 132 kV export"`.
 
-- `drawing-register-table.tsx` — table, filter toolbar (search debounced 300ms → URL search), discipline/status `Select`, status badge with token map (draft=muted, IFD=amber accent, IFC=primary, as_built=secondary, superseded=muted + line-through), skeleton/empty/error states, "New drawing" `Dialog`.
-- `drawing-detail.tsx` — header card (number/title/discipline/status + `Lock` icon when `locked`), Tabs.
-- `revision-timeline.tsx` — vertical timeline; per-revision: code, status badge, issue_reason, issued_by/at, download button (signed URL), "Set status →" menu (gated).
-- `upload-revision-dialog.tsx` — dropzone (single file, 50MB, .pdf/.dwg/.dxf/.tif), auto-fills `suggestedRevisionCode`, XHR upload with progress, then `registerDrawingRevision`.
-- `status-transition-dialog.tsx` — target-status picker; when IFC selected, shows checklist preview (IFD revision ✔, markups resolved ✔, sign-off ✔) with disabled confirm until all green; 409 toast on server rejection.
-- `signoff-card.tsx` — request sign-off button + list of `approval_instances` for this drawing with decide controls (engineering_admin/project_admin).
-- `markup-viewer.tsx` — canvas viewer:
-  - Renders revision preview: PDF via `pdfjs-dist` (dynamic import, page 1) into a canvas; if mime is image, draws image. Fallback panel when neither.
-  - Overlays markup pins from `annotation.coords` (relative x/y in [0,1]).
-  - Click-to-add pin (writer roles) → opens comment popover → `createMarkup`.
-  - Side panel: list with status chips + comment; author or engineering_admin can change status (Select) → audited.
-- Read-only role detection via a small `useProjectRole(projectId)` hook (reads `user_roles` via existing profile query) — hides all edit affordances for `client_viewer` / `lender_viewer` / `company_admin`.
+### 6. Verification checklist (post-approval, manual)
+- Migration applies; new columns visible.
+- Zero voltage levels → inline error; add 33 kV collection + 132 kV export → saves; hierarchy preview shows `"33 kV collection → 132 kV export"`.
+- Audit row `engineering.sld_config_saved`.
+- "New SLD" → gallery card → opens P-053 detail.
+- Non-engineering roles: no write controls; RLS blocks cross-tenant.
+- `bunx tsgo --noEmit` clean.
 
-### 5. Dependencies
-
-Add `pdfjs-dist` (dynamic-imported inside the viewer only, to keep it out of SSR).
-
-### 6. Verification (Prairie Winds)
-
-- Create GM-E-1001 (electrical) → upload rev A → transition to IFD.
-- Attempt IFC with no sign-off → 409 `ifc_requires_ifd_signoff` toast with governance message.
-- Add + resolve markups; request sign-off; decide `approved`; retry IFC → success; verify `drawing.status_changed` audit rows for draft→IFD→IFC.
-- Upload second revision → dialog suggests "B"; timeline shows both with 15-min signed downloads.
-- Filters + search hit server; `client_viewer` login shows zero edit controls.
-- Markup status change → `drawing.markup_status_changed` audit row present.
-- Set a drawing to `superseded` → row renders with strikethrough.
-
-### Out of scope
-- PDF multi-page navigation (page 1 only).
-- Drag-repositioning pins (create/delete only).
-- Markup threaded replies (single comment per markup for now).
-- Bulk CSV of full register beyond current page.
+### Technical notes
+- No `tags` column added to `drawing_register` — SLD detection uses `SLD-` drawing_number prefix.
+- Follows existing `.functions.ts` + `-query.ts` split; helpers stay imported (server-fn-splitting rule).
+- Design tokens only; shadcn `Tabs`, `Form`, `Card`, `Badge`, `Select`, `Button`, `Dialog`.
