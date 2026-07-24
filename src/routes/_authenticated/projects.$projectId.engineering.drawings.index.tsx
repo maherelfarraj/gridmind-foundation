@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { zodValidator } from "@tanstack/zod-adapter";
+
 import { z } from "zod";
 import { RefreshCw } from "lucide-react";
 
