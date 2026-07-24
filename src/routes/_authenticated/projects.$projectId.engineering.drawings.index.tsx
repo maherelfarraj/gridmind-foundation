@@ -33,7 +33,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/drawings/",
 )({
-  validateSearch: zodValidator(searchSchema),
+  validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
       { title: "Drawing register — GridMind EPC" },
