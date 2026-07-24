@@ -428,9 +428,21 @@ export const createProject = createServerFn({ method: "POST" })
       name: PHASE_LABELS_SHORT[phase],
       sort_order: idx + 1,
       status: idx === 0 ? "open" : "locked",
-      checklist: (gatesByPhase.get(phase) ?? [])
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map((it) => ({ name: it.name, done: false })),
+      checklist: [
+        ...(gatesByPhase.get(phase) ?? [])
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((it) => ({ name: it.name, done: false })),
+        ...(phase === "development"
+          ? [
+              {
+                key: "design_freeze",
+                label: "Design freeze — IFC package released",
+                required: true,
+                done: false,
+              },
+            ]
+          : []),
+      ],
     }));
     const { error: gateErr } = await context.supabase
       .from("project_phase_gates")
