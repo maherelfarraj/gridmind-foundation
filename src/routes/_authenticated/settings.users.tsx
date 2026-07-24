@@ -221,7 +221,7 @@ function UsersPage() {
     mutationFn: (vars: FormValues) =>
       createFn({
         data: {
-          companyId: activeCompanyId,
+          companyId: activeCompanyId!,
           email: vars.email,
           role: vars.role,
         },
