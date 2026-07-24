@@ -20,7 +20,6 @@ import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-pas
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
-import { Route as AuthenticatedSettingsInvitesRouteImport } from './routes/_authenticated/settings.invites'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
@@ -76,12 +75,6 @@ const AuthenticatedSettingsUsersRoute =
     path: '/settings/users',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedSettingsInvitesRoute =
-  AuthenticatedSettingsInvitesRouteImport.update({
-    id: '/settings/invites',
-    path: '/settings/invites',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -92,7 +85,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof authResetPasswordRoute
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRoutesByTo {
@@ -104,7 +96,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof authResetPasswordRoute
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRoutesById {
@@ -119,7 +110,6 @@ export interface FileRoutesById {
   '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/signup': typeof authSignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/settings/invites': typeof AuthenticatedSettingsInvitesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRouteTypes {
@@ -133,7 +123,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/dashboard'
-    | '/settings/invites'
     | '/settings/users'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -145,7 +134,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/dashboard'
-    | '/settings/invites'
     | '/settings/users'
   id:
     | '__root__'
@@ -159,7 +147,6 @@ export interface FileRouteTypes {
     | '/(auth)/reset-password'
     | '/(auth)/signup'
     | '/_authenticated/dashboard'
-    | '/_authenticated/settings/invites'
     | '/_authenticated/settings/users'
   fileRoutesById: FileRoutesById
 }
@@ -250,13 +237,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/settings/invites': {
-      id: '/_authenticated/settings/invites'
-      path: '/settings/invites'
-      fullPath: '/settings/invites'
-      preLoaderRoute: typeof AuthenticatedSettingsInvitesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
@@ -280,13 +260,11 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedSettingsInvitesRoute: typeof AuthenticatedSettingsInvitesRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedSettingsInvitesRoute: AuthenticatedSettingsInvitesRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
 }
 
