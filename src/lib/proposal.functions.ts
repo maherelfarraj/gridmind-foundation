@@ -295,6 +295,15 @@ export const getProposal = createServerFn({ method: "GET" })
         unit_price: Number(l.unit_price ?? 0),
         line_total: Number(l.line_total ?? 0),
       })),
+      esign_status: (p as any).esign_status ?? null,
+      esign_provider: (p as any).esign_provider ?? null,
+      esign_envelope_id: (p as any).esign_envelope_id ?? null,
+      esign_sent_at: (p as any).esign_sent_at ?? null,
+      esign_completed_at: (p as any).esign_completed_at ?? null,
+      esign_history: Array.isArray((p as any).esign_history)
+        ? ((p as any).esign_history as any[])
+        : [],
+      signed_copy_path: (p as any).signed_copy_path ?? null,
     };
   });
 
