@@ -25,6 +25,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
+import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
@@ -34,11 +35,13 @@ import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
+import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
 import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/_authenticated/procurement.rfqs.index'
+import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
 import { Route as AuthenticatedProjectsProjectIdOverviewRouteImport } from './routes/_authenticated/projects.$projectId.overview'
@@ -52,6 +55,7 @@ import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementVendorsVendorIdRouteImport } from './routes/_authenticated/procurement.vendors.$vendorId'
 import { Route as AuthenticatedProcurementRfqsNewRouteImport } from './routes/_authenticated/procurement.rfqs.new'
 import { Route as AuthenticatedProcurementRfqsRfqIdRouteImport } from './routes/_authenticated/procurement.rfqs.$rfqId'
+import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
@@ -149,6 +153,12 @@ const AuthenticatedSettingsProfileRoute =
     path: '/settings/profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsProcurementRoute =
+  AuthenticatedSettingsProcurementRouteImport.update({
+    id: '/settings/procurement',
+    path: '/settings/procurement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsPermissionsSimulatorRoute =
   AuthenticatedSettingsPermissionsSimulatorRouteImport.update({
     id: '/settings/permissions-simulator',
@@ -203,6 +213,12 @@ const AuthenticatedProcurementRfqsRoute =
     path: '/procurement/rfqs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProcurementPosRoute =
+  AuthenticatedProcurementPosRouteImport.update({
+    id: '/procurement/pos',
+    path: '/procurement/pos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
@@ -232,6 +248,12 @@ const AuthenticatedProcurementRfqsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedProcurementRfqsRoute,
+  } as any)
+const AuthenticatedProcurementPosIndexRoute =
+  AuthenticatedProcurementPosIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProcurementPosRoute,
   } as any)
 const AuthenticatedAdminTenantsIndexRoute =
   AuthenticatedAdminTenantsIndexRouteImport.update({
@@ -310,6 +332,12 @@ const AuthenticatedProcurementRfqsRfqIdRoute =
     id: '/$rfqId',
     path: '/$rfqId',
     getParentRoute: () => AuthenticatedProcurementRfqsRoute,
+  } as any)
+const AuthenticatedProcurementPosPoIdRoute =
+  AuthenticatedProcurementPosPoIdRouteImport.update({
+    id: '/$poId',
+    path: '/$poId',
+    getParentRoute: () => AuthenticatedProcurementPosRoute,
   } as any)
 const AuthenticatedCrmOpportunitiesOpportunityIdRoute =
   AuthenticatedCrmOpportunitiesOpportunityIdRouteImport.update({
@@ -413,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -422,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -429,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -442,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
   '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -475,6 +507,7 @@ export interface FileRoutesByTo {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -482,6 +515,7 @@ export interface FileRoutesByTo {
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -494,6 +528,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
+  '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsIndexRoute
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -524,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -533,6 +569,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -540,6 +577,7 @@ export interface FileRoutesById {
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
   '/_authenticated/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/_authenticated/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/_authenticated/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
@@ -553,6 +591,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/_authenticated/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
   '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
@@ -583,6 +622,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/admin/tenants'
     | '/crm/pipeline'
+    | '/procurement/pos'
     | '/procurement/rfqs'
     | '/procurement/vendors'
     | '/projects/$projectId'
@@ -592,6 +632,7 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
@@ -599,6 +640,7 @@ export interface FileRouteTypes {
     | '/proposals/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/procurement/pos/$poId'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
@@ -612,6 +654,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/overview'
     | '/projects/$projectId/procurement'
     | '/admin/tenants/'
+    | '/procurement/pos/'
     | '/procurement/rfqs/'
     | '/procurement/vendors/'
     | '/projects/$projectId/'
@@ -645,6 +688,7 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
@@ -652,6 +696,7 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/procurement/pos/$poId'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
@@ -664,6 +709,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/overview'
     | '/projects/$projectId/procurement'
     | '/admin/tenants'
+    | '/procurement/pos'
     | '/procurement/rfqs'
     | '/procurement/vendors'
     | '/projects/$projectId'
@@ -693,6 +739,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
+    | '/_authenticated/procurement/pos'
     | '/_authenticated/procurement/rfqs'
     | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
@@ -702,6 +749,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/permissions-simulator'
+    | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
     | '/api/webhooks/esign'
@@ -709,6 +757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
+    | '/_authenticated/procurement/pos/$poId'
     | '/_authenticated/procurement/rfqs/$rfqId'
     | '/_authenticated/procurement/rfqs/new'
     | '/_authenticated/procurement/vendors/$vendorId'
@@ -722,6 +771,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/overview'
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/admin/tenants/'
+    | '/_authenticated/procurement/pos/'
     | '/_authenticated/procurement/rfqs/'
     | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
@@ -862,6 +912,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/procurement': {
+      id: '/_authenticated/settings/procurement'
+      path: '/settings/procurement'
+      fullPath: '/settings/procurement'
+      preLoaderRoute: typeof AuthenticatedSettingsProcurementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/permissions-simulator': {
       id: '/_authenticated/settings/permissions-simulator'
       path: '/settings/permissions-simulator'
@@ -925,6 +982,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementRfqsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/procurement/pos': {
+      id: '/_authenticated/procurement/pos'
+      path: '/procurement/pos'
+      fullPath: '/procurement/pos'
+      preLoaderRoute: typeof AuthenticatedProcurementPosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm/pipeline': {
       id: '/_authenticated/crm/pipeline'
       path: '/crm/pipeline'
@@ -959,6 +1023,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/rfqs/'
       preLoaderRoute: typeof AuthenticatedProcurementRfqsIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementRfqsRoute
+    }
+    '/_authenticated/procurement/pos/': {
+      id: '/_authenticated/procurement/pos/'
+      path: '/'
+      fullPath: '/procurement/pos/'
+      preLoaderRoute: typeof AuthenticatedProcurementPosIndexRouteImport
+      parentRoute: typeof AuthenticatedProcurementPosRoute
     }
     '/_authenticated/admin/tenants/': {
       id: '/_authenticated/admin/tenants/'
@@ -1050,6 +1121,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/rfqs/$rfqId'
       preLoaderRoute: typeof AuthenticatedProcurementRfqsRfqIdRouteImport
       parentRoute: typeof AuthenticatedProcurementRfqsRoute
+    }
+    '/_authenticated/procurement/pos/$poId': {
+      id: '/_authenticated/procurement/pos/$poId'
+      path: '/$poId'
+      fullPath: '/procurement/pos/$poId'
+      preLoaderRoute: typeof AuthenticatedProcurementPosPoIdRouteImport
+      parentRoute: typeof AuthenticatedProcurementPosRoute
     }
     '/_authenticated/crm/opportunities/$opportunityId': {
       id: '/_authenticated/crm/opportunities/$opportunityId'
@@ -1198,6 +1276,23 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedProcurementPosRouteChildren {
+  AuthenticatedProcurementPosPoIdRoute: typeof AuthenticatedProcurementPosPoIdRoute
+  AuthenticatedProcurementPosIndexRoute: typeof AuthenticatedProcurementPosIndexRoute
+}
+
+const AuthenticatedProcurementPosRouteChildren: AuthenticatedProcurementPosRouteChildren =
+  {
+    AuthenticatedProcurementPosPoIdRoute: AuthenticatedProcurementPosPoIdRoute,
+    AuthenticatedProcurementPosIndexRoute:
+      AuthenticatedProcurementPosIndexRoute,
+  }
+
+const AuthenticatedProcurementPosRouteWithChildren =
+  AuthenticatedProcurementPosRoute._addFileChildren(
+    AuthenticatedProcurementPosRouteChildren,
+  )
 
 interface AuthenticatedProcurementRfqsRouteChildren {
   AuthenticatedProcurementRfqsRfqIdRoute: typeof AuthenticatedProcurementRfqsRfqIdRoute
@@ -1355,6 +1450,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
+  AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
   AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
@@ -1364,6 +1460,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -1375,6 +1472,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
+  AuthenticatedProcurementPosRoute:
+    AuthenticatedProcurementPosRouteWithChildren,
   AuthenticatedProcurementRfqsRoute:
     AuthenticatedProcurementRfqsRouteWithChildren,
   AuthenticatedProcurementVendorsRoute:
@@ -1388,6 +1487,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsPermissionsSimulatorRoute:
     AuthenticatedSettingsPermissionsSimulatorRoute,
+  AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
