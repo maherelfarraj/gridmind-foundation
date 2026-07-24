@@ -85,11 +85,35 @@ function errorMessage(err: unknown): string {
   return "Something went wrong";
 }
 
+export interface VendorIdentityInput {
+  name: string;
+  legal_name?: string | null;
+  tax_id?: string | null;
+  website?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address_line?: string | null;
+  city?: string | null;
+  country?: string | null;
+  currency_code?: string | null;
+  payment_terms?: "net_15" | "net_30" | "net_45" | "net_60" | null;
+  incoterms?: "DAP" | "DDP" | "FOB" | "CIF" | "EXW" | "FCA" | "CPT" | null;
+  categories?: string[];
+  notes?: string | null;
+}
+
+export interface CertificationInput {
+  name: string;
+  issuer?: string | null;
+  expires_at?: string | null;
+  file_path: string;
+}
+
 export function useCreateVendor() {
   const qc = useQueryClient();
   const fn = useServerFn(createVendor);
   return useMutation({
-    mutationFn: (input: Parameters<typeof fn>[0]["data"]) => fn({ data: input }),
+    mutationFn: (input: VendorIdentityInput) => fn({ data: input as any }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendors"] });
       toast.success("Vendor onboarded");
@@ -102,8 +126,8 @@ export function useUpdateVendor(vendorId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(updateVendor);
   return useMutation({
-    mutationFn: (patch: Parameters<typeof fn>[0]["data"]["patch"]) =>
-      fn({ data: { id: vendorId, patch } }),
+    mutationFn: (patch: Partial<VendorIdentityInput>) =>
+      fn({ data: { id: vendorId, patch: patch as any } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendor", vendorId] });
       qc.invalidateQueries({ queryKey: ["vendors"] });
@@ -131,9 +155,8 @@ export function useAttachVendorCertification(vendorId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(attachVendorCertification);
   return useMutation({
-    mutationFn: (
-      certification: Parameters<typeof fn>[0]["data"]["certification"],
-    ) => fn({ data: { vendorId, certification } }),
+    mutationFn: (certification: CertificationInput) =>
+      fn({ data: { vendorId, certification } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendor", vendorId] });
       toast.success("Certification attached");
@@ -154,3 +177,4 @@ export function useRemoveVendorCertification(vendorId: string) {
     onError: (err) => toast.error(errorMessage(err)),
   });
 }
+
