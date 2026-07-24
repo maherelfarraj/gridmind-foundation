@@ -322,16 +322,17 @@ export const decideGateTransition = createServerFn({ method: "POST" })
       const nextPhase = idx >= 0 && idx < PHASE_ORDER.length - 1
         ? PHASE_ORDER[idx + 1]
         : null;
-      const projUpdate: Record<string, unknown> = {};
+      const projUpdate: { phase?: Phase; status?: string } = {};
       if (nextPhase) projUpdate.phase = nextPhase;
       if (gate.phase === "handover") projUpdate.status = "completed";
       if (Object.keys(projUpdate).length > 0) {
         const { error: pErr } = await context.supabase
           .from("projects")
-          .update(projUpdate)
+          .update(projUpdate as any)
           .eq("id", gate.project_id);
         if (pErr) throw pErr;
       }
+
 
       // Open the next gate by sort order.
       const { data: nextGate } = await context.supabase
