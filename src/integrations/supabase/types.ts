@@ -1758,6 +1758,214 @@ export type Database = {
           },
         ]
       }
+      proposal_line_items: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          line_total: number
+          proposal_id: string
+          qty: number
+          sort_order: number
+          unit: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          line_total?: number
+          proposal_id: string
+          qty?: number
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          line_total?: number
+          proposal_id?: string
+          qty?: number
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_line_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposal_line_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposal_line_items_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          accepted_at: string | null
+          array_config: Json
+          company_id: string
+          contingency_pct: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          esign_completed_at: string | null
+          esign_envelope_id: string | null
+          esign_history: Json
+          esign_provider: string | null
+          esign_sent_at: string | null
+          esign_status: string | null
+          fx_rate_snapshot: number | null
+          id: string
+          margin_pct: number | null
+          notes: string | null
+          opportunity_id: string
+          previous_version_id: string | null
+          pricing_lock: Json | null
+          project_id: string | null
+          sent_at: string | null
+          signed_copy_path: string | null
+          status: Database["public"]["Enums"]["proposal_status"]
+          subtotal: number
+          title: string
+          total: number
+          updated_at: string
+          valid_until: string | null
+          version: number
+          yield_result: Json | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          array_config?: Json
+          company_id: string
+          contingency_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          esign_completed_at?: string | null
+          esign_envelope_id?: string | null
+          esign_history?: Json
+          esign_provider?: string | null
+          esign_sent_at?: string | null
+          esign_status?: string | null
+          fx_rate_snapshot?: number | null
+          id?: string
+          margin_pct?: number | null
+          notes?: string | null
+          opportunity_id: string
+          previous_version_id?: string | null
+          pricing_lock?: Json | null
+          project_id?: string | null
+          sent_at?: string | null
+          signed_copy_path?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          subtotal?: number
+          title: string
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+          version?: number
+          yield_result?: Json | null
+        }
+        Update: {
+          accepted_at?: string | null
+          array_config?: Json
+          company_id?: string
+          contingency_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          esign_completed_at?: string | null
+          esign_envelope_id?: string | null
+          esign_history?: Json
+          esign_provider?: string | null
+          esign_sent_at?: string | null
+          esign_status?: string | null
+          fx_rate_snapshot?: number | null
+          id?: string
+          margin_pct?: number | null
+          notes?: string | null
+          opportunity_id?: string
+          previous_version_id?: string | null
+          pricing_lock?: Json | null
+          project_id?: string | null
+          sent_at?: string | null
+          signed_copy_path?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          subtotal?: number
+          title?: string
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+          version?: number
+          yield_result?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -2114,6 +2322,16 @@ export type Database = {
         | "converted"
       project_phase: "development" | "ntp" | "cod" | "handover"
       project_status: "active" | "on_hold" | "completed" | "archived"
+      proposal_status:
+        | "draft"
+        | "in_review"
+        | "approved"
+        | "sent"
+        | "viewed"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "superseded"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -2321,6 +2539,17 @@ export const Constants = {
       ],
       project_phase: ["development", "ntp", "cod", "handover"],
       project_status: ["active", "on_hold", "completed", "archived"],
+      proposal_status: [
+        "draft",
+        "in_review",
+        "approved",
+        "sent",
+        "viewed",
+        "accepted",
+        "rejected",
+        "expired",
+        "superseded",
+      ],
       tender_event_type: [
         "pre_bid_meeting",
         "site_visit",
