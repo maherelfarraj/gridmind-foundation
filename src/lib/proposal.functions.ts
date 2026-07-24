@@ -1319,12 +1319,7 @@ export const recordProposalExport = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 // P-049 — E-signature: send / refresh / void / simulate / signed-copy URL
 // ---------------------------------------------------------------------------
-import { assertExportAllowed } from "@/lib/export-guard";
-import {
-  getEsignProvider,
-  isEsignConfigured,
-  type EsignEvent,
-} from "@/lib/esign/provider";
+
 
 const ESIGN_EVENT = z.enum(["sent", "viewed", "completed", "declined", "voided"]);
 
