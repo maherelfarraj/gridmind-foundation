@@ -268,4 +268,3 @@ function NewProjectPage() {
     </div>
   );
 }
-}
