@@ -1,45 +1,26 @@
+## P-031 — Projects core migration
 
-# Batch 03 checkpoint — live behavior sweep
+Apply migration `supabase/migrations/0012_projects_core.sql` with the exact SQL from the request (4 enums, 4 tables, RLS, policies, grants, indexes, triggers, audit function). Then verify and regenerate types.
 
-Schema sweep already passed (RLS on `companies`, `company_branding`, `notification_prefs`; `companies` has `legal_name`, `contact_email`, `phone`, `address`). Audit log currently shows only `tenant.created` / `tenant.plan_changed` — the rest of the sweep will populate it.
+### Steps
 
-## What I'll do (build mode)
+1. Apply `0012_projects_core.sql` via the migration tool, verbatim from the request. If any statement errors, stop and surface the exact error + statement (per standing rule; may need `drop type ... cascade` and re-run rather than hand-patching).
+2. Regenerate `src/integrations/supabase/types.ts` (auto after migration approval).
+3. Verify with read queries and show results:
+   - 4 enums exist (`project_archetype`, `project_phase`, `project_status`, `project_department`).
+   - 4 tables exist with expected columns.
+   - RLS enabled on all 4; policies listed (`*_select`, `*_admin`, plus `departments_lead_update`).
+   - `authenticated` grants present on all 4.
+   - Indexes present (`idx_projects_phase`, `idx_project_members_project/user`, `idx_project_departments_project`, `idx_phase_gates_project`, plus per-table `idx_<t>_company`).
+   - Triggers present: `trg_<t>_updated` on all 4, `trg_gate_audit`, `trg_project_phase_audit`.
+   - `unique(company_id, code)` on projects; `unique(project_id, phase)` on project_phase_gates.
+4. Behavioral checks via read/insert queries against seed data:
+   - Cross-tenant SELECT isolation (Test Co B member cannot see Demo EPC Co projects) — validate via policy definitions since we can't impersonate; note this is policy-level verification.
+   - Confirm plain-member INSERT policy denial (policy USING clause requires `company_admin` or `project_admin`).
+   - Insert a projects row as Demo EPC Co, insert a phase_gate row, UPDATE its status, confirm exactly one `audit_logs` row with `from`/`to` metadata.
 
-Drive the app headlessly as demo-admin with Playwright against `http://localhost:8080`, restoring the managed Supabase session from the sandbox env. Capture a screenshot at each step for evidence and print the final URL + any console errors per step.
+### Notes
 
-1. **Auth**
-   - Sign out from `/dashboard`, confirm redirect to `/auth`.
-   - Visit `/settings/users` while logged out → expect redirect to `/auth`.
-   - Sign back in as demo-admin.
-2. **/settings/users**
-   - Members tab loads; open "Invite member" → send a throwaway invite (`sweep+1@example.test`, role `engineer`).
-   - Open "Bulk invite" → paste 2 valid + 1 invalid row, confirm preview validation, submit the valid rows.
-   - Switch to Invitations tab; confirm new rows appear as `pending`; Resend + Revoke one row.
-   - Last-admin guard: open Manage roles on the sole `company_admin`, attempt to revoke `company_admin` → expect refusal toast, no DB change.
-3. **/settings/departments**
-   - Confirm 9 cards render. Assign demo-admin as admin on `engineering`, then unassign — expect two audit rows.
-4. **/admin/tenants**
-   - Confirm Demo EPC Co + Test Co B visible. Open Demo EPC Co, change plan tier (Starter↔Growth), revert.
-5. **/settings/modules** — confirm read-only (no toggles enabled for company_admin view).
-6. **/settings/permissions-simulator** — pick two roles, confirm compare renders and no network mutations fire (watch requests).
-7. **/settings/company** — edit legal name + footer text, save; upload a tiny PNG logo, confirm preview via signed URL; revert.
-8. **/settings/profile** — change locale to `es` then back to `en`; upload avatar; confirm save toasts.
-
-## Verification after the sweep
-
-Re-run:
-
-```sql
-select action, count(*) from audit_logs group by action order by 2 desc;
-```
-
-Expect new rows for: `invite.created`, `invite.bulk_sent`, `invite.resent`, `invite.revoked`, `role.granted`, `role.revoked`, `tenant.plan_changed`, `branding.updated`, `company.updated`, `profile.updated`, `notification_prefs.updated` (where triggered).
-
-Also list latest 20 rows so you can see the trail.
-
-## Out of scope
-
-- GitHub repo migration listing (I have no repo visibility from here) — confirm on your side that `supabase/migrations/` contains 0001–0014.
-- No schema changes, no seed changes, no code edits. This is verification only. If a step reveals a real bug, I'll stop and report before touching code.
-
-Approve to switch to build mode and run the sweep.
+- No app code (routes, RPCs, components) in this task — migration + verification only.
+- `template_id` / `approval_instance_id` FKs deferred to P-032 / P-040 as specified.
+- After success, prompt user to say `next` for P-032.

@@ -441,6 +441,293 @@ export type Database = {
           },
         ]
       }
+      project_departments: {
+        Row: {
+          company_id: string
+          created_at: string
+          department: Database["public"]["Enums"]["project_department"]
+          id: string
+          lead_user_id: string | null
+          project_id: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          department: Database["public"]["Enums"]["project_department"]
+          id?: string
+          lead_user_id?: string | null
+          project_id: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          department?: Database["public"]["Enums"]["project_department"]
+          id?: string
+          lead_user_id?: string | null
+          project_id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_departments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_departments_lead_user_id_fkey"
+            columns: ["lead_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_departments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          project_id: string
+          project_role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id: string
+          project_role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id?: string
+          project_role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_phase_gates: {
+        Row: {
+          approval_instance_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          checklist: Json
+          company_id: string
+          created_at: string
+          id: string
+          name: string
+          phase: Database["public"]["Enums"]["project_phase"]
+          project_id: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          checklist?: Json
+          company_id: string
+          created_at?: string
+          id?: string
+          name: string
+          phase: Database["public"]["Enums"]["project_phase"]
+          project_id: string
+          sort_order: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          checklist?: Json
+          company_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phase?: Database["public"]["Enums"]["project_phase"]
+          project_id?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_phase_gates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_phase_gates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_phase_gates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          archetype: Database["public"]["Enums"]["project_archetype"]
+          capacity_mw: number | null
+          capacity_mwh: number | null
+          code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          offtaker: string | null
+          phase: Database["public"]["Enums"]["project_phase"]
+          project_admin_id: string | null
+          site_country: string | null
+          site_lat: number | null
+          site_lng: number | null
+          site_name: string | null
+          site_region: string | null
+          status: Database["public"]["Enums"]["project_status"]
+          target_cod: string | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          archetype: Database["public"]["Enums"]["project_archetype"]
+          capacity_mw?: number | null
+          capacity_mwh?: number | null
+          code: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          offtaker?: string | null
+          phase?: Database["public"]["Enums"]["project_phase"]
+          project_admin_id?: string | null
+          site_country?: string | null
+          site_lat?: number | null
+          site_lng?: number | null
+          site_name?: string | null
+          site_region?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          target_cod?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          archetype?: Database["public"]["Enums"]["project_archetype"]
+          capacity_mw?: number | null
+          capacity_mwh?: number | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          offtaker?: string | null
+          phase?: Database["public"]["Enums"]["project_phase"]
+          project_admin_id?: string | null
+          site_country?: string | null
+          site_lat?: number | null
+          site_lng?: number | null
+          site_name?: string | null
+          site_region?: string | null
+          status?: Database["public"]["Enums"]["project_status"]
+          target_cod?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_project_admin_id_fkey"
+            columns: ["project_admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -688,6 +975,26 @@ export type Database = {
         | "lender_viewer"
       delivery_status: "pending" | "success" | "failed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
+      project_archetype:
+        | "utility_pv"
+        | "standalone_bess"
+        | "c_and_i_rooftop"
+        | "hybrid_pv_bess"
+        | "onshore_wind"
+        | "green_hydrogen"
+        | "transmission_substation"
+      project_department:
+        | "engineering"
+        | "procurement"
+        | "construction"
+        | "hse"
+        | "finance"
+        | "legal"
+        | "om"
+        | "scada"
+        | "billing"
+      project_phase: "development" | "ntp" | "cod" | "handover"
+      project_status: "active" | "on_hold" | "completed" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -839,6 +1146,28 @@ export const Constants = {
       ],
       delivery_status: ["pending", "success", "failed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
+      project_archetype: [
+        "utility_pv",
+        "standalone_bess",
+        "c_and_i_rooftop",
+        "hybrid_pv_bess",
+        "onshore_wind",
+        "green_hydrogen",
+        "transmission_substation",
+      ],
+      project_department: [
+        "engineering",
+        "procurement",
+        "construction",
+        "hse",
+        "finance",
+        "legal",
+        "om",
+        "scada",
+        "billing",
+      ],
+      project_phase: ["development", "ntp", "cod", "handover"],
+      project_status: ["active", "on_hold", "completed", "archived"],
     },
   },
 } as const
