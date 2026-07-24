@@ -180,12 +180,27 @@ export function useIssueRfq(rfqId: string) {
   });
 }
 
+export interface SubmitBidInput {
+  bidId: string;
+  lines: Array<{
+    line_no: number;
+    unit_price: number;
+    qty: number;
+    lead_time_days?: number | null;
+    exceptions?: string | null;
+  }>;
+  totalPrice?: number | null;
+  currencyCode?: string | null;
+  leadTimeDays?: number | null;
+  validityDate?: string | null;
+  attachments?: Array<{ name: string; file_path: string }>;
+}
+
 export function useSubmitBid(rfqId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(submitBid);
   return useMutation({
-    mutationFn: (input: Parameters<typeof fn>[0]["data"]) =>
-      fn({ data: input as any }),
+    mutationFn: (input: SubmitBidInput) => fn({ data: input as any }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rfq", rfqId] });
       toast.success("Bid recorded");
@@ -193,3 +208,4 @@ export function useSubmitBid(rfqId: string) {
     onError: (err) => toast.error(errorMessage(err)),
   });
 }
+
