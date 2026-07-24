@@ -1,80 +1,75 @@
-## P-025 — Bulk invite + invite status tracking
+# P-026 — Department Configuration Page
 
-Extends `/settings/users` (P-022, P-024). Server enforcement uses existing `create_invite` SECURITY DEFINER + `requireSupabaseAuth`; UI gates rendering by `snapshot.isAdmin`. No migration.
+Adds `/settings/departments` for company_admin (super_admin allowed) with 9 fixed department cards, each showing responsibilities, current admin chips, and an "Assign admin" flow that reuses the guarded `grantRole` / `revokeRole` RPCs from P-024. No new tables, no new server functions.
 
-### New: `bulkCreateInvites` in `src/lib/invites.functions.ts`
+## 1. Single source of truth: `src/lib/permissions.ts`
 
-Signature (createServerFn POST, `attachSupabaseAuth`, `requireSupabaseAuth`):
+Append (keep all existing exports untouched):
 
 ```ts
-input: {
-  companyId: uuid,
-  rows: Array<{ email: string /* lowercased, trimmed */, role: app_role }> // 1..100
+import type { GrantableRole } from "./role-groups";
+
+export type DepartmentKey =
+  | "engineering" | "procurement" | "construction" | "hse"
+  | "finance" | "legal" | "om" | "scada" | "billing";
+
+export interface Department {
+  key: DepartmentKey;
+  name: string;              // display label ("O&M", "HSE" spelled exactly)
+  adminRole: GrantableRole;  // corresponding app_role in user_roles
+  responsibilities: string;  // Tenant Manual copy
+  icon: LucideIcon;          // lucide-react component
 }
+
+export const DEPARTMENTS: readonly Department[] = [ /* 9 entries */ ];
 ```
 
-Zod schema rejects `super_admin`, invalid emails, and >100 rows. Handler:
+Icons (lucide-react): `Ruler` (engineering), `ShoppingCart` (procurement), `HardHat` (construction), `ShieldAlert` (hse), `Wallet` (finance), `Scale` (legal), `Wrench` (om), `Activity` (scada), `Receipt` (billing).
 
-1. Verify caller is company admin: `supabase.rpc('is_company_admin', { _company_id })`; throw 403 otherwise (defense in depth on top of `create_invite`'s own gate).
-2. Deduplicate rows client-side already; server also dedupes on lowercased email + role (keep first occurrence).
-3. Read current `user_roles` count where `role = 'company_admin'` for the company. If `adminCount === 0`, filter to rows with `role === 'company_admin'` and record the rest as `skipped:'no_admin_yet'`.
-4. Pull existing pending invites for the company (`select email` where `status = 'pending'`) and current member emails (`profiles` in-company) to precompute per-row skip reasons: `already_member`, `already_pending`.
-5. For each surviving row, call `supabase.rpc('create_invite', { p_company_id, p_email, p_role })` sequentially. On per-row error, record `{ email, role, error: msg }` and continue — don't fail the whole batch.
-6. After the loop, write ONE audit via `write_audit_log('invite.bulk_sent', 'invites', null, { count: successes.length, roles: unique(successes.role) })`.
-7. Return `{ created: Array<{ email, role, acceptUrl }>, skipped: Array<{ email, role, reason }>, failed: Array<{ email, role, error }> }`. `acceptUrl` derived same way as single invite.
+Responsibilities strings copied verbatim from the request (checked against Tenant Manual wording).
 
-### UI: split `/settings/users` into two tabs
+Compile-time exhaustiveness check so any new `DepartmentKey` must be added to `DEPARTMENTS`.
 
-Replace the current sequential Members / Invitations sections with a shadcn `Tabs` (`Members` default, `Invitations`). Keep the existing header, admin-only "Invite member" button, and lockout warning. Add a second admin-only button next to it: **"Bulk invite"**.
+## 2. Route: `src/routes/_authenticated/settings.departments.tsx`
 
-#### Bulk invite dialog (`src/components/bulk-invite-dialog.tsx`)
+- `createFileRoute("/_authenticated/settings/departments")` with `head()` (title "Departments — GridMind EPC", matching description + og tags).
+- Uses `useActiveCompany()`, `useServerFn(listCompanyMembers)`, `useServerFn(grantRole)`, `useServerFn(revokeRole)`.
+- One `useQuery` on `["company-members", activeCompanyId]` (same key as P-024 so caches stay in sync).
+- Derives `isAdmin` from the query result; if not admin, page renders a read-only view (chips visible, no Assign button). Server-side `assert_can_grant_role` is the real gate.
 
-- Textarea, monospace, placeholder shows `email,role` example. Optional header row `email,role` is skipped case-insensitively.
-- "Preview" button parses rows client-side (comma or tab separator, trim, lowercase email, lowercase role). For each row compute status:
-  - `invalid_email` (zod email fails)
-  - `unknown_role` — not in `app_role`; suggest closest via Levenshtein against `GRANTABLE_ROLES` (from `role-groups.ts`); show suggestion as an inline "Use X?" button that patches the row.
-  - `super_admin_forbidden` — role is `super_admin`.
-  - `duplicate_in_paste` — repeated (email,role) later in list.
-  - `already_member` — email matches any member from the current `listCompanyMembers` cache.
-  - `already_pending` — email matches any pending invite from the current `listInvites` cache.
-  - `ok` otherwise.
-- Preview table columns: Email, Role (editable Select), Status badge, Note. Rows with non-`ok` status are excluded from send; user can edit inline (email input, role select) which re-runs validation for that row. Row 1 remains editable so the user can fix and re-preview without repasting.
-- Footer summary: "N of M rows will be invited." Disabled Send when zero.
-- Send: calls `bulkCreateInvites` with the `ok` rows (max 100 enforced). Shows loading spinner. On success replaces dialog body with a results panel: successes list (with individual copy link + "Copy all links" button), skipped list grouped by reason, failed list. Sonner toast summarizes counts. Invalidates `invites` + `company-members` queries. Keeps dialog open until user dismisses.
+### Layout
+- Page header: `<h1>Departments</h1>` + subtitle.
+- Responsive grid: `grid gap-4 sm:grid-cols-2 xl:grid-cols-3`.
+- One `<Card>` per `DEPARTMENTS` entry with:
+  - Header: icon in a rounded token-colored square + `dept.name`.
+  - Body: `dept.responsibilities` paragraph (`text-sm text-muted-foreground`).
+  - Admins section: label "Admins" + chips (`Avatar` + name/email) for every member whose `roles` includes `dept.adminRole`; empty state "No admin assigned".
+  - Footer: "Assign admin" button (opens picker for that department). Disabled with tooltip if `!isAdmin`.
+- Loading: 9 skeleton cards. Error: card list replaced by an inline error state with retry.
 
-Rate-limit UX: if `bulkCreateInvites` throws (e.g., DB rate-limit), toast the message, keep the preview intact so user can retry.
+### Assign-admin picker (shared dialog component in same file)
+- shadcn `Dialog` with a `Command` search palette listing all company members not currently holding that department's admin role.
+- Selecting a member calls `grantRole({ targetUserId, role: dept.adminRole })`; optimistic cache patch via `queryClient.setQueryData(["company-members", activeCompanyId], …)` — same pattern as `settings.users.tsx`.
+- Current admin chip has an "x" button → `revokeRole({ targetUserId, role: dept.adminRole })` with confirm.
+- Toasts on success/error; both branches write audit rows automatically (existing `grantRole` / `revokeRole` already call `write_audit_log` for `role.granted` / `role.revoked`).
+- No last-admin guard needed (department admins aren't the tenant lockout risk); `revokeRole`'s existing safety on `company_admin` still stands.
 
-#### Invitations tab
+## 3. Navigation
 
-Rebuild the existing invites table into a `data-table`-style block within the tab:
+Add "Departments" entry to the Settings section of `src/components/app-sidebar.tsx` next to "Users" using the `Building2` icon.
 
-- Toolbar: search input (filters `email`, case-insensitive), status `Select` (`All`, `Pending`, `Accepted`, `Expired`, `Revoked`), refresh icon.
-- Derived status: any row where `status === 'pending'` and `new Date(expires_at) < now` renders as `expired` and gates actions accordingly (server `revoke_invite` still targets `status = 'pending'`; derivation is display-only).
-- Columns: Email, Role (badge via `humanizeRole`), Status (badge, variant per status), Invited by (fetch names via `listCompanyMembers` cache — fall back to short user id), Sent (from `created_at`), Expires. Skeleton rows (3) while `invitesQuery.isLoading`; empty state "No invites sent yet" with a hint to click Invite/Bulk when admin.
-- Row actions column (admin only): `Resend` and `Revoke`. Enabled only when derived status is `pending` or `expired`. Behavior:
-  - Resend uses existing `resendInvite` (already: revokes prior + creates new invite with new token/expiry via `create_invite`). Add an extra `write_audit_log('invite.resent', ...)` server-side (see server tweaks). Shows the new link in the existing single-invite issued-link dialog.
-  - Revoke: existing `revokeInvite`; server-side add `write_audit_log('invite.revoked', 'invites', inviteId, { email, role, company_id })`.
+## 4. Verification checks after build
 
-Members tab remains exactly as P-024 (avatars, search, CSV, manage-roles sheet).
+- Route renders 9 cards labelled exactly: Engineering, Procurement, Construction, HSE, Finance, Legal, O&M, SCADA, Billing.
+- Responsibilities strings match the Tenant Manual copy.
+- Assigning `finance_admin` to a second user shows the chip immediately, inserts `user_roles` row, logs `role.granted`.
+- Removing chip logs `role.revoked` and updates UI.
+- Signed in as non-admin: Assign button disabled AND server-side call rejects with `assert_can_grant_role` error (toast).
+- Typecheck (`bunx tsgo`) clean.
 
-### Small server tweaks (`invites.functions.ts`)
+## Technical notes
 
-- `resendInvite`: after `create_invite` succeeds, call `write_audit_log('invite.resent','invites', <old inviteId>, { email, role, company_id })`.
-- `revokeInvite`: read the invite row first to capture `{ email, role, company_id }`, then update, then `write_audit_log('invite.revoked','invites', inviteId, meta)`.
-- No changes to `create_invite` (already audits `invite.created`); the bulk audit is a single additional `invite.bulk_sent` summary row.
-- `listInvites`: add `email` search index-friendly ordering already present; add nothing new — filtering is client-side.
-
-### Files touched
-
-- New: `src/components/bulk-invite-dialog.tsx`
-- Edited: `src/lib/invites.functions.ts` (add `bulkCreateInvites`, add audit calls in resend/revoke), `src/routes/_authenticated/settings.users.tsx` (Tabs shell, Bulk invite trigger, invitations toolbar/filter/derived-expired, invited-by name join)
-- Reused: `src/lib/role-groups.ts` for role labels + fuzzy suggestions; `src/components/ui/tabs`, `select`, `dialog`, `textarea`, `table`, `badge`, `skeleton`
-
-### Verification checklist (run after implementation)
-
-1. Bulk paste with the four sample rows → preview flags rows 2, 3, 4 with the exact reasons; only row 1 is send-eligible.
-2. Send with only `good1@test.com` → results panel shows 1 created (with copy link); `invite.bulk_sent` audit exists with `count=1, roles=['engineer']`.
-3. Manually POST a bulk request containing `super_admin` (bypassing client) → server 400 from zod, no rows inserted, no audit.
-4. Invitations tab: pending invite appears with 7-day expiry; Resend produces a new token + new expiry, `invite.resent` audit row logged; Revoke sets status revoked, `invite.revoked` audit row logged.
-5. Accept-invite page loaded with a revoked link → existing branded revoked state (peekInviteAnonymous already returns `{ status: 'revoked' }`).
-6. Status filter + email search operate on the invitations table without refetching.
+- No new server functions, no migrations, no new tables — department admin state = `user_roles(user_id, company_id, role=<dept>_admin)`.
+- `DEPARTMENTS` is the only place these 9 keys/roles/labels/copy live; sidebar and future module gating read from it.
+- All styling via semantic tokens; icons via lucide-react components on `text-muted-foreground` / `text-foreground`.
+- Reuses P-024's `grantRole`/`revokeRole` verbatim → audit + guard preserved.
