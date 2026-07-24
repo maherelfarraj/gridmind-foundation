@@ -200,7 +200,7 @@ export const updateOpportunity = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("opportunities")
-      .update(patch)
+      .update(patch as any)
       .eq("id", data.id);
     if (error) throw error;
 
