@@ -556,28 +556,30 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
       );
     }
 
-    // IFC governance: MUST rule #2 — IFD sign-off required.
+    // IFC governance (P-058): latest IFD revision must have a review round
+    // where every reviewer has a decision (approved / approved_with_comments
+    // / rejected / waived). Any pending sign-off blocks IFC. Also verifies
+    // there is at least one IFD revision and no open/rejected markups.
+    let autoCloseRoundId: string | null = null;
     if (data.toStatus === "IFC") {
-      // (1) at least one IFD revision exists on this drawing
       const { data: ifdRevs, error: iErr } = await context.supabase
         .from("drawing_revisions")
-        .select("id")
+        .select("id, created_at")
         .eq("drawing_id", drawing.id)
-        .eq("status", "IFD");
+        .eq("status", "IFD")
+        .order("created_at", { ascending: false });
       if (iErr) throw iErr;
-      if (!ifdRevs || ifdRevs.length === 0) {
+      const ifdList = (ifdRevs ?? []) as any[];
+      if (ifdList.length === 0) {
         httpError(
           409,
-          "ifc_requires_ifd_signoff",
-          "IFC blocked — no IFD revision on record. Issue an IFD revision, resolve all markups, and log CFO/engineering sign-off first.",
+          "ifc_requires_ifd",
+          "IFC blocked — no IFD revision on record. Issue an IFD revision, resolve markups, and complete the review round first.",
         );
       }
+      const latestIfdId = ifdList[0].id as string;
 
-      // (2) no open/rejected markups on any revision of this drawing
-      const allRevIds = [
-        ...((ifdRevs ?? []) as any[]).map((r) => r.id),
-        rev.id,
-      ];
+      const allRevIds = [...ifdList.map((r) => r.id), rev.id];
       const { data: openMarkups, error: mErr } = await context.supabase
         .from("document_markups")
         .select("id, status")
@@ -587,28 +589,52 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
       if ((openMarkups ?? []).length > 0) {
         httpError(
           409,
-          "ifc_requires_ifd_signoff",
+          "ifc_open_markups",
           `IFC blocked — ${(openMarkups ?? []).length} markup(s) still open/rejected. Resolve or accept every markup before promoting to IFC.`,
         );
       }
 
-      // (3) approval_instances row for this drawing must exist and be approved
-      const { data: signoffs, error: sErr } = await context.supabase
-        .from("approval_instances")
+      const { data: round, error: rrErr } = await context.supabase
+        .from("drawing_review_rounds")
         .select("id, status")
-        .eq("entity", "drawing")
-        .eq("entity_id", drawing.id)
-        .eq("status", "approved")
-        .limit(1);
-      if (sErr) throw sErr;
-      if (!signoffs || signoffs.length === 0) {
+        .eq("revision_id", latestIfdId)
+        .order("round_no", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (rrErr) throw rrErr;
+      if (!round) {
         httpError(
           409,
-          "ifc_requires_ifd_signoff",
-          "IFC blocked — no approved engineering sign-off recorded. Request sign-off and have engineering_admin/project_admin approve it first.",
+          "ifc_blocked_no_review",
+          "IFC blocked — no review round exists for the latest IFD revision. Open a review round and collect reviewer sign-offs first.",
         );
       }
+
+      const { data: signoffs, error: sErr } = await context.supabase
+        .from("drawing_review_signoffs")
+        .select("id, decision")
+        .eq("round_id", (round as any).id);
+      if (sErr) throw sErr;
+      const sList = (signoffs ?? []) as any[];
+      if (sList.length === 0) {
+        httpError(
+          409,
+          "ifc_blocked_no_reviewers",
+          "IFC blocked — the review round has no reviewers assigned.",
+        );
+      }
+      const pending = sList.filter((s) => s.decision == null).length;
+      if (pending > 0) {
+        httpError(
+          409,
+          "ifc_blocked_pending_reviews",
+          `IFC blocked — ${pending} reviewer(s) still pending. Have every reviewer sign, or waive with a comment.`,
+        );
+      }
+      autoCloseRoundId =
+        (round as any).status === "open" ? ((round as any).id as string) : null;
     }
+
 
     const now = new Date().toISOString();
     const nextRevisionUpdate: Record<string, any> = { status: data.toStatus };
