@@ -156,12 +156,11 @@ export const listProjectTemplates = createServerFn({ method: "GET" })
 import { Constants } from "@/integrations/supabase/types";
 import {
   DEPT_LEAD_ROLES,
-  DEPT_LEAD_ROLE_MAP,
   makeCreateProjectSchema,
   PROJECT_PHASES,
   type DeptLeadKey,
-  type Gate,
 } from "@/lib/schemas/project-wizard";
+
 
 export type EligibleUser = {
   id: string;
