@@ -180,6 +180,14 @@ function UsersPage() {
   const [search, setSearch] = useState("");
   const [manageUserId, setManageUserId] = useState<string | null>(null);
   const [pendingRole, setPendingRole] = useState<GrantableRole | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"members" | "invitations">(
+    "members",
+  );
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [inviteFilter, setInviteFilter] = useState<
+    "all" | "pending" | "accepted" | "expired" | "revoked"
+  >("all");
 
   const membersKey = ["company-members", activeCompanyId] as const;
 
