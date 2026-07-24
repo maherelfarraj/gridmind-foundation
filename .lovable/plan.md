@@ -1,92 +1,86 @@
+## Checkpoint sweep
 
-## P-040 — Phase Gate Engine
+**Schema (16/16 tables, all RLS on):** ✅
+`projects, project_members, project_departments, project_phase_gates, project_templates, project_pv_config, project_bess_config, project_substation_config, project_sld_config, project_scada_config, project_yield_config, project_pvsyst_config, project_financial_config, project_cybersecurity_config, approval_instances, approvals`
 
-### 1. Migration `0014_gate_approvals.sql`
-
-Apply the exact SQL you supplied (`approval_instances`, `approvals`, FK `gates_approval_fk`, RLS policies, updated_at triggers, grants). Also normalize existing seed checklists so the engine has one shape to work against:
-
-```sql
--- Backfill legacy checklist items {name, done} → {key, label, required, done}
-update public.project_phase_gates
-   set checklist = (
-     select jsonb_agg(
-       case
-         when item ? 'key' then item
-         else jsonb_build_object(
-           'key', lower(regexp_replace(coalesce(item->>'name', item->>'label',''), '\W+', '_', 'g')),
-           'label', coalesce(item->>'label', item->>'name',''),
-           'required', coalesce((item->>'required')::boolean, true),
-           'done', coalesce((item->>'done')::boolean, false)
-         )
-       end
-     )
-     from jsonb_array_elements(checklist) item
-   )
- where jsonb_typeof(checklist) = 'array'
-   and exists (select 1 from jsonb_array_elements(checklist) i where not (i ? 'key'));
+**Audit trail:**
 ```
+project.created   1
+role.granted      2
+```
+No `gate.*` or `project_config.saved` rows yet — expected if you haven't walked the Prairie Winds gate/config flow in the UI. Do that walkthrough to satisfy the live-sweep boxes; the code paths are wired and audited.
 
-Verify after apply: `\d approval_instances`, `\d approvals`, FK on `project_phase_gates.approval_instance_id`, policies present, no rows lost, sample gate checklist now `{key,label,required,done}`.
+Migrations 0012 / 0013 / 0013b / 0014 commit-to-GitHub is a manual step on your side.
 
-### 2. Server functions — `src/lib/gates.functions.ts`
+---
 
-All use `attachSupabaseAuth` + `requireSupabaseAuth`, zod input, and write audit rows via existing RPC `write_audit_log`.
+## P-041 — CRM core migration (`0015_crm_core.sql`)
 
-- `getGateHistory({ project_id })` → returns `audit_logs` where `entity='project_phase_gates'` and `metadata->>'project_id' = project_id`, joined with `profiles` for actor name/email, ordered `created_at desc`, limit 200. Company membership enforced by RLS.
-- `toggleGateChecklistItem({ gate_id, key, done })` → load gate under RLS; role guard (`company_admin`|`project_admin`) via `has_company_role`; refuse when gate status ∉ `open|in_review`; mutate checklist item — stamp `done_by=auth.uid()`, `done_at=now()` when `done=true`, clear both when `false`; update row; write `audit_logs` `gate.checklist_toggled` with `{project_id, phase, key, done}`. Returns updated checklist.
-- `requestGateTransition({ gate_id })` →
-  1. Load gate; require status `open` and every `required` item `done` (server re-verifies).
-  2. Role guard: `company_admin`|`project_admin`.
-  3. Insert `approval_instances` row (`entity='project_phase_gate'`, `entity_id=gate_id`, `requested_by=auth.uid()`, `metadata={project_id, phase}`).
-  4. Insert one `approvals` row (status `pending`) per `user_roles.role='company_admin'` in the company (fallback pool until P-111).
-  5. Update gate → `status='in_review'`, `approval_instance_id=<new>`.
-  6. `write_audit_log('gate.transition_requested', 'project_phase_gates', gate_id, {project_id, phase, approval_instance_id})`.
-- `decideGateTransition({ approval_id, decision:'approve'|'reject', comment? })` →
-  1. Load approval + instance + gate; assert `approver_id = auth.uid()` and approval status `pending`.
-  2. Update the approval row (status, comment, `decided_at`).
-  3. On **approve** (single-approver model until P-111): mark instance `approved`, gate → `approved` with `approved_by`/`approved_at`; advance `projects.phase` to next in order `development → ntp → cod → handover`; if current gate was `handover`, also set `projects.status='completed'`; find next gate by `sort_order+1` and set `status='open'`. Audit `gate.transition_approved`.
-  4. On **reject**: mark instance `rejected`, gate back to `open`, clear `approval_instance_id`. Audit `gate.transition_rejected` with `{comment}`.
+Single migration introducing the CRM domain. All tables tenant-scoped by `company_id`, RLS on, GRANTs to `authenticated` + `service_role`, `updated_at` trigger via existing `public.set_updated_at()`, standard audit hooks via existing `public.write_audit_log(...)` from server functions in later prompts (no triggers here — keeps this migration schema-only, matching Batch 04 pattern).
 
-  The DB trigger `trg_gate_audit` already logs raw status changes; our explicit rows add the semantic action + comment.
+### Enums
+- `lead_status`: `new | qualifying | qualified | disqualified | converted`
+- `lead_source`: `inbound | outbound | referral | tender_portal | event | partner | other`
+- `opportunity_stage`: `prospect | qualified | proposal | negotiation | won | lost`
+- `contact_type`: `client | partner | consultant | epc_peer | authority | other`
+- `tender_event_type`: `rfi | rfp | rfq | tender | prequal | site_visit | q_and_a | submission | award`
 
-### 3. Query options
+### Tables
 
-`src/lib/gates-query.ts` — `gateHistoryQueryOptions(projectId)` (staleTime 15s). Reuse `projectDetailQueryOptions` for gate/checklist state; invalidate it plus history on every mutation.
+**`leads`** — top-of-funnel, may or may not become an opportunity
+- `company_id` (fk companies, cascade), `owner_id` (fk auth.users, set null)
+- `name`, `organization`, `email` (citext), `phone`, `country`, `region`
+- `source lead_source not null default 'inbound'`
+- `status lead_status not null default 'new'`
+- `estimated_capacity_mw numeric`, `archetype text` (matches archetype enum values as text — soft link, no fk)
+- `notes text`
+- indexes: `(company_id, status)`, `(company_id, owner_id)`
 
-### 4. UI — `src/routes/_authenticated/projects.$projectId.gates.tsx`
+**`opportunities`** — qualified pursuits, pipeline board rows
+- `company_id`, `owner_id`, `lead_id` (fk leads, set null)
+- `name text not null`, `client_name text`, `archetype text`
+- `stage opportunity_stage not null default 'prospect'`
+- `value_amount numeric`, `value_currency text default 'USD'`
+- `probability int check (probability between 0 and 100)`
+- `expected_close_date date`, `actual_close_date date`
+- `competitor text`, `loss_reason text`
+- `converted_project_id uuid` (fk projects, set null — set by P-050 win flow)
+- indexes: `(company_id, stage)`, `(company_id, owner_id)`, `(company_id, expected_close_date)`
 
-Rewrite the placeholder. Layout: two-column on `lg` (`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]`).
+**`contacts`** — people attached to leads / opportunities / tenders
+- `company_id`, `type contact_type not null default 'client'`
+- `first_name`, `last_name`, `title`, `email` (citext), `phone`, `organization`
+- `lead_id` (fk leads, cascade, nullable)
+- `opportunity_id` (fk opportunities, cascade, nullable)
+- CHECK: at least one of `lead_id` / `opportunity_id` is set
+- index: `(company_id, opportunity_id)`, `(company_id, lead_id)`
 
-**Left — gate cards** (map `project.gates` sorted by `sort_order`):
-- Header: name, phase badge, status pill (reuse existing style map + add `rejected`/`completed` styles as needed, semantic tokens only).
-- Checklist: shadcn `Checkbox` per item; disabled when gate status `locked`/`approved` or user lacks `company_admin`/`project_admin` (hint tooltip); shows `done_by` name + `done_at` (date-fns `formatDistanceToNow`) when done. Optimistic toggle via `useMutation` + `queryClient.setQueryData` on `project-detail`; rollback + `toast.error` on failure.
-- Footer actions:
-  - **Request transition** (`Button`) — enabled only when `status==='open'` and every `required` item done and role gate passes. Calls `requestGateTransition`; success toast.
-  - When `status==='in_review'` and the current user has a pending `approvals` row on the instance → show **Approve** / **Reject** buttons; Reject opens a `Dialog` with a `Textarea` comment (required). Calls `decideGateTransition`.
-- Skeleton via `<Skeleton />`, empty state card ("No gates configured"), error `Alert` with retry (`router.invalidate` + reset).
+**`tender_events`** — timeline entries on an opportunity (RFI issued, site visit, submission, award, …)
+- `company_id`, `opportunity_id` (fk opportunities, cascade, not null)
+- `type tender_event_type not null`
+- `event_date date not null`
+- `title text not null`, `notes text`
+- `created_by` (fk auth.users, set null)
+- index: `(opportunity_id, event_date desc)`
 
-**Right — Gate history panel**:
-- Card titled "Gate history"; `useSuspenseQuery(gateHistoryQueryOptions)`; list newest-first with icon per action (`CheckCircle2`, `XCircle`, `Clock`, `ListChecks`), actor name, relative time (`formatDistanceToNow`), action label, and diff summary from `metadata` (e.g. `to: ntp`, checklist key, comment excerpt).
-- Empty state: "No gate activity yet".
+### RLS policies (all tables, same shape)
+- SELECT: `public.is_company_member(company_id)`
+- INSERT: `public.is_company_member(company_id)` WITH CHECK
+- UPDATE: `is_company_member(company_id)` (owner or company_admin gate enforced in RPCs later)
+- DELETE: `public.is_company_admin(company_id)`
 
-Also augment the loader to prime `gateHistoryQueryOptions` alongside project detail.
+### GRANTs
+`GRANT SELECT, INSERT, UPDATE, DELETE ON public.<table> TO authenticated;`
+`GRANT ALL ON public.<table> TO service_role;`
+No `anon` grants — every policy scopes to `auth.uid()` via `is_company_member`.
 
-### 5. Route loader
+### Triggers
+`updated_at` maintained by `BEFORE UPDATE ... EXECUTE FUNCTION public.set_updated_at()` on all four tables.
 
-Update `projects.$projectId.gates.tsx` route to `loader: ({ context, params }) => Promise.all([context.queryClient.ensureQueryData(projectDetailQueryOptions(params.projectId)), context.queryClient.ensureQueryData(gateHistoryQueryOptions(params.projectId))])`, with `errorComponent` + `notFoundComponent` reusing existing `DetailNotFound`.
+### Post-migration verification (I'll run automatically)
+- Confirm 4 new tables exist, `relrowsecurity = true` on each
+- Confirm every table has ≥ 4 policies + `updated_at` trigger
+- Confirm enums exist and GRANTs are in place
+- Regenerate Supabase types (auto after approval)
 
-### 6. Verification (Playwright against Prairie Winds)
-
-1. Sign in as company_admin; open project → Gates.
-2. Toggle all 3 Development items; screenshot; assert audit rows `gate.checklist_toggled` (3) via `psql`.
-3. Assert "Request transition" disabled before, enabled after.
-4. Click Request → gate `in_review`, one `approval_instances` pending, one `approvals` pending; stepper clock icon.
-5. Approve → gate `approved`, NTP `open`, `projects.phase='ntp'`, audit rows for approved + phase change.
-6. On NTP: toggle items, request, reject with comment "hold" → gate back to `open`, comment persisted, audit `gate.transition_rejected`.
-7. History panel shows every entry newest-first.
-
-### Notes
-- Approval-instance FK column `approval_instance_id` already exists on `project_phase_gates`; the migration only adds the FK constraint.
-- No changes to types file needed until migration approval regenerates it; server functions cast rows narrowly.
-- Audit-log append-only invariant already enforced by P-012 grants; we only INSERT.
-- Only same-turn writes are the migration + new/edited files listed above. No changes outside gates domain.
+No UI, no server functions, no seed data in this prompt — those land in P-042 (pipeline board) and P-043 (opportunity detail). Ready to submit the migration on your go.
