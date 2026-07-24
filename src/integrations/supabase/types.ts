@@ -3685,6 +3685,33 @@ export type Database = {
         }
         Returns: string
       }
+      get_po_by_share_token: {
+        Args: { p_token: string }
+        Returns: {
+          accent_color: string
+          company_name: string
+          currency_code: string
+          delivery_address: string
+          footer_text: string
+          id: string
+          incoterms: string
+          issued_at: string
+          lines: Json
+          logo_url: string
+          payment_terms: string
+          pdf_path: string
+          po_number: string
+          primary_color: string
+          project_name: string
+          required_by_date: string
+          status: Database["public"]["Enums"]["po_status"]
+          subtotal: number
+          tax_amount: number
+          tax_pct: number
+          total_amount: number
+          vendor_name: string
+        }[]
+      }
       has_company_role: {
         Args: { p_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
