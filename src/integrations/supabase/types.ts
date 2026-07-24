@@ -341,6 +341,76 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          lead_id: string | null
+          opportunity_id: string | null
+          organization: string | null
+          phone: string | null
+          title: string | null
+          type: Database["public"]["Enums"]["contact_type"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          lead_id?: string | null
+          opportunity_id?: string | null
+          organization?: string | null
+          phone?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["contact_type"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          lead_id?: string | null
+          opportunity_id?: string | null
+          organization?: string | null
+          phone?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["contact_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       currencies: {
         Row: {
           code: string
@@ -455,6 +525,71 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          archetype: string | null
+          company_id: string
+          country: string | null
+          created_at: string
+          email: string | null
+          estimated_capacity_mw: number | null
+          id: string
+          name: string
+          notes: string | null
+          organization: string | null
+          owner_id: string | null
+          phone: string | null
+          region: string | null
+          source: Database["public"]["Enums"]["lead_source"]
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          archetype?: string | null
+          company_id: string
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          estimated_capacity_mw?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          organization?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          region?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          archetype?: string | null
+          company_id?: string
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          estimated_capacity_mw?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          organization?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          region?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_access_rules: {
         Row: {
           company_id: string
@@ -518,6 +653,91 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunities: {
+        Row: {
+          actual_close_date: string | null
+          archetype: string | null
+          client_name: string | null
+          company_id: string
+          competitor: string | null
+          converted_project_id: string | null
+          created_at: string
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          loss_reason: string | null
+          name: string
+          owner_id: string | null
+          probability: number | null
+          stage: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at: string
+          value_amount: number | null
+          value_currency: string
+        }
+        Insert: {
+          actual_close_date?: string | null
+          archetype?: string | null
+          client_name?: string | null
+          company_id: string
+          competitor?: string | null
+          converted_project_id?: string | null
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          loss_reason?: string | null
+          name: string
+          owner_id?: string | null
+          probability?: number | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at?: string
+          value_amount?: number | null
+          value_currency?: string
+        }
+        Update: {
+          actual_close_date?: string | null
+          archetype?: string | null
+          client_name?: string | null
+          company_id?: string
+          competitor?: string | null
+          converted_project_id?: string | null
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          loss_reason?: string | null
+          name?: string
+          owner_id?: string | null
+          probability?: number | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at?: string
+          value_amount?: number | null
+          value_currency?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_converted_project_id_fkey"
+            columns: ["converted_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
@@ -1462,6 +1682,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tender_events: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          event_date: string
+          id: string
+          notes: string | null
+          opportunity_id: string
+          title: string
+          type: Database["public"]["Enums"]["tender_event_type"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          event_date: string
+          id?: string
+          notes?: string | null
+          opportunity_id: string
+          title: string
+          type: Database["public"]["Enums"]["tender_event_type"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          event_date?: string
+          id?: string
+          notes?: string | null
+          opportunity_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["tender_event_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tender_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tender_events_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           company_id: string
@@ -1683,8 +1957,36 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
+      contact_type:
+        | "client"
+        | "partner"
+        | "consultant"
+        | "epc_peer"
+        | "authority"
+        | "other"
       delivery_status: "pending" | "success" | "failed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
+      lead_source:
+        | "inbound"
+        | "outbound"
+        | "referral"
+        | "tender_portal"
+        | "event"
+        | "partner"
+        | "other"
+      lead_status:
+        | "new"
+        | "qualifying"
+        | "qualified"
+        | "disqualified"
+        | "converted"
+      opportunity_stage:
+        | "prospect"
+        | "qualified"
+        | "proposal"
+        | "negotiation"
+        | "won"
+        | "lost"
       project_archetype:
         | "utility_pv"
         | "standalone_bess"
@@ -1705,6 +2007,16 @@ export type Database = {
         | "billing"
       project_phase: "development" | "ntp" | "cod" | "handover"
       project_status: "active" | "on_hold" | "completed" | "archived"
+      tender_event_type:
+        | "rfi"
+        | "rfp"
+        | "rfq"
+        | "tender"
+        | "prequal"
+        | "site_visit"
+        | "q_and_a"
+        | "submission"
+        | "award"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1854,8 +2166,40 @@ export const Constants = {
         "investor_viewer",
         "lender_viewer",
       ],
+      contact_type: [
+        "client",
+        "partner",
+        "consultant",
+        "epc_peer",
+        "authority",
+        "other",
+      ],
       delivery_status: ["pending", "success", "failed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
+      lead_source: [
+        "inbound",
+        "outbound",
+        "referral",
+        "tender_portal",
+        "event",
+        "partner",
+        "other",
+      ],
+      lead_status: [
+        "new",
+        "qualifying",
+        "qualified",
+        "disqualified",
+        "converted",
+      ],
+      opportunity_stage: [
+        "prospect",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost",
+      ],
       project_archetype: [
         "utility_pv",
         "standalone_bess",
@@ -1878,6 +2222,17 @@ export const Constants = {
       ],
       project_phase: ["development", "ntp", "cod", "handover"],
       project_status: ["active", "on_hold", "completed", "archived"],
+      tender_event_type: [
+        "rfi",
+        "rfp",
+        "rfq",
+        "tender",
+        "prequal",
+        "site_visit",
+        "q_and_a",
+        "submission",
+        "award",
+      ],
     },
   },
 } as const
