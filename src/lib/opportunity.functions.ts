@@ -48,7 +48,9 @@ export interface OpportunityDetail {
   updated_at: string;
   won_at: string | null;
   lost_at: string | null;
+  converted_intake_id: string | null;
 }
+
 
 export interface ContactRow {
   id: string;
