@@ -515,6 +515,7 @@ export type Database = {
           file_name: string | null
           file_size_bytes: number | null
           id: string
+          metadata: Json
           mime_type: string | null
           project_id: string
           storage_path: string | null
@@ -530,6 +531,7 @@ export type Database = {
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
+          metadata?: Json
           mime_type?: string | null
           project_id: string
           storage_path?: string | null
@@ -545,6 +547,7 @@ export type Database = {
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
+          metadata?: Json
           mime_type?: string | null
           project_id?: string
           storage_path?: string | null
