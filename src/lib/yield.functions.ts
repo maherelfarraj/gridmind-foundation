@@ -64,11 +64,12 @@ export interface YieldScenarioRow {
   project_id: string;
   company_id: string;
   scenario_name: string;
-  params: YieldParams | Record<string, unknown>;
+  params: Record<string, any>;
   results: YieldResults;
   updated_at: string;
   capacity_mw: number | null;
 }
+
 
 // ---------------------------------------------------------------------------
 // Helpers
