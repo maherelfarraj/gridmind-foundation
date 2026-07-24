@@ -14,7 +14,7 @@ const STEPS: Array<{ status: PoStatus; label: string }> = [
 ];
 
 export function PoStatusStepper({ status }: { status: PoStatus }) {
-  if (status === "cancelled" || status === "rejected") {
+  if ((status as string) === "cancelled" || (status as string) === "rejected") {
     return (
       <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">
         Purchase order is <span className="font-semibold">{status}</span> — no
