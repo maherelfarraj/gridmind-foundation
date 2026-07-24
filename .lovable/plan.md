@@ -1,32 +1,57 @@
-## Current state (verified via psql)
+## Corrective migration: `0013b_seed_corrective.sql`
 
-`public.companies` contains exactly two rows — no `Demo EPC Co.` (period) duplicate:
+Idempotent, slug-keyed. Safe to re-run. No display-name lookups anywhere.
 
-| name | slug | plan_tier |
-|---|---|---|
-| Demo EPC Co | demo | enterprise |
-| test-co-b | test-co-b | growth |
+```sql
+-- Corrective: supersedes any name-based seed lookups; always key seeds on slug.
+-- Re-affirms the Demo tenant + its module rules + audit retention, and fixes
+-- the Test Co B display name. All statements are idempotent.
 
-So there is nothing to delete: no duplicate company, no orphan `profiles` / `user_roles` / `projects` / `invites` / `module_access_rules` / `audit_log_retention_policies` rows to clean up.
+-- 1) Ensure Demo tenant exists (keyed on slug), correct name + plan tier.
+insert into public.companies (name, slug, plan_tier)
+values ('Demo EPC Co', 'demo', 'enterprise')
+on conflict (slug) do update
+  set name = excluded.name,
+      plan_tier = excluded.plan_tier;
 
-Heads-up: the second company's `name` column is `test-co-b`, not `Test Co B` as your acceptance list expects. Slug matches. I'll leave the name alone unless you ask me to rename it (a one-line `UPDATE` migration).
+-- 2) Rename Test Co B display name if drifted.
+update public.companies
+   set name = 'Test Co B'
+ where slug = 'test-co-b'
+   and name <> 'Test Co B';
 
-## The real fix — stale seed migration
+-- 3) Demo module_access_rules — all 9 modules enabled (enterprise baseline).
+with demo as (select id from public.companies where slug = 'demo')
+insert into public.module_access_rules (company_id, module, enabled)
+select demo.id, m, true
+from demo, unnest(array[
+  'crm','engineering','procurement','planning_budget',
+  'field_qaqc','commissioning','portals','om_scada','green_hydrogen'
+]) as m
+on conflict (company_id, module) do nothing;
 
-`rg` found exactly one file still referencing the bad name:
+-- 4) Demo audit_log_retention_policies — financial=2555 days, default=400 days.
+with demo as (select id from public.companies where slug = 'demo')
+insert into public.audit_log_retention_policies (company_id, category, retention_days)
+select demo.id, c.category, c.days
+from demo, (values ('financial', 2555), ('default', 400)) as c(category, days)
+on conflict (company_id, category) do update
+  set retention_days = excluded.retention_days;
+```
 
-- `supabase/migrations/20260724113707_ce48c97c-da5e-419d-9584-8e87d5cc62c8.sql`
-  - Line 1 comment: `-- P-035: seed system project templates for Demo EPC Co.`
-  - Line 4 lookup: `SELECT id FROM public.companies WHERE name = 'Demo EPC Co.' LIMIT 1`
+## After apply
 
-That `name = 'Demo EPC Co.'` is why the original P-035 seed silently inserted zero rows (the actual name has no period). I'll swap it to a slug-based lookup so a future re-run can't miss the tenant or accidentally recreate a duplicate.
+Run and paste back:
+```sql
+select name, slug, plan_tier from public.companies order by created_at;
+```
+Expect exactly:
+- `Demo EPC Co | demo | enterprise`
+- `Test Co B | test-co-b | growth`
 
-## Changes
+Then hand off: **next → P-036 (wizard step 4: team assignment + create project).**
 
-1. Edit `supabase/migrations/20260724113707_ce48c97c-da5e-419d-9584-8e87d5cc62c8.sql`:
-   - Comment → `-- P-035: seed system project templates for the Demo tenant (slug='demo').`
-   - CTE → `SELECT id FROM public.companies WHERE slug = 'demo' LIMIT 1`
-2. Re-run `rg "Demo EPC Co\."` to confirm zero remaining hits.
-3. Re-run the `companies` select and paste it back so you can confirm the final list.
+## Assumptions to confirm before applying
 
-No DB migration required — the file is a historical migration that already ran; editing its text prevents a bad re-run without changing current DB state.
+- `public.companies.slug` has a UNIQUE constraint (required for the `on conflict (slug)` upsert). I'll verify with a quick read before writing the migration; if it's not unique I'll drop the upsert to a `WHERE NOT EXISTS` insert + separate `UPDATE` for name/plan.
+- `module_access_rules` unique key is `(company_id, module)` and `audit_log_retention_policies` unique key is `(company_id, category)`. Same verification step; I'll adjust the `ON CONFLICT` targets to match the actual constraint names if they differ.
