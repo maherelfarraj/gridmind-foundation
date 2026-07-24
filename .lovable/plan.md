@@ -1,65 +1,80 @@
-## P-024 — Company Admin: users & roles
+## P-025 — Bulk invite + invite status tracking
 
-Extends existing `/settings/users` (P-022) with role management. Keep the Invite dialog, invites list, and lockout warning as-is.
+Extends `/settings/users` (P-022, P-024). Server enforcement uses existing `create_invite` SECURITY DEFINER + `requireSupabaseAuth`; UI gates rendering by `snapshot.isAdmin`. No migration.
 
-### Server (new `src/lib/roles.functions.ts`)
+### New: `bulkCreateInvites` in `src/lib/invites.functions.ts`
 
-All fns: `createServerFn` + `attachSupabaseAuth` + `requireSupabaseAuth`, zod-validated, audit-logged via `write_audit_log` RPC.
+Signature (createServerFn POST, `attachSupabaseAuth`, `requireSupabaseAuth`):
 
-- `listCompanyMembers({ companyId })` — replaces the members portion of `getCompanyAdminSnapshot`. Selects `profiles(id, full_name, email, avatar_url)` for `company_id = :companyId` (RLS-scoped), then `user_roles(user_id, role)` for those ids. Returns `Array<{ userId, fullName, email, avatarUrl, roles: AppRole[] }>` plus `{ adminCount, isAdmin }`. Keep `getCompanyAdminSnapshot` too (still used by invite pre-flight); this fn is the richer read.
-- `grantRole({ companyId, targetUserId, role })`:
-  1. Reject `role === 'super_admin'` in the validator.
-  2. `supabase.rpc('assert_can_grant_role', { p_target_user_id, p_company_id, p_role })` — the DB is the source of truth; throw if it errors.
-  3. `insert into user_roles ... on conflict do nothing` via `.upsert({ user_id, company_id, role }, { onConflict: 'user_id,company_id,role', ignoreDuplicates: true })`.
-  4. `write_audit_log('role.granted', 'user_roles', <inserted id or target user id>, { target_user, role, company_id })`.
-- `revokeRole({ companyId, targetUserId, role })`:
-  1. Reject `role === 'super_admin'`.
-  2. Same `assert_can_grant_role` RPC first (defense in depth — DB blocks non-admin callers).
-  3. Last-admin guard: if `role === 'company_admin'`, count `user_roles where company_id=:c and role='company_admin'`; if count ≤ 1 AND that row belongs to `targetUserId`, throw `{ statusCode: 409, message: 'Cannot revoke the last company admin.' }`.
-  4. `delete from user_roles where user_id=:t and company_id=:c and role=:r`.
-  5. Audit `role.revoked` with same metadata shape.
-
-### Route grouping & constants (`src/lib/role-groups.ts`)
-
-Static grouping used by the sheet (super_admin excluded):
-
-```text
-Administration:   company_admin, billing_admin, project_admin
-Department:       engineering_admin, procurement_admin, construction_admin,
-                  hse_admin, finance_admin, legal_admin, om_admin, scada_admin
-Operational:      engineer, sales, procurement_officer, foreman, field_technician
-External viewers: client_viewer, investor_viewer, lender_viewer
+```ts
+input: {
+  companyId: uuid,
+  rows: Array<{ email: string /* lowercased, trimmed */, role: app_role }> // 1..100
+}
 ```
 
-Total: 19. Compile-time assertion that the flattened list equals `Constants.public.Enums.app_role` minus `super_admin` so future enum additions fail typecheck until grouped.
+Zod schema rejects `super_admin`, invalid emails, and >100 rows. Handler:
 
-### UI changes to `src/routes/_authenticated/settings.users.tsx`
+1. Verify caller is company admin: `supabase.rpc('is_company_admin', { _company_id })`; throw 403 otherwise (defense in depth on top of `create_invite`'s own gate).
+2. Deduplicate rows client-side already; server also dedupes on lowercased email + role (keep first occurrence).
+3. Read current `user_roles` count where `role = 'company_admin'` for the company. If `adminCount === 0`, filter to rows with `role === 'company_admin'` and record the rest as `skipped:'no_admin_yet'`.
+4. Pull existing pending invites for the company (`select email` where `status = 'pending'`) and current member emails (`profiles` in-company) to precompute per-row skip reasons: `already_member`, `already_pending`.
+5. For each surviving row, call `supabase.rpc('create_invite', { p_company_id, p_email, p_role })` sequentially. On per-row error, record `{ email, role, error: msg }` and continue — don't fail the whole batch.
+6. After the loop, write ONE audit via `write_audit_log('invite.bulk_sent', 'invites', null, { count: successes.length, roles: unique(successes.role) })`.
+7. Return `{ created: Array<{ email, role, acceptUrl }>, skipped: Array<{ email, role, reason }>, failed: Array<{ email, role, error }> }`. `acceptUrl` derived same way as single invite.
 
-- Swap the members table read to `listCompanyMembers`; add `avatar_url` avatar cell.
-- Add a search input (client-side filter on name + email).
-- Add "Export CSV" button — generates `members.csv` (name, email, roles joined by `|`) via a Blob + `URL.createObjectURL`.
-- Skeleton rows during load; existing empty/error states retained.
-- Row action button "Manage roles" opens a shadcn `Sheet` for the selected member showing 4 grouped sections of `Switch` toggles (labels humanized). Toggling:
-  - Optimistically update the row's `roles` array in the React Query cache (`setQueryData` on `['company-members', companyId]`).
-  - Call `grantRole` / `revokeRole`; on error, rollback the cache snapshot and `toast.error(err.message)`; on success `toast.success`.
-  - Disable the toggle while its mutation is pending.
-- Access: page still visible to any signed-in member (matches existing gate). "Manage roles" button only rendered when `snapshot.isAdmin` OR viewer has `super_admin`; server RPCs remain the authoritative check.
+### UI: split `/settings/users` into two tabs
 
-### Cross-company negative check (verification only, no code change)
+Replace the current sequential Members / Invitations sections with a shadcn `Tabs` (`Members` default, `Invitations`). Keep the existing header, admin-only "Invite member" button, and lockout warning. Add a second admin-only button next to it: **"Bulk invite"**.
 
-After the UI ships, from demo-admin's session (Demo EPC), call `grantRole` targeting a Test Co B user id → expect the `assert_can_grant_role` RPC to raise `forbidden: cross-company role grant blocked`; confirm no `user_roles` row created and no audit written.
+#### Bulk invite dialog (`src/components/bulk-invite-dialog.tsx`)
 
-### Live checklist (run after implementation)
+- Textarea, monospace, placeholder shows `email,role` example. Optional header row `email,role` is skipped case-insensitively.
+- "Preview" button parses rows client-side (comma or tab separator, trim, lowercase email, lowercase role). For each row compute status:
+  - `invalid_email` (zod email fails)
+  - `unknown_role` — not in `app_role`; suggest closest via Levenshtein against `GRANTABLE_ROLES` (from `role-groups.ts`); show suggestion as an inline "Use X?" button that patches the row.
+  - `super_admin_forbidden` — role is `super_admin`.
+  - `duplicate_in_paste` — repeated (email,role) later in list.
+  - `already_member` — email matches any member from the current `listCompanyMembers` cache.
+  - `already_pending` — email matches any pending invite from the current `listInvites` cache.
+  - `ok` otherwise.
+- Preview table columns: Email, Role (editable Select), Status badge, Note. Rows with non-`ok` status are excluded from send; user can edit inline (email input, role select) which re-runs validation for that row. Row 1 remains editable so the user can fix and re-preview without repasting.
+- Footer summary: "N of M rows will be invited." Disabled Send when zero.
+- Send: calls `bulkCreateInvites` with the `ok` rows (max 100 enforced). Shows loading spinner. On success replaces dialog body with a results panel: successes list (with individual copy link + "Copy all links" button), skipped list grouped by reason, failed list. Sonner toast summarizes counts. Invalidates `invites` + `company-members` queries. Keeps dialog open until user dismisses.
 
-1. `/settings/users` shows members table with Demo Admin's `super_admin` + `company_admin` badges and the second invited user.
-2. Manage roles sheet renders exactly 19 roles across 4 groups, `finance_admin` in Department admins.
-3. Grant `engineer` to user 2 → badge appears → `role.granted` in `audit_logs` with correct metadata; revoke → `role.revoked` logged.
-4. Attempt to revoke your own `company_admin` while `adminCount === 1` → toast "Cannot revoke the last company admin"; no DB change, no audit row.
-5. Search filters both name and email; CSV downloads; skeleton/empty/error states visible.
-6. Cross-company grant attempt from Demo session against Test Co B user → RPC rejects with `forbidden: cross-company role grant blocked`.
+Rate-limit UX: if `bulkCreateInvites` throws (e.g., DB rate-limit), toast the message, keep the preview intact so user can retry.
+
+#### Invitations tab
+
+Rebuild the existing invites table into a `data-table`-style block within the tab:
+
+- Toolbar: search input (filters `email`, case-insensitive), status `Select` (`All`, `Pending`, `Accepted`, `Expired`, `Revoked`), refresh icon.
+- Derived status: any row where `status === 'pending'` and `new Date(expires_at) < now` renders as `expired` and gates actions accordingly (server `revoke_invite` still targets `status = 'pending'`; derivation is display-only).
+- Columns: Email, Role (badge via `humanizeRole`), Status (badge, variant per status), Invited by (fetch names via `listCompanyMembers` cache — fall back to short user id), Sent (from `created_at`), Expires. Skeleton rows (3) while `invitesQuery.isLoading`; empty state "No invites sent yet" with a hint to click Invite/Bulk when admin.
+- Row actions column (admin only): `Resend` and `Revoke`. Enabled only when derived status is `pending` or `expired`. Behavior:
+  - Resend uses existing `resendInvite` (already: revokes prior + creates new invite with new token/expiry via `create_invite`). Add an extra `write_audit_log('invite.resent', ...)` server-side (see server tweaks). Shows the new link in the existing single-invite issued-link dialog.
+  - Revoke: existing `revokeInvite`; server-side add `write_audit_log('invite.revoked', 'invites', inviteId, { email, role, company_id })`.
+
+Members tab remains exactly as P-024 (avatars, search, CSV, manage-roles sheet).
+
+### Small server tweaks (`invites.functions.ts`)
+
+- `resendInvite`: after `create_invite` succeeds, call `write_audit_log('invite.resent','invites', <old inviteId>, { email, role, company_id })`.
+- `revokeInvite`: read the invite row first to capture `{ email, role, company_id }`, then update, then `write_audit_log('invite.revoked','invites', inviteId, meta)`.
+- No changes to `create_invite` (already audits `invite.created`); the bulk audit is a single additional `invite.bulk_sent` summary row.
+- `listInvites`: add `email` search index-friendly ordering already present; add nothing new — filtering is client-side.
 
 ### Files touched
 
-- New: `src/lib/roles.functions.ts`, `src/lib/role-groups.ts`
-- Edited: `src/routes/_authenticated/settings.users.tsx`
-- No migration; existing `assert_can_grant_role`, `write_audit_log`, and `user_roles` RLS already in place.
+- New: `src/components/bulk-invite-dialog.tsx`
+- Edited: `src/lib/invites.functions.ts` (add `bulkCreateInvites`, add audit calls in resend/revoke), `src/routes/_authenticated/settings.users.tsx` (Tabs shell, Bulk invite trigger, invitations toolbar/filter/derived-expired, invited-by name join)
+- Reused: `src/lib/role-groups.ts` for role labels + fuzzy suggestions; `src/components/ui/tabs`, `select`, `dialog`, `textarea`, `table`, `badge`, `skeleton`
+
+### Verification checklist (run after implementation)
+
+1. Bulk paste with the four sample rows → preview flags rows 2, 3, 4 with the exact reasons; only row 1 is send-eligible.
+2. Send with only `good1@test.com` → results panel shows 1 created (with copy link); `invite.bulk_sent` audit exists with `count=1, roles=['engineer']`.
+3. Manually POST a bulk request containing `super_admin` (bypassing client) → server 400 from zod, no rows inserted, no audit.
+4. Invitations tab: pending invite appears with 7-day expiry; Resend produces a new token + new expiry, `invite.resent` audit row logged; Revoke sets status revoked, `invite.revoked` audit row logged.
+5. Accept-invite page loaded with a revoked link → existing branded revoked state (peekInviteAnonymous already returns `{ status: 'revoked' }`).
+6. Status filter + email search operate on the invitations table without refetching.
