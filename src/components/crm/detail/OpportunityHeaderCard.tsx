@@ -55,9 +55,12 @@ export function OpportunityHeaderCard({
 }: Props) {
   const update = useUpdateOpportunity(opp.id);
   const move = useMoveOpportunityStage();
+  const downloadKickoff = useDownloadKickoffPack();
   const [pendingLoss, setPendingLoss] = useState(false);
+  const [winOpen, setWinOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(opp.name);
+
 
   const value =
     opp.estimated_value != null
