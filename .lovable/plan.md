@@ -1,81 +1,61 @@
-# P-067 — Three-Way Match
+## P-068 — Expediting Log
 
-Payment gatekeeper: match vendor invoices against PO and GRN totals; block payment when variance exceeds tolerance; allow finance-admin override with mandatory note.
+Delivery tracking workbench chasing PO items against site-need dates, with Stage-3 exit-gate KPI.
 
-## 1. Migration — `0029_three_way_match.sql`
+### 1. Database — migration `0030_expediting.sql`
 
-Note: numbering as `0029` since `0028_goods_receipts.sql` was used in P-066 (spec's "0028" name is superseded by this project's sequence).
+Note: numbering as `0030_` since `0029_three_way_match.sql` already exists (spec's `0029_expediting.sql` collides).
 
-- Guarded `do $$` block creating `match_status` enum: `pending | matched | variance_blocked | approved_with_variance`.
-- `public.three_way_matches` table per spec (company_id, po_id, goods_receipt_id nullable, `invoice_id uuid` with **no FK** — Batch 08/P-080 will add it, vendor_invoice_number, invoice_date, invoice_amount `numeric(14,2)`, invoice_currency_code → `currencies(code)`, invoice_file_path, status, `qty_variance_pct/price_variance_pct` numeric(6,2), `amount_variance` numeric(14,2), `variance_threshold_pct` numeric(5,2) default 5.00, `payment_release_blocked` bool, resolution_note, matched_by/matched_at, created_by, created_at/updated_at).
-- Ordered exactly: CREATE TABLE → GRANT select/insert/update to authenticated + ALL to service_role → ENABLE RLS → policies `twm_select` (any company member) and `twm_write` (member AND `procurement_admin | finance_admin | company_admin`).
-- Indexes `(po_id, status)` and `(company_id, status)`.
-- Attach existing `set_updated_at()` BEFORE UPDATE trigger.
+- `expediting_status` enum via guarded `do` block: `on_track | at_risk | delayed | delivered`.
+- `public.expediting_logs` per spec (company_id, po_id, project_id, po_line_no, item_description, is_long_lead, promised_delivery_date, delivery_window_start/end, site_need_date, current_eta, eta_confirmed, status, last_vendor_contact_at, notes, created_by, timestamps).
+- GRANT to `authenticated` + service_role, then RLS + policies (`exp_select`, `exp_write` gated on `procurement_admin | procurement_officer | company_admin`).
+- Indexes on `(company_id, project_id, status)` and `(po_id)`.
+- Unique guard `(po_id, po_line_no)` where `po_line_no is not null` to prevent duplicate imports.
+- Attach `set_updated_at()` trigger.
 
-## 2. Pure logic — `src/lib/match-rules.ts`
+### 2. Server logic
 
-Unit-testable, no I/O.
-- Types: `MatchStatus`, `MatchInputs { poTotal, poQtyByLine, poUnitPriceByLine, grnQtyByLine, invoiceAmount, invoiceQtyByLine?, invoiceUnitPriceByLine? }`.
-- `computeVariances(inputs)` → `{ qty_variance_pct, price_variance_pct, amount_variance }`. Uses max abs line-level pct across lines for qty & price; amount_variance = `invoiceAmount − poTotal`.
-- `deriveMatchStatus({ variances, thresholdPct })` → `matched` when all abs pcts ≤ threshold, else `variance_blocked`.
-- Zod schemas: `matchCreatePayload` (vendor_invoice_number required non-empty ≤ 120, invoice_date optional ISO, invoice_amount > 0, currency ISO 4217 ≤ 8, threshold 0–100, optional line invoice qty/price arrays), `matchOverridePayload` (`resolution_note` trimmed min 5, max 2000).
+**`src/lib/expediting-rules.ts`** (pure, tested)
+- `deriveStatus({ current_eta, site_need_date, delivery_window_start/end, last_vendor_contact_at, fully_received })`:
+  - `fully_received` → `delivered`
+  - `current_eta > site_need_date` → `delayed`
+  - ETA inside window AND `last_vendor_contact_at` > 14 days old → `at_risk`
+  - else `on_track`
+- `daysUntilNeed(site_need_date)` (UTC-safe).
+- `computeLongLeadKpi(rows)` → `{ total, ready, pct, band: 'green'|'amber'|'destructive' }` (≥95 / 85–94 / <85).
+- Zod schemas for create/update payloads.
 
-## 3. Server fns — `src/lib/match.functions.ts`
+**`src/lib/expediting.functions.ts`** (`createServerFn` + `requireSupabaseAuth`)
+- `listExpediting({ projectId? })` — RLS-scoped select joined with PO number + project name.
+- `importFromPo({ poId, longLeadLineNos[] })` — pulls open PO lines from `purchase_orders.lines`, upserts rows (skip existing `(po_id, po_line_no)`), marks selected lines long-lead, defaults `site_need_date` from PO `required_by_date` / line need date.
+- `updateExpediting({ id, patch })` — updates ETA/eta_confirmed/notes/window/long-lead; recomputes status server-side by loading `goods_receipts` for the PO line to determine `fully_received`; writes audit log `expediting.update`.
+- `logVendorContact({ id })` — stamps `last_vendor_contact_at = now()`, recomputes status, audits.
+- `getLongLeadKpi({ projectId? })` — returns KPI numbers for the tile.
+- All mutations require `procurement_admin | procurement_officer | company_admin` (verified via `context.supabase` role check); reads open to any company member (RLS handles).
 
-All with `requireSupabaseAuth`, role checks via `context.supabase` + `has_company_role`, `writeAuditLog` for every mutation. Currency defaults to PO's `currency_code`.
+### 3. UI — `/procurement/expediting`
 
-- `listMatches({ status?, poId?, search? })` — joined with PO number, vendor name, GRN number.
-- `getMatch({ matchId })` — full row + PO snapshot + GRN snapshot + signed invoice URL.
-- `getMatchContextForPo({ poId })` — returns PO lines/totals + summed confirmed GRN qty by line for pre-filling the form.
-- `createMatch({ poId, grnId?, payload })` — role: `procurement_admin | finance_admin | company_admin`. Server recomputes variances from PO + GRN, ignores any client-supplied variance fields, derives status, sets `payment_release_blocked = (status === 'variance_blocked')`, stores `invoice_file_path` when provided. Audit `match.create`; add `match.block` when blocked.
-- `uploadInvoiceFile` helper path guard: enforce prefix `{company_id}/invoices/{match_id}/…`. Actual upload uses existing client-side storage helper; server persists the path only after validation. Draft-first pattern: `createMatch` returns id so client can upload then call `attachInvoiceFile({ matchId, path })`.
-- `overrideMatchVariance({ matchId, resolution_note })` — role: `finance_admin | company_admin` only; requires non-empty note; only valid when `status = variance_blocked`; sets `status = approved_with_variance`, `payment_release_blocked = false`, `matched_by/matched_at`. Audit `match.override` with `{ from_status, note }`.
-- `updateMatchThreshold({ matchId, threshold_pct })` — `finance_admin | company_admin`; recomputes status & block from stored variances. Audit `match.threshold_update`.
-- `getMatchVarianceKpi()` — avg absolute `amount_variance / po_total` % for matches created in current quarter (company-scoped). Returned as `{ avgPct, count }`.
+Route file `src/routes/_authenticated/procurement.expediting.tsx` (add nav entry with `Truck` icon).
 
-Payment release integration: exposes `payment_release_blocked` for Batch 08 to consume — no code from this batch touches invoice/pay flows.
+- **Header KPI strip**: Open items, Delayed count, and the long-lead exit-gate progress tile (green ≥95 / amber 85–94 / destructive <85) with tooltip "Procure → Plan exit gate".
+- **Board/table hybrid** grouped by project (collapsible groups); rows show PO link, item, long-lead badge, promised date, delivery window, site-need date, ETA input (inline edit) with confirmed toggle, status badge, days-until-need countdown chip (color by sign/threshold), "Log contact" button.
+- **"Add from PO" dialog**: pick a PO, list its open lines with checkbox for long-lead flag, submit → `importFromPo`.
+- Optimistic mutations via TanStack Query with `sonner` toasts; skeleton, empty ("No items being expedited"), and error+retry states.
+- **CSV export** client-side from current filtered rows.
+- Semantic tokens only (status colors via existing badge variants; no raw hex).
 
-## 4. Query hooks — `src/lib/match-query.ts`
+### 4. Tests
 
-`useMatchList`, `useMatch`, `useMatchContextForPo`, `useMatchVarianceKpi`, mutations `useCreateMatch`, `useAttachInvoiceFile`, `useOverrideMatch`, `useUpdateMatchThreshold`. Invalidate `["matches"]`, `["match", id]`, `["po", poId]`, `["match-kpi"]`. Sonner toasts, `errorMessage` helper reused from GRN pattern.
+- `tests/unit/expediting-rules.test.ts`: status derivation matrix (delivered wins, delayed vs at_risk, contact-age boundary at 14d), `daysUntilNeed`, KPI band thresholds (exact 95 / 94.9 / 85 / 84.9), import de-dup.
 
-## 5. UI routes
+### 5. Acceptance checks
 
-- `src/routes/_authenticated/procurement.matches.tsx` — `<Outlet />`.
-- `procurement.matches.index.tsx` — KPI tile (avg variance % this quarter), table (PO#, GRN#, vendor invoice #, invoice amount, PO amount, variance % badge — semantic `default/warning/destructive` via existing Badge variants, status badge, blocked indicator), status filter, search, CSV export, skeleton/empty ("No invoices matched yet")/error+retry.
-- `procurement.matches.new.tsx` — accepts `?po=<id>`; PO picker if missing. Loads context, pre-fills PO total & GRN qty summary, form: vendor invoice #, date, amount (with currency read-only from PO), optional invoice PDF upload (creates match first for `{match_id}` path), threshold override input gated to `finance_admin/company_admin`. On submit shows live client-side variance preview using `computeVariances`; server is source of truth. Sticky action bar.
-- `procurement.matches.$matchId.tsx` — detail view: PO/GRN summary cards, invoice card with signed PDF link, variance breakdown (qty/price/amount with tolerance line), status stepper `pending → matched | variance_blocked → approved_with_variance`, destructive banner "Payment release blocked" when `payment_release_blocked`, "Approve with variance" dialog (finance-admin only, mandatory `resolution_note` textarea min 5 chars), threshold editor (finance-admin), audit trail excerpt.
+- Import from PO: no duplicates on re-import; long-lead flags persist.
+- ETA past site-need → `delayed`; ETA in window with 15-day-old contact → `at_risk`.
+- Full GRN on the linked line → `delivered` on next update/refresh.
+- KPI tile color thresholds correct.
+- `foreman` read-only (write blocked by role check); every mutation audited.
 
-## 6. `MatchStatusBadge` component
-
-`src/components/procurement/match-status-badge.tsx` — semantic variant map: matched=default, pending=secondary, variance_blocked=destructive, approved_with_variance=outline.
-
-## 7. Nav
-
-`src/lib/nav-map.ts`: add "Invoice Matching" under Procurement with a suitable lucide icon (e.g. `Scale`).
-
-## 8. Storage
-
-Reuse `documents` bucket. Path prefix `{company_id}/invoices/{match_id}/{uuid}.pdf` — server validates prefix before persisting. Signed URL generated server-side.
-
-## 9. Tests
-
-- `tests/unit/match-rules.test.ts` — variance math (exact match → 0/0/0 → matched; +8% amount → variance_blocked; per-line qty/price pcts; threshold edge cases), zod rejects empty invoice # / negative amount / short override note.
-- `tests/rls/three-way-match.rls.test.ts` — stub: non-member blocked; `procurement_officer` cannot insert; `finance_admin` can override.
-
-## Acceptance verification
-
-- Invoice = PO total → `matched`.
-- Invoice 8% above PO → `variance_blocked`, destructive banner, `payment_release_blocked = true`.
-- Override without note → server rejects (zod); with note as `finance_admin` → `approved_with_variance`, block cleared, `match.override` audited.
-- Variance math verified in unit tests (qty vs GRN, price vs PO, amount = invoice − PO).
-- `procurement_officer` write denied by RLS; `match.create/block/override` all in audit_logs.
-- KPI tile renders avg abs amount-variance % for current quarter.
-
-## Technical notes
-
-- No `invoice_id` FK yet — column is `uuid` nullable; Batch 08/P-080 will add `references invoices(id)` in its own migration.
-- Currency: single-currency match keyed to PO currency; cross-currency variance out of scope for this batch.
-- All numeric formatting via `Intl.NumberFormat` using PO's `currency_code`.
-- Design tokens only; badges via existing variant map (no raw colors).
-- No changes to `po.functions.ts`; downstream payment flow reads `payment_release_blocked` in P-080.
+### Out of scope
+- Automatic status recompute on GRN insert (handled lazily on read/update this iteration; a trigger can come later if needed).
+- Push notifications for at-risk items.
