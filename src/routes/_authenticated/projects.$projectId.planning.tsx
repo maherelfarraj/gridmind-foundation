@@ -3,7 +3,10 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
 
-const SUB_TABS = [{ to: "wbs" as const, label: "WBS" }];
+const SUB_TABS = [
+  { to: "wbs" as const, label: "WBS" },
+  { to: "schedule" as const, label: "Schedule" },
+];
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning")({
   component: PlanningLayout,
