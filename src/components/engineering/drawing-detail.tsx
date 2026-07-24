@@ -24,6 +24,8 @@ import { RevisionTimeline } from "./revision-timeline";
 import { UploadRevisionDialog } from "./upload-revision-dialog";
 import { SignoffCard } from "./signoff-card";
 import { MarkupViewer } from "./markup-viewer";
+import { StartReviewRoundDialog } from "./reviews/StartReviewRoundDialog";
+
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
@@ -127,14 +129,38 @@ export function DrawingDetail({ drawingId, projectId }: Props) {
           <TabsTrigger value="markups">Markups</TabsTrigger>
           <TabsTrigger value="signoff">Sign-off</TabsTrigger>
         </TabsList>
-        <TabsContent value="revisions">
+        <TabsContent value="revisions" className="flex flex-col gap-3">
           <RevisionTimeline
             drawingId={drawing.id}
             projectId={projectId}
             revisions={revisions}
             currentRevisionId={drawing.current_revision_id}
           />
+          {revisions.some((r) => r.status === "IFD") && (
+            <Card className="p-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                Start a review round on an IFD revision
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {revisions
+                  .filter((r) => r.status === "IFD")
+                  .map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex items-center gap-2 rounded border border-border px-2 py-1"
+                    >
+                      <span className="text-xs">Rev {r.revision_code}</span>
+                      <StartReviewRoundDialog
+                        projectId={projectId}
+                        revisionId={r.id}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </Card>
+          )}
         </TabsContent>
+
         <TabsContent value="markups">
           {revisions.length === 0 ? (
             <Card className="p-6 text-sm text-muted-foreground">
