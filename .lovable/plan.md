@@ -1,64 +1,94 @@
+## P-046 — Pricing checklist + CFO approval gate
 
-# P-045 — Proposal Builder + Yield Stub
+Add a "Pricing & approval" section to the proposal builder that computes a server-side checklist, gates submission to a `finance_admin` CFO approval workflow (using existing `approval_instances` + `approvals` tables), and enforces the lock in SQL after approval.
 
-## Files to create
+### 1. Migration — `proposals_enforce_pricing_lock`
 
-### Yield engine (pure, deterministic)
-- `src/lib/yield/stub.ts` — engine id `gridmind-stub-v1`
-  - `mulberry32(seed)` PRNG + `hashString(s)` FNV-1a → seed from normalized JSON of config
-  - Sunrise/sunset from latitude + day-of-year (NOAA-style declination approx)
-  - Per-hour: clear-sky bell curve × seeded monthly weather derate (0.82–1.00) × (1 − combined losses) × (1 − degradation_y1/2), DC clipped to `dc_capacity_kw`, then AC clipped to `ac_capacity_kw`
-  - Returns `{ engine, computed_at, p50_kwh, p90_kwh, specific_yield_kwh_kwp, performance_ratio, monthly:number[12] }` with `p90 = p50 × (1 − 1.2816 × sigma)`
-  - No `Date.now()`/`Math.random()` inside computation — `computed_at` supplied by caller for determinism of results
+New migration `20260724_pricing_lock.sql` (idempotent):
+- `create or replace function public.proposals_enforce_pricing_lock()` — raises when `old.pricing_lock->>'status'='approved'` and any of `margin_pct / fx_rate_snapshot / contingency_pct / subtotal / total` change. Updates to `pricing_lock` itself remain allowed.
+- `drop trigger if exists trg_proposals_pricing_lock` + `create trigger trg_proposals_pricing_lock before update on public.proposals`.
 
-### Server functions
-- `src/lib/proposal.functions.ts` — add:
-  - `getProposal({ proposalId })` — returns proposal + line items + opportunity name (RLS)
-  - `listProposals({ opportunityId? })` — for `/proposals` list
-  - `createProposal({ opportunityId })` — insert draft v1 with default currency, audit `proposal.created`
-  - `saveProposalHeader({ proposalId, title, currency_code, contingency_pct, margin_pct, valid_until, notes })` — recomputes totals server-side; audit `proposal.updated`
-  - `saveLineItems({ proposalId, items[] })` — full replace inside a diff (insert/update/delete by id); recomputes subtotal/total; guarded by `proposals_guard_immutable` (draft/in_review only); audit `proposal.lines_saved`
-  - `saveArrayConfig({ proposalId, array_config })` — zod schema for all fields; audit `proposal.array_config_saved`
-  - `runYieldStub({ proposalId })` — loads array_config, calls `stub.ts`, persists into `proposals.yield_result`; if `proposals.project_id` set, upsert `project_yield_config` (map `p50_kwh→p50_mwh/1000`, `p90_kwh→p90_mwh/1000`, degradation, availability, losses); wrap in try/catch — on `42P01` or missing-column PG errors (`42703`) log + continue. Audit `proposal.yield_simulated` with `{opportunity_id, p50_kwh, p90_kwh}`
-- Write gating: `sales` or `company_admin` (mirrors existing pattern); `finance_admin` read-only
+No new tables — `approval_instances` and `approvals` already exist from 0014 with the expected columns.
 
-### Query layer
-- `src/lib/proposal-query.ts` — `queryOptions` for `getProposal`, `listProposals`; invalidation helpers
+### 2. Constants (`src/lib/pricing-rules.ts`)
 
-### Routes
-- `src/routes/_authenticated/proposals.index.tsx` — table list (title, opportunity, version, status badge, total, updated_at) with skeleton/empty/error
-- `src/routes/_authenticated/proposals.$proposalId.tsx` — builder page
-  - Loader: `ensureQueryData(getProposal)`; branded not-found if missing
-  - Tabs / stacked cards: **Scope & pricing**, **Array config**, **Yield simulation**
-  - Header strip: title, version, status badge, opportunity link, "Create new version" button (existing `createProposalVersion`)
+```ts
+export const COMPANY_BASE_CURRENCY = "USD";
+export const MARGIN_FLOOR_PCT = 8;
+export const CONTINGENCY_FLOOR_PCT = 5;
+export const FX_MAX_AGE_HOURS = 24;
+export const PRICING_ENTITY = "proposal_pricing";
+export const PRICING_RULE_KEY = "proposal_pricing_cfo";
+```
 
-### Components (under `src/components/proposals/`)
-- `ProposalHeaderCard.tsx` — inline edit for title/currency/contingency/margin/valid_until/notes, RHF + zod
-- `LineItemsGrid.tsx` — editable rows (category, description, qty, unit, unit_price, computed line_total), add/remove, live subtotal/contingency/margin/total tiles using `Intl.NumberFormat` with `currency_code`. Debounced autosave via `saveLineItems`
-- `ArrayConfigForm.tsx` — RHF + zod for the full `array_config` schema (dc/ac kW, tilt, azimuth, gcr, tracking select, latitude, module_w, inverter text, losses{...}, degradation_y1_pct, p90_sigma default 0.04)
-- `YieldSimulationCard.tsx` — "Run simulation" button (calls `runYieldStub`), P50/P90 tiles, `specific_yield_kwh_kwp`, `performance_ratio`, Recharts monthly bar chart, engine + computed_at footer, visible disclaimer text: *"Placeholder engine — replaced by PVsyst import in Stage 2 (Engineering)"*
+(There is no `companies.base_currency` column today; `USD` is the placeholder base per the spec's "configurable constant" wording — swappable when P-111 adds per-company config.)
 
-### Opportunity integration
-- Update `OpportunityHeaderCard` "New proposal" quick action → call `createProposal({opportunityId})` then navigate to `/proposals/$proposalId`
-- Update activity timeline (already merges proposals) — no change needed; new audit events will appear
+### 3. Server functions — extend `src/lib/proposal.functions.ts`
 
-## Determinism guarantees
-- PRNG seeded from `hashString(JSON.stringify(normalizedConfig))` where normalization sorts keys and rounds floats to 6 decimals
-- Weather derate table generated once from seeded PRNG at engine start
-- No `Date.now()` or `Math.random()` in the compute path
-- Test hook: exporting `simulateYield(config)` pure function so identical config → identical `{p50_kwh, p90_kwh, monthly}`
+All use `createServerFn` + zod + `attachSupabaseAuth` + `requireSupabaseAuth`.
 
-## Graceful degradation
-- `project_yield_config` table exists but uses `p50_mwh/p90_mwh` schema — upsert path converts units and catches `42P01`/`42703`/`PGRST204` errors, logs via `console.warn`, continues successfully
+- `getPricingChecklist({ proposalId })` — returns `{ items: ChecklistItem[], allPass: boolean, pricingLock, approvalInstance }` where each item is `{ key, label, pass, detail? }`. Checks:
+  - `line_items_priced` — every `qty > 0` and `unit_price >= 0`; `abs(Σ line_total − subtotal) < 0.01`.
+  - `margin_floor` — `margin_pct >= 8`.
+  - `fx_snapshot` — currency = `COMPANY_BASE_CURRENCY` → pass; else `fx_rate_snapshot` non-null AND latest `fx_rates` row where `base_code=USD and quote_code=currency` has `as_of` within 24h. If no fx_rates row exists → fail with detail "no FX rate available".
+  - `contingency_floor` — `contingency_pct >= 5`.
+  - `valid_until_future` — set and `> now()`.
+  - `competitor_recorded` — join `opportunities.competitor` non-empty.
+  - `yield_run` — `yield_result` has non-null `p50_kwh` and `p90_kwh`.
+  - Also loads latest `approval_instances` for `entity='proposal_pricing', entity_id=proposalId` and returns it (for the UI pending badge).
 
-## Roles
-- Read: any company member
-- Edit line items / array config / run simulation: `sales` or `company_admin`
-- `finance_admin`: read-only (form fields disabled, buttons hidden)
+- `submitPricingApproval({ proposalId })` — writer role check (sales OR company_admin); revalidate the checklist server-side and refuse if any fail. Dual path:
+  1. Try `insert into approval_instances (company_id, entity='proposal_pricing', entity_id, status='pending', requested_by, metadata={rule_key:'proposal_pricing_cfo', margin_pct, contingency_pct, fx_rate_snapshot, currency_code})`; then insert one `approvals` row per `finance_admin` in the company (from `user_roles`) with `status='pending'`.
+  2. On PG error code `42P01` / undefined column: fall back to `update proposals set pricing_lock = {status:'pending', requested_by, requested_at, margin_pct, fx_rate_snapshot, contingency_pct}`.
+  Always also stamp `proposals.pricing_lock` with the pending payload so the UI has a single source of truth; audit `proposal.pricing_submitted` with `{opportunity_id, instance_id?}`.
 
-## Verification checklist
-1. Create proposal from opportunity → add 3–4 lines → totals recompute live
-2. Set 150,000 kW DC / 125,000 kW AC, tilt 25, single_axis, latitude 31.9 → run sim → tiles + monthly chart render, specific yield 600–2200 kWh/kWp, P90 < P50
-3. Run twice with unchanged config → byte-identical P50/P90/monthly
-4. Disclaimer visible; `proposal.yield_simulated` audit row present
-5. `finance_admin` sees read-only UI
+- `decidePricingApproval({ proposalId, decision: 'approve'|'reject', comment? })` — `finance_admin` only (checked via `has_company_role`). Dual path:
+  1. Update matching `approval_instances` row: `status`, `decided_by=auth.uid()`, `decided_at=now()`. Update the caller's `approvals` row with `status` + `comment`.
+  2. Fallback: update `proposals.pricing_lock` directly.
+  On approve: also `update proposals set pricing_lock = {status:'approved', approved_by, approved_at, margin_pct, fx_rate_snapshot, contingency_pct}, status='approved'`. On reject: `pricing_lock = {status:'rejected', rejected_by, rejected_at, comment}`; leave `proposals.status` as-is.
+  Audit `proposal.pricing_approved` / `proposal.pricing_rejected` with `{opportunity_id, comment?}`.
+
+### 4. Query hooks — `src/lib/proposal-query.ts`
+
+- `pricingChecklistQueryOptions(fn, proposalId)` — `staleTime: 5s`.
+- `useSubmitPricingApproval(id)`, `useDecidePricingApproval(id)` — invalidate `["proposal", id]` and `["pricing-checklist", id]`.
+
+### 5. UI — `src/components/proposals/PricingApprovalCard.tsx`
+
+Rendered below `YieldSimulationCard` in `proposals.$proposalId.tsx`.
+- Header: "Pricing & approval" with a status badge (`Draft` / `Pending CFO review · Nh ago` / `Approved by X` / `Rejected`).
+- Checklist list — each row a `Check` (success) or `X` (destructive) icon + label + optional `detail`. Failing rows in `text-destructive`.
+- Actions:
+  - Writers (sales / company_admin): "Submit to CFO" button — disabled unless `allPass` and status not already `pending`/`approved`. Uses `date-fns` for "requested Nh ago".
+  - `finance_admin` sees Approve / Reject buttons when a pending instance exists; Reject opens a small dialog with a comment textarea.
+- After approval, `ProposalHeaderForm` and `LineItemsGrid`/`ArrayConfigForm` respect a new `pricingLocked` flag (already implicit through `readOnly` when status leaves draft, but also add a `Lock` icon next to `margin_pct` / `contingency_pct` / currency inputs when `pricing_lock.status='approved'`). Locked fields render read-only with a tooltip "Locked by CFO approval — create a new version to change".
+
+Route (`proposals.$proposalId.tsx`):
+- Extend the loader to also `ensureQueryData` the checklist.
+- Compute `pricingLocked = proposal.pricing_lock?.status === 'approved'`. Pass into the three edit cards so they show lock icons even when the writer still has editor role in draft/in_review.
+
+### 6. Audit metadata
+
+Every mutation calls `writeAuditLog(action, 'proposal', proposalId, { opportunity_id, ...context })`. Adds three actions: `proposal.pricing_submitted`, `proposal.pricing_approved`, `proposal.pricing_rejected`.
+
+### 7. Verification (post-implementation)
+
+- Live typecheck.
+- Query approval flow via `supabase--read_query`:
+  1. Create a proposal, set margin to 5% → checklist row fails → submit button disabled.
+  2. Fix values → all pass → submit → assert one row in `approval_instances` with `entity='proposal_pricing'` and one audit row `proposal.pricing_submitted`.
+  3. As finance_admin: approve → `pricing_lock.status='approved'`, `proposals.status='approved'`, audit row present.
+  4. Attempt `update proposals set margin_pct = ...` via `supabase--insert` → expect exception "pricing locked by CFO approval".
+
+### Files
+
+Created:
+- `supabase/migrations/<ts>_pricing_lock.sql`
+- `src/lib/pricing-rules.ts`
+- `src/components/proposals/PricingApprovalCard.tsx`
+
+Modified:
+- `src/lib/proposal.functions.ts` — add 3 RPCs + checklist types.
+- `src/lib/proposal-query.ts` — add hooks/options.
+- `src/routes/_authenticated/proposals.$proposalId.tsx` — mount the new card + pass `pricingLocked`.
+- `src/components/proposals/ProposalHeaderForm.tsx`, `LineItemsGrid.tsx`, `ArrayConfigForm.tsx` — accept optional `pricingLocked` prop, render `Lock` icons on the three protected fields.
