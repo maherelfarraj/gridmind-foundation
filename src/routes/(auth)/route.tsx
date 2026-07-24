@@ -1,19 +1,30 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 
+const searchSchema = z.object({
+  redirect: z
+    .string()
+    .refine((v) => v.startsWith("/") && !v.startsWith("//"), {
+      message: "redirect must be a same-origin path",
+    })
+    .optional(),
+});
+
 export const Route = createFileRoute("/(auth)")({
   ssr: false,
-  beforeLoad: async ({ location }) => {
-    // Recovery links land on /reset-password with an active session; keep them here.
+  validateSearch: (search) => searchSchema.parse(search),
+  beforeLoad: async ({ location, search }) => {
     if (location.pathname === "/reset-password") return;
     const { data } = await supabase.auth.getUser();
     if (data.user) {
-      throw redirect({ to: "/" });
+      throw redirect({ to: search.redirect ?? "/" });
     }
   },
   component: AuthLayout,
 });
+
 
 function AuthLayout() {
   return (
