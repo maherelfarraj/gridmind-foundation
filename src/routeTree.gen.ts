@@ -30,7 +30,11 @@ import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_auth
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
+import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
+import { Route as AuthenticatedProjectsProjectIdOverviewRouteImport } from './routes/_authenticated/projects.$projectId.overview'
+import { Route as AuthenticatedProjectsProjectIdGatesRouteImport } from './routes/_authenticated/projects.$projectId.gates'
+import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
@@ -146,11 +150,35 @@ const AuthenticatedAdminTenantsRouteRoute =
     path: '/tenants',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedProjectsProjectIdIndexRoute =
+  AuthenticatedProjectsProjectIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
 const AuthenticatedAdminTenantsIndexRoute =
   AuthenticatedAdminTenantsIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminTenantsRouteRoute,
+  } as any)
+const AuthenticatedProjectsProjectIdOverviewRoute =
+  AuthenticatedProjectsProjectIdOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
+const AuthenticatedProjectsProjectIdGatesRoute =
+  AuthenticatedProjectsProjectIdGatesRouteImport.update({
+    id: '/gates',
+    path: '/gates',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
+const AuthenticatedProjectsProjectIdConfigRoute =
+  AuthenticatedProjectsProjectIdConfigRouteImport.update({
+    id: '/config',
+    path: '/config',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
   } as any)
 const AuthenticatedAdminTenantsCompanyIdRoute =
   AuthenticatedAdminTenantsCompanyIdRouteImport.update({
@@ -170,7 +198,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
-  '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
+  '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -180,7 +208,11 @@ export interface FileRoutesByFullPath {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
+  '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
+  '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -192,7 +224,6 @@ export interface FileRoutesByTo {
   '/signup': typeof authSignupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -202,7 +233,11 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
+  '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
+  '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
+  '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,7 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
-  '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
+  '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
   '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -228,7 +263,11 @@ export interface FileRoutesById {
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
+  '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
+  '/_authenticated/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
+  '/_authenticated/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -253,7 +292,11 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/projects/'
     | '/admin/tenants/$companyId'
+    | '/projects/$projectId/config'
+    | '/projects/$projectId/gates'
+    | '/projects/$projectId/overview'
     | '/admin/tenants/'
+    | '/projects/$projectId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -265,7 +308,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/dashboard'
-    | '/projects/$projectId'
     | '/projects/new'
     | '/settings/company'
     | '/settings/departments'
@@ -275,7 +317,11 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/projects'
     | '/admin/tenants/$companyId'
+    | '/projects/$projectId/config'
+    | '/projects/$projectId/gates'
+    | '/projects/$projectId/overview'
     | '/admin/tenants'
+    | '/projects/$projectId'
   id:
     | '__root__'
     | '/'
@@ -300,7 +346,11 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/users'
     | '/_authenticated/projects/'
     | '/_authenticated/admin/tenants/$companyId'
+    | '/_authenticated/projects/$projectId/config'
+    | '/_authenticated/projects/$projectId/gates'
+    | '/_authenticated/projects/$projectId/overview'
     | '/_authenticated/admin/tenants/'
+    | '/_authenticated/projects/$projectId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -460,12 +510,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTenantsRouteRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/projects/$projectId/': {
+      id: '/_authenticated/projects/$projectId/'
+      path: '/'
+      fullPath: '/projects/$projectId/'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdIndexRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
     '/_authenticated/admin/tenants/': {
       id: '/_authenticated/admin/tenants/'
       path: '/'
       fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AuthenticatedAdminTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminTenantsRouteRoute
+    }
+    '/_authenticated/projects/$projectId/overview': {
+      id: '/_authenticated/projects/$projectId/overview'
+      path: '/overview'
+      fullPath: '/projects/$projectId/overview'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdOverviewRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
+    '/_authenticated/projects/$projectId/gates': {
+      id: '/_authenticated/projects/$projectId/gates'
+      path: '/gates'
+      fullPath: '/projects/$projectId/gates'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdGatesRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
+    '/_authenticated/projects/$projectId/config': {
+      id: '/_authenticated/projects/$projectId/config'
+      path: '/config'
+      fullPath: '/projects/$projectId/config'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdConfigRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
     }
     '/_authenticated/admin/tenants/$companyId': {
       id: '/_authenticated/admin/tenants/$companyId'
@@ -524,10 +602,34 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedProjectsProjectIdRouteChildren {
+  AuthenticatedProjectsProjectIdConfigRoute: typeof AuthenticatedProjectsProjectIdConfigRoute
+  AuthenticatedProjectsProjectIdGatesRoute: typeof AuthenticatedProjectsProjectIdGatesRoute
+  AuthenticatedProjectsProjectIdOverviewRoute: typeof AuthenticatedProjectsProjectIdOverviewRoute
+  AuthenticatedProjectsProjectIdIndexRoute: typeof AuthenticatedProjectsProjectIdIndexRoute
+}
+
+const AuthenticatedProjectsProjectIdRouteChildren: AuthenticatedProjectsProjectIdRouteChildren =
+  {
+    AuthenticatedProjectsProjectIdConfigRoute:
+      AuthenticatedProjectsProjectIdConfigRoute,
+    AuthenticatedProjectsProjectIdGatesRoute:
+      AuthenticatedProjectsProjectIdGatesRoute,
+    AuthenticatedProjectsProjectIdOverviewRoute:
+      AuthenticatedProjectsProjectIdOverviewRoute,
+    AuthenticatedProjectsProjectIdIndexRoute:
+      AuthenticatedProjectsProjectIdIndexRoute,
+  }
+
+const AuthenticatedProjectsProjectIdRouteWithChildren =
+  AuthenticatedProjectsProjectIdRoute._addFileChildren(
+    AuthenticatedProjectsProjectIdRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRoute
+  AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
   AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
@@ -541,7 +643,8 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedProjectsProjectIdRoute: AuthenticatedProjectsProjectIdRoute,
+  AuthenticatedProjectsProjectIdRoute:
+    AuthenticatedProjectsProjectIdRouteWithChildren,
   AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,
   AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
