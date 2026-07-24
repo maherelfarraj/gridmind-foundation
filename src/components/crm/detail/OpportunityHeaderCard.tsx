@@ -1,6 +1,9 @@
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
-import { Award, CalendarDays, Plus, User } from "lucide-react";
+import { Award, CalendarDays, FileText, Plus, User } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+
+import { useCreateProposal } from "@/lib/proposal-query";
 
 import { LossReasonDialog } from "@/components/crm/LossReasonDialog";
 import { Badge } from "@/components/ui/badge";
