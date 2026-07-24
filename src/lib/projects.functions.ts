@@ -880,7 +880,7 @@ const getConfigsInput = z.object({ project_id: z.string().uuid() });
 export type ArchetypeConfigsResult = {
   project_id: string;
   archetype: ProjectArchetype;
-  rows: Record<ArchetypeConfigKey, Record<string, unknown> | null>;
+  rows: Record<ArchetypeConfigKey, Record<string, any> | null>;
   canEdit: Record<ArchetypeConfigKey, boolean>;
 };
 
@@ -916,12 +916,12 @@ export const getArchetypeConfigs = createServerFn({ method: "GET" })
       ),
     );
 
-    const rows = {} as Record<ArchetypeConfigKey, Record<string, unknown> | null>;
+    const rows = {} as Record<ArchetypeConfigKey, Record<string, any> | null>;
     const canEdit = {} as Record<ArchetypeConfigKey, boolean>;
     ARCHETYPE_CONFIG_KEYS.forEach((key, i) => {
       const res = rowResults[i];
       if (res.error) throw res.error;
-      rows[key] = (res.data as Record<string, unknown> | null) ?? null;
+      rows[key] = (res.data as Record<string, any> | null) ?? null;
       canEdit[key] = CONFIG_EDIT_ROLES[key].some((r) => roles.has(r));
     });
 
@@ -985,8 +985,8 @@ export const saveArchetypeConfig = createServerFn({ method: "POST" })
     }
 
     const table = CONFIG_TABLE_MAP[configKey];
-    const payload: Record<string, unknown> = {
-      ...(parsed.data as Record<string, unknown>),
+    const payload: Record<string, any> = {
+      ...(parsed.data as Record<string, any>),
       company_id: proj.company_id,
       project_id: proj.id,
     };
@@ -1004,10 +1004,10 @@ export const saveArchetypeConfig = createServerFn({ method: "POST" })
       p_entity_id: proj.id,
       p_metadata: {
         config: configKey,
-        fields: Object.keys(parsed.data as Record<string, unknown>),
+        fields: Object.keys(parsed.data as Record<string, any>),
       },
     });
     if (auditErr) throw new Error(auditErr.message);
 
-    return { row: saved as Record<string, unknown> };
+    return { row: saved as Record<string, any> };
   });
