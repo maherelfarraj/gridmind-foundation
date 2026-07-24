@@ -16,65 +16,46 @@ export type Role =
 
 export type PlanTier = "starter" | "growth" | "enterprise";
 
-export type ModuleKey =
-  | "crm"
-  | "engineering"
-  | "procurement"
-  | "planning"
-  | "field"
-  | "commissioning"
-  | "om"
-  | "partners"
-  | "green_hydrogen"
-  | "admin";
+// Canonical module keys live in ./modules. `admin` is a UI-only key used for
+// navigation sections that don't map to a module_access_rules row.
+import { MODULE_KEYS as CANONICAL_MODULE_KEYS, planAllowsModule } from "./modules";
+export type { ModuleKey as CanonicalModuleKey } from "./modules";
 
-const CORE_MODULES: ModuleKey[] = [
-  "crm",
-  "engineering",
-  "procurement",
-  "planning",
-  "field",
-  "commissioning",
-  "om",
-  "partners",
-  "green_hydrogen",
-];
+export type ModuleKey = (typeof CANONICAL_MODULE_KEYS)[number] | "admin";
+
+const CORE_MODULES: ModuleKey[] = [...CANONICAL_MODULE_KEYS];
 
 export const ROLE_TO_MODULES: Record<Role, ModuleKey[]> = {
-  viewer: ["crm", "engineering", "planning", "field", "commissioning", "om", "partners"],
+  viewer: [
+    "crm",
+    "engineering",
+    "planning_budget",
+    "field_qaqc",
+    "commissioning",
+    "om_scada",
+    "portals",
+  ],
   member: [...CORE_MODULES],
   manager: [...CORE_MODULES],
   company_admin: [...CORE_MODULES, "admin"],
   super_admin: [...CORE_MODULES, "admin"],
 };
 
-export const MODULE_PLAN_REQUIREMENTS: Partial<Record<ModuleKey, PlanTier>> = {
-  green_hydrogen: "enterprise",
-};
-
-const PLAN_RANK: Record<PlanTier, number> = {
-  starter: 0,
-  growth: 1,
-  enterprise: 2,
-};
-
-function planMeets(actual: PlanTier, required: PlanTier): boolean {
-  return PLAN_RANK[actual] >= PLAN_RANK[required];
-}
-
 /**
  * Modules the given role + plan tier may see in navigation. Consumers should
- * treat this as authoritative for hiding nav items (not for authorization —
- * server-side RLS remains the source of truth for data access).
+ * treat this as authoritative for hiding nav items ONLY as a fallback — the
+ * server-side `module_access_rules` table (via `listModuleAccess`) is the
+ * runtime source of truth used by the sidebar.
  */
 export function getVisibleModules(role: Role, planTier: PlanTier): Set<ModuleKey> {
   const allowedByRole = ROLE_TO_MODULES[role] ?? [];
   const visible = allowedByRole.filter((moduleKey) => {
-    const requiredPlan = MODULE_PLAN_REQUIREMENTS[moduleKey];
-    return !requiredPlan || planMeets(planTier, requiredPlan);
+    if (moduleKey === "admin") return true;
+    return planAllowsModule(planTier, moduleKey);
   });
   return new Set(visible);
 }
+
 
 export interface SessionContext {
   role: Role;
