@@ -8,6 +8,8 @@ import { RefreshCw, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
+import { ExportPptxButton } from "@/components/proposals/ExportPptxButton";
+
 import { Card } from "@/components/ui/card";
 import { proposalsListQueryOptions } from "@/lib/proposal-query";
 import { listProposals } from "@/lib/proposal.functions";
@@ -146,13 +148,22 @@ function ProposalsListPage() {
                       {format(parseISO(p.updated_at), "PP")}
                     </td>
                     <td className="p-3 text-right">
-                      <ExportPdfButton
-                        proposalId={p.id}
-                        companyId={p.company_id}
-                        projectId={p.project_id}
-                        size="icon"
-                      />
+                      <div className="inline-flex gap-1">
+                        <ExportPdfButton
+                          proposalId={p.id}
+                          companyId={p.company_id}
+                          projectId={p.project_id}
+                          size="icon"
+                        />
+                        <ExportPptxButton
+                          proposalId={p.id}
+                          companyId={p.company_id}
+                          projectId={p.project_id}
+                          size="icon"
+                        />
+                      </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

@@ -1130,10 +1130,10 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
   });
 
 // ---------------------------------------------------------------------------
-// P-047 — PDF export data + audit
+// P-047 / P-048 — Shared export data + audit (PDF + PPTX)
 // ---------------------------------------------------------------------------
 
-export const getProposalPdfData = createServerFn({ method: "GET" })
+export const getProposalExportData = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data, context }) => {
@@ -1157,13 +1157,21 @@ export const getProposalPdfData = createServerFn({ method: "GET" })
     if (liErr) throw new Error(liErr.message);
 
     let opportunity: any = null;
+    let opportunityOwnerId: string | null = null;
     if (p.opportunity_id) {
       const { data: opp } = await supabase
         .from("opportunities")
-        .select("name, account_name, expected_decision_date")
+        .select("name, account_name, expected_decision_date, owner_id")
         .eq("id", p.opportunity_id)
         .maybeSingle();
-      opportunity = opp ?? null;
+      opportunity = opp
+        ? {
+            name: (opp as any).name,
+            account_name: (opp as any).account_name,
+            expected_decision_date: (opp as any).expected_decision_date,
+          }
+        : null;
+      opportunityOwnerId = (opp as any)?.owner_id ?? null;
     }
 
     const companyId = p.company_id as string;
@@ -1196,7 +1204,52 @@ export const getProposalPdfData = createServerFn({ method: "GET" })
       }
     }
 
-    // Defence-in-depth: strip margin_pct so the client PDF can never leak it.
+    // Sales owner — proposals.created_by preferred, fall back to opportunity owner.
+    const ownerId = (p.created_by as string | null) ?? opportunityOwnerId;
+    let salesOwner: { full_name: string | null; email: string | null } | null = null;
+    if (ownerId) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", ownerId)
+        .maybeSingle();
+      if (prof) {
+        salesOwner = {
+          full_name: (prof as any).full_name ?? null,
+          email: (prof as any).email ?? null,
+        };
+      }
+    }
+
+    // Upcoming tender events — tolerate table absence (42P01).
+    let tenderEvents: Array<{
+      event_type: string;
+      title: string | null;
+      event_at: string;
+      notes: string | null;
+    }> = [];
+    if (p.opportunity_id) {
+      const { data: evs, error: evErr } = await supabase
+        .from("tender_events")
+        .select("event_type, title, event_at, notes")
+        .eq("opportunity_id", p.opportunity_id)
+        .gte("event_at", new Date().toISOString())
+        .order("event_at", { ascending: true });
+      if (evErr && (evErr as any).code !== "42P01") {
+        // Non-missing-table errors: log and continue with empty list.
+        // eslint-disable-next-line no-console
+        console.warn("tender_events fetch failed", evErr.message);
+      } else if (evs) {
+        tenderEvents = (evs as any[]).map((e) => ({
+          event_type: e.event_type,
+          title: e.title ?? null,
+          event_at: e.event_at,
+          notes: e.notes ?? null,
+        }));
+      }
+    }
+
+    // Defence-in-depth: strip margin_pct so the client PDF/PPTX can never leak it.
     const { margin_pct: _drop, ...proposalSafe } = p;
 
     return {
@@ -1209,14 +1262,25 @@ export const getProposalPdfData = createServerFn({ method: "GET" })
         accentColor: (branding as any)?.accent_color ?? null,
         footerText: (branding as any)?.footer_text ?? null,
         logoSignedUrl,
+        fontFamily: "Arial" as const,
       },
       yieldResult: (p.yield_result as any) ?? null,
+      salesOwner,
+      tenderEvents,
     };
   });
 
+// Back-compat alias — existing callers still import the old name.
+export const getProposalPdfData = getProposalExportData;
+
+const recordExportSchema = z.object({
+  proposalId: z.string().uuid(),
+  format: z.enum(["pdf", "pptx"]).default("pdf"),
+});
+
 export const recordProposalExport = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .inputValidator((input: unknown) => recordExportSchema.parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { supabase } = context;
@@ -1230,8 +1294,11 @@ export const recordProposalExport = createServerFn({ method: "POST" })
     if (!proposal) httpError(404, "not_found");
     const p = proposal as any;
 
+    const action =
+      data.format === "pptx" ? "proposal.export_pptx" : "proposal.export_pdf";
+
     await supabase.rpc("write_audit_log", {
-      p_action: "proposal.export_pdf",
+      p_action: action,
       p_entity: "proposal",
       p_entity_id: data.proposalId,
       p_metadata: {
@@ -1242,3 +1309,4 @@ export const recordProposalExport = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
