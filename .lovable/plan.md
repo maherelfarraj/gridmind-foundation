@@ -1,47 +1,80 @@
-## P-057 — BOM v1 builder
+## P-058 — Drawing review workflow (IFD → reviewers → sign-off → IFC gate)
 
-### 1. Migration `0020_bom.sql`
-- `public.bom_snapshots`: standard tenant columns + `version int`, `status text default 'draft' check in ('draft','released','superseded')`, `params jsonb`, `totals jsonb`, `created_by uuid`, `created_at`, `updated_at`. Unique `(project_id, version)`.
-- `public.bom_lines`: `snapshot_id references bom_snapshots(id) on delete cascade`, `category text check in ('modules','inverters','bos','cables','structures','transformers','other')`, `item text`, `spec text`, `unit text`, `qty numeric`, `buffer_pct numeric default 0`, `qty_buffered numeric`, `unit_cost numeric`, `notes text`, `company_id uuid`, timestamps.
-- Order: `CREATE TABLE` → `GRANT SELECT,INSERT,UPDATE,DELETE … TO authenticated; GRANT ALL … TO service_role` → `ENABLE RLS` → policies.
-- Policies: `select` when `is_company_member(company_id)`; `insert/update/delete` when `has_role(auth.uid(),'engineering_admin') or has_role(auth.uid(),'engineer') or has_role(auth.uid(),'company_admin') or has_role(auth.uid(),'super_admin')` (delete restricted to engineering_admin/company_admin/super_admin).
-- Indexes: `bom_lines(snapshot_id)`, `bom_snapshots(project_id, version desc)`.
-- `updated_at` trigger via `public.set_updated_at()`.
+### Migration `0021_drawing_reviews.sql`
 
-### 2. Pure calculator + tests
-- `src/lib/calculators/bom.ts` — pure, browser-safe:
-  - `DEFAULT_BUFFERS = { modules: 0.5, inverters: 0, cables: 10, structures: 2, bos: 5 }`.
-  - `applyBuffer(qty, pct)` — rounds to 4 decimals, ceils integer units (modules, inverters, structures, transformers).
-  - `computeBom(params)`: takes `{ capacity_mwp_dc, module_wp, dc_ac_ratio, inverter_count?, tracker_type, avg_dc_run_m?, modules_per_string?, mv_cable_m_per_mw? }` → returns typed line list with `{category,item,spec,unit,qty,buffer_pct,qty_buffered,unit_cost?}`. Heuristics: modules = `ceil(capacity_kwp / module_wp)`; inverters = provided or `ceil(capacity_mw_ac × ratio_helper)`; strings ≈ `ceil(modules / modules_per_string(default 28))`; DC cable metres ≈ `strings × avg_dc_run_m(default 90) × 2`; MV cable ≈ `capacity_mwp × mv_cable_m_per_mw(default 800)`; structures = `ceil(modules / (modules_per_row=90))`; transformers/BOS defaults; unit costs left null (populated in Batch 07).
-- `tests/unit/bom-calculator.test.ts` — Prairie Winds fixture (175 MWp, 550 Wp modules, 42 inverters): asserts module qty, buffered qty rounding, unchanged output snapshot for regression.
+Three tables, standard tenant columns (`id`, `company_id`, `created_at`, `updated_at` where applicable), `set_updated_at()` triggers, indexes, GRANTs, RLS.
 
-### 3. Server functions (`src/lib/bom.functions.ts`)
-Thin wrappers only — helpers/schemas imported from `bom.server.ts` (avoid `?tss-serverfn-split` ReferenceError):
-- `listBomSnapshots({projectId})`
-- `getBomSnapshot({snapshotId})` — snapshot + grouped lines
-- `generateBom({projectId})` — reads `projects` + `project_pv_config`, calls `computeBom`, inserts snapshot v=max+1 with lines + totals, `write_audit_log('engineering.bom_generated', …)`
-- `updateBomLine({lineId, qty?, buffer_pct?, unit_cost?, notes?})` — recomputes `qty_buffered` server-side; blocks edits when snapshot `status='released'` (returns 409)
-- `releaseBom({snapshotId})` — engineering_admin only (assertRole); flips status to `released` and prior versions to `superseded`; audit `engineering.bom_released`
-- `getMyBomRoles({projectId})` → `{ canWrite, canRelease }`
-- `getBomKpi({projectId})` → `{ releasedTotalCost, snapshotCount }`
-- `src/lib/bom.server.ts` — role/audit helpers, zod schemas, category labels, project-loading query.
+1. `drawing_review_rounds`
+   - `revision_id` → `drawing_revisions(id)` on delete cascade
+   - `project_id`, `round_no` int (1-based per revision), `status` ('open' | 'closed' | 'waived'), `due_date`, `created_by`
+   - unique `(revision_id, round_no)`
+   - RLS: SELECT `is_company_member`; INSERT/UPDATE `has_role(auth.uid(),'engineering_admin')` OR `has_role(...,'project_admin')`
+2. `drawing_review_signoffs`
+   - `round_id` → cascade; `reviewer_id` → `profiles(id)`; `reviewer_org` ('client'|'lender'|'utility'|'internal'); `decision` nullable ('approved'|'approved_with_comments'|'rejected'|'waived'); `comment`; `signed_at`
+   - unique `(round_id, reviewer_id)`
+   - RLS: SELECT company member; INSERT by engineering_admin/project_admin (round creation); UPDATE where `reviewer_id = auth.uid()` OR engineering_admin (waiver path)
+3. `notifications` (minimal — full UI in Batch 12)
+   - `user_id` → `profiles(id)`, `type`, `title`, `body`, `link`, `read_at`
+   - RLS: SELECT/UPDATE `user_id = auth.uid()`; INSERT allowed to any authenticated (server functions write on behalf of users)
 
-### 4. Query hooks (`src/lib/bom-query.ts`)
-`queryOptions` for snapshots/details/roles; mutations for generate/updateLine (optimistic recalc)/release with invalidation + sonner.
+### Server logic — `src/lib/drawing-reviews.functions.ts`
 
-### 5. UI
-- Route: `src/routes/_authenticated/projects.$projectId.engineering.bom.tsx`, plus `bom` entry in engineering sub-nav.
-- `bom-header.tsx` — version select, status badge, params summary, totals; "Regenerate" (writer) and "Release" (engineering_admin) buttons.
-- `bom-table.tsx` — grouped by category with `useReducer` for local edits (qty/buffer/unit_cost), live `qty_buffered` = `applyBuffer(qty, pct)` recompute, blur commits via `updateBomLine`. Read-only when released.
-- `bom-empty.tsx` — "No BOM yet — generate from archetype config" with Generate CTA.
-- CSV export button → constructs CSV client-side from loaded lines.
-- States: `Suspense` skeleton, error boundary card, empty state. Semantic tokens only.
+All `.middleware([attachSupabaseAuth])`, zod-validated, tenant-scoped via loaded revision/project row.
 
-### 6. Verification
-- Apply migration; `bunx tsgo --noEmit`; `bun run test` (new calculator suite).
-- Manual: on Prairie Winds, generate → v1 populated; edit cable buffer live; release as engineering_admin (verify audit row); attempt release as engineer (403).
+- `listReviewRounds({ projectId })` — rounds joined with revision (drawing number, rev code), reviewers, decision chips, markup open/resolved counts (aggregate `document_markups` by revision).
+- `getReviewRound({ roundId })` — round + signoffs + reviewer profile display names + markup summary + audit chip data.
+- `listEligibleReviewers({ projectId })` — company members with roles `client_viewer`, `lender_viewer`, or internal engineering roles (`engineer`, `engineering_admin`, `project_admin`).
+- `startReviewRound({ revisionId, reviewerIds: [{userId, org}], dueDate })` — engineering_admin/project_admin only; requires revision status `IFD`; supersedes any existing open round on same revision (mark closed) then creates round with `round_no = max+1`; inserts signoff rows with `decision = null`; inserts `notifications` rows (`type='drawing_review.requested'`, link to drawing); audit `engineering.review_round_started`.
+- `submitSignoff({ signoffId, decision, comment })` — only the named reviewer; `decision` in `approved | approved_with_comments | rejected`; sets `signed_at`; audit `engineering.review_signoff`; on final signoff auto-close round.
+- `waiveSignoff({ signoffId, comment })` — engineering_admin only; requires non-empty comment (409 otherwise); sets `decision='waived'`, `signed_at=now()`, audit `engineering.review_waived`.
+- `closeReviewRound({ roundId })` — engineering_admin/project_admin; only when all signoffs have `decision != null`; audit `engineering.review_closed`.
 
-### Technical notes
-- BOM totals stored on snapshot as `{ line_count, total_cost, generated_from: {config_versions...} }` for the Batch 07 procurement KPI.
-- All writes go through `requireSupabaseAuth`; server always recomputes `qty_buffered` to prevent client tampering.
-- CSV export is client-side only (no server function needed).
+### IFC governance update — `src/lib/drawings.functions.ts`
+
+Replace the existing "approved engineering sign-off" check inside `transitionDrawingStatus` when `toStatus === 'IFC'`:
+
+- Locate the latest IFD revision on the drawing.
+- Load the most recent review round for that revision.
+- Reject 409 `ifc_blocked_no_review` when no round exists.
+- Reject 409 `ifc_blocked_pending_reviews` when any signoff row has `decision IS NULL`.
+- On success, auto-close the round (idempotent) before performing the status transition.
+
+Existing "no open markups" and "must have IFD" checks stay. Update the error copy to match the new contract.
+
+### UI — `src/routes/_authenticated/projects.$projectId.engineering.reviews.tsx`
+
+Add "Reviews" tab to engineering sub-nav (`projects.$projectId.engineering.tsx`).
+
+Sections:
+- **Rounds list** (`ReviewRoundsTable`): per project — drawing number + rev, round #, status badge, reviewers as decision chips (color per decision), due-date countdown, overdue → amber badge when `due_date < today && status='open'`. Row click opens drawer.
+- **Round detail drawer** (`ReviewRoundDrawer`): revision info, markup summary (open / resolved counts), signoff timeline (reviewer, org, decision chip, comment, signed_at), inline actions:
+  - reviewer's own row → decision + comment form (submit via `submitSignoff`)
+  - engineering_admin → "Waive" per pending row (comment required — client-side + server-side validation)
+  - engineering_admin / project_admin → "Close round" when complete
+- **Start round dialog** (`StartReviewRoundDialog`) triggered from drawing detail (P-053) header when `revision.status === 'IFD'` and from Reviews tab header: multi-select reviewers from `listEligibleReviewers` with org selector per reviewer, due date picker.
+
+States: skeleton via TanStack Query `useSuspenseQuery`, empty (`No review rounds yet — start one from an IFD revision`), error boundary. Optimistic mutation for signoff + sonner toast. Semantic tokens only. All copy respects role (view-only for non-writers).
+
+### Query layer — `src/lib/drawing-reviews-query.ts`
+
+`useReviewRounds(projectId)`, `useReviewRound(roundId)`, `useEligibleReviewers(projectId)`, plus mutations invalidating `['review-rounds', projectId]`, `['review-round', roundId]`, `['drawing', drawingId]` (for the IFC gate refresh).
+
+### Tests — `tests/unit/`
+
+- Sign-off completeness helper (pure): `roundIsComplete(signoffs)` — used by both server and UI.
+- Governance error mapper: input scenarios → status/code.
+
+### Acceptance checklist
+
+- [ ] Start round on IFD rev with two reviewers → rows + notifications inserted
+- [ ] IFC transition returns 409 while any signoff pending
+- [ ] Reviewer can only sign own row; other row returns 403
+- [ ] Engineering_admin waive without comment → 409; with comment → 200 + audited
+- [ ] All decisions filled → IFC transition succeeds and round auto-closes
+- [ ] Overdue open round → amber badge in list
+
+### Out of scope (Batch 12 / P-111)
+
+Full notifications UI (bell/menu), background overdue sweeper, and the generic approvals engine — this ticket adds only the minimal `notifications` table row-writes.
+
+next → P-059 once green.
