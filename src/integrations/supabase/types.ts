@@ -144,36 +144,80 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string | null
           contact_email: string | null
           created_at: string
           id: string
           legal_name: string | null
           name: string
+          phone: string | null
           plan_tier: string
           slug: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
           contact_email?: string | null
           created_at?: string
           id?: string
           legal_name?: string | null
           name: string
+          phone?: string | null
           plan_tier?: string
           slug: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
           contact_email?: string | null
           created_at?: string
           id?: string
           legal_name?: string | null
           name?: string
+          phone?: string | null
           plan_tier?: string
           slug?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      company_branding: {
+        Row: {
+          accent_color: string | null
+          company_id: string
+          created_at: string
+          footer_text: string | null
+          logo_url: string | null
+          primary_color: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          company_id: string
+          created_at?: string
+          footer_text?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          company_id?: string
+          created_at?: string
+          footer_text?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_branding_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       currencies: {
         Row: {

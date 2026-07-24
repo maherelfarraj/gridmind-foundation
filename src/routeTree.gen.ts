@@ -24,6 +24,7 @@ import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authen
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
+import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_authenticated/settings.company'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
@@ -105,6 +106,12 @@ const AuthenticatedSettingsDepartmentsRoute =
     path: '/settings/departments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsCompanyRoute =
+  AuthenticatedSettingsCompanyRouteImport.update({
+    id: '/settings/company',
+    path: '/settings/company',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminTenantsRouteRoute =
   AuthenticatedAdminTenantsRouteRouteImport.update({
     id: '/tenants',
@@ -135,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
@@ -152,6 +160,7 @@ export interface FileRoutesByTo {
   '/signup': typeof authSignupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
@@ -173,6 +182,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/admin/tenants'
+    | '/settings/company'
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/dashboard'
+    | '/settings/company'
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
@@ -230,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/admin/tenants'
+    | '/_authenticated/settings/company'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/permissions-simulator'
@@ -353,6 +366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDepartmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/company': {
+      id: '/_authenticated/settings/company'
+      path: '/settings/company'
+      fullPath: '/settings/company'
+      preLoaderRoute: typeof AuthenticatedSettingsCompanyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/tenants': {
       id: '/_authenticated/admin/tenants'
       path: '/tenants'
@@ -427,6 +447,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
@@ -436,6 +457,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsPermissionsSimulatorRoute:
