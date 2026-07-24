@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, GitBranch, RefreshCw } from "lucide-react";
 
 import { ArrayConfigForm } from "@/components/proposals/ArrayConfigForm";
+import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
 import { LineItemsGrid } from "@/components/proposals/LineItemsGrid";
 import { PricingApprovalCard } from "@/components/proposals/PricingApprovalCard";
 import { ProposalHeaderForm } from "@/components/proposals/ProposalHeaderForm";
