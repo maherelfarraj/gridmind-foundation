@@ -80,12 +80,39 @@ export function OpportunityHeaderCard({
       setPendingLoss(true);
       return;
     }
+    if (next === "won") {
+      setWinOpen(true);
+      return;
+    }
     move.mutate({ id: opp.id, stage: next as any });
   };
+
+  const isWon = opp.stage === "won";
+  const intakeId = opp.converted_intake_id;
 
   return (
     <>
       <Card className="flex flex-col gap-4 border-border bg-card p-6">
+        {isWon && intakeId ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/5 px-4 py-2 text-sm">
+            <span className="text-foreground">
+              <span className="font-semibold">Won</span> — converted to project intake{" "}
+              <code className="rounded bg-muted px-1.5 py-0.5 text-[11px]">
+                #{intakeId.slice(0, 8)}
+              </code>
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={downloadKickoff.isPending}
+              onClick={() => downloadKickoff.mutate({ intakeId })}
+            >
+              <Download size={14} aria-hidden />
+              {downloadKickoff.isPending ? "Opening…" : "Download kick-off pack"}
+            </Button>
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             {editingName && !readOnly ? (
