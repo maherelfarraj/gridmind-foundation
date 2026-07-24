@@ -7,11 +7,13 @@ const SUB_TABS = [
   { to: "" as const, label: "Overview" },
   { to: "drawings" as const, label: "Drawings" },
   { to: "reviews" as const, label: "Reviews" },
+  { to: "rfis" as const, label: "RFIs" },
   { to: "sld" as const, label: "SLD" },
   { to: "yield" as const, label: "Yield" },
   { to: "bom" as const, label: "BOM" },
   { to: "uploads" as const, label: "Site data uploads" },
 ];
+
 
 
 
@@ -49,7 +51,7 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads" | "drawings" | "reviews" | "sld" | "yield" | "bom";
+  to: "" | "uploads" | "drawings" | "reviews" | "rfis" | "sld" | "yield" | "bom";
   label: string;
   projectId: string;
 }) {
