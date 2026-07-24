@@ -540,7 +540,7 @@ function escapeIlike(v: string): string {
 }
 
 async function assertCompanyMember(
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> },
+  supabase: { rpc: (fn: any, args: any) => any },
   companyId: string,
 ): Promise<void> {
   const { data: ok, error } = await supabase.rpc("is_company_member", {
@@ -549,6 +549,7 @@ async function assertCompanyMember(
   if (error) throw error;
   if (ok !== true) httpError(403, "forbidden");
 }
+
 
 
 export const listProjects = createServerFn({ method: "GET" })
