@@ -441,6 +441,120 @@ export type Database = {
           },
         ]
       }
+      project_bess_config: {
+        Row: {
+          augmentation_strategy: string | null
+          chemistry: string
+          company_id: string
+          container_count: number | null
+          created_at: string
+          cycles_per_day: number | null
+          duration_hours: number | null
+          energy_mwh: number | null
+          id: string
+          pcs_count: number | null
+          power_mw: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          augmentation_strategy?: string | null
+          chemistry?: string
+          company_id: string
+          container_count?: number | null
+          created_at?: string
+          cycles_per_day?: number | null
+          duration_hours?: number | null
+          energy_mwh?: number | null
+          id?: string
+          pcs_count?: number | null
+          power_mw?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          augmentation_strategy?: string | null
+          chemistry?: string
+          company_id?: string
+          container_count?: number | null
+          created_at?: string
+          cycles_per_day?: number | null
+          duration_hours?: number | null
+          energy_mwh?: number | null
+          id?: string
+          pcs_count?: number | null
+          power_mw?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_bess_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_bess_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_cybersecurity_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          project_id: string
+          remote_access_policy: string | null
+          soc_monitoring: boolean
+          standard: string
+          updated_at: string
+          zones_conduits: Json
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          project_id: string
+          remote_access_policy?: string | null
+          soc_monitoring?: boolean
+          standard?: string
+          updated_at?: string
+          zones_conduits?: Json
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          remote_access_policy?: string | null
+          soc_monitoring?: boolean
+          standard?: string
+          updated_at?: string
+          zones_conduits?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_cybersecurity_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_cybersecurity_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_departments: {
         Row: {
           company_id: string
@@ -494,6 +608,73 @@ export type Database = {
             foreignKeyName: "project_departments_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_financial_config: {
+        Row: {
+          capex_total: number | null
+          company_id: string
+          contingency_pct: number | null
+          contract_years: number | null
+          created_at: string
+          currency_code: string
+          debt_ratio_pct: number | null
+          discount_rate_pct: number | null
+          id: string
+          ppa_price: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          capex_total?: number | null
+          company_id: string
+          contingency_pct?: number | null
+          contract_years?: number | null
+          created_at?: string
+          currency_code?: string
+          debt_ratio_pct?: number | null
+          discount_rate_pct?: number | null
+          id?: string
+          ppa_price?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          capex_total?: number | null
+          company_id?: string
+          contingency_pct?: number | null
+          contract_years?: number | null
+          created_at?: string
+          currency_code?: string
+          debt_ratio_pct?: number | null
+          discount_rate_pct?: number | null
+          id?: string
+          ppa_price?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_financial_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_financial_config_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "project_financial_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -631,6 +812,399 @@ export type Database = {
           },
         ]
       }
+      project_pv_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          dc_ac_ratio: number | null
+          dc_capacity_mwp: number | null
+          gcr: number | null
+          id: string
+          inverter_count: number | null
+          module_type: string | null
+          project_id: string
+          tilt_deg: number | null
+          tracker_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          dc_ac_ratio?: number | null
+          dc_capacity_mwp?: number | null
+          gcr?: number | null
+          id?: string
+          inverter_count?: number | null
+          module_type?: string | null
+          project_id: string
+          tilt_deg?: number | null
+          tracker_type?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          dc_ac_ratio?: number | null
+          dc_capacity_mwp?: number | null
+          gcr?: number | null
+          id?: string
+          inverter_count?: number | null
+          module_type?: string | null
+          project_id?: string
+          tilt_deg?: number | null
+          tracker_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_pv_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_pv_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_pvsyst_config: {
+        Row: {
+          albedo: number | null
+          bifacial: boolean
+          company_id: string
+          created_at: string
+          id: string
+          meteo_source: string | null
+          near_shading_pct: number | null
+          project_id: string
+          pvsyst_version: string | null
+          sim_report_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          albedo?: number | null
+          bifacial?: boolean
+          company_id: string
+          created_at?: string
+          id?: string
+          meteo_source?: string | null
+          near_shading_pct?: number | null
+          project_id: string
+          pvsyst_version?: string | null
+          sim_report_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          albedo?: number | null
+          bifacial?: boolean
+          company_id?: string
+          created_at?: string
+          id?: string
+          meteo_source?: string | null
+          near_shading_pct?: number | null
+          project_id?: string
+          pvsyst_version?: string | null
+          sim_report_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_pvsyst_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_pvsyst_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_scada_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          historian_retention_days: number
+          id: string
+          points_count: number | null
+          polling_interval_sec: number
+          project_id: string
+          protocol: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          historian_retention_days?: number
+          id?: string
+          points_count?: number | null
+          polling_interval_sec?: number
+          project_id: string
+          protocol?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          historian_retention_days?: number
+          id?: string
+          points_count?: number | null
+          polling_interval_sec?: number
+          project_id?: string
+          protocol?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_scada_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_scada_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_sld_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          hv_voltage_kv: number | null
+          id: string
+          lv_voltage_kv: number | null
+          mv_voltage_kv: number | null
+          project_id: string
+          updated_at: string
+          voltage_levels: Json
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          hv_voltage_kv?: number | null
+          id?: string
+          lv_voltage_kv?: number | null
+          mv_voltage_kv?: number | null
+          project_id: string
+          updated_at?: string
+          voltage_levels?: Json
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          hv_voltage_kv?: number | null
+          id?: string
+          lv_voltage_kv?: number | null
+          mv_voltage_kv?: number | null
+          project_id?: string
+          updated_at?: string
+          voltage_levels?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_sld_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_sld_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_substation_config: {
+        Row: {
+          bay_count: number | null
+          busbar_scheme: string | null
+          company_id: string
+          created_at: string
+          grid_code: string | null
+          id: string
+          project_id: string
+          transformer_count: number | null
+          transformer_mva: number | null
+          updated_at: string
+          voltage_kv: number | null
+        }
+        Insert: {
+          bay_count?: number | null
+          busbar_scheme?: string | null
+          company_id: string
+          created_at?: string
+          grid_code?: string | null
+          id?: string
+          project_id: string
+          transformer_count?: number | null
+          transformer_mva?: number | null
+          updated_at?: string
+          voltage_kv?: number | null
+        }
+        Update: {
+          bay_count?: number | null
+          busbar_scheme?: string | null
+          company_id?: string
+          created_at?: string
+          grid_code?: string | null
+          id?: string
+          project_id?: string
+          transformer_count?: number | null
+          transformer_mva?: number | null
+          updated_at?: string
+          voltage_kv?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_substation_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_substation_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_templates: {
+        Row: {
+          archetype: Database["public"]["Enums"]["project_archetype"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          default_budget_lines: Json
+          default_departments: Database["public"]["Enums"]["project_department"][]
+          default_gates: Json
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          archetype: Database["public"]["Enums"]["project_archetype"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          default_budget_lines?: Json
+          default_departments?: Database["public"]["Enums"]["project_department"][]
+          default_gates?: Json
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          archetype?: Database["public"]["Enums"]["project_archetype"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_budget_lines?: Json
+          default_departments?: Database["public"]["Enums"]["project_department"][]
+          default_gates?: Json
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_yield_config: {
+        Row: {
+          availability_pct: number | null
+          company_id: string
+          created_at: string
+          degradation_pct: number | null
+          ghi_kwh_m2: number | null
+          id: string
+          losses_pct: number | null
+          p50_mwh: number | null
+          p90_mwh: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          availability_pct?: number | null
+          company_id: string
+          created_at?: string
+          degradation_pct?: number | null
+          ghi_kwh_m2?: number | null
+          id?: string
+          losses_pct?: number | null
+          p50_mwh?: number | null
+          p90_mwh?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          availability_pct?: number | null
+          company_id?: string
+          created_at?: string
+          degradation_pct?: number | null
+          ghi_kwh_m2?: number | null
+          id?: string
+          losses_pct?: number | null
+          p50_mwh?: number | null
+          p90_mwh?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_yield_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_yield_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           archetype: Database["public"]["Enums"]["project_archetype"]
@@ -724,6 +1298,13 @@ export type Database = {
             columns: ["project_admin_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_template_fk"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "project_templates"
             referencedColumns: ["id"]
           },
         ]
