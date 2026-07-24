@@ -167,8 +167,14 @@ function PriceAlertsPage() {
   }, [rows]);
 
   const subscribeMutation = useMutation({
-    mutationFn: (vars: Parameters<typeof subscribeFn>[0]["data"]) =>
-      subscribeFn({ data: vars }),
+    mutationFn: (vars: {
+      category: MaterialCategory;
+      region: string;
+      unit: string;
+      currency_code: string;
+      alert_threshold_pct: number;
+      source?: string | null;
+    }) => subscribeFn({ data: vars }),
     onSuccess: () => {
       invalidate();
       toast.success("Subscription saved");

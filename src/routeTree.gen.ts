@@ -38,6 +38,7 @@ import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_a
 import { Route as AuthenticatedProcurementScorecardsRouteImport } from './routes/_authenticated/procurement.scorecards'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
 import { Route as AuthenticatedProcurementReceiptsRouteImport } from './routes/_authenticated/procurement.receipts'
+import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './routes/_authenticated/procurement.price-alerts'
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
@@ -239,6 +240,12 @@ const AuthenticatedProcurementReceiptsRoute =
   AuthenticatedProcurementReceiptsRouteImport.update({
     id: '/procurement/receipts',
     path: '/procurement/receipts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProcurementPriceAlertsRoute =
+  AuthenticatedProcurementPriceAlertsRouteImport.update({
+    id: '/procurement/price-alerts',
+    path: '/procurement/price-alerts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProcurementPosRoute =
@@ -521,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
+  '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -590,6 +598,7 @@ export interface FileRoutesByTo {
   '/po/$token': typeof PoTokenRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
+  '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
@@ -659,6 +668,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
+  '/_authenticated/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/_authenticated/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/_authenticated/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -733,6 +743,7 @@ export interface FileRouteTypes {
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
+    | '/procurement/price-alerts'
     | '/procurement/receipts'
     | '/procurement/rfqs'
     | '/procurement/scorecards'
@@ -802,6 +813,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/crm/pipeline'
     | '/procurement/expediting'
+    | '/procurement/price-alerts'
     | '/procurement/scorecards'
     | '/projects/new'
     | '/proposals/$proposalId'
@@ -870,6 +882,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
+    | '/_authenticated/procurement/price-alerts'
     | '/_authenticated/procurement/receipts'
     | '/_authenticated/procurement/rfqs'
     | '/_authenticated/procurement/scorecards'
@@ -1140,6 +1153,13 @@ declare module '@tanstack/react-router' {
       path: '/procurement/receipts'
       fullPath: '/procurement/receipts'
       preLoaderRoute: typeof AuthenticatedProcurementReceiptsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/procurement/price-alerts': {
+      id: '/_authenticated/procurement/price-alerts'
+      path: '/procurement/price-alerts'
+      fullPath: '/procurement/price-alerts'
+      preLoaderRoute: typeof AuthenticatedProcurementPriceAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/procurement/pos': {
@@ -1711,6 +1731,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
+  AuthenticatedProcurementPriceAlertsRoute: typeof AuthenticatedProcurementPriceAlertsRoute
   AuthenticatedProcurementReceiptsRoute: typeof AuthenticatedProcurementReceiptsRouteWithChildren
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
   AuthenticatedProcurementScorecardsRoute: typeof AuthenticatedProcurementScorecardsRoute
@@ -1740,6 +1761,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProcurementMatchesRouteWithChildren,
   AuthenticatedProcurementPosRoute:
     AuthenticatedProcurementPosRouteWithChildren,
+  AuthenticatedProcurementPriceAlertsRoute:
+    AuthenticatedProcurementPriceAlertsRoute,
   AuthenticatedProcurementReceiptsRoute:
     AuthenticatedProcurementReceiptsRouteWithChildren,
   AuthenticatedProcurementRfqsRoute:
