@@ -1,5 +1,5 @@
-// P-064 — Purchase Order detail with CFO approval controls.
-import { useState } from "react";
+// P-064/P-065 — Purchase Order detail: approval, issue, PDF, vendor share link.
+import { useMemo, useState } from "react";
 import {
   createFileRoute,
   useNavigate,
@@ -7,8 +7,20 @@ import {
 } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CheckCircle2, Receipt, Send, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Copy,
+  Download,
+  Link2,
+  Link2Off,
+  Receipt,
+  RefreshCw,
+  Send,
+  XCircle,
+} from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,14 +35,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
-import { getPo, getPoApprovalThreshold, getPoWriteAccess } from "@/lib/po.functions";
+import { PoStatusStepper } from "@/components/procurement/po-status-stepper";
+import {
+  getPo,
+  getPoApprovalThreshold,
+  getPoWriteAccess,
+} from "@/lib/po.functions";
 import {
   poApprovalThresholdQueryOptions,
   poDetailQueryOptions,
   poWriteAccessQueryOptions,
   useApprovePo,
+  useCreatePoShareLink,
+  useDownloadPoPdf,
   useIssuePo,
   useRejectPo,
+  useRevokePoShareLink,
   useSubmitPoForApproval,
 } from "@/lib/po-query";
 
@@ -40,7 +60,8 @@ export const Route = createFileRoute("/_authenticated/procurement/pos/$poId")({
       { title: "Purchase Order — GridMind EPC" },
       {
         name: "description",
-        content: "Review, approve, and issue a purchase order with full audit trail.",
+        content:
+          "Review, approve, issue, and share a purchase order with full audit trail.",
       },
     ],
   }),
@@ -57,6 +78,11 @@ function fmtMoney(n: number, currency: string) {
   } catch {
     return `${currency} ${n.toFixed(2)}`;
   }
+}
+
+function shareUrl(token: string): string {
+  if (typeof window === "undefined") return `/po/${token}`;
+  return `${window.location.origin}/po/${token}`;
 }
 
 function PoDetail() {
@@ -81,11 +107,26 @@ function PoDetail() {
   const approve = useApprovePo(poId);
   const reject = useRejectPo(poId);
   const issue = useIssuePo(poId);
+  const download = useDownloadPoPdf(poId);
+  const createLink = useCreatePoShareLink(poId);
+  const revokeLink = useRevokePoShareLink(poId);
 
   const [approveNote, setApproveNote] = useState("");
   const [rejectNote, setRejectNote] = useState("");
 
   const requiresApproval = po.total_amount > threshold;
+
+  const shareLive = useMemo(() => {
+    if (!po.share_token || !po.share_token_expires_at) return false;
+    return new Date(po.share_token_expires_at).getTime() > Date.now();
+  }, [po.share_token, po.share_token_expires_at]);
+  const shareLink = po.share_token ? shareUrl(po.share_token) : null;
+  const canShare =
+    access.canAuthor &&
+    ["approved", "issued", "partially_received", "received"].includes(po.status);
+  const canDownload = ["approved", "issued", "partially_received", "received", "closed"].includes(
+    po.status,
+  );
 
   return (
     <div className="space-y-6">
@@ -128,6 +169,8 @@ function PoDetail() {
         </div>
       </header>
 
+      <PoStatusStepper status={po.status} />
+
       {/* action strip */}
       <section className="rounded-md border border-border p-4 space-y-4">
         {po.status === "draft" && access.canAuthor && (
@@ -166,7 +209,9 @@ function PoDetail() {
                   <Button
                     className="w-full"
                     onClick={() => approve.mutate(approveNote)}
-                    disabled={approve.isPending || approveNote.trim().length === 0}
+                    disabled={
+                      approve.isPending || approveNote.trim().length === 0
+                    }
                   >
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Approve
@@ -185,7 +230,9 @@ function PoDetail() {
                     variant="destructive"
                     className="w-full"
                     onClick={() => reject.mutate(rejectNote)}
-                    disabled={reject.isPending || rejectNote.trim().length === 0}
+                    disabled={
+                      reject.isPending || rejectNote.trim().length === 0
+                    }
                   >
                     <XCircle className="mr-2 h-4 w-4" />
                     Reject
@@ -221,6 +268,127 @@ function PoDetail() {
           </div>
         )}
       </section>
+
+      {/* Approval trail */}
+      {(po.approved_at || po.approval_note) && (
+        <section className="rounded-md border border-border p-4">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Approval trail
+          </h2>
+          <dl className="mt-2 grid grid-cols-2 gap-y-2 text-sm md:grid-cols-3">
+            <div>
+              <dt className="text-muted-foreground">Approved at</dt>
+              <dd>
+                {po.approved_at
+                  ? format(new Date(po.approved_at), "PPp")
+                  : "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Approved by</dt>
+              <dd className="font-mono text-xs">{po.approved_by ?? "—"}</dd>
+            </div>
+            <div className="md:col-span-1">
+              <dt className="text-muted-foreground">Note</dt>
+              <dd>{po.approval_note ?? "—"}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
+      {/* PDF + vendor share */}
+      {(canDownload || canShare) && (
+        <section className="rounded-md border border-border p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Branded PDF
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {po.pdf_path
+                  ? "Latest branded PDF is ready to download."
+                  : "PDF has not been generated yet. Downloading will build it now."}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => download.mutate()}
+              disabled={download.isPending || !canDownload}
+            >
+              {po.pdf_path ? (
+                <Download className="mr-2 h-4 w-4" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {download.isPending ? "Preparing…" : "Download PDF"}
+            </Button>
+          </div>
+
+          {canShare && (
+            <div className="border-t border-border pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Vendor share link
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {shareLive
+                      ? `Read-only vendor view · expires ${format(
+                          new Date(po.share_token_expires_at as string),
+                          "PPp",
+                        )}`
+                      : "No active vendor link. Generate one to share this PO for 14 days."}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => createLink.mutate()}
+                    disabled={createLink.isPending}
+                  >
+                    <Link2 className="mr-2 h-4 w-4" />
+                    {shareLive
+                      ? createLink.isPending
+                        ? "Regenerating…"
+                        : "Regenerate link"
+                      : createLink.isPending
+                        ? "Creating…"
+                        : "Create vendor link"}
+                  </Button>
+                  {shareLive && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => revokeLink.mutate()}
+                      disabled={revokeLink.isPending}
+                    >
+                      <Link2Off className="mr-2 h-4 w-4" />
+                      Revoke
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {shareLive && shareLink && (
+                <div className="mt-3 flex gap-2">
+                  <Input readOnly value={shareLink} className="font-mono text-xs" />
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(shareLink);
+                        toast.success("Link copied");
+                      } catch {
+                        toast.error("Copy failed");
+                      }
+                    }}
+                  >
+                    <Copy className="mr-2 h-4 w-4" /> Copy
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="grid gap-4 md:grid-cols-2">
         <MetaCard
@@ -271,7 +439,10 @@ function PoDetail() {
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={6} className="text-right text-sm text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="text-right text-sm text-muted-foreground"
+              >
                 Subtotal
               </TableCell>
               <TableCell className="text-right">
@@ -279,7 +450,10 @@ function PoDetail() {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={6} className="text-right text-sm text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="text-right text-sm text-muted-foreground"
+              >
                 Tax ({po.tax_pct}%)
               </TableCell>
               <TableCell className="text-right">

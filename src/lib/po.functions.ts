@@ -46,6 +46,8 @@ export interface PoRow {
   approved_at: string | null;
   issued_at: string | null;
   pdf_path: string | null;
+  share_token: string | null;
+  share_token_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -118,6 +120,8 @@ function toPoRow(r: any): PoRow {
     approved_at: r.approved_at,
     issued_at: r.issued_at,
     pdf_path: r.pdf_path,
+    share_token: r.share_token ?? null,
+    share_token_expires_at: r.share_token_expires_at ?? null,
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
@@ -708,12 +712,122 @@ export const rejectPo = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------------------------------------------------------------------------
+// PDF generation + storage
+// ---------------------------------------------------------------------------
+async function loadPoForPdf(
+  context: AuthContext,
+  poId: string,
+): Promise<{
+  companyId: string;
+  poNumber: string;
+  input: import("@/lib/exports/po-pdf").PoPdfInput;
+}> {
+  const { data: row, error } = await context.supabase
+    .from("purchase_orders")
+    .select(
+      `id, company_id, po_number, status, currency_code, lines, subtotal,
+       tax_pct, tax_amount, total_amount, payment_terms, incoterms,
+       delivery_address, required_by_date, issued_at, created_at,
+       vendors ( name, address ),
+       projects ( name )`,
+    )
+    .eq("id", poId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!row) httpError(404, "po_not_found");
+  const r = row as any;
+
+  const [{ data: company }, { data: branding }] = await Promise.all([
+    context.supabase
+      .from("companies")
+      .select("name, legal_name, contact_email, phone, address")
+      .eq("id", r.company_id)
+      .maybeSingle(),
+    context.supabase
+      .from("company_branding")
+      .select("primary_color, accent_color, footer_text, logo_url")
+      .eq("company_id", r.company_id)
+      .maybeSingle(),
+  ]);
+
+  let logoSignedUrl: string | null = null;
+  const logoPath = (branding as any)?.logo_url as string | null;
+  if (logoPath) {
+    const { data: signed } = await context.supabase.storage
+      .from("documents")
+      .createSignedUrl(logoPath, 300);
+    logoSignedUrl = signed?.signedUrl ?? null;
+  }
+
+  return {
+    companyId: r.company_id,
+    poNumber: r.po_number,
+    input: {
+      po: {
+        id: r.id,
+        po_number: r.po_number,
+        status: r.status,
+        currency_code: r.currency_code,
+        lines: (r.lines ?? []) as any,
+        subtotal: Number(r.subtotal ?? 0),
+        tax_pct: Number(r.tax_pct ?? 0),
+        tax_amount: Number(r.tax_amount ?? 0),
+        total_amount: Number(r.total_amount ?? 0),
+        payment_terms: r.payment_terms,
+        incoterms: r.incoterms,
+        delivery_address: r.delivery_address,
+        required_by_date: r.required_by_date,
+        issued_at: r.issued_at,
+        created_at: r.created_at,
+      },
+      vendor: r.vendors
+        ? { name: r.vendors.name, address: (r.vendors as any).address ?? null }
+        : null,
+      project: r.projects ? { name: r.projects.name } : null,
+      company: (company as any) ?? { name: "" },
+      branding: {
+        primaryColor: (branding as any)?.primary_color ?? null,
+        accentColor: (branding as any)?.accent_color ?? null,
+        footerText: (branding as any)?.footer_text ?? null,
+        logoSignedUrl,
+      },
+    },
+  };
+}
+
+async function generateAndStorePoPdf(
+  context: AuthContext,
+  poId: string,
+): Promise<string> {
+  const { companyId, input } = await loadPoForPdf(context, poId);
+  const { buildPoPdfBytes } = await import("@/lib/exports/po-pdf");
+  const bytes = await buildPoPdfBytes(input);
+  // FIRST path segment MUST be the company UUID — storage RLS enforces this.
+  const path = `${companyId}/po/${poId}.pdf`;
+
+  const { error: upErr } = await context.supabase.storage
+    .from("documents")
+    .upload(path, bytes, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+  if (upErr) throw upErr;
+
+  await context.supabase
+    .from("purchase_orders")
+    .update({ pdf_path: path } as any)
+    .eq("id", poId);
+
+  return path;
+}
+
 export const issuePo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
     z.object({ poId: z.string().uuid() }).parse(input),
   )
-  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+  .handler(async ({ data, context }): Promise<{ ok: true; pdfPath: string }> => {
     requireSupabaseAuth(context);
     const { data: po, error: pErr } = await context.supabase
       .from("purchase_orders")
@@ -734,9 +848,234 @@ export const issuePo = createServerFn({ method: "POST" })
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
     }
-    await audit(context, "po.issue", "purchase_orders", data.poId, {});
+
+    let pdfPath = "";
+    try {
+      pdfPath = await generateAndStorePoPdf(context, data.poId);
+    } catch (e) {
+      // Don't roll back the issue — surface path failure but keep the transition.
+      console.error("[po.issue] pdf generation failed", e);
+    }
+
+    await audit(context, "po.issue", "purchase_orders", data.poId, {
+      pdf_path: pdfPath || null,
+    });
+    return { ok: true, pdfPath };
+  });
+
+/** Signed URL for the authenticated authoring UI. Regenerates if missing. */
+export const getPoPdfDownloadUrl = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ poId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ url: string | null }> => {
+    requireSupabaseAuth(context);
+    const { data: po, error } = await context.supabase
+      .from("purchase_orders")
+      .select("id, company_id, pdf_path")
+      .eq("id", data.poId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!po) httpError(404, "po_not_found");
+
+    let path = (po as any).pdf_path as string | null;
+    if (!path) {
+      path = await generateAndStorePoPdf(context, data.poId);
+    }
+    const { data: signed, error: sErr } = await context.supabase.storage
+      .from("documents")
+      .createSignedUrl(path, 300);
+    if (sErr) return { url: null };
+    return { url: signed?.signedUrl ?? null };
+  });
+
+// ---------------------------------------------------------------------------
+// Vendor share link
+// ---------------------------------------------------------------------------
+const SHARE_TTL_DAYS = 14;
+
+export const createPoShareLink = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ poId: z.string().uuid() }).parse(input),
+  )
+  .handler(
+    async (
+      { data, context },
+    ): Promise<{ token: string; expiresAt: string }> => {
+      requireSupabaseAuth(context);
+      const flags = await hasAnyRole(context, [
+        "procurement_admin",
+        "procurement_officer",
+        "finance_admin",
+        "company_admin",
+      ]);
+      if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
+
+      const { data: po, error } = await context.supabase
+        .from("purchase_orders")
+        .select("id, status")
+        .eq("id", data.poId)
+        .maybeSingle();
+      if (error) throw error;
+      if (!po) httpError(404, "po_not_found");
+      if (
+        !["approved", "issued", "partially_received", "received"].includes(
+          (po as any).status,
+        )
+      )
+        httpError(
+          409,
+          "po_not_shareable",
+          "PO must be approved before sharing with a vendor.",
+        );
+
+      const token = crypto.randomUUID();
+      const expiresAt = new Date(
+        Date.now() + SHARE_TTL_DAYS * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const { error: uErr } = await context.supabase
+        .from("purchase_orders")
+        .update({
+          share_token: token,
+          share_token_expires_at: expiresAt,
+        } as any)
+        .eq("id", data.poId);
+      if (uErr) {
+        if ((uErr as any).code === "42501") httpError(403, "forbidden");
+        throw uErr;
+      }
+      await audit(
+        context,
+        "po.share_link_create",
+        "purchase_orders",
+        data.poId,
+        { expires_at: expiresAt },
+      );
+      return { token, expiresAt };
+    },
+  );
+
+export const revokePoShareLink = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ poId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    requireSupabaseAuth(context);
+    const now = new Date().toISOString();
+    const { error } = await context.supabase
+      .from("purchase_orders")
+      .update({ share_token_expires_at: now } as any)
+      .eq("id", data.poId);
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+    await audit(
+      context,
+      "po.share_link_revoke",
+      "purchase_orders",
+      data.poId,
+      {},
+    );
     return { ok: true };
   });
+
+// ---------------------------------------------------------------------------
+// Public vendor lookup (unauthenticated). No requireSupabaseAuth.
+// ---------------------------------------------------------------------------
+export interface PublicPoView {
+  po_number: string;
+  status: string;
+  currency_code: string;
+  lines: Array<{
+    line_no: number;
+    description: string;
+    spec: string | null;
+    qty: number;
+    uom: string;
+    unit_price: number;
+    amount: number;
+    site_need_date: string | null;
+  }>;
+  subtotal: number;
+  tax_pct: number;
+  tax_amount: number;
+  total_amount: number;
+  payment_terms: string | null;
+  incoterms: string | null;
+  delivery_address: string | null;
+  required_by_date: string | null;
+  issued_at: string | null;
+  vendor_name: string | null;
+  project_name: string | null;
+  company_name: string;
+  primary_color: string | null;
+  accent_color: string | null;
+  footer_text: string | null;
+  pdf_url: string | null;
+}
+
+export const getPoByShareToken = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ token: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<PublicPoView> => {
+    // No requireSupabaseAuth — this is intentionally public.
+    // The SECURITY DEFINER RPC enforces token + expiry server-side.
+    const { data: rows, error } = await context.supabase.rpc(
+      "get_po_by_share_token",
+      { p_token: data.token },
+    );
+    if (error) throw error;
+    const row = (rows as any[] | null)?.[0];
+    if (!row) httpError(410, "share_link_expired", "This link is no longer valid.");
+
+    // Signed URL for the PDF — vendors aren't company members, so RLS blocks
+    // them from storage.objects. The token has already been verified above,
+    // so a short-lived service-role signed URL is scoped narrowly enough.
+    let pdfUrl: string | null = null;
+    if (row.pdf_path) {
+      try {
+        const { supabaseAdmin } = await import(
+          "@/integrations/supabase/client.server"
+        );
+        const { data: signed } = await supabaseAdmin.storage
+          .from("documents")
+          .createSignedUrl(row.pdf_path, 300);
+        pdfUrl = signed?.signedUrl ?? null;
+      } catch (e) {
+        console.error("[po.share] signed url failed", e);
+      }
+    }
+
+    return {
+      po_number: row.po_number,
+      status: row.status,
+      currency_code: row.currency_code,
+      lines: (row.lines ?? []) as any,
+      subtotal: Number(row.subtotal ?? 0),
+      tax_pct: Number(row.tax_pct ?? 0),
+      tax_amount: Number(row.tax_amount ?? 0),
+      total_amount: Number(row.total_amount ?? 0),
+      payment_terms: row.payment_terms,
+      incoterms: row.incoterms,
+      delivery_address: row.delivery_address,
+      required_by_date: row.required_by_date,
+      issued_at: row.issued_at,
+      vendor_name: row.vendor_name,
+      project_name: row.project_name,
+      company_name: row.company_name,
+      primary_color: row.primary_color,
+      accent_color: row.accent_color,
+      footer_text: row.footer_text,
+      pdf_url: pdfUrl,
+    };
+  });
+
 
 // ---------------------------------------------------------------------------
 // threshold

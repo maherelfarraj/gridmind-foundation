@@ -6,14 +6,17 @@ import { toast } from "sonner";
 import {
   approvePo,
   awardRfqLine,
+  createPoShareLink,
   generatePosFromAwards,
   getPo,
   getPoApprovalThreshold,
+  getPoPdfDownloadUrl,
   getPoWriteAccess,
   issuePo,
   listPos,
   listRfqAwards,
   rejectPo,
+  revokePoShareLink,
   setPoApprovalThreshold,
   submitPoForApproval,
   unawardRfqLine,
@@ -230,6 +233,47 @@ export function useSetPoThreshold() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["po-approval-threshold"] });
       toast.success("Approval threshold updated");
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  });
+}
+
+export function useDownloadPoPdf(poId: string) {
+  const fn = useServerFn(getPoPdfDownloadUrl);
+  return useMutation({
+    mutationFn: async () => {
+      const { url } = await fn({ data: { poId } });
+      if (!url) throw new Error("Could not generate a signed PDF URL.");
+      if (typeof window !== "undefined") {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      return url;
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  });
+}
+
+export function useCreatePoShareLink(poId: string) {
+  const qc = useQueryClient();
+  const fn = useServerFn(createPoShareLink);
+  return useMutation({
+    mutationFn: () => fn({ data: { poId } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["po", poId] });
+      toast.success("Vendor share link created — valid for 14 days");
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  });
+}
+
+export function useRevokePoShareLink(poId: string) {
+  const qc = useQueryClient();
+  const fn = useServerFn(revokePoShareLink);
+  return useMutation({
+    mutationFn: () => fn({ data: { poId } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["po", poId] });
+      toast.success("Vendor link revoked");
     },
     onError: (err) => toast.error(errorMessage(err)),
   });
