@@ -1,94 +1,71 @@
+## P-034 — Wizard step 2: basics
 
-## P-033 — Archetype picker (wizard step 1)
+Extend the existing wizard route with a step-2 form. No DB writes; validated values are merged into the sessionStorage draft.
 
-Build the first step of the project creation wizard. No DB writes; state lives in a sessionStorage draft.
+### Shared schema
 
-### Route
+New file `src/lib/schemas/project-wizard.ts`:
 
-- File: `src/routes/_authenticated/projects.new.tsx` (flat-dot convention; the app shell in this repo is `_authenticated/`, not `(app)/` — everything under it already sits behind the auth guard).
-- Path: `/projects/new`.
-- `validateSearch`: `zodValidator(z.object({ step: fallback(z.number().int(), 1).default(1) }))`. Clamp to 1..4 in the component.
-- `Cancel` links to `/projects` (route file not yet created in P-031/P-032 — link renders as text `to="/projects"`; typecheck will pass once P-034 lands the list route. If typecheck fails today, use `<Link to=".." >` relative back-nav or a `useNavigate` handler string. Decide at implementation time based on tsgo output.)
+- Export `ProjectArchetype` re-use from `@/lib/wizard-draft`.
+- Export a `makeProjectBasicsSchema(archetype: ProjectArchetype)` factory returning a `z.object({...}).superRefine(...)`.
+  - Ticket shows `getDraftArchetype()` but that couples the schema to a global; a factory keeps the same shape without hidden state and stays reusable server-side in P-036 (server will pass the archetype coming from the persisted draft/insert payload).
+  - Uses the exact field shape from the ticket: `name`, `code` (regex `/^[A-Z0-9-]{2,12}$/`), `capacity_mw`, optional `capacity_mwh`, `site_name/country/region`, optional `site_lat/lng`, `offtaker`, `target_cod`.
+  - `target_cod` refined to be strictly in the future.
+  - `superRefine`: if archetype is `standalone_bess` or `hybrid_pv_bess`, require `capacity_mwh`.
+- Export a `suggestProjectCode(name: string, year = new Date().getFullYear())` helper: take up to 3 uppercase alphanumeric initials of the words in `name`, join, append `-<YYYY>`, clamp to the 2–12 char regex (fallback to `PRJ-<YYYY>` when name yields nothing).
+- Export `type ProjectBasics = z.infer<ReturnType<typeof makeProjectBasicsSchema>>`.
 
-### Draft store
+### Draft store update
 
-- File: `src/lib/wizard-draft.ts`.
-- Shape: `type ProjectDraft = { archetype?: ProjectArchetype; /* future steps append here */ }`.
-- API: `readDraft()`, `writeDraft(patch)`, `clearDraft()`, plus a `useProjectDraft()` hook that:
-  - Reads from `sessionStorage` under key `gridmind:project-draft:v1` inside `useEffect` (SSR-safe; never in a `useState` initializer per the execution-model rule).
-  - Returns `{ draft, setDraft, clear, hydrated }`.
-- Persist per-write, wrap access in try/catch, ignore quota errors.
+`src/lib/wizard-draft.ts`:
 
-### Server function
+- Extend `ProjectDraft` with an optional `basics?: ProjectBasics` field (typed against the schema output). Dates round-trip as ISO strings in sessionStorage — add a small `reviveDraft` step in `readDraft` that converts `basics.target_cod` back to a `Date` if it's a string. Keep `writeDraft` unchanged; `JSON.stringify` already turns `Date` into ISO.
+- No API change to `useProjectDraft`.
 
-- New file: `src/lib/projects.functions.ts`.
-- `getProjectCreationAccess = createServerFn({ method: "GET" }).middleware([attachSupabaseAuth]).inputValidator(z.object({ companyId: z.string().uuid() }).parse).handler(...)`.
-  - `requireSupabaseAuth(context)`.
-  - Verify caller is a member of `companyId` (reuse the `isCompanyMember` pattern from `modules.functions.ts` — copy the two helpers into the new file or extract to a shared module; prefer inline copy to keep the change scoped).
-  - Load `companies.plan_tier`.
-  - Call `context.supabase.rpc("has_module_access", { p_company_id, p_module: "green_hydrogen" })`.
-  - Return `{ planTier: PlanTier, greenHydrogenEnabled: boolean }`.
-- No mutation is performed; final creation gate re-checks in P-036.
+### Form component
 
-### Components
+New file `src/components/wizard/project-basics-form.tsx`:
 
-- `src/components/wizard/archetype-picker.tsx`
-  - Props: `{ planTier, greenHydrogenEnabled, value, onChange }`.
-  - Renders `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`.
-  - Card = `<button type="button">` wrapping shadcn `Card`; selected state = `ring-2 ring-primary`; disabled = `opacity-60 cursor-not-allowed` + "Enterprise plan required" `Badge` linking to `/settings/billing` (route may not exist yet — render as anchor `<a href="/settings/billing">` to avoid Link typecheck error).
-  - Icon left, label + capacity hint + one-line description stacked right.
-- `src/components/wizard/archetype-catalog.ts` — the 7 entries as a typed const array:
+- Props: `{ archetype: ProjectArchetype; defaultValues?: Partial<ProjectBasics>; onSubmit: (values: ProjectBasics) => void; onBack: () => void; }`.
+- `useForm` with `zodResolver(makeProjectBasicsSchema(archetype))`, `mode: "onChange"` so Next stays disabled until valid.
+- Layout: single-column shadcn `Form` inside a `Card` (`bg-card border-border`), section headers using `text-muted-foreground` uppercase labels.
+  - "Identity" section: `name`, `code`. Watch `name` and, when the user hasn't manually touched `code` (track with a ref flag toggled on first `code` change), keep `code` synced with `suggestProjectCode(name)`.
+  - "Capacity" section: `capacity_mw` (number input, `MW` suffix via right-aligned span). `capacity_mwh` (number input, `MWh` suffix) rendered only when `archetype` is `standalone_bess` or `hybrid_pv_bess`.
+  - "Site" section: `site_name`, `site_country`, `site_region`, plus `site_lat` and `site_lng` numeric inputs in a two-column grid. Add a disabled `Button variant="outline"` labelled "Pick on map" wrapped in a shadcn `Tooltip` with content "Map picker ships in a later batch". No map dependency.
+  - "Commercial" section: `offtaker`, `target_cod`.
+- `target_cod` uses the shadcn Datepicker pattern from knowledge (Popover + Calendar with `pointer-events-auto`, formatted via `date-fns` `format(date, "PPP")`).
+- Inline errors under each field via `FormMessage` (already `text-destructive`). Semantic tokens only; no hex/rgb.
+- Footer: "Back" ghost button (calls `onBack`), "Next" primary button (`type="submit"`, disabled when `!formState.isValid`).
 
-  ```ts
-  export const ARCHETYPES = [
-    { key: "utility_pv",              label: "Utility PV",              icon: Sun,            capacityHint: "MW",            description: "..." },
-    { key: "standalone_bess",         label: "Standalone BESS",         icon: BatteryCharging,capacityHint: "MW + MWh",      description: "..." },
-    { key: "c_and_i_rooftop",         label: "C&I Rooftop",             icon: Building2,      capacityHint: "MW",            description: "..." },
-    { key: "hybrid_pv_bess",          label: "Hybrid PV+BESS",          icon: SunSnow,        capacityHint: "MW + MWh",      description: "..." },
-    { key: "onshore_wind",            label: "Onshore Wind",            icon: Wind,           capacityHint: "MW",            description: "..." },
-    { key: "green_hydrogen",          label: "Green H\u2082",           icon: FlaskConical,   capacityHint: "MW electrolyser", description: "...", enterpriseOnly: true },
-    { key: "transmission_substation", label: "Transmission Substation", icon: Zap,            capacityHint: "MW",            description: "..." },
-  ] as const;
-  ```
+### Route wiring
 
-  Use string literals with `&` (never `&amp;` / `&#38;`) and `\u2082` (never `n`, `2`, or `&sub2;`).
+Update `src/routes/_authenticated/projects.new.tsx`:
 
-### Route body
+- Keep step-1 rendering intact when `search.step === 1`.
+- When `search.step >= 2` and `!draft.archetype` (and `hydrated`), call `navigate({ to: "/projects/new", search: { step: 1 }, replace: true })` from an effect and render the skeleton in the meantime. Do not redirect before hydration to avoid clobbering a valid draft on first paint.
+- When `search.step === 2` and draft has an archetype, render `<ProjectBasicsForm>`:
+  - `archetype={draft.archetype}`
+  - `defaultValues={draft.basics}`
+  - `onBack` → `navigate({ to: "/projects/new", search: { step: 1 } })`
+  - `onSubmit(values)` → `setDraft({ basics: values })` then `navigate({ to: "/projects/new", search: { step: 3 } })`
+- Header copy updates: when step is 2, subtitle changes to "Tell us the basics: name, capacity, site, and target COD." Keep the step indicator (`Step {n} of 4`).
+- Head metadata: leave as-is (single route, step is a search param).
+- The existing step-1 access query (`getProjectCreationAccess`) still runs and remains the gate for archetype changes, but step 2 doesn't depend on it — render the form even if the query is still refetching, since the archetype is already committed in the draft.
+- Steps 3 and 4 remain unhandled; a small fallback panel ("Coming soon in P-035") is fine when `search.step >= 3` to avoid a blank page, but this ticket doesn't ship them.
 
-Layout: page header ("New project" + step indicator "Step 1 of 4"), body renders the picker, footer with Cancel + Next.
+### Design & copy rules
 
-```text
-useActiveCompany() → activeCompanyId (nullable while loading)
-useQuery({
-  queryKey: ["project-creation-access", activeCompanyId],
-  queryFn: () => getAccessFn({ data: { companyId: activeCompanyId! } }),
-  enabled: !!activeCompanyId,
-})
-useProjectDraft()
-```
+- Semantic tokens only (`bg-card`, `border-border`, `text-muted-foreground`, `text-destructive`, `ring-primary`, etc.).
+- Preserve `C&I` (literal ampersand) and `Green H₂` (`\u2082`) in any copy that references archetypes.
+- Icons via `lucide-react` at `size={16}` or `20`.
 
-States:
-- No `activeCompanyId` yet OR query pending → 7 skeleton cards (shadcn `Skeleton`).
-- Error → branded panel: `Card` with `border-destructive/40`, icon, message, "Try again" button calling `refetch()`. A dev-only `?forceError=1` search flag can trigger a synthetic error to demo it.
-- Success → picker. Green H₂ card disabled when `planTier !== "enterprise" || !greenHydrogenEnabled`.
-
-Next button: disabled until `draft.archetype` set. On click `navigate({ to: "/projects/new", search: { step: 2 } })`.
-Cancel: `clearDraft()` then `navigate({ to: "/projects" })` (or `/` if `/projects` still doesn't typecheck).
-
-Head metadata: unique title "New project · GridMind EPC", description, og:title/description, twitter:card.
-
-### Styling rules
-
-- Semantic tokens only: `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`, `ring-primary`, `bg-destructive/10`, etc. No hex, no `rgb(`, no arbitrary color values.
-- Icons inherit `currentColor`; size via `size={20}` prop.
-
-### Verification (after implementation, in build mode)
+### Verification (after switching to build mode)
 
 1. `bunx tsgo --noEmit`.
-2. `rg -n "#[0-9a-fA-F]{3,8}|rgb\\(|rgba\\(" src/components/wizard src/routes/_authenticated/projects.new.tsx src/lib/wizard-draft.ts src/lib/projects.functions.ts` — expect no matches.
-3. Playwright as demo-admin: land on `/projects/new`, screenshot the 7 cards, assert labels via `page.get_by_text("C&I Rooftop", exact=True)` and `page.get_by_text("Green H₂", exact=True)`; select a card, reload, confirm ring persists; visit `?forceError=1`, screenshot error panel; click Next → URL becomes `?step=2`; click Cancel → returns to `/projects` (or fallback) and sessionStorage key is cleared.
-4. Gating: `supabase--read_query` to grab a growth-tier company id, switch via the CompanySwitcher, confirm Green H₂ card is disabled with the Enterprise badge; switch back and confirm it re-enables.
+2. `rg -n "#[0-9a-fA-F]{3,8}|rgb\(|rgba\(" src/components/wizard src/lib/schemas src/routes/_authenticated/projects.new.tsx` — expect no matches.
+3. Vitest unit: add `tests/unit/project-wizard-schema.test.ts` covering (a) BESS requires MWh, (b) PV does not, (c) past `target_cod` rejected, (d) `suggestProjectCode("Prairie Winds Solar")` → matches `/^PWS-\d{4}$/`, (e) code regex accepts/ rejects samples.
+4. Playwright as demo-admin: direct-visit `?step=2` with cleared sessionStorage → lands on step 1; pick Standalone BESS → step 2 shows MWh field; pick Utility PV → MWh hidden; type a past date → error; fill valid form → Next → Back → values intact; reload on step 2 → values intact; typing a name populates `code` until user edits code manually.
 
 ### Out of scope
 
-- Steps 2–4, project row insertion, audit logging, `/projects` list route, `/settings/billing` route — all deferred to their own tickets.
+- Steps 3–4, DB writes, audit rows, map picker, `/projects` list route — deferred.

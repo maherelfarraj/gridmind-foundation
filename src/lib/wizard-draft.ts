@@ -3,25 +3,40 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Database } from "@/integrations/supabase/types";
+import type { ProjectBasics } from "@/lib/schemas/project-wizard";
 
 export type ProjectArchetype =
   Database["public"]["Enums"]["project_archetype"];
 
 export type ProjectDraft = {
   archetype?: ProjectArchetype;
-  // Steps 2–4 append fields here.
+  basics?: ProjectBasics;
+  // Steps 3–4 append fields here.
 };
 
 const STORAGE_KEY = "gridmind:project-draft:v1";
+
+function reviveDraft(input: unknown): ProjectDraft {
+  if (!input || typeof input !== "object") return {};
+  const d = { ...(input as ProjectDraft) };
+  const basics = d.basics as
+    | (Omit<ProjectBasics, "target_cod"> & { target_cod?: unknown })
+    | undefined;
+  if (basics && typeof basics.target_cod === "string") {
+    const parsed = new Date(basics.target_cod);
+    if (!isNaN(parsed.getTime())) {
+      d.basics = { ...basics, target_cod: parsed } as ProjectBasics;
+    }
+  }
+  return d;
+}
 
 export function readDraft(): ProjectDraft {
   if (typeof window === "undefined") return {};
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as unknown;
-    if (parsed && typeof parsed === "object") return parsed as ProjectDraft;
-    return {};
+    return reviveDraft(JSON.parse(raw));
   } catch {
     return {};
   }
