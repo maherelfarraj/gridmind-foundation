@@ -1,33 +1,64 @@
-## P-071 — Planning baseline migration (WBS, schedule, baselines, risks)
+## P-072 — WBS builder UI
 
-Single migration + RLS test stub. No UI, no server functions yet (those land in P-072/P-073).
+Adds the first Planning sub-route: `/projects/$projectId/planning/wbs`. Uses TanStack Query loaders, `createServerFn` + zod + `requireSupabaseAuth`, and semantic tokens throughout.
 
-### 1. Migration `supabase/migrations/0032_planning_baseline.sql`
+### 1. Server functions — `src/lib/wbs.functions.ts`
 
-(0031 is taken by procurement extras; renumber to 0032.)
+Role gate: `project_admin | finance_admin | company_admin` for writes (read is company-member via RLS).
 
-Idempotent SQL block:
-- Guarded `do` blocks creating enums `wbs_item_type`, `schedule_task_status`, `risk_status`.
-- `create table if not exists` for `wbs_items`, `schedule_tasks`, `baseline_snapshots`, `risks` — schemas exactly as specified (FKs to `companies`, `projects`, `profiles`, `currencies`; CHECKs on schedule dates/progress and risk P×I; `risks.score` as `generated always as (probability * impact) stored`).
-- Attach existing `public.set_updated_at()` BEFORE UPDATE trigger to all four tables (guarded with `drop trigger if exists`).
-- `alter table ... enable row level security` for all four.
-- Policies exactly as specified: `wbs_select/wbs_write`, `sched_select/sched_write`, `baseline_select/baseline_write`, `risks_select/risks_write` — all using `is_company_member` + `has_company_role(...)` combinations.
-- GRANTs: `SELECT` on all four to `authenticated`; `INSERT, UPDATE, DELETE` on `wbs_items` and `schedule_tasks`; `INSERT, UPDATE` only on `baseline_snapshots` and `risks` (no DELETE — append-only guarantee). `GRANT ALL` on all four to `service_role`.
-- Indexes: `wbs_project_idx`, `sched_project_idx`, `sched_wbs_idx`, `baseline_project_idx`, `risks_project_idx`.
+- `listWbsTree({ projectId })` — returns `{ items: WbsItem[] }` sorted by `parent_id, sort_order`. Client builds the tree.
+- `createWbsItem({ projectId, parent_id, code, name, item_type, discipline?, description?, sort_order?, budgeted_amount?, currency_code?, ifc_package_ref? })` — audits `wbs.create`.
+- `updateWbsItem({ id, patch })` — same schema (partial). Audits `wbs.update`.
+- `reparentWbsItem({ id, parent_id, sort_order })` — audits `wbs.reparent` (prevents self/descendant cycles server-side by walking ancestors).
+- `deleteWbsItem({ id })` — blocks with `wbs.has_children` when the node has direct WBS children OR any `schedule_tasks.wbs_item_id = id`. Returns a typed `{ error: "has_dependencies", counts: { children, tasks } }` shape so the UI can toast a friendly message. Audits `wbs.delete` on success.
+- `importIfcPackages({ projectId, packages: [{ code, name, discipline, ifc_package_ref }] })` — inserts selected packages in one call under a single "Engineering" root (auto-created if missing), audits `wbs.import_ifc` with `{ project_id, count, source: "ifc_release" }`.
+- `proposeIfcPackages({ projectId })` — reads released `ifc_releases` for the project + their `revision_snapshot` and `drawing_register` (discipline, drawing_number, title) and returns dedupe-by-discipline proposals (code suggestion like `1.<n>` unused-in-project, name from `package_name`, `ifc_package_ref = release.id`). Also flags packages already imported (existing `wbs_items.ifc_package_ref = release.id`).
 
-All `create policy` statements wrapped with `drop policy if exists` so re-running is clean.
+Split rule: file contains only `createServerFn` + imports; helpers (cycle check, next-code, proposal builder) live in `src/lib/wbs.server.ts`. Pure rules (code regex, discipline enum, zod schemas) live in `src/lib/wbs-rules.ts` — imported by both.
 
-### 2. RLS test stub `tests/rls/planning-baseline.rls.test.ts`
+### 2. Schedule-task alignment — extend `src/lib/schedule-tasks.functions.ts`
 
-Vitest skeleton mirroring `tests/rls/rfq-core.rls.test.ts` — `describe.skip` blocks for cross-tenant SELECT = 0 rows on each of the four tables, so future wiring has a shape to fill in.
+New file (schedule task work fully lands in P-073; this batch adds just what the align panel needs):
+- `listScheduleTasksForAlign({ projectId })` → `{ tasks: [{ id, name, discipline, wbs_item_id, status }] }`.
+- `assignScheduleTask({ id, discipline, wbs_item_id })` — role gate: `project_admin | construction_admin | company_admin`. Audits `schedule_task.assign` with `{ from: {...}, to: {...} }`.
 
-### 3. Verification checklist
+### 3. Query helpers — `src/lib/wbs-query.ts`
 
-- Migration runs twice cleanly (guarded enums/policies/triggers).
-- `supabase--linter` clean for the new tables.
-- Read-query sanity: RLS enabled on all 4; `unique(project_id, code)` on `wbs_items`; no DELETE grant on `baseline_snapshots`/`risks`; `risks.score` is a generated column (insert P=4/I=3 sample → 12, then rollback).
-- Types file regenerated after apply.
+`wbsTreeQueryOptions(projectId)`, `wbsIfcProposalsQueryOptions(projectId)`, `scheduleTasksAlignQueryOptions(projectId)`.
 
-### Deferred to later prompts (per spec)
-- WBS builder UI → P-072.
-- Server functions (`createServerFn` + zod + `requireSupabaseAuth` + `writeAuditLog` for `wbs.create`, `schedule_task.update`, `baseline.lock`, `risk.create`), cycle validation for `predecessor_ids`, locked-baseline immutability check → P-073.
+### 4. Route — `src/routes/_authenticated/projects.$projectId.planning.tsx` (layout) + `.planning.wbs.tsx` (leaf)
+
+Layout mirrors `projects.$projectId.engineering.tsx`: subnav shell with `Outlet`, only "WBS" tab active this batch (Gantt/Baselines/Risks appear in P-073/P-074). Adds "Planning" to the department tabs by extending `DEPT_TABS` in `projects.$projectId.tsx` **only when** the project's `departments` contains `finance` or a new synthetic `planning` mapping — safer to keep it separate: append a static "Planning" tab visible on every project (planning is not gated per project department). Confirmed acceptable — this matches how `gates` is always shown.
+
+Leaf `planning.wbs.tsx`:
+- Two-pane grid (`lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]`, stacks on mobile).
+- **Left tree** (`components/planning/wbs-tree.tsx`): recursive collapsible list, indent-per-depth, per-row shows `code` (mono), name, `item_type` badge, discipline chip, budget `Intl.NumberFormat`. Row actions (kebab): Add child, Add sibling, Delete. Includes "Unassigned tasks" virtual node fed by `scheduleTasksAlignQueryOptions` (unassigned count badge).
+- **Right editor** (`components/planning/wbs-detail-form.tsx`): react-hook-form + zod. Client-side sibling-uniqueness check against loaded tree; DB unique is backstop. Reparent via parent-picker `Select` (excludes self + descendants). Discipline `Select` from fixed vocab. Currency `Select` from `currencies` query. Save → mutation → invalidate tree.
+- **Header actions**: "Import IFC packages" opens `IfcImportDialog` (uses `proposeIfcPackages`), rows with checkboxes + editable code/name; "Already imported" rows disabled. Confirm → `importIfcPackages` → toast + invalidate.
+- **Lower panel** (`components/planning/task-alignment-panel.tsx`): table of schedule tasks with inline discipline + WBS `Select`s, optimistic update via `useMutation` (`onMutate` patches cache, rollback on error), sonner toast per save.
+- **States**: `pendingComponent` skeleton, empty state ("No WBS yet — import IFC packages or add your first phase" with two CTAs), `errorComponent` with retry (`router.invalidate()` + `reset()`).
+- **Read-only mode**: query `has_company_role` results via a `wbsAccessQueryOptions` (mirrors pattern used in price-alerts) — hides all write controls when the user lacks a write role.
+
+### 5. Nav — `src/lib/nav-map.ts`
+
+No change (Planning & Budget already listed under Lifecycle → `/planning`). This batch surfaces WBS inside the project cockpit, not the global nav. A future batch can add a top-level `/planning` index if needed.
+
+### 6. Tests — `tests/unit/wbs-rules.test.ts`
+
+Pure-rule coverage:
+- Code regex + sibling uniqueness helper (`isCodeUniqueAmongSiblings`).
+- Cycle detector (`wouldCreateCycle(tree, id, newParent)`).
+- Zod schemas reject: empty name, invalid discipline, negative sort_order, negative budget.
+- Next-code suggestion for imports (`suggestNextRootChildCode`).
+
+### 7. Verification
+
+- Typecheck; `bun run test:unit tests/unit/wbs-rules.test.ts`.
+- Manual on Prairie Winds: build 1 → 1.1 → 1.1.1, unique code rejection surfaces, IFC import proposes from released set + audits `wbs.import_ifc`, delete blocked while a task references the node, align panel decrements unassigned badge, skeleton/empty/error visible, read-only role sees no controls.
+
+### Technical notes
+
+- `.functions.ts` files stay handler-only per `tanstack-serverfn-splitting`.
+- IFC proposal reads `ifc_releases.revision_snapshot` (Json) and joins to `drawing_register` for discipline. If a release lacks a snapshot, fall back to listing the release itself as one package.
+- Optimistic task assignment uses `queryClient.setQueryData` + rollback on `onError`.
+- No changes to migration 0032; all constraints already in place.
