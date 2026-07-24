@@ -442,6 +442,297 @@ export type Database = {
         }
         Relationships: []
       }
+      document_markups: {
+        Row: {
+          annotation: Json
+          company_id: string
+          created_at: string
+          id: string
+          page_number: number | null
+          resolution_note: string | null
+          reviewer_id: string | null
+          reviewer_org: string | null
+          revision_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          annotation: Json
+          company_id: string
+          created_at?: string
+          id?: string
+          page_number?: number | null
+          resolution_note?: string | null
+          reviewer_id?: string | null
+          reviewer_org?: string | null
+          revision_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          annotation?: Json
+          company_id?: string
+          created_at?: string
+          id?: string
+          page_number?: number | null
+          resolution_note?: string | null
+          reviewer_id?: string | null
+          reviewer_org?: string | null
+          revision_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_markups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_markups_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_markups_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "drawing_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          category: Database["public"]["Enums"]["document_category"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          project_id: string
+          storage_path: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["document_category"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          project_id: string
+          storage_path?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["document_category"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          project_id?: string
+          storage_path?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drawing_register: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          current_revision_id: string | null
+          current_status: Database["public"]["Enums"]["drawing_status"]
+          discipline: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_number: string
+          id: string
+          locked: boolean
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          current_revision_id?: string | null
+          current_status?: Database["public"]["Enums"]["drawing_status"]
+          discipline?: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_number: string
+          id?: string
+          locked?: boolean
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          current_revision_id?: string | null
+          current_status?: Database["public"]["Enums"]["drawing_status"]
+          discipline?: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_number?: string
+          id?: string
+          locked?: boolean
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drawing_register_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drawing_register_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drawing_register_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_current_revision"
+            columns: ["current_revision_id"]
+            isOneToOne: false
+            referencedRelation: "drawing_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drawing_revisions: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          drawing_id: string
+          file_name: string | null
+          file_size_bytes: number | null
+          id: string
+          issue_reason: string | null
+          issued_at: string | null
+          issued_by: string | null
+          mime_type: string | null
+          revision_code: string
+          status: Database["public"]["Enums"]["drawing_status"]
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          drawing_id: string
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          issue_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          mime_type?: string | null
+          revision_code: string
+          status?: Database["public"]["Enums"]["drawing_status"]
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          drawing_id?: string
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          issue_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          mime_type?: string | null
+          revision_code?: string
+          status?: Database["public"]["Enums"]["drawing_status"]
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drawing_revisions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drawing_revisions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drawing_revisions_drawing_id_fkey"
+            columns: ["drawing_id"]
+            isOneToOne: false
+            referencedRelation: "drawing_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drawing_revisions_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fx_rates: {
         Row: {
           as_of: string
@@ -2279,6 +2570,23 @@ export type Database = {
         | "investor_viewer"
         | "lender_viewer"
       delivery_status: "pending" | "success" | "failed"
+      document_category:
+        | "drawing"
+        | "report"
+        | "calculation"
+        | "datasheet"
+        | "correspondence"
+        | "contract_doc"
+        | "other"
+      drawing_discipline:
+        | "civil"
+        | "structural"
+        | "electrical"
+        | "mechanical"
+        | "scada_controls"
+        | "survey"
+        | "general"
+      drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       lead_source:
         | "referral"
@@ -2491,6 +2799,25 @@ export const Constants = {
         "lender_viewer",
       ],
       delivery_status: ["pending", "success", "failed"],
+      document_category: [
+        "drawing",
+        "report",
+        "calculation",
+        "datasheet",
+        "correspondence",
+        "contract_doc",
+        "other",
+      ],
+      drawing_discipline: [
+        "civil",
+        "structural",
+        "electrical",
+        "mechanical",
+        "scada_controls",
+        "survey",
+        "general",
+      ],
+      drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       lead_source: [
         "referral",
