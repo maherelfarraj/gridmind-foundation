@@ -1,61 +1,64 @@
-## P-068 — Expediting Log
+## P-069 — Vendor Scorecards (OTD / Quality / Responsiveness)
 
-Delivery tracking workbench chasing PO items against site-need dates, with Stage-3 exit-gate KPI.
+Auto-compute vendor performance from live PO/GRN/expediting data. Table `vendor_scorecards` already exists (P-061) with the exact columns and unique constraint we need — no migration required.
 
-### 1. Database — migration `0030_expediting.sql`
+### Server layer
 
-Note: numbering as `0030_` since `0029_three_way_match.sql` already exists (spec's `0029_expediting.sql` collides).
+**`src/lib/scorecard-rules.ts`** (pure, unit-tested)
+- Zod schemas: `recomputeSchema { periodStart, periodEnd, projectId? }`, `listSchema { periodStart, periodEnd }`.
+- `computeOtdPct(grns, poDueMap)` → on-time GRNs ÷ confirmed GRNs × 100.
+- `computeQuality(grns)` → 100 − (defective ÷ total × 100). Defective = `status='has_defects' || defects_count>0`.
+- `computeResponsiveness(expLogs, now)` → 100 − 10 × (logs with `status='delayed'` OR `last_vendor_contact_at` older than 14d). Floor 0. Returns `null` when no expediting rows.
+- `trend(current, prior)` → `{delta, direction: 'up'|'down'|'flat'}` for each metric.
+- Status band: OTD ≥ 95 green, 80–94 amber, <80 destructive.
 
-- `expediting_status` enum via guarded `do` block: `on_track | at_risk | delayed | delivered`.
-- `public.expediting_logs` per spec (company_id, po_id, project_id, po_line_no, item_description, is_long_lead, promised_delivery_date, delivery_window_start/end, site_need_date, current_eta, eta_confirmed, status, last_vendor_contact_at, notes, created_by, timestamps).
-- GRANT to `authenticated` + service_role, then RLS + policies (`exp_select`, `exp_write` gated on `procurement_admin | procurement_officer | company_admin`).
-- Indexes on `(company_id, project_id, status)` and `(po_id)`.
-- Unique guard `(po_id, po_line_no)` where `po_line_no is not null` to prevent duplicate imports.
-- Attach `set_updated_at()` trigger.
+**`src/lib/scorecard.functions.ts`** (`requireSupabaseAuth`)
+- `listScorecards({ periodStart, periodEnd })` — RLS-scoped rows for the period + prior-period rows keyed by `(vendor_id, project_id)` for trend.
+- `getVendorHistory({ vendorId })` — all stored periods for chart + contributing PO/GRN summary for the current period.
+- `recomputeScorecards({ periodStart, periodEnd, projectId? })` — role-gated (`procurement_admin`/`procurement_officer`/`company_admin` via `has_company_role`). Steps:
+  1. Load POs (issued_at in period, optional project filter) with `required_by_date`, joined vendors.
+  2. Load confirmed GRNs for those POs (`received_at` in period).
+  3. Load expediting_logs for those POs in period.
+  4. Group per `(vendor_id, project_id?)`, compute three metrics + counts.
+  5. UPSERT into `vendor_scorecards` on `(vendor_id, project_id, period_start, period_end)` with `computed_at = now()`.
+  6. `writeAuditLog('scorecard.recompute','vendor_scorecards', null, { period, vendor_count, project_id })`.
+  - Returns `{ upsertedCount }`.
 
-### 2. Server logic
+**`src/lib/scorecard-query.ts`** — `queryOptions` for list + history.
 
-**`src/lib/expediting-rules.ts`** (pure, tested)
-- `deriveStatus({ current_eta, site_need_date, delivery_window_start/end, last_vendor_contact_at, fully_received })`:
-  - `fully_received` → `delivered`
-  - `current_eta > site_need_date` → `delayed`
-  - ETA inside window AND `last_vendor_contact_at` > 14 days old → `at_risk`
-  - else `on_track`
-- `daysUntilNeed(site_need_date)` (UTC-safe).
-- `computeLongLeadKpi(rows)` → `{ total, ready, pct, band: 'green'|'amber'|'destructive' }` (≥95 / 85–94 / <85).
-- Zod schemas for create/update payloads.
+### UI
 
-**`src/lib/expediting.functions.ts`** (`createServerFn` + `requireSupabaseAuth`)
-- `listExpediting({ projectId? })` — RLS-scoped select joined with PO number + project name.
-- `importFromPo({ poId, longLeadLineNos[] })` — pulls open PO lines from `purchase_orders.lines`, upserts rows (skip existing `(po_id, po_line_no)`), marks selected lines long-lead, defaults `site_need_date` from PO `required_by_date` / line need date.
-- `updateExpediting({ id, patch })` — updates ETA/eta_confirmed/notes/window/long-lead; recomputes status server-side by loading `goods_receipts` for the PO line to determine `fully_received`; writes audit log `expediting.update`.
-- `logVendorContact({ id })` — stamps `last_vendor_contact_at = now()`, recomputes status, audits.
-- `getLongLeadKpi({ projectId? })` — returns KPI numbers for the tile.
-- All mutations require `procurement_admin | procurement_officer | company_admin` (verified via `context.supabase` role check); reads open to any company member (RLS handles).
+**`/procurement/scorecards`** (`src/routes/_authenticated/procurement.scorecards.tsx`)
+- Header: period picker (trailing 90d default, presets 30/90/180/365d + custom range via existing `Popover` + `Calendar`), optional project filter, "Recompute" button (role-hidden via `useCurrentRoles`), CSV export.
+- KPI strip: portfolio avg OTD, avg quality, count of vendors below 80% OTD.
+- Table (design-token semantic classes): Vendor · OTD % · Quality · Responsiveness (or "Insufficient data") · POs · Defects · Trend chips vs prior period · status badge. Sortable by OTD.
+- Row click → `VendorScorecardDrawer` with Recharts `LineChart` of three metrics across stored periods and a contributing-list panel (recent GRNs with received_at vs required_by, defective flag; recent POs).
+- Skeleton, empty-state copy: "No scorecard data — receipts will populate scores automatically."; error state with retry; sonner toasts.
 
-### 3. UI — `/procurement/expediting`
+**Components**
+- `src/components/procurement/scorecard-status-badge.tsx`
+- `src/components/procurement/vendor-scorecard-drawer.tsx`
+- `src/components/procurement/trend-chip.tsx`
 
-Route file `src/routes/_authenticated/procurement.expediting.tsx` (add nav entry with `Truck` icon).
+**Nav** — `src/lib/nav-map.ts` add "Scorecards" under Procurement (icon `Gauge`).
 
-- **Header KPI strip**: Open items, Delayed count, and the long-lead exit-gate progress tile (green ≥95 / amber 85–94 / destructive <85) with tooltip "Procure → Plan exit gate".
-- **Board/table hybrid** grouped by project (collapsible groups); rows show PO link, item, long-lead badge, promised date, delivery window, site-need date, ETA input (inline edit) with confirmed toggle, status badge, days-until-need countdown chip (color by sign/threshold), "Log contact" button.
-- **"Add from PO" dialog**: pick a PO, list its open lines with checkbox for long-lead flag, submit → `importFromPo`.
-- Optimistic mutations via TanStack Query with `sonner` toasts; skeleton, empty ("No items being expedited"), and error+retry states.
-- **CSV export** client-side from current filtered rows.
-- Semantic tokens only (status colors via existing badge variants; no raw hex).
+### Tests
 
-### 4. Tests
+`tests/unit/scorecard-rules.test.ts`:
+- OTD math with mixed on-time/late GRNs, no receipts → null.
+- Quality: defects_count>0 and status='has_defects' both count; all clean = 100.
+- Responsiveness: stale contact and delayed status penalty, floor at 0, empty logs → null.
+- Trend direction: up/down/flat, no prior → null.
+- Status band thresholds at 79.99, 80, 94.99, 95.
 
-- `tests/unit/expediting-rules.test.ts`: status derivation matrix (delivered wins, delayed vs at_risk, contact-age boundary at 14d), `daysUntilNeed`, KPI band thresholds (exact 95 / 94.9 / 85 / 84.9), import de-dup.
-
-### 5. Acceptance checks
-
-- Import from PO: no duplicates on re-import; long-lead flags persist.
-- ETA past site-need → `delayed`; ETA in window with 15-day-old contact → `at_risk`.
-- Full GRN on the linked line → `delivered` on next update/refresh.
-- KPI tile color thresholds correct.
-- `foreman` read-only (write blocked by role check); every mutation audited.
+### Acceptance checklist
+- Upsert idempotent on repeat recompute (unique constraint enforces it).
+- OTD math verifiable against `received_at` vs `required_by_date`.
+- P-066 defect flows through to quality; P-068 stale contact/delayed → responsiveness penalty.
+- Trend column + per-vendor history chart.
+- `scorecard.recompute` audited; recompute button hidden/blocked for non-procurement roles; empty state clean.
 
 ### Out of scope
-- Automatic status recompute on GRN insert (handled lazily on read/update this iteration; a trigger can come later if needed).
-- Push notifications for at-risk items.
+- No schema change (table already exists).
+- No changes to P-063 award logic (feedback loop noted, not wired).
+- Vendor drawer uses live query for contributing GRNs/POs; not stored snapshots.
