@@ -705,3 +705,422 @@ export const runYieldStub = createServerFn({ method: "POST" })
     return yieldResult;
   });
 
+
+// ---------------------------------------------------------------------------
+// P-046 — Pricing checklist + CFO approval gate
+// ---------------------------------------------------------------------------
+export interface ChecklistItem {
+  key: string;
+  label: string;
+  pass: boolean;
+  detail?: string;
+}
+
+export interface ApprovalInstanceRow {
+  id: string;
+  status: string;
+  requested_by: string | null;
+  decided_by: string | null;
+  decided_at: string | null;
+  metadata: Record<string, any> | null;
+  created_at: string;
+}
+
+export interface PricingChecklistResult {
+  items: ChecklistItem[];
+  allPass: boolean;
+  pricingLock: {
+    status?: string;
+    requested_by?: string;
+    requested_at?: string;
+    approved_by?: string;
+    approved_at?: string;
+    rejected_by?: string;
+    rejected_at?: string;
+    comment?: string;
+    margin_pct?: number;
+    fx_rate_snapshot?: number | null;
+    contingency_pct?: number;
+  } | null;
+  approvalInstance: ApprovalInstanceRow | null;
+}
+
+async function computeChecklistFor(
+  context: any,
+  proposalId: string,
+): Promise<{
+  result: PricingChecklistResult;
+  proposal: any;
+  opportunity: any | null;
+}> {
+  const { supabase } = context;
+  const { data: proposal, error } = await supabase
+    .from("proposals")
+    .select("*, opportunities(id, competitor)")
+    .eq("id", proposalId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!proposal) httpError(404, "not_found");
+
+  const p = proposal as any;
+  const opportunity = p.opportunities ?? null;
+
+  const { data: lines, error: lErr } = await supabase
+    .from("proposal_line_items")
+    .select("qty, unit_price, line_total")
+    .eq("proposal_id", proposalId);
+  if (lErr) throw new Error(lErr.message);
+
+  const items: ChecklistItem[] = [];
+  const lineRows = lines ?? [];
+  const anyBad = lineRows.some(
+    (l: any) => Number(l.qty ?? 0) <= 0 || Number(l.unit_price ?? 0) < 0,
+  );
+  const lineSum = lineRows.reduce(
+    (s: number, l: any) => s + Number(l.line_total ?? 0),
+    0,
+  );
+  const subtotalMatch = Math.abs(lineSum - Number(p.subtotal ?? 0)) < 0.01;
+  items.push({
+    key: "line_items_priced",
+    label: "All line items priced and totals reconcile",
+    pass: lineRows.length > 0 && !anyBad && subtotalMatch,
+    detail:
+      lineRows.length === 0
+        ? "no line items"
+        : anyBad
+          ? "qty or unit price invalid on one or more lines"
+          : !subtotalMatch
+            ? `Σ line_total (${lineSum.toFixed(2)}) ≠ subtotal (${Number(
+                p.subtotal ?? 0,
+              ).toFixed(2)})`
+            : undefined,
+  });
+
+  const marginPass = Number(p.margin_pct ?? 0) >= MARGIN_FLOOR_PCT;
+  items.push({
+    key: "margin_floor",
+    label: `Margin ≥ ${MARGIN_FLOOR_PCT}%`,
+    pass: marginPass,
+    detail: marginPass ? undefined : `current: ${Number(p.margin_pct ?? 0)}%`,
+  });
+
+  const currency = String(p.currency_code ?? "").toUpperCase();
+  if (currency === COMPANY_BASE_CURRENCY) {
+    items.push({
+      key: "fx_snapshot",
+      label: `FX (${currency} = company base)`,
+      pass: true,
+    });
+  } else if (p.fx_rate_snapshot == null) {
+    items.push({
+      key: "fx_snapshot",
+      label: `FX snapshot ≤ ${FX_MAX_AGE_HOURS}h old`,
+      pass: false,
+      detail: "no fx_rate_snapshot captured",
+    });
+  } else {
+    const { data: fx } = await supabase
+      .from("fx_rates")
+      .select("as_of, rate")
+      .eq("base_code", COMPANY_BASE_CURRENCY)
+      .eq("quote_code", currency)
+      .order("as_of", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!fx) {
+      items.push({
+        key: "fx_snapshot",
+        label: `FX snapshot ≤ ${FX_MAX_AGE_HOURS}h old`,
+        pass: false,
+        detail: `no FX rate available for ${COMPANY_BASE_CURRENCY}→${currency}`,
+      });
+    } else {
+      const ageH =
+        (Date.now() - new Date((fx as any).as_of).getTime()) / 3_600_000;
+      items.push({
+        key: "fx_snapshot",
+        label: `FX snapshot ≤ ${FX_MAX_AGE_HOURS}h old`,
+        pass: ageH <= FX_MAX_AGE_HOURS,
+        detail:
+          ageH <= FX_MAX_AGE_HOURS
+            ? undefined
+            : `latest rate is ${Math.round(ageH)}h old`,
+      });
+    }
+  }
+
+  const contPass = Number(p.contingency_pct ?? 0) >= CONTINGENCY_FLOOR_PCT;
+  items.push({
+    key: "contingency_floor",
+    label: `Contingency ≥ ${CONTINGENCY_FLOOR_PCT}%`,
+    pass: contPass,
+    detail: contPass
+      ? undefined
+      : `current: ${Number(p.contingency_pct ?? 0)}%`,
+  });
+
+  const vu = p.valid_until ? new Date(p.valid_until) : null;
+  const vuPass = !!vu && vu.getTime() > Date.now();
+  items.push({
+    key: "valid_until_future",
+    label: "Valid-until date set and in the future",
+    pass: vuPass,
+    detail: !vu ? "not set" : vuPass ? undefined : "in the past",
+  });
+
+  const compPass = !!(
+    opportunity?.competitor && String(opportunity.competitor).trim().length > 0
+  );
+  items.push({
+    key: "competitor_recorded",
+    label: "Competitor recorded on opportunity",
+    pass: compPass,
+    detail: compPass
+      ? undefined
+      : opportunity
+        ? "no competitor on linked opportunity"
+        : "proposal not linked to an opportunity",
+  });
+
+  const yr = p.yield_result ?? null;
+  const yieldPass = !!yr && yr.p50_kwh != null && yr.p90_kwh != null;
+  items.push({
+    key: "yield_run",
+    label: "Yield simulation run (P50/P90 present)",
+    pass: yieldPass,
+    detail: yieldPass ? undefined : "no yield result yet",
+  });
+
+  const { data: instance } = await supabase
+    .from("approval_instances")
+    .select("*")
+    .eq("entity", PRICING_ENTITY)
+    .eq("entity_id", proposalId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const allPass = items.every((i) => i.pass);
+  return {
+    result: {
+      items,
+      allPass,
+      pricingLock: (p.pricing_lock as any) ?? null,
+      approvalInstance: (instance as any) ?? null,
+    },
+    proposal: p,
+    opportunity,
+  };
+}
+
+export const getPricingChecklist = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }): Promise<PricingChecklistResult> => {
+    requireSupabaseAuth(context);
+    const { result } = await computeChecklistFor(context, data.proposalId);
+    return result;
+  });
+
+export const submitPricingApproval = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    await assertProposalWriter(context);
+
+    const { result, proposal } = await computeChecklistFor(
+      context,
+      data.proposalId,
+    );
+    if (!result.allPass) httpError(422, "checklist_failed");
+
+    const companyId = proposal.company_id as string;
+    const opportunityId = proposal.opportunity_id as string | null;
+    const now = new Date().toISOString();
+    const pendingLock = {
+      status: "pending",
+      requested_by: context.user.id,
+      requested_at: now,
+      margin_pct: Number(proposal.margin_pct ?? 0),
+      fx_rate_snapshot:
+        proposal.fx_rate_snapshot != null
+          ? Number(proposal.fx_rate_snapshot)
+          : null,
+      contingency_pct: Number(proposal.contingency_pct ?? 0),
+    };
+
+    let instanceId: string | null = null;
+    try {
+      const { data: inst, error: iErr } = await context.supabase
+        .from("approval_instances")
+        .insert({
+          company_id: companyId,
+          entity: PRICING_ENTITY,
+          entity_id: data.proposalId,
+          status: "pending",
+          requested_by: context.user.id,
+          metadata: {
+            rule_key: PRICING_RULE_KEY,
+            margin_pct: pendingLock.margin_pct,
+            contingency_pct: pendingLock.contingency_pct,
+            fx_rate_snapshot: pendingLock.fx_rate_snapshot,
+            currency_code: proposal.currency_code,
+            opportunity_id: opportunityId,
+          },
+        } as any)
+        .select("id")
+        .single();
+      if (iErr) throw iErr;
+      instanceId = (inst as any).id;
+
+      const { data: approvers } = await context.supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("company_id", companyId)
+        .eq("role", "finance_admin");
+      const rows = (approvers ?? []).map((r: any) => ({
+        company_id: companyId,
+        instance_id: instanceId,
+        approver_id: r.user_id,
+        status: "pending",
+      }));
+      if (rows.length > 0) {
+        await context.supabase.from("approvals").insert(rows as any);
+      }
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code !== "42P01" && code !== "42703") {
+        // Non-schema errors — still fall through to inline lock stamp.
+      }
+    }
+
+    const { error: upErr } = await context.supabase
+      .from("proposals")
+      .update({ pricing_lock: pendingLock as any })
+      .eq("id", data.proposalId);
+    if (upErr) throw new Error(upErr.message);
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: "proposal.pricing_submitted",
+      p_entity: "proposal",
+      p_entity_id: data.proposalId,
+      p_metadata: {
+        opportunity_id: opportunityId,
+        instance_id: instanceId,
+        margin_pct: pendingLock.margin_pct,
+        contingency_pct: pendingLock.contingency_pct,
+      },
+    });
+
+    return { ok: true, instance_id: instanceId };
+  });
+
+export const decidePricingApproval = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        proposalId: z.string().uuid(),
+        decision: z.enum(["approve", "reject"]),
+        comment: z.string().max(2000).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { data: isFinance } = await context.supabase.rpc(
+      "has_company_role",
+      { p_role: "finance_admin" },
+    );
+    if (!isFinance) httpError(403, "forbidden");
+
+    const { data: proposal, error } = await context.supabase
+      .from("proposals")
+      .select(
+        "id, company_id, opportunity_id, margin_pct, contingency_pct, fx_rate_snapshot, pricing_lock, status",
+      )
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!proposal) httpError(404, "not_found");
+    const p = proposal as any;
+
+    const now = new Date().toISOString();
+    const approved = data.decision === "approve";
+
+    try {
+      const { data: inst } = await context.supabase
+        .from("approval_instances")
+        .select("id")
+        .eq("entity", PRICING_ENTITY)
+        .eq("entity_id", data.proposalId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (inst) {
+        await context.supabase
+          .from("approval_instances")
+          .update({
+            status: approved ? "approved" : "rejected",
+            decided_by: context.user.id,
+            decided_at: now,
+          } as any)
+          .eq("id", (inst as any).id);
+        await context.supabase
+          .from("approvals")
+          .update({
+            status: approved ? "approved" : "rejected",
+            comment: data.comment ?? null,
+            decided_at: now,
+          } as any)
+          .eq("instance_id", (inst as any).id)
+          .eq("approver_id", context.user.id);
+      }
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code !== "42P01" && code !== "42703") throw err;
+    }
+
+    const lockPayload = approved
+      ? {
+          status: "approved",
+          approved_by: context.user.id,
+          approved_at: now,
+          margin_pct: Number(p.margin_pct ?? 0),
+          fx_rate_snapshot:
+            p.fx_rate_snapshot != null ? Number(p.fx_rate_snapshot) : null,
+          contingency_pct: Number(p.contingency_pct ?? 0),
+        }
+      : {
+          status: "rejected",
+          rejected_by: context.user.id,
+          rejected_at: now,
+          comment: data.comment ?? null,
+        };
+
+    const patch: Record<string, any> = { pricing_lock: lockPayload };
+    if (approved) patch.status = "approved";
+
+    const { error: upErr } = await context.supabase
+      .from("proposals")
+      .update(patch as any)
+      .eq("id", data.proposalId);
+    if (upErr) throw new Error(upErr.message);
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: approved
+        ? "proposal.pricing_approved"
+        : "proposal.pricing_rejected",
+      p_entity: "proposal",
+      p_entity_id: data.proposalId,
+      p_metadata: {
+        opportunity_id: p.opportunity_id,
+        comment: data.comment ?? null,
+      },
+    });
+
+    return { ok: true };
+  });
