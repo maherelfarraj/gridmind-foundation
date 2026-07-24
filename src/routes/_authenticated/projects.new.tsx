@@ -1,11 +1,10 @@
-// P-033/P-034 — Project wizard: step 1 archetype picker + step 2 basics.
-// Wizard driven by ?step=1..4 and a sessionStorage draft.
-// No DB writes; final creation gate is P-036.
+// P-033/P-034/P-035/P-036 — Project wizard: 4 steps + createProject.
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { useActiveCompany } from "@/components/company-switcher";
@@ -15,19 +14,30 @@ import {
 } from "@/components/wizard/archetype-picker";
 import { ProjectBasicsForm } from "@/components/wizard/project-basics-form";
 import { ProjectSelectionForm } from "@/components/wizard/project-selection-form";
+import { TeamForm } from "@/components/wizard/team-form";
 import { TemplatePickerSkeleton } from "@/components/wizard/template-picker";
 import { WizardErrorPanel } from "@/components/wizard/error-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
+  createProject,
   getProjectCreationAccess,
+  listActiveCompanyProfiles,
+  listEligibleUsers,
   listProjectTemplates,
+  type EligibleUser,
 } from "@/lib/projects.functions";
-import type {
-  ProjectBasics,
-  ProjectSelection,
+import {
+  DEPT_LEAD_ROLE_MAP,
+  DEPT_LEAD_ROLES,
+  type DeptLeadKey,
+  type ProjectBasics,
+  type ProjectSelection,
+  type ProjectTeam,
 } from "@/lib/schemas/project-wizard";
 import { useProjectDraft, type ProjectArchetype } from "@/lib/wizard-draft";
+
 
 const searchSchema = z.object({
   step: z.coerce.number().int().min(1).max(4).catch(1).default(1),
