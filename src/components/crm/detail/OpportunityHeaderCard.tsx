@@ -198,14 +198,18 @@ export function OpportunityHeaderCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() =>
-                  move.mutate({ id: opp.id, stage: "won" })
-                }
-                disabled={opp.stage === "won"}
+                onClick={() => {
+                  if (isWon && intakeId) {
+                    downloadKickoff.mutate({ intakeId });
+                  } else {
+                    setWinOpen(true);
+                  }
+                }}
               >
                 <Award size={14} aria-hidden />
-                Mark as won
+                {isWon ? "Won" : "Mark as won"}
               </Button>
+
               <Button size="sm" onClick={onAddTenderEvent}>
                 <Plus size={14} aria-hidden />
                 Add tender event
