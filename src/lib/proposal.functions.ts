@@ -94,7 +94,7 @@ export const createProposalVersion = createServerFn({ method: "POST" })
       const { error: copyErr } = await supabase
         .from("proposal_line_items")
         .insert(
-          lines.map((l) => ({
+          lines.map((l: (typeof lines)[number]) => ({
             company_id: source.company_id,
             proposal_id: created.id,
             sort_order: l.sort_order,
