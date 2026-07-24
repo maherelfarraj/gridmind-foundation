@@ -20,6 +20,12 @@ import {
   PRICING_ENTITY,
   PRICING_RULE_KEY,
 } from "@/lib/pricing-rules";
+import { assertExportAllowed } from "@/lib/export-guard";
+import {
+  getEsignProvider,
+  isEsignConfigured,
+  type EsignEvent,
+} from "@/lib/esign/provider";
 
 const inputSchema = z.object({ proposalId: z.string().uuid() });
 
@@ -224,6 +230,19 @@ export interface ProposalDetail {
   created_at: string;
   updated_at: string;
   line_items: ProposalLineItem[];
+  esign_status: string | null;
+  esign_provider: string | null;
+  esign_envelope_id: string | null;
+  esign_sent_at: string | null;
+  esign_completed_at: string | null;
+  esign_history: Array<{
+    at: string;
+    event: "sent" | "viewed" | "completed" | "declined" | "voided";
+    actor: string | null;
+    note?: string | null;
+    provider_event_id?: string | null;
+  }>;
+  signed_copy_path: string | null;
 }
 
 export const getProposal = createServerFn({ method: "GET" })
@@ -276,6 +295,15 @@ export const getProposal = createServerFn({ method: "GET" })
         unit_price: Number(l.unit_price ?? 0),
         line_total: Number(l.line_total ?? 0),
       })),
+      esign_status: (p as any).esign_status ?? null,
+      esign_provider: (p as any).esign_provider ?? null,
+      esign_envelope_id: (p as any).esign_envelope_id ?? null,
+      esign_sent_at: (p as any).esign_sent_at ?? null,
+      esign_completed_at: (p as any).esign_completed_at ?? null,
+      esign_history: Array.isArray((p as any).esign_history)
+        ? ((p as any).esign_history as any[])
+        : [],
+      signed_copy_path: (p as any).signed_copy_path ?? null,
     };
   });
 
@@ -1309,4 +1337,386 @@ export const recordProposalExport = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+// ---------------------------------------------------------------------------
+// P-049 — E-signature: send / refresh / void / simulate / signed-copy URL
+// ---------------------------------------------------------------------------
+
+
+const ESIGN_EVENT = z.enum(["sent", "viewed", "completed", "declined", "voided"]);
+
+function decodeBase64(b64: string): Uint8Array {
+  const clean = b64.includes(",") ? b64.slice(b64.indexOf(",") + 1) : b64;
+  if (typeof Buffer !== "undefined") {
+    return new Uint8Array(Buffer.from(clean, "base64"));
+  }
+  const bin = atob(clean);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function envelopeStoragePath(
+  companyId: string,
+  proposalId: string,
+  version: number,
+): string {
+  return `${companyId}/proposals/${proposalId}/envelope_v${version}.pdf`;
+}
+
+function signedCopyStoragePath(
+  companyId: string,
+  proposalId: string,
+  version: number,
+): string {
+  return `${companyId}/proposals/${proposalId}/signed_v${version}.pdf`;
+}
+
+interface EsignHistoryEntry {
+  at: string;
+  event: EsignEvent;
+  actor: string | null;
+  provider_event_id?: string | null;
+  note?: string | null;
+}
+
+/**
+ * Apply a provider/user-driven envelope event to a proposal. Idempotent per
+ * (envelope, event, provider_event_id). On `completed`, uploads the signed
+ * PDF to documents/<company>/proposals/<id>/signed_v<version>.pdf via the
+ * service-role client (privileged storage write).
+ */
+async function applyEsignEvent(
+  supabaseUser: any,
+  proposalId: string,
+  event: EsignEvent,
+  actor: string | null,
+  providerEventId?: string | null,
+): Promise<void> {
+  const { data: prop, error } = await supabaseUser
+    .from("proposals")
+    .select(
+      "id, company_id, opportunity_id, version, status, esign_status, esign_envelope_id, esign_history, signed_copy_path",
+    )
+    .eq("id", proposalId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!prop) httpError(404, "not_found");
+  const p = prop as any;
+
+  const history: EsignHistoryEntry[] = Array.isArray(p.esign_history)
+    ? (p.esign_history as EsignHistoryEntry[])
+    : [];
+
+  if (providerEventId && history.some((h) => h.provider_event_id === providerEventId)) {
+    return;
+  }
+  if (!providerEventId && history.length > 0) {
+    const last = history[history.length - 1];
+    if (last.event === event && Date.now() - new Date(last.at).getTime() < 5000) {
+      return;
+    }
+  }
+
+  const now = new Date().toISOString();
+  const nextHistory = [
+    ...history,
+    { at: now, event, actor, provider_event_id: providerEventId ?? null },
+  ];
+
+  const patch: Record<string, any> = {
+    esign_history: nextHistory,
+    esign_status: event,
+  };
+
+  if (event === "completed") {
+    const resolved = getEsignProvider();
+    if (!resolved) throw new Error("esign_not_configured");
+    const envelopePath = envelopeStoragePath(p.company_id, p.id, p.version ?? 1);
+    const signedPath = signedCopyStoragePath(p.company_id, p.id, p.version ?? 1);
+    const { createServiceRoleClient } = await import(
+      "@/integrations/supabase/server"
+    );
+    const admin = createServiceRoleClient();
+    const { bytes, contentType } = await resolved.provider.fetchSignedPdf(
+      {
+        envelopeId: p.esign_envelope_id ?? "",
+        envelopePdfStoragePath: envelopePath,
+      },
+      admin,
+    );
+    const { error: upErr } = await admin.storage
+      .from("documents")
+      .upload(signedPath, bytes, {
+        contentType: contentType || "application/pdf",
+        upsert: true,
+      });
+    if (upErr) throw new Error(`signed_copy_upload_failed: ${upErr.message}`);
+    patch.signed_copy_path = signedPath;
+    patch.esign_completed_at = now;
+    patch.status = "accepted";
+    patch.accepted_at = now;
+  } else if (event === "sent") {
+    patch.esign_sent_at = now;
+  }
+
+  const { error: upErr } = await supabaseUser
+    .from("proposals")
+    .update(patch)
+    .eq("id", proposalId);
+  if (upErr) throw new Error(upErr.message);
+
+  const auditAction =
+    event === "completed"
+      ? "proposal.esign_completed"
+      : event === "declined"
+        ? "proposal.esign_declined"
+        : event === "voided"
+          ? "proposal.esign_voided"
+          : event === "viewed"
+            ? "proposal.esign_viewed"
+            : "proposal.esign_sent";
+  await supabaseUser.rpc("write_audit_log", {
+    p_action: auditAction,
+    p_entity: "proposal",
+    p_entity_id: proposalId,
+    p_metadata: {
+      opportunity_id: p.opportunity_id,
+      envelope_id: p.esign_envelope_id,
+      event,
+    },
+  });
+}
+
+// Exported for the webhook route to reuse the same state machine.
+export const applyEsignEventInternal = applyEsignEvent;
+
+export const sendProposalForSignature = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        proposalId: z.string().uuid(),
+        signerName: z.string().trim().min(1).max(200),
+        signerEmail: z.string().trim().email().max(320),
+        pdfBase64: z.string().min(1),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    await assertProposalWriter(context);
+    const resolved = getEsignProvider();
+    if (!resolved) httpError(400, "esign_not_configured");
+
+    const { data: prop, error } = await context.supabase
+      .from("proposals")
+      .select(
+        "id, company_id, opportunity_id, version, status, esign_status, project_id",
+      )
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!prop) httpError(404, "not_found");
+    const p = prop as any;
+
+    if (p.status !== "approved") httpError(422, "cfo_approval_required");
+    if (p.esign_status === "sent" || p.esign_status === "viewed") {
+      httpError(409, "already_out_for_signature");
+    }
+    if (p.esign_status === "completed") httpError(409, "already_signed");
+
+    try {
+      await assertExportAllowed(context.supabase, {
+        companyId: p.company_id,
+        projectId: p.project_id ?? null,
+      });
+    } catch (lockErr: any) {
+      httpError(lockErr?.statusCode ?? 409, "export_locked");
+    }
+
+    const bytes = decodeBase64(data.pdfBase64);
+    const envelopePath = envelopeStoragePath(p.company_id, p.id, p.version ?? 1);
+    const { createServiceRoleClient } = await import(
+      "@/integrations/supabase/server"
+    );
+    const admin = createServiceRoleClient();
+    const { error: upErr } = await admin.storage
+      .from("documents")
+      .upload(envelopePath, bytes, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+    if (upErr) throw new Error(`envelope_upload_failed: ${upErr.message}`);
+
+    const sendResult = await resolved!.provider.send({
+      proposalId: p.id,
+      companyId: p.company_id,
+      version: p.version ?? 1,
+      signerName: data.signerName,
+      signerEmail: data.signerEmail,
+      envelopePdfStoragePath: envelopePath,
+    });
+
+    const now = new Date().toISOString();
+    const history: EsignHistoryEntry[] = [
+      {
+        at: now,
+        event: "sent",
+        actor: context.user.id,
+        note: `Signer: ${data.signerName} <${data.signerEmail}>`,
+      },
+    ];
+    const { error: writeErr } = await context.supabase
+      .from("proposals")
+      .update({
+        esign_provider: resolved!.providerName,
+        esign_envelope_id: sendResult.envelopeId,
+        esign_status: "sent",
+        esign_sent_at: now,
+        esign_history: history,
+        status: "sent",
+        sent_at: now,
+      } as any)
+      .eq("id", p.id);
+    if (writeErr) throw new Error(writeErr.message);
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: "proposal.esign_sent",
+      p_entity: "proposal",
+      p_entity_id: p.id,
+      p_metadata: {
+        opportunity_id: p.opportunity_id,
+        envelope_id: sendResult.envelopeId,
+        signer_email: data.signerEmail,
+      },
+    });
+
+    return { ok: true, envelopeId: sendResult.envelopeId };
+  });
+
+export const refreshProposalEsign = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const resolved = getEsignProvider();
+    if (!resolved) httpError(400, "esign_not_configured");
+    const { data: prop, error } = await context.supabase
+      .from("proposals")
+      .select("id, esign_envelope_id, esign_status")
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!prop) httpError(404, "not_found");
+    const p = prop as any;
+    if (!p.esign_envelope_id) return { ok: true, status: p.esign_status ?? null };
+    const { status } = await resolved!.provider.refresh(p.esign_envelope_id);
+    if (status && status !== p.esign_status) {
+      await applyEsignEvent(context.supabase, p.id, status, context.user.id);
+    }
+    return { ok: true, status };
+  });
+
+export const voidProposalEsign = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        proposalId: z.string().uuid(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { data: isAdmin } = await context.supabase.rpc("has_company_role", {
+      p_role: "company_admin",
+    });
+    if (!isAdmin) httpError(403, "forbidden");
+    const resolved = getEsignProvider();
+    if (!resolved) httpError(400, "esign_not_configured");
+    const { data: prop, error } = await context.supabase
+      .from("proposals")
+      .select("id, esign_envelope_id, esign_status")
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!prop) httpError(404, "not_found");
+    const p = prop as any;
+    if (!p.esign_envelope_id) httpError(409, "no_envelope");
+    if (p.esign_status === "completed") httpError(409, "already_signed");
+    await resolved!.provider.void(p.esign_envelope_id, data.reason);
+    await applyEsignEvent(context.supabase, p.id, "voided", context.user.id);
+    return { ok: true };
+  });
+
+export const simulateEsignEvent = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        proposalId: z.string().uuid(),
+        event: ESIGN_EVENT,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    await assertProposalWriter(context);
+    const resolved = getEsignProvider();
+    if (!resolved || !resolved.provider.isDevMode) {
+      httpError(403, "simulation_disabled");
+    }
+    await applyEsignEvent(
+      context.supabase,
+      data.proposalId,
+      data.event,
+      context.user.id,
+    );
+    return { ok: true };
+  });
+
+export const getSignedCopyDownloadUrl = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { data: prop, error } = await context.supabase
+      .from("proposals")
+      .select("id, company_id, project_id, signed_copy_path")
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!prop) httpError(404, "not_found");
+    const p = prop as any;
+    if (!p.signed_copy_path) httpError(404, "no_signed_copy");
+    try {
+      await assertExportAllowed(context.supabase, {
+        companyId: p.company_id,
+        projectId: p.project_id ?? null,
+      });
+    } catch (lockErr: any) {
+      httpError(lockErr?.statusCode ?? 409, "export_locked");
+    }
+    const { data: signed, error: sErr } = await context.supabase.storage
+      .from("documents")
+      .createSignedUrl(p.signed_copy_path, 300);
+    if (sErr || !signed?.signedUrl) {
+      throw new Error(sErr?.message ?? "signed_url_failed");
+    }
+    return { url: signed.signedUrl };
+  });
+
+export const getEsignConfigStatus = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const resolved = getEsignProvider();
+    return {
+      configured: isEsignConfigured(),
+      provider: resolved?.providerName ?? null,
+      devMode: resolved?.provider.isDevMode ?? false,
+    };
+  },
+);
+
 

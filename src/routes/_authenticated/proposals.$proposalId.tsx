@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, GitBranch, RefreshCw } from "lucide-react";
 
 import { ArrayConfigForm } from "@/components/proposals/ArrayConfigForm";
+import { EsignCard } from "@/components/proposals/EsignCard";
 import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
 import { ExportPptxButton } from "@/components/proposals/ExportPptxButton";
 
@@ -75,6 +76,7 @@ function ProposalBuilderPage() {
   const canWrite =
     roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
   const isFinanceAdmin = roles.has("finance_admin") || roles.has("super_admin");
+  const isCompanyAdmin = roles.has("company_admin") || roles.has("super_admin");
   const isReadOnlyStatus =
     proposal && !["draft", "in_review"].includes(proposal.status);
   const readOnly = !canWrite || !!isReadOnlyStatus;
@@ -165,6 +167,11 @@ function ProposalBuilderPage() {
         proposalId={proposalId}
         canWrite={canWrite}
         isFinanceAdmin={isFinanceAdmin}
+      />
+      <EsignCard
+        proposal={proposal}
+        canWrite={canWrite}
+        isCompanyAdmin={isCompanyAdmin}
       />
     </div>
   );

@@ -1,68 +1,58 @@
-## P-048 — Proposal PPTX export (pptxgenjs, branded)
+# P-049 — E-signature flow
 
-Add a branded `.pptx` export next to the existing PDF button, reusing the same server-side data fetch, export-lock gate, and audit conventions from P-047.
+Schema already covers this (migration `20260724133610`): `esign_provider`, `esign_envelope_id`, `esign_status`, `esign_history`, `esign_sent_at`, `esign_completed_at`, `signed_copy_path` exist on `proposals`, plus a `status` check that includes `'sent'` and `'accepted'`. No new migration needed.
 
-### 1. Server function — rename + extend
+## Provider adapter
 
-In `src/lib/proposal.functions.ts`:
+`src/lib/esign/provider.ts`
+- Types: `EsignEvent = 'sent' | 'viewed' | 'completed' | 'declined' | 'voided'`; `EsignProvider` interface with `send`, `refresh`, `void`, `fetchSignedPdf(envelopeId)`.
+- `getEsignProvider()` reads `process.env.ESIGN_PROVIDER` (default `'manual'`) and `ESIGN_API_KEY`; returns the adapter or `null` when misconfigured.
+- **Manual adapter** (dev-mode): `send` generates envelope id `manual_<uuid>`; `refresh` reads current `esign_status` and returns it unchanged (transitions are driven by the "simulate" server fn below, not by refresh); `void` returns `voided`; `fetchSignedPdf` re-uses the P-047 generator output stored earlier and returns those bytes as the "signed copy".
+- Real providers plug in later without schema change.
 
-- Rename `getProposalPdfData` → `getProposalExportData` (single data fetcher shared by both formats).
-- Extend the return payload to include what PPTX needs but PDF didn't:
-  - `branding.fontFamily` (from `company_branding.font_family` if present; fallback `"Arial"`).
-  - `salesOwner`: `{ full_name, email }` — look up `profiles` for `proposal.owner_id` (or `opportunity.owner_id` fallback); tolerate missing.
-  - `tenderEvents`: upcoming `tender_events` rows for `opportunity_id` (`event_type`, `event_at`, `notes`), ordered by `event_at asc`, filtered to `event_at >= now()`; on `42P01` return `[]`.
-  - Keep the `margin_pct` strip (defence-in-depth).
-- Keep existing PDF field shape intact (add fields, don't remove).
-- Update `ExportPdfButton.tsx` import to the new name (`getProposalExportData`). No behaviour change for the PDF path.
+## Server functions (append to `src/lib/proposal.functions.ts`, all `requireSupabaseAuth` + zod)
 
-Extend `recordProposalExport` to accept `{ proposalId, format: "pdf" | "pptx" }` (default `"pdf"` for back-compat) and write `p_action` = `proposal.export_pdf` or `proposal.export_pptx` accordingly. Metadata unchanged: `{ opportunity_id, version }`.
+- `sendProposalForSignature({ proposalId, signerName, signerEmail })`
+  - Guards: `proposals.status === 'approved'`; caller is sales / company_admin; provider configured. Reuses `getProposalExportData` + `buildProposalPdf` (P-047) for PDF bytes.
+  - Calls `provider.send`, then updates `esign_provider`, `esign_envelope_id`, `esign_status='sent'`, `esign_sent_at=now()`, `status='sent'`, appends `{at, event:'sent', actor}` to `esign_history`.
+  - `writeAuditLog('proposal.esign_sent','proposal', id, { opportunity_id, envelope_id })`.
+- `refreshProposalEsign({ proposalId })` — polls provider, appends any new events, applies terminal transitions via shared helper `applyEsignEvent` (see below).
+- `voidProposalEsign({ proposalId, reason })` — company_admin only; calls `provider.void`, sets `esign_status='voided'`, history entry, audit `proposal.esign_voided`.
+- `simulateEsignEvent({ proposalId, event })` — dev-only, only when `ESIGN_PROVIDER === 'manual'`; sales+; drives viewed → completed / declined transitions through `applyEsignEvent`.
+- `getSignedCopyDownloadUrl({ proposalId })` — runs `assertExportAllowed` (42P01 → proceed), returns a signed URL from the `documents` bucket for `signed_copy_path`.
 
-### 2. PPTX generator — `src/lib/exports/proposal-pptx.ts`
+### `applyEsignEvent` helper (shared by refresh / webhook / simulate)
+- Appends `{at, event, actor}` to `esign_history` idempotently (skip if last entry matches event within a small window / by provider event id).
+- On `completed`: `fetchSignedPdf` → upload to `documents` bucket at `<company_id>/proposals/<proposal_id>/signed_v<version>.pdf` via service-role client (privileged storage write), set `signed_copy_path`, `esign_completed_at`, `status='accepted'`, audit `proposal.esign_completed`.
+- On `declined` / `voided`: set `esign_status` accordingly, audit `proposal.esign_declined` / `proposal.esign_voided`. No status change back to `approved` (proposal remains locked; new version required).
 
-New client-only module using `pptxgenjs`. Exports `buildProposalPptx(data)` → `{ blob, filename }` plus reuses `downloadBlob` from the PDF module (or re-exports it).
+## Webhook route
 
-- **Layout**: `LAYOUT_WIDE` (16:9, 13.333 × 7.5 in).
-- **Master slide** `GM_MASTER`:
-  - Top title bar rectangle filled with `branding.primaryColor` (fallback `#0F172A`), height ~0.6 in.
-  - Logo placed top-right, fetched via `fetch(logoSignedUrl)` → base64 data URL (skip on failure).
-  - Footer: left = `company.legal_name ?? company.name`, right = slide number via `{ text: "Slide", options: { ... } }` + pptxgenjs slide-number placeholder.
-  - Default font: `branding.fontFamily || "Arial"`.
-- **Colour helpers**: normalize hex (strip `#`), guard invalid values.
-- **XML safety**: helper `clean(str)` that trims and passes plain text (pptxgenjs escapes for XML itself — verify by grepping the output blob in dev; explicitly do NOT pre-encode `&amp;` so "O&M"/"C&I" stay clean).
+`src/routes/api/webhooks/esign.ts` — `createFileRoute('/api/webhooks/esign')` with `POST` handler.
+- Parses provider payload (zod), maps to `EsignEvent`, resolves proposal by `esign_envelope_id`.
+- Minimal verification now: shared-secret header check against `ESIGN_WEBHOOK_SECRET` (timing-safe compare).
+- `TODO(B13/P-126): move under /api/public/, wrap in guardPublicHook + provider signature verification.`
+- Loads `supabaseAdmin` inside the handler only (no top-level import); calls `applyEsignEvent`.
 
-**Slides** (7):
-1. **Title** — proposal title, "Prepared for {account_name}", today's date, `Valid until {valid_until}`, `v{version}`.
-2. **About us** — `company.about` / branding blurb (fallback: legal name) + contact block (email, phone, address).
-3. **Solution** — 2-column table: archetype, capacity MW / MWh, tracking, tilt, GCR, module, inverter (pulled from `proposal.config` / `yieldResult.inputs`).
-4. **Energy yield** — three big-number shapes (P50, P90, specific yield kWh/kWp) using coloured rounded rectangles + text; below: native pptxgenjs `addChart(pptx.ChartType.bar, ...)` with monthly P50 values from `yieldResult.monthly` (fallback: hide chart with "Yield simulation pending" note). Caption: `gridmind-stub-v1 (placeholder)`.
-5. **Commercial summary** — table rows: subtotal, contingency, total, currency, validity. Explicitly no `margin_pct`.
-6. **Timeline & tender dates** — bullet/milestone list from `tenderEvents` (event type + formatted date + notes). Empty state: "No upcoming tender events".
-7. **Terms & contact** — `proposal.notes`, validity line, and `salesOwner.full_name` / `salesOwner.email`.
+## UI
 
-**Filename**: `GridMind_Proposal_<account>_<title>_v<version>.pptx`; slugify (`[^A-Za-z0-9]+` → `_`, trim, cap length 60 per segment).
+New card `src/components/proposals/EsignCard.tsx` mounted in the proposal builder header / right rail.
+- Empty state when provider missing: "E-signature provider not configured" + hide Send.
+- Send form (react-hook-form + zod): signer name + email; disabled unless `status === 'approved'`; tooltip explains dependency on CFO approval (P-046).
+- Status badge (uses design tokens) + timeline from `esign_history` (icon per event, actor, timestamp via date-fns).
+- Buttons: **Send for signature**, **Refresh status**, **Simulate…** dropdown (viewed / completed / declined) visible only for manual provider with "dev mode" label, **Void** (company_admin), **Download signed copy** (when `signed_copy_path`).
+- All async actions: spinner + sonner success/error toasts.
 
-### 3. Export button — `src/components/proposals/ExportPptxButton.tsx`
+Wire the card into `src/routes/_authenticated/proposals.$proposalId.tsx`. Invalidate proposal query on every mutation.
 
-Mirrors `ExportPdfButton`:
-- Props identical (`proposalId`, `companyId`, `projectId?`, `size`, `variant`, `label`).
-- Icon: `Presentation` from `lucide-react`; label default `"Export PPTX"`.
-- Flow: `assertExportAllowed` → toast + silent abort on lock → `getProposalExportData` → `buildProposalPptx` → `downloadBlob` → `recordProposalExport({ format: "pptx" })` → sonner success/error toasts, spinner state.
+## Secrets
 
-### 4. Wire button into UI
+Request via `add_secret` after user confirms (not in same turn as explanation): `ESIGN_PROVIDER` (default `manual`, so optional), `ESIGN_API_KEY` (only if real provider), `ESIGN_WEBHOOK_SECRET` (for the webhook). For dev-mode manual flow, none are strictly required — the card renders and works with defaults.
 
-- `src/routes/_authenticated/proposals.$proposalId.tsx` (~line 129): add `<ExportPptxButton …/>` beside `<ExportPdfButton …/>` in the header actions.
-- `src/routes/_authenticated/proposals.index.tsx` (~line 149): add `<ExportPptxButton …/>` beside the row PDF button.
+## Verification
 
-### 5. Verification
-
-- `bun run build:dev` clean (typecheck via tsgo if fast).
-- Manual QA in preview: export a seeded proposal → open the file, confirm 7 slides, brand title bar + logo, native editable bar chart, no `margin_pct` anywhere, "O&M"/"C&I" render as plain ampersand (no `&amp;` artefact), filename matches convention.
-- Confirm `audit_log` has a `proposal.export_pptx` row after export (via `supabase--read_query`).
-- Trigger a `project_export_locks` row and confirm the PPTX button aborts with the same toast as PDF; drop the row and confirm normal export resumes. `42P01` (locks table absent) → export proceeds.
-
-### Technical notes
-
-- pptxgenjs is already installed (`^3.12.0`).
-- All server changes stay in `proposal.functions.ts`; no DB migration.
-- No new tokens; button uses existing shadcn `Button` variants.
-- Renaming `getProposalPdfData` is a breaking symbol change — only one call site (`ExportPdfButton`), updated in the same batch.
+- Send disabled until `status='approved'`; enabling after CFO approval triggers `proposal.esign_sent` audit and `status → sent`.
+- Simulate viewed → completed uploads `signed_v<version>.pdf` to `documents/<company>/proposals/<id>/`, sets `status='accepted'`, audits `proposal.esign_completed`, Download link works and passes through `assertExportAllowed`.
+- Void works only for company_admin.
+- Webhook route present with B13 TODO; service-role import only inside handler bodies.
+- `bun run tsgo` clean.
