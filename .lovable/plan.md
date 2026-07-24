@@ -1,66 +1,75 @@
-## P-052 — Site data uploads to `drawings` bucket
+## P-053 — Drawing register UI: revisions, status, markup viewer
 
-### 1. Migration `0018_documents_metadata.sql`
-- `alter table public.documents add column if not exists metadata jsonb not null default '{}';`
-- No RLS/grant changes.
+Build the engineering drawing register (list + detail) with governed status transitions, revision uploads, and a canvas markup viewer. All mutations use `createServerFn` + zod + `requireSupabaseAuth`; RLS is second-layer. Design tokens only.
 
-### 2. Server functions — `src/lib/site-data.functions.ts`
-All `createServerFn` + zod + `requireSupabaseAuth`; use `context.supabase` (user-scoped, RLS). Never use service role.
+### 1. Server functions — `src/lib/drawings.functions.ts`
 
-- `uploadSiteData({ projectId, category, fileName, fileSize, mimeType })`
-  - Enforce role: caller must have `engineering_admin | engineer | project_admin` (query `user_roles` via `context.supabase`).
-  - Resolve project → `company_id` (RLS enforces membership).
-  - Reject `fileSize > 50 * 1024 * 1024` (server-side belt).
-  - Validate `category ∈ document_category` enum.
-  - Build path: `{company_id}/{project_id}/site-data/{category}/{crypto.randomUUID()}-{sanitized filename}`.
-  - Return signed upload URL via `context.supabase.storage.from('drawings').createSignedUploadUrl(path)` + the resolved `path` + `company_id`.
-- `registerSiteDataDocument({ projectId, storagePath, fileName, fileSize, mimeType, category, title, tags, metadata })`
-  - Re-check role + resolve `company_id`.
-  - Sanity-check `storagePath` starts with `{company_id}/{project_id}/site-data/{category}/`.
-  - Insert into `public.documents` (populate `metadata` jsonb + `tags[]` + `created_by = context.userId`).
-  - `write_audit_log('engineering.site_data_uploaded','documents', new_id, { projectId, category, storagePath, metadata })`.
-  - Return the inserted row.
-- `listSiteData({ projectId })` — select from `documents` where `project_id=?` and `storage_path like '%/site-data/%'`, ordered by `created_at desc`, joined with uploader display name via a follow-up profiles fetch.
-- `getSiteDataDownloadUrl({ documentId })` — RLS-scoped fetch of `storage_path`, then `createSignedUrl(path, 900)` (15 min).
+Roles: writers = `engineering_admin | engineer | project_admin` (+ super_admin). `company_admin`, `client_viewer`, `lender_viewer` = read-only (filtered UI-side; RLS already blocks writes).
 
-### 3. Query layer — `src/lib/site-data-query.ts`
-- `siteDataListQueryOptions(projectId)` (staleTime 30s).
-- Mutation hooks: `useUploadSiteData`, `useRegisterSiteDataDocument`, `useSiteDataDownload`.
-- Invalidate the list on register success.
+- `listDrawings({ projectId, search?, discipline?, status?, limit=100, offset=0 })` — server-side filtered query on `drawing_register` joined to the current revision (`drawing_revisions` via `current_revision_id`) for `issued_at` + `revision_code`. Returns rows + `total`.
+- `getDrawing({ drawingId })` — header + full revision timeline (ordered by `created_at`), each revision joined with `profiles` (issued_by / created_by names).
+- `createDrawing({ projectId, drawingNumber, title, discipline })` — insert into `drawing_register`; unique (project_id, drawing_number) violation → 409 `drawing_number_taken`.
+- `uploadDrawingRevision` — 2-step like site-data:
+  - `getRevisionUploadUrl({ drawingId, fileName, fileSize, mimeType })` → signed upload URL at `drawings/{company_id}/{project_id}/drawings/{drawing_id}/{uuid}-{safeName}`; returns `suggestedRevisionCode` (next letter A→Z from existing revisions; if numeric scheme detected, next number).
+  - `registerDrawingRevision({ drawingId, revisionCode, storagePath, fileName, fileSize, mimeType, issueReason? })` — inserts revision (status=`draft`), sets `drawing_register.current_revision_id`. Audit `drawing.revision_added`.
+- `transitionDrawingStatus({ drawingId, revisionId, toStatus })` — enforces:
+  - Allowed transitions: draft→IFD, IFD→IFC, IFC→as_built, any→superseded.
+  - **IFC governance** (409 `ifc_requires_ifd_signoff`, clear message):
+    1. At least one revision on this drawing has `status='IFD'` (either current or historical).
+    2. All `document_markups` for revisions of this drawing where `status IN ('open','rejected')` — must be 0 (all resolved/accepted).
+    3. A sign-off record exists: `approval_instances` row with `entity='drawing'`, `entity_id=drawing_id`, `status='approved'`.
+  - On success: updates `drawing_revisions.status`, `drawing_register.current_status` (+ `locked=true` when IFC/as_built), sets `issued_by`/`issued_at` on the revision, writes `drawing.status_changed` audit with `{from, to, revision_id}`.
+- `requestIfcSignoff({ drawingId, note? })` — creates `approval_instances` (entity='drawing', status='pending') if none pending; audit `drawing.signoff_requested`. (Writer role.)
+- `decideIfcSignoff({ instanceId, decision: 'approved'|'rejected', comment? })` — role `engineering_admin | project_admin` only; updates instance + inserts `approvals` row; audit `drawing.signoff_decided`.
+- `listMarkups({ revisionId })` / `createMarkup({ revisionId, pageNumber, annotation, reviewerOrg })` / `updateMarkupStatus({ markupId, status, resolutionNote? })` — status change gated to markup author OR `engineering_admin`; audit `drawing.markup_status_changed` on every update.
+- `getDrawingFileUrl({ revisionId })` — 15-min signed URL from `drawings` bucket.
 
-### 4. Route — `src/routes/_authenticated/projects.$projectId.engineering.uploads.tsx`
-- Loader: `ensureQueryData(siteDataListQueryOptions(projectId))`.
-- Head metadata (unique title/description).
-- Renders `<SiteDataUploads projectId=… />`.
+### 2. Query hooks — `src/lib/drawings-query.ts`
 
-### 5. Update engineering tab index
-- Convert `projects.$projectId.engineering.tsx` into a layout (`<Outlet />`) with a small sub-nav linking to Uploads (extendable later for register/markups).
-- Add `projects.$projectId.engineering.index.tsx` keeping the current placeholder as the default landing.
+Query options + `useMutation` wrappers with cache invalidation (`['drawings', projectId, filters]`, `['drawing', drawingId]`, `['markups', revisionId]`).
 
-### 6. UI components (`src/components/engineering/`)
-- `SiteDataUploads.tsx` — orchestrates dropzone + queue + list; role-gated (hide/disable actions for viewers).
-- `SiteDataDropzone.tsx` — HTML5 drag-and-drop (no new dep; replicate react-dropzone pattern with `useState` + `onDrop`). Accepts `.dxf, .dwg, .pdf, .csv, .zip, .tif, .tiff`; client-side 50 MB check with sonner error.
-- `SiteDataCategoryDialog.tsx` — after drop, per-file wizard: pick category then render typed metadata form via `react-hook-form + zod`:
-  - `survey_topo`: date, EPSG, surveyor, units.
-  - `geotech`: report number, lab, boring count, groundwater depth (m).
-  - `meteorological`: source, station, data period start/end.
-  - Others → free-form title only.
-  - Metadata compiled into `{ ...typed }` jsonb + human tags (e.g. `['geotech','lab:acme']`). Category maps to `document_category` (`report | datasheet | other` etc.; `survey_topo → other`, `geotech → report`, `meteorological → datasheet`).
-- `SiteDataQueue.tsx` — per-file progress bar driven by `XMLHttpRequest` upload against the signed URL (fetch has no progress); on 200 → call `registerSiteDataDocument`; on error → retry button.
-- `SiteDataList.tsx` — table with type badge, uploader, uploaded date, "Download" (calls `getSiteDataDownloadUrl` then `window.open`).
-- Skeleton (list loading), empty state ("No site data uploaded yet — drop DXF, topo or geotech files"), error state with retry.
-- Semantic tokens only (`bg-card`, `border-border`, `text-muted-foreground`, `text-destructive`).
+### 3. Routes
 
-### 7. Verification (post-approval, manual)
-- Migration re-check via `supabase--read_query`: `metadata` column exists on `public.documents`.
-- Playwright: upload a PDF as geotech with metadata → confirm `documents` row + audit row + storage path prefix.
-- >50 MB rejected client + server side.
-- Signed download URL works; direct storage URL denied.
-- Empty/skeleton/error states render.
+- `src/routes/_authenticated/projects.$projectId.engineering.drawings.tsx` — add sub-nav entry (Overview / Site data / Drawings) in the engineering layout.
+- `src/routes/_authenticated/projects.$projectId.engineering.drawings.index.tsx`
+  - `validateSearch` (zod): `{ q?, discipline?, status?, page? }`.
+  - `loaderDeps` → `ensureQueryData`.
+  - Renders `DrawingRegisterTable` with toolbar, CSV export (client-side from current page rows), "New drawing" dialog.
+- `src/routes/_authenticated/projects.$projectId.engineering.drawings.$drawingId.tsx`
+  - Loader primes drawing + revisions.
+  - Renders `DrawingDetail` (header + tabs: Revisions | Markups | Sign-off).
 
-### Technical notes
-- No new npm deps — dropzone + progress built from React + XHR.
-- Signed upload URL avoids proxying file bytes through the server function.
-- All uploads happen browser → Supabase storage using the user's session; RLS on `storage.objects` (`storage_company_id`) already enforces the company prefix.
+### 4. Components — `src/components/engineering/`
 
-next → P-053 after green.
+- `drawing-register-table.tsx` — table, filter toolbar (search debounced 300ms → URL search), discipline/status `Select`, status badge with token map (draft=muted, IFD=amber accent, IFC=primary, as_built=secondary, superseded=muted + line-through), skeleton/empty/error states, "New drawing" `Dialog`.
+- `drawing-detail.tsx` — header card (number/title/discipline/status + `Lock` icon when `locked`), Tabs.
+- `revision-timeline.tsx` — vertical timeline; per-revision: code, status badge, issue_reason, issued_by/at, download button (signed URL), "Set status →" menu (gated).
+- `upload-revision-dialog.tsx` — dropzone (single file, 50MB, .pdf/.dwg/.dxf/.tif), auto-fills `suggestedRevisionCode`, XHR upload with progress, then `registerDrawingRevision`.
+- `status-transition-dialog.tsx` — target-status picker; when IFC selected, shows checklist preview (IFD revision ✔, markups resolved ✔, sign-off ✔) with disabled confirm until all green; 409 toast on server rejection.
+- `signoff-card.tsx` — request sign-off button + list of `approval_instances` for this drawing with decide controls (engineering_admin/project_admin).
+- `markup-viewer.tsx` — canvas viewer:
+  - Renders revision preview: PDF via `pdfjs-dist` (dynamic import, page 1) into a canvas; if mime is image, draws image. Fallback panel when neither.
+  - Overlays markup pins from `annotation.coords` (relative x/y in [0,1]).
+  - Click-to-add pin (writer roles) → opens comment popover → `createMarkup`.
+  - Side panel: list with status chips + comment; author or engineering_admin can change status (Select) → audited.
+- Read-only role detection via a small `useProjectRole(projectId)` hook (reads `user_roles` via existing profile query) — hides all edit affordances for `client_viewer` / `lender_viewer` / `company_admin`.
+
+### 5. Dependencies
+
+Add `pdfjs-dist` (dynamic-imported inside the viewer only, to keep it out of SSR).
+
+### 6. Verification (Prairie Winds)
+
+- Create GM-E-1001 (electrical) → upload rev A → transition to IFD.
+- Attempt IFC with no sign-off → 409 `ifc_requires_ifd_signoff` toast with governance message.
+- Add + resolve markups; request sign-off; decide `approved`; retry IFC → success; verify `drawing.status_changed` audit rows for draft→IFD→IFC.
+- Upload second revision → dialog suggests "B"; timeline shows both with 15-min signed downloads.
+- Filters + search hit server; `client_viewer` login shows zero edit controls.
+- Markup status change → `drawing.markup_status_changed` audit row present.
+- Set a drawing to `superseded` → row renders with strikethrough.
+
+### Out of scope
+- PDF multi-page navigation (page 1 only).
+- Drag-repositioning pins (create/delete only).
+- Markup threaded replies (single comment per markup for now).
+- Bulk CSV of full register beyond current page.
