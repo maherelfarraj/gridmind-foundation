@@ -14,6 +14,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PoTokenRouteImport } from './routes/po.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
@@ -92,6 +93,11 @@ const authRouteRoute = authRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoTokenRoute = PoTokenRouteImport.update({
+  id: '/po/$token',
+  path: '/po/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -439,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof authSignupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/po/$token': typeof PoTokenRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -500,6 +507,7 @@ export interface FileRoutesByTo {
   '/signup': typeof authSignupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/po/$token': typeof PoTokenRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
@@ -557,6 +565,7 @@ export interface FileRoutesById {
   '/(auth)/signup': typeof authSignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/po/$token': typeof PoTokenRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -620,6 +629,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/dashboard'
+    | '/po/$token'
     | '/admin/tenants'
     | '/crm/pipeline'
     | '/procurement/pos'
@@ -681,6 +691,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/dashboard'
+    | '/po/$token'
     | '/crm/pipeline'
     | '/projects/new'
     | '/proposals/$proposalId'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/(auth)/signup'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/po/$token'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/procurement/pos'
@@ -795,6 +807,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  PoTokenRoute: typeof PoTokenRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
 }
 
@@ -833,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/po/$token': {
+      id: '/po/$token'
+      path: '/po/$token'
+      fullPath: '/po/$token'
+      preLoaderRoute: typeof PoTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard': {
@@ -1505,6 +1525,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
+  PoTokenRoute: PoTokenRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
 }
 export const routeTree = rootRouteImport
