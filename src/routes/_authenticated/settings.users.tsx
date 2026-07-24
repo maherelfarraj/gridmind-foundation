@@ -193,17 +193,20 @@ function UsersPage() {
 
   const snapshotQuery = useQuery({
     queryKey: ["company-admin-snapshot", activeCompanyId],
-    queryFn: () => snapshotFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => snapshotFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const membersQuery = useQuery({
     queryKey: membersKey,
-    queryFn: () => membersFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => membersFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const invitesQuery = useQuery({
     queryKey: ["invites", activeCompanyId],
-    queryFn: () => listFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => listFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const invalidate = () => {
