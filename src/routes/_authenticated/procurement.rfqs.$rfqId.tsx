@@ -27,6 +27,7 @@ import {
 import { InviteVendorDialog } from "@/components/procurement/invite-vendor-dialog";
 import { SubmitBidDialog } from "@/components/procurement/submit-bid-dialog";
 import { BidTabulationTable } from "@/components/procurement/bid-tabulation-table";
+import { AwardPanel } from "@/components/procurement/award-panel";
 import {
   getRfq,
   getRfqWriteAccess,
@@ -63,7 +64,7 @@ function RfqDetail() {
   const detailQuery = useSuspenseQuery(rfqDetailQueryOptions(detailFn, rfqId));
   const accessQuery = useSuspenseQuery(rfqWriteAccessQueryOptions(accessFn));
   const { rfq, bids } = detailQuery.data;
-  const { canAuthor } = accessQuery.data;
+  const { canAuthor, canAward } = accessQuery.data;
 
   const invite = useInviteVendors(rfqId);
   const removeInvite = useRemoveInvite(rfqId);
@@ -310,7 +311,8 @@ function RfqDetail() {
           )}
         </TabsContent>
 
-        <TabsContent value="tabulation" className="pt-4">
+        <TabsContent value="tabulation" className="space-y-6 pt-4">
+          <AwardPanel rfq={rfq} bids={bids} canAward={canAward} />
           <BidTabulationTable
             rfqLines={rfq.lines}
             bids={bids}
