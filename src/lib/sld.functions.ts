@@ -151,10 +151,10 @@ export const getSldConfig = createServerFn({ method: "GET" })
       company_id: row.company_id,
       bus_config: (row.bus_config as BusConfig) ?? "single",
       voltage_levels: Array.isArray(row.voltage_levels)
-        ? (row.voltage_levels as VoltageLevel[])
+        ? (row.voltage_levels as unknown as VoltageLevel[])
         : [],
       metering_points: Array.isArray(row.metering_points)
-        ? (row.metering_points as MeteringPoint[])
+        ? (row.metering_points as unknown as MeteringPoint[])
         : [],
       protection_scheme: row.protection_scheme ?? null,
       notes: row.notes ?? null,
