@@ -97,7 +97,11 @@ export const resendInvite = createServerFn({ method: "POST" })
       .from("invites")
       .select("company_id, email, role")
       .eq("id", data.inviteId)
-      .maybeSingle();
+      .maybeSingle<{
+        company_id: string;
+        email: string;
+        role: (typeof Constants.public.Enums.app_role)[number];
+      }>();
     if (readErr) throw readErr;
     if (!existing) throw new Error("Invite not found");
 
@@ -116,6 +120,7 @@ export const resendInvite = createServerFn({ method: "POST" })
     if (!token) throw new Error("create_invite returned no token");
     return { token, acceptUrl: acceptUrlFor(token) };
   });
+
 
 export const redeemInviteRpc = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
