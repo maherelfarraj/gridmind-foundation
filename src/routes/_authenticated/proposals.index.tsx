@@ -7,6 +7,7 @@ import { RefreshCw, FileText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
 import { Card } from "@/components/ui/card";
 import { proposalsListQueryOptions } from "@/lib/proposal-query";
 import { listProposals } from "@/lib/proposal.functions";
