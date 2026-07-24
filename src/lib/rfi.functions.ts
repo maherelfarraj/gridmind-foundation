@@ -269,8 +269,9 @@ const raiseInput = z.object({
   projectId: z.string().uuid(),
   subject: z.string().min(3).max(140),
   question: z.string().min(10).max(4000),
-  discipline: z.enum(DISCIPLINES),
-  priority: z.enum(PRIORITIES),
+  discipline: z.enum([...DISCIPLINES] as [string, ...string[]]),
+  priority: z.enum([...PRIORITIES] as [string, ...string[]]),
+
   routedTo: z.string().uuid(),
   drawingId: z.string().uuid().nullable().optional(),
   dueDate: z.string().min(1),
