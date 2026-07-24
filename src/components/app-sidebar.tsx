@@ -76,6 +76,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Administration",
     items: [
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
+      { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
       {
         moduleKey: "admin",
         label: "Tenants",
