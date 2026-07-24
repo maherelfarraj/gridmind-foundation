@@ -134,12 +134,19 @@ function NewProjectPage() {
     void navigate({ to: "/projects/new", search: { step: 3 } });
   };
 
+  const handleSelectionSubmit = (values: ProjectSelection) => {
+    setDraft({ selection: values });
+    void navigate({ to: "/projects/new", search: { step: 4 } });
+  };
+
   const stepSubtitle =
     currentStep === 1
       ? "Pick the archetype that best describes what you're building. It drives the templates, configuration, and lifecycle we'll set up for you."
       : currentStep === 2
         ? "Tell us the basics: name, capacity, site, and target COD."
-        : "More wizard steps ship in the next batch.";
+        : currentStep === 3
+          ? "Choose a template, then tune the gates, budget, and departments."
+          : "More wizard steps ship in the next batch.";
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
