@@ -1477,6 +1477,88 @@ export type Database = {
           },
         ]
       }
+      material_price_alerts: {
+        Row: {
+          alert_threshold_pct: number
+          category: Database["public"]["Enums"]["material_category"]
+          change_pct: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          id: string
+          index_price: number | null
+          observed_at: string
+          previous_price: number | null
+          region: string
+          source: string | null
+          triggered: boolean
+          triggered_at: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold_pct?: number
+          category: Database["public"]["Enums"]["material_category"]
+          change_pct?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          id?: string
+          index_price?: number | null
+          observed_at?: string
+          previous_price?: number | null
+          region?: string
+          source?: string | null
+          triggered?: boolean
+          triggered_at?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold_pct?: number
+          category?: Database["public"]["Enums"]["material_category"]
+          change_pct?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          id?: string
+          index_price?: number | null
+          observed_at?: string
+          previous_price?: number | null
+          region?: string
+          source?: string | null
+          triggered?: boolean
+          triggered_at?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_price_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_price_alerts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_price_alerts_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       module_access_rules: {
         Row: {
           company_id: string
@@ -3468,6 +3550,101 @@ export type Database = {
           },
         ]
       }
+      spare_parts: {
+        Row: {
+          category: Database["public"]["Enums"]["material_category"]
+          company_id: string
+          compatible_equipment: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          id: string
+          lead_time_days: number | null
+          location: string | null
+          name: string
+          part_number: string
+          preferred_vendor_id: string | null
+          qty_on_hand: number
+          reorder_point: number
+          safety_stock: number
+          unit_cost: number | null
+          uom: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["material_category"]
+          company_id: string
+          compatible_equipment?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          lead_time_days?: number | null
+          location?: string | null
+          name: string
+          part_number: string
+          preferred_vendor_id?: string | null
+          qty_on_hand?: number
+          reorder_point?: number
+          safety_stock?: number
+          unit_cost?: number | null
+          uom?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["material_category"]
+          company_id?: string
+          compatible_equipment?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          lead_time_days?: number | null
+          location?: string | null
+          name?: string
+          part_number?: string
+          preferred_vendor_id?: string | null
+          qty_on_hand?: number
+          reorder_point?: number
+          safety_stock?: number
+          unit_cost?: number | null
+          uom?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spare_parts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spare_parts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spare_parts_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "spare_parts_preferred_vendor_id_fkey"
+            columns: ["preferred_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -4108,6 +4285,17 @@ export type Database = {
         | "matched"
         | "variance_blocked"
         | "approved_with_variance"
+      material_category:
+        | "module"
+        | "inverter"
+        | "tracker"
+        | "battery_cell"
+        | "transformer"
+        | "cable_copper"
+        | "cable_alu"
+        | "steel"
+        | "concrete"
+        | "other"
       opportunity_stage:
         | "prospecting"
         | "qualification"
@@ -4365,6 +4553,18 @@ export const Constants = {
         "matched",
         "variance_blocked",
         "approved_with_variance",
+      ],
+      material_category: [
+        "module",
+        "inverter",
+        "tracker",
+        "battery_cell",
+        "transformer",
+        "cable_copper",
+        "cable_alu",
+        "steel",
+        "concrete",
+        "other",
       ],
       opportunity_stage: [
         "prospecting",
