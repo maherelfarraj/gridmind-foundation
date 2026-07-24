@@ -35,6 +35,7 @@ import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
+import { Route as AuthenticatedProcurementSparePartsRouteImport } from './routes/_authenticated/procurement.spare-parts'
 import { Route as AuthenticatedProcurementScorecardsRouteImport } from './routes/_authenticated/procurement.scorecards'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
 import { Route as AuthenticatedProcurementReceiptsRouteImport } from './routes/_authenticated/procurement.receipts'
@@ -222,6 +223,12 @@ const AuthenticatedProcurementVendorsRoute =
   AuthenticatedProcurementVendorsRouteImport.update({
     id: '/procurement/vendors',
     path: '/procurement/vendors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProcurementSparePartsRoute =
+  AuthenticatedProcurementSparePartsRouteImport.update({
+    id: '/procurement/spare-parts',
+    path: '/procurement/spare-parts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProcurementScorecardsRoute =
@@ -532,6 +539,7 @@ export interface FileRoutesByFullPath {
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
+  '/procurement/spare-parts': typeof AuthenticatedProcurementSparePartsRoute
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -600,6 +608,7 @@ export interface FileRoutesByTo {
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
+  '/procurement/spare-parts': typeof AuthenticatedProcurementSparePartsRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
@@ -672,6 +681,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/_authenticated/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
+  '/_authenticated/procurement/spare-parts': typeof AuthenticatedProcurementSparePartsRoute
   '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -747,6 +757,7 @@ export interface FileRouteTypes {
     | '/procurement/receipts'
     | '/procurement/rfqs'
     | '/procurement/scorecards'
+    | '/procurement/spare-parts'
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/projects/new'
@@ -815,6 +826,7 @@ export interface FileRouteTypes {
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/scorecards'
+    | '/procurement/spare-parts'
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/settings/company'
@@ -886,6 +898,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/receipts'
     | '/_authenticated/procurement/rfqs'
     | '/_authenticated/procurement/scorecards'
+    | '/_authenticated/procurement/spare-parts'
     | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/new'
@@ -1132,6 +1145,13 @@ declare module '@tanstack/react-router' {
       path: '/procurement/vendors'
       fullPath: '/procurement/vendors'
       preLoaderRoute: typeof AuthenticatedProcurementVendorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/procurement/spare-parts': {
+      id: '/_authenticated/procurement/spare-parts'
+      path: '/procurement/spare-parts'
+      fullPath: '/procurement/spare-parts'
+      preLoaderRoute: typeof AuthenticatedProcurementSparePartsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/procurement/scorecards': {
@@ -1735,6 +1755,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProcurementReceiptsRoute: typeof AuthenticatedProcurementReceiptsRouteWithChildren
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
   AuthenticatedProcurementScorecardsRoute: typeof AuthenticatedProcurementScorecardsRoute
+  AuthenticatedProcurementSparePartsRoute: typeof AuthenticatedProcurementSparePartsRoute
   AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
@@ -1769,6 +1790,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProcurementRfqsRouteWithChildren,
   AuthenticatedProcurementScorecardsRoute:
     AuthenticatedProcurementScorecardsRoute,
+  AuthenticatedProcurementSparePartsRoute:
+    AuthenticatedProcurementSparePartsRoute,
   AuthenticatedProcurementVendorsRoute:
     AuthenticatedProcurementVendorsRouteWithChildren,
   AuthenticatedProjectsProjectIdRoute:
