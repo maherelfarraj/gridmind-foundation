@@ -20,6 +20,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from '.
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
 import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_authenticated/settings.company'
+import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_authenticated/proposals.$proposalId'
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
@@ -97,6 +99,12 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
+const AuthenticatedProposalsIndexRoute =
+  AuthenticatedProposalsIndexRouteImport.update({
+    id: '/proposals/',
+    path: '/proposals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsIndexRoute =
   AuthenticatedProjectsIndexRouteImport.update({
     id: '/projects/',
@@ -137,6 +145,12 @@ const AuthenticatedSettingsCompanyRoute =
   AuthenticatedSettingsCompanyRouteImport.update({
     id: '/settings/company',
     path: '/settings/company',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProposalsProposalIdRoute =
+  AuthenticatedProposalsProposalIdRouteImport.update({
+    id: '/proposals/$proposalId',
+    path: '/proposals/$proposalId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectsNewRoute =
@@ -250,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
+  '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -257,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -282,6 +298,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
+  '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -289,6 +306,7 @@ export interface FileRoutesByTo {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -319,6 +337,7 @@ export interface FileRoutesById {
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
+  '/_authenticated/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -326,6 +345,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -355,6 +375,7 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/proposals/$proposalId'
     | '/settings/company'
     | '/settings/departments'
     | '/settings/modules'
@@ -362,6 +383,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/projects/'
+    | '/proposals/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/projects/$projectId/config'
@@ -387,6 +409,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/crm/pipeline'
     | '/projects/new'
+    | '/proposals/$proposalId'
     | '/settings/company'
     | '/settings/departments'
     | '/settings/modules'
@@ -394,6 +417,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/projects'
+    | '/proposals'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/projects/$projectId/config'
@@ -423,6 +447,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/new'
+    | '/_authenticated/proposals/$proposalId'
     | '/_authenticated/settings/company'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/modules'
@@ -430,6 +455,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
     | '/_authenticated/projects/'
+    | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
     | '/_authenticated/projects/$projectId/config'
@@ -531,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/_authenticated/proposals/': {
+      id: '/_authenticated/proposals/'
+      path: '/proposals'
+      fullPath: '/proposals/'
+      preLoaderRoute: typeof AuthenticatedProposalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/projects'
@@ -578,6 +611,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/company'
       fullPath: '/settings/company'
       preLoaderRoute: typeof AuthenticatedSettingsCompanyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/proposals/$proposalId': {
+      id: '/_authenticated/proposals/$proposalId'
+      path: '/proposals/$proposalId'
+      fullPath: '/proposals/$proposalId'
+      preLoaderRoute: typeof AuthenticatedProposalsProposalIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/new': {
@@ -787,6 +827,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
+  AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
   AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
@@ -794,6 +835,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
   AuthenticatedCrmOpportunitiesOpportunityIdRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
 }
 
@@ -804,6 +846,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsProjectIdRoute:
     AuthenticatedProjectsProjectIdRouteWithChildren,
   AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,
+  AuthenticatedProposalsProposalIdRoute: AuthenticatedProposalsProposalIdRoute,
   AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
@@ -812,6 +855,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
   AuthenticatedCrmOpportunitiesOpportunityIdRoute:
     AuthenticatedCrmOpportunitiesOpportunityIdRoute,
 }

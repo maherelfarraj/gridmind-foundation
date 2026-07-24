@@ -1,6 +1,9 @@
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
-import { Award, CalendarDays, Plus, User } from "lucide-react";
+import { Award, CalendarDays, FileText, Plus, User } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+
+import { useCreateProposal } from "@/lib/proposal-query";
 
 import { LossReasonDialog } from "@/components/crm/LossReasonDialog";
 import { Badge } from "@/components/ui/badge";
@@ -151,14 +154,12 @@ export function OpportunityHeaderCard({
           </div>
           {!readOnly && (
             <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled
-                title="Proposals ship in P-044"
-              >
-                New proposal
-              </Button>
+              <NewProposalButton
+                opportunityId={opp.id}
+                currencyCode={opp.currency_code ?? "USD"}
+                title={`${opp.name} — Proposal`}
+              />
+
               <Button
                 size="sm"
                 variant="outline"
@@ -331,5 +332,40 @@ function EditableInline({
     >
       {display ?? value ?? placeholder ?? "—"}
     </button>
+  );
+}
+
+function NewProposalButton({
+  opportunityId,
+  currencyCode,
+  title,
+}: {
+  opportunityId: string;
+  currencyCode: string;
+  title: string;
+}) {
+  const navigate = useNavigate();
+  const create = useCreateProposal();
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={create.isPending}
+      onClick={() =>
+        create.mutate(
+          { opportunityId, currencyCode, title },
+          {
+            onSuccess: (res: any) =>
+              navigate({
+                to: "/proposals/$proposalId",
+                params: { proposalId: res.id },
+              }),
+          },
+        )
+      }
+    >
+      <FileText size={14} aria-hidden />
+      {create.isPending ? "Creating…" : "New proposal"}
+    </Button>
   );
 }
