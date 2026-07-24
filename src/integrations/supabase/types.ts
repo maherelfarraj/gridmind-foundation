@@ -988,6 +988,101 @@ export type Database = {
           },
         ]
       }
+      expediting_logs: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          current_eta: string | null
+          delivery_window_end: string | null
+          delivery_window_start: string | null
+          eta_confirmed: boolean
+          id: string
+          is_long_lead: boolean
+          item_description: string
+          last_vendor_contact_at: string | null
+          notes: string | null
+          po_id: string
+          po_line_no: number | null
+          project_id: string
+          promised_delivery_date: string | null
+          site_need_date: string
+          status: Database["public"]["Enums"]["expediting_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          current_eta?: string | null
+          delivery_window_end?: string | null
+          delivery_window_start?: string | null
+          eta_confirmed?: boolean
+          id?: string
+          is_long_lead?: boolean
+          item_description: string
+          last_vendor_contact_at?: string | null
+          notes?: string | null
+          po_id: string
+          po_line_no?: number | null
+          project_id: string
+          promised_delivery_date?: string | null
+          site_need_date: string
+          status?: Database["public"]["Enums"]["expediting_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          current_eta?: string | null
+          delivery_window_end?: string | null
+          delivery_window_start?: string | null
+          eta_confirmed?: boolean
+          id?: string
+          is_long_lead?: boolean
+          item_description?: string
+          last_vendor_contact_at?: string | null
+          notes?: string | null
+          po_id?: string
+          po_line_no?: number | null
+          project_id?: string
+          promised_delivery_date?: string | null
+          site_need_date?: string
+          status?: Database["public"]["Enums"]["expediting_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expediting_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expediting_logs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expediting_logs_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expediting_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fx_rates: {
         Row: {
           as_of: string
@@ -3997,6 +4092,7 @@ export type Database = {
         | "survey"
         | "general"
       drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
+      expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
       grn_status: "draft" | "confirmed" | "has_defects" | "closed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       lead_source:
@@ -4252,6 +4348,7 @@ export const Constants = {
         "general",
       ],
       drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
+      expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
       grn_status: ["draft", "confirmed", "has_defects", "closed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       lead_source: [
