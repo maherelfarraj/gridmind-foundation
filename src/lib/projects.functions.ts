@@ -255,7 +255,7 @@ const createProjectInput = z.object({
 const PHASE_LABELS_SHORT: Record<(typeof PROJECT_PHASES)[number], string> = {
   development: "Development",
   ntp: "NTP",
-  cod: "CoD",
+  cod: "COD",
   handover: "Handover",
 };
 
@@ -490,3 +490,217 @@ export const getProjectSummary = createServerFn({ method: "GET" })
     };
   });
 
+
+// ---------------------------------------------------------------------------
+// P-037 — Project cockpit list + CSV export.
+// ---------------------------------------------------------------------------
+
+const PHASE_ENUM = z.enum(PROJECT_PHASES);
+
+const listProjectsInput = z.object({
+  companyId: z.string().uuid(),
+  search: z.string().trim().max(120).optional(),
+  phase: PHASE_ENUM.optional(),
+  archetype: ARCHETYPE_ENUM.optional(),
+  department: DEPT_ENUM.optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+
+export type ProjectCardRow = {
+  id: string;
+  name: string;
+  code: string;
+  archetype: ProjectArchetype;
+  phase: (typeof PROJECT_PHASES)[number];
+  status: string;
+  capacity_mw: number | null;
+  capacity_mwh: number | null;
+  site_country: string | null;
+  target_cod: string | null;
+  project_admin: {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+export type ListProjectsResult = {
+  rows: ProjectCardRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+const PAGE_SIZE = 24;
+
+function escapeIlike(v: string): string {
+  // Escape PostgREST .or() delimiter + LIKE wildcards.
+  return v.replace(/[,%_]/g, (c) => `\\${c}`);
+}
+
+async function assertCompanyMember(
+  supabase: { rpc: (fn: any, args: any) => any },
+  companyId: string,
+): Promise<void> {
+  const { data: ok, error } = await supabase.rpc("is_company_member", {
+    p_company_id: companyId,
+  });
+  if (error) throw error;
+  if (ok !== true) httpError(403, "forbidden");
+}
+
+
+
+export const listProjects = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => listProjectsInput.parse(input))
+  .handler(async ({ data, context }): Promise<ListProjectsResult> => {
+    requireSupabaseAuth(context);
+    await assertCompanyMember(context.supabase, data.companyId);
+
+    // Department semi-join: prefetch project ids that have the requested dept.
+    let deptIdFilter: string[] | null = null;
+    if (data.department) {
+      const { data: deptRows, error: deptErr } = await context.supabase
+        .from("project_departments")
+        .select("project_id")
+        .eq("department", data.department);
+      if (deptErr) throw deptErr;
+      deptIdFilter = Array.from(
+        new Set((deptRows ?? []).map((r) => r.project_id as string)),
+      );
+      if (deptIdFilter.length === 0) {
+        return { rows: [], total: 0, page: data.page, pageSize: PAGE_SIZE };
+      }
+    }
+
+    let q = context.supabase
+      .from("projects")
+      .select(
+        "id, name, code, archetype, phase, status, capacity_mw, capacity_mwh, site_country, target_cod, project_admin:profiles!projects_project_admin_id_fkey(id, full_name, email, avatar_url)",
+        { count: "exact" },
+      )
+      .eq("company_id", data.companyId)
+      .order("created_at", { ascending: false });
+
+    if (data.phase) q = q.eq("phase", data.phase);
+    if (data.archetype) q = q.eq("archetype", data.archetype);
+    if (deptIdFilter) q = q.in("id", deptIdFilter);
+    if (data.search && data.search.length > 0) {
+      const s = escapeIlike(data.search);
+      q = q.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
+    }
+
+    const from = (data.page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data: rows, error, count } = await q.range(from, to);
+    if (error) throw error;
+
+    return {
+      rows: ((rows ?? []) as unknown as ProjectCardRow[]),
+      total: count ?? 0,
+      page: data.page,
+      pageSize: PAGE_SIZE,
+    };
+  });
+
+// TODO(Batch 12): consult project_export_locks before returning CSV.
+const exportCsvInput = listProjectsInput.omit({ page: true });
+
+function csvEscape(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+export const exportProjectsCsv = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => exportCsvInput.parse(input))
+  .handler(
+    async ({ data, context }): Promise<{ filename: string; csv: string }> => {
+      requireSupabaseAuth(context);
+      await assertCompanyMember(context.supabase, data.companyId);
+
+      let deptIdFilter: string[] | null = null;
+      if (data.department) {
+        const { data: deptRows, error: deptErr } = await context.supabase
+          .from("project_departments")
+          .select("project_id")
+          .eq("department", data.department);
+        if (deptErr) throw deptErr;
+        deptIdFilter = Array.from(
+          new Set((deptRows ?? []).map((r) => r.project_id as string)),
+        );
+        if (deptIdFilter.length === 0) {
+          return {
+            filename: `projects-${new Date().toISOString()}.csv`,
+            csv: buildCsv([]),
+          };
+        }
+      }
+
+      let q = context.supabase
+        .from("projects")
+        .select(
+          "code, name, archetype, phase, status, capacity_mw, capacity_mwh, site_country, target_cod, project_admin:profiles!projects_project_admin_id_fkey(full_name, email)",
+        )
+        .eq("company_id", data.companyId)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+
+      if (data.phase) q = q.eq("phase", data.phase);
+      if (data.archetype) q = q.eq("archetype", data.archetype);
+      if (deptIdFilter) q = q.in("id", deptIdFilter);
+      if (data.search && data.search.length > 0) {
+        const s = escapeIlike(data.search);
+        q = q.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
+      }
+
+      const { data: rows, error } = await q;
+      if (error) throw error;
+
+      return {
+        filename: `projects-${new Date().toISOString().slice(0, 19)}.csv`,
+        csv: buildCsv((rows ?? []) as any[]),
+      };
+    },
+  );
+
+function buildCsv(rows: any[]): string {
+  const header = [
+    "code",
+    "name",
+    "archetype",
+    "phase",
+    "status",
+    "capacity_mw",
+    "capacity_mwh",
+    "site_country",
+    "target_cod",
+    "project_admin",
+  ];
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    const admin = r.project_admin
+      ? r.project_admin.full_name || r.project_admin.email || ""
+      : "";
+    lines.push(
+      [
+        r.code,
+        r.name,
+        r.archetype,
+        r.phase,
+        r.status,
+        r.capacity_mw,
+        r.capacity_mwh,
+        r.site_country,
+        r.target_cod,
+        admin,
+      ]
+        .map(csvEscape)
+        .join(","),
+    );
+  }
+  return lines.join("\r\n") + "\r\n";
+}
