@@ -10,12 +10,15 @@ import { toast } from "sonner";
 import {
   createProposal,
   createProposalVersion,
+  decidePricingApproval,
+  getPricingChecklist,
   getProposal,
   listProposals,
   runYieldStub,
   saveArrayConfig,
   saveLineItems,
   saveProposalHeader,
+  submitPricingApproval,
 } from "@/lib/proposal.functions";
 
 export function proposalDetailQueryOptions(
