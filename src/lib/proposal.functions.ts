@@ -12,6 +12,14 @@ import {
   type ArrayConfig,
   type YieldResult,
 } from "@/lib/yield/stub";
+import {
+  COMPANY_BASE_CURRENCY,
+  CONTINGENCY_FLOOR_PCT,
+  FX_MAX_AGE_HOURS,
+  MARGIN_FLOOR_PCT,
+  PRICING_ENTITY,
+  PRICING_RULE_KEY,
+} from "@/lib/pricing-rules";
 
 const inputSchema = z.object({ proposalId: z.string().uuid() });
 
