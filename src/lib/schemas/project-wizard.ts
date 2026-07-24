@@ -145,3 +145,66 @@ export const BLANK_SELECTION: ProjectSelection = {
   ],
   departments: ["engineering"],
 };
+
+// ---------------------------------------------------------------------------
+// P-036 — Wizard step 4: team assignment + createProject payload.
+// ---------------------------------------------------------------------------
+
+export const DEPT_LEAD_ROLES = [
+  "engineering",
+  "procurement",
+  "construction",
+  "hse",
+  "finance",
+] as const;
+export type DeptLeadKey = (typeof DEPT_LEAD_ROLES)[number];
+
+export const DEPT_LEAD_ROLE_MAP = {
+  engineering: "engineering_admin",
+  procurement: "procurement_admin",
+  construction: "construction_admin",
+  hse: "hse_admin",
+  finance: "finance_admin",
+} as const satisfies Record<DeptLeadKey, string>;
+
+const uuid = z.string().uuid();
+
+export const projectTeamSchema = z.object({
+  project_admin_id: uuid,
+  member_ids: z.array(uuid),
+  dept_leads: z.record(z.enum(DEPT_LEAD_ROLES), uuid).default({}),
+});
+export type ProjectTeam = z.infer<typeof projectTeamSchema>;
+
+/**
+ * Full server-side payload for createProject.
+ * Composes basics (archetype-aware MWh gate) + selection + team.
+ */
+export function makeCreateProjectSchema(
+  archetype: import("@/lib/wizard-draft").ProjectArchetype,
+) {
+  const basics = baseObject.superRefine((v, ctx) => {
+    const needsMwh =
+      archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
+    if (needsMwh && (v.capacity_mwh === undefined || v.capacity_mwh === null)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["capacity_mwh"],
+        message: "MWh is required for BESS archetypes",
+      });
+    }
+  });
+  return z
+    .object({
+      companyId: uuid,
+      archetype: z.literal(archetype),
+      template_id: uuid.nullable(),
+    })
+    .and(basics)
+    .and(projectTeamSchema);
+}
+
+export type CreateProjectInput = z.infer<
+  ReturnType<typeof makeCreateProjectSchema>
+>;
+
