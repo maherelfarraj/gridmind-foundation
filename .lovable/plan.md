@@ -1,84 +1,64 @@
-## P-038 — Project detail layout + phase-gate stepper
+## P-039 — Archetype config forms
 
-Convert `projects.$projectId` from a single page into a nested layout with tab child routes.
+Build the Config tab so users can view/edit the archetype-specific engineering, financial, and cybersecurity configuration rows for a project. Read-only for non-privileged members; writable for company/project/engineering admins (financial also finance_admin).
 
-### New server function
+### 1. Shared schema registry
+New file `src/lib/schemas/archetype-configs.ts`:
+- One zod object per config table, mirroring migration `20260724094907_*.sql` columns (numerics via `z.coerce.number()`, enums via `z.enum([...])`, JSON fields as `z.array(z.record(...))` — `voltage_levels` and `zones_conduits` = array of `{ key, value }` pairs).
+- Export `ARCHETYPE_CONFIG_KEYS = ['pv','bess','substation','sld','scada','yield','pvsyst','financial','cybersecurity']` and `configSchemas` map + `ArchetypeConfigKey` type + `CONFIG_LABELS` map (`"PV"`, `"BESS"`, `"SLD"`, `"SCADA"`, `"Yield"`, `"PVsyst"`, `"Financial"`, `"Cybersecurity"`, `"Substation"`).
+- Export `ARCHETYPE_CONFIG_MAP: Record<ProjectArchetype, ArchetypeConfigKey[]>` matching the spec (utility_pv → pv/sld/scada/yield/pvsyst/financial/cybersecurity, etc.).
+- Export `CONFIG_TABLE_MAP: Record<ArchetypeConfigKey, string>` → `project_pv_config` etc.
 
-Append `getProject` to `src/lib/projects.functions.ts`:
+### 2. Server functions (append to `src/lib/projects.functions.ts`)
+- `getArchetypeConfigs({ project_id })`: `attachSupabaseAuth` + `requireSupabaseAuth`. Verify member via `is_company_member` (using project's `company_id`). Parallel `.maybeSingle()` on all 9 config tables filtered by `project_id`. Return `{ pv: row|null, bess: row|null, ... , canEdit: { <key>: boolean } }` — role flags computed once from `user_roles` (company_admin, project_admin, engineering_admin, finance_admin).
+- `saveArchetypeConfig({ config, project_id, values })`:
+  - Zod input: `config` = enum of the 9 keys, `project_id` uuid, `values` validated by `configSchemas[config]`.
+  - Load project row → `company_id` + archetype. 403 if not member. 403 if config key isn't in that archetype's allowed list (prevent tampering).
+  - Role check: caller must hold `company_admin`, `project_admin`, or `engineering_admin`; `financial` also accepts `finance_admin`. Query via `user_roles`.
+  - Upsert into `CONFIG_TABLE_MAP[config]` on conflict `(project_id)` DO UPDATE, setting `company_id` from project. JSON key/value arrays serialized as JSON.
+  - Call `write_audit_log('project_config.saved', 'project_'+config+'_config', project_id, { fields: Object.keys(values) })`.
+  - Return the persisted row.
 
-- Zod input `{ id: uuid }`, `attachSupabaseAuth` + `requireSupabaseAuth`.
-- Single `.maybeSingle()` on `projects` (RLS scopes to caller's company). If null → return `null` (never distinguish "does not exist" from "wrong tenant").
-- If found, parallel-fetch:
-  - Caller's roles for the project's `company_id` (query `user_roles` filtered by `auth.uid()` + company).
-  - `project_members` joined to `profiles` (full_name, email, avatar_url) for the badges.
-  - `project_departments` (dept, status, lead_user_id) joined to `profiles` for lead names.
-  - `project_phase_gates` (id, phase, name, status, sort_order) ordered by `sort_order`.
-- Return a plain DTO `ProjectDetail` (all fields as strings/numbers/nulls) — never SDK objects.
+### 3. Query wiring
+New `src/lib/archetype-configs-query.ts` exporting `archetypeConfigsQueryOptions(projectId)` (staleTime 30s, key `['archetype-configs', projectId]`). Consumers use `useSuspenseQuery`; on save, invalidate that key.
 
-### New shared component
+### 4. UI — replace `src/routes/_authenticated/projects.$projectId.config.tsx`
+- Loader primes both `projectDetailQueryOptions(id)` and `archetypeConfigsQueryOptions(id)`.
+- Component reads the project (for archetype) and configs; computes `visibleTabs = ARCHETYPE_CONFIG_MAP[archetype]`.
+- Renders a shadcn `<Tabs>` with one `TabsTrigger` per visible key using `CONFIG_LABELS`. Selected tab lives in URL search param `?section=pv` for shareability (default = first tab).
+- Each tab renders `<ArchetypeConfigForm configKey={key} projectId={id} initial={configs[key]} canEdit={configs.canEdit[key]} />`.
 
-`src/components/projects/phase-gate-stepper.tsx`:
+New components under `src/components/projects/config/`:
+- `archetype-config-form.tsx` — generic wrapper: `useForm` with `zodResolver(configSchemas[key])`, default values from `initial` (or DB defaults from schema), `useMutation` calling `saveArchetypeConfig`, sonner toast on success ("Configuration saved"), error toast + inline banner on failure preserving user edits. When `!canEdit`, wraps the form in a `fieldset[disabled]` and shows a muted hint: "You need company_admin, project_admin, or engineering_admin to edit this section" (financial substitutes finance_admin).
+- `config-fields/` one small file per key rendering the actual inputs:
+  - `pv-fields.tsx`: tracker_type Select (fixed/single_axis/dual_axis), numeric inputs with suffixes (tilt °, GCR, DC/AC, DC MWp, inverter count).
+  - `bess-fields.tsx`: chemistry Select (lfp/nmc/flow/other), power MW, energy MWh, duration h, PCS count, container count, cycles/day, augmentation_strategy textarea.
+  - `substation-fields.tsx`: voltage_kv, transformer_count, transformer_mva, bay_count, busbar_scheme, grid_code.
+  - `sld-fields.tsx`: hv/mv/lv voltage; `voltage_levels` key-value editor (add/remove rows of `{ name, kv }`).
+  - `scada-fields.tsx`: protocol Select (modbus_tcp/iec61850/dnp3/opc_ua), polling_interval_sec (s), points_count, historian_retention_days.
+  - `yield-fields.tsx`: p50/p90 MWh, GHI, losses %, degradation %, availability %.
+  - `pvsyst-fields.tsx`: version, meteo_source, sim_report_url, near_shading %, albedo, bifacial toggle.
+  - `financial-fields.tsx`: currency Select (from `currencies` — small static list ok for now), capex_total, contingency %, debt_ratio %, discount_rate %, ppa_price, contract_years.
+  - `cybersecurity-fields.tsx`: standard Select (IEC 62443 / NERC CIP / ISO 27019), zones_conduits key-value editor, remote_access_policy textarea, soc_monitoring toggle.
+- `key-value-editor.tsx` — reusable JSON array editor (`{ key, value }` rows, add/remove buttons, semantic tokens only).
+- `field-shell.tsx` — small helper wrapping label + input + unit suffix + error message.
 
-- Props: `gates: { phase; status; name }[]`.
-- Renders 4 horizontal steps in fixed order Development → NTP → COD → Handover.
-- Each step matches to the gate row for that phase (fallback to `locked` if missing).
-- Icon + token classes:
-  - `approved` → `CheckCircle2` + `bg-primary text-primary-foreground`
-  - `in_review` → `Clock` + `bg-accent text-accent-foreground`
-  - `open` → outlined circle + `border-primary text-primary ring-1 ring-primary/40`
-  - `locked` → `Lock` + `bg-muted text-muted-foreground`
-- Connector line between steps uses `bg-border`; the segment before an approved step becomes `bg-primary`.
-- Purely presentational; no click handlers (gate transitions land in P-040).
+All UI uses semantic tokens (`bg-card`, `border-border`, `text-muted-foreground`, `text-destructive`) — no hex/rgb/white/black. Copy uses "C&I", "O&M", "Green H₂" spellings.
 
-### Route split
+### 5. Types
+Regenerate `src/integrations/supabase/types.ts` isn't needed — tables already exist. Local `ConfigRow` types come from Supabase generated types.
 
-`src/routes/_authenticated/projects.$projectId.tsx` becomes a **layout route**:
-
-- Loader primes a `projectDetailQueryOptions(id)` via `context.queryClient.ensureQueryData`.
-- `errorComponent` + `notFoundComponent` render a branded panel with retry / "Back to projects".
-- Component reads `useSuspenseQuery(projectDetailQueryOptions(id))`.
-  - If the fn returns `null` → render the same branded not-found panel (name-agnostic copy so tenant existence isn't leaked). This is the cross-tenant case.
-  - Otherwise renders header block (name, code, archetype badge with correct "C&I Rooftop" / "Green H₂" copy, status chip, `PhaseGateStepper`) then the tab bar, then `<Outlet />`.
-- Tab bar: static tabs Overview / Gates / Config always shown; department tabs (Engineering, Procurement, Construction, HSE, Finance) rendered only when a matching `project_departments` row exists. Uses `<Link>` with active-state token styling; no manual URL strings.
-- `pendingComponent` shows skeleton header + tab bar.
-
-New child route files (all import a shared `projectDetailQueryOptions` from `src/lib/projects-detail-query.ts`):
-
-- `projects.$projectId.index.tsx` — `beforeLoad` throws `redirect({ to: '/projects/$projectId/overview', params })`.
-- `projects.$projectId.overview.tsx` — `bg-card` grid of key facts (capacity_mw with `MW`, appended `· X MWh` if set, site_name/site_country, offtaker, target_cod formatted `PP`, team avatars from members).
-- `projects.$projectId.gates.tsx` — placeholder card "Gate transitions ship in P-040" listing gate names + statuses read-only.
-- `projects.$projectId.config.tsx` — placeholder card "Archetype config ships in P-039".
-- `projects.$projectId.engineering.tsx`, `.procurement.tsx`, `.construction.tsx`, `.hse.tsx`, `.finance.tsx` — each reads its department row from the shared query and renders a placeholder panel (department status badge, lead name from profile, copy "This module ships in a later batch"). If the row is missing (URL was hand-typed for a hidden dept), render a small "Department not assigned to this project" panel instead of crashing.
-
-### Shared query options module
-
-`src/lib/projects-detail-query.ts` exports:
-
-```ts
-export const projectDetailQueryOptions = (id: string) =>
-  queryOptions({
-    queryKey: ['project-detail', id],
-    queryFn: () => getProject({ data: { id } }),
-    staleTime: 30_000,
-  });
-```
-
-This lets layout + every child tab share the cache with `useSuspenseQuery` — one RPC per navigation into the project, no per-tab fetch.
-
-### Head metadata
-
-Layout `head()` uses the loaded project (name + code) for title, description, `og:title`, `og:description`, `og:type=website`, `twitter:card=summary`. Fallback to generic "Project — GridMind EPC" when data isn't in cache yet (SSR/prefetch).
-
-### Verification (manual + Playwright)
-
-1. `/projects/{prairie-id}` as Demo Admin → header shows "Prairie Winds Solar — 150 MWac", `PWS-2026`, `Utility PV` badge, stepper with Development ring/open + NTP/COD/Handover muted/locked.
-2. Tab bar shows Overview, Gates, Config plus the 5 departments seeded at creation; no other dept tabs visible.
-3. Overview panel shows 150 MW, site, offtaker, target COD, member avatars.
-4. Hand-type same URL while signed in as Test Co B → branded not-found panel with "Back to projects", no name leaked.
-5. Reload with network throttled → skeleton header/tabs render before content.
-6. Kill the RPC (temporarily flip the id to a non-uuid via URL) → error boundary shows retry button that calls `router.invalidate()`.
-7. `rg -n "#[0-9a-fA-F]{6}\\|rgb\\(\\|text-white\\|bg-black" src/components/projects src/routes/_authenticated/projects.\\$projectId*` returns no hits (tokens only).
+### 6. Verification (Playwright as Demo Admin, Prairie Winds)
+1. `/projects/{prairie-id}/config` shows exactly PV, SLD, SCADA, Yield, PVsyst, Financial, Cybersecurity — no BESS or Substation tab.
+2. Fill PV: tracker=single_axis, tilt=25, GCR=0.35, DC/AC=1.25, DC=175, inverters=42 → Save → toast → reload → values persist.
+3. `select count(*) from project_pv_config where project_id = …` returns 1 after two saves (upsert).
+4. `select action, metadata from audit_logs where entity='project_pv_config'` shows `project_config.saved` with `fields` array.
+5. Client rejects GCR=9; server rejects a hand-crafted payload with GCR=9 (invoke-server-function).
+6. Sign in as a finance_admin-only user → Financial editable, other tabs read-only with hint.
+7. `rg -n "#[0-9a-fA-F]{6}|rgb\(|text-white|bg-black" src/components/projects/config src/lib/schemas/archetype-configs.ts` returns no hits.
 
 ### Non-goals
-
-Read-only page: no mutations, no audit rows, no gate transitions (P-040), no archetype config forms (P-039).
+- No PVsyst file upload pipeline (just URL text field).
+- No P50/P90 recompute — pure data capture (feeds Batch 05–06).
+- No new migrations; RLS + role gating already exist from migration 0013.
+- No changes to gates, overview, or department tabs.

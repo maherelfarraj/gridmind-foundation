@@ -858,3 +858,156 @@ export const getProject = createServerFn({ method: "GET" })
       gates,
     };
   });
+
+// ---------------------------------------------------------------------------
+// P-039 — Archetype configuration reads + writes.
+// ---------------------------------------------------------------------------
+
+import {
+  ARCHETYPE_CONFIG_KEYS,
+  ARCHETYPE_CONFIG_MAP,
+  CONFIG_DEFAULTS,
+  CONFIG_EDIT_ROLES,
+  CONFIG_TABLE_MAP,
+  configSchemas,
+  type ArchetypeConfigKey,
+} from "@/lib/schemas/archetype-configs";
+
+const configKeyEnum = z.enum(ARCHETYPE_CONFIG_KEYS);
+
+const getConfigsInput = z.object({ project_id: z.string().uuid() });
+
+export type ArchetypeConfigsResult = {
+  project_id: string;
+  archetype: ProjectArchetype;
+  rows: Record<ArchetypeConfigKey, Record<string, any> | null>;
+  canEdit: Record<ArchetypeConfigKey, boolean>;
+};
+
+export const getArchetypeConfigs = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => getConfigsInput.parse(input))
+  .handler(async ({ data, context }): Promise<ArchetypeConfigsResult | null> => {
+    requireSupabaseAuth(context);
+
+    const { data: proj, error } = await context.supabase
+      .from("projects")
+      .select("id, company_id, archetype")
+      .eq("id", data.project_id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!proj) return null;
+
+    const { data: roleRows, error: roleErr } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.user.id)
+      .eq("company_id", proj.company_id);
+    if (roleErr) throw roleErr;
+    const roles = new Set((roleRows ?? []).map((r: any) => r.role as string));
+
+    const rowResults = await Promise.all(
+      ARCHETYPE_CONFIG_KEYS.map((key) =>
+        context.supabase
+          .from(CONFIG_TABLE_MAP[key] as any)
+          .select("*")
+          .eq("project_id", data.project_id)
+          .maybeSingle(),
+      ),
+    );
+
+    const rows = {} as Record<ArchetypeConfigKey, Record<string, any> | null>;
+    const canEdit = {} as Record<ArchetypeConfigKey, boolean>;
+    ARCHETYPE_CONFIG_KEYS.forEach((key, i) => {
+      const res = rowResults[i];
+      if (res.error) throw res.error;
+      rows[key] = (res.data as Record<string, any> | null) ?? null;
+      canEdit[key] = CONFIG_EDIT_ROLES[key].some((r) => roles.has(r));
+    });
+
+    return {
+      project_id: proj.id,
+      archetype: proj.archetype as ProjectArchetype,
+      rows,
+      canEdit,
+    };
+  });
+
+const saveConfigInput = z.object({
+  project_id: z.string().uuid(),
+  config: configKeyEnum,
+  values: z.unknown(),
+});
+
+export const saveArchetypeConfig = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => saveConfigInput.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+
+    const configKey = data.config as ArchetypeConfigKey;
+    const schema = configSchemas[configKey];
+    const parsed = schema.safeParse(data.values ?? CONFIG_DEFAULTS[configKey]);
+    if (!parsed.success) {
+      throw Object.assign(new Error("invalid_config_values"), {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "invalid_config_values",
+          issues: parsed.error.issues,
+        }),
+        headers: { "content-type": "application/json; charset=utf-8" },
+      });
+    }
+
+    const { data: proj, error: projErr } = await context.supabase
+      .from("projects")
+      .select("id, company_id, archetype")
+      .eq("id", data.project_id)
+      .maybeSingle();
+    if (projErr) throw projErr;
+    if (!proj) httpError(404, "project_not_found");
+
+    const allowed = ARCHETYPE_CONFIG_MAP[proj.archetype as ProjectArchetype];
+    if (!allowed.includes(configKey)) {
+      httpError(403, "config_not_allowed_for_archetype");
+    }
+
+    const { data: roleRows, error: roleErr } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.user.id)
+      .eq("company_id", proj.company_id);
+    if (roleErr) throw roleErr;
+    const roles = new Set((roleRows ?? []).map((r: any) => r.role as string));
+    const requiredRoles = CONFIG_EDIT_ROLES[configKey];
+    if (!requiredRoles.some((r) => roles.has(r))) {
+      httpError(403, "forbidden");
+    }
+
+    const table = CONFIG_TABLE_MAP[configKey];
+    const payload: Record<string, any> = {
+      ...(parsed.data as Record<string, any>),
+      company_id: proj.company_id,
+      project_id: proj.id,
+    };
+
+    const { data: saved, error: upErr } = await context.supabase
+      .from(table as any)
+      .upsert(payload, { onConflict: "project_id" })
+      .select("*")
+      .single();
+    if (upErr) throw new Error(upErr.message);
+
+    const { error: auditErr } = await context.supabase.rpc("write_audit_log", {
+      p_action: "project_config.saved",
+      p_entity: table,
+      p_entity_id: proj.id,
+      p_metadata: {
+        config: configKey,
+        fields: Object.keys(parsed.data as Record<string, any>),
+      },
+    });
+    if (auditErr) throw new Error(auditErr.message);
+
+    return { row: saved as Record<string, any> };
+  });
