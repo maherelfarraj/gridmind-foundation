@@ -242,7 +242,7 @@ function AnonymousEnroll({
     setGoogleLoading(true);
     try {
       await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+        redirect_uri: `${window.location.origin}/login?redirect=${encodeURIComponent(
           redirectPath,
         )}`,
       });
