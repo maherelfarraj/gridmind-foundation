@@ -10,9 +10,17 @@ import {
   updateTenantPlan,
   type PlanTier,
 } from "@/lib/tenants.functions";
+import { ModuleAccessTable } from "@/components/module-access-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
 import {
   Card,
   CardContent,
