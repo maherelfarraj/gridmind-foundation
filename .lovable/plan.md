@@ -1,64 +1,53 @@
-## P-072 — WBS builder UI
+## P-073 — Gantt, baseline lock, variance tracking
 
-Adds the first Planning sub-route: `/projects/$projectId/planning/wbs`. Uses TanStack Query loaders, `createServerFn` + zod + `requireSupabaseAuth`, and semantic tokens throughout.
+Schema is already in place from P-071 (`schedule_tasks`, `baseline_snapshots` with `snapshot` jsonb + `locked/locked_by/locked_at`, append-only via absent DELETE grant). No new migration required.
 
-### 1. Server functions — `src/lib/wbs.functions.ts`
+### Server (`createServerFn` + zod + `requireSupabaseAuth`)
 
-Role gate: `project_admin | finance_admin | company_admin` for writes (read is company-member via RLS).
+- `src/lib/schedule.rules.ts` — pure helpers + zod schemas:
+  - `scheduleTaskCreateSchema`, `scheduleTaskUpdateSchema` (partial patch: `name`, `discipline`, `start_date`, `end_date`, `progress_pct 0–100`, `status`, `is_milestone`, `sort_order`, `wbs_item_id`, `predecessor_ids uuid[]`).
+  - `baselineCreateSchema`, `baselineLockSchema`, `deleteBaselineSchema` (all zod-validated).
+  - `isOverdue(row, today)`, `daysBetween(a,b)`, `barColorForStatus(status, overdue)` → semantic token class (`bg-primary`, `bg-muted-foreground`, `bg-destructive`, `bg-secondary`).
+  - `wouldCreateCycle(taskId, newPreds, allTasks)` — DFS over `predecessor_ids`; rejects self-reference and A→B→A chains.
+  - `computeVariance(current, baselineSnapshotRow)` → `{ start_var_days, finish_var_days }` (positive = late).
+  - `avgFinishVariance(tasks, snapshot)` for KPI.
+  - `weightedProgress(tasks)` — Σ(progress×duration)/Σ(duration).
+- `src/lib/schedule.functions.ts` (thin — helpers via imports):
+  - `getScheduleAccess` (returns `{ canWrite, canLockBaseline }` from `has_company_role`).
+  - `listScheduleTasks({projectId})`.
+  - `createScheduleTask`, `updateScheduleTask`, `deleteScheduleTask` (write roles: `project_admin`, `construction_admin`, `company_admin`). `updateScheduleTask` runs the cycle check against the current task list and rejects with `{error:'predecessor_cycle'}` on violation.
+  - `listBaselines({projectId})`, `createBaseline({projectId, name?})` (auto-name "Baseline N"; snapshots current tasks into `snapshot` jsonb).
+  - `lockBaseline({id})` — `project_admin`/`company_admin` only; sets `locked, locked_by=auth.uid(), locked_at=now()`.
+  - `deleteBaseline({id})` — refuses when `locked=true` (returns error) even though RLS also blocks writes/deletes on locked rows.
+  - Every mutation calls `write_audit_log` with `schedule_task.create|update|delete` or `baseline.create|lock|delete`.
+- `src/lib/schedule.query.ts` — `queryOptions` wrappers + `scheduleErrorMessage(err)`.
 
-- `listWbsTree({ projectId })` — returns `{ items: WbsItem[] }` sorted by `parent_id, sort_order`. Client builds the tree.
-- `createWbsItem({ projectId, parent_id, code, name, item_type, discipline?, description?, sort_order?, budgeted_amount?, currency_code?, ifc_package_ref? })` — audits `wbs.create`.
-- `updateWbsItem({ id, patch })` — same schema (partial). Audits `wbs.update`.
-- `reparentWbsItem({ id, parent_id, sort_order })` — audits `wbs.reparent` (prevents self/descendant cycles server-side by walking ancestors).
-- `deleteWbsItem({ id })` — blocks with `wbs.has_children` when the node has direct WBS children OR any `schedule_tasks.wbs_item_id = id`. Returns a typed `{ error: "has_dependencies", counts: { children, tasks } }` shape so the UI can toast a friendly message. Audits `wbs.delete` on success.
-- `importIfcPackages({ projectId, packages: [{ code, name, discipline, ifc_package_ref }] })` — inserts selected packages in one call under a single "Engineering" root (auto-created if missing), audits `wbs.import_ifc` with `{ project_id, count, source: "ifc_release" }`.
-- `proposeIfcPackages({ projectId })` — reads released `ifc_releases` for the project + their `revision_snapshot` and `drawing_register` (discipline, drawing_number, title) and returns dedupe-by-discipline proposals (code suggestion like `1.<n>` unused-in-project, name from `package_name`, `ifc_package_ref = release.id`). Also flags packages already imported (existing `wbs_items.ifc_package_ref = release.id`).
+### UI
 
-Split rule: file contains only `createServerFn` + imports; helpers (cycle check, next-code, proposal builder) live in `src/lib/wbs.server.ts`. Pure rules (code regex, discipline enum, zod schemas) live in `src/lib/wbs-rules.ts` — imported by both.
+- `src/routes/_authenticated/projects.$projectId.planning.schedule.tsx` — leaf route with `head()` metadata, `pendingComponent` skeleton, `errorComponent` (retry via `router.invalidate()`), `component` = orchestrator.
+- Adds "Schedule" sub-tab in `projects.$projectId.planning.tsx` (alongside WBS).
+- `src/components/planning/schedule-kpi-strip.tsx` — 4 cards: total tasks, weighted % complete, overdue count, schedule variance (colored amber `text-amber-500-ish token`/destructive against selected locked baseline; grey "No baseline selected" when none).
+- `src/components/planning/schedule-toolbar.tsx` — "New task", baseline picker (`Select` listing locked + draft baselines with 🔒 / draft badges), "Create baseline", "Lock" button (role-gated), "Compare to baseline" switch, CSV export button.
+- `src/components/planning/gantt-view.tsx` — main workspace:
+  - Left grid columns: name, discipline, start, end, progress %, status. When compare active + baseline selected, add **Start var** + **Finish var** columns (positive = destructive text, negative = muted-foreground).
+  - Right timeline: SVG-free div-based grid. Header scales unit to weeks (project span ≤ 90 days) or months (larger). Row bar `absolute` positioned by (offset days / total span) × 100%, colored via `barColorForStatus` (in_progress→`bg-primary`, completed→`bg-muted-foreground`, overdue in_progress→`bg-destructive`, not_started→`bg-secondary`). Milestones render as rotated `bg-primary` diamonds. Ghost baseline overlay = 40% opacity outlined bar underneath current bar.
+- `src/components/planning/task-inline-editor.tsx` — popover per row: name/discipline inputs, two shadcn date pickers with `pointer-events-auto`, progress `<Slider>` (0–100), status `<Select>`, milestone `<Checkbox>`, predecessors multi-select (checklist of sibling tasks; excludes self; excludes descendants to help avoid cycles client-side too). All changes call `updateScheduleTask`; server cycle check is the authority.
+- `src/components/planning/baseline-manager.tsx` — small dialog listing baselines with created_at, lock state, task count; lock button; delete button disabled when locked.
+- Empty state ("No tasks yet — build the WBS first" with link back to /planning/wbs).
+- CSV export (`src/lib/schedule.csv.ts`) — Blob download containing task name, discipline, current start/end, progress, baseline start/end, start_var_days, finish_var_days.
 
-### 2. Schedule-task alignment — extend `src/lib/schedule-tasks.functions.ts`
+### Verification (in build mode)
 
-New file (schedule task work fully lands in P-073; this batch adds just what the align panel needs):
-- `listScheduleTasksForAlign({ projectId })` → `{ tasks: [{ id, name, discipline, wbs_item_id, status }] }`.
-- `assignScheduleTask({ id, discipline, wbs_item_id })` — role gate: `project_admin | construction_admin | company_admin`. Audits `schedule_task.assign` with `{ from: {...}, to: {...} }`.
+1. `tests/unit/schedule-rules.test.ts` — cycle detection (self-ref + A→B→A + long chain), `barColorForStatus`, `computeVariance`, `weightedProgress`, `avgFinishVariance`, `isOverdue`. Run with `bun run test:unit`.
+2. `bunx tsgo --noEmit` clean.
+3. Smoke via preview: create 6 tasks per acceptance list, verify colors + milestone diamond, force a cycle (server should reject), create/lock Baseline 1, push a task +10d, verify variance columns + amber/destructive KPI + ghost bar, verify CSV export.
 
-### 3. Query helpers — `src/lib/wbs-query.ts`
+### Non-goals
 
-`wbsTreeQueryOptions(projectId)`, `wbsIfcProposalsQueryOptions(projectId)`, `scheduleTasksAlignQueryOptions(projectId)`.
+- No baseline editing UI (append-only + lock is spec).
+- No drag-to-resize on bars (spec says popover date pickers).
+- Predecessor arrows on the timeline are out of scope for P-073 (kept as inline chips in the row editor).
 
-### 4. Route — `src/routes/_authenticated/projects.$projectId.planning.tsx` (layout) + `.planning.wbs.tsx` (leaf)
+### Follow-ups after green
 
-Layout mirrors `projects.$projectId.engineering.tsx`: subnav shell with `Outlet`, only "WBS" tab active this batch (Gantt/Baselines/Risks appear in P-073/P-074). Adds "Planning" to the department tabs by extending `DEPT_TABS` in `projects.$projectId.tsx` **only when** the project's `departments` contains `finance` or a new synthetic `planning` mapping — safer to keep it separate: append a static "Planning" tab visible on every project (planning is not gated per project department). Confirmed acceptable — this matches how `gates` is always shown.
-
-Leaf `planning.wbs.tsx`:
-- Two-pane grid (`lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]`, stacks on mobile).
-- **Left tree** (`components/planning/wbs-tree.tsx`): recursive collapsible list, indent-per-depth, per-row shows `code` (mono), name, `item_type` badge, discipline chip, budget `Intl.NumberFormat`. Row actions (kebab): Add child, Add sibling, Delete. Includes "Unassigned tasks" virtual node fed by `scheduleTasksAlignQueryOptions` (unassigned count badge).
-- **Right editor** (`components/planning/wbs-detail-form.tsx`): react-hook-form + zod. Client-side sibling-uniqueness check against loaded tree; DB unique is backstop. Reparent via parent-picker `Select` (excludes self + descendants). Discipline `Select` from fixed vocab. Currency `Select` from `currencies` query. Save → mutation → invalidate tree.
-- **Header actions**: "Import IFC packages" opens `IfcImportDialog` (uses `proposeIfcPackages`), rows with checkboxes + editable code/name; "Already imported" rows disabled. Confirm → `importIfcPackages` → toast + invalidate.
-- **Lower panel** (`components/planning/task-alignment-panel.tsx`): table of schedule tasks with inline discipline + WBS `Select`s, optimistic update via `useMutation` (`onMutate` patches cache, rollback on error), sonner toast per save.
-- **States**: `pendingComponent` skeleton, empty state ("No WBS yet — import IFC packages or add your first phase" with two CTAs), `errorComponent` with retry (`router.invalidate()` + `reset()`).
-- **Read-only mode**: query `has_company_role` results via a `wbsAccessQueryOptions` (mirrors pattern used in price-alerts) — hides all write controls when the user lacks a write role.
-
-### 5. Nav — `src/lib/nav-map.ts`
-
-No change (Planning & Budget already listed under Lifecycle → `/planning`). This batch surfaces WBS inside the project cockpit, not the global nav. A future batch can add a top-level `/planning` index if needed.
-
-### 6. Tests — `tests/unit/wbs-rules.test.ts`
-
-Pure-rule coverage:
-- Code regex + sibling uniqueness helper (`isCodeUniqueAmongSiblings`).
-- Cycle detector (`wouldCreateCycle(tree, id, newParent)`).
-- Zod schemas reject: empty name, invalid discipline, negative sort_order, negative budget.
-- Next-code suggestion for imports (`suggestNextRootChildCode`).
-
-### 7. Verification
-
-- Typecheck; `bun run test:unit tests/unit/wbs-rules.test.ts`.
-- Manual on Prairie Winds: build 1 → 1.1 → 1.1.1, unique code rejection surfaces, IFC import proposes from released set + audits `wbs.import_ifc`, delete blocked while a task references the node, align panel decrements unassigned badge, skeleton/empty/error visible, read-only role sees no controls.
-
-### Technical notes
-
-- `.functions.ts` files stay handler-only per `tanstack-serverfn-splitting`.
-- IFC proposal reads `ifc_releases.revision_snapshot` (Json) and joins to `drawing_register` for discipline. If a release lacks a snapshot, fall back to listing the release itself as one package.
-- Optimistic task assignment uses `queryClient.setQueryData` + rollback on `onError`.
-- No changes to migration 0032; all constraints already in place.
+P-074 — risk register with P×I heat scoring.
