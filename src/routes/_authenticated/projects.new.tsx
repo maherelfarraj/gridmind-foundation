@@ -222,24 +222,50 @@ function NewProjectPage() {
             }
           />
         )
+      ) : currentStep === 3 ? (
+        !hydrated || !draft.archetype || !activeCompanyId ? (
+          <TemplatePickerSkeleton />
+        ) : templatesQuery.isPending ? (
+          <TemplatePickerSkeleton />
+        ) : templatesQuery.isError ? (
+          <WizardErrorPanel
+            title="Could not load templates"
+            message={
+              templatesQuery.error instanceof Error
+                ? templatesQuery.error.message
+                : "Unexpected error"
+            }
+            onRetry={() => void templatesQuery.refetch()}
+          />
+        ) : (
+          <ProjectSelectionForm
+            templates={templatesQuery.data}
+            defaultValues={draft.selection}
+            onSubmit={handleSelectionSubmit}
+            onBack={() =>
+              void navigate({ to: "/projects/new", search: { step: 2 } })
+            }
+          />
+        )
       ) : (
         <Card className="flex flex-col gap-2 border-border bg-card p-6">
           <div className="font-medium text-foreground">Coming soon</div>
           <p className="text-sm text-muted-foreground">
-            Step {currentStep} ships in the next wizard batch (P-035).
+            Step {currentStep} ships in the next wizard batch (P-036).
           </p>
           <div>
             <Button
               variant="outline"
               onClick={() =>
-                void navigate({ to: "/projects/new", search: { step: 2 } })
+                void navigate({ to: "/projects/new", search: { step: 3 } })
               }
             >
-              Back to basics
+              Back to selection
             </Button>
           </div>
         </Card>
       )}
     </div>
   );
+}
 }
