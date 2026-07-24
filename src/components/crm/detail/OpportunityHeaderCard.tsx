@@ -303,7 +303,14 @@ export function OpportunityHeaderCard({
           setPendingLoss(false);
         }}
       />
+
+      <WinConversionDialog
+        opportunityId={opp.id}
+        open={winOpen}
+        onOpenChange={setWinOpen}
+      />
     </>
+
   );
 }
 
