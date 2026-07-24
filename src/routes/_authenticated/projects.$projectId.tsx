@@ -60,12 +60,7 @@ const PROJECTS_LINK_SEARCH = {
   page: 1,
 } as const;
 
-  { key: "engineering", dept: "engineering", label: DEPARTMENT_LABELS.engineering },
-  { key: "procurement", dept: "procurement", label: DEPARTMENT_LABELS.procurement },
-  { key: "construction", dept: "construction", label: DEPARTMENT_LABELS.construction },
-  { key: "hse", dept: "hse", label: DEPARTMENT_LABELS.hse },
-  { key: "finance", dept: "finance", label: DEPARTMENT_LABELS.finance },
-];
+
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   head: () => ({
