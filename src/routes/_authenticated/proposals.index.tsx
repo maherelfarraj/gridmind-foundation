@@ -7,6 +7,7 @@ import { RefreshCw, FileText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
 import { Card } from "@/components/ui/card";
 import { proposalsListQueryOptions } from "@/lib/proposal-query";
 import { listProposals } from "@/lib/proposal.functions";
@@ -100,6 +101,7 @@ function ProposalsListPage() {
                   <th className="p-3 text-left font-medium">Status</th>
                   <th className="p-3 text-right font-medium">Total</th>
                   <th className="p-3 text-left font-medium">Updated</th>
+                  <th className="p-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,6 +144,14 @@ function ProposalsListPage() {
                     </td>
                     <td className="p-3 text-muted-foreground">
                       {format(parseISO(p.updated_at), "PP")}
+                    </td>
+                    <td className="p-3 text-right">
+                      <ExportPdfButton
+                        proposalId={p.id}
+                        companyId={p.company_id}
+                        projectId={p.project_id}
+                        size="icon"
+                      />
                     </td>
                   </tr>
                 ))}
