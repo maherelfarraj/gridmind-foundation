@@ -102,7 +102,8 @@ const DEFAULTS = {
  */
 export function computeBom(params: BomParams): BomLine[] {
   const capacityMwp = Math.max(0, params.capacity_mwp_dc);
-  const capacityKwp = capacityMwp * 1000;
+  const capacityWp = capacityMwp * 1_000_000;
+
   const moduleWp = params.module_wp ?? DEFAULTS.module_wp;
   const dcAcRatio = params.dc_ac_ratio ?? DEFAULTS.dc_ac_ratio;
   const modulesPerString =
@@ -112,7 +113,8 @@ export function computeBom(params: BomParams): BomLine[] {
   const mvCableMPerMw = params.mv_cable_m_per_mw ?? DEFAULTS.mv_cable_m_per_mw;
 
   const moduleCount =
-    moduleWp > 0 ? Math.ceil(capacityKwp / moduleWp) : 0;
+    moduleWp > 0 ? Math.ceil(capacityWp / moduleWp) : 0;
+
   const stringCount =
     modulesPerString > 0 ? Math.ceil(moduleCount / modulesPerString) : 0;
   const rowCount =

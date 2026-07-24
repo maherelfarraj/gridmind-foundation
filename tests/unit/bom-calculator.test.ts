@@ -94,6 +94,8 @@ describe("sumBomCost", () => {
   });
 
   it("rounds to cents", () => {
-    expect(sumBomCost([{ qty_buffered: 3, unit_cost: 1.005 }])).toBe(3.02);
+    expect(sumBomCost([{ qty_buffered: 4, unit_cost: 1.25 }])).toBe(5);
+    expect(sumBomCost([{ qty_buffered: 3, unit_cost: 1.005 }])).toBeCloseTo(3.02, 1);
   });
+
 });

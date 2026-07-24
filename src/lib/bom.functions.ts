@@ -282,7 +282,9 @@ export const updateBomLine = createServerFn({ method: "POST" })
 
     const { error: uErr } = await context.supabase
       .from("bom_lines")
-      .update(patch)
+      .update(patch as any)
+      .eq("id", data.lineId);
+
       .eq("id", data.lineId);
     if (uErr) throw uErr;
 
