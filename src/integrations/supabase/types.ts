@@ -1030,6 +1030,157 @@ export type Database = {
           },
         ]
       }
+      ifc_release_signoffs: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          release_id: string
+          role_label: string
+          signature_text: string
+          signed_at: string
+          signer_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          release_id: string
+          role_label: string
+          signature_text: string
+          signed_at?: string
+          signer_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          release_id?: string
+          role_label?: string
+          signature_text?: string
+          signed_at?: string
+          signer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ifc_release_signoffs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_release_signoffs_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "ifc_releases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_release_signoffs_signer_id_fkey"
+            columns: ["signer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ifc_releases: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          distribution_list: Json
+          id: string
+          notes: string | null
+          package_name: string
+          prepared_by: string | null
+          project_id: string
+          released_at: string | null
+          released_by: string | null
+          revision_snapshot: Json
+          status: string
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          distribution_list?: Json
+          id?: string
+          notes?: string | null
+          package_name: string
+          prepared_by?: string | null
+          project_id: string
+          released_at?: string | null
+          released_by?: string | null
+          revision_snapshot?: Json
+          status?: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          distribution_list?: Json
+          id?: string
+          notes?: string | null
+          package_name?: string
+          prepared_by?: string | null
+          project_id?: string
+          released_at?: string | null
+          released_by?: string | null
+          revision_snapshot?: Json
+          status?: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ifc_releases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_releases_prepared_by_fkey"
+            columns: ["prepared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_releases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_releases_released_by_fkey"
+            columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ifc_releases_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accepted_at: string | null

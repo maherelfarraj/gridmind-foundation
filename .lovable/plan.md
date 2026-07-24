@@ -1,116 +1,79 @@
-# P-059 — RFI Module
+## P-060 — IFC release ceremony
 
-Adds Request For Information (RFI) tracking to the Engineering workspace with tenant-scoped schema, role-gated transitions, KPI analytics, and full audit coverage.
+Wires the drawing pipeline (P-053), review governance (P-058), and phase-gate engine (P-040) into a formal Issued-for-Construction release.
 
-## 1. Migration `0022_rfis.sql`
+### 1. Migration `0023_ifc_releases.sql`
 
-Single migration containing:
+- `public.ifc_releases` — `company_id`, `project_id`, `package_name`, `revision_snapshot jsonb` (array of `{drawing_id, revision_id, drawing_number, revision_code, discipline}`), `status text default 'prepared' check in ('prepared','released','void')`, `prepared_by`, `released_by`, `released_at`, `distribution_list jsonb default '[]'`, timestamps, `updated_at` trigger.
+- `public.ifc_release_signoffs` — `release_id references ifc_releases on delete cascade`, `signer_id`, `role_label text check in ('Lead Engineer','Engineering Manager','Project Director')`, `signature_text`, `signed_at`, unique `(release_id, signer_id)` and unique `(release_id, role_label)`.
+- Grants to `authenticated` and `service_role`; RLS on:
+  - `select` — `is_company_member(company_id)`
+  - `insert/update` — `has_role(auth.uid(),'engineering_admin') or has_role(auth.uid(),'project_admin')`
+  - `delete` blocked (void via status update)
+- Backfill: append `{key:'design_freeze', label:'Design freeze — IFC package released', required:true, done:false}` to every existing `project_phase_gates` row where `phase='development'` and the key is missing.
+- Update the project template seed (project bootstrap) so newly created Development gates include the same item.
+- Index `ifc_releases(project_id, status)` and `ifc_release_signoffs(release_id)`.
 
-- `create table public.rfis` with columns per spec:
-  - Identity: `id`, `company_id`, `project_id → projects`, `rfi_number text`
-  - Content: `subject`, `question`, `discipline drawing_discipline default 'general'`, `priority` (`low|normal|high|urgent`), `status` (`open|in_review|answered|closed|void`)
-  - Routing: `raised_by`, `routed_to`, optional `drawing_id → drawing_register`, `due_date`
-  - Resolution: `answer`, `answered_by`, `answered_at`, `closed_at`
-  - Impact flags: `cost_impact`, `schedule_impact`
-  - Standard: `created_by`, `created_at`, `updated_at`
-  - `unique(project_id, rfi_number)`
-- Grants: `select, insert, update, delete` to `authenticated`; `all` to `service_role`
-- Enable RLS + policies:
-  - `select`: `is_company_member(company_id)`
-  - `insert`: member AND `raised_by = auth.uid()` AND `created_by = auth.uid()`
-  - `update`: `has_role(auth.uid(),'engineering_admin')` OR `has_role(auth.uid(),'project_admin')` OR `routed_to = auth.uid()` OR `raised_by = auth.uid()` (raiser needed for close)
-  - `delete`: engineering_admin or project_admin only
-- Indexes: `(project_id, status)`, `(routed_to, status)`, `(company_id, created_at desc)`
-- `update_updated_at` trigger reusing existing `set_updated_at()`
+### 2. Server functions — `src/lib/ifc-release.functions.ts`
 
-## 2. Server functions — `src/lib/rfi.functions.ts`
+All use `attachSupabaseAuth` + `requireSupabaseAuth`; writes gated by `assertIfcAdmin(context)` (engineering_admin OR project_admin, same pattern as gates).
 
-All wrapped with `requireSupabaseAuth`. Errors use existing `httpError` helper for 403/409 codes.
+- `listIfcReleases({projectId})` — releases with signoff counts.
+- `getIfcRelease({releaseId})` — release row + signoffs + signer names for detail/certificate view.
+- `listReleasableDrawings({projectId})` — drawings whose latest revision is IFD with a completed review round and zero open/rejected markups; returns `{eligible: Drawing[], blocked: {drawing, reasons[]}[]}` reusing the same rules `transitionRevisionStatus` enforces in `drawings.functions.ts` (extracted to `src/lib/ifc-rules.ts`).
+- `prepareIfcRelease({projectId, packageName, drawingIds, distribution})` — validates each drawing via the shared rule; snapshots current revision id + code + discipline; inserts `ifc_releases` row `prepared`; returns `id`. On any blocked drawing → 409 with per-drawing reasons.
+- `signIfcRelease({releaseId, roleLabel, signatureText})` — server verifies typed name equals caller's profile full name (case-insensitive trim); upserts on `(release_id, role_label)`; audit `engineering.ifc_signed`.
+- `releaseIfc({releaseId})` — guards: status `prepared`, signoffs present for `Lead Engineer` + `Engineering Manager` (Project Director optional). Transactionally:
+  1. For each snapshot drawing: set `drawing_register.current_status='IFC'`, `locked=true`, `current_revision_id=snapshot.revision_id`; set matching `drawing_revisions.status='IFC'`.
+  2. Update release: `status='released'`, `released_by`, `released_at`.
+  3. Toggle `design_freeze` checklist item on the project's Development gate (only when currently `open` or `in_review`) — mirrors `toggleGateChecklistItem` logic inline to avoid privileged escalation.
+  4. `write_audit_log('engineering.ifc_released', ...)` with full snapshot + signer roster.
+- `voidIfcRelease({releaseId, reason})` — only while `prepared`; audit `engineering.ifc_voided`.
+- `notifyDistribution({releaseId})` — inserts one `notifications` row per `distribution_list[*].profile_id` (kind `ifc_released`, payload with package name); audit `engineering.ifc_distributed`.
+- `getIfcKpis({projectId})` — returns `{design_cycle_days: firstIfdCreatedAt → latestReleasedAt, change_orders_after_ifc: count of revisions on locked drawings created after release}` for future dashboards.
 
-- `listRfis({ projectId, status?, discipline?, assignee?, search? })` — RLS-scoped select with joins to `profiles` (raised_by, routed_to, answered_by) and drawing number
-- `getRfi({ rfiId })` — full row + joined display names
-- `listRoutableMembers({ projectId })` — company members that can receive RFIs (any authenticated member)
-- `raiseRfi({ projectId, subject, question, discipline, priority, routedTo, drawingId?, dueDate })`
-  - Auto-generate `rfi_number` as `RFI-####` from `max(number) + 1` scoped to project
-  - Server sets `raised_by = context.userId`, `status='open'`
-  - Insert; on `23505` (unique violation) → `httpError(409, 'rfi_duplicate_number', …)` with retry hint (returns fresh next number)
-  - `writeAuditLog('rfi.raised', 'rfis', id, { rfi_number, routed_to })`
-- `answerRfi({ rfiId, answer })`
-  - Load row; must be `routed_to = userId` OR engineering_admin/project_admin; else 403 `rfi_not_authorized_to_answer`
-  - Status must be `open|in_review`; else 409 `rfi_not_answerable`
-  - Update `answer`, `answered_by = userId`, `answered_at = now()`, `status='answered'`
-  - Audit `rfi.answered`
-- `closeRfi({ rfiId })`
-  - Must be `raised_by = userId` OR engineering_admin/project_admin
-  - Status must be `answered`; else 409 `rfi_not_closable`
-  - Set `status='closed'`, `closed_at=now()`; audit `rfi.closed`
-- `voidRfi({ rfiId, reason })` — admin only, audit `rfi.voided`
-- `getRfiKpis({ projectId })` — computed from last 90 days:
-  - `turnaround_days_avg` = avg(`answered_at - created_at`) where answered
-  - `open_count`, `overdue_count` (`status in ('open','in_review')` and `due_date < today`)
-  - `pct_on_time` = answered where `answered_at::date <= due_date` / total answered × 100
-  - `by_month` = last 6 months → `{ month, raised, answered }` for the mini bar chart
+The existing drawing-lock guard in `drawings.functions.ts` already returns 409 when `locked` is true — no change needed for the "post-release edits rejected" check.
 
-## 3. Query layer — `src/lib/rfi-query.ts`
+### 3. Query hooks — `src/lib/ifc-release-query.ts`
 
-- `rfiListQueryOptions(projectId, filters)`
-- `rfiDetailQueryOptions(rfiId)`
-- `rfiKpiQueryOptions(projectId)` (staleTime 60s)
-- `routableMembersQueryOptions(projectId)`
-- `useRaiseRfiMutation`, `useAnswerRfiMutation` (optimistic on detail cache), `useCloseRfiMutation` — each invalidates list + detail + KPI keys
+`ifcReleaseListQueryOptions`, `ifcReleaseDetailQueryOptions`, `releasableDrawingsQueryOptions`, plus `usePrepareIfcRelease`, `useSignIfcRelease`, `useReleaseIfc`, `useVoidIfcRelease`, `useNotifyDistribution`. Invalidates `['ifc-releases', projectId]`, `['drawings', projectId]`, and `['gates', projectId]` on success.
 
-## 4. Route — `src/routes/_authenticated/projects.$projectId.engineering.rfis.tsx`
+### 4. UI
 
-- Loader primes list + KPI via `ensureQueryData`
-- Layout:
-  - Header row: title + "Raise RFI" button
-  - `RfiKpiCard` (turnaround, open, overdue, % on-time, Recharts `BarChart` monthly raised vs answered)
-  - Filter toolbar: status Select, discipline Select, assignee Select, search input, "Export CSV"
-  - `RfiTable` — columns: number, subject (click to open), discipline, priority badge, status badge, routed to, due date (overdue rows highlighted with `text-destructive`), age (days since created)
-  - Empty state ("No RFIs raised yet"), skeleton state, error state
-- URL search params for filters (typed via `zod` validateSearch)
-- Detail opens `RfiDetailDrawer` (sheet) with query/answer thread, answer textarea (visible only to authorized), close button (visible only to raiser/admin), audit-friendly timestamps
-- CSV export builds client-side from current filtered rows
+Route `src/routes/_authenticated/projects.$projectId.engineering.ifc-release.tsx` — three-column layout with list on the left, wizard/detail on the right.
 
-## 5. Components — `src/components/engineering/rfis/`
+- Sub-nav entry added: `{ to: "ifc-release", label: "IFC release" }` in `projects.$projectId.engineering.tsx` (`SUB_TABS` and the union type).
+- Empty state: "Prepare your first IFC package".
+- List: package name, status badge, prepared/released timestamps, drawing count, click → detail.
+- Wizard component `IfcReleaseWizard.tsx` (steps: Package → Drawings → Distribution → Review):
+  - **Package**: name + optional notes.
+  - **Drawings**: table from `listReleasableDrawings`; eligible checkable, blocked rows show inline reasons with an "IFC blocked" chip.
+  - **Distribution**: member picker (reuses `listRoutableMembers` from RFI module) building `[{profile_id, org, email}]`.
+  - **Review**: summary + "Prepare release" → creates row with status `prepared`.
+- Detail component `IfcReleaseDetail.tsx`:
+  - Package header, revision snapshot table, distribution list.
+  - `SignoffPanel.tsx`: for each required role, if caller matches role's admin group and hasn't signed, form asking to type full name; server validates match. Shows signed roster with timestamps.
+  - "Release now" button (engineering_admin only, disabled until required signoffs present); "Void" button while `prepared`.
+  - Once released: "Notify recipients" and "Open certificate" buttons.
+- Certificate view `src/routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate.tsx` — printable (Tailwind `print:` classes, hidden nav), shows package, revisions table, signers with typed name and `signed_at`, released_by/at, distribution list; "Print" button uses `window.print()`.
 
-- `RfiKpiCard.tsx` — 4 KPI tiles + Recharts monthly bar (semantic tokens `--chart-*`)
-- `RfiTable.tsx` — presentational table with row click
-- `RfiFiltersToolbar.tsx`
-- `RaiseRfiDialog.tsx` — react-hook-form + zod (`subject 3-140`, `question 10-4000`, priority, discipline, `routedTo uuid`, optional `drawingId`, `dueDate` default +7d via `date-fns/addDays`). Shadcn Datepicker (`pointer-events-auto`)
-- `RfiDetailDrawer.tsx` — sheet with question card, answer thread, answer form, close/void controls (role-gated), status/priority badges
-- `RfiStatusBadge.tsx`, `RfiPriorityBadge.tsx`
+All copy uses design tokens; sonner toasts on mutations; role-gated buttons; skeletons per Suspense boundary; branded 404/error components.
 
-All styling via semantic tokens — no raw hex.
+### 5. Governance verification (post-build)
 
-## 6. Navigation
+Reproduce the manual checklist against Prairie Winds:
 
-Add "RFIs" tab to `src/routes/_authenticated/projects.$projectId.engineering.tsx` sub-nav between Reviews and BOM.
+- Drawing lacking a completed review round → wizard "Drawings" step lists reason "no review round completed".
+- Sign as Lead Engineer + Engineering Manager → both rows appear signed with timestamps.
+- Release without signoffs → 409 `signoff_missing`; with signoffs → drawings locked, `current_status='IFC'`, audit `engineering.ifc_released` with snapshot.
+- Attempt drawing edit after release → existing 409 `drawing_locked`.
+- Development→NTP gate: `design_freeze` item shows `done=true, done_by=released_by, done_at=released_at`; gate can now progress.
+- Certificate route renders and prints cleanly.
 
-## 7. Tests — `tests/unit/rfi-rules.test.ts`
+### Technical notes
 
-Pure helpers extracted to `src/lib/rfi-rules.ts`:
-
-- `nextRfiNumber(existing: string[]) → 'RFI-0001'` sequencing (gaps + zero-pad)
-- `isOverdue({ due_date, status })`
-- `canAnswer({ role, userId, routed_to, status })`
-- `canClose({ role, userId, raised_by, status })`
-- `computeKpis(rows, today)` → turnaround, open, overdue, pct_on_time
-
-## Technical details
-
-- Enum reuse: `discipline` reuses existing `drawing_discipline` enum (from P-051), avoiding a new type
-- `drawing_id` FK is `on delete set null` so deleting a drawing doesn't cascade RFI history
-- `answered_at`/`closed_at` are the audit truth — no separate status_history table (audit_logs already covers transitions)
-- `routed_to` remains nullable to accept unrouted RFIs, but raise dialog requires it
-- KPI mini-chart uses existing chart tokens from design system
-- Optimistic answer patches the detail cache with `answered_at = new Date()` before server round-trip; rollback on error via sonner toast + `queryClient.setQueryData` restore
-
-## Verification checklist (manual after build)
-
-- Raise RFI-0001 → audit row
-- Force duplicate number (concurrent insert simulation) → 409 with `rfi_duplicate_number`
-- Non-routed member answer attempt → 403
-- Routed user answers → status flips to answered
-- Overdue row (`due_date` yesterday, still open) highlighted
-- Close audited; KPI card matches manual math on seed data
+- Signature verification: `profiles.full_name` compared with `.trim().toLowerCase()` equality; reject with 400 `signature_mismatch`.
+- Snapshot is the source of truth — release ignores later revisions until voided or superseded.
+- All drawing/revision updates in `releaseIfc` are sequential Supabase calls guarded by pre-checks; there is no cross-table transaction in Supabase JS, so on partial failure we roll forward by re-issuing the call — acceptable because each individual update is idempotent (`locked=true, status='IFC'` on already-locked drawings is a no-op).
+- Reuses existing `notifications` table from P-058 for distribution.
+- No new packages required.
