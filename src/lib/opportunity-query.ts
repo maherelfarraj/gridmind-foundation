@@ -178,9 +178,23 @@ export function useConvertOpportunity(opportunityId: string) {
   const invalidate = useInvalidateOpp(opportunityId);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (
-      input: Parameters<typeof convertOpportunityToIntake>[0]["data"],
-    ) => fn({ data: input }),
+    mutationFn: (input: {
+      opportunityId: string;
+      name: string;
+      archetype:
+        | "utility_pv"
+        | "standalone_bess"
+        | "c_and_i_rooftop"
+        | "hybrid_pv_bess"
+        | "onshore_wind"
+        | "green_hydrogen"
+        | "transmission_substation";
+      capacity_mw: number | null;
+      offtaker: string | null;
+      target_cod: string | null;
+      owner_id: string | null;
+    }) => fn({ data: input }),
+
     onSuccess: (res) => {
       if (res.alreadyConverted) {
         toast.info("Opportunity was already converted");
