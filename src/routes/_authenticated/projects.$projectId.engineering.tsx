@@ -43,7 +43,7 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads" | "drawings";
+  to: "" | "uploads" | "drawings" | "sld";
   label: string;
   projectId: string;
 }) {
