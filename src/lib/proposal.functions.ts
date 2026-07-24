@@ -1124,3 +1124,117 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+// ---------------------------------------------------------------------------
+// P-047 — PDF export data + audit
+// ---------------------------------------------------------------------------
+
+export const getProposalPdfData = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { supabase } = context;
+
+    const { data: proposal, error: pErr } = await supabase
+      .from("proposals")
+      .select("*")
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!proposal) httpError(404, "not_found");
+    const p = proposal as any;
+
+    const { data: lineItems, error: liErr } = await supabase
+      .from("proposal_line_items")
+      .select("sort_order, category, description, qty, unit, unit_price, line_total")
+      .eq("proposal_id", data.proposalId)
+      .order("sort_order", { ascending: true });
+    if (liErr) throw new Error(liErr.message);
+
+    let opportunity: any = null;
+    if (p.opportunity_id) {
+      const { data: opp } = await supabase
+        .from("opportunities")
+        .select("name, account_name, expected_decision_date")
+        .eq("id", p.opportunity_id)
+        .maybeSingle();
+      opportunity = opp ?? null;
+    }
+
+    const companyId = p.company_id as string;
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name, legal_name, contact_email, phone, address")
+      .eq("id", companyId)
+      .maybeSingle();
+
+    const { data: branding } = await supabase
+      .from("company_branding")
+      .select("logo_url, primary_color, accent_color, footer_text")
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    let logoSignedUrl: string | null = null;
+    const logoRef = (branding as any)?.logo_url as string | null | undefined;
+    if (logoRef) {
+      if (/^https?:\/\//i.test(logoRef)) {
+        logoSignedUrl = logoRef;
+      } else {
+        try {
+          const { data: signed } = await supabase.storage
+            .from("documents")
+            .createSignedUrl(logoRef, 300);
+          logoSignedUrl = signed?.signedUrl ?? null;
+        } catch {
+          logoSignedUrl = null;
+        }
+      }
+    }
+
+    // Defence-in-depth: strip margin_pct so the client PDF can never leak it.
+    const { margin_pct: _drop, ...proposalSafe } = p;
+
+    return {
+      proposal: proposalSafe,
+      lineItems: lineItems ?? [],
+      opportunity,
+      company: (company as any) ?? { name: "" },
+      branding: {
+        primaryColor: (branding as any)?.primary_color ?? null,
+        accentColor: (branding as any)?.accent_color ?? null,
+        footerText: (branding as any)?.footer_text ?? null,
+        logoSignedUrl,
+      },
+      yieldResult: (p.yield_result as any) ?? null,
+    };
+  });
+
+export const recordProposalExport = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { supabase } = context;
+
+    const { data: proposal, error } = await supabase
+      .from("proposals")
+      .select("id, opportunity_id, version")
+      .eq("id", data.proposalId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!proposal) httpError(404, "not_found");
+    const p = proposal as any;
+
+    await supabase.rpc("write_audit_log", {
+      p_action: "proposal.export_pdf",
+      p_entity: "proposal",
+      p_entity_id: data.proposalId,
+      p_metadata: {
+        opportunity_id: p.opportunity_id,
+        version: p.version,
+      },
+    });
+
+    return { ok: true };
+  });
