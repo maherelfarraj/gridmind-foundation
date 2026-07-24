@@ -32,9 +32,11 @@ import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_auth
 import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_authenticated/proposals.$proposalId'
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
+import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
+import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
 import { Route as AuthenticatedProjectsProjectIdOverviewRouteImport } from './routes/_authenticated/projects.$projectId.overview'
@@ -44,6 +46,8 @@ import { Route as AuthenticatedProjectsProjectIdFinanceRouteImport } from './rou
 import { Route as AuthenticatedProjectsProjectIdEngineeringRouteImport } from './routes/_authenticated/projects.$projectId.engineering'
 import { Route as AuthenticatedProjectsProjectIdConstructionRouteImport } from './routes/_authenticated/projects.$projectId.construction'
 import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
+import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes/_authenticated/procurement.vendors.new'
+import { Route as AuthenticatedProcurementVendorsVendorIdRouteImport } from './routes/_authenticated/procurement.vendors.$vendorId'
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
@@ -183,6 +187,12 @@ const AuthenticatedProjectsProjectIdRoute =
     path: '/projects/$projectId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProcurementVendorsRoute =
+  AuthenticatedProcurementVendorsRouteImport.update({
+    id: '/procurement/vendors',
+    path: '/procurement/vendors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
@@ -200,6 +210,12 @@ const AuthenticatedProjectsProjectIdIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
+const AuthenticatedProcurementVendorsIndexRoute =
+  AuthenticatedProcurementVendorsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProcurementVendorsRoute,
   } as any)
 const AuthenticatedAdminTenantsIndexRoute =
   AuthenticatedAdminTenantsIndexRouteImport.update({
@@ -254,6 +270,18 @@ const AuthenticatedProjectsProjectIdConfigRoute =
     id: '/config',
     path: '/config',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
+const AuthenticatedProcurementVendorsNewRoute =
+  AuthenticatedProcurementVendorsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedProcurementVendorsRoute,
+  } as any)
+const AuthenticatedProcurementVendorsVendorIdRoute =
+  AuthenticatedProcurementVendorsVendorIdRouteImport.update({
+    id: '/$vendorId',
+    path: '/$vendorId',
+    getParentRoute: () => AuthenticatedProcurementVendorsRoute,
   } as any)
 const AuthenticatedCrmOpportunitiesOpportunityIdRoute =
   AuthenticatedCrmOpportunitiesOpportunityIdRouteImport.update({
@@ -357,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
@@ -371,6 +400,8 @@ export interface FileRoutesByFullPath {
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
+  '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
@@ -380,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
@@ -418,6 +450,8 @@ export interface FileRoutesByTo {
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
+  '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRoute
@@ -426,6 +460,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
+  '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -454,6 +489,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
   '/_authenticated/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
@@ -468,6 +504,8 @@ export interface FileRoutesById {
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/_authenticated/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
+  '/_authenticated/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/_authenticated/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/_authenticated/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
@@ -477,6 +515,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/overview': typeof AuthenticatedProjectsProjectIdOverviewRoute
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
@@ -505,6 +544,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/admin/tenants'
     | '/crm/pipeline'
+    | '/procurement/vendors'
     | '/projects/$projectId'
     | '/projects/new'
     | '/proposals/$proposalId'
@@ -519,6 +559,8 @@ export interface FileRouteTypes {
     | '/proposals/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/procurement/vendors/$vendorId'
+    | '/procurement/vendors/new'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/engineering'
@@ -528,6 +570,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/overview'
     | '/projects/$projectId/procurement'
     | '/admin/tenants/'
+    | '/procurement/vendors/'
     | '/projects/$projectId/'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
@@ -566,6 +609,8 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/procurement/vendors/$vendorId'
+    | '/procurement/vendors/new'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/finance'
@@ -574,6 +619,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/overview'
     | '/projects/$projectId/procurement'
     | '/admin/tenants'
+    | '/procurement/vendors'
     | '/projects/$projectId'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/ifc-release'
@@ -601,6 +647,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
+    | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/new'
     | '/_authenticated/proposals/$proposalId'
@@ -615,6 +662,8 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
+    | '/_authenticated/procurement/vendors/$vendorId'
+    | '/_authenticated/procurement/vendors/new'
     | '/_authenticated/projects/$projectId/config'
     | '/_authenticated/projects/$projectId/construction'
     | '/_authenticated/projects/$projectId/engineering'
@@ -624,6 +673,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/overview'
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/admin/tenants/'
+    | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
@@ -811,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/procurement/vendors': {
+      id: '/_authenticated/procurement/vendors'
+      path: '/procurement/vendors'
+      fullPath: '/procurement/vendors'
+      preLoaderRoute: typeof AuthenticatedProcurementVendorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm/pipeline': {
       id: '/_authenticated/crm/pipeline'
       path: '/crm/pipeline'
@@ -831,6 +888,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdIndexRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
+    '/_authenticated/procurement/vendors/': {
+      id: '/_authenticated/procurement/vendors/'
+      path: '/'
+      fullPath: '/procurement/vendors/'
+      preLoaderRoute: typeof AuthenticatedProcurementVendorsIndexRouteImport
+      parentRoute: typeof AuthenticatedProcurementVendorsRoute
     }
     '/_authenticated/admin/tenants/': {
       id: '/_authenticated/admin/tenants/'
@@ -894,6 +958,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/config'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdConfigRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
+    '/_authenticated/procurement/vendors/new': {
+      id: '/_authenticated/procurement/vendors/new'
+      path: '/new'
+      fullPath: '/procurement/vendors/new'
+      preLoaderRoute: typeof AuthenticatedProcurementVendorsNewRouteImport
+      parentRoute: typeof AuthenticatedProcurementVendorsRoute
+    }
+    '/_authenticated/procurement/vendors/$vendorId': {
+      id: '/_authenticated/procurement/vendors/$vendorId'
+      path: '/$vendorId'
+      fullPath: '/procurement/vendors/$vendorId'
+      preLoaderRoute: typeof AuthenticatedProcurementVendorsVendorIdRouteImport
+      parentRoute: typeof AuthenticatedProcurementVendorsRoute
     }
     '/_authenticated/crm/opportunities/$opportunityId': {
       id: '/_authenticated/crm/opportunities/$opportunityId'
@@ -1043,6 +1121,27 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedProcurementVendorsRouteChildren {
+  AuthenticatedProcurementVendorsVendorIdRoute: typeof AuthenticatedProcurementVendorsVendorIdRoute
+  AuthenticatedProcurementVendorsNewRoute: typeof AuthenticatedProcurementVendorsNewRoute
+  AuthenticatedProcurementVendorsIndexRoute: typeof AuthenticatedProcurementVendorsIndexRoute
+}
+
+const AuthenticatedProcurementVendorsRouteChildren: AuthenticatedProcurementVendorsRouteChildren =
+  {
+    AuthenticatedProcurementVendorsVendorIdRoute:
+      AuthenticatedProcurementVendorsVendorIdRoute,
+    AuthenticatedProcurementVendorsNewRoute:
+      AuthenticatedProcurementVendorsNewRoute,
+    AuthenticatedProcurementVendorsIndexRoute:
+      AuthenticatedProcurementVendorsIndexRoute,
+  }
+
+const AuthenticatedProcurementVendorsRouteWithChildren =
+  AuthenticatedProcurementVendorsRoute._addFileChildren(
+    AuthenticatedProcurementVendorsRouteChildren,
+  )
+
 interface AuthenticatedProjectsProjectIdEngineeringDrawingsRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
@@ -1158,6 +1257,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
+  AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
   AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
@@ -1176,6 +1276,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
+  AuthenticatedProcurementVendorsRoute:
+    AuthenticatedProcurementVendorsRouteWithChildren,
   AuthenticatedProjectsProjectIdRoute:
     AuthenticatedProjectsProjectIdRouteWithChildren,
   AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,

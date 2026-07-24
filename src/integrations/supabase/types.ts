@@ -2996,6 +2996,179 @@ export type Database = {
           },
         ]
       }
+      vendor_scorecards: {
+        Row: {
+          company_id: string
+          computed_at: string | null
+          created_at: string
+          defects_count: number | null
+          id: string
+          on_time_delivery_pct: number | null
+          period_end: string
+          period_start: string
+          project_id: string | null
+          quality_score: number | null
+          responsiveness_score: number | null
+          total_pos: number | null
+          total_receipts: number | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          company_id: string
+          computed_at?: string | null
+          created_at?: string
+          defects_count?: number | null
+          id?: string
+          on_time_delivery_pct?: number | null
+          period_end: string
+          period_start: string
+          project_id?: string | null
+          quality_score?: number | null
+          responsiveness_score?: number | null
+          total_pos?: number | null
+          total_receipts?: number | null
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          company_id?: string
+          computed_at?: string | null
+          created_at?: string
+          defects_count?: number | null
+          id?: string
+          on_time_delivery_pct?: number | null
+          period_end?: string
+          period_start?: string
+          project_id?: string | null
+          quality_score?: number | null
+          responsiveness_score?: number | null
+          total_pos?: number | null
+          total_receipts?: number | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_scorecards_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_scorecards_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_scorecards_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          address_line: string | null
+          categories: string[]
+          certifications: Json
+          city: string | null
+          company_id: string
+          country: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          email: string | null
+          id: string
+          incoterms: string | null
+          legal_name: string | null
+          name: string
+          notes: string | null
+          onboarded_at: string | null
+          payment_terms: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["vendor_status"]
+          tax_id: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address_line?: string | null
+          categories?: string[]
+          certifications?: Json
+          city?: string | null
+          company_id: string
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          email?: string | null
+          id?: string
+          incoterms?: string | null
+          legal_name?: string | null
+          name: string
+          notes?: string | null
+          onboarded_at?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["vendor_status"]
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address_line?: string | null
+          categories?: string[]
+          certifications?: Json
+          city?: string | null
+          company_id?: string
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          email?: string | null
+          id?: string
+          incoterms?: string | null
+          legal_name?: string | null
+          name?: string
+          notes?: string | null
+          onboarded_at?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["vendor_status"]
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendors_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       webhook_deliveries: {
         Row: {
           attempts: number
@@ -3255,6 +3428,7 @@ export type Database = {
         | "clarification"
         | "award_announcement"
         | "other"
+      vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3493,6 +3667,7 @@ export const Constants = {
         "award_announcement",
         "other",
       ],
+      vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
     },
   },
 } as const
