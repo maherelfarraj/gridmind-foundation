@@ -19,6 +19,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsInvitesRouteImport } from './routes/_authenticated/settings.invites'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
@@ -69,6 +70,12 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
+const AuthenticatedSettingsUsersRoute =
+  AuthenticatedSettingsUsersRouteImport.update({
+    id: '/settings/users',
+    path: '/settings/users',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsInvitesRoute =
   AuthenticatedSettingsInvitesRouteImport.update({
     id: '/settings/invites',
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
+  '/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,6 +105,7 @@ export interface FileRoutesByTo {
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
+  '/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,6 +120,7 @@ export interface FileRoutesById {
   '/(auth)/signup': typeof authSignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/settings/invites': typeof AuthenticatedSettingsInvitesRoute
+  '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/dashboard'
     | '/settings/invites'
+    | '/settings/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/dashboard'
     | '/settings/invites'
+    | '/settings/users'
   id:
     | '__root__'
     | '/'
@@ -148,6 +160,7 @@ export interface FileRouteTypes {
     | '/(auth)/signup'
     | '/_authenticated/dashboard'
     | '/_authenticated/settings/invites'
+    | '/_authenticated/settings/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -230,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/_authenticated/settings/users': {
+      id: '/_authenticated/settings/users'
+      path: '/settings/users'
+      fullPath: '/settings/users'
+      preLoaderRoute: typeof AuthenticatedSettingsUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/invites': {
       id: '/_authenticated/settings/invites'
       path: '/settings/invites'
@@ -261,11 +281,13 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsInvitesRoute: typeof AuthenticatedSettingsInvitesRoute
+  AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsInvitesRoute: AuthenticatedSettingsInvitesRoute,
+  AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
