@@ -259,7 +259,7 @@ export const getMyRfiRole = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const project = await loadProjectCompany(context, data.projectId);
     const isAdmin = await isAdminOfCompany(context, project.company_id);
-    return { userId: context.userId as string, isAdmin };
+    return { userId: context.user.id, isAdmin };
   });
 
 // ---------------------------------------------------------------------------
@@ -313,13 +313,13 @@ export const raiseRfi = createServerFn({ method: "POST" })
       discipline: data.discipline,
       priority: data.priority,
       status: "open" as const,
-      raised_by: context.userId as string,
+      raised_by: context.user.id,
       routed_to: data.routedTo,
       drawing_id: data.drawingId ?? null,
       due_date: data.dueDate,
       cost_impact: !!data.costImpact,
       schedule_impact: !!data.scheduleImpact,
-      created_by: context.userId as string,
+      created_by: context.user.id,
     };
 
     const { data: inserted, error: iErr } = await context.supabase
@@ -366,7 +366,7 @@ export const answerRfi = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const rfi = await loadRfi(context, data.rfiId);
     const isAdmin = await isAdminOfCompany(context, rfi.company_id);
-    if (!isAdmin && rfi.routed_to !== context.userId) {
+    if (!isAdmin && rfi.routed_to !== context.user.id) {
       httpError(403, "rfi_not_authorized_to_answer");
     }
     if (rfi.status !== "open" && rfi.status !== "in_review") {
@@ -377,7 +377,7 @@ export const answerRfi = createServerFn({ method: "POST" })
       .from("rfis")
       .update({
         answer: data.answer,
-        answered_by: context.userId as string,
+        answered_by: context.user.id,
         answered_at: nowIso,
         status: "answered",
       })
@@ -402,7 +402,7 @@ export const closeRfi = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const rfi = await loadRfi(context, data.rfiId);
     const isAdmin = await isAdminOfCompany(context, rfi.company_id);
-    if (!isAdmin && rfi.raised_by !== context.userId) {
+    if (!isAdmin && rfi.raised_by !== context.user.id) {
       httpError(403, "rfi_not_authorized_to_close");
     }
     if (rfi.status !== "answered") {
