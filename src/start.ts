@@ -39,6 +39,17 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
       "statusCode" in error &&
       typeof (error as { statusCode: unknown }).statusCode === "number"
     ) {
+      const e = error as {
+        statusCode: number;
+        body?: unknown;
+        headers?: Record<string, string>;
+      };
+      if (typeof e.body === "string") {
+        return new Response(e.body, {
+          status: e.statusCode,
+          headers: e.headers ?? { "content-type": "text/plain; charset=utf-8" },
+        });
+      }
       throw error;
     }
     const { errorRef } = captureError(error, { path: pathname });
