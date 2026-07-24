@@ -85,6 +85,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BulkInviteDialog } from "@/components/bulk-invite-dialog";
 
 export const Route = createFileRoute("/_authenticated/settings/users")({
   head: () => ({
