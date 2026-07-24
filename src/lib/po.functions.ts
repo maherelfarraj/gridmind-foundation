@@ -120,6 +120,8 @@ function toPoRow(r: any): PoRow {
     approved_at: r.approved_at,
     issued_at: r.issued_at,
     pdf_path: r.pdf_path,
+    share_token: r.share_token ?? null,
+    share_token_expires_at: r.share_token_expires_at ?? null,
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
