@@ -6,6 +6,8 @@ import { ArrowLeft, GitBranch, RefreshCw } from "lucide-react";
 
 import { ArrayConfigForm } from "@/components/proposals/ArrayConfigForm";
 import { ExportPdfButton } from "@/components/proposals/ExportPdfButton";
+import { ExportPptxButton } from "@/components/proposals/ExportPptxButton";
+
 import { LineItemsGrid } from "@/components/proposals/LineItemsGrid";
 import { PricingApprovalCard } from "@/components/proposals/PricingApprovalCard";
 import { ProposalHeaderForm } from "@/components/proposals/ProposalHeaderForm";
@@ -131,6 +133,12 @@ function ProposalBuilderPage() {
             companyId={proposal.company_id}
             projectId={proposal.project_id}
           />
+          <ExportPptxButton
+            proposalId={proposalId}
+            companyId={proposal.company_id}
+            projectId={proposal.project_id}
+          />
+
           <Button
             size="sm"
             variant="ghost"
