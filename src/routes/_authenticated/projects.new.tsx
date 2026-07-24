@@ -102,7 +102,6 @@ function NewProjectPage() {
     retry: false,
   });
 
-  const currentStep = Math.min(4, Math.max(1, search.step));
 
   // Redirect to step 1 if a later step is opened without an archetype in the draft.
   useEffect(() => {
