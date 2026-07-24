@@ -147,6 +147,11 @@ function ProposalBuilderPage() {
       <LineItemsGrid proposal={proposal} readOnly={readOnly} />
       <ArrayConfigForm proposal={proposal} readOnly={readOnly} />
       <YieldSimulationCard proposal={proposal} readOnly={readOnly} />
+      <PricingApprovalCard
+        proposalId={proposalId}
+        canWrite={canWrite}
+        isFinanceAdmin={isFinanceAdmin}
+      />
     </div>
   );
 }
