@@ -25,7 +25,7 @@ function isNewSupabaseApiKey(value: string): boolean {
  * evaluates as the end user.
  */
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
+  return async (input, init) => {
     const headers = new Headers(
       typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
     );
@@ -39,8 +39,35 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
       headers.delete('Authorization');
     }
     headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
+
+    const requestInit = { ...init, headers };
+    const response = await fetch(input, requestInit);
+    if (!(await isJwtIssuedAtFutureResponse(response))) return response;
+
+    await waitForAuthClockSkew();
+    return fetch(input, requestInit);
   };
+}
+
+async function isJwtIssuedAtFutureResponse(response: Response): Promise<boolean> {
+  if (response.ok) return false;
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return false;
+
+  try {
+    const payload = (await response.clone().json()) as { code?: unknown; message?: unknown };
+    return (
+      payload.code === 'PGRST303' &&
+      typeof payload.message === 'string' &&
+      payload.message.toLowerCase().includes('jwt issued at future')
+    );
+  } catch {
+    return false;
+  }
+}
+
+function waitForAuthClockSkew(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 1_500));
 }
 
 function readEnv(name: string): string | undefined {
