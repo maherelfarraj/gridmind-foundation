@@ -28,6 +28,8 @@ export interface NavItem {
   url: string;
   icon: LucideIcon;
   requiresSuperAdmin?: boolean;
+  /** When true, the item is shown to every authenticated user regardless of module/plan gating. */
+  alwaysVisible?: boolean;
 }
 
 export interface NavSection {
@@ -58,7 +60,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Administration",
     items: [
-      { moduleKey: "admin", label: "Profile", url: "/settings/profile", icon: UserCircle },
+      { moduleKey: "admin", label: "Profile", url: "/settings/profile", icon: UserCircle, alwaysVisible: true },
       { moduleKey: "admin", label: "Company", url: "/settings/company", icon: Settings2 },
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },

@@ -91,6 +91,7 @@ export function AppSidebar() {
         {NAV_SECTIONS.map((section) => {
           const items = section.items.filter((item) => {
             if (item.requiresSuperAdmin && !isSuperAdmin) return false;
+            if (item.alwaysVisible) return true;
             if (item.moduleKey === "admin") return visibleModules.has("admin");
             // Prefer rule-driven visibility; fall back to plan-based map.
             if (enabledModuleKeys) return enabledModuleKeys.has(item.moduleKey);
