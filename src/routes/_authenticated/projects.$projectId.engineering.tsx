@@ -7,8 +7,10 @@ const SUB_TABS = [
   { to: "" as const, label: "Overview" },
   { to: "drawings" as const, label: "Drawings" },
   { to: "sld" as const, label: "SLD" },
+  { to: "yield" as const, label: "Yield" },
   { to: "uploads" as const, label: "Site data uploads" },
 ];
+
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering",
@@ -43,7 +45,7 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads" | "drawings" | "sld";
+  to: "" | "uploads" | "drawings" | "sld" | "yield";
   label: string;
   projectId: string;
 }) {
