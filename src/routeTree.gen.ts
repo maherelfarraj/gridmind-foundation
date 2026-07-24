@@ -35,6 +35,7 @@ import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
+import { Route as AuthenticatedProcurementScorecardsRouteImport } from './routes/_authenticated/procurement.scorecards'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
 import { Route as AuthenticatedProcurementReceiptsRouteImport } from './routes/_authenticated/procurement.receipts'
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
@@ -220,6 +221,12 @@ const AuthenticatedProcurementVendorsRoute =
   AuthenticatedProcurementVendorsRouteImport.update({
     id: '/procurement/vendors',
     path: '/procurement/vendors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProcurementScorecardsRoute =
+  AuthenticatedProcurementScorecardsRouteImport.update({
+    id: '/procurement/scorecards',
+    path: '/procurement/scorecards',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProcurementRfqsRoute =
@@ -516,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
+  '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -582,6 +590,7 @@ export interface FileRoutesByTo {
   '/po/$token': typeof PoTokenRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
+  '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
@@ -652,6 +661,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
   '/_authenticated/procurement/receipts': typeof AuthenticatedProcurementReceiptsRouteWithChildren
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
+  '/_authenticated/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -725,6 +735,7 @@ export interface FileRouteTypes {
     | '/procurement/pos'
     | '/procurement/receipts'
     | '/procurement/rfqs'
+    | '/procurement/scorecards'
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/projects/new'
@@ -791,6 +802,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/crm/pipeline'
     | '/procurement/expediting'
+    | '/procurement/scorecards'
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/settings/company'
@@ -860,6 +872,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/pos'
     | '/_authenticated/procurement/receipts'
     | '/_authenticated/procurement/rfqs'
+    | '/_authenticated/procurement/scorecards'
     | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/new'
@@ -1106,6 +1119,13 @@ declare module '@tanstack/react-router' {
       path: '/procurement/vendors'
       fullPath: '/procurement/vendors'
       preLoaderRoute: typeof AuthenticatedProcurementVendorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/procurement/scorecards': {
+      id: '/_authenticated/procurement/scorecards'
+      path: '/procurement/scorecards'
+      fullPath: '/procurement/scorecards'
+      preLoaderRoute: typeof AuthenticatedProcurementScorecardsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/procurement/rfqs': {
@@ -1693,6 +1713,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
   AuthenticatedProcurementReceiptsRoute: typeof AuthenticatedProcurementReceiptsRouteWithChildren
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
+  AuthenticatedProcurementScorecardsRoute: typeof AuthenticatedProcurementScorecardsRoute
   AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
@@ -1723,6 +1744,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProcurementReceiptsRouteWithChildren,
   AuthenticatedProcurementRfqsRoute:
     AuthenticatedProcurementRfqsRouteWithChildren,
+  AuthenticatedProcurementScorecardsRoute:
+    AuthenticatedProcurementScorecardsRoute,
   AuthenticatedProcurementVendorsRoute:
     AuthenticatedProcurementVendorsRouteWithChildren,
   AuthenticatedProjectsProjectIdRoute:
@@ -1758,13 +1781,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
