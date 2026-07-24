@@ -46,6 +46,8 @@ export interface PoRow {
   approved_at: string | null;
   issued_at: string | null;
   pdf_path: string | null;
+  share_token: string | null;
+  share_token_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
