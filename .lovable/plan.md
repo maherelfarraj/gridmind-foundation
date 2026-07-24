@@ -1,64 +1,92 @@
-## P-039 — Archetype config forms
 
-Build the Config tab so users can view/edit the archetype-specific engineering, financial, and cybersecurity configuration rows for a project. Read-only for non-privileged members; writable for company/project/engineering admins (financial also finance_admin).
+## P-040 — Phase Gate Engine
 
-### 1. Shared schema registry
-New file `src/lib/schemas/archetype-configs.ts`:
-- One zod object per config table, mirroring migration `20260724094907_*.sql` columns (numerics via `z.coerce.number()`, enums via `z.enum([...])`, JSON fields as `z.array(z.record(...))` — `voltage_levels` and `zones_conduits` = array of `{ key, value }` pairs).
-- Export `ARCHETYPE_CONFIG_KEYS = ['pv','bess','substation','sld','scada','yield','pvsyst','financial','cybersecurity']` and `configSchemas` map + `ArchetypeConfigKey` type + `CONFIG_LABELS` map (`"PV"`, `"BESS"`, `"SLD"`, `"SCADA"`, `"Yield"`, `"PVsyst"`, `"Financial"`, `"Cybersecurity"`, `"Substation"`).
-- Export `ARCHETYPE_CONFIG_MAP: Record<ProjectArchetype, ArchetypeConfigKey[]>` matching the spec (utility_pv → pv/sld/scada/yield/pvsyst/financial/cybersecurity, etc.).
-- Export `CONFIG_TABLE_MAP: Record<ArchetypeConfigKey, string>` → `project_pv_config` etc.
+### 1. Migration `0014_gate_approvals.sql`
 
-### 2. Server functions (append to `src/lib/projects.functions.ts`)
-- `getArchetypeConfigs({ project_id })`: `attachSupabaseAuth` + `requireSupabaseAuth`. Verify member via `is_company_member` (using project's `company_id`). Parallel `.maybeSingle()` on all 9 config tables filtered by `project_id`. Return `{ pv: row|null, bess: row|null, ... , canEdit: { <key>: boolean } }` — role flags computed once from `user_roles` (company_admin, project_admin, engineering_admin, finance_admin).
-- `saveArchetypeConfig({ config, project_id, values })`:
-  - Zod input: `config` = enum of the 9 keys, `project_id` uuid, `values` validated by `configSchemas[config]`.
-  - Load project row → `company_id` + archetype. 403 if not member. 403 if config key isn't in that archetype's allowed list (prevent tampering).
-  - Role check: caller must hold `company_admin`, `project_admin`, or `engineering_admin`; `financial` also accepts `finance_admin`. Query via `user_roles`.
-  - Upsert into `CONFIG_TABLE_MAP[config]` on conflict `(project_id)` DO UPDATE, setting `company_id` from project. JSON key/value arrays serialized as JSON.
-  - Call `write_audit_log('project_config.saved', 'project_'+config+'_config', project_id, { fields: Object.keys(values) })`.
-  - Return the persisted row.
+Apply the exact SQL you supplied (`approval_instances`, `approvals`, FK `gates_approval_fk`, RLS policies, updated_at triggers, grants). Also normalize existing seed checklists so the engine has one shape to work against:
 
-### 3. Query wiring
-New `src/lib/archetype-configs-query.ts` exporting `archetypeConfigsQueryOptions(projectId)` (staleTime 30s, key `['archetype-configs', projectId]`). Consumers use `useSuspenseQuery`; on save, invalidate that key.
+```sql
+-- Backfill legacy checklist items {name, done} → {key, label, required, done}
+update public.project_phase_gates
+   set checklist = (
+     select jsonb_agg(
+       case
+         when item ? 'key' then item
+         else jsonb_build_object(
+           'key', lower(regexp_replace(coalesce(item->>'name', item->>'label',''), '\W+', '_', 'g')),
+           'label', coalesce(item->>'label', item->>'name',''),
+           'required', coalesce((item->>'required')::boolean, true),
+           'done', coalesce((item->>'done')::boolean, false)
+         )
+       end
+     )
+     from jsonb_array_elements(checklist) item
+   )
+ where jsonb_typeof(checklist) = 'array'
+   and exists (select 1 from jsonb_array_elements(checklist) i where not (i ? 'key'));
+```
 
-### 4. UI — replace `src/routes/_authenticated/projects.$projectId.config.tsx`
-- Loader primes both `projectDetailQueryOptions(id)` and `archetypeConfigsQueryOptions(id)`.
-- Component reads the project (for archetype) and configs; computes `visibleTabs = ARCHETYPE_CONFIG_MAP[archetype]`.
-- Renders a shadcn `<Tabs>` with one `TabsTrigger` per visible key using `CONFIG_LABELS`. Selected tab lives in URL search param `?section=pv` for shareability (default = first tab).
-- Each tab renders `<ArchetypeConfigForm configKey={key} projectId={id} initial={configs[key]} canEdit={configs.canEdit[key]} />`.
+Verify after apply: `\d approval_instances`, `\d approvals`, FK on `project_phase_gates.approval_instance_id`, policies present, no rows lost, sample gate checklist now `{key,label,required,done}`.
 
-New components under `src/components/projects/config/`:
-- `archetype-config-form.tsx` — generic wrapper: `useForm` with `zodResolver(configSchemas[key])`, default values from `initial` (or DB defaults from schema), `useMutation` calling `saveArchetypeConfig`, sonner toast on success ("Configuration saved"), error toast + inline banner on failure preserving user edits. When `!canEdit`, wraps the form in a `fieldset[disabled]` and shows a muted hint: "You need company_admin, project_admin, or engineering_admin to edit this section" (financial substitutes finance_admin).
-- `config-fields/` one small file per key rendering the actual inputs:
-  - `pv-fields.tsx`: tracker_type Select (fixed/single_axis/dual_axis), numeric inputs with suffixes (tilt °, GCR, DC/AC, DC MWp, inverter count).
-  - `bess-fields.tsx`: chemistry Select (lfp/nmc/flow/other), power MW, energy MWh, duration h, PCS count, container count, cycles/day, augmentation_strategy textarea.
-  - `substation-fields.tsx`: voltage_kv, transformer_count, transformer_mva, bay_count, busbar_scheme, grid_code.
-  - `sld-fields.tsx`: hv/mv/lv voltage; `voltage_levels` key-value editor (add/remove rows of `{ name, kv }`).
-  - `scada-fields.tsx`: protocol Select (modbus_tcp/iec61850/dnp3/opc_ua), polling_interval_sec (s), points_count, historian_retention_days.
-  - `yield-fields.tsx`: p50/p90 MWh, GHI, losses %, degradation %, availability %.
-  - `pvsyst-fields.tsx`: version, meteo_source, sim_report_url, near_shading %, albedo, bifacial toggle.
-  - `financial-fields.tsx`: currency Select (from `currencies` — small static list ok for now), capex_total, contingency %, debt_ratio %, discount_rate %, ppa_price, contract_years.
-  - `cybersecurity-fields.tsx`: standard Select (IEC 62443 / NERC CIP / ISO 27019), zones_conduits key-value editor, remote_access_policy textarea, soc_monitoring toggle.
-- `key-value-editor.tsx` — reusable JSON array editor (`{ key, value }` rows, add/remove buttons, semantic tokens only).
-- `field-shell.tsx` — small helper wrapping label + input + unit suffix + error message.
+### 2. Server functions — `src/lib/gates.functions.ts`
 
-All UI uses semantic tokens (`bg-card`, `border-border`, `text-muted-foreground`, `text-destructive`) — no hex/rgb/white/black. Copy uses "C&I", "O&M", "Green H₂" spellings.
+All use `attachSupabaseAuth` + `requireSupabaseAuth`, zod input, and write audit rows via existing RPC `write_audit_log`.
 
-### 5. Types
-Regenerate `src/integrations/supabase/types.ts` isn't needed — tables already exist. Local `ConfigRow` types come from Supabase generated types.
+- `getGateHistory({ project_id })` → returns `audit_logs` where `entity='project_phase_gates'` and `metadata->>'project_id' = project_id`, joined with `profiles` for actor name/email, ordered `created_at desc`, limit 200. Company membership enforced by RLS.
+- `toggleGateChecklistItem({ gate_id, key, done })` → load gate under RLS; role guard (`company_admin`|`project_admin`) via `has_company_role`; refuse when gate status ∉ `open|in_review`; mutate checklist item — stamp `done_by=auth.uid()`, `done_at=now()` when `done=true`, clear both when `false`; update row; write `audit_logs` `gate.checklist_toggled` with `{project_id, phase, key, done}`. Returns updated checklist.
+- `requestGateTransition({ gate_id })` →
+  1. Load gate; require status `open` and every `required` item `done` (server re-verifies).
+  2. Role guard: `company_admin`|`project_admin`.
+  3. Insert `approval_instances` row (`entity='project_phase_gate'`, `entity_id=gate_id`, `requested_by=auth.uid()`, `metadata={project_id, phase}`).
+  4. Insert one `approvals` row (status `pending`) per `user_roles.role='company_admin'` in the company (fallback pool until P-111).
+  5. Update gate → `status='in_review'`, `approval_instance_id=<new>`.
+  6. `write_audit_log('gate.transition_requested', 'project_phase_gates', gate_id, {project_id, phase, approval_instance_id})`.
+- `decideGateTransition({ approval_id, decision:'approve'|'reject', comment? })` →
+  1. Load approval + instance + gate; assert `approver_id = auth.uid()` and approval status `pending`.
+  2. Update the approval row (status, comment, `decided_at`).
+  3. On **approve** (single-approver model until P-111): mark instance `approved`, gate → `approved` with `approved_by`/`approved_at`; advance `projects.phase` to next in order `development → ntp → cod → handover`; if current gate was `handover`, also set `projects.status='completed'`; find next gate by `sort_order+1` and set `status='open'`. Audit `gate.transition_approved`.
+  4. On **reject**: mark instance `rejected`, gate back to `open`, clear `approval_instance_id`. Audit `gate.transition_rejected` with `{comment}`.
 
-### 6. Verification (Playwright as Demo Admin, Prairie Winds)
-1. `/projects/{prairie-id}/config` shows exactly PV, SLD, SCADA, Yield, PVsyst, Financial, Cybersecurity — no BESS or Substation tab.
-2. Fill PV: tracker=single_axis, tilt=25, GCR=0.35, DC/AC=1.25, DC=175, inverters=42 → Save → toast → reload → values persist.
-3. `select count(*) from project_pv_config where project_id = …` returns 1 after two saves (upsert).
-4. `select action, metadata from audit_logs where entity='project_pv_config'` shows `project_config.saved` with `fields` array.
-5. Client rejects GCR=9; server rejects a hand-crafted payload with GCR=9 (invoke-server-function).
-6. Sign in as a finance_admin-only user → Financial editable, other tabs read-only with hint.
-7. `rg -n "#[0-9a-fA-F]{6}|rgb\(|text-white|bg-black" src/components/projects/config src/lib/schemas/archetype-configs.ts` returns no hits.
+  The DB trigger `trg_gate_audit` already logs raw status changes; our explicit rows add the semantic action + comment.
 
-### Non-goals
-- No PVsyst file upload pipeline (just URL text field).
-- No P50/P90 recompute — pure data capture (feeds Batch 05–06).
-- No new migrations; RLS + role gating already exist from migration 0013.
-- No changes to gates, overview, or department tabs.
+### 3. Query options
+
+`src/lib/gates-query.ts` — `gateHistoryQueryOptions(projectId)` (staleTime 15s). Reuse `projectDetailQueryOptions` for gate/checklist state; invalidate it plus history on every mutation.
+
+### 4. UI — `src/routes/_authenticated/projects.$projectId.gates.tsx`
+
+Rewrite the placeholder. Layout: two-column on `lg` (`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]`).
+
+**Left — gate cards** (map `project.gates` sorted by `sort_order`):
+- Header: name, phase badge, status pill (reuse existing style map + add `rejected`/`completed` styles as needed, semantic tokens only).
+- Checklist: shadcn `Checkbox` per item; disabled when gate status `locked`/`approved` or user lacks `company_admin`/`project_admin` (hint tooltip); shows `done_by` name + `done_at` (date-fns `formatDistanceToNow`) when done. Optimistic toggle via `useMutation` + `queryClient.setQueryData` on `project-detail`; rollback + `toast.error` on failure.
+- Footer actions:
+  - **Request transition** (`Button`) — enabled only when `status==='open'` and every `required` item done and role gate passes. Calls `requestGateTransition`; success toast.
+  - When `status==='in_review'` and the current user has a pending `approvals` row on the instance → show **Approve** / **Reject** buttons; Reject opens a `Dialog` with a `Textarea` comment (required). Calls `decideGateTransition`.
+- Skeleton via `<Skeleton />`, empty state card ("No gates configured"), error `Alert` with retry (`router.invalidate` + reset).
+
+**Right — Gate history panel**:
+- Card titled "Gate history"; `useSuspenseQuery(gateHistoryQueryOptions)`; list newest-first with icon per action (`CheckCircle2`, `XCircle`, `Clock`, `ListChecks`), actor name, relative time (`formatDistanceToNow`), action label, and diff summary from `metadata` (e.g. `to: ntp`, checklist key, comment excerpt).
+- Empty state: "No gate activity yet".
+
+Also augment the loader to prime `gateHistoryQueryOptions` alongside project detail.
+
+### 5. Route loader
+
+Update `projects.$projectId.gates.tsx` route to `loader: ({ context, params }) => Promise.all([context.queryClient.ensureQueryData(projectDetailQueryOptions(params.projectId)), context.queryClient.ensureQueryData(gateHistoryQueryOptions(params.projectId))])`, with `errorComponent` + `notFoundComponent` reusing existing `DetailNotFound`.
+
+### 6. Verification (Playwright against Prairie Winds)
+
+1. Sign in as company_admin; open project → Gates.
+2. Toggle all 3 Development items; screenshot; assert audit rows `gate.checklist_toggled` (3) via `psql`.
+3. Assert "Request transition" disabled before, enabled after.
+4. Click Request → gate `in_review`, one `approval_instances` pending, one `approvals` pending; stepper clock icon.
+5. Approve → gate `approved`, NTP `open`, `projects.phase='ntp'`, audit rows for approved + phase change.
+6. On NTP: toggle items, request, reject with comment "hold" → gate back to `open`, comment persisted, audit `gate.transition_rejected`.
+7. History panel shows every entry newest-first.
+
+### Notes
+- Approval-instance FK column `approval_instance_id` already exists on `project_phase_gates`; the migration only adds the FK constraint.
+- No changes to types file needed until migration approval regenerates it; server functions cast rows narrowly.
+- Audit-log append-only invariant already enforced by P-012 grants; we only INSERT.
+- Only same-turn writes are the migration + new/edited files listed above. No changes outside gates domain.

@@ -729,13 +729,34 @@ export type ProjectDetailDepartment = {
   lead_name: string | null;
 };
 
+export type GateChecklistItem = {
+  key: string;
+  label: string;
+  required: boolean;
+  done: boolean;
+  done_by?: string | null;
+  done_at?: string | null;
+  done_by_name?: string | null;
+};
+
 export type ProjectDetailGate = {
   id: string;
   phase: (typeof PROJECT_PHASES)[number];
   name: string;
   status: string;
   sort_order: number;
+  checklist: GateChecklistItem[];
+  approval_instance_id: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  approval?: {
+    instance_id: string;
+    instance_status: string;
+    my_approval_id: string | null;
+    my_approval_status: string | null;
+  } | null;
 };
+
 
 export type ProjectDetail = {
   id: string;
@@ -796,7 +817,9 @@ export const getProject = createServerFn({ method: "GET" })
         .eq("project_id", proj.id),
       context.supabase
         .from("project_phase_gates")
-        .select("id, phase, name, status, sort_order")
+        .select(
+          "id, phase, name, status, sort_order, checklist, approval_instance_id, approved_by, approved_at",
+        )
         .eq("project_id", proj.id)
         .order("sort_order", { ascending: true }),
     ]);
@@ -827,13 +850,103 @@ export const getProject = createServerFn({ method: "GET" })
       }),
     );
 
-    const gates: ProjectDetailGate[] = (gatesRes.data ?? []).map((g: any) => ({
-      id: g.id,
-      phase: g.phase,
-      name: g.name,
-      status: g.status,
-      sort_order: g.sort_order,
-    }));
+    const gateRows = (gatesRes.data ?? []) as any[];
+
+    // Collect done_by ids to resolve names
+    const stampIds = new Set<string>();
+    for (const g of gateRows) {
+      const items = Array.isArray(g.checklist) ? g.checklist : [];
+      for (const it of items) if (it?.done_by) stampIds.add(it.done_by);
+    }
+
+    let namesById: Record<string, string | null> = {};
+    if (stampIds.size > 0) {
+      const { data: ppl } = await context.supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", Array.from(stampIds));
+      for (const p of (ppl ?? []) as Array<{ id: string; full_name: string | null }>) {
+        namesById[p.id] = p.full_name;
+      }
+    }
+
+    // Resolve caller approval rows for any in_review gates
+    const inReviewInstanceIds = gateRows
+      .filter((g) => g.status === "in_review" && g.approval_instance_id)
+      .map((g) => g.approval_instance_id as string);
+    let myApprovals: Record<
+      string,
+      { my_approval_id: string; my_approval_status: string; instance_status: string }
+    > = {};
+    if (inReviewInstanceIds.length > 0) {
+      const { data: apRows } = await context.supabase
+        .from("approvals")
+        .select("id, instance_id, status, approver_id")
+        .in("instance_id", inReviewInstanceIds)
+        .eq("approver_id", context.user.id);
+      const { data: instRows } = await context.supabase
+        .from("approval_instances")
+        .select("id, status")
+        .in("id", inReviewInstanceIds);
+      const instStatus: Record<string, string> = {};
+      for (const i of (instRows ?? []) as Array<{ id: string; status: string }>) {
+        instStatus[i.id] = i.status;
+      }
+      for (const a of (apRows ?? []) as Array<{
+        id: string;
+        instance_id: string;
+        status: string;
+      }>) {
+        myApprovals[a.instance_id] = {
+          my_approval_id: a.id,
+          my_approval_status: a.status,
+          instance_status: instStatus[a.instance_id] ?? "pending",
+        };
+      }
+    }
+
+    const gates: ProjectDetailGate[] = gateRows.map((g: any) => {
+      const rawList: any[] = Array.isArray(g.checklist) ? g.checklist : [];
+      const checklist: GateChecklistItem[] = rawList.map((it: any) => ({
+        key: String(it?.key ?? ""),
+        label: String(it?.label ?? it?.name ?? ""),
+        required: it?.required !== false,
+        done: !!it?.done,
+        done_by: it?.done_by ?? null,
+        done_at: it?.done_at ?? null,
+        done_by_name: it?.done_by ? namesById[it.done_by] ?? null : null,
+      }));
+      const approvalInfo =
+        g.approval_instance_id && myApprovals[g.approval_instance_id]
+          ? {
+              instance_id: g.approval_instance_id as string,
+              instance_status: myApprovals[g.approval_instance_id].instance_status,
+              my_approval_id: myApprovals[g.approval_instance_id].my_approval_id,
+              my_approval_status:
+                myApprovals[g.approval_instance_id].my_approval_status,
+            }
+          : g.approval_instance_id
+            ? {
+                instance_id: g.approval_instance_id as string,
+                instance_status: "pending",
+                my_approval_id: null,
+                my_approval_status: null,
+              }
+            : null;
+      return {
+        id: g.id,
+        phase: g.phase,
+        name: g.name,
+        status: g.status,
+        sort_order: g.sort_order,
+        checklist,
+        approval_instance_id: g.approval_instance_id ?? null,
+        approved_by: g.approved_by ?? null,
+        approved_at: g.approved_at ?? null,
+        approval: approvalInfo,
+      };
+    });
+
 
     return {
       id: proj.id,
