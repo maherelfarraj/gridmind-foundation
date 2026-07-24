@@ -1,58 +1,65 @@
-## P-023 — Super Admin console (tenants list / create / detail)
+## P-024 — Company Admin: users & roles
 
-### 1. Additive migration (`companies`)
+Extends existing `/settings/users` (P-022) with role management. Keep the Invite dialog, invites list, and lockout warning as-is.
 
-```sql
-alter table public.companies add column if not exists legal_name text;
-alter table public.companies add column if not exists contact_email text;
-update public.companies set legal_name = name where legal_name is null;
+### Server (new `src/lib/roles.functions.ts`)
 
--- Full super_admin management policy (member-read policy stays intact)
-drop policy if exists companies_super_admin_all on public.companies;
-create policy companies_super_admin_all on public.companies
-  for all to authenticated
-  using (public.has_role(auth.uid(),'super_admin'))
-  with check (public.has_role(auth.uid(),'super_admin'));
+All fns: `createServerFn` + `attachSupabaseAuth` + `requireSupabaseAuth`, zod-validated, audit-logged via `write_audit_log` RPC.
+
+- `listCompanyMembers({ companyId })` — replaces the members portion of `getCompanyAdminSnapshot`. Selects `profiles(id, full_name, email, avatar_url)` for `company_id = :companyId` (RLS-scoped), then `user_roles(user_id, role)` for those ids. Returns `Array<{ userId, fullName, email, avatarUrl, roles: AppRole[] }>` plus `{ adminCount, isAdmin }`. Keep `getCompanyAdminSnapshot` too (still used by invite pre-flight); this fn is the richer read.
+- `grantRole({ companyId, targetUserId, role })`:
+  1. Reject `role === 'super_admin'` in the validator.
+  2. `supabase.rpc('assert_can_grant_role', { p_target_user_id, p_company_id, p_role })` — the DB is the source of truth; throw if it errors.
+  3. `insert into user_roles ... on conflict do nothing` via `.upsert({ user_id, company_id, role }, { onConflict: 'user_id,company_id,role', ignoreDuplicates: true })`.
+  4. `write_audit_log('role.granted', 'user_roles', <inserted id or target user id>, { target_user, role, company_id })`.
+- `revokeRole({ companyId, targetUserId, role })`:
+  1. Reject `role === 'super_admin'`.
+  2. Same `assert_can_grant_role` RPC first (defense in depth — DB blocks non-admin callers).
+  3. Last-admin guard: if `role === 'company_admin'`, count `user_roles where company_id=:c and role='company_admin'`; if count ≤ 1 AND that row belongs to `targetUserId`, throw `{ statusCode: 409, message: 'Cannot revoke the last company admin.' }`.
+  4. `delete from user_roles where user_id=:t and company_id=:c and role=:r`.
+  5. Audit `role.revoked` with same metadata shape.
+
+### Route grouping & constants (`src/lib/role-groups.ts`)
+
+Static grouping used by the sheet (super_admin excluded):
+
+```text
+Administration:   company_admin, billing_admin, project_admin
+Department:       engineering_admin, procurement_admin, construction_admin,
+                  hse_admin, finance_admin, legal_admin, om_admin, scada_admin
+Operational:      engineer, sales, procurement_officer, foreman, field_technician
+External viewers: client_viewer, investor_viewer, lender_viewer
 ```
 
-After apply: show columns + all `pg_policies` rows for `public.companies` (per standing rule).
+Total: 19. Compile-time assertion that the flattened list equals `Constants.public.Enums.app_role` minus `super_admin` so future enum additions fail typecheck until grouped.
 
-### 2. Server functions — `src/lib/tenants.functions.ts`
+### UI changes to `src/routes/_authenticated/settings.users.tsx`
 
-All `.middleware([attachSupabaseAuth])`, `requireSupabaseAuth`, then gate with `has_role(auth.uid(),'super_admin')` via `context.supabase.rpc('has_role', ...)`. Throw `Object.assign(new Error('Forbidden'), { statusCode: 403 })` on failure so `errorMiddleware` surfaces 403.
+- Swap the members table read to `listCompanyMembers`; add `avatar_url` avatar cell.
+- Add a search input (client-side filter on name + email).
+- Add "Export CSV" button — generates `members.csv` (name, email, roles joined by `|`) via a Blob + `URL.createObjectURL`.
+- Skeleton rows during load; existing empty/error states retained.
+- Row action button "Manage roles" opens a shadcn `Sheet` for the selected member showing 4 grouped sections of `Switch` toggles (labels humanized). Toggling:
+  - Optimistically update the row's `roles` array in the React Query cache (`setQueryData` on `['company-members', companyId]`).
+  - Call `grantRole` / `revokeRole`; on error, rollback the cache snapshot and `toast.error(err.message)`; on success `toast.success`.
+  - Disable the toggle while its mutation is pending.
+- Access: page still visible to any signed-in member (matches existing gate). "Manage roles" button only rendered when `snapshot.isAdmin` OR viewer has `super_admin`; server RPCs remain the authoritative check.
 
-- `listTenants({ search? })` → id, name (slug), legal_name, contact_email, plan_tier, created_at, member_count (aggregate via 2nd query on `profiles` grouped by company_id — or per-row count via `profiles(count)` embed). Server-side filter by ilike on legal_name/name/contact_email.
-- `createTenant({ legalName, slug, contactEmail, planTier })` — zod validates slug ≤ 20, email valid, planTier enum. Insert companies (name=slug, legal_name, contact_email, plan_tier), then `write_audit_log('tenant.created','companies', id, {...})`.
-- `getTenantDetail({ companyId })` → company row + memberCount, adminCount (user_roles where role in company_admin/super_admin), inviteCount (invites where status='pending').
-- `updateTenantPlan({ companyId, planTier })` — read current plan, update, audit `tenant.plan_changed` with `{ from, to }`.
+### Cross-company negative check (verification only, no code change)
 
-### 3. Routes
+After the UI ships, from demo-admin's session (Demo EPC), call `grantRole` targeting a Test Co B user id → expect the `assert_can_grant_role` RPC to raise `forbidden: cross-company role grant blocked`; confirm no `user_roles` row created and no audit written.
 
-- `src/routes/_authenticated/admin.tsx` — pathless layout with `<Outlet/>`; `beforeLoad` calls `getCurrentUserRoles` and throws 404 (`notFound()`) if user lacks super_admin. Simple heading "Platform admin".
-- `src/routes/_authenticated/admin.tenants.tsx` — list page: search input (debounced), shadcn Table, plan badge (starter=secondary, growth=default, enterprise=accent), skeleton (5 rows), empty state, error state with retry (`router.invalidate()`), "Create tenant" dialog (react-hook-form + zod). Row click → detail.
-- `src/routes/_authenticated/admin.tenants.$companyId.tsx` — header (legal name + plan badge), Tenant ID card (mono UUID + Copy button using `navigator.clipboard.writeText`, sonner toast), plan editor (Select + Save, disabled while pending, audits), stats grid (members/admins/invites).
+### Live checklist (run after implementation)
 
-Both list & detail: `errorComponent` + `notFoundComponent` per route rules; loaders use `context.queryClient.ensureQueryData` + `useSuspenseQuery`.
+1. `/settings/users` shows members table with Demo Admin's `super_admin` + `company_admin` badges and the second invited user.
+2. Manage roles sheet renders exactly 19 roles across 4 groups, `finance_admin` in Department admins.
+3. Grant `engineer` to user 2 → badge appears → `role.granted` in `audit_logs` with correct metadata; revoke → `role.revoked` logged.
+4. Attempt to revoke your own `company_admin` while `adminCount === 1` → toast "Cannot revoke the last company admin"; no DB change, no audit row.
+5. Search filters both name and email; CSV downloads; skeleton/empty/error states visible.
+6. Cross-company grant attempt from Demo session against Test Co B user → RPC rejects with `forbidden: cross-company role grant blocked`.
 
-### 4. Sidebar gating
+### Files touched
 
-Replace the hardcoded "Admin" nav item behavior in `src/components/app-sidebar.tsx`:
-- Add a small hook `useIsSuperAdmin()` that runs `useQuery({ queryFn: getCurrentUserRoles })` (returns bool). Render the "Admin" item only when true, pointing to `/admin/tenants`. "Users" item stays as-is.
-
-Client hiding is UX only — every RPC re-checks super_admin server-side.
-
-### 5. Negative test (server-side auth)
-
-After live checks, invoke `listTenants` while signed in as a non-super_admin (temporarily sign in as demo-pm@ or similar); expect 403 from the RPC (not just hidden nav). Report the raw response.
-
-### 6. Live checklist (as demo-admin, who has super_admin)
-
-- [ ] Admin > Tenants nav visible; lists Demo EPC Co with enterprise badge + member count
-- [ ] Create "Test Co B" (starter) → row appears, audit_logs has `tenant.created`
-- [ ] Detail page: copy Tenant ID; change starter → growth; audit_logs has `tenant.plan_changed` `{ from:'starter', to:'growth' }`
-- [ ] Loading skeleton / empty / error states verified
-- [ ] Non-super_admin call to listTenants returns 403
-
-Design tokens only; no raw hex.
-
-Then: `next → P-024`.
+- New: `src/lib/roles.functions.ts`, `src/lib/role-groups.ts`
+- Edited: `src/routes/_authenticated/settings.users.tsx`
+- No migration; existing `assert_can_grant_role`, `write_audit_log`, and `user_roles` RLS already in place.
