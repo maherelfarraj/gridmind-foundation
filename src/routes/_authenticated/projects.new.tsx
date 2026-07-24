@@ -340,23 +340,42 @@ function NewProjectPage() {
           />
         )
       ) : (
-        <Card className="flex flex-col gap-2 border-border bg-card p-6">
-          <div className="font-medium text-foreground">Coming soon</div>
-          <p className="text-sm text-muted-foreground">
-            Step {currentStep} ships in the next wizard batch (P-036).
-          </p>
-          <div>
-            <Button
-              variant="outline"
-              onClick={() =>
-                void navigate({ to: "/projects/new", search: { step: 3 } })
-              }
-            >
-              Back to selection
-            </Button>
+        !hydrated ||
+        !activeCompanyId ||
+        !draft.archetype ||
+        !draft.basics ||
+        !draft.selection ||
+        teamQuery.isPending ? (
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-40 w-full" />
           </div>
-        </Card>
+        ) : teamQuery.isError ? (
+          <WizardErrorPanel
+            title="Could not load team candidates"
+            message={
+              teamQuery.error instanceof Error
+                ? teamQuery.error.message
+                : "Unexpected error"
+            }
+            onRetry={() => void teamQuery.refetch()}
+          />
+        ) : (
+          <TeamForm
+            projectAdmins={teamQuery.data.admins}
+            members={teamQuery.data.profiles}
+            deptCandidates={teamQuery.data.deptCandidates}
+            defaultValues={draft.team}
+            submitting={createMutation.isPending}
+            onSubmit={handleTeamSubmit}
+            onBack={() =>
+              void navigate({ to: "/projects/new", search: { step: 3 } })
+            }
+          />
+        )
       )}
     </div>
   );
 }
+
