@@ -1,4 +1,4 @@
-// P-044 — Proposals versioning RPC.
+// P-044 / P-045 — Proposals: versioning + builder RPCs.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -6,8 +6,44 @@ import {
   attachSupabaseAuth,
   requireSupabaseAuth,
 } from "@/integrations/supabase/auth-attacher";
+import {
+  simulateYield,
+  YIELD_ENGINE_ID,
+  type ArrayConfig,
+  type YieldResult,
+} from "@/lib/yield/stub";
 
 const inputSchema = z.object({ proposalId: z.string().uuid() });
+
+// ---------------------------------------------------------------------------
+// Shared helpers
+// ---------------------------------------------------------------------------
+function httpError(status: number, code: string): never {
+  throw Object.assign(new Error(code), {
+    statusCode: status,
+    body: JSON.stringify({ error: code }),
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
+}
+
+async function assertProposalWriter(context: any) {
+  const [{ data: isSales }, { data: isCoAdmin }] = await Promise.all([
+    context.supabase.rpc("has_company_role", { p_role: "sales" }),
+    context.supabase.rpc("has_company_role", { p_role: "company_admin" }),
+  ]);
+  if (!isSales && !isCoAdmin) httpError(403, "forbidden");
+}
+
+async function getMyCompanyId(context: any): Promise<string> {
+  const { data, error } = await context.supabase
+    .from("profiles")
+    .select("company_id")
+    .eq("id", context.user.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.company_id) httpError(400, "no_company");
+  return data.company_id as string;
+}
 
 /**
  * Create a new draft version of an existing proposal.
