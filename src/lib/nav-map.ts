@@ -12,6 +12,7 @@ import {
   MailPlus,
   PencilRuler,
   Receipt,
+  Scale,
   Settings2,
   Shield,
   SlidersHorizontal,
@@ -48,6 +49,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "procurement", label: "RFQs", url: "/procurement/rfqs", icon: MailPlus },
       { moduleKey: "procurement", label: "Purchase Orders", url: "/procurement/pos", icon: Receipt },
       { moduleKey: "procurement", label: "Goods Receipts", url: "/procurement/receipts", icon: ClipboardCheck },
+      { moduleKey: "procurement", label: "Invoice Matching", url: "/procurement/matches", icon: Scale },
 
       { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
       { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
