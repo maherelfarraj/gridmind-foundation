@@ -202,8 +202,8 @@ void _departmentExhaustive;
 // has_role() on every request; keep these consistent with server policies.
 // ---------------------------------------------------------------------------
 
-import { GRANTABLE_ROLES, type GrantableRole } from "./role-groups";
-import { MODULE_KEYS as _MK } from "./modules";
+import { GRANTABLE_ROLES } from "./role-groups";
+
 
 export type Action = "view" | "create" | "edit" | "approve" | "export";
 export const ACTIONS: readonly Action[] = ["view", "create", "edit", "approve", "export"] as const;
