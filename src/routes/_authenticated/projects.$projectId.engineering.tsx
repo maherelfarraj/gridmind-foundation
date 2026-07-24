@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const SUB_TABS = [
   { to: "" as const, label: "Overview" },
   { to: "drawings" as const, label: "Drawings" },
+  { to: "sld" as const, label: "SLD" },
   { to: "uploads" as const, label: "Site data uploads" },
 ];
 
