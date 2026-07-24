@@ -255,7 +255,7 @@ const createProjectInput = z.object({
 const PHASE_LABELS_SHORT: Record<(typeof PROJECT_PHASES)[number], string> = {
   development: "Development",
   ntp: "NTP",
-  cod: "CoD",
+  cod: "COD",
   handover: "Handover",
 };
 

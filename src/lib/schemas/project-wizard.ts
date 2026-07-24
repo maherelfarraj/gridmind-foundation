@@ -114,7 +114,7 @@ export const DEPARTMENT_LABELS: Record<ProjectDepartment, string> = {
 export const PHASE_LABELS: Record<ProjectPhase, string> = {
   development: "Development",
   ntp: "NTP",
-  cod: "CoD",
+  cod: "COD",
   handover: "Handover",
 };
 
