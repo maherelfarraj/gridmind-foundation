@@ -145,6 +145,14 @@ function ProposalsListPage() {
                     <td className="p-3 text-muted-foreground">
                       {format(parseISO(p.updated_at), "PP")}
                     </td>
+                    <td className="p-3 text-right">
+                      <ExportPdfButton
+                        proposalId={p.id}
+                        companyId={p.company_id}
+                        projectId={p.project_id}
+                        size="icon"
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
