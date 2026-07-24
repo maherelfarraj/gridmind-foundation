@@ -509,7 +509,7 @@ export const saveLineItems = createServerFn({ method: "POST" })
             unit: item.unit,
             unit_price: item.unit_price,
             line_total,
-          })
+          } as any)
           .eq("id", item.id);
         if (error) throw new Error(error.message);
       } else {
@@ -526,7 +526,7 @@ export const saveLineItems = createServerFn({ method: "POST" })
             unit_price: item.unit_price,
             line_total,
             created_by: context.user.id,
-          });
+          } as any);
         if (error) throw new Error(error.message);
       }
     }
