@@ -1,11 +1,12 @@
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
-import { Award, CalendarDays, FileText, Plus, User } from "lucide-react";
+import { Award, CalendarDays, Download, FileText, Plus, User } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useCreateProposal } from "@/lib/proposal-query";
 
 import { LossReasonDialog } from "@/components/crm/LossReasonDialog";
+import { WinConversionDialog } from "@/components/crm/detail/WinConversionDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,11 @@ import {
   STAGE_PROBABILITY,
 } from "@/lib/crm.functions";
 import type { OpportunityDetail } from "@/lib/opportunity.functions";
-import { useUpdateOpportunity } from "@/lib/opportunity-query";
+import {
+  useDownloadKickoffPack,
+  useUpdateOpportunity,
+} from "@/lib/opportunity-query";
+
 
 const ARCHETYPE_SHORT: Record<string, string> = {
   utility_pv: "Utility PV",
