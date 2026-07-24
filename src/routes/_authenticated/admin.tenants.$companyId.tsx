@@ -103,7 +103,9 @@ function TenantDetailPage() {
       if (res.changed) toast.success(`Plan updated to ${PLAN_LABELS[res.to as PlanTier]}`);
       else toast.info("Plan unchanged");
       qc.invalidateQueries({ queryKey: ["admin", "tenants"] });
+      qc.invalidateQueries({ queryKey: ["modules", companyId] });
     },
+
     onError: (err: Error) => toast.error(err.message || "Failed to update plan"),
   });
 
