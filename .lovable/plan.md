@@ -1,62 +1,30 @@
+## P-030 — Profile settings
 
-# P-029 — Company settings + branding editor
+Build `/settings/profile` for every authenticated user. Mirrors the P-029 shape (server fns + zod + audit + signed URLs + semantic tokens). Roles/email are never editable here.
 
-Single page at `/settings/company` with two sections: Company details and Branding. All company members read; only `company_admin` writes. Mutations via `createServerFn` + zod + `requireSupabaseAuth`, audited with `writeAuditLog`.
+### 1. Migration `0014_notification_prefs.sql`
+Create `public.notification_prefs` as specified (PK user_id → profiles.id, `email_enabled`, `in_app_enabled`, `prefs jsonb`, `updated_at`), enable RLS, add owner-only policy, GRANT SELECT/INSERT/UPDATE/DELETE to `authenticated` and ALL to `service_role`, and attach the shared `update_updated_at_column` trigger. Verify columns + policies after apply.
 
-## 1. Migration (additive)
+### 2. `src/lib/profile.functions.ts` (new)
+All `createServerFn` + `attachSupabaseAuth` + `requireSupabaseAuth` + zod:
 
-Migration `0013_company_branding.sql`:
+- `getProfileSettings` — returns `{ profile: {id, full_name, email, locale, avatar_url, company_id}, avatarSignedUrl, notificationPrefs }`. Signs `avatar_url` from `photos` bucket (300s TTL). Creates a default `notification_prefs` row lazily if missing (or returns defaults without insert).
+- `updateProfile` — zod: `full_name` 2–80, `locale` enum `['en','es','de','fr','pt']`. Updates `profiles` for `auth.uid()`. Audits `profile.updated` with changed-field diff.
+- `getAvatarUploadTarget` — returns `{ bucket: 'photos', path: '{company_id}/avatars/{user_id}' }` for client-side upload via signed upload URL (createSignedUploadUrl) — same pattern as logo.
+- `setProfileAvatar` — validates path prefix starts with the caller's company UUID and ends `/avatars/{user_id}`, updates `profiles.avatar_url`. Audits `profile.updated` with `{ avatar: true }`.
+- `removeProfileAvatar` — deletes storage object, nulls `avatar_url`. Audits.
+- `updateNotificationPrefs` — zod: `email_enabled`, `in_app_enabled` booleans; `prefs` object with 5 booleans (`approvals`, `mentions`, `invites`, `report_delivery`, `alarm_escalation`). Upsert to `notification_prefs` for `auth.uid()`. Audits `notification_prefs.updated`.
 
-- `ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS phone text, ADD COLUMN IF NOT EXISTS address text;`
-- `CREATE TABLE IF NOT EXISTS public.company_branding` with columns from the spec (`company_id` PK FK → companies ON DELETE CASCADE, `logo_url`, `primary_color` default `'#1e40af'`, `accent_color` default `'#0d9488'`, `footer_text`, `created_at`, `updated_at`).
-- `GRANT SELECT, INSERT, UPDATE, DELETE ON public.company_branding TO authenticated; GRANT ALL ON public.company_branding TO service_role;`
-- `ALTER TABLE public.company_branding ENABLE ROW LEVEL SECURITY;`
-- Policies exactly as in prompt: `members read branding` (SELECT via `is_company_member`), `admins write branding` (ALL via `has_company_role('company_admin')`).
-- `updated_at` trigger via existing `set_updated_at()`.
+### 3. `src/routes/_authenticated/settings.profile.tsx` (new)
+- Load with `useQuery(getProfileSettings)`; skeleton while loading; error card + retry on failure.
+- Three cards, react-hook-form + zod resolver, sonner toasts:
+  - **Profile**: `full_name` input, circular avatar preview with Upload/Remove buttons (client-side ≤ 2 MB image type check, upload via signed upload URL then call `setProfileAvatar`), email shown disabled/read-only. Save button → `updateProfile`.
+  - **Locale**: Select with 5 native-label options; part of the same profile form or separate mini-form — save via `updateProfile`.
+  - **Notifications**: two master Switches (email, in-app) + 5 per-event Checkboxes bound to `prefs`. Helper note under email toggle referencing `/email/unsubscribe`. Save via `updateNotificationPrefs`.
+- Semantic tokens only (`bg-card`, `border-border`, `text-foreground`, etc). No role or email fields anywhere.
 
-Post-migration verification query: confirm columns, policies, trigger exist.
+### 4. `src/lib/nav-map.ts`
+Add "Profile" entry to the Account/Settings section (visible to all authenticated roles) pointing to `/settings/profile`.
 
-## 2. Server functions — `src/lib/company.functions.ts`
-
-All use `attachSupabaseAuth` + `requireSupabaseAuth`. Resolve caller's `company_id` from `profiles`; verify `has_company_role('company_admin')` for writes.
-
-- `getCompanySettings()` → returns `{ company: {id, name, legal_name, contact_email, phone, address, plan_tier}, branding: {...} | null, logoSignedUrl: string | null }`. Generates 5-minute signed URL from `documents` bucket when `logo_url` set.
-- `updateCompanyDetails({ legal_name, contact_email, phone, address })` — zod validated; diff old vs new; write `company.updated` audit with `{changed_fields}` metadata.
-- `upsertCompanyBranding({ primary_color, accent_color, footer_text })` — hex color regex `/^#[0-9a-fA-F]{6}$/`; upsert; audit `branding.updated` with changed fields.
-- `getLogoUploadTarget()` → returns `{ bucket: 'documents', path: '{company_id}/branding/logo' }` so the browser can upload directly using the user's session (storage RLS accepts because path prefix is company UUID and user is a member).
-- `setCompanyLogo({ path })` — validates path starts with caller's `{company_id}/branding/`; upserts branding row with `logo_url = path`; audits `branding.logo_updated`.
-- `removeCompanyLogo()` — deletes object from storage (server-side using per-request client, RLS admin-only DELETE satisfied by `company_admin`), sets `logo_url = null`, audits `branding.logo_removed`.
-
-Client uploads via `supabase.storage.from('documents').upload('{company_id}/branding/logo', file, { upsert: true, contentType })` using the browser Supabase client — storage `INSERT` policy already gates on `is_company_member`. Then calls `setCompanyLogo` to persist and audit.
-
-## 3. UI — `src/routes/_authenticated/settings.company.tsx`
-
-Two `<Card>` sections in one route:
-
-**Company details form** (react-hook-form + zod):
-- Fields: Legal name, Contact email, Phone, Address (textarea).
-- Save button disabled unless dirty; sonner toast on success; inline errors.
-- Read-only for non-admins (inputs disabled + hint text).
-
-**Branding editor**:
-- Logo: current preview from signed URL, drag/drop or file input, max 2 MB, accept `image/*`, client-side size + type check, live preview before upload, Upload + Remove buttons.
-- Primary color + Accent color: shadcn `<Input type="color">` alongside hex text input, synchronized via RHF.
-- Footer text: textarea.
-- Helper copy under section title: *"Branding is applied to proposal PDF/PPTX exports."*
-- Save button audits `branding.updated`.
-
-**States**: skeleton cards while loading; sonner toast on save; inline zod errors; error `<Card>` with Retry button on fetch failure. Uses semantic tokens only (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`). Color hex values live in DB only — never render brand colors as component styling.
-
-## 4. Navigation
-
-Add "Company" entry under Settings in `src/lib/nav-map.ts` (visible to all authenticated members). `AppSidebar` picks it up automatically.
-
-## 5. Verification (post-build, live as demo-admin via Playwright)
-
-- Save details → row updated, `company.updated` audit row with `changed_fields`.
-- Upload logo → object present at `documents/{company-uuid}/branding/logo`, `logo_url` persisted, preview renders via signed URL, survives reload.
-- Colors + footer persist in `company_branding`; `branding.updated` audit written.
-- RLS check: query as non-admin member — SELECT works, UPDATE denied.
-- Negative storage test: attempt upload to `other-uuid/branding/logo` → 403 from storage RLS.
-
-Then say `next` for P-030.
+### 5. Verification (after build)
+Run as demo-admin via Playwright: save name+locale, upload avatar (confirm path `{company_uuid}/avatars/{user_uuid}`), toggle notifications, then query `profiles`, `notification_prefs`, and `audit_logs` to confirm rows + `profile.updated` / `notification_prefs.updated` entries; confirm no email/role fields are editable.
