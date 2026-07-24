@@ -704,3 +704,157 @@ function buildCsv(rows: any[]): string {
   }
   return lines.join("\r\n") + "\r\n";
 }
+
+
+// ---------------------------------------------------------------------------
+// P-038 — Full project detail (header + tabs + stepper).
+// ---------------------------------------------------------------------------
+
+const projectDetailInput = z.object({ id: z.string().uuid() });
+
+export type ProjectDetailMember = {
+  id: string;
+  user_id: string;
+  project_role: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+};
+
+export type ProjectDetailDepartment = {
+  id: string;
+  department: ProjectDepartment;
+  status: string;
+  lead_user_id: string | null;
+  lead_name: string | null;
+};
+
+export type ProjectDetailGate = {
+  id: string;
+  phase: (typeof PROJECT_PHASES)[number];
+  name: string;
+  status: string;
+  sort_order: number;
+};
+
+export type ProjectDetail = {
+  id: string;
+  company_id: string;
+  name: string;
+  code: string;
+  archetype: ProjectArchetype;
+  phase: (typeof PROJECT_PHASES)[number];
+  status: string;
+  capacity_mw: number | null;
+  capacity_mwh: number | null;
+  site_name: string | null;
+  site_country: string | null;
+  site_region: string | null;
+  offtaker: string | null;
+  target_cod: string | null;
+  description: string | null;
+  project_admin_id: string | null;
+  caller_roles: string[];
+  members: ProjectDetailMember[];
+  departments: ProjectDetailDepartment[];
+  gates: ProjectDetailGate[];
+};
+
+export const getProject = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => projectDetailInput.parse(input))
+  .handler(async ({ data, context }): Promise<ProjectDetail | null> => {
+    requireSupabaseAuth(context);
+
+    const { data: proj, error } = await context.supabase
+      .from("projects")
+      .select(
+        "id, company_id, name, code, archetype, phase, status, capacity_mw, capacity_mwh, site_name, site_country, site_region, offtaker, target_cod, description, project_admin_id",
+      )
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!proj) return null;
+
+    const [rolesRes, membersRes, deptsRes, gatesRes] = await Promise.all([
+      context.supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.user.id)
+        .eq("company_id", proj.company_id),
+      context.supabase
+        .from("project_members")
+        .select(
+          "id, user_id, project_role, profiles:profiles!project_members_user_id_fkey(full_name, email, avatar_url)",
+        )
+        .eq("project_id", proj.id),
+      context.supabase
+        .from("project_departments")
+        .select(
+          "id, department, status, lead_user_id, lead:profiles!project_departments_lead_user_id_fkey(full_name)",
+        )
+        .eq("project_id", proj.id),
+      context.supabase
+        .from("project_phase_gates")
+        .select("id, phase, name, status, sort_order")
+        .eq("project_id", proj.id)
+        .order("sort_order", { ascending: true }),
+    ]);
+
+    if (rolesRes.error) throw rolesRes.error;
+    if (membersRes.error) throw membersRes.error;
+    if (deptsRes.error) throw deptsRes.error;
+    if (gatesRes.error) throw gatesRes.error;
+
+    const members: ProjectDetailMember[] = (membersRes.data ?? []).map(
+      (m: any) => ({
+        id: m.id,
+        user_id: m.user_id,
+        project_role: m.project_role,
+        full_name: m.profiles?.full_name ?? null,
+        email: m.profiles?.email ?? null,
+        avatar_url: m.profiles?.avatar_url ?? null,
+      }),
+    );
+
+    const departments: ProjectDetailDepartment[] = (deptsRes.data ?? []).map(
+      (d: any) => ({
+        id: d.id,
+        department: d.department as ProjectDepartment,
+        status: d.status,
+        lead_user_id: d.lead_user_id,
+        lead_name: d.lead?.full_name ?? null,
+      }),
+    );
+
+    const gates: ProjectDetailGate[] = (gatesRes.data ?? []).map((g: any) => ({
+      id: g.id,
+      phase: g.phase,
+      name: g.name,
+      status: g.status,
+      sort_order: g.sort_order,
+    }));
+
+    return {
+      id: proj.id,
+      company_id: proj.company_id,
+      name: proj.name,
+      code: proj.code,
+      archetype: proj.archetype as ProjectArchetype,
+      phase: proj.phase as (typeof PROJECT_PHASES)[number],
+      status: proj.status,
+      capacity_mw: proj.capacity_mw,
+      capacity_mwh: proj.capacity_mwh,
+      site_name: proj.site_name,
+      site_country: proj.site_country,
+      site_region: proj.site_region,
+      offtaker: proj.offtaker,
+      target_cod: proj.target_cod,
+      description: proj.description,
+      project_admin_id: proj.project_admin_id,
+      caller_roles: (rolesRes.data ?? []).map((r: any) => r.role as string),
+      members,
+      departments,
+      gates,
+    };
+  });
