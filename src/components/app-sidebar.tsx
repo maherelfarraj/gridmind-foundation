@@ -4,25 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { listModuleAccess } from "@/lib/modules.functions";
 import { useActiveCompany } from "@/components/company-switcher";
-
-import {
-  Atom,
-  Building2,
-  CalendarRange,
-  ClipboardCheck,
-  HardHat,
-  Handshake,
-  MailPlus,
-  PencilRuler,
-  Shield,
-  SlidersHorizontal,
-  Truck,
-  Users,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
-
-
+import { NAV_SECTIONS } from "@/lib/nav-map";
 
 import {
   Sidebar,
@@ -40,59 +22,9 @@ import {
 import {
   DEV_SESSION_CONTEXT,
   getVisibleModules,
-  type ModuleKey,
 } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
-interface NavItem {
-  moduleKey: ModuleKey;
-  label: string;
-  url: string;
-  icon: LucideIcon;
-  requiresSuperAdmin?: boolean;
-}
-
-interface NavSection {
-  label: string;
-  items: NavItem[];
-}
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    label: "Lifecycle",
-    items: [
-      { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm", icon: Handshake },
-      { moduleKey: "engineering", label: "Engineering", url: "/engineering", icon: PencilRuler },
-      { moduleKey: "procurement", label: "Procurement", url: "/procurement", icon: Truck },
-      { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
-      { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
-      {
-        moduleKey: "commissioning",
-        label: "Commission & Turnover",
-        url: "/commissioning",
-        icon: ClipboardCheck,
-      },
-      { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om", icon: Wrench },
-      { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
-      { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
-    ],
-  },
-  {
-    label: "Administration",
-    items: [
-      { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
-      { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
-      { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
-      {
-        moduleKey: "admin",
-        label: "Tenants",
-        url: "/admin/tenants",
-        icon: Shield,
-        requiresSuperAdmin: true,
-      },
-    ],
-  },
-];
 
 
 

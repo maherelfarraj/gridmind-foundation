@@ -1,62 +1,66 @@
-# P-027 — Module access admin
+# P-028 — Permission Simulator
 
-Build the tenant-scoped module access admin on top of migration 0005 (`module_access_rules` + `has_module_access`). Super admin edits any tenant; company admin reads their own; sidebar visibility follows the same rules (single source of truth).
+Read-only preview tool at `/settings/permissions-simulator` for company admins and super admins to answer "what can role X see and do?" — no mutations, no audit writes.
 
-## 1. Canonical module registry — `src/lib/modules.ts` (new)
+## Extend `src/lib/permissions.ts`
 
-Single source of truth for the 9 module keys from migration 0005's CHECK constraint:
+Add two typed constants alongside `ROLE_TO_MODULES` (which today only covers 5 roles — the new maps cover all `GrantableRole` values, i.e. every `app_role` except `super_admin`, grouped by `ROLE_GROUPS` from `role-groups.ts`):
 
-| key | label | description | plans |
-| --- | --- | --- | --- |
-| `crm` | CRM & Origination | Leads, opportunities, proposals | starter, growth, enterprise |
-| `engineering` | Engineering | Designs, drawings, BOM | starter, growth, enterprise |
-| `procurement` | Procurement | Vendors, RFQs, POs, receipts | starter, growth, enterprise |
-| `planning_budget` | Planning & Budget | Schedules, budgets, EVM | starter, growth, enterprise |
-| `field_qaqc` | Field, HSE & QA/QC | Daily reports, inspections, incidents | growth, enterprise |
-| `commissioning` | Commissioning | Punch lists, energization, handover | growth, enterprise |
-| `portals` | Client & Investor Portals | External stakeholder access | growth, enterprise |
-| `om_scada` | O&M & SCADA | Work orders, telemetry, alarms | enterprise |
-| `green_hydrogen` | Green H₂ | Electrolyser + H₂ plant modules | **enterprise only** |
+- `ROLE_MODULE_MAP: Record<GrantableRole, ModuleKey[]>` — full per-role module visibility. Department admins get their own department's module plus related read modules; operational roles get their working modules; external viewers get portal + read-only relevant modules; `company_admin` / `billing_admin` / `project_admin` get all core modules + `admin`.
+- `ROLE_ACTION_MATRIX: Record<GrantableRole, Partial<Record<ModuleKey, Set<Action>>>>` where `Action = "view" | "create" | "edit" | "approve" | "export"`. Rules:
+  - `client_viewer` / `investor_viewer` / `lender_viewer` — `view` only, on their visible modules.
+  - Operational roles — `view` + `create` + `edit` on their modules; no `approve`.
+  - Department admins — full set (`view`/`create`/`edit`/`approve`/`export`) on their own department's module, `view` on peer modules.
+  - `company_admin`, `billing_admin`, `project_admin` — full set on all modules they see.
 
-Exports: `MODULE_KEYS` (readonly tuple), `ModuleKey` type, `MODULE_REGISTRY` (label, description, `baselinePlans: PlanTier[]`, `enterpriseOnly: boolean`), helper `planAllowsModule(plan, key)` mirroring `has_module_access` baseline.
+Also export helper `getActionsFor(role, moduleKey): Set<Action>`.
 
-## 2. Reconcile `src/lib/permissions.ts`
+## New route `src/routes/_authenticated/settings.permissions-simulator.tsx`
 
-The existing `ModuleKey` union uses obsolete keys (`planning`, `field`, `om`, `partners`). Re-export `ModuleKey` from `modules.ts` and rewrite `ROLE_TO_MODULES` / `MODULE_PLAN_REQUIREMENTS` / `getVisibleModules` to use the canonical 9 keys plus `admin`. Update `src/components/app-sidebar.tsx` nav items to the new keys (planning→planning_budget, field→field_qaqc, om→om_scada, partners→portals).
+Layout: two-column responsive grid (stacks on mobile).
 
-## 3. Server functions — `src/lib/modules.functions.ts` (new)
+**Left panel (`bg-card border-border` card):**
+- Header: "Permission simulator" + muted explainer "Preview only — actual access is enforced by RLS and `has_role()` on every request."
+- Primary role `Select` grouped by `ROLE_GROUPS` (Administration / Department admins / Operational / External viewers), `super_admin` excluded.
+- "Compare with" toggle → shows a second `Select` with the same options plus a "Clear" button.
+- Header chips: selected role badge(s) + active tenant plan tier badge (from `listModuleAccess` response, which already returns `planTier`).
 
-All zod-validated, all `attachSupabaseAuth` + `requireSupabaseAuth`, all audit-logged.
+**Right panel — three stacked cards, all recompute on selection:**
 
-- `listModuleAccess({ companyId })` → `{ planTier, canEdit, modules: { key, enabled, source: 'override'|'baseline', allowedByPlan }[] }`. Any authenticated caller who is either super_admin OR company_admin/member of the tenant. Reads `companies.plan_tier`, joins `module_access_rules` for overrides, and for each of the 9 keys resolves final `enabled` the same way `has_module_access` does (override wins; green_hydrogen forced false unless enterprise). `canEdit` = super_admin.
-- `setModuleAccess({ companyId, module, enabled })` → super_admin only (via `has_role`). Validates `module` against `MODULE_KEYS`. Rejects with **403 JSON** `{ error: 'plan_gated' }` if `enabled=true` and plan doesn't allow it (esp. green_hydrogen on non-enterprise). Upserts into `module_access_rules` on `(company_id, module)`. Writes `audit_logs` action `module_access.changed` with metadata `{ module_key, enabled, company_id, actor }`.
-- Extend `updateTenantPlan` in `src/lib/tenants.functions.ts`: when a downgrade removes `green_hydrogen` (any → non-enterprise), upsert `module_access_rules` row `{ enabled: false }` for `green_hydrogen` and write `audit_logs` action `module_access.auto_disabled` with `{ from, to, module_key: 'green_hydrogen' }`. Done in the same handler after the plan update succeeds.
+1. **Visible modules** — for each `ModuleKey` in `MODULE_REGISTRY`, show label (correct spelling from registry: "O&M & SCADA", "Green H₂", "Field, HSE & QA/QC"):
+   - Role has it AND tenant rule enabled → check icon + label.
+   - Role has it AND tenant rule disabled → check + "off by plan" muted suffix (not hidden).
+   - Role doesn't have it → dash icon, muted label.
+   - Compare mode: two columns per module.
 
-## 4. Shared UI — `src/components/module-access-table.tsx` (new)
+2. **Visible routes** — tree derived from the sidebar `NAV_SECTIONS` map (extract to `src/lib/nav-map.ts` shared by `AppSidebar` and the simulator so they can't drift). Group by section header; render `/route/path` in mono. Filter by same rule as sidebar (module in role map AND enabled in tenant rules; `admin` items require `company_admin`/`billing_admin`/`project_admin`). Compare mode = side-by-side.
 
-Props: `{ companyId, planTier, canEdit, rows }`. Renders a table with columns: Module (label + description), Plan availability (three badges Starter/Growth/Enterprise; the ones that include the module are filled, others muted), Enabled (Switch, or read-only checkmark when `!canEdit`). Green H₂ switch is `disabled` on non-enterprise tenants with a shadcn Tooltip: *"Green H₂ requires the Enterprise plan — upgrade to enable."* Uses `useMutation` on `setModuleAccess` with optimistic update and sonner toasts; on 403 rolls back and toasts the server message. Skeleton row state; error card with Retry.
+3. **Allowed actions** — table with rows = modules the role can see, columns = View / Create / Edit / Approve / Export. Cells = check or em-dash from `ROLE_ACTION_MATRIX`. Compare mode = two stacked tables labelled by role, or a merged table with two icon columns per action (pick stacked — cleaner).
 
-## 5. Routes
+**States:**
+- No role selected → empty state prompting "Pick a role to preview its access."
+- `modulesQuery.isLoading` → skeleton rows in all three cards.
+- `modulesQuery.error` → error state with retry.
 
-- `src/routes/_authenticated/admin.tenants.$companyId.tsx`: wrap the current body in shadcn `Tabs` — **Overview** (existing plan tier + stat cards) and **Modules** (`<ModuleAccessTable canEdit />`). Invalidate `['modules', companyId]` after `updateTenantPlan` succeeds so the Modules tab reflects auto-disable.
-- `src/routes/_authenticated/settings.modules.tsx` (new): read-only `<ModuleAccessTable canEdit={false} />` for the active company (from `useActiveCompany`). Standard `head()` meta. Add sidebar nav item under Administration → "Module access" (visible to company_admin and above via existing gating).
+**Data:**
+- `listModuleAccess({ data: { companyId: activeCompanyId } })` — reuses the existing RPC; zero writes.
+- `useActiveCompany()` for the tenant.
+- No new server function.
 
-## 6. Sidebar becomes rule-driven
+**Access gate:** loader/component queries `getCurrentUserRoles`; if user is not `company_admin` / `super_admin` in the active company, render an "Access denied" card (server-side enforcement is unchanged — this is a UI-only tool with no mutations, so it can't leak anything).
 
-`src/components/app-sidebar.tsx` currently derives visibility from `getVisibleModules` (role+plan only). Add a `useQuery(['modules', activeCompanyId], listModuleAccess)` and filter module-scoped nav items by `rows.find(r => r.key === item.moduleKey)?.enabled`. Admin section unaffected. Nav shows skeletons while loading; on error falls back to the plan-based visibility so nav isn't blank.
+## Nav
 
-## 7. Verification (after build)
+Add "Permissions simulator" entry to `AppSidebar`'s Administration section (`admin` module, `Eye` icon, url `/settings/permissions-simulator`).
 
-- 9 rows render on Demo EPC Co (enterprise) — all enabled.
-- On a starter/growth tenant, Green H₂ switch is disabled + tooltip; `invoke-server-function` `setModuleAccess enabled=true` → 403 `plan_gated`.
-- Toggle a module off on the active tenant → sidebar item disappears after query invalidation.
-- Downgrade Demo EPC Co enterprise → growth → `module_access_rules` shows green_hydrogen enabled=false + one `module_access.auto_disabled` audit row.
-- `/settings/modules` as company_admin: switches rendered read-only (disabled).
-- Each toggle emits one `module_access.changed` audit row.
+## Route metadata
 
-## Technical notes
+`head()` — title "Permissions simulator · GridMind EPC", description "Preview which modules, routes, and actions a role can access on this tenant.", `robots: noindex` (admin tool). No OG image.
 
-- `module_access_rules` grants already in place from P-013; no migration required.
-- Roles read via `has_role`/`has_company_role`; never from `profiles`.
-- All strings use design tokens; badges use existing `Badge` variants.
-- Zod enum uses `MODULE_KEYS` tuple so server input matches the CHECK constraint exactly.
+## Technical details
+
+- Design tokens only: `bg-card`, `bg-muted`, `text-muted-foreground`, `border-border`, `text-foreground`. No raw hex, no arbitrary colors. Check/dash icons via `lucide-react` (`Check`, `Minus`).
+- `humanizeRole()` from `role-groups.ts` for role display labels.
+- Extract `NAV_SECTIONS` from `app-sidebar.tsx` into `src/lib/nav-map.ts` and re-import from both places — prevents drift.
+- Compile-time exhaustiveness check on `ROLE_MODULE_MAP` keys against `GrantableRole` (same pattern as `_ExhaustiveCheck` in `role-groups.ts`).
+- No `createServerFn` needed; zero writes means zero audit rows by construction.
