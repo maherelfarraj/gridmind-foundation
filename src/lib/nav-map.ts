@@ -57,6 +57,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Administration",
     items: [
+      { moduleKey: "admin", label: "Company", url: "/settings/company", icon: Settings2 },
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
       { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
