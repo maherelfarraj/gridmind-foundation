@@ -11,6 +11,7 @@ import {
   Handshake,
   MailPlus,
   PencilRuler,
+  Receipt,
   Settings2,
   Shield,
   SlidersHorizontal,
@@ -45,6 +46,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "engineering", label: "Engineering", url: "/engineering", icon: PencilRuler },
       { moduleKey: "procurement", label: "Procurement", url: "/procurement/vendors", icon: Truck },
       { moduleKey: "procurement", label: "RFQs", url: "/procurement/rfqs", icon: MailPlus },
+      { moduleKey: "procurement", label: "Purchase Orders", url: "/procurement/pos", icon: Receipt },
 
       { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
       { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
@@ -67,6 +69,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
       { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
+      { moduleKey: "admin", label: "Procurement", url: "/settings/procurement", icon: Receipt },
       {
         moduleKey: "admin",
         label: "Permissions simulator",

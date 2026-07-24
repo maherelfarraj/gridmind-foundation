@@ -394,6 +394,7 @@ export type Database = {
           name: string
           phone: string | null
           plan_tier: string
+          po_approval_threshold: number
           slug: string
           updated_at: string
         }
@@ -406,6 +407,7 @@ export type Database = {
           name: string
           phone?: string | null
           plan_tier?: string
+          po_approval_threshold?: number
           slug: string
           updated_at?: string
         }
@@ -418,6 +420,7 @@ export type Database = {
           name?: string
           phone?: string | null
           plan_tier?: string
+          po_approval_threshold?: number
           slug?: string
           updated_at?: string
         }
@@ -2738,6 +2741,146 @@ export type Database = {
           },
         ]
       }
+      purchase_orders: {
+        Row: {
+          approval_note: string | null
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          delivery_address: string | null
+          id: string
+          incoterms: string | null
+          issued_at: string | null
+          lines: Json
+          payment_terms: string | null
+          pdf_path: string | null
+          po_number: string
+          project_id: string
+          required_by_date: string | null
+          rfq_id: string | null
+          share_token: string | null
+          share_token_expires_at: string | null
+          status: Database["public"]["Enums"]["po_status"]
+          subtotal: number
+          tax_amount: number
+          tax_pct: number
+          total_amount: number
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          delivery_address?: string | null
+          id?: string
+          incoterms?: string | null
+          issued_at?: string | null
+          lines?: Json
+          payment_terms?: string | null
+          pdf_path?: string | null
+          po_number: string
+          project_id: string
+          required_by_date?: string | null
+          rfq_id?: string | null
+          share_token?: string | null
+          share_token_expires_at?: string | null
+          status?: Database["public"]["Enums"]["po_status"]
+          subtotal?: number
+          tax_amount?: number
+          tax_pct?: number
+          total_amount?: number
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          delivery_address?: string | null
+          id?: string
+          incoterms?: string | null
+          issued_at?: string | null
+          lines?: Json
+          payment_terms?: string | null
+          pdf_path?: string | null
+          po_number?: string
+          project_id?: string
+          required_by_date?: string | null
+          rfq_id?: string | null
+          share_token?: string | null
+          share_token_expires_at?: string | null
+          status?: Database["public"]["Enums"]["po_status"]
+          subtotal?: number
+          tax_amount?: number
+          tax_pct?: number
+          total_amount?: number
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "purchase_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -3635,6 +3778,15 @@ export type Database = {
         | "negotiation"
         | "won"
         | "lost"
+      po_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "issued"
+        | "partially_received"
+        | "received"
+        | "closed"
+        | "cancelled"
       project_archetype:
         | "utility_pv"
         | "standalone_bess"
@@ -3876,6 +4028,16 @@ export const Constants = {
         "negotiation",
         "won",
         "lost",
+      ],
+      po_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "issued",
+        "partially_received",
+        "received",
+        "closed",
+        "cancelled",
       ],
       project_archetype: [
         "utility_pv",
