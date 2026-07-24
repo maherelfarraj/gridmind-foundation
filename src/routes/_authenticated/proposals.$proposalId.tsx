@@ -10,7 +10,6 @@ import { LineItemsGrid } from "@/components/proposals/LineItemsGrid";
 import { PricingApprovalCard } from "@/components/proposals/PricingApprovalCard";
 import { ProposalHeaderForm } from "@/components/proposals/ProposalHeaderForm";
 import { YieldSimulationCard } from "@/components/proposals/YieldSimulationCard";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
