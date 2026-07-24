@@ -1,30 +1,45 @@
-## P-030 — Profile settings
 
-Build `/settings/profile` for every authenticated user. Mirrors the P-029 shape (server fns + zod + audit + signed URLs + semantic tokens). Roles/email are never editable here.
+# Batch 03 checkpoint — live behavior sweep
 
-### 1. Migration `0014_notification_prefs.sql`
-Create `public.notification_prefs` as specified (PK user_id → profiles.id, `email_enabled`, `in_app_enabled`, `prefs jsonb`, `updated_at`), enable RLS, add owner-only policy, GRANT SELECT/INSERT/UPDATE/DELETE to `authenticated` and ALL to `service_role`, and attach the shared `update_updated_at_column` trigger. Verify columns + policies after apply.
+Schema sweep already passed (RLS on `companies`, `company_branding`, `notification_prefs`; `companies` has `legal_name`, `contact_email`, `phone`, `address`). Audit log currently shows only `tenant.created` / `tenant.plan_changed` — the rest of the sweep will populate it.
 
-### 2. `src/lib/profile.functions.ts` (new)
-All `createServerFn` + `attachSupabaseAuth` + `requireSupabaseAuth` + zod:
+## What I'll do (build mode)
 
-- `getProfileSettings` — returns `{ profile: {id, full_name, email, locale, avatar_url, company_id}, avatarSignedUrl, notificationPrefs }`. Signs `avatar_url` from `photos` bucket (300s TTL). Creates a default `notification_prefs` row lazily if missing (or returns defaults without insert).
-- `updateProfile` — zod: `full_name` 2–80, `locale` enum `['en','es','de','fr','pt']`. Updates `profiles` for `auth.uid()`. Audits `profile.updated` with changed-field diff.
-- `getAvatarUploadTarget` — returns `{ bucket: 'photos', path: '{company_id}/avatars/{user_id}' }` for client-side upload via signed upload URL (createSignedUploadUrl) — same pattern as logo.
-- `setProfileAvatar` — validates path prefix starts with the caller's company UUID and ends `/avatars/{user_id}`, updates `profiles.avatar_url`. Audits `profile.updated` with `{ avatar: true }`.
-- `removeProfileAvatar` — deletes storage object, nulls `avatar_url`. Audits.
-- `updateNotificationPrefs` — zod: `email_enabled`, `in_app_enabled` booleans; `prefs` object with 5 booleans (`approvals`, `mentions`, `invites`, `report_delivery`, `alarm_escalation`). Upsert to `notification_prefs` for `auth.uid()`. Audits `notification_prefs.updated`.
+Drive the app headlessly as demo-admin with Playwright against `http://localhost:8080`, restoring the managed Supabase session from the sandbox env. Capture a screenshot at each step for evidence and print the final URL + any console errors per step.
 
-### 3. `src/routes/_authenticated/settings.profile.tsx` (new)
-- Load with `useQuery(getProfileSettings)`; skeleton while loading; error card + retry on failure.
-- Three cards, react-hook-form + zod resolver, sonner toasts:
-  - **Profile**: `full_name` input, circular avatar preview with Upload/Remove buttons (client-side ≤ 2 MB image type check, upload via signed upload URL then call `setProfileAvatar`), email shown disabled/read-only. Save button → `updateProfile`.
-  - **Locale**: Select with 5 native-label options; part of the same profile form or separate mini-form — save via `updateProfile`.
-  - **Notifications**: two master Switches (email, in-app) + 5 per-event Checkboxes bound to `prefs`. Helper note under email toggle referencing `/email/unsubscribe`. Save via `updateNotificationPrefs`.
-- Semantic tokens only (`bg-card`, `border-border`, `text-foreground`, etc). No role or email fields anywhere.
+1. **Auth**
+   - Sign out from `/dashboard`, confirm redirect to `/auth`.
+   - Visit `/settings/users` while logged out → expect redirect to `/auth`.
+   - Sign back in as demo-admin.
+2. **/settings/users**
+   - Members tab loads; open "Invite member" → send a throwaway invite (`sweep+1@example.test`, role `engineer`).
+   - Open "Bulk invite" → paste 2 valid + 1 invalid row, confirm preview validation, submit the valid rows.
+   - Switch to Invitations tab; confirm new rows appear as `pending`; Resend + Revoke one row.
+   - Last-admin guard: open Manage roles on the sole `company_admin`, attempt to revoke `company_admin` → expect refusal toast, no DB change.
+3. **/settings/departments**
+   - Confirm 9 cards render. Assign demo-admin as admin on `engineering`, then unassign — expect two audit rows.
+4. **/admin/tenants**
+   - Confirm Demo EPC Co + Test Co B visible. Open Demo EPC Co, change plan tier (Starter↔Growth), revert.
+5. **/settings/modules** — confirm read-only (no toggles enabled for company_admin view).
+6. **/settings/permissions-simulator** — pick two roles, confirm compare renders and no network mutations fire (watch requests).
+7. **/settings/company** — edit legal name + footer text, save; upload a tiny PNG logo, confirm preview via signed URL; revert.
+8. **/settings/profile** — change locale to `es` then back to `en`; upload avatar; confirm save toasts.
 
-### 4. `src/lib/nav-map.ts`
-Add "Profile" entry to the Account/Settings section (visible to all authenticated roles) pointing to `/settings/profile`.
+## Verification after the sweep
 
-### 5. Verification (after build)
-Run as demo-admin via Playwright: save name+locale, upload avatar (confirm path `{company_uuid}/avatars/{user_uuid}`), toggle notifications, then query `profiles`, `notification_prefs`, and `audit_logs` to confirm rows + `profile.updated` / `notification_prefs.updated` entries; confirm no email/role fields are editable.
+Re-run:
+
+```sql
+select action, count(*) from audit_logs group by action order by 2 desc;
+```
+
+Expect new rows for: `invite.created`, `invite.bulk_sent`, `invite.resent`, `invite.revoked`, `role.granted`, `role.revoked`, `tenant.plan_changed`, `branding.updated`, `company.updated`, `profile.updated`, `notification_prefs.updated` (where triggered).
+
+Also list latest 20 rows so you can see the trail.
+
+## Out of scope
+
+- GitHub repo migration listing (I have no repo visibility from here) — confirm on your side that `supabase/migrations/` contains 0001–0014.
+- No schema changes, no seed changes, no code edits. This is verification only. If a step reveals a real bug, I'll stop and report before touching code.
+
+Approve to switch to build mode and run the sweep.
