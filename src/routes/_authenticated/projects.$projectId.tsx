@@ -109,7 +109,7 @@ function ProjectDetailLayout() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link
             to="/projects"
-            search={{ q: "", phase: undefined, archetype: undefined, department: undefined, page: 1 }}
+            search={PROJECTS_LINK_SEARCH}
             className="inline-flex items-center gap-1 hover:text-foreground"
           >
             <ArrowLeft size={14} aria-hidden />
@@ -226,7 +226,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
           <Button asChild variant="outline">
             <Link
               to="/projects"
-              search={{ q: "", phase: undefined, archetype: undefined, department: undefined, page: 1 }}
+              search={PROJECTS_LINK_SEARCH}
             >
               <ArrowLeft size={14} aria-hidden />
               Back to projects
@@ -251,7 +251,7 @@ function DetailNotFound() {
         <Button asChild variant="outline">
           <Link
             to="/projects"
-            search={{ q: "", phase: undefined, archetype: undefined, department: undefined, page: 1 }}
+            search={PROJECTS_LINK_SEARCH}
           >
             <ArrowLeft size={14} aria-hidden />
             Back to projects
