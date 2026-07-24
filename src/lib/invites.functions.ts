@@ -38,14 +38,24 @@ export const listInvites = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
       .from("invites")
-      .select(
-        "id, email, role, status, expires_at, created_at, invited_by",
-      )
+      .select("id, email, role, status, expires_at, created_at, invited_by")
       .eq("company_id", data.companyId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .returns<InviteListRow[]>();
     if (error) throw error;
     return rows ?? [];
   });
+
+export type InviteListRow = {
+  id: string;
+  email: string;
+  role: (typeof Constants.public.Enums.app_role)[number];
+  status: (typeof Constants.public.Enums.invite_status)[number];
+  expires_at: string;
+  created_at: string;
+  invited_by: string;
+};
+
 
 export const createInvite = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
