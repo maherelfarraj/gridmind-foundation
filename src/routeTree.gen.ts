@@ -20,6 +20,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
@@ -85,6 +86,12 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
+const AuthenticatedProjectsIndexRoute =
+  AuthenticatedProjectsIndexRouteImport.update({
+    id: '/projects/',
+    path: '/projects/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
@@ -171,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
 }
@@ -192,6 +200,7 @@ export interface FileRoutesByTo {
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
 }
@@ -217,6 +226,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
 }
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/settings/permissions-simulator'
     | '/settings/profile'
     | '/settings/users'
+    | '/projects/'
     | '/admin/tenants/$companyId'
     | '/admin/tenants/'
   fileRoutesByTo: FileRoutesByTo
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/settings/permissions-simulator'
     | '/settings/profile'
     | '/settings/users'
+    | '/projects'
     | '/admin/tenants/$companyId'
     | '/admin/tenants'
   id:
@@ -286,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/permissions-simulator'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
+    | '/_authenticated/projects/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/admin/tenants/'
   fileRoutesById: FileRoutesById
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
+    }
+    '/_authenticated/projects/': {
+      id: '/_authenticated/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/users': {
       id: '/_authenticated/settings/users'
@@ -515,6 +535,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
+  AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -529,6 +550,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsPermissionsSimulatorRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
+  AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
