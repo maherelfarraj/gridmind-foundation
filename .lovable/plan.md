@@ -1,58 +1,56 @@
-# P-049 — E-signature flow
+## P-050 — Win flow: opportunity → project_intake + kick-off pack
 
-Schema already covers this (migration `20260724133610`): `esign_provider`, `esign_envelope_id`, `esign_status`, `esign_history`, `esign_sent_at`, `esign_completed_at`, `signed_copy_path` exist on `proposals`, plus a `status` check that includes `'sent'` and `'accepted'`. No new migration needed.
+### Server: `src/lib/opportunity.functions.ts`
 
-## Provider adapter
+Add `convertOpportunityToIntake` (createServerFn POST, requireSupabaseAuth, zod):
+- Input: `opportunityId`, `name`, `archetype` (7 canonical enum), `capacity_mw`, `offtaker`, `target_cod`, `owner_id` (project owner profile).
+- Role guard: sales / company_admin / super_admin (via `getCurrentUserRoles` pattern already in file); reject otherwise.
+- Load opportunity via RLS-scoped client. If `stage='lost'` → throw `Cannot convert a lost opportunity`. If `converted_intake_id` already set → return `{ intake_id, alreadyConverted: true }` (idempotent, no writes).
+- Transactional sequence (single RPC via `supabase.rpc` OR sequential with rollback-on-error using `has_role`-checked writes; use sequential — no cross-table transaction available from PostgREST, wrap in try/catch and best-effort compensation on intake insert failure since opportunity update happens last):
+  1. INSERT `project_intake` (company_id, name, archetype, capacity_mw, offtaker, target_cod, source `'opportunity'` — enum has no `crm_win`, closest legal value; source_opportunity_id, status `'new'`, created_by=userId, notes=`Converted from opportunity <name>`).
+  2. UPDATE `opportunities` SET stage='won', won_at=now(), probability=100, converted_intake_id=<new>.
+  3. `writeAuditLog('opportunity.won', 'opportunities', id, { opportunity_id, intake_id })`.
+  4. `writeAuditLog('project_intake.created', 'project_intake', intake_id, { opportunity_id, source:'crm_win' })`.
+- Return `{ intake_id, alreadyConverted: false }`.
 
-`src/lib/esign/provider.ts`
-- Types: `EsignEvent = 'sent' | 'viewed' | 'completed' | 'declined' | 'voided'`; `EsignProvider` interface with `send`, `refresh`, `void`, `fetchSignedPdf(envelopeId)`.
-- `getEsignProvider()` reads `process.env.ESIGN_PROVIDER` (default `'manual'`) and `ESIGN_API_KEY`; returns the adapter or `null` when misconfigured.
-- **Manual adapter** (dev-mode): `send` generates envelope id `manual_<uuid>`; `refresh` reads current `esign_status` and returns it unchanged (transitions are driven by the "simulate" server fn below, not by refresh); `void` returns `voided`; `fetchSignedPdf` re-uses the P-047 generator output stored earlier and returns those bytes as the "signed copy".
-- Real providers plug in later without schema change.
+Also add `getWinConversionPrefill({ opportunityId })` (GET) returning `{ opportunity: {...}, ownersList: profiles-in-company (id, email, full_name) }` for the dialog. Owners fetched from `profiles` filtered by `company_id`.
 
-## Server functions (append to `src/lib/proposal.functions.ts`, all `requireSupabaseAuth` + zod)
+### Server: `src/lib/exports/kickoff-pdf.ts` (new)
 
-- `sendProposalForSignature({ proposalId, signerName, signerEmail })`
-  - Guards: `proposals.status === 'approved'`; caller is sales / company_admin; provider configured. Reuses `getProposalExportData` + `buildProposalPdf` (P-047) for PDF bytes.
-  - Calls `provider.send`, then updates `esign_provider`, `esign_envelope_id`, `esign_status='sent'`, `esign_sent_at=now()`, `status='sent'`, appends `{at, event:'sent', actor}` to `esign_history`.
-  - `writeAuditLog('proposal.esign_sent','proposal', id, { opportunity_id, envelope_id })`.
-- `refreshProposalEsign({ proposalId })` — polls provider, appends any new events, applies terminal transitions via shared helper `applyEsignEvent` (see below).
-- `voidProposalEsign({ proposalId, reason })` — company_admin only; calls `provider.void`, sets `esign_status='voided'`, history entry, audit `proposal.esign_voided`.
-- `simulateEsignEvent({ proposalId, event })` — dev-only, only when `ESIGN_PROVIDER === 'manual'`; sales+; drives viewed → completed / declined transitions through `applyEsignEvent`.
-- `getSignedCopyDownloadUrl({ proposalId })` — runs `assertExportAllowed` (42P01 → proceed), returns a signed URL from the `documents` bucket for `signed_copy_path`.
+`buildKickoffPack({ opportunityId, intakeId })` server fn:
+- Gate through `assertExportAllowed(company_id, 'kickoff_pack')`; 42P01 → proceed.
+- Gather: opportunity (full, incl. margin/estimated_value), contacts (`listContacts`), accepted proposal (latest proposals row for opportunity where status in ('accepted','sent') ordered by version desc, else latest), yield_result (P50/P90/monthly), tender_events history.
+- Build PDF with jspdf + autoTable — reuse branding fetch pattern from `src/lib/exports/proposal-pdf.ts` (`company_branding` + logo signed URL). Sections: cover, opportunity summary + **margin snapshot (internal — margin included, unlike client PDF)**, contacts table, accepted proposal pricing (version, subtotal, contingency_pct, total, currency), yield P50/P90 tiles + monthly table, tender events history table, next-steps checklist (`[ ] Assign project_admin`, `[ ] Run project wizard (Batch 04)`, `[ ] Schedule kickoff meeting`). Watermark footer: "Internal — do not distribute".
+- Upload via service-role Supabase client to `documents` bucket at `<company_id>/intake/<intake_id>/kickoff_pack.pdf` (upsert).
+- Append kickoff path to opportunity notes (append-only note line "Kickoff pack: <path>"); `writeAuditLog('opportunity.kickoff_pack_generated', 'opportunities', opp.id, { intake_id, path })`.
+- Return `{ path }`. Called from the client immediately after `convertOpportunityToIntake` resolves.
 
-### `applyEsignEvent` helper (shared by refresh / webhook / simulate)
-- Appends `{at, event, actor}` to `esign_history` idempotently (skip if last entry matches event within a small window / by provider event id).
-- On `completed`: `fetchSignedPdf` → upload to `documents` bucket at `<company_id>/proposals/<proposal_id>/signed_v<version>.pdf` via service-role client (privileged storage write), set `signed_copy_path`, `esign_completed_at`, `status='accepted'`, audit `proposal.esign_completed`.
-- On `declined` / `voided`: set `esign_status` accordingly, audit `proposal.esign_declined` / `proposal.esign_voided`. No status change back to `approved` (proposal remains locked; new version required).
+### Client: `src/components/crm/detail/WinConversionDialog.tsx` (new)
 
-## Webhook route
+- Trigger: "Mark as won" button on `OpportunityHeaderCard` (or detail header). Hidden when `stage='won'` (already-won branch shows an inline banner instead).
+- Dialog form (react-hook-form + zod): name (default opp.name), archetype (Select, 7 canonical values, default opp.archetype), capacity_mw (default), offtaker (default account_name), target_cod (date), owner (Select loaded from `getWinConversionPrefill`).
+- Submit: call `convertOpportunityToIntake` → on success, call `buildKickoffPack` (fire-and-forget with toast progress; failures show toast but don't roll back the win). Invalidate queries: `["crm","opportunity",id]`, `["crm","pipeline"]`, `["crm","kpis"]`, `["crm","activity",id]`. Sonner success toast with `<Link to="...">View intake</Link>` (route: intake list not yet in Batch 06 — link to opportunity banner href `/projects` or the intake id; use anchor showing intake id — clarify in Technical section).
 
-`src/routes/api/webhooks/esign.ts` — `createFileRoute('/api/webhooks/esign')` with `POST` handler.
-- Parses provider payload (zod), maps to `EsignEvent`, resolves proposal by `esign_envelope_id`.
-- Minimal verification now: shared-secret header check against `ESIGN_WEBHOOK_SECRET` (timing-safe compare).
-- `TODO(B13/P-126): move under /api/public/, wrap in guardPublicHook + provider signature verification.`
-- Loads `supabaseAdmin` inside the handler only (no top-level import); calls `applyEsignEvent`.
+### Client: won-state banner
 
-## UI
+- In `OpportunityHeaderCard` (or detail route body), when `opp.stage === 'won'` and `opp.converted_intake_id`: render banner "Won — converted to project intake #<shortId>" with a "Download kick-off pack" button that calls a new `getKickoffPackDownloadUrl({ intakeId })` server fn (signed URL from `documents` bucket, RLS-scoped). Re-clicking "Mark as won" is disabled; button hidden.
 
-New card `src/components/proposals/EsignCard.tsx` mounted in the proposal builder header / right rail.
-- Empty state when provider missing: "E-signature provider not configured" + hide Send.
-- Send form (react-hook-form + zod): signer name + email; disabled unless `status === 'approved'`; tooltip explains dependency on CFO approval (P-046).
-- Status badge (uses design tokens) + timeline from `esign_history` (icon per event, actor, timestamp via date-fns).
-- Buttons: **Send for signature**, **Refresh status**, **Simulate…** dropdown (viewed / completed / declined) visible only for manual provider with "dev mode" label, **Void** (company_admin), **Download signed copy** (when `signed_copy_path`).
-- All async actions: spinner + sonner success/error toasts.
+### Idempotency & KPIs
 
-Wire the card into `src/routes/_authenticated/proposals.$proposalId.tsx`. Invalidate proposal query on every mutation.
+- `convertOpportunityToIntake` short-circuits when `converted_intake_id` already exists → guarantees single intake row.
+- CRM KPI strip already queries pipeline; won stage move causes stage='won' rollup on next load. No KPI code change needed.
 
-## Secrets
+### Verification
 
-Request via `add_secret` after user confirms (not in same turn as explanation): `ESIGN_PROVIDER` (default `manual`, so optional), `ESIGN_API_KEY` (only if real provider), `ESIGN_WEBHOOK_SECRET` (for the webhook). For dev-mode manual flow, none are strictly required — the card renders and works with defaults.
+1. Typecheck.
+2. Mark test opportunity won → verify project_intake row, opportunity fields, audit rows via `supabase--read_query`.
+3. Second click → dialog not shown, banner + download visible; no duplicate intake.
+4. Lost opportunity → server rejects with clear error.
+5. Storage: object at `<company>/intake/<id>/kickoff_pack.pdf`.
 
-## Verification
+### Technical notes
 
-- Send disabled until `status='approved'`; enabling after CFO approval triggers `proposal.esign_sent` audit and `status → sent`.
-- Simulate viewed → completed uploads `signed_v<version>.pdf` to `documents/<company>/proposals/<id>/`, sets `status='accepted'`, audits `proposal.esign_completed`, Download link works and passes through `assertExportAllowed`.
-- Void works only for company_admin.
-- Webhook route present with B13 TODO; service-role import only inside handler bodies.
-- `bun run tsgo` clean.
+- `project_intake_source` enum has no `crm_win` value (only `manual|opportunity|api|other`). Use `'opportunity'` and record `source:'crm_win'` in the audit metadata for provenance; no schema change.
+- No true cross-table transaction is available from PostgREST. Order operations so intake insert (the only creation) happens first; if the opportunity update fails, best-effort delete the intake row and surface the error.
+- Kick-off pack generation runs post-conversion so a PDF failure never blocks the win. Failure surfaces a retry toast; a "Regenerate kick-off pack" button on the banner reuses `buildKickoffPack`.
+- Server functions live in `src/lib/opportunity.functions.ts` (no new server-only sibling helpers — new PDF builder is a `.server.ts`-safe pure module imported into the fn).
