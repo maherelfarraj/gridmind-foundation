@@ -168,6 +168,11 @@ function ProposalBuilderPage() {
         canWrite={canWrite}
         isFinanceAdmin={isFinanceAdmin}
       />
+      <EsignCard
+        proposal={proposal}
+        canWrite={canWrite}
+        isCompanyAdmin={isCompanyAdmin}
+      />
     </div>
   );
 }
