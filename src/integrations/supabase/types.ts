@@ -264,6 +264,126 @@ export type Database = {
           },
         ]
       }
+      bom_lines: {
+        Row: {
+          buffer_pct: number
+          category: string
+          company_id: string
+          created_at: string
+          id: string
+          item: string
+          notes: string | null
+          qty: number
+          qty_buffered: number
+          snapshot_id: string
+          spec: string | null
+          unit: string
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          buffer_pct?: number
+          category: string
+          company_id: string
+          created_at?: string
+          id?: string
+          item: string
+          notes?: string | null
+          qty?: number
+          qty_buffered?: number
+          snapshot_id: string
+          spec?: string | null
+          unit?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          buffer_pct?: number
+          category?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          item?: string
+          notes?: string | null
+          qty?: number
+          qty_buffered?: number
+          snapshot_id?: string
+          spec?: string | null
+          unit?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bom_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bom_lines_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "bom_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bom_snapshots: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          params: Json
+          project_id: string
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          params?: Json
+          project_id: string
+          status?: string
+          totals?: Json
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          params?: Json
+          project_id?: string
+          status?: string
+          totals?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bom_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bom_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
