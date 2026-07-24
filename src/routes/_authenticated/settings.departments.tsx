@@ -128,7 +128,7 @@ function DepartmentsPage() {
     }) => {
       const payload = {
         data: {
-          companyId: activeCompanyId,
+          companyId: activeCompanyId!,
           targetUserId: vars.targetUserId,
           role: vars.role,
         },
