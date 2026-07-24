@@ -47,6 +47,7 @@ import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './rout
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
+import { Route as AuthenticatedProjectsProjectIdEngineeringYieldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.yield'
 import { Route as AuthenticatedProjectsProjectIdEngineeringUploadsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.uploads'
 import { Route as AuthenticatedProjectsProjectIdEngineeringSldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
@@ -267,6 +268,12 @@ const AuthenticatedProjectsProjectIdEngineeringIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringYieldRoute =
+  AuthenticatedProjectsProjectIdEngineeringYieldRouteImport.update({
+    id: '/yield',
+    path: '/yield',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringUploadsRoute =
   AuthenticatedProjectsProjectIdEngineeringUploadsRouteImport.update({
     id: '/uploads',
@@ -339,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
+  '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
+  '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
@@ -424,6 +433,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/_authenticated/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
+  '/_authenticated/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/_authenticated/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
+    | '/projects/$projectId/engineering/yield'
     | '/projects/$projectId/engineering/'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/drawings/'
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
+    | '/projects/$projectId/engineering/yield'
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/drawings'
@@ -553,6 +565,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/sld'
     | '/_authenticated/projects/$projectId/engineering/uploads'
+    | '/_authenticated/projects/$projectId/engineering/yield'
     | '/_authenticated/projects/$projectId/engineering/'
     | '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
     | '/_authenticated/projects/$projectId/engineering/drawings/'
@@ -835,6 +848,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/yield': {
+      id: '/_authenticated/projects/$projectId/engineering/yield'
+      path: '/yield'
+      fullPath: '/projects/$projectId/engineering/yield'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringYieldRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/uploads': {
       id: '/_authenticated/projects/$projectId/engineering/uploads'
       path: '/uploads'
@@ -942,6 +962,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringSldRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   AuthenticatedProjectsProjectIdEngineeringUploadsRoute: typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
+  AuthenticatedProjectsProjectIdEngineeringYieldRoute: typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   AuthenticatedProjectsProjectIdEngineeringIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
 }
 
@@ -953,6 +974,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringSldRoute,
     AuthenticatedProjectsProjectIdEngineeringUploadsRoute:
       AuthenticatedProjectsProjectIdEngineeringUploadsRoute,
+    AuthenticatedProjectsProjectIdEngineeringYieldRoute:
+      AuthenticatedProjectsProjectIdEngineeringYieldRoute,
     AuthenticatedProjectsProjectIdEngineeringIndexRoute:
       AuthenticatedProjectsProjectIdEngineeringIndexRoute,
   }

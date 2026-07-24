@@ -702,15 +702,31 @@ export const runYieldStub = createServerFn({ method: "POST" })
             {
               company_id: (proposal as any).company_id,
               project_id: projectId,
+              scenario_name: "Proposal",
               p50_mwh: yieldResult.p50_kwh / 1000,
               p90_mwh: yieldResult.p90_kwh / 1000,
               losses_pct: Math.round(losses * 1000) / 10,
               degradation_pct: config.degradation_y1_pct,
               availability_pct:
                 Math.round((1 - availabilityLoss) * 1000) / 10,
+              params: {
+                source: "proposal_stub",
+                proposal_id: data.proposalId,
+              } as any,
+              results: {
+                p50_mwh: yieldResult.p50_kwh / 1000,
+                p90_mwh: yieldResult.p90_kwh / 1000,
+                specific_yield_kwh_kwp:
+                  yieldResult.specific_yield_kwh_kwp,
+                pr_pct: yieldResult.performance_ratio * 100,
+                losses_pct: Math.round(losses * 1000) / 10,
+                engine: yieldResult.engine,
+                imported: false,
+              } as any,
             },
-            { onConflict: "project_id" },
+            { onConflict: "project_id,scenario_name" },
           );
+
         if (pyErr && !GRACEFUL_PG_CODES.has((pyErr as any).code)) {
           console.warn(
             "[runYieldStub] project_yield_config upsert failed:",

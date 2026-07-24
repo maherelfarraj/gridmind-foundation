@@ -1624,8 +1624,10 @@ export type Database = {
           id: string
           meteo_source: string | null
           near_shading_pct: number | null
+          params: Json
           project_id: string
           pvsyst_version: string | null
+          scenario_name: string
           sim_report_url: string | null
           updated_at: string
         }
@@ -1637,8 +1639,10 @@ export type Database = {
           id?: string
           meteo_source?: string | null
           near_shading_pct?: number | null
+          params?: Json
           project_id: string
           pvsyst_version?: string | null
+          scenario_name?: string
           sim_report_url?: string | null
           updated_at?: string
         }
@@ -1650,8 +1654,10 @@ export type Database = {
           id?: string
           meteo_source?: string | null
           near_shading_pct?: number | null
+          params?: Json
           project_id?: string
           pvsyst_version?: string | null
+          scenario_name?: string
           sim_report_url?: string | null
           updated_at?: string
         }
@@ -1666,7 +1672,7 @@ export type Database = {
           {
             foreignKeyName: "project_pvsyst_config_project_id_fkey"
             columns: ["project_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -1914,7 +1920,10 @@ export type Database = {
           losses_pct: number | null
           p50_mwh: number | null
           p90_mwh: number | null
+          params: Json
           project_id: string
+          results: Json
+          scenario_name: string
           updated_at: string
         }
         Insert: {
@@ -1927,7 +1936,10 @@ export type Database = {
           losses_pct?: number | null
           p50_mwh?: number | null
           p90_mwh?: number | null
+          params?: Json
           project_id: string
+          results?: Json
+          scenario_name?: string
           updated_at?: string
         }
         Update: {
@@ -1940,7 +1952,10 @@ export type Database = {
           losses_pct?: number | null
           p50_mwh?: number | null
           p90_mwh?: number | null
+          params?: Json
           project_id?: string
+          results?: Json
+          scenario_name?: string
           updated_at?: string
         }
         Relationships: [
@@ -1954,7 +1969,7 @@ export type Database = {
           {
             foreignKeyName: "project_yield_config_project_id_fkey"
             columns: ["project_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
