@@ -6,7 +6,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { AlertTriangle, Copy, Loader2, RotateCcw, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Copy,
+  Download,
+  Loader2,
+  RotateCcw,
+  Settings2,
+  Trash2,
+} from "lucide-react";
 
 import {
   createInvite,
@@ -15,11 +23,27 @@ import {
   resendInvite,
   revokeInvite,
 } from "@/lib/invites.functions";
+import {
+  grantRole,
+  listCompanyMembers,
+  revokeRole,
+  type CompanyMemberRow,
+  type CompanyMembersResult,
+} from "@/lib/roles.functions";
+import {
+  GRANTABLE_ROLES,
+  ROLE_GROUPS,
+  humanizeRole,
+  type GrantableRole,
+} from "@/lib/role-groups";
 import { Constants } from "@/integrations/supabase/types";
 import { useActiveCompany } from "@/components/company-switcher";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +69,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Table,
   TableBody,
   TableCell,
@@ -60,13 +91,13 @@ export const Route = createFileRoute("/_authenticated/settings/users")({
       {
         name: "description",
         content:
-          "Manage members and pending invitations for your GridMind EPC workspace.",
+          "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
       },
       { property: "og:title", content: "Users | GridMind EPC" },
       {
         property: "og:description",
         content:
-          "Manage members and pending invitations for your GridMind EPC workspace.",
+          "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -76,9 +107,7 @@ export const Route = createFileRoute("/_authenticated/settings/users")({
   component: UsersPage,
 });
 
-// super_admin is only grantable by another super_admin at the DB level;
-// hide it from the UI dropdown per spec.
-const ROLE_OPTIONS = Constants.public.Enums.app_role.filter(
+const INVITE_ROLE_OPTIONS = Constants.public.Enums.app_role.filter(
   (r) => r !== "super_admin",
 );
 
@@ -99,21 +128,65 @@ function statusVariant(status: string) {
   }
 }
 
+function initialsOf(m: CompanyMemberRow): string {
+  const src = m.fullName?.trim() || m.email?.trim() || "?";
+  const parts = src.split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+}
+
+function toCsv(rows: CompanyMemberRow[]): string {
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const lines = [["Name", "Email", "Roles"].map(escape).join(",")];
+  for (const r of rows) {
+    lines.push(
+      [r.fullName ?? "", r.email ?? "", r.roles.join("|")]
+        .map(escape)
+        .join(","),
+    );
+  }
+  return lines.join("\n");
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function UsersPage() {
   const { activeCompanyId } = useActiveCompany();
   const queryClient = useQueryClient();
   const listFn = useServerFn(listInvites);
   const snapshotFn = useServerFn(getCompanyAdminSnapshot);
+  const membersFn = useServerFn(listCompanyMembers);
   const createFn = useServerFn(createInvite);
   const revokeFn = useServerFn(revokeInvite);
   const resendFn = useServerFn(resendInvite);
+  const grantFn = useServerFn(grantRole);
+  const revokeRoleFn = useServerFn(revokeRole);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [issuedLink, setIssuedLink] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [manageUserId, setManageUserId] = useState<string | null>(null);
+  const [pendingRole, setPendingRole] = useState<GrantableRole | null>(null);
+
+  const membersKey = ["company-members", activeCompanyId] as const;
 
   const snapshotQuery = useQuery({
     queryKey: ["company-admin-snapshot", activeCompanyId],
     queryFn: () => snapshotFn({ data: { companyId: activeCompanyId } }),
+  });
+
+  const membersQuery = useQuery({
+    queryKey: membersKey,
+    queryFn: () => membersFn({ data: { companyId: activeCompanyId } }),
   });
 
   const invitesQuery = useQuery({
@@ -126,6 +199,7 @@ function UsersPage() {
     queryClient.invalidateQueries({
       queryKey: ["company-admin-snapshot", activeCompanyId],
     });
+    queryClient.invalidateQueries({ queryKey: membersKey });
   };
 
   const createMut = useMutation({
@@ -169,22 +243,92 @@ function UsersPage() {
     },
   });
 
+  const applyRoleLocally = (
+    targetUserId: string,
+    role: GrantableRole,
+    action: "grant" | "revoke",
+  ) => {
+    const prev = queryClient.getQueryData<CompanyMembersResult>(membersKey);
+    if (!prev) return prev;
+    const next: CompanyMembersResult = {
+      ...prev,
+      members: prev.members.map((m) => {
+        if (m.userId !== targetUserId) return m;
+        const set = new Set(m.roles);
+        if (action === "grant") set.add(role);
+        else set.delete(role);
+        return { ...m, roles: Array.from(set) };
+      }),
+    };
+    queryClient.setQueryData(membersKey, next);
+    return prev;
+  };
+
+  const roleMut = useMutation({
+    mutationFn: async (vars: {
+      targetUserId: string;
+      role: GrantableRole;
+      action: "grant" | "revoke";
+    }) => {
+      const payload = {
+        data: {
+          companyId: activeCompanyId,
+          targetUserId: vars.targetUserId,
+          role: vars.role,
+        },
+      };
+      if (vars.action === "grant") await grantFn(payload);
+      else await revokeRoleFn(payload);
+      return vars;
+    },
+    onMutate: (vars) => {
+      setPendingRole(vars.role);
+      const snapshot = applyRoleLocally(vars.targetUserId, vars.role, vars.action);
+      return { snapshot };
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.snapshot) queryClient.setQueryData(membersKey, ctx.snapshot);
+      toast.error(err instanceof Error ? err.message : "Role update failed");
+    },
+    onSuccess: (vars) => {
+      toast.success(
+        vars.action === "grant"
+          ? `Granted ${humanizeRole(vars.role)}`
+          : `Revoked ${humanizeRole(vars.role)}`,
+      );
+      queryClient.invalidateQueries({ queryKey: membersKey });
+      queryClient.invalidateQueries({
+        queryKey: ["company-admin-snapshot", activeCompanyId],
+      });
+    },
+    onSettled: () => setPendingRole(null),
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", role: "engineer" },
   });
 
-  const isAdmin = snapshotQuery.data?.isAdmin ?? false;
-  const adminCount = snapshotQuery.data?.adminCount ?? 0;
-  const members = snapshotQuery.data?.members ?? [];
+  const isAdmin =
+    membersQuery.data?.isAdmin ?? snapshotQuery.data?.isAdmin ?? false;
+  const adminCount =
+    membersQuery.data?.adminCount ?? snapshotQuery.data?.adminCount ?? 0;
+  const members = membersQuery.data?.members ?? [];
   const invites = invitesQuery.data ?? [];
 
-  const sortedMembers = useMemo(
-    () =>
-      [...members].sort((a, b) =>
-        (a.fullName ?? a.email ?? "").localeCompare(b.fullName ?? b.email ?? ""),
-      ),
-    [members],
+  const filteredMembers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(
+      (m) =>
+        (m.fullName ?? "").toLowerCase().includes(q) ||
+        (m.email ?? "").toLowerCase().includes(q),
+    );
+  }, [members, search]);
+
+  const managedMember = useMemo(
+    () => members.find((m) => m.userId === manageUserId) ?? null,
+    [members, manageUserId],
   );
 
   const onSubmit = (values: FormValues) => createMut.mutate(values);
@@ -205,6 +349,14 @@ function UsersPage() {
     form.reset();
   };
 
+  const onExport = () => {
+    if (members.length === 0) {
+      toast.error("No members to export");
+      return;
+    }
+    downloadCsv("members.csv", toCsv(members));
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -213,7 +365,7 @@ function UsersPage() {
             Users
           </h1>
           <p className="text-sm text-muted-foreground">
-            Workspace members and pending invitations.
+            Workspace members, roles, and pending invitations.
           </p>
         </div>
         {isAdmin && (
@@ -299,9 +451,9 @@ function UsersPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {ROLE_OPTIONS.map((role) => (
+                                {INVITE_ROLE_OPTIONS.map((role) => (
                                   <SelectItem key={role} value={role}>
-                                    {role.replace(/_/g, " ")}
+                                    {humanizeRole(role)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -327,7 +479,7 @@ function UsersPage() {
         )}
       </div>
 
-      {snapshotQuery.data && adminCount === 1 && (
+      {membersQuery.data && adminCount === 1 && (
         <div className="flex items-start gap-3 rounded-lg border border-accent bg-accent/40 p-4 text-accent-foreground">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <div className="text-sm">
@@ -340,44 +492,87 @@ function UsersPage() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Members
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Members
+          </h2>
+          <div className="flex items-center gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name or email"
+              className="h-9 w-64"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onExport}
+              disabled={membersQuery.isLoading || members.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
+        </div>
         <div className="rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12" />
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {snapshotQuery.isLoading && (
+              {membersQuery.isLoading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={`sk-${i}`}>
+                    <TableCell>
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                ))}
+              {membersQuery.isError && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    Loading members…
-                  </TableCell>
-                </TableRow>
-              )}
-              {snapshotQuery.isError && (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-destructive">
-                    {snapshotQuery.error instanceof Error
-                      ? snapshotQuery.error.message
+                  <TableCell colSpan={5} className="text-center text-destructive">
+                    {membersQuery.error instanceof Error
+                      ? membersQuery.error.message
                       : "Failed to load members"}
                   </TableCell>
                 </TableRow>
               )}
-              {snapshotQuery.data && sortedMembers.length === 0 && (
+              {membersQuery.data && filteredMembers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    No members yet.
+                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                    {members.length === 0
+                      ? "No members yet."
+                      : "No members match your search."}
                   </TableCell>
                 </TableRow>
               )}
-              {sortedMembers.map((m) => (
+              {filteredMembers.map((m) => (
                 <TableRow key={m.userId}>
+                  <TableCell>
+                    <Avatar className="h-8 w-8">
+                      {m.avatarUrl ? (
+                        <AvatarImage src={m.avatarUrl} alt="" />
+                      ) : null}
+                      <AvatarFallback>{initialsOf(m)}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell className="font-medium">
                     {m.fullName ?? "—"}
                   </TableCell>
@@ -386,12 +581,30 @@ function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
+                      {m.roles.length === 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          No roles
+                        </span>
+                      )}
                       {m.roles.map((r) => (
                         <Badge key={r} variant="outline">
-                          {r.replace(/_/g, " ")}
+                          {humanizeRole(r)}
                         </Badge>
                       ))}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {isAdmin && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setManageUserId(m.userId)}
+                      >
+                        <Settings2 className="mr-2 h-4 w-4" />
+                        Manage roles
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -446,7 +659,7 @@ function UsersPage() {
                 <TableRow key={row.id}>
                   <TableCell className="font-medium">{row.email}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {row.role.replace(/_/g, " ")}
+                    {humanizeRole(row.role)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(row.status)}>{row.status}</Badge>
@@ -492,6 +705,79 @@ function UsersPage() {
           </Table>
         </div>
       </section>
+
+      <Sheet
+        open={manageUserId !== null}
+        onOpenChange={(open) => {
+          if (!open) setManageUserId(null);
+        }}
+      >
+        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>
+              Manage roles
+              {managedMember && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  · {managedMember.fullName ?? managedMember.email ?? ""}
+                </span>
+              )}
+            </SheetTitle>
+            <SheetDescription>
+              Toggle roles for this member. Changes are audit-logged and enforced
+              by the database.
+            </SheetDescription>
+          </SheetHeader>
+          {managedMember && (
+            <div className="mt-6 flex flex-col gap-6">
+              {ROLE_GROUPS.map((group) => (
+                <div key={group.key} className="flex flex-col gap-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {group.label}
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {group.roles.map((role) => {
+                      const on = managedMember.roles.includes(role);
+                      const busy =
+                        roleMut.isPending && pendingRole === role;
+                      return (
+                        <label
+                          key={role}
+                          className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                        >
+                          <span className="capitalize text-foreground">
+                            {humanizeRole(role)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {busy && (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                            )}
+                            <Switch
+                              checked={on}
+                              disabled={roleMut.isPending}
+                              onCheckedChange={(next) =>
+                                roleMut.mutate({
+                                  targetUserId: managedMember.userId,
+                                  role,
+                                  action: next ? "grant" : "revoke",
+                                })
+                              }
+                              aria-label={`${on ? "Revoke" : "Grant"} ${humanizeRole(role)}`}
+                            />
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                {GRANTABLE_ROLES.length} roles available. super_admin can only be
+                granted by another super_admin at the database level.
+              </p>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
