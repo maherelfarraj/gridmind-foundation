@@ -221,7 +221,7 @@ function ProjectsPage() {
             Export CSV
           </Button>
           <Button asChild>
-            <Link to="/projects/new">
+            <Link to="/projects/new" search={{ step: 1 }}>
               <Plus size={16} aria-hidden />
               New project
             </Link>
@@ -474,7 +474,7 @@ function EmptyState({ filtersActive }: { filtersActive: boolean }) {
             No projects yet — create your first project
           </p>
           <Button asChild size="sm">
-            <Link to="/projects/new">
+            <Link to="/projects/new" search={{ step: 1 }}>
               <Plus size={16} aria-hidden />
               New project
             </Link>
