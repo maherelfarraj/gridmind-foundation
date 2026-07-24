@@ -21,7 +21,9 @@ export const createProposalVersion = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = requireSupabaseAuth(context);
+    requireSupabaseAuth(context);
+    const { supabase } = context;
+    const userId = context.user.id;
 
     // 1. Load source proposal (RLS gates cross-company access).
     const { data: source, error: srcErr } = await supabase
