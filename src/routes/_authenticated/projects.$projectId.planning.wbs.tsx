@@ -30,7 +30,10 @@ import {
   wbsErrorMessage,
   wbsTreeQueryOptions,
 } from "@/lib/wbs-query";
-import { suggestNextRootChildCode } from "@/lib/wbs-rules";
+import type {
+  WbsCreateInput,
+  WbsUpdateInput,
+} from "@/lib/wbs-rules";
 
 import { WbsTree } from "@/components/planning/wbs-tree";
 import { WbsDetailForm } from "@/components/planning/wbs-detail-form";
@@ -95,8 +98,7 @@ function WbsPage() {
     queryClient.invalidateQueries({ queryKey: ["wbs", "tree", projectId] });
 
   const createMut = useMutation({
-    mutationFn: (input: Parameters<typeof createFn>[0]["data"]) =>
-      createFn({ data: input }),
+    mutationFn: (input: WbsCreateInput) => createFn({ data: input }),
     onSuccess: (row) => {
       toast.success(`Created ${row.code} — ${row.name}`);
       setSelectedId(row.id);
@@ -106,8 +108,7 @@ function WbsPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: (input: Parameters<typeof updateFn>[0]["data"]) =>
-      updateFn({ data: input }),
+    mutationFn: (input: WbsUpdateInput) => updateFn({ data: input }),
     onSuccess: (row) => {
       toast.success(`Saved ${row.code}`);
       invalidate();
@@ -116,8 +117,11 @@ function WbsPage() {
   });
 
   const reparentMut = useMutation({
-    mutationFn: (input: Parameters<typeof reparentFn>[0]["data"]) =>
-      reparentFn({ data: input }),
+    mutationFn: (input: {
+      id: string;
+      parent_id: string | null;
+      sort_order: number;
+    }) => reparentFn({ data: input }),
     onSuccess: () => {
       toast.success("Moved");
       invalidate();
@@ -142,14 +146,15 @@ function WbsPage() {
   });
 
   const handleQuickAddRoot = () => {
-    const nextCode = suggestNextRootChildCode(items);
+    const rootCount = items.filter((i) => i.parent_id === null).length;
+    const nextCode = String(rootCount + 1);
     createMut.mutate({
       projectId,
       parent_id: null,
       code: nextCode,
       name: "New root item",
       item_type: "phase",
-      sort_order: 0,
+      sort_order: rootCount,
     });
   };
 
