@@ -2887,6 +2887,259 @@ export type Database = {
           },
         ]
       }
+      rfq_bids: {
+        Row: {
+          attachments: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          id: string
+          lead_time_days: number | null
+          lines: Json
+          rfq_id: string
+          status: Database["public"]["Enums"]["rfq_bid_status"]
+          submitted_at: string | null
+          total_price: number | null
+          updated_at: string
+          validity_date: string | null
+          vendor_id: string
+        }
+        Insert: {
+          attachments?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          id?: string
+          lead_time_days?: number | null
+          lines?: Json
+          rfq_id: string
+          status?: Database["public"]["Enums"]["rfq_bid_status"]
+          submitted_at?: string | null
+          total_price?: number | null
+          updated_at?: string
+          validity_date?: string | null
+          vendor_id: string
+        }
+        Update: {
+          attachments?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          id?: string
+          lead_time_days?: number | null
+          lines?: Json
+          rfq_id?: string
+          status?: Database["public"]["Enums"]["rfq_bid_status"]
+          submitted_at?: string | null
+          total_price?: number | null
+          updated_at?: string
+          validity_date?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_bids_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_bids_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_bids_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "rfq_bids_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_bids_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_line_awards: {
+        Row: {
+          award_note: string | null
+          awarded_amount: number
+          awarded_at: string
+          awarded_by: string | null
+          awarded_qty: number
+          awarded_unit_price: number
+          company_id: string
+          created_at: string
+          id: string
+          line_no: number
+          rfq_bid_id: string
+          rfq_id: string
+          tco_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          award_note?: string | null
+          awarded_amount: number
+          awarded_at?: string
+          awarded_by?: string | null
+          awarded_qty: number
+          awarded_unit_price: number
+          company_id: string
+          created_at?: string
+          id?: string
+          line_no: number
+          rfq_bid_id: string
+          rfq_id: string
+          tco_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          award_note?: string | null
+          awarded_amount?: number
+          awarded_at?: string
+          awarded_by?: string | null
+          awarded_qty?: number
+          awarded_unit_price?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          line_no?: number
+          rfq_bid_id?: string
+          rfq_id?: string
+          tco_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_line_awards_awarded_by_fkey"
+            columns: ["awarded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_line_awards_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_line_awards_rfq_bid_id_fkey"
+            columns: ["rfq_bid_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_bids"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_line_awards_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfqs: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          description: string | null
+          due_date: string | null
+          id: string
+          issue_date: string | null
+          lines: Json
+          project_id: string
+          rfq_number: string
+          status: Database["public"]["Enums"]["rfq_status"]
+          terms: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issue_date?: string | null
+          lines?: Json
+          project_id: string
+          rfq_number: string
+          status?: Database["public"]["Enums"]["rfq_status"]
+          terms?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issue_date?: string | null
+          lines?: Json
+          project_id?: string
+          rfq_number?: string
+          status?: Database["public"]["Enums"]["rfq_status"]
+          terms?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfqs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfqs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfqs_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "rfqs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -3419,6 +3672,14 @@ export type Database = {
         | "rejected"
         | "expired"
         | "superseded"
+      rfq_bid_status:
+        | "invited"
+        | "submitted"
+        | "under_review"
+        | "awarded"
+        | "rejected"
+        | "withdrawn"
+      rfq_status: "draft" | "issued" | "closed" | "awarded" | "cancelled"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -3657,6 +3918,15 @@ export const Constants = {
         "expired",
         "superseded",
       ],
+      rfq_bid_status: [
+        "invited",
+        "submitted",
+        "under_review",
+        "awarded",
+        "rejected",
+        "withdrawn",
+      ],
+      rfq_status: ["draft", "issued", "closed", "awarded", "cancelled"],
       tender_event_type: [
         "pre_bid_meeting",
         "site_visit",
