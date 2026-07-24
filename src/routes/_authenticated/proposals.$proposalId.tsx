@@ -126,6 +126,11 @@ function ProposalBuilderPage() {
               {version.isPending ? "Creating…" : "New version"}
             </Button>
           )}
+          <ExportPdfButton
+            proposalId={proposalId}
+            companyId={proposal.company_id}
+            projectId={proposal.project_id}
+          />
           <Button
             size="sm"
             variant="ghost"
