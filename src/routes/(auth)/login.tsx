@@ -52,6 +52,8 @@ function GoogleGlyph() {
 
 function LoginPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const redirectTo = search.redirect ?? "/";
   const [pending, setPending] = useState(false);
   const [oauthPending, setOauthPending] = useState(false);
   const form = useForm<Values>({
@@ -68,7 +70,7 @@ function LoginPage() {
       return;
     }
     toast.success("Welcome back");
-    navigate({ to: "/", replace: true });
+    navigate({ to: redirectTo, replace: true });
   };
 
   const onGoogle = async () => {
@@ -82,8 +84,9 @@ function LoginPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/", replace: true });
+    navigate({ to: redirectTo, replace: true });
   };
+
 
   return (
     <div className="flex flex-col gap-6">

@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   HardHat,
   Handshake,
+  MailPlus,
   PencilRuler,
   Shield,
   Truck,
@@ -12,6 +13,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+
 
 import {
   Sidebar,
@@ -67,9 +69,13 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: "Administration",
-    items: [{ moduleKey: "admin", label: "Admin", url: "/admin", icon: Shield }],
+    items: [
+      { moduleKey: "admin", label: "Team invites", url: "/settings/invites", icon: MailPlus },
+      { moduleKey: "admin", label: "Admin", url: "/admin", icon: Shield },
+    ],
   },
 ];
+
 
 export function AppSidebar() {
   const { state } = useSidebar();

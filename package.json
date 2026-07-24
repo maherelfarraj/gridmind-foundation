@@ -15,7 +15,7 @@
     "test:all": "vitest run --config vitest.config.all.ts"
   },
   "overrides": {
-    "entities": ">=4.5.0"
+    "entities": "^6.0.0"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.1.0",

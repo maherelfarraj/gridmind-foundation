@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,10 +19,16 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as AuthenticatedSettingsInvitesRouteImport } from './routes/_authenticated/settings.invites'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -62,73 +69,92 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
+const AuthenticatedSettingsInvitesRoute =
+  AuthenticatedSettingsInvitesRouteImport.update({
+    id: '/settings/invites',
+    path: '/settings/invites',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
   '/signup': typeof authSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings/invites': typeof AuthenticatedSettingsInvitesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/(auth)': typeof authRouteRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/signup': typeof authSignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/settings/invites': typeof AuthenticatedSettingsInvitesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accept-invite'
     | '/design-system'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/signup'
     | '/dashboard'
+    | '/settings/invites'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accept-invite'
     | '/design-system'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
     | '/signup'
     | '/dashboard'
+    | '/settings/invites'
   id:
     | '__root__'
     | '/'
     | '/(auth)'
     | '/_authenticated'
+    | '/accept-invite'
     | '/design-system'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
     | '/(auth)/reset-password'
     | '/(auth)/signup'
     | '/_authenticated/dashboard'
+    | '/_authenticated/settings/invites'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   authRouteRoute: typeof authRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
 }
 
@@ -139,6 +165,13 @@ declare module '@tanstack/react-router' {
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof DesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -197,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/_authenticated/settings/invites': {
+      id: '/_authenticated/settings/invites'
+      path: '/settings/invites'
+      fullPath: '/settings/invites'
+      preLoaderRoute: typeof AuthenticatedSettingsInvitesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -220,10 +260,12 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsInvitesRoute: typeof AuthenticatedSettingsInvitesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsInvitesRoute: AuthenticatedSettingsInvitesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -233,6 +275,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
 }
 export const routeTree = rootRouteImport

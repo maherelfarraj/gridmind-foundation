@@ -121,18 +121,28 @@ function normalizeError(error: unknown): { message: string; stack?: string; stat
   return { message: String(error ?? "Unknown error") };
 }
 
+function sanitizePath(path?: string): string | undefined {
+  if (!path) return path;
+  // Never log the raw invite token; strip query entirely on the accept-invite route.
+  if (path.startsWith("/accept-invite")) {
+    return "/accept-invite";
+  }
+  return path;
+}
+
 export function captureError(
   error: unknown,
   context: CaptureContext = {},
 ): { errorRef: string; captured: CapturedError } {
   const errorRef = generateErrorRef();
   const normalized = normalizeError(error);
+  const sanitizedPath = sanitizePath(context.path);
   const captured: CapturedError = {
     message: normalized.message,
     stack: normalized.stack,
     statusCode: normalized.statusCode,
     cause: normalized.cause,
-    path: context.path,
+    path: sanitizedPath,
     requestId: context.requestId,
   };
 
@@ -148,4 +158,5 @@ export function captureError(
 
   return { errorRef, captured };
 }
+
 

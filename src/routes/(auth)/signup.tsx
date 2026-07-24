@@ -43,6 +43,7 @@ export const Route = createFileRoute("/(auth)/signup")({
 });
 
 function SignupPage() {
+  const search = Route.useSearch();
   const [pending, setPending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const form = useForm<Values>({
@@ -52,12 +53,13 @@ function SignupPage() {
 
   const onSubmit = async (values: Values) => {
     setPending(true);
+    const redirectPath = search.redirect ?? "/";
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         data: { full_name: values.full_name },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}${redirectPath}`,
       },
     });
     setPending(false);
@@ -67,6 +69,7 @@ function SignupPage() {
     }
     setSentTo(values.email);
   };
+
 
   if (sentTo) {
     return (
