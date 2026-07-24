@@ -145,17 +145,28 @@ function ScorecardsPage() {
   function handleExport() {
     if (!rows.length) return;
     const csv = toCsv(
-      rows.map((r) => ({
-        vendor: r.vendor_name ?? "",
-        otd_pct: r.on_time_delivery_pct ?? "",
-        quality: r.quality_score ?? "",
-        responsiveness: r.responsiveness_score ?? "",
-        pos: r.total_pos,
-        receipts: r.total_receipts,
-        defects: r.defects_count,
-        period_start: r.period_start,
-        period_end: r.period_end,
-      })),
+      [
+        "vendor",
+        "otd_pct",
+        "quality",
+        "responsiveness",
+        "pos",
+        "receipts",
+        "defects",
+        "period_start",
+        "period_end",
+      ],
+      rows.map((r) => [
+        r.vendor_name ?? "",
+        r.on_time_delivery_pct ?? "",
+        r.quality_score ?? "",
+        r.responsiveness_score ?? "",
+        r.total_pos,
+        r.total_receipts,
+        r.defects_count,
+        r.period_start,
+        r.period_end,
+      ]),
     );
     downloadCsv(`vendor-scorecards-${periodStart}-to-${periodEnd}.csv`, csv);
   }
