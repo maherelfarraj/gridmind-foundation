@@ -14,10 +14,19 @@ import {
   ArchetypePickerSkeleton,
 } from "@/components/wizard/archetype-picker";
 import { ProjectBasicsForm } from "@/components/wizard/project-basics-form";
+import { ProjectSelectionForm } from "@/components/wizard/project-selection-form";
+import { TemplatePickerSkeleton } from "@/components/wizard/template-picker";
+import { WizardErrorPanel } from "@/components/wizard/error-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getProjectCreationAccess } from "@/lib/projects.functions";
-import type { ProjectBasics } from "@/lib/schemas/project-wizard";
+import {
+  getProjectCreationAccess,
+  listProjectTemplates,
+} from "@/lib/projects.functions";
+import type {
+  ProjectBasics,
+  ProjectSelection,
+} from "@/lib/schemas/project-wizard";
 import { useProjectDraft, type ProjectArchetype } from "@/lib/wizard-draft";
 
 const searchSchema = z.object({
