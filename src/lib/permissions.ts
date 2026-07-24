@@ -203,6 +203,8 @@ void _departmentExhaustive;
 // ---------------------------------------------------------------------------
 
 import { GRANTABLE_ROLES } from "./role-groups";
+import { MODULE_KEYS as _MK } from "./modules";
+
 
 
 export type Action = "view" | "create" | "edit" | "approve" | "export";
