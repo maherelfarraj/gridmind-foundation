@@ -26,15 +26,40 @@ const ARCHETYPE_LABEL: Record<ProjectArchetype, string> = Object.fromEntries(
   ARCHETYPES.map((a) => [a.key, a.label]),
 ) as Record<ProjectArchetype, string>;
 
-// Tabs that always render.
+// Tabs — key must match the child route path segment.
 const STATIC_TABS = [
-  { key: "overview", label: "Overview" },
-  { key: "gates", label: "Gates" },
-  { key: "config", label: "Config" },
-] as const;
+  { key: "overview" as const, label: "Overview" },
+  { key: "gates" as const, label: "Gates" },
+  { key: "config" as const, label: "Config" },
+];
 
 // Department tabs — only render when the project has that department row.
-const DEPT_TABS: { key: string; dept: ProjectDepartment; label: string }[] = [
+const DEPT_TABS: { key: TabKey; dept: ProjectDepartment; label: string }[] = [
+  { key: "engineering", dept: "engineering", label: DEPARTMENT_LABELS.engineering },
+  { key: "procurement", dept: "procurement", label: DEPARTMENT_LABELS.procurement },
+  { key: "construction", dept: "construction", label: DEPARTMENT_LABELS.construction },
+  { key: "hse", dept: "hse", label: DEPARTMENT_LABELS.hse },
+  { key: "finance", dept: "finance", label: DEPARTMENT_LABELS.finance },
+];
+
+type TabKey =
+  | "overview"
+  | "gates"
+  | "config"
+  | "engineering"
+  | "procurement"
+  | "construction"
+  | "hse"
+  | "finance";
+
+const PROJECTS_LINK_SEARCH = {
+  q: "",
+  phase: "",
+  archetype: "",
+  department: "",
+  page: 1,
+} as const;
+
   { key: "engineering", dept: "engineering", label: DEPARTMENT_LABELS.engineering },
   { key: "procurement", dept: "procurement", label: DEPARTMENT_LABELS.procurement },
   { key: "construction", dept: "construction", label: DEPARTMENT_LABELS.construction },
