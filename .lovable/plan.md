@@ -1,94 +1,96 @@
-## P-046 — Pricing checklist + CFO approval gate
+# P-047 — Proposal PDF export
 
-Add a "Pricing & approval" section to the proposal builder that computes a server-side checklist, gates submission to a `finance_admin` CFO approval workflow (using existing `approval_instances` + `approvals` tables), and enforces the lock in SQL after approval.
+Adds "Export PDF" to the proposal builder and proposals list. Uses `jspdf` + `jspdf-autotable` (already installed), pulls branding from `company_branding`, and audits every export. Gated by the shared `assertExportAllowed` helper (`src/lib/export-guard.ts` already exists with 42P01 fallback).
 
-### 1. Migration — `proposals_enforce_pricing_lock`
+## 1. Server function — `getProposalPdfData`
 
-New migration `20260724_pricing_lock.sql` (idempotent):
-- `create or replace function public.proposals_enforce_pricing_lock()` — raises when `old.pricing_lock->>'status'='approved'` and any of `margin_pct / fx_rate_snapshot / contingency_pct / subtotal / total` change. Updates to `pricing_lock` itself remain allowed.
-- `drop trigger if exists trg_proposals_pricing_lock` + `create trigger trg_proposals_pricing_lock before update on public.proposals`.
+Added to `src/lib/proposal.functions.ts` (reuses `attachSupabaseAuth` + `requireSupabaseAuth`, member-only read via RLS).
 
-No new tables — `approval_instances` and `approvals` already exist from 0014 with the expected columns.
+Input: `{ proposalId: uuid }`. Steps:
+1. Load proposal (all columns) + line items ordered by `sort_order`.
+2. Load opportunity via `proposal.opportunity_id`: `name, account_name, expected_decision_date`.
+3. Load `companies` row (`name, legal_name, contact_email, phone, address`) for the caller's company.
+4. Load `company_branding` (`logo_url, primary_color, accent_color, footer_text`).
+5. Logo signed URL: `logo_url` in this schema stores either a full URL or a bucket object path. If it looks like a path (no `://`), call `supabase.storage.from('documents').createSignedUrl(logoPath, 300)` and return `logoSignedUrl`. On any error (missing file, bucket missing), return `logoSignedUrl: null` — never throw.
+6. Return plain DTO: `{ proposal, lineItems, opportunity, company, branding: {primaryColor, accentColor, footerText, logoSignedUrl}, yieldResult }`. `margin_pct` is NOT included in the DTO (defence-in-depth so the client PDF can't leak it).
 
-### 2. Constants (`src/lib/pricing-rules.ts`)
+No audit here — audit fires on the export mutation (`recordProposalExport` below).
 
-```ts
-export const COMPANY_BASE_CURRENCY = "USD";
-export const MARGIN_FLOOR_PCT = 8;
-export const CONTINGENCY_FLOOR_PCT = 5;
-export const FX_MAX_AGE_HOURS = 24;
-export const PRICING_ENTITY = "proposal_pricing";
-export const PRICING_RULE_KEY = "proposal_pricing_cfo";
+## 2. Audit-only server fn — `recordProposalExport`
+
+Small POST fn: writes `writeAuditLog('proposal.export_pdf', 'proposal', proposalId, { opportunity_id, version })`. Called from the client after PDF generation succeeds so we don't audit failed exports.
+
+(Rationale: PDF generation runs in the browser with jspdf; the server just supplies data + logs the event.)
+
+## 3. Client PDF generator — `src/lib/exports/proposal-pdf.ts`
+
+Pure function `buildProposalPdf(data): Promise<{ blob, filename }>` using `jspdf` + `autoTable`. Structure:
+
+- **Helpers**:
+  - `sanitize(text)`: collapse HTML-escape artifacts (`&amp;` → `&`, strip `&;`), used on every string drawn.
+  - `hexToRgb(hex)`: parse `#rrggbb`; fallback to `#1e40af` when branding color is missing/invalid.
+  - `fetchLogoDataUrl(url)`: `fetch(url)` → `blob()` → `FileReader` data URL; wrap in try/catch and return `null` on failure (skip logo gracefully).
+  - `filenameOf(company, title, version)`: `GridMind_Proposal_<account>_<title>_v<version>.pdf` with `[^A-Za-z0-9_-]` → `_` and length cap.
+
+- **Layout** (A4 portrait, 40pt margins):
+  1. **Cover page** — logo top-left (48pt tall, aspect-preserved) or empty gutter; brand-color header band; proposal title (Space Grotesk-ish sans, jspdf built-in `helvetica bold`); "Prepared for: <account>"; date (`format(now, 'PP')`); "Valid until: …"; `v<version>` badge.
+  2. **Executive summary** — archetype, capacity MW, P50 kWh/yr, P90 kWh/yr, specific yield kWh/kWp (from `yieldResult`; if absent render "—").
+  3. **Scope & pricing** — `autoTable` with columns Category / Description / Qty / Unit / Unit price / Total; header row filled with branding `primary_color`. Below: subtotal, contingency (% + amount), **total** rows right-aligned. Explicitly no margin row.
+  4. **Yield summary** — small table: Engine "gridmind-stub-v1 (placeholder)", P50, P90, specific yield, PR, monthly kWh (12 columns wrapping).
+  5. **Terms** — validity (from `valid_until`), currency (`currency_code`), free-text `proposal.notes`.
+
+- **Footer on every page** (autoTable `didDrawPage`): left = `company.legal_name ?? company.name`, right = `Page X of Y` using `doc.getNumberOfPages()` in a final pass.
+
+- Return `{ blob: doc.output('blob'), filename }`.
+
+## 4. UI wiring
+
+### Proposal builder — add "Export PDF" button
+
+`src/components/proposals/ProposalHeaderForm.tsx` already renders header actions in `proposals.$proposalId.tsx`. Add a new small component `src/components/proposals/ExportPdfButton.tsx`:
+
+```
+<Button variant="outline" onClick={run} disabled={pending}>
+  {pending ? <Loader2 spin/> : <FileDown/>} Export PDF
+</Button>
 ```
 
-(There is no `companies.base_currency` column today; `USD` is the placeholder base per the spec's "configurable constant" wording — swappable when P-111 adds per-company config.)
+`run()`:
+1. Fetch caller's `company_id` via the existing `getMyProfile`/context (we already have it on the proposal — `proposal.company_id`). No extra fetch.
+2. Call new `getProposalPdfData({ proposalId })`.
+3. Call `assertExportAllowed(supabase, { companyId: proposal.company_id, projectId: proposal.project_id })`. On thrown 409 or any lock error → `toast.error('Exports locked by governance')` and abort.
+4. `buildProposalPdf(data)` → trigger download via existing `downloadCsv` pattern (create tiny `downloadBlob(filename, blob)` in `src/lib/exports/proposal-pdf.ts` — Blob URL + anchor click).
+5. On success: `recordProposalExport({ proposalId })` then `toast.success('Proposal PDF exported')`.
+6. Errors surface as `toast.error(err.message)`.
 
-### 3. Server functions — extend `src/lib/proposal.functions.ts`
+Mounted in the builder header action row (next to "New version" / "Refresh") — always visible (no role gating; members can export their own company's proposals since read is already RLS-gated).
 
-All use `createServerFn` + zod + `attachSupabaseAuth` + `requireSupabaseAuth`.
+### Proposals list — add row-level action
 
-- `getPricingChecklist({ proposalId })` — returns `{ items: ChecklistItem[], allPass: boolean, pricingLock, approvalInstance }` where each item is `{ key, label, pass, detail? }`. Checks:
-  - `line_items_priced` — every `qty > 0` and `unit_price >= 0`; `abs(Σ line_total − subtotal) < 0.01`.
-  - `margin_floor` — `margin_pct >= 8`.
-  - `fx_snapshot` — currency = `COMPANY_BASE_CURRENCY` → pass; else `fx_rate_snapshot` non-null AND latest `fx_rates` row where `base_code=USD and quote_code=currency` has `as_of` within 24h. If no fx_rates row exists → fail with detail "no FX rate available".
-  - `contingency_floor` — `contingency_pct >= 5`.
-  - `valid_until_future` — set and `> now()`.
-  - `competitor_recorded` — join `opportunities.competitor` non-empty.
-  - `yield_run` — `yield_result` has non-null `p50_kwh` and `p90_kwh`.
-  - Also loads latest `approval_instances` for `entity='proposal_pricing', entity_id=proposalId` and returns it (for the UI pending badge).
+In `src/routes/_authenticated/proposals.index.tsx`, add a trailing "Actions" column with the same `ExportPdfButton` (compact `size="icon"` variant flag) per row. Same flow — passes `proposalId`, resolves data server-side.
 
-- `submitPricingApproval({ proposalId })` — writer role check (sales OR company_admin); revalidate the checklist server-side and refuse if any fail. Dual path:
-  1. Try `insert into approval_instances (company_id, entity='proposal_pricing', entity_id, status='pending', requested_by, metadata={rule_key:'proposal_pricing_cfo', margin_pct, contingency_pct, fx_rate_snapshot, currency_code})`; then insert one `approvals` row per `finance_admin` in the company (from `user_roles`) with `status='pending'`.
-  2. On PG error code `42P01` / undefined column: fall back to `update proposals set pricing_lock = {status:'pending', requested_by, requested_at, margin_pct, fx_rate_snapshot, contingency_pct}`.
-  Always also stamp `proposals.pricing_lock` with the pending payload so the UI has a single source of truth; audit `proposal.pricing_submitted` with `{opportunity_id, instance_id?}`.
+## 5. Verification
 
-- `decidePricingApproval({ proposalId, decision: 'approve'|'reject', comment? })` — `finance_admin` only (checked via `has_company_role`). Dual path:
-  1. Update matching `approval_instances` row: `status`, `decided_by=auth.uid()`, `decided_at=now()`. Update the caller's `approvals` row with `status` + `comment`.
-  2. Fallback: update `proposals.pricing_lock` directly.
-  On approve: also `update proposals set pricing_lock = {status:'approved', approved_by, approved_at, margin_pct, fx_rate_snapshot, contingency_pct}, status='approved'`. On reject: `pricing_lock = {status:'rejected', rejected_by, rejected_at, comment}`; leave `proposals.status` as-is.
-  Audit `proposal.pricing_approved` / `proposal.pricing_rejected` with `{opportunity_id, comment?}`.
+- Typecheck (`bun run build:dev` / tsgo path used previously) — clean.
+- Manual: open a proposal with line items + a yield run, click Export PDF → downloads `GridMind_Proposal_<account>_<title>_v<version>.pdf`.
+- `psql -c "select action from audit_logs where entity='proposal' order by created_at desc limit 3"` → shows `proposal.export_pdf`.
+- Grep generated code: no reference to `margin_pct` inside `proposal-pdf.ts` or the PDF data DTO.
+- `project_export_locks` doesn't exist → export helper's 42P01 branch is exercised (already covered).
 
-### 4. Query hooks — `src/lib/proposal-query.ts`
-
-- `pricingChecklistQueryOptions(fn, proposalId)` — `staleTime: 5s`.
-- `useSubmitPricingApproval(id)`, `useDecidePricingApproval(id)` — invalidate `["proposal", id]` and `["pricing-checklist", id]`.
-
-### 5. UI — `src/components/proposals/PricingApprovalCard.tsx`
-
-Rendered below `YieldSimulationCard` in `proposals.$proposalId.tsx`.
-- Header: "Pricing & approval" with a status badge (`Draft` / `Pending CFO review · Nh ago` / `Approved by X` / `Rejected`).
-- Checklist list — each row a `Check` (success) or `X` (destructive) icon + label + optional `detail`. Failing rows in `text-destructive`.
-- Actions:
-  - Writers (sales / company_admin): "Submit to CFO" button — disabled unless `allPass` and status not already `pending`/`approved`. Uses `date-fns` for "requested Nh ago".
-  - `finance_admin` sees Approve / Reject buttons when a pending instance exists; Reject opens a small dialog with a comment textarea.
-- After approval, `ProposalHeaderForm` and `LineItemsGrid`/`ArrayConfigForm` respect a new `pricingLocked` flag (already implicit through `readOnly` when status leaves draft, but also add a `Lock` icon next to `margin_pct` / `contingency_pct` / currency inputs when `pricing_lock.status='approved'`). Locked fields render read-only with a tooltip "Locked by CFO approval — create a new version to change".
-
-Route (`proposals.$proposalId.tsx`):
-- Extend the loader to also `ensureQueryData` the checklist.
-- Compute `pricingLocked = proposal.pricing_lock?.status === 'approved'`. Pass into the three edit cards so they show lock icons even when the writer still has editor role in draft/in_review.
-
-### 6. Audit metadata
-
-Every mutation calls `writeAuditLog(action, 'proposal', proposalId, { opportunity_id, ...context })`. Adds three actions: `proposal.pricing_submitted`, `proposal.pricing_approved`, `proposal.pricing_rejected`.
-
-### 7. Verification (post-implementation)
-
-- Live typecheck.
-- Query approval flow via `supabase--read_query`:
-  1. Create a proposal, set margin to 5% → checklist row fails → submit button disabled.
-  2. Fix values → all pass → submit → assert one row in `approval_instances` with `entity='proposal_pricing'` and one audit row `proposal.pricing_submitted`.
-  3. As finance_admin: approve → `pricing_lock.status='approved'`, `proposals.status='approved'`, audit row present.
-  4. Attempt `update proposals set margin_pct = ...` via `supabase--insert` → expect exception "pricing locked by CFO approval".
-
-### Files
+## Files
 
 Created:
-- `supabase/migrations/<ts>_pricing_lock.sql`
-- `src/lib/pricing-rules.ts`
-- `src/components/proposals/PricingApprovalCard.tsx`
+- `src/lib/exports/proposal-pdf.ts` — PDF builder + `downloadBlob` helper + filename sanitizer.
+- `src/components/proposals/ExportPdfButton.tsx` — reusable button.
 
 Modified:
-- `src/lib/proposal.functions.ts` — add 3 RPCs + checklist types.
-- `src/lib/proposal-query.ts` — add hooks/options.
-- `src/routes/_authenticated/proposals.$proposalId.tsx` — mount the new card + pass `pricingLocked`.
-- `src/components/proposals/ProposalHeaderForm.tsx`, `LineItemsGrid.tsx`, `ArrayConfigForm.tsx` — accept optional `pricingLocked` prop, render `Lock` icons on the three protected fields.
+- `src/lib/proposal.functions.ts` — `getProposalPdfData` + `recordProposalExport`.
+- `src/lib/proposal-query.ts` — expose `useServerFn` wrappers if needed (thin).
+- `src/routes/_authenticated/proposals.$proposalId.tsx` — mount button in header actions.
+- `src/routes/_authenticated/proposals.index.tsx` — add Actions column with export button.
+
+## Notes / assumptions
+
+- `company_branding.logo_url` today stores a URL/path; both are handled (path → signed URL from `documents` bucket, URL → used directly, missing → skipped). No schema change.
+- Fonts: jspdf ships helvetica; we don't embed Space Grotesk to avoid bundle weight — this matches the "branded but pragmatic" tone of P-029 exports.
+- PDF is generated client-side; server function only assembles data + audits. Blob download is same-origin.
