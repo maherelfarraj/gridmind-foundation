@@ -153,7 +153,7 @@ export const listRfis = createServerFn({ method: "GET" })
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: false });
     if (data.status) q = q.eq("status", data.status);
-    if (data.discipline) q = q.eq("discipline", data.discipline);
+    if (data.discipline) q = q.eq("discipline", data.discipline as any);
     if (data.assignee) q = q.eq("routed_to", data.assignee);
     if (data.search && data.search.trim().length > 0) {
       const s = data.search.trim().replace(/[%_]/g, "");
