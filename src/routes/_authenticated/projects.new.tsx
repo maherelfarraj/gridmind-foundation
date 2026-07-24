@@ -77,6 +77,9 @@ function NewProjectPage() {
 
   const getAccessFn = useServerFn(getProjectCreationAccess);
   const listTemplatesFn = useServerFn(listProjectTemplates);
+  const listEligibleFn = useServerFn(listEligibleUsers);
+  const listProfilesFn = useServerFn(listActiveCompanyProfiles);
+  const createProjectFn = useServerFn(createProject);
 
   const accessQuery = useQuery({
     queryKey: ["project-creation-access", activeCompanyId, search.forceError],
@@ -112,6 +115,65 @@ function NewProjectPage() {
     retry: false,
   });
 
+  const teamQuery = useQuery({
+    queryKey: ["project-team-candidates", activeCompanyId],
+    queryFn: async () => {
+      const companyId = activeCompanyId!;
+      const [admins, profiles, ...leads] = await Promise.all([
+        listEligibleFn({ data: { companyId, role: "project_admin" } }),
+        listProfilesFn({ data: { companyId } }),
+        ...DEPT_LEAD_ROLES.map((k) =>
+          listEligibleFn({
+            data: { companyId, role: DEPT_LEAD_ROLE_MAP[k] },
+          }),
+        ),
+      ]);
+      const deptCandidates = Object.fromEntries(
+        DEPT_LEAD_ROLES.map((k, i) => [k, leads[i] as EligibleUser[]]),
+      ) as Record<DeptLeadKey, EligibleUser[]>;
+      return { admins, profiles, deptCandidates };
+    },
+    enabled: !!activeCompanyId && currentStep === 4,
+    retry: false,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (team: ProjectTeam) => {
+      const basics = draft.basics!;
+      return createProjectFn({
+        data: {
+          companyId: activeCompanyId!,
+          archetype: draft.archetype!,
+          template_id: draft.selection?.template_id ?? null,
+          name: basics.name,
+          code: basics.code,
+          capacity_mw: basics.capacity_mw,
+          capacity_mwh: basics.capacity_mwh,
+          site_name: basics.site_name,
+          site_country: basics.site_country,
+          site_region: basics.site_region,
+          site_lat: basics.site_lat,
+          site_lng: basics.site_lng,
+          offtaker: basics.offtaker,
+          target_cod: basics.target_cod,
+          project_admin_id: team.project_admin_id,
+          member_ids: team.member_ids,
+          dept_leads: team.dept_leads,
+        },
+      });
+    },
+    onSuccess: (result) => {
+      toast.success("Project created");
+      clear();
+      void navigate({
+        to: "/projects/$projectId",
+        params: { projectId: result.id },
+      });
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not create project");
+    },
+  });
 
   // Redirect to step 1 if a later step is opened without an archetype in the draft.
   useEffect(() => {
@@ -123,7 +185,21 @@ function NewProjectPage() {
         replace: true,
       });
     }
-  }, [hydrated, currentStep, draft.archetype, navigate]);
+    if (currentStep >= 3 && !draft.basics) {
+      void navigate({
+        to: "/projects/new",
+        search: { step: 2 },
+        replace: true,
+      });
+    }
+    if (currentStep === 4 && !draft.selection) {
+      void navigate({
+        to: "/projects/new",
+        search: { step: 3 },
+        replace: true,
+      });
+    }
+  }, [hydrated, currentStep, draft.archetype, draft.basics, draft.selection, navigate]);
 
   const handleSelect = (archetype: ProjectArchetype) => {
     setDraft({ archetype });
@@ -149,6 +225,11 @@ function NewProjectPage() {
     void navigate({ to: "/projects/new", search: { step: 4 } });
   };
 
+  const handleTeamSubmit = (values: ProjectTeam) => {
+    setDraft({ team: values });
+    createMutation.mutate(values);
+  };
+
   const stepSubtitle =
     currentStep === 1
       ? "Pick the archetype that best describes what you're building. It drives the templates, configuration, and lifecycle we'll set up for you."
@@ -156,7 +237,8 @@ function NewProjectPage() {
         ? "Tell us the basics: name, capacity, site, and target COD."
         : currentStep === 3
           ? "Choose a template, then tune the gates, budget, and departments."
-          : "More wizard steps ship in the next batch.";
+          : "Assign the project admin, members, and department leads.";
+
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
