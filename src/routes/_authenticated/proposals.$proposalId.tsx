@@ -75,6 +75,7 @@ function ProposalBuilderPage() {
   const canWrite =
     roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
   const isFinanceAdmin = roles.has("finance_admin") || roles.has("super_admin");
+  const isCompanyAdmin = roles.has("company_admin") || roles.has("super_admin");
   const isReadOnlyStatus =
     proposal && !["draft", "in_review"].includes(proposal.status);
   const readOnly = !canWrite || !!isReadOnlyStatus;
