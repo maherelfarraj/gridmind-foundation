@@ -1,76 +1,47 @@
-# P-056 — PVsyst / yield scenarios workspace
+## P-057 — BOM v1 builder
 
-Multi-scenario yield modelling for a project with comparison charts and PVsyst report import, replacing today's 1:1 `project_yield_config` row.
+### 1. Migration `0020_bom.sql`
+- `public.bom_snapshots`: standard tenant columns + `version int`, `status text default 'draft' check in ('draft','released','superseded')`, `params jsonb`, `totals jsonb`, `created_by uuid`, `created_at`, `updated_at`. Unique `(project_id, version)`.
+- `public.bom_lines`: `snapshot_id references bom_snapshots(id) on delete cascade`, `category text check in ('modules','inverters','bos','cables','structures','transformers','other')`, `item text`, `spec text`, `unit text`, `qty numeric`, `buffer_pct numeric default 0`, `qty_buffered numeric`, `unit_cost numeric`, `notes text`, `company_id uuid`, timestamps.
+- Order: `CREATE TABLE` → `GRANT SELECT,INSERT,UPDATE,DELETE … TO authenticated; GRANT ALL … TO service_role` → `ENABLE RLS` → policies.
+- Policies: `select` when `is_company_member(company_id)`; `insert/update/delete` when `has_role(auth.uid(),'engineering_admin') or has_role(auth.uid(),'engineer') or has_role(auth.uid(),'company_admin') or has_role(auth.uid(),'super_admin')` (delete restricted to engineering_admin/company_admin/super_admin).
+- Indexes: `bom_lines(snapshot_id)`, `bom_snapshots(project_id, version desc)`.
+- `updated_at` trigger via `public.set_updated_at()`.
 
-## 1. Migration `0019_yield_scenarios.sql` (idempotent)
+### 2. Pure calculator + tests
+- `src/lib/calculators/bom.ts` — pure, browser-safe:
+  - `DEFAULT_BUFFERS = { modules: 0.5, inverters: 0, cables: 10, structures: 2, bos: 5 }`.
+  - `applyBuffer(qty, pct)` — rounds to 4 decimals, ceils integer units (modules, inverters, structures, transformers).
+  - `computeBom(params)`: takes `{ capacity_mwp_dc, module_wp, dc_ac_ratio, inverter_count?, tracker_type, avg_dc_run_m?, modules_per_string?, mv_cable_m_per_mw? }` → returns typed line list with `{category,item,spec,unit,qty,buffer_pct,qty_buffered,unit_cost?}`. Heuristics: modules = `ceil(capacity_kwp / module_wp)`; inverters = provided or `ceil(capacity_mw_ac × ratio_helper)`; strings ≈ `ceil(modules / modules_per_string(default 28))`; DC cable metres ≈ `strings × avg_dc_run_m(default 90) × 2`; MV cable ≈ `capacity_mwp × mv_cable_m_per_mw(default 800)`; structures = `ceil(modules / (modules_per_row=90))`; transformers/BOS defaults; unit costs left null (populated in Batch 07).
+- `tests/unit/bom-calculator.test.ts` — Prairie Winds fixture (175 MWp, 550 Wp modules, 42 inverters): asserts module qty, buffered qty rounding, unchanged output snapshot for regression.
 
-- `project_yield_config`
-  - Add `scenario_name text not null default 'Base'`.
-  - Add `results jsonb not null default '{}'` (holds `p50_mwh`, `p90_mwh`, `specific_yield_kwh_kwp`, `pr_pct`, `imported`).
-  - Add `params jsonb not null default '{}'` (tilt_deg, azimuth_deg, gcr, tracking, bifacial, dc_ac_ratio, losses_pct breakdown).
-  - Backfill existing rows: `scenario_name='Base'`; move existing scalar columns into `results` where present.
-  - `alter table … drop constraint if exists project_yield_config_project_id_key`.
-  - `create unique index if not exists project_yield_config_project_scenario_uniq on project_yield_config(project_id, scenario_name)`.
-- `project_pvsyst_config`
-  - Same treatment: add `scenario_name text not null default 'Base'`, `params jsonb`, drop old unique on `project_id`, add composite unique on `(project_id, scenario_name)`.
-- Keep existing RLS policies and `set_updated_at` triggers (they already cover the new columns).
-- No new GRANTs needed — table already granted in original migration.
+### 3. Server functions (`src/lib/bom.functions.ts`)
+Thin wrappers only — helpers/schemas imported from `bom.server.ts` (avoid `?tss-serverfn-split` ReferenceError):
+- `listBomSnapshots({projectId})`
+- `getBomSnapshot({snapshotId})` — snapshot + grouped lines
+- `generateBom({projectId})` — reads `projects` + `project_pv_config`, calls `computeBom`, inserts snapshot v=max+1 with lines + totals, `write_audit_log('engineering.bom_generated', …)`
+- `updateBomLine({lineId, qty?, buffer_pct?, unit_cost?, notes?})` — recomputes `qty_buffered` server-side; blocks edits when snapshot `status='released'` (returns 409)
+- `releaseBom({snapshotId})` — engineering_admin only (assertRole); flips status to `released` and prior versions to `superseded`; audit `engineering.bom_released`
+- `getMyBomRoles({projectId})` → `{ canWrite, canRelease }`
+- `getBomKpi({projectId})` → `{ releasedTotalCost, snapshotCount }`
+- `src/lib/bom.server.ts` — role/audit helpers, zod schemas, category labels, project-loading query.
 
-## 2. P-045 call-site update
+### 4. Query hooks (`src/lib/bom-query.ts`)
+`queryOptions` for snapshots/details/roles; mutations for generate/updateLine (optimistic recalc)/release with invalidation + sonner.
 
-In `src/lib/proposal.functions.ts` (`runYieldStub`), change the `project_yield_config` upsert to:
-- Include `scenario_name: 'Proposal'` and `onConflict: 'project_id,scenario_name'`.
-- Move scalar fields into a `results` jsonb payload as well, keeping the legacy columns for back-compat until later cleanup. This preserves the proposal → project flow under the new composite unique.
+### 5. UI
+- Route: `src/routes/_authenticated/projects.$projectId.engineering.bom.tsx`, plus `bom` entry in engineering sub-nav.
+- `bom-header.tsx` — version select, status badge, params summary, totals; "Regenerate" (writer) and "Release" (engineering_admin) buttons.
+- `bom-table.tsx` — grouped by category with `useReducer` for local edits (qty/buffer/unit_cost), live `qty_buffered` = `applyBuffer(qty, pct)` recompute, blur commits via `updateBomLine`. Read-only when released.
+- `bom-empty.tsx` — "No BOM yet — generate from archetype config" with Generate CTA.
+- CSV export button → constructs CSV client-side from loaded lines.
+- States: `Suspense` skeleton, error boundary card, empty state. Semantic tokens only.
 
-## 3. Server functions — `src/lib/yield.functions.ts` (new)
+### 6. Verification
+- Apply migration; `bunx tsgo --noEmit`; `bun run test` (new calculator suite).
+- Manual: on Prairie Winds, generate → v1 populated; edit cable buffer live; release as engineering_admin (verify audit row); attempt release as engineer (403).
 
-All `.middleware([requireSupabaseAuth])` and role-gated to `engineering_admin | engineer | project_admin` via `has_role` checks on `context.userId` before write. Reads open to any company member (RLS enforces).
-
-- `listYieldScenarios({ projectId })` → rows joined with project MWp for KPI display.
-- `saveYieldScenario({ projectId, id?, scenarioName, params })` — zod: tilt 0–90, azimuth 0–360, gcr 0.1–0.9, dc_ac_ratio 0.8–1.6, tracking enum, losses each 0–40 (%). Upserts on `(project_id, scenario_name)`. Writes audit `engineering.yield_scenario_saved` with changed fields.
-- `estimateYieldScenario({ projectId, id }) ` — deterministic stub: uses `mulberry32` seeded by `projectId+scenarioName` from `src/lib/yield/stub.ts`, computes P50 from MWp × specific-yield baseline (1600 kWh/kWp) adjusted for tracking (+8%/+12%), tilt loss curve, GCR shading, losses total; P90 = P50 × 0.92; specific yield = P50_mwh×1000 / MWp; PR = 100 − losses_total. Writes into `results` plus `results.stub_version='gridmind-yield-stub-v1'`. Same audit event.
-- `duplicateYieldScenario({ projectId, id, newName })`.
-- `deleteYieldScenario({ projectId, id })` — blocks deletion of `'Proposal'` scenario (managed by proposal flow).
-- `importPvsystScenario({ projectId, scenarioName, documentId, parsed })` — expects a `documents` bucket file already uploaded via existing site-data flow; parses provided `{ p50_mwh, p90_mwh, pr_pct, specific_yield_kwh_kwp }` (client-parsed for CSV; PDF path stores file only and records metrics from a small form), sets `results.imported=true`, `results.source_document_id`.
-- `getEngineeringYieldKpi({ projectId })` — returns `{ scenarioCount, latestP50Mwh, baseP50Mwh }` for the KPI hook.
-
-Parse logic lives in `src/lib/yield/pvsyst-parse.ts` (client-safe): CSV parser looks for header rows `P50`, `P90`, `PR`, `Specific yield`; PDF is stored only, metrics captured via form (avoids pulling a PDF parser into the Worker).
-
-## 4. UI — `src/routes/_authenticated/projects.$projectId.engineering.yield.tsx`
-
-Tabs (shadcn `Tabs`): **Scenarios**, **Comparison**, **PVsyst import**. Add "Yield" to the engineering sub-navigation.
-
-- **Scenarios tab** (`components/engineering/yield-scenarios-table.tsx`)
-  - `Table` with columns: name, tilt, GCR, tracking, DC/AC, P50 (MWh), P90 (MWh), specific yield, PR, actions (Edit / Duplicate / Run estimate / Delete).
-  - Toolbar: "New scenario" opens `YieldScenarioDrawer` (react-hook-form + zod bound to params schema, sonner toasts, optimistic cache update via query invalidation).
-  - Row "Run estimate" → calls `estimateYieldScenario`; result badge labelled **"Preliminary estimate — replace with PVsyst import"**.
-  - Empty state: "Create your first scenario".
-  - Skeleton + error-with-retry states.
-- **Comparison tab** (`components/engineering/yield-comparison.tsx`)
-  - Multi-select (2–4) scenarios; Recharts `BarChart` grouped P50/P90; second `BarChart` (stacked) for loss breakdown; delta column vs Base scenario (`(scenario.p50 − base.p50)/base.p50`).
-- **PVsyst import tab** (`components/engineering/yield-pvsyst-import.tsx`)
-  - Reuses existing `documents` bucket upload flow (`src/lib/site-data.functions.ts`) with `category='engineering'`, `metadata.subtype='pvsyst_report'`.
-  - After upload, form captures parsed / entered metrics → `importPvsystScenario` → row appears in Scenarios with an "Imported" badge.
-
-Design tokens only; no raw colors. Role-gated writes: readers see disabled action buttons + tooltip.
-
-## 5. KPI hook
-
-`src/lib/hooks/use-engineering-yield-kpi.ts` exposes `useEngineeringYieldKpi(projectId)` → `{ scenarioCount, latestP50Mwh }` via TanStack Query, ready to plug into the engineering dashboard later.
-
-## 6. Acceptance checks (executed at end)
-
-1. `psql \d project_yield_config` — old unique gone, composite present; run P-045 proposal stub once and confirm `Proposal` scenario row exists.
-2. Create `Base` (tilt 25, fixed) → duplicate to `Tracker` (1p_tracker) → run estimates → deterministic across reloads; label present in UI.
-3. Comparison chart renders 2 scenarios with delta column.
-4. Zod: tilt 95 or GCR 1.2 blocked with inline error; `audit_logs` row with `action='engineering.yield_scenario_saved'` and changed fields.
-5. Upload CSV → file lands in `documents` bucket via existing site-data function; scenario row has `results.imported=true`.
-6. Cross-tenant probe via `context.supabase` under RLS returns 0 rows.
-
-## Technical notes
-
-- No new bucket — reuse `documents`.
-- No new dependency — `recharts` and `react-hook-form` are already installed.
-- Deviations to flag:
-  - PVsyst PDF: file stored, metrics captured via form (no PDF parser bundled in the Worker). CSV is auto-parsed. This is called out in the tab copy.
-  - Legacy scalar columns on `project_yield_config` kept for now to avoid breaking any other reader; the new `results` jsonb is the source of truth going forward.
+### Technical notes
+- BOM totals stored on snapshot as `{ line_count, total_cost, generated_from: {config_versions...} }` for the Batch 07 procurement KPI.
+- All writes go through `requireSupabaseAuth`; server always recomputes `qty_buffered` to prevent client tampering.
+- CSV export is client-side only (no server function needed).
