@@ -284,9 +284,8 @@ export const updateBomLine = createServerFn({ method: "POST" })
       .from("bom_lines")
       .update(patch as any)
       .eq("id", data.lineId);
-
-      .eq("id", data.lineId);
     if (uErr) throw uErr;
+
 
     // Refresh snapshot totals.
     const { data: siblingLines } = await context.supabase
