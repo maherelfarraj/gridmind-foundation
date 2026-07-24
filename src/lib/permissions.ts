@@ -193,3 +193,114 @@ type _DepartmentExhaustive = Exclude<
 >;
 const _departmentExhaustive: _DepartmentExhaustive[] = [];
 void _departmentExhaustive;
+
+// ---------------------------------------------------------------------------
+// P-028 — Permission simulator maps
+// ROLE_MODULE_MAP: full per-role module visibility (all GrantableRole values).
+// ROLE_ACTION_MATRIX: per-role, per-module allowed actions.
+// These are UI-preview data only. Actual access is enforced by RLS and
+// has_role() on every request; keep these consistent with server policies.
+// ---------------------------------------------------------------------------
+
+import { GRANTABLE_ROLES, type GrantableRole } from "./role-groups";
+import { MODULE_KEYS as _MK } from "./modules";
+
+export type Action = "view" | "create" | "edit" | "approve" | "export";
+export const ACTIONS: readonly Action[] = ["view", "create", "edit", "approve", "export"] as const;
+
+const CORE_VISIBLE: ModuleKey[] = [..._MK];
+const ALL_ADMIN_VISIBLE: ModuleKey[] = [...CORE_VISIBLE, "admin"];
+
+// Department admin → the module their department primarily lives in.
+const DEPT_ADMIN_HOME: Record<string, ModuleKey> = {
+  engineering_admin: "engineering",
+  procurement_admin: "procurement",
+  construction_admin: "field_qaqc",
+  hse_admin: "field_qaqc",
+  finance_admin: "planning_budget",
+  legal_admin: "crm",
+  om_admin: "om_scada",
+  scada_admin: "om_scada",
+};
+
+// Operational role → modules they work in.
+const OPERATIONAL_MODULES: Record<string, ModuleKey[]> = {
+  engineer: ["engineering", "planning_budget", "field_qaqc"],
+  sales: ["crm"],
+  procurement_officer: ["procurement", "planning_budget"],
+  foreman: ["field_qaqc", "commissioning"],
+  field_technician: ["field_qaqc", "om_scada"],
+};
+
+// External viewer → read-only portals + limited context.
+const EXTERNAL_MODULES: Record<string, ModuleKey[]> = {
+  client_viewer: ["portals", "crm", "planning_budget"],
+  investor_viewer: ["portals", "planning_budget"],
+  lender_viewer: ["portals", "planning_budget"],
+};
+
+function buildRoleModuleMap(): Record<GrantableRole, ModuleKey[]> {
+  const map = {} as Record<GrantableRole, ModuleKey[]>;
+  for (const role of GRANTABLE_ROLES) {
+    if (role === "company_admin" || role === "billing_admin" || role === "project_admin") {
+      map[role] = [...ALL_ADMIN_VISIBLE];
+    } else if (role in DEPT_ADMIN_HOME) {
+      // Department admins see every core module (they coordinate cross-team)
+      // but only get elevated actions in their own department module.
+      map[role] = [...CORE_VISIBLE];
+    } else if (role in OPERATIONAL_MODULES) {
+      map[role] = [...OPERATIONAL_MODULES[role]];
+    } else if (role in EXTERNAL_MODULES) {
+      map[role] = [...EXTERNAL_MODULES[role]];
+    } else {
+      map[role] = [];
+    }
+  }
+  return map;
+}
+
+export const ROLE_MODULE_MAP: Record<GrantableRole, ModuleKey[]> = buildRoleModuleMap();
+
+const FULL_ACTIONS: readonly Action[] = ["view", "create", "edit", "approve", "export"];
+const WRITE_ACTIONS: readonly Action[] = ["view", "create", "edit", "export"];
+const VIEW_ONLY: readonly Action[] = ["view"];
+
+function buildActionMatrix(): Record<GrantableRole, Partial<Record<ModuleKey, readonly Action[]>>> {
+  const matrix = {} as Record<GrantableRole, Partial<Record<ModuleKey, readonly Action[]>>>;
+  for (const role of GRANTABLE_ROLES) {
+    const visible = ROLE_MODULE_MAP[role];
+    const entry: Partial<Record<ModuleKey, readonly Action[]>> = {};
+
+    if (role === "company_admin" || role === "billing_admin" || role === "project_admin") {
+      for (const m of visible) entry[m] = FULL_ACTIONS;
+    } else if (role in DEPT_ADMIN_HOME) {
+      const home = DEPT_ADMIN_HOME[role];
+      for (const m of visible) {
+        if (m === "admin") continue;
+        entry[m] = m === home ? FULL_ACTIONS : VIEW_ONLY;
+      }
+    } else if (role in OPERATIONAL_MODULES) {
+      for (const m of visible) entry[m] = WRITE_ACTIONS;
+    } else if (role in EXTERNAL_MODULES) {
+      for (const m of visible) entry[m] = VIEW_ONLY;
+    }
+
+    matrix[role] = entry;
+  }
+  return matrix;
+}
+
+export const ROLE_ACTION_MATRIX: Record<
+  GrantableRole,
+  Partial<Record<ModuleKey, readonly Action[]>>
+> = buildActionMatrix();
+
+export function getActionsFor(role: GrantableRole, moduleKey: ModuleKey): readonly Action[] {
+  return ROLE_ACTION_MATRIX[role]?.[moduleKey] ?? [];
+}
+
+// Compile-time exhaustiveness: any new GrantableRole must appear in the map.
+type _RoleModuleExhaustive = Exclude<GrantableRole, keyof typeof ROLE_MODULE_MAP>;
+const _roleModuleExhaustive: _RoleModuleExhaustive[] = [];
+void _roleModuleExhaustive;
+
