@@ -2611,6 +2611,131 @@ export type Database = {
         }
         Relationships: []
       }
+      rfis: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          closed_at: string | null
+          company_id: string
+          cost_impact: boolean
+          created_at: string
+          created_by: string | null
+          discipline: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_id: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          project_id: string
+          question: string
+          raised_by: string | null
+          rfi_number: string
+          routed_to: string | null
+          schedule_impact: boolean
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          closed_at?: string | null
+          company_id: string
+          cost_impact?: boolean
+          created_at?: string
+          created_by?: string | null
+          discipline?: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_id?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id: string
+          question: string
+          raised_by?: string | null
+          rfi_number: string
+          routed_to?: string | null
+          schedule_impact?: boolean
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          closed_at?: string | null
+          company_id?: string
+          cost_impact?: boolean
+          created_at?: string
+          created_by?: string | null
+          discipline?: Database["public"]["Enums"]["drawing_discipline"]
+          drawing_id?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string
+          question?: string
+          raised_by?: string | null
+          rfi_number?: string
+          routed_to?: string | null
+          schedule_impact?: boolean
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfis_answered_by_fkey"
+            columns: ["answered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_drawing_id_fkey"
+            columns: ["drawing_id"]
+            isOneToOne: false
+            referencedRelation: "drawing_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfis_routed_to_fkey"
+            columns: ["routed_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string

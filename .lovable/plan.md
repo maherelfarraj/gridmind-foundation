@@ -1,80 +1,116 @@
-## P-058 — Drawing review workflow (IFD → reviewers → sign-off → IFC gate)
+# P-059 — RFI Module
 
-### Migration `0021_drawing_reviews.sql`
+Adds Request For Information (RFI) tracking to the Engineering workspace with tenant-scoped schema, role-gated transitions, KPI analytics, and full audit coverage.
 
-Three tables, standard tenant columns (`id`, `company_id`, `created_at`, `updated_at` where applicable), `set_updated_at()` triggers, indexes, GRANTs, RLS.
+## 1. Migration `0022_rfis.sql`
 
-1. `drawing_review_rounds`
-   - `revision_id` → `drawing_revisions(id)` on delete cascade
-   - `project_id`, `round_no` int (1-based per revision), `status` ('open' | 'closed' | 'waived'), `due_date`, `created_by`
-   - unique `(revision_id, round_no)`
-   - RLS: SELECT `is_company_member`; INSERT/UPDATE `has_role(auth.uid(),'engineering_admin')` OR `has_role(...,'project_admin')`
-2. `drawing_review_signoffs`
-   - `round_id` → cascade; `reviewer_id` → `profiles(id)`; `reviewer_org` ('client'|'lender'|'utility'|'internal'); `decision` nullable ('approved'|'approved_with_comments'|'rejected'|'waived'); `comment`; `signed_at`
-   - unique `(round_id, reviewer_id)`
-   - RLS: SELECT company member; INSERT by engineering_admin/project_admin (round creation); UPDATE where `reviewer_id = auth.uid()` OR engineering_admin (waiver path)
-3. `notifications` (minimal — full UI in Batch 12)
-   - `user_id` → `profiles(id)`, `type`, `title`, `body`, `link`, `read_at`
-   - RLS: SELECT/UPDATE `user_id = auth.uid()`; INSERT allowed to any authenticated (server functions write on behalf of users)
+Single migration containing:
 
-### Server logic — `src/lib/drawing-reviews.functions.ts`
+- `create table public.rfis` with columns per spec:
+  - Identity: `id`, `company_id`, `project_id → projects`, `rfi_number text`
+  - Content: `subject`, `question`, `discipline drawing_discipline default 'general'`, `priority` (`low|normal|high|urgent`), `status` (`open|in_review|answered|closed|void`)
+  - Routing: `raised_by`, `routed_to`, optional `drawing_id → drawing_register`, `due_date`
+  - Resolution: `answer`, `answered_by`, `answered_at`, `closed_at`
+  - Impact flags: `cost_impact`, `schedule_impact`
+  - Standard: `created_by`, `created_at`, `updated_at`
+  - `unique(project_id, rfi_number)`
+- Grants: `select, insert, update, delete` to `authenticated`; `all` to `service_role`
+- Enable RLS + policies:
+  - `select`: `is_company_member(company_id)`
+  - `insert`: member AND `raised_by = auth.uid()` AND `created_by = auth.uid()`
+  - `update`: `has_role(auth.uid(),'engineering_admin')` OR `has_role(auth.uid(),'project_admin')` OR `routed_to = auth.uid()` OR `raised_by = auth.uid()` (raiser needed for close)
+  - `delete`: engineering_admin or project_admin only
+- Indexes: `(project_id, status)`, `(routed_to, status)`, `(company_id, created_at desc)`
+- `update_updated_at` trigger reusing existing `set_updated_at()`
 
-All `.middleware([attachSupabaseAuth])`, zod-validated, tenant-scoped via loaded revision/project row.
+## 2. Server functions — `src/lib/rfi.functions.ts`
 
-- `listReviewRounds({ projectId })` — rounds joined with revision (drawing number, rev code), reviewers, decision chips, markup open/resolved counts (aggregate `document_markups` by revision).
-- `getReviewRound({ roundId })` — round + signoffs + reviewer profile display names + markup summary + audit chip data.
-- `listEligibleReviewers({ projectId })` — company members with roles `client_viewer`, `lender_viewer`, or internal engineering roles (`engineer`, `engineering_admin`, `project_admin`).
-- `startReviewRound({ revisionId, reviewerIds: [{userId, org}], dueDate })` — engineering_admin/project_admin only; requires revision status `IFD`; supersedes any existing open round on same revision (mark closed) then creates round with `round_no = max+1`; inserts signoff rows with `decision = null`; inserts `notifications` rows (`type='drawing_review.requested'`, link to drawing); audit `engineering.review_round_started`.
-- `submitSignoff({ signoffId, decision, comment })` — only the named reviewer; `decision` in `approved | approved_with_comments | rejected`; sets `signed_at`; audit `engineering.review_signoff`; on final signoff auto-close round.
-- `waiveSignoff({ signoffId, comment })` — engineering_admin only; requires non-empty comment (409 otherwise); sets `decision='waived'`, `signed_at=now()`, audit `engineering.review_waived`.
-- `closeReviewRound({ roundId })` — engineering_admin/project_admin; only when all signoffs have `decision != null`; audit `engineering.review_closed`.
+All wrapped with `requireSupabaseAuth`. Errors use existing `httpError` helper for 403/409 codes.
 
-### IFC governance update — `src/lib/drawings.functions.ts`
+- `listRfis({ projectId, status?, discipline?, assignee?, search? })` — RLS-scoped select with joins to `profiles` (raised_by, routed_to, answered_by) and drawing number
+- `getRfi({ rfiId })` — full row + joined display names
+- `listRoutableMembers({ projectId })` — company members that can receive RFIs (any authenticated member)
+- `raiseRfi({ projectId, subject, question, discipline, priority, routedTo, drawingId?, dueDate })`
+  - Auto-generate `rfi_number` as `RFI-####` from `max(number) + 1` scoped to project
+  - Server sets `raised_by = context.userId`, `status='open'`
+  - Insert; on `23505` (unique violation) → `httpError(409, 'rfi_duplicate_number', …)` with retry hint (returns fresh next number)
+  - `writeAuditLog('rfi.raised', 'rfis', id, { rfi_number, routed_to })`
+- `answerRfi({ rfiId, answer })`
+  - Load row; must be `routed_to = userId` OR engineering_admin/project_admin; else 403 `rfi_not_authorized_to_answer`
+  - Status must be `open|in_review`; else 409 `rfi_not_answerable`
+  - Update `answer`, `answered_by = userId`, `answered_at = now()`, `status='answered'`
+  - Audit `rfi.answered`
+- `closeRfi({ rfiId })`
+  - Must be `raised_by = userId` OR engineering_admin/project_admin
+  - Status must be `answered`; else 409 `rfi_not_closable`
+  - Set `status='closed'`, `closed_at=now()`; audit `rfi.closed`
+- `voidRfi({ rfiId, reason })` — admin only, audit `rfi.voided`
+- `getRfiKpis({ projectId })` — computed from last 90 days:
+  - `turnaround_days_avg` = avg(`answered_at - created_at`) where answered
+  - `open_count`, `overdue_count` (`status in ('open','in_review')` and `due_date < today`)
+  - `pct_on_time` = answered where `answered_at::date <= due_date` / total answered × 100
+  - `by_month` = last 6 months → `{ month, raised, answered }` for the mini bar chart
 
-Replace the existing "approved engineering sign-off" check inside `transitionDrawingStatus` when `toStatus === 'IFC'`:
+## 3. Query layer — `src/lib/rfi-query.ts`
 
-- Locate the latest IFD revision on the drawing.
-- Load the most recent review round for that revision.
-- Reject 409 `ifc_blocked_no_review` when no round exists.
-- Reject 409 `ifc_blocked_pending_reviews` when any signoff row has `decision IS NULL`.
-- On success, auto-close the round (idempotent) before performing the status transition.
+- `rfiListQueryOptions(projectId, filters)`
+- `rfiDetailQueryOptions(rfiId)`
+- `rfiKpiQueryOptions(projectId)` (staleTime 60s)
+- `routableMembersQueryOptions(projectId)`
+- `useRaiseRfiMutation`, `useAnswerRfiMutation` (optimistic on detail cache), `useCloseRfiMutation` — each invalidates list + detail + KPI keys
 
-Existing "no open markups" and "must have IFD" checks stay. Update the error copy to match the new contract.
+## 4. Route — `src/routes/_authenticated/projects.$projectId.engineering.rfis.tsx`
 
-### UI — `src/routes/_authenticated/projects.$projectId.engineering.reviews.tsx`
+- Loader primes list + KPI via `ensureQueryData`
+- Layout:
+  - Header row: title + "Raise RFI" button
+  - `RfiKpiCard` (turnaround, open, overdue, % on-time, Recharts `BarChart` monthly raised vs answered)
+  - Filter toolbar: status Select, discipline Select, assignee Select, search input, "Export CSV"
+  - `RfiTable` — columns: number, subject (click to open), discipline, priority badge, status badge, routed to, due date (overdue rows highlighted with `text-destructive`), age (days since created)
+  - Empty state ("No RFIs raised yet"), skeleton state, error state
+- URL search params for filters (typed via `zod` validateSearch)
+- Detail opens `RfiDetailDrawer` (sheet) with query/answer thread, answer textarea (visible only to authorized), close button (visible only to raiser/admin), audit-friendly timestamps
+- CSV export builds client-side from current filtered rows
 
-Add "Reviews" tab to engineering sub-nav (`projects.$projectId.engineering.tsx`).
+## 5. Components — `src/components/engineering/rfis/`
 
-Sections:
-- **Rounds list** (`ReviewRoundsTable`): per project — drawing number + rev, round #, status badge, reviewers as decision chips (color per decision), due-date countdown, overdue → amber badge when `due_date < today && status='open'`. Row click opens drawer.
-- **Round detail drawer** (`ReviewRoundDrawer`): revision info, markup summary (open / resolved counts), signoff timeline (reviewer, org, decision chip, comment, signed_at), inline actions:
-  - reviewer's own row → decision + comment form (submit via `submitSignoff`)
-  - engineering_admin → "Waive" per pending row (comment required — client-side + server-side validation)
-  - engineering_admin / project_admin → "Close round" when complete
-- **Start round dialog** (`StartReviewRoundDialog`) triggered from drawing detail (P-053) header when `revision.status === 'IFD'` and from Reviews tab header: multi-select reviewers from `listEligibleReviewers` with org selector per reviewer, due date picker.
+- `RfiKpiCard.tsx` — 4 KPI tiles + Recharts monthly bar (semantic tokens `--chart-*`)
+- `RfiTable.tsx` — presentational table with row click
+- `RfiFiltersToolbar.tsx`
+- `RaiseRfiDialog.tsx` — react-hook-form + zod (`subject 3-140`, `question 10-4000`, priority, discipline, `routedTo uuid`, optional `drawingId`, `dueDate` default +7d via `date-fns/addDays`). Shadcn Datepicker (`pointer-events-auto`)
+- `RfiDetailDrawer.tsx` — sheet with question card, answer thread, answer form, close/void controls (role-gated), status/priority badges
+- `RfiStatusBadge.tsx`, `RfiPriorityBadge.tsx`
 
-States: skeleton via TanStack Query `useSuspenseQuery`, empty (`No review rounds yet — start one from an IFD revision`), error boundary. Optimistic mutation for signoff + sonner toast. Semantic tokens only. All copy respects role (view-only for non-writers).
+All styling via semantic tokens — no raw hex.
 
-### Query layer — `src/lib/drawing-reviews-query.ts`
+## 6. Navigation
 
-`useReviewRounds(projectId)`, `useReviewRound(roundId)`, `useEligibleReviewers(projectId)`, plus mutations invalidating `['review-rounds', projectId]`, `['review-round', roundId]`, `['drawing', drawingId]` (for the IFC gate refresh).
+Add "RFIs" tab to `src/routes/_authenticated/projects.$projectId.engineering.tsx` sub-nav between Reviews and BOM.
 
-### Tests — `tests/unit/`
+## 7. Tests — `tests/unit/rfi-rules.test.ts`
 
-- Sign-off completeness helper (pure): `roundIsComplete(signoffs)` — used by both server and UI.
-- Governance error mapper: input scenarios → status/code.
+Pure helpers extracted to `src/lib/rfi-rules.ts`:
 
-### Acceptance checklist
+- `nextRfiNumber(existing: string[]) → 'RFI-0001'` sequencing (gaps + zero-pad)
+- `isOverdue({ due_date, status })`
+- `canAnswer({ role, userId, routed_to, status })`
+- `canClose({ role, userId, raised_by, status })`
+- `computeKpis(rows, today)` → turnaround, open, overdue, pct_on_time
 
-- [ ] Start round on IFD rev with two reviewers → rows + notifications inserted
-- [ ] IFC transition returns 409 while any signoff pending
-- [ ] Reviewer can only sign own row; other row returns 403
-- [ ] Engineering_admin waive without comment → 409; with comment → 200 + audited
-- [ ] All decisions filled → IFC transition succeeds and round auto-closes
-- [ ] Overdue open round → amber badge in list
+## Technical details
 
-### Out of scope (Batch 12 / P-111)
+- Enum reuse: `discipline` reuses existing `drawing_discipline` enum (from P-051), avoiding a new type
+- `drawing_id` FK is `on delete set null` so deleting a drawing doesn't cascade RFI history
+- `answered_at`/`closed_at` are the audit truth — no separate status_history table (audit_logs already covers transitions)
+- `routed_to` remains nullable to accept unrouted RFIs, but raise dialog requires it
+- KPI mini-chart uses existing chart tokens from design system
+- Optimistic answer patches the detail cache with `answered_at = new Date()` before server round-trip; rollback on error via sonner toast + `queryClient.setQueryData` restore
 
-Full notifications UI (bell/menu), background overdue sweeper, and the generic approvals engine — this ticket adds only the minimal `notifications` table row-writes.
+## Verification checklist (manual after build)
 
-next → P-059 once green.
+- Raise RFI-0001 → audit row
+- Force duplicate number (concurrent insert simulation) → 409 with `rfi_duplicate_number`
+- Non-routed member answer attempt → 403
+- Routed user answers → status flips to answered
+- Overdue row (`due_date` yesterday, still open) highlighted
+- Close audited; KPI card matches manual math on seed data

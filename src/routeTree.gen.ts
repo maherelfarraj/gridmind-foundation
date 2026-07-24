@@ -50,6 +50,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } fr
 import { Route as AuthenticatedProjectsProjectIdEngineeringYieldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.yield'
 import { Route as AuthenticatedProjectsProjectIdEngineeringUploadsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.uploads'
 import { Route as AuthenticatedProjectsProjectIdEngineeringSldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld'
+import { Route as AuthenticatedProjectsProjectIdEngineeringRfisRouteImport } from './routes/_authenticated/projects.$projectId.engineering.rfis'
 import { Route as AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.reviews'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
@@ -288,6 +289,12 @@ const AuthenticatedProjectsProjectIdEngineeringSldRoute =
     path: '/sld',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringRfisRoute =
+  AuthenticatedProjectsProjectIdEngineeringRfisRouteImport.update({
+    id: '/rfis',
+    path: '/rfis',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringReviewsRoute =
   AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport.update({
     id: '/reviews',
@@ -360,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
+  '/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
@@ -402,6 +410,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
+  '/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
@@ -451,6 +460,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
+  '/_authenticated/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/_authenticated/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/_authenticated/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/_authenticated/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
@@ -499,6 +509,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/reviews'
+    | '/projects/$projectId/engineering/rfis'
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
     | '/projects/$projectId/engineering/yield'
@@ -541,6 +552,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/reviews'
+    | '/projects/$projectId/engineering/rfis'
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
     | '/projects/$projectId/engineering/yield'
@@ -589,6 +601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/reviews'
+    | '/_authenticated/projects/$projectId/engineering/rfis'
     | '/_authenticated/projects/$projectId/engineering/sld'
     | '/_authenticated/projects/$projectId/engineering/uploads'
     | '/_authenticated/projects/$projectId/engineering/yield'
@@ -895,6 +908,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/rfis': {
+      id: '/_authenticated/projects/$projectId/engineering/rfis'
+      path: '/rfis'
+      fullPath: '/projects/$projectId/engineering/rfis'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringRfisRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/reviews': {
       id: '/_authenticated/projects/$projectId/engineering/reviews'
       path: '/reviews'
@@ -1002,6 +1022,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringBomRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringReviewsRoute: typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
+  AuthenticatedProjectsProjectIdEngineeringRfisRoute: typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   AuthenticatedProjectsProjectIdEngineeringSldRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   AuthenticatedProjectsProjectIdEngineeringUploadsRoute: typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   AuthenticatedProjectsProjectIdEngineeringYieldRoute: typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
@@ -1016,6 +1037,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringReviewsRoute:
       AuthenticatedProjectsProjectIdEngineeringReviewsRoute,
+    AuthenticatedProjectsProjectIdEngineeringRfisRoute:
+      AuthenticatedProjectsProjectIdEngineeringRfisRoute,
     AuthenticatedProjectsProjectIdEngineeringSldRoute:
       AuthenticatedProjectsProjectIdEngineeringSldRoute,
     AuthenticatedProjectsProjectIdEngineeringUploadsRoute:
