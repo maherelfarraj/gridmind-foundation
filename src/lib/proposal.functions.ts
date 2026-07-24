@@ -290,6 +290,8 @@ export interface ProposalListRow {
   opportunity_id: string | null;
   opportunity_name: string | null;
   updated_at: string;
+  company_id: string;
+  project_id: string | null;
 }
 
 export const listProposals = createServerFn({ method: "GET" })
@@ -304,7 +306,7 @@ export const listProposals = createServerFn({ method: "GET" })
     let q = context.supabase
       .from("proposals")
       .select(
-        "id, title, version, status, currency_code, total, opportunity_id, updated_at, opportunities(name)",
+        "id, title, version, status, currency_code, total, opportunity_id, updated_at, company_id, project_id, opportunities(name)",
       )
       .order("updated_at", { ascending: false });
     if (data.opportunityId) q = q.eq("opportunity_id", data.opportunityId);
@@ -320,6 +322,8 @@ export const listProposals = createServerFn({ method: "GET" })
       opportunity_id: r.opportunity_id,
       opportunity_name: r.opportunities?.name ?? null,
       updated_at: r.updated_at,
+      company_id: r.company_id,
+      project_id: r.project_id ?? null,
     }));
   });
 
