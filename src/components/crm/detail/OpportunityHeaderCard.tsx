@@ -334,3 +334,38 @@ function EditableInline({
     </button>
   );
 }
+
+function NewProposalButton({
+  opportunityId,
+  currencyCode,
+  title,
+}: {
+  opportunityId: string;
+  currencyCode: string;
+  title: string;
+}) {
+  const navigate = useNavigate();
+  const create = useCreateProposal();
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={create.isPending}
+      onClick={() =>
+        create.mutate(
+          { opportunityId, currencyCode, title },
+          {
+            onSuccess: (res: any) =>
+              navigate({
+                to: "/proposals/$proposalId",
+                params: { proposalId: res.id },
+              }),
+          },
+        )
+      }
+    >
+      <FileText size={14} aria-hidden />
+      {create.isPending ? "Creating…" : "New proposal"}
+    </Button>
+  );
+}
