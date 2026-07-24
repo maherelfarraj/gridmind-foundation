@@ -11,9 +11,11 @@ import {
   Copy,
   Download,
   Loader2,
+  RefreshCw,
   RotateCcw,
   Settings2,
   Trash2,
+  Users as UsersIcon,
 } from "lucide-react";
 
 import {
