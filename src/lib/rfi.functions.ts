@@ -325,7 +325,7 @@ export const raiseRfi = createServerFn({ method: "POST" })
 
     const { data: inserted, error: iErr } = await context.supabase
       .from("rfis")
-      .insert(insertRow)
+      .insert(insertRow as any)
       .select("id, rfi_number")
       .single();
     if (iErr) {
