@@ -1,53 +1,84 @@
-## P-037 — Project cockpit (approved with adjustments)
+## P-038 — Project detail layout + phase-gate stepper
 
-Route file: `src/routes/_authenticated/projects.index.tsx` (repo convention). Server fns: `src/lib/projects.functions.ts` (repo convention — no `src/lib/server/` dir exists).
+Convert `projects.$projectId` from a single page into a nested layout with tab child routes.
 
-### Label fix (contractual: "COD" all-caps)
+### New server function
 
-- `src/lib/schemas/project-wizard.ts` → `PHASE_LABELS.cod: "COD"`
-- `src/lib/projects.functions.ts` → `PHASE_LABELS_SHORT.cod: "COD"` (this map seeds `project_phase_gates.name` on create, so all future projects render COD everywhere; existing Prairie Winds gate row is not backfilled — flagged in report).
+Append `getProject` to `src/lib/projects.functions.ts`:
 
-### New server fns (`src/lib/projects.functions.ts`)
+- Zod input `{ id: uuid }`, `attachSupabaseAuth` + `requireSupabaseAuth`.
+- Single `.maybeSingle()` on `projects` (RLS scopes to caller's company). If null → return `null` (never distinguish "does not exist" from "wrong tenant").
+- If found, parallel-fetch:
+  - Caller's roles for the project's `company_id` (query `user_roles` filtered by `auth.uid()` + company).
+  - `project_members` joined to `profiles` (full_name, email, avatar_url) for the badges.
+  - `project_departments` (dept, status, lead_user_id) joined to `profiles` for lead names.
+  - `project_phase_gates` (id, phase, name, status, sort_order) ordered by `sort_order`.
+- Return a plain DTO `ProjectDetail` (all fields as strings/numbers/nulls) — never SDK objects.
 
-1. **`listProjects`** — `createServerFn({ method: 'GET' })`, `attachSupabaseAuth` + `requireSupabaseAuth`.
-   - Input (zod): `{ companyId: uuid, search?: string(≤120), phase?: enum, archetype?: enum(7), department?: enum(9), page: int≥1 default 1 }`.
-   - **Guard: `is_company_member(companyId)` → throws `httpError(403, "forbidden")` on false** (matches `getProjectCreationAccess`; makes tenant-hopping visible in logs, no silent empty).
-   - Query via `context.supabase` (RLS enforces same-company; no service key):
-     - `department` set → prefetch `project_departments.project_id` where `department = X` and `.in('id', ids)`; empty list short-circuits `{ rows: [], total: 0 }`.
-     - `search` → `.or("name.ilike.%q%,code.ilike.%q%")` with `%`, `_`, `,` escaped.
-     - `phase`, `archetype` → `.eq(...)`.
-     - Join `project_admin:profiles!projects_project_admin_id_fkey(id, full_name, email, avatar_url)`.
-   - Pagination: `.range((page-1)*24, page*24 - 1)`, `count: 'exact'`. Returns `{ rows, total, page, pageSize: 24 }`.
+### New shared component
 
-2. **`exportProjectsCsv`** — same input minus `page`, same auth + 403 guard + filter logic. Returns `{ filename: 'projects-<iso>.csv', csv: string }` (DTO — createServerFn can't stream `Response`). RFC-4180 escaping. Columns: `code,name,archetype,phase,status,capacity_mw,capacity_mwh,site_country,target_cod,project_admin`. Leading comment: `// TODO(Batch 12): consult project_export_locks before returning CSV.`
+`src/components/projects/phase-gate-stepper.tsx`:
 
-### New component (`src/components/projects/phase-badge.tsx`)
+- Props: `gates: { phase; status; name }[]`.
+- Renders 4 horizontal steps in fixed order Development → NTP → COD → Handover.
+- Each step matches to the gate row for that phase (fallback to `locked` if missing).
+- Icon + token classes:
+  - `approved` → `CheckCircle2` + `bg-primary text-primary-foreground`
+  - `in_review` → `Clock` + `bg-accent text-accent-foreground`
+  - `open` → outlined circle + `border-primary text-primary ring-1 ring-primary/40`
+  - `locked` → `Lock` + `bg-muted text-muted-foreground`
+- Connector line between steps uses `bg-border`; the segment before an approved step becomes `bg-primary`.
+- Purely presentational; no click handlers (gate transitions land in P-040).
 
-Props `{ phase: ProjectPhase }`. Token variants: development=secondary, ntp=accent, cod=primary, handover=muted. Label via `PHASE_LABELS`.
+### Route split
 
-### New route (`src/routes/_authenticated/projects.index.tsx`)
+`src/routes/_authenticated/projects.$projectId.tsx` becomes a **layout route**:
 
-- `validateSearch`: plain zod (no `@tanstack/zod-adapter` in repo) — `{ q, phase, archetype, department, page }` all with `.catch()` defaults; component clamps to known enum sets.
-- `head()`: app-specific title/description/og.
-- Reads `useActiveCompany()` for `companyId`; `Route.useSearch()` for filters.
-- `useQuery({ queryKey: ['projects', companyId, filters], queryFn: () => listProjectsFn({ data: {...} }), enabled: !!companyId, placeholderData: keepPreviousData })`.
-- Filter bar: debounced search `Input` (300 ms → `navigate({ search, replace: true })`), 3 `Select`s (Phase/Archetype/Department each with "All" = clear), `Link` "New project" → `/projects/new`, "Export CSV" button (calls `exportProjectsCsvFn`, builds `Blob`, triggers `<a download>` click).
-- Grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Card: name+code, archetype badge (label from `ARCHETYPES` catalog — "Green H₂", "C&I Rooftop"), `"{mw} MW"` + `" · {mwh} MWh"` when set, `format(target_cod, 'PP')`, `<Avatar>` + admin name, `<PhaseBadge>`. Whole card is a `<Link to='/projects/$projectId' params>`.
-- States: 6-card skeleton on load; distinct empty ("No projects yet — create your first project" + CTA) vs no-matches copy when filters active; branded error panel with `refetch()`.
-- Pagination footer when `total > 24`.
+- Loader primes a `projectDetailQueryOptions(id)` via `context.queryClient.ensureQueryData`.
+- `errorComponent` + `notFoundComponent` render a branded panel with retry / "Back to projects".
+- Component reads `useSuspenseQuery(projectDetailQueryOptions(id))`.
+  - If the fn returns `null` → render the same branded not-found panel (name-agnostic copy so tenant existence isn't leaked). This is the cross-tenant case.
+  - Otherwise renders header block (name, code, archetype badge with correct "C&I Rooftop" / "Green H₂" copy, status chip, `PhaseGateStepper`) then the tab bar, then `<Outlet />`.
+- Tab bar: static tabs Overview / Gates / Config always shown; department tabs (Engineering, Procurement, Construction, HSE, Finance) rendered only when a matching `project_departments` row exists. Uses `<Link>` with active-state token styling; no manual URL strings.
+- `pendingComponent` shows skeleton header + tab bar.
 
-### Verification checklist (Playwright as demo-admin, then Test Co B)
+New child route files (all import a shared `projectDetailQueryOptions` from `src/lib/projects-detail-query.ts`):
 
-1. Typecheck + `bun test:unit` pass.
-2. `/projects` shows Prairie Winds card: name, PWS-2026, Utility PV badge, "150 MW", COD date via `PP`, avatar + name, Development badge.
-3. `?phase=development` → shows it; `?phase=cod` → no-matches; `?q=prairie` → shows it; reload preserves URL.
-4. Switch to Test Co B → empty state "No projects yet — create your first project".
-5. Export CSV → downloads file containing Prairie Winds row (headers correct).
-6. "New project" navigates to wizard; skeleton renders on slow load; PhaseBadge variants visually match tokens.
-7. Direct-invoke `listProjects` with a foreign `companyId` → 403 in response + audit trail (spot-check via server logs).
+- `projects.$projectId.index.tsx` — `beforeLoad` throws `redirect({ to: '/projects/$projectId/overview', params })`.
+- `projects.$projectId.overview.tsx` — `bg-card` grid of key facts (capacity_mw with `MW`, appended `· X MWh` if set, site_name/site_country, offtaker, target_cod formatted `PP`, team avatars from members).
+- `projects.$projectId.gates.tsx` — placeholder card "Gate transitions ship in P-040" listing gate names + statuses read-only.
+- `projects.$projectId.config.tsx` — placeholder card "Archetype config ships in P-039".
+- `projects.$projectId.engineering.tsx`, `.procurement.tsx`, `.construction.tsx`, `.hse.tsx`, `.finance.tsx` — each reads its department row from the shared query and renders a placeholder panel (department status badge, lead name from profile, copy "This module ships in a later batch"). If the row is missing (URL was hand-typed for a hidden dept), render a small "Department not assigned to this project" panel instead of crashing.
 
-### Deliberate scope
+### Shared query options module
 
-- Existing Prairie Winds gate row keeps its old "CoD" name (data-fix out of scope); the two source-of-truth label maps are corrected so `PhaseBadge` and all future creates render "COD".
-- CSV via DTO string, not stream — matches every prior export in repo; upgrade to `src/routes/api/*` later if payloads grow.
-- No `@tanstack/zod-adapter` install — plain `validateSearch` with `.catch()` defaults + component-side clamp keeps deps minimal.
+`src/lib/projects-detail-query.ts` exports:
+
+```ts
+export const projectDetailQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: ['project-detail', id],
+    queryFn: () => getProject({ data: { id } }),
+    staleTime: 30_000,
+  });
+```
+
+This lets layout + every child tab share the cache with `useSuspenseQuery` — one RPC per navigation into the project, no per-tab fetch.
+
+### Head metadata
+
+Layout `head()` uses the loaded project (name + code) for title, description, `og:title`, `og:description`, `og:type=website`, `twitter:card=summary`. Fallback to generic "Project — GridMind EPC" when data isn't in cache yet (SSR/prefetch).
+
+### Verification (manual + Playwright)
+
+1. `/projects/{prairie-id}` as Demo Admin → header shows "Prairie Winds Solar — 150 MWac", `PWS-2026`, `Utility PV` badge, stepper with Development ring/open + NTP/COD/Handover muted/locked.
+2. Tab bar shows Overview, Gates, Config plus the 5 departments seeded at creation; no other dept tabs visible.
+3. Overview panel shows 150 MW, site, offtaker, target COD, member avatars.
+4. Hand-type same URL while signed in as Test Co B → branded not-found panel with "Back to projects", no name leaked.
+5. Reload with network throttled → skeleton header/tabs render before content.
+6. Kill the RPC (temporarily flip the id to a non-uuid via URL) → error boundary shows retry button that calls `router.invalidate()`.
+7. `rg -n "#[0-9a-fA-F]{6}\\|rgb\\(\\|text-white\\|bg-black" src/components/projects src/routes/_authenticated/projects.\\$projectId*` returns no hits (tokens only).
+
+### Non-goals
+
+Read-only page: no mutations, no audit rows, no gate transitions (P-040), no archetype config forms (P-039).
