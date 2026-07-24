@@ -9,7 +9,16 @@ import {
   attachSupabaseAuth,
   requireSupabaseAuth,
 } from "@/integrations/supabase/auth-attacher";
+import {
+  budgetLineSchema,
+  gateSchema,
+  PROJECT_DEPARTMENTS,
+  type BudgetLine,
+  type Gate,
+  type ProjectDepartment,
+} from "@/lib/schemas/project-wizard";
 import type { PlanTier } from "./permissions";
+import type { ProjectArchetype } from "./wizard-draft";
 
 const inputSchema = z.object({ companyId: z.string().uuid() });
 
