@@ -1,31 +1,53 @@
-## Drive the P-036 wizard end-to-end, then verify
+## P-037 — Project cockpit (approved with adjustments)
 
-I'll script Playwright against the local preview to run the full 4-step wizard as the signed-in demo admin, then run the 5 verification SQL queries and report the results.
+Route file: `src/routes/_authenticated/projects.index.tsx` (repo convention). Server fns: `src/lib/projects.functions.ts` (repo convention — no `src/lib/server/` dir exists).
 
-### Steps
+### Label fix (contractual: "COD" all-caps)
 
-1. **Preflight checks (SQL, read-only)**
-   - Confirm at least one user in the Demo EPC Co tenant holds `project_admin` (needed for step 4). If none, stop and ask before proceeding — I won't grant roles without confirmation.
-   - Note the caller's `user_id` and any `finance_admin` candidates so the wizard fills correctly.
+- `src/lib/schemas/project-wizard.ts` → `PHASE_LABELS.cod: "COD"`
+- `src/lib/projects.functions.ts` → `PHASE_LABELS_SHORT.cod: "COD"` (this map seeds `project_phase_gates.name` on create, so all future projects render COD everywhere; existing Prairie Winds gate row is not backfilled — flagged in report).
 
-2. **Playwright script (`/tmp/browser/p036/`)**
-   - Restore the injected Supabase session (`LOVABLE_BROWSER_SUPABASE_*`) into localStorage + cookies, navigate to `http://localhost:8080/projects/new`.
-   - Step 1: click the **Utility PV** card → Next.
-   - Step 2: fill name `Prairie Winds Solar — 150 MWac`, code `PWS-2026`, capacity `150`, site name `Ma'an Solar Park`, country `Jordan`, region `Ma'an Governorate`, offtaker `NEPCO`, target COD `2027-12-31` → Next.
-   - Step 3: pick the **Utility PV** system template → Next.
-   - Step 4: select project admin (self), pick finance lead from the eligible list, leave other dept leads blank → Finish.
-   - Screenshot each step and wait for navigation to `/projects/<uuid>`; capture the final URL and toast.
+### New server fns (`src/lib/projects.functions.ts`)
 
-3. **Verification queries (after wizard completes)**
-   Bind the new `project_id` from the URL, then run:
-   1. `SELECT * FROM projects WHERE id = $1` — full row.
-   2. `SELECT project_role, count(*) FROM project_members WHERE project_id = $1 GROUP BY project_role`.
-   3. `SELECT department, lead_user_id, status FROM project_departments WHERE project_id = $1 ORDER BY department` — expect 5 rows.
-   4. `SELECT phase, name, status, sort_order FROM project_phase_gates WHERE project_id = $1 ORDER BY sort_order` — expect Development=open, others=locked.
-   5. `SELECT action, entity, entity_id, metadata, created_at FROM audit_logs WHERE entity='projects' AND entity_id=$1 AND action='project.created'` — expect exactly 1 row.
+1. **`listProjects`** — `createServerFn({ method: 'GET' })`, `attachSupabaseAuth` + `requireSupabaseAuth`.
+   - Input (zod): `{ companyId: uuid, search?: string(≤120), phase?: enum, archetype?: enum(7), department?: enum(9), page: int≥1 default 1 }`.
+   - **Guard: `is_company_member(companyId)` → throws `httpError(403, "forbidden")` on false** (matches `getProjectCreationAccess`; makes tenant-hopping visible in logs, no silent empty).
+   - Query via `context.supabase` (RLS enforces same-company; no service key):
+     - `department` set → prefetch `project_departments.project_id` where `department = X` and `.in('id', ids)`; empty list short-circuits `{ rows: [], total: 0 }`.
+     - `search` → `.or("name.ilike.%q%,code.ilike.%q%")` with `%`, `_`, `,` escaped.
+     - `phase`, `archetype` → `.eq(...)`.
+     - Join `project_admin:profiles!projects_project_admin_id_fkey(id, full_name, email, avatar_url)`.
+   - Pagination: `.range((page-1)*24, page*24 - 1)`, `count: 'exact'`. Returns `{ rows, total, page, pageSize: 24 }`.
 
-4. **Report** — inline table of results + pass/fail against the expected shape, plus links to screenshots. If the wizard errors, I stop and surface the toast + console/network output rather than fabricating data.
+2. **`exportProjectsCsv`** — same input minus `page`, same auth + 403 guard + filter logic. Returns `{ filename: 'projects-<iso>.csv', csv: string }` (DTO — createServerFn can't stream `Response`). RFC-4180 escaping. Columns: `code,name,archetype,phase,status,capacity_mw,capacity_mwh,site_country,target_cod,project_admin`. Leading comment: `// TODO(Batch 12): consult project_export_locks before returning CSV.`
 
-### No code changes
+### New component (`src/components/projects/phase-badge.tsx`)
 
-This is verification-only — no file edits, no migrations, no data inserts.
+Props `{ phase: ProjectPhase }`. Token variants: development=secondary, ntp=accent, cod=primary, handover=muted. Label via `PHASE_LABELS`.
+
+### New route (`src/routes/_authenticated/projects.index.tsx`)
+
+- `validateSearch`: plain zod (no `@tanstack/zod-adapter` in repo) — `{ q, phase, archetype, department, page }` all with `.catch()` defaults; component clamps to known enum sets.
+- `head()`: app-specific title/description/og.
+- Reads `useActiveCompany()` for `companyId`; `Route.useSearch()` for filters.
+- `useQuery({ queryKey: ['projects', companyId, filters], queryFn: () => listProjectsFn({ data: {...} }), enabled: !!companyId, placeholderData: keepPreviousData })`.
+- Filter bar: debounced search `Input` (300 ms → `navigate({ search, replace: true })`), 3 `Select`s (Phase/Archetype/Department each with "All" = clear), `Link` "New project" → `/projects/new`, "Export CSV" button (calls `exportProjectsCsvFn`, builds `Blob`, triggers `<a download>` click).
+- Grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Card: name+code, archetype badge (label from `ARCHETYPES` catalog — "Green H₂", "C&I Rooftop"), `"{mw} MW"` + `" · {mwh} MWh"` when set, `format(target_cod, 'PP')`, `<Avatar>` + admin name, `<PhaseBadge>`. Whole card is a `<Link to='/projects/$projectId' params>`.
+- States: 6-card skeleton on load; distinct empty ("No projects yet — create your first project" + CTA) vs no-matches copy when filters active; branded error panel with `refetch()`.
+- Pagination footer when `total > 24`.
+
+### Verification checklist (Playwright as demo-admin, then Test Co B)
+
+1. Typecheck + `bun test:unit` pass.
+2. `/projects` shows Prairie Winds card: name, PWS-2026, Utility PV badge, "150 MW", COD date via `PP`, avatar + name, Development badge.
+3. `?phase=development` → shows it; `?phase=cod` → no-matches; `?q=prairie` → shows it; reload preserves URL.
+4. Switch to Test Co B → empty state "No projects yet — create your first project".
+5. Export CSV → downloads file containing Prairie Winds row (headers correct).
+6. "New project" navigates to wizard; skeleton renders on slow load; PhaseBadge variants visually match tokens.
+7. Direct-invoke `listProjects` with a foreign `companyId` → 403 in response + audit trail (spot-check via server logs).
+
+### Deliberate scope
+
+- Existing Prairie Winds gate row keeps its old "CoD" name (data-fix out of scope); the two source-of-truth label maps are corrected so `PhaseBadge` and all future creates render "COD".
+- CSV via DTO string, not stream — matches every prior export in repo; upgrade to `src/routes/api/*` later if payloads grow.
+- No `@tanstack/zod-adapter` install — plain `validateSearch` with `.catch()` defaults + component-side clamp keeps deps minimal.
