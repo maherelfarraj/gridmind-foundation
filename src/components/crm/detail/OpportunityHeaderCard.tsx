@@ -151,14 +151,12 @@ export function OpportunityHeaderCard({
           </div>
           {!readOnly && (
             <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled
-                title="Proposals ship in P-044"
-              >
-                New proposal
-              </Button>
+              <NewProposalButton
+                opportunityId={opp.id}
+                currencyCode={opp.currency_code ?? "USD"}
+                title={`${opp.name} — Proposal`}
+              />
+
               <Button
                 size="sm"
                 variant="outline"
