@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 const SUB_TABS = [
   { to: "" as const, label: "Overview" },
+  { to: "drawings" as const, label: "Drawings" },
   { to: "uploads" as const, label: "Site data uploads" },
 ];
 
@@ -41,7 +42,7 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads";
+  to: "" | "uploads" | "drawings";
   label: string;
   projectId: string;
 }) {
