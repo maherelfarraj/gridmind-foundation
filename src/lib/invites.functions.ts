@@ -168,11 +168,15 @@ export const peekInvite = createServerFn({ method: "GET" })
     );
     const { data: invite, error } = await supabaseAdmin
       .from("invites")
-      .select(
-        "email, role, status, expires_at, company_id, companies!inner(name)",
-      )
+      .select("email, role, status, expires_at, company_id")
       .eq("token_hash", hash)
-      .maybeSingle();
+      .maybeSingle<{
+        email: string;
+        role: (typeof Constants.public.Enums.app_role)[number];
+        status: (typeof Constants.public.Enums.invite_status)[number];
+        expires_at: string;
+        company_id: string;
+      }>();
 
     if (error) throw error;
     if (!invite) return { status: "invalid" };
@@ -187,7 +191,12 @@ export const peekInvite = createServerFn({ method: "GET" })
       return { status: "wrong_account", invitedEmail: invite.email };
     }
 
-    const company = invite.companies as unknown as { name: string } | null;
+    const { data: company } = await supabaseAdmin
+      .from("companies")
+      .select("name")
+      .eq("id", invite.company_id)
+      .maybeSingle<{ name: string }>();
+
     return {
       status: "valid",
       email: invite.email,
@@ -197,3 +206,4 @@ export const peekInvite = createServerFn({ method: "GET" })
       expiresAt: invite.expires_at,
     };
   });
+
