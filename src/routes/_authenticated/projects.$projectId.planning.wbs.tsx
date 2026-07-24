@@ -167,7 +167,7 @@ function WbsPage() {
       parent_id: parent.id,
       code: nextCode,
       name: "New item",
-      item_type: parent.item_type === "phase" ? "package" : "activity",
+      item_type: parent.item_type === "phase" ? "package" : "task_group",
       discipline: parent.discipline ?? null,
       sort_order: siblings.length,
     });
