@@ -248,5 +248,37 @@ export const updateTenantPlan = createServerFn({ method: "POST" })
     });
     if (auditErr) throw auditErr;
 
+    // Auto-disable green_hydrogen when downgrading away from enterprise.
+    // Mirrors has_module_access's hard rule and keeps the override row honest.
+    if (from === "enterprise" && data.planTier !== "enterprise") {
+      const { error: ghErr } = await context.supabase
+        .from("module_access_rules")
+        .upsert(
+          {
+            company_id: data.companyId,
+            module: "green_hydrogen",
+            enabled: false,
+          },
+          { onConflict: "company_id,module" },
+        );
+      if (ghErr) throw ghErr;
+
+      const { error: ghAuditErr } = await context.supabase.rpc(
+        "write_audit_log",
+        {
+          p_action: "module_access.auto_disabled",
+          p_entity: "module_access_rules",
+          p_entity_id: data.companyId,
+          p_metadata: {
+            module_key: "green_hydrogen",
+            from,
+            to: data.planTier,
+          },
+        },
+      );
+      if (ghAuditErr) throw ghAuditErr;
+    }
+
     return { id: data.companyId, changed: true, from, to: data.planTier };
   });
+

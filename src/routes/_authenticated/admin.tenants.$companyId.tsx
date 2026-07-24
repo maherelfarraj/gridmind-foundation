@@ -10,9 +10,17 @@ import {
   updateTenantPlan,
   type PlanTier,
 } from "@/lib/tenants.functions";
+import { ModuleAccessTable } from "@/components/module-access-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
 import {
   Card,
   CardContent,
@@ -95,7 +103,9 @@ function TenantDetailPage() {
       if (res.changed) toast.success(`Plan updated to ${PLAN_LABELS[res.to as PlanTier]}`);
       else toast.info("Plan unchanged");
       qc.invalidateQueries({ queryKey: ["admin", "tenants"] });
+      qc.invalidateQueries({ queryKey: ["modules", companyId] });
     },
+
     onError: (err: Error) => toast.error(err.message || "Failed to update plan"),
   });
 
@@ -153,55 +163,73 @@ function TenantDetailPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Tenant ID</CardTitle>
-          <CardDescription>Use this UUID when opening a support or debugging ticket.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center gap-2">
-          <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground">
-            {t.id}
-          </code>
-          <Button variant="outline" size="sm" onClick={copyId}>
-            <Copy className="mr-2 h-3 w-3" /> Copy
-          </Button>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="modules">Modules</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Plan tier</CardTitle>
-          <CardDescription>Changing the plan is audit-logged.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-end gap-3">
-          <div className="flex-1">
-            <Select value={draft} onValueChange={(v) => setPlanDraft(v as PlanTier)}>
-              <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="growth">Growth</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
+        <TabsContent value="overview" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Tenant ID</CardTitle>
+              <CardDescription>Use this UUID when opening a support or debugging ticket.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center gap-2">
+              <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground">
+                {t.id}
+              </code>
+              <Button variant="outline" size="sm" onClick={copyId}>
+                <Copy className="mr-2 h-3 w-3" /> Copy
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Plan tier</CardTitle>
+              <CardDescription>Changing the plan is audit-logged. Downgrading from Enterprise auto-disables Green H₂.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-end gap-3">
+              <div className="flex-1">
+                <Select value={draft} onValueChange={(v) => setPlanDraft(v as PlanTier)}>
+                  <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="growth">Growth</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                disabled={!dirty || mutation.isPending}
+                onClick={() => mutation.mutate(draft)}
+              >
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatCard label="Members" value={t.member_count} />
+            <StatCard label="Admins" value={t.admin_count} />
+            <StatCard label="Pending invites" value={t.invite_count} />
           </div>
-          <Button
-            disabled={!dirty || mutation.isPending}
-            onClick={() => mutation.mutate(draft)}
-          >
-            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save
-          </Button>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard label="Members" value={t.member_count} />
-        <StatCard label="Admins" value={t.admin_count} />
-        <StatCard label="Pending invites" value={t.invite_count} />
-      </div>
+        <TabsContent value="modules" className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Toggle module access for this tenant. Each change is audit-logged as{" "}
+            <span className="font-mono">module_access.changed</span>.
+          </p>
+          <ModuleAccessTable companyId={companyId} canEdit />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (

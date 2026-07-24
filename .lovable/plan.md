@@ -1,75 +1,62 @@
-# P-026 — Department Configuration Page
+# P-027 — Module access admin
 
-Adds `/settings/departments` for company_admin (super_admin allowed) with 9 fixed department cards, each showing responsibilities, current admin chips, and an "Assign admin" flow that reuses the guarded `grantRole` / `revokeRole` RPCs from P-024. No new tables, no new server functions.
+Build the tenant-scoped module access admin on top of migration 0005 (`module_access_rules` + `has_module_access`). Super admin edits any tenant; company admin reads their own; sidebar visibility follows the same rules (single source of truth).
 
-## 1. Single source of truth: `src/lib/permissions.ts`
+## 1. Canonical module registry — `src/lib/modules.ts` (new)
 
-Append (keep all existing exports untouched):
+Single source of truth for the 9 module keys from migration 0005's CHECK constraint:
 
-```ts
-import type { GrantableRole } from "./role-groups";
+| key | label | description | plans |
+| --- | --- | --- | --- |
+| `crm` | CRM & Origination | Leads, opportunities, proposals | starter, growth, enterprise |
+| `engineering` | Engineering | Designs, drawings, BOM | starter, growth, enterprise |
+| `procurement` | Procurement | Vendors, RFQs, POs, receipts | starter, growth, enterprise |
+| `planning_budget` | Planning & Budget | Schedules, budgets, EVM | starter, growth, enterprise |
+| `field_qaqc` | Field, HSE & QA/QC | Daily reports, inspections, incidents | growth, enterprise |
+| `commissioning` | Commissioning | Punch lists, energization, handover | growth, enterprise |
+| `portals` | Client & Investor Portals | External stakeholder access | growth, enterprise |
+| `om_scada` | O&M & SCADA | Work orders, telemetry, alarms | enterprise |
+| `green_hydrogen` | Green H₂ | Electrolyser + H₂ plant modules | **enterprise only** |
 
-export type DepartmentKey =
-  | "engineering" | "procurement" | "construction" | "hse"
-  | "finance" | "legal" | "om" | "scada" | "billing";
+Exports: `MODULE_KEYS` (readonly tuple), `ModuleKey` type, `MODULE_REGISTRY` (label, description, `baselinePlans: PlanTier[]`, `enterpriseOnly: boolean`), helper `planAllowsModule(plan, key)` mirroring `has_module_access` baseline.
 
-export interface Department {
-  key: DepartmentKey;
-  name: string;              // display label ("O&M", "HSE" spelled exactly)
-  adminRole: GrantableRole;  // corresponding app_role in user_roles
-  responsibilities: string;  // Tenant Manual copy
-  icon: LucideIcon;          // lucide-react component
-}
+## 2. Reconcile `src/lib/permissions.ts`
 
-export const DEPARTMENTS: readonly Department[] = [ /* 9 entries */ ];
-```
+The existing `ModuleKey` union uses obsolete keys (`planning`, `field`, `om`, `partners`). Re-export `ModuleKey` from `modules.ts` and rewrite `ROLE_TO_MODULES` / `MODULE_PLAN_REQUIREMENTS` / `getVisibleModules` to use the canonical 9 keys plus `admin`. Update `src/components/app-sidebar.tsx` nav items to the new keys (planning→planning_budget, field→field_qaqc, om→om_scada, partners→portals).
 
-Icons (lucide-react): `Ruler` (engineering), `ShoppingCart` (procurement), `HardHat` (construction), `ShieldAlert` (hse), `Wallet` (finance), `Scale` (legal), `Wrench` (om), `Activity` (scada), `Receipt` (billing).
+## 3. Server functions — `src/lib/modules.functions.ts` (new)
 
-Responsibilities strings copied verbatim from the request (checked against Tenant Manual wording).
+All zod-validated, all `attachSupabaseAuth` + `requireSupabaseAuth`, all audit-logged.
 
-Compile-time exhaustiveness check so any new `DepartmentKey` must be added to `DEPARTMENTS`.
+- `listModuleAccess({ companyId })` → `{ planTier, canEdit, modules: { key, enabled, source: 'override'|'baseline', allowedByPlan }[] }`. Any authenticated caller who is either super_admin OR company_admin/member of the tenant. Reads `companies.plan_tier`, joins `module_access_rules` for overrides, and for each of the 9 keys resolves final `enabled` the same way `has_module_access` does (override wins; green_hydrogen forced false unless enterprise). `canEdit` = super_admin.
+- `setModuleAccess({ companyId, module, enabled })` → super_admin only (via `has_role`). Validates `module` against `MODULE_KEYS`. Rejects with **403 JSON** `{ error: 'plan_gated' }` if `enabled=true` and plan doesn't allow it (esp. green_hydrogen on non-enterprise). Upserts into `module_access_rules` on `(company_id, module)`. Writes `audit_logs` action `module_access.changed` with metadata `{ module_key, enabled, company_id, actor }`.
+- Extend `updateTenantPlan` in `src/lib/tenants.functions.ts`: when a downgrade removes `green_hydrogen` (any → non-enterprise), upsert `module_access_rules` row `{ enabled: false }` for `green_hydrogen` and write `audit_logs` action `module_access.auto_disabled` with `{ from, to, module_key: 'green_hydrogen' }`. Done in the same handler after the plan update succeeds.
 
-## 2. Route: `src/routes/_authenticated/settings.departments.tsx`
+## 4. Shared UI — `src/components/module-access-table.tsx` (new)
 
-- `createFileRoute("/_authenticated/settings/departments")` with `head()` (title "Departments — GridMind EPC", matching description + og tags).
-- Uses `useActiveCompany()`, `useServerFn(listCompanyMembers)`, `useServerFn(grantRole)`, `useServerFn(revokeRole)`.
-- One `useQuery` on `["company-members", activeCompanyId]` (same key as P-024 so caches stay in sync).
-- Derives `isAdmin` from the query result; if not admin, page renders a read-only view (chips visible, no Assign button). Server-side `assert_can_grant_role` is the real gate.
+Props: `{ companyId, planTier, canEdit, rows }`. Renders a table with columns: Module (label + description), Plan availability (three badges Starter/Growth/Enterprise; the ones that include the module are filled, others muted), Enabled (Switch, or read-only checkmark when `!canEdit`). Green H₂ switch is `disabled` on non-enterprise tenants with a shadcn Tooltip: *"Green H₂ requires the Enterprise plan — upgrade to enable."* Uses `useMutation` on `setModuleAccess` with optimistic update and sonner toasts; on 403 rolls back and toasts the server message. Skeleton row state; error card with Retry.
 
-### Layout
-- Page header: `<h1>Departments</h1>` + subtitle.
-- Responsive grid: `grid gap-4 sm:grid-cols-2 xl:grid-cols-3`.
-- One `<Card>` per `DEPARTMENTS` entry with:
-  - Header: icon in a rounded token-colored square + `dept.name`.
-  - Body: `dept.responsibilities` paragraph (`text-sm text-muted-foreground`).
-  - Admins section: label "Admins" + chips (`Avatar` + name/email) for every member whose `roles` includes `dept.adminRole`; empty state "No admin assigned".
-  - Footer: "Assign admin" button (opens picker for that department). Disabled with tooltip if `!isAdmin`.
-- Loading: 9 skeleton cards. Error: card list replaced by an inline error state with retry.
+## 5. Routes
 
-### Assign-admin picker (shared dialog component in same file)
-- shadcn `Dialog` with a `Command` search palette listing all company members not currently holding that department's admin role.
-- Selecting a member calls `grantRole({ targetUserId, role: dept.adminRole })`; optimistic cache patch via `queryClient.setQueryData(["company-members", activeCompanyId], …)` — same pattern as `settings.users.tsx`.
-- Current admin chip has an "x" button → `revokeRole({ targetUserId, role: dept.adminRole })` with confirm.
-- Toasts on success/error; both branches write audit rows automatically (existing `grantRole` / `revokeRole` already call `write_audit_log` for `role.granted` / `role.revoked`).
-- No last-admin guard needed (department admins aren't the tenant lockout risk); `revokeRole`'s existing safety on `company_admin` still stands.
+- `src/routes/_authenticated/admin.tenants.$companyId.tsx`: wrap the current body in shadcn `Tabs` — **Overview** (existing plan tier + stat cards) and **Modules** (`<ModuleAccessTable canEdit />`). Invalidate `['modules', companyId]` after `updateTenantPlan` succeeds so the Modules tab reflects auto-disable.
+- `src/routes/_authenticated/settings.modules.tsx` (new): read-only `<ModuleAccessTable canEdit={false} />` for the active company (from `useActiveCompany`). Standard `head()` meta. Add sidebar nav item under Administration → "Module access" (visible to company_admin and above via existing gating).
 
-## 3. Navigation
+## 6. Sidebar becomes rule-driven
 
-Add "Departments" entry to the Settings section of `src/components/app-sidebar.tsx` next to "Users" using the `Building2` icon.
+`src/components/app-sidebar.tsx` currently derives visibility from `getVisibleModules` (role+plan only). Add a `useQuery(['modules', activeCompanyId], listModuleAccess)` and filter module-scoped nav items by `rows.find(r => r.key === item.moduleKey)?.enabled`. Admin section unaffected. Nav shows skeletons while loading; on error falls back to the plan-based visibility so nav isn't blank.
 
-## 4. Verification checks after build
+## 7. Verification (after build)
 
-- Route renders 9 cards labelled exactly: Engineering, Procurement, Construction, HSE, Finance, Legal, O&M, SCADA, Billing.
-- Responsibilities strings match the Tenant Manual copy.
-- Assigning `finance_admin` to a second user shows the chip immediately, inserts `user_roles` row, logs `role.granted`.
-- Removing chip logs `role.revoked` and updates UI.
-- Signed in as non-admin: Assign button disabled AND server-side call rejects with `assert_can_grant_role` error (toast).
-- Typecheck (`bunx tsgo`) clean.
+- 9 rows render on Demo EPC Co (enterprise) — all enabled.
+- On a starter/growth tenant, Green H₂ switch is disabled + tooltip; `invoke-server-function` `setModuleAccess enabled=true` → 403 `plan_gated`.
+- Toggle a module off on the active tenant → sidebar item disappears after query invalidation.
+- Downgrade Demo EPC Co enterprise → growth → `module_access_rules` shows green_hydrogen enabled=false + one `module_access.auto_disabled` audit row.
+- `/settings/modules` as company_admin: switches rendered read-only (disabled).
+- Each toggle emits one `module_access.changed` audit row.
 
 ## Technical notes
 
-- No new server functions, no migrations, no new tables — department admin state = `user_roles(user_id, company_id, role=<dept>_admin)`.
-- `DEPARTMENTS` is the only place these 9 keys/roles/labels/copy live; sidebar and future module gating read from it.
-- All styling via semantic tokens; icons via lucide-react components on `text-muted-foreground` / `text-foreground`.
-- Reuses P-024's `grantRole`/`revokeRole` verbatim → audit + guard preserved.
+- `module_access_rules` grants already in place from P-013; no migration required.
+- Roles read via `has_role`/`has_company_role`; never from `profiles`.
+- All strings use design tokens; badges use existing `Badge` variants.
+- Zod enum uses `MODULE_KEYS` tuple so server input matches the CHECK constraint exactly.
