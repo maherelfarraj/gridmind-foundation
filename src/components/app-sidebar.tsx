@@ -113,6 +113,25 @@ export function AppSidebar() {
   });
   const isSuperAdmin = (rolesQuery.data ?? []).some((r) => r.role === "super_admin");
 
+  const { activeCompanyId } = useActiveCompany();
+  const modulesFn = useServerFn(listModuleAccess);
+  const modulesQuery = useQuery({
+    queryKey: ["modules", activeCompanyId],
+    queryFn: () => modulesFn({ data: { companyId: activeCompanyId } }),
+    enabled: Boolean(activeCompanyId),
+    staleTime: 30_000,
+  });
+  // Runtime source of truth: module_access_rules. Fall back to the plan-based
+  // permissions map only while the query is loading or errored so nav isn't
+  // blank on first paint.
+  const enabledModuleKeys: Set<string> | null = modulesQuery.data
+    ? new Set(
+        modulesQuery.data.modules
+          .filter((m) => m.enabled)
+          .map((m) => m.key),
+      )
+    : null;
+
   const isActive = (url: string) =>
     pathname === url || pathname.startsWith(`${url}/`);
 
@@ -138,12 +157,15 @@ export function AppSidebar() {
 
       <SidebarContent>
         {NAV_SECTIONS.map((section) => {
-          const items = section.items.filter(
-            (item) =>
-              visibleModules.has(item.moduleKey) &&
-              (!item.requiresSuperAdmin || isSuperAdmin),
-          );
+          const items = section.items.filter((item) => {
+            if (item.requiresSuperAdmin && !isSuperAdmin) return false;
+            if (item.moduleKey === "admin") return visibleModules.has("admin");
+            // Prefer rule-driven visibility; fall back to plan-based map.
+            if (enabledModuleKeys) return enabledModuleKeys.has(item.moduleKey);
+            return visibleModules.has(item.moduleKey);
+          });
           if (items.length === 0) return null;
+
 
           return (
             <SidebarGroup key={section.label}>
