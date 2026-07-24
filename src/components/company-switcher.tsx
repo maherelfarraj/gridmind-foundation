@@ -106,6 +106,8 @@ function initialsOf(name: string): string {
 export function CompanySwitcher() {
   const { companies, activeCompany, activeCompanyId, setActiveCompanyId } = useActiveCompany();
 
+  if (!activeCompany) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -124,6 +126,7 @@ export function CompanySwitcher() {
           <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
           Switch company
