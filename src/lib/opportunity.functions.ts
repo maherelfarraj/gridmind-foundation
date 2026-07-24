@@ -48,7 +48,9 @@ export interface OpportunityDetail {
   updated_at: string;
   won_at: string | null;
   lost_at: string | null;
+  converted_intake_id: string | null;
 }
+
 
 export interface ContactRow {
   id: string;
@@ -149,7 +151,7 @@ export const getOpportunity = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("opportunities")
       .select(
-        "id, company_id, name, account_name, archetype, capacity_mw, estimated_value, currency_code, expected_decision_date, stage, probability, competitor, loss_reason, notes, owner_id, created_at, updated_at, won_at, lost_at",
+        "id, company_id, name, account_name, archetype, capacity_mw, estimated_value, currency_code, expected_decision_date, stage, probability, competitor, loss_reason, notes, owner_id, created_at, updated_at, won_at, lost_at, converted_intake_id",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -616,3 +618,345 @@ export const getOpportunityActivity = createServerFn({ method: "GET" })
 
 // re-export for callers
 export { OPPORTUNITY_STAGES, STAGE_PROBABILITY };
+
+// ---------------------------------------------------------------------------
+// P-050 — Win conversion: opportunity → project_intake + kick-off pack
+// ---------------------------------------------------------------------------
+
+const PROJECT_ARCHETYPES = [
+  "utility_pv",
+  "standalone_bess",
+  "c_and_i_rooftop",
+  "hybrid_pv_bess",
+  "onshore_wind",
+  "green_hydrogen",
+  "transmission_substation",
+] as const;
+
+export const WIN_ARCHETYPES = PROJECT_ARCHETYPES;
+
+export interface WinConversionPrefill {
+  opportunity: {
+    id: string;
+    company_id: string;
+    name: string;
+    account_name: string | null;
+    archetype: string | null;
+    capacity_mw: number | null;
+    stage: OpportunityStage;
+    converted_intake_id: string | null;
+  };
+  owners: Array<{ id: string; full_name: string | null; email: string | null }>;
+}
+
+export const getWinConversionPrefill = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ opportunityId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<WinConversionPrefill | null> => {
+    requireSupabaseAuth(context);
+
+    const { data: opp, error } = await context.supabase
+      .from("opportunities")
+      .select(
+        "id, company_id, name, account_name, archetype, capacity_mw, stage, converted_intake_id",
+      )
+      .eq("id", data.opportunityId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!opp) return null;
+
+    const { data: profs } = await context.supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .eq("company_id", (opp as any).company_id)
+      .order("full_name", { ascending: true });
+
+    return {
+      opportunity: opp as any,
+      owners: (profs ?? []) as any,
+    };
+  });
+
+const convertInput = z.object({
+  opportunityId: z.string().uuid(),
+  name: z.string().trim().min(1).max(200),
+  archetype: z.enum(PROJECT_ARCHETYPES),
+  capacity_mw: z.number().nonnegative().nullable(),
+  offtaker: z.string().trim().max(200).nullable(),
+  target_cod: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable(),
+  owner_id: z.string().uuid().nullable(),
+});
+
+export const convertOpportunityToIntake = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => convertInput.parse(input))
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ intake_id: string; alreadyConverted: boolean }> => {
+      requireSupabaseAuth(context);
+      await assertCrmWriter(context);
+
+      // Load opportunity (RLS-scoped)
+      const { data: opp, error: oErr } = await context.supabase
+        .from("opportunities")
+        .select("id, company_id, name, stage, converted_intake_id")
+        .eq("id", data.opportunityId)
+        .maybeSingle();
+      if (oErr) throw oErr;
+      if (!opp) httpError(404, "opportunity_not_found");
+      const o = opp as any;
+
+      if (o.stage === "lost") {
+        httpError(409, "cannot_convert_lost_opportunity");
+      }
+
+      // Idempotent: existing intake wins
+      if (o.converted_intake_id) {
+        return { intake_id: o.converted_intake_id as string, alreadyConverted: true };
+      }
+
+      // 1) Insert project_intake — enum has no crm_win; use 'opportunity'.
+      const intakePayload = {
+        company_id: o.company_id,
+        name: data.name,
+        archetype: data.archetype,
+        capacity_mw: data.capacity_mw,
+        offtaker: data.offtaker,
+        target_cod: data.target_cod,
+        status: "new" as const,
+        source: "opportunity" as const,
+        source_opportunity_id: o.id,
+        created_by: (context as any).user?.id ?? null,
+        notes: `Converted from opportunity: ${o.name}`,
+      };
+
+      const { data: intakeRow, error: iErr } = await context.supabase
+        .from("project_intake")
+        .insert(intakePayload as any)
+        .select("id")
+        .single();
+      if (iErr) throw iErr;
+      const intakeId = (intakeRow as any).id as string;
+
+      // 2) Update opportunity → won (best-effort compensation on failure)
+      const { error: uErr } = await context.supabase
+        .from("opportunities")
+        .update({
+          stage: "won",
+          won_at: new Date().toISOString(),
+          probability: 100,
+          converted_intake_id: intakeId,
+        } as any)
+        .eq("id", o.id);
+      if (uErr) {
+        // Compensate — delete the orphan intake so the user can retry cleanly.
+        await context.supabase.from("project_intake").delete().eq("id", intakeId);
+        throw uErr;
+      }
+
+      // 3+4) Audit rows — opportunity.won and project_intake.created
+      await auditOpportunity(context, "opportunity.won", o.id, {
+        intake_id: intakeId,
+      });
+      await context.supabase.rpc("write_audit_log", {
+        p_action: "project_intake.created",
+        p_entity: "project_intake",
+        p_entity_id: intakeId,
+        p_metadata: {
+          opportunity_id: o.id,
+          source: "crm_win",
+        },
+      });
+
+      return { intake_id: intakeId, alreadyConverted: false };
+    },
+  );
+
+// ---------------------------------------------------------------------------
+// Kick-off pack — internal branded PDF, uploaded to `documents` bucket
+// ---------------------------------------------------------------------------
+
+const kickoffInput = z.object({
+  opportunityId: z.string().uuid(),
+  intakeId: z.string().uuid(),
+});
+
+export const buildKickoffPack = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => kickoffInput.parse(input))
+  .handler(async ({ data, context }): Promise<{ path: string }> => {
+    requireSupabaseAuth(context);
+    await assertCrmWriter(context);
+
+    // Load opportunity (RLS-scoped)
+    const { data: opp, error: oErr } = await context.supabase
+      .from("opportunities")
+      .select("*")
+      .eq("id", data.opportunityId)
+      .maybeSingle();
+    if (oErr) throw oErr;
+    if (!opp) httpError(404, "opportunity_not_found");
+    const o = opp as any;
+
+    // Confirm intake belongs to same tenant
+    const { data: intake, error: iErr } = await context.supabase
+      .from("project_intake")
+      .select("id, company_id, name, archetype, capacity_mw, offtaker, target_cod")
+      .eq("id", data.intakeId)
+      .maybeSingle();
+    if (iErr) throw iErr;
+    if (!intake || (intake as any).company_id !== o.company_id) {
+      httpError(404, "intake_not_found");
+    }
+
+    const { assertExportAllowed } = await import("@/lib/export-guard");
+    await assertExportAllowed(context.supabase, {
+      companyId: o.company_id,
+      projectId: null,
+    });
+
+    // Related data
+    const [{ data: contacts }, { data: proposals }, { data: tenders }] =
+      await Promise.all([
+        context.supabase
+          .from("contacts")
+          .select("full_name, title, email, phone, is_primary")
+          .eq("opportunity_id", o.id)
+          .order("is_primary", { ascending: false }),
+        context.supabase
+          .from("proposals")
+          .select(
+            "id, version, status, subtotal, contingency_pct, total, currency_code, margin_pct, yield_result, created_at",
+          )
+          .eq("opportunity_id", o.id)
+          .order("version", { ascending: false }),
+        context.supabase
+          .from("tender_events")
+          .select("event_type, title, event_at, location, notes")
+          .eq("opportunity_id", o.id)
+          .order("event_at", { ascending: true }),
+      ]);
+
+    const acceptedProposal =
+      (proposals ?? []).find((p: any) =>
+        ["accepted", "sent"].includes(p.status),
+      ) ?? (proposals ?? [])[0] ?? null;
+
+    // Branding
+    const { data: branding } = await context.supabase
+      .from("company_branding")
+      .select("logo_url, primary_color, accent_color, footer_text")
+      .eq("company_id", o.company_id)
+      .maybeSingle();
+
+    const { data: company } = await context.supabase
+      .from("companies")
+      .select("name, legal_name")
+      .eq("id", o.company_id)
+      .maybeSingle();
+
+    let logoSignedUrl: string | null = null;
+    const logoRef = (branding as any)?.logo_url as string | null | undefined;
+    if (logoRef) {
+      if (/^https?:\/\//i.test(logoRef)) {
+        logoSignedUrl = logoRef;
+      } else {
+        try {
+          const { data: signed } = await context.supabase.storage
+            .from("documents")
+            .createSignedUrl(logoRef, 300);
+          logoSignedUrl = signed?.signedUrl ?? null;
+        } catch {
+          logoSignedUrl = null;
+        }
+      }
+    }
+
+    // Build the PDF
+    const { buildKickoffPdf } = await import("@/lib/exports/kickoff-pdf");
+    const blob = await buildKickoffPdf({
+      opportunity: o,
+      intake: intake as any,
+      contacts: (contacts ?? []) as any,
+      acceptedProposal: acceptedProposal as any,
+      tenderEvents: (tenders ?? []) as any,
+      company: (company as any) ?? { name: "" },
+      branding: {
+        primaryColor: (branding as any)?.primary_color ?? null,
+        accentColor: (branding as any)?.accent_color ?? null,
+        footerText: (branding as any)?.footer_text ?? null,
+        logoSignedUrl,
+      },
+    });
+
+    // Upload via service role (documents bucket is private, RLS-gated).
+    const { createServiceRoleClient } = await import(
+      "@/integrations/supabase/server"
+    );
+    const admin = createServiceRoleClient();
+    const path = `${o.company_id}/intake/${data.intakeId}/kickoff_pack.pdf`;
+    const arrayBuf = await blob.arrayBuffer();
+    const { error: upErr } = await admin.storage
+      .from("documents")
+      .upload(path, new Uint8Array(arrayBuf), {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+    if (upErr) throw upErr;
+
+    // Append kickoff path note (idempotent — only if not already present)
+    const notePrefix = "Kickoff pack:";
+    const currentNotes = (o.notes as string | null) ?? "";
+    if (!currentNotes.includes(path)) {
+      const nextNotes = currentNotes
+        ? `${currentNotes}\n${notePrefix} ${path}`
+        : `${notePrefix} ${path}`;
+      await context.supabase
+        .from("opportunities")
+        .update({ notes: nextNotes } as any)
+        .eq("id", o.id);
+    }
+
+    await auditOpportunity(context, "opportunity.kickoff_pack_generated", o.id, {
+      intake_id: data.intakeId,
+      path,
+    });
+
+    return { path };
+  });
+
+export const getKickoffPackDownloadUrl = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        intakeId: z.string().uuid(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ url: string | null }> => {
+    requireSupabaseAuth(context);
+
+    const { data: intake, error } = await context.supabase
+      .from("project_intake")
+      .select("id, company_id")
+      .eq("id", data.intakeId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!intake) httpError(404, "intake_not_found");
+
+    const path = `${(intake as any).company_id}/intake/${data.intakeId}/kickoff_pack.pdf`;
+    const { data: signed, error: sErr } = await context.supabase.storage
+      .from("documents")
+      .createSignedUrl(path, 300);
+    if (sErr) return { url: null };
+    return { url: signed?.signedUrl ?? null };
+  });
+

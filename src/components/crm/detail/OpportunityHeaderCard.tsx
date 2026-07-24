@@ -1,11 +1,12 @@
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
-import { Award, CalendarDays, FileText, Plus, User } from "lucide-react";
+import { Award, CalendarDays, Download, FileText, Plus, User } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useCreateProposal } from "@/lib/proposal-query";
 
 import { LossReasonDialog } from "@/components/crm/LossReasonDialog";
+import { WinConversionDialog } from "@/components/crm/detail/WinConversionDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,11 @@ import {
   STAGE_PROBABILITY,
 } from "@/lib/crm.functions";
 import type { OpportunityDetail } from "@/lib/opportunity.functions";
-import { useUpdateOpportunity } from "@/lib/opportunity-query";
+import {
+  useDownloadKickoffPack,
+  useUpdateOpportunity,
+} from "@/lib/opportunity-query";
+
 
 const ARCHETYPE_SHORT: Record<string, string> = {
   utility_pv: "Utility PV",
@@ -50,9 +55,12 @@ export function OpportunityHeaderCard({
 }: Props) {
   const update = useUpdateOpportunity(opp.id);
   const move = useMoveOpportunityStage();
+  const downloadKickoff = useDownloadKickoffPack();
   const [pendingLoss, setPendingLoss] = useState(false);
+  const [winOpen, setWinOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(opp.name);
+
 
   const value =
     opp.estimated_value != null
@@ -72,12 +80,39 @@ export function OpportunityHeaderCard({
       setPendingLoss(true);
       return;
     }
+    if (next === "won") {
+      setWinOpen(true);
+      return;
+    }
     move.mutate({ id: opp.id, stage: next as any });
   };
+
+  const isWon = opp.stage === "won";
+  const intakeId = opp.converted_intake_id;
 
   return (
     <>
       <Card className="flex flex-col gap-4 border-border bg-card p-6">
+        {isWon && intakeId ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/5 px-4 py-2 text-sm">
+            <span className="text-foreground">
+              <span className="font-semibold">Won</span> — converted to project intake{" "}
+              <code className="rounded bg-muted px-1.5 py-0.5 text-[11px]">
+                #{intakeId.slice(0, 8)}
+              </code>
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={downloadKickoff.isPending}
+              onClick={() => downloadKickoff.mutate({ intakeId })}
+            >
+              <Download size={14} aria-hidden />
+              {downloadKickoff.isPending ? "Opening…" : "Download kick-off pack"}
+            </Button>
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             {editingName && !readOnly ? (
@@ -163,14 +198,18 @@ export function OpportunityHeaderCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() =>
-                  move.mutate({ id: opp.id, stage: "won" })
-                }
-                disabled={opp.stage === "won"}
+                onClick={() => {
+                  if (isWon && intakeId) {
+                    downloadKickoff.mutate({ intakeId });
+                  } else {
+                    setWinOpen(true);
+                  }
+                }}
               >
                 <Award size={14} aria-hidden />
-                Mark as won
+                {isWon ? "Won" : "Mark as won"}
               </Button>
+
               <Button size="sm" onClick={onAddTenderEvent}>
                 <Plus size={14} aria-hidden />
                 Add tender event
@@ -264,7 +303,14 @@ export function OpportunityHeaderCard({
           setPendingLoss(false);
         }}
       />
+
+      <WinConversionDialog
+        opportunityId={opp.id}
+        open={winOpen}
+        onOpenChange={setWinOpen}
+      />
     </>
+
   );
 }
 

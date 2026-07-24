@@ -4,10 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 import {
+  buildKickoffPack,
+  convertOpportunityToIntake,
   deleteContact,
   deleteTenderEvent,
+  getKickoffPackDownloadUrl,
   getOpportunity,
   getOpportunityActivity,
+  getWinConversionPrefill,
   listContacts,
   listTenderEvents,
   postOpportunityNote,
@@ -15,6 +19,7 @@ import {
   saveTenderEvent,
   updateOpportunity,
 } from "@/lib/opportunity.functions";
+
 
 // ---- Query options ---------------------------------------------------------
 export function opportunityDetailQueryOptions(
@@ -155,3 +160,79 @@ export function usePostNote(opportunityId: string) {
       toast.error(err instanceof Error ? err.message : "Post failed"),
   });
 }
+
+// ---- P-050 Win conversion --------------------------------------------------
+export function winConversionPrefillQueryOptions(
+  fn: ReturnType<typeof useServerFn<typeof getWinConversionPrefill>>,
+  opportunityId: string,
+) {
+  return queryOptions({
+    queryKey: ["crm", "opportunity", opportunityId, "win-prefill"],
+    queryFn: () => fn({ data: { opportunityId } }),
+    staleTime: 30_000,
+  });
+}
+
+export function useConvertOpportunity(opportunityId: string) {
+  const fn = useServerFn(convertOpportunityToIntake);
+  const invalidate = useInvalidateOpp(opportunityId);
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      opportunityId: string;
+      name: string;
+      archetype:
+        | "utility_pv"
+        | "standalone_bess"
+        | "c_and_i_rooftop"
+        | "hybrid_pv_bess"
+        | "onshore_wind"
+        | "green_hydrogen"
+        | "transmission_substation";
+      capacity_mw: number | null;
+      offtaker: string | null;
+      target_cod: string | null;
+      owner_id: string | null;
+    }) => fn({ data: input }),
+
+    onSuccess: (res) => {
+      if (res.alreadyConverted) {
+        toast.info("Opportunity was already converted");
+      } else {
+        toast.success("Opportunity won — project intake created");
+      }
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["crm"] });
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Conversion failed"),
+  });
+}
+
+export function useBuildKickoffPack(opportunityId: string) {
+  const fn = useServerFn(buildKickoffPack);
+  return useMutation({
+    mutationFn: (input: { intakeId: string }) =>
+      fn({ data: { opportunityId, intakeId: input.intakeId } }),
+    onSuccess: () => toast.success("Kick-off pack ready"),
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Kick-off pack failed"),
+  });
+}
+
+export function useDownloadKickoffPack() {
+  const fn = useServerFn(getKickoffPackDownloadUrl);
+  return useMutation({
+    mutationFn: (input: { intakeId: string }) => fn({ data: input }),
+    onSuccess: (res) => {
+      if (res.url && typeof window !== "undefined") {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error("Kick-off pack not available yet");
+      }
+    },
+    onError: (err) =>
+      toast.error(err instanceof Error ? err.message : "Download failed"),
+  });
+}
+
