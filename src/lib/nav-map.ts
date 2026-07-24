@@ -11,6 +11,7 @@ import {
   Handshake,
   MailPlus,
   PencilRuler,
+  Settings2,
   Shield,
   SlidersHorizontal,
   Truck,
