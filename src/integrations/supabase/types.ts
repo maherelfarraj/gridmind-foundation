@@ -3440,6 +3440,124 @@ export type Database = {
           },
         ]
       }
+      three_way_matches: {
+        Row: {
+          amount_variance: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          goods_receipt_id: string | null
+          id: string
+          invoice_amount: number
+          invoice_currency_code: string
+          invoice_date: string | null
+          invoice_file_path: string | null
+          invoice_id: string | null
+          matched_at: string | null
+          matched_by: string | null
+          payment_release_blocked: boolean
+          po_id: string
+          price_variance_pct: number | null
+          qty_variance_pct: number | null
+          resolution_note: string | null
+          status: Database["public"]["Enums"]["match_status"]
+          updated_at: string
+          variance_threshold_pct: number
+          vendor_invoice_number: string
+        }
+        Insert: {
+          amount_variance?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          goods_receipt_id?: string | null
+          id?: string
+          invoice_amount: number
+          invoice_currency_code: string
+          invoice_date?: string | null
+          invoice_file_path?: string | null
+          invoice_id?: string | null
+          matched_at?: string | null
+          matched_by?: string | null
+          payment_release_blocked?: boolean
+          po_id: string
+          price_variance_pct?: number | null
+          qty_variance_pct?: number | null
+          resolution_note?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+          variance_threshold_pct?: number
+          vendor_invoice_number: string
+        }
+        Update: {
+          amount_variance?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          goods_receipt_id?: string | null
+          id?: string
+          invoice_amount?: number
+          invoice_currency_code?: string
+          invoice_date?: string | null
+          invoice_file_path?: string | null
+          invoice_id?: string | null
+          matched_at?: string | null
+          matched_by?: string | null
+          payment_release_blocked?: boolean
+          po_id?: string
+          price_variance_pct?: number | null
+          qty_variance_pct?: number | null
+          resolution_note?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+          variance_threshold_pct?: number
+          vendor_invoice_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "three_way_matches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "three_way_matches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "three_way_matches_goods_receipt_id_fkey"
+            columns: ["goods_receipt_id"]
+            isOneToOne: false
+            referencedRelation: "goods_receipts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "three_way_matches_invoice_currency_code_fkey"
+            columns: ["invoice_currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "three_way_matches_matched_by_fkey"
+            columns: ["matched_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "three_way_matches_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           company_id: string
@@ -3889,6 +4007,11 @@ export type Database = {
         | "partner"
         | "other"
       lead_status: "new" | "working" | "qualified" | "unqualified" | "converted"
+      match_status:
+        | "pending"
+        | "matched"
+        | "variance_blocked"
+        | "approved_with_variance"
       opportunity_stage:
         | "prospecting"
         | "qualification"
@@ -4140,6 +4263,12 @@ export const Constants = {
         "other",
       ],
       lead_status: ["new", "working", "qualified", "unqualified", "converted"],
+      match_status: [
+        "pending",
+        "matched",
+        "variance_blocked",
+        "approved_with_variance",
+      ],
       opportunity_stage: [
         "prospecting",
         "qualification",
