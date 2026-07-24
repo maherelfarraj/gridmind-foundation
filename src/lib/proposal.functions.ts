@@ -230,6 +230,19 @@ export interface ProposalDetail {
   created_at: string;
   updated_at: string;
   line_items: ProposalLineItem[];
+  esign_status: string | null;
+  esign_provider: string | null;
+  esign_envelope_id: string | null;
+  esign_sent_at: string | null;
+  esign_completed_at: string | null;
+  esign_history: Array<{
+    at: string;
+    event: "sent" | "viewed" | "completed" | "declined" | "voided";
+    actor: string | null;
+    note?: string | null;
+    provider_event_id?: string | null;
+  }>;
+  signed_copy_path: string | null;
 }
 
 export const getProposal = createServerFn({ method: "GET" })
