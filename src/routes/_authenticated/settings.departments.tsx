@@ -87,7 +87,8 @@ function DepartmentsPage() {
 
   const membersQuery = useQuery({
     queryKey: membersKey,
-    queryFn: () => membersFn({ data: { companyId: activeCompanyId } }),
+    queryFn: () => membersFn({ data: { companyId: activeCompanyId! } }),
+    enabled: !!activeCompanyId,
   });
 
   const [pickerFor, setPickerFor] = useState<Department | null>(null);
