@@ -41,7 +41,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Lifecycle",
     items: [
-      { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm", icon: Handshake },
+      { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm/pipeline", icon: Handshake },
       { moduleKey: "engineering", label: "Engineering", url: "/engineering", icon: PencilRuler },
       { moduleKey: "procurement", label: "Procurement", url: "/procurement", icon: Truck },
       { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
