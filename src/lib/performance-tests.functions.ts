@@ -187,6 +187,15 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
           .maybeSingle(),
       ]);
 
+    const logoPath = (br as any)?.logo_url ?? null;
+    let logoSignedUrl: string | null = null;
+    if (logoPath) {
+      const { data: signed } = await context.supabase.storage
+        .from("documents")
+        .createSignedUrl(logoPath, 60 * 10);
+      logoSignedUrl = signed?.signedUrl ?? null;
+    }
+
     return {
       capacityMwp:
         (pv as any)?.dc_capacity_mwp != null
@@ -202,7 +211,8 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
       companyLegalName: (co as any)?.legal_name ?? null,
       primaryColor: (br as any)?.primary_color ?? null,
       accentColor: (br as any)?.accent_color ?? null,
-      logoPath: (br as any)?.logo_url ?? null,
+      logoPath,
+      logoSignedUrl,
     };
   });
 
