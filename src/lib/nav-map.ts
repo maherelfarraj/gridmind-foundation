@@ -113,6 +113,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
       { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
       { moduleKey: "admin", label: "Procurement", url: "/settings/procurement", icon: Receipt },
+      { moduleKey: "admin", label: "Approval rules", url: "/settings/approval-rules", icon: ShieldCheck },
       {
         moduleKey: "admin",
         label: "Permissions simulator",

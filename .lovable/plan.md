@@ -1,49 +1,50 @@
-## P-110 — Monthly O&M Report PDF
+## P-111 — Approval Rules Engine
 
-### Migration `supabase/migrations/0051_om_reports.sql`
-- Guarded enums: `om_report_type` (monthly/quarterly/annual), `om_report_status` (draft/generated/sent).
-- Table `om_reports` per spec (unique `project_id, report_type, period_start`).
-- RLS enabled: `is_company_member` SELECT; writes gated by `om_admin`/`company_admin`.
-- GRANTs to `authenticated`; `set_updated_at()` trigger; index `(company_id, period_start desc)`.
+Upgrade P-040's minimal `approval_instances` / `approvals` tables into a full engine with threshold rules, sequential chains, per-step SLAs, audit triggers, and four RPCs. Add a company_admin rules-admin UI. Wiring into existing PO/proposal/gate/contract flows is deferred (this ticket ships engine + admin only).
 
-### Server logic — `src/lib/om-reports.functions.ts` + `.server.ts` + `.rules.ts`
-`generateOmReport({ projectId, periodStart, periodEnd })` with `requireSupabaseAuth`:
-1. `assertExportAllowed` (graceful 42P01 fallback).
-2. Aggregate `data` jsonb — five sections:
-   - **availability**: `1 − downtime_hours / period_hours`, downtime = critical `scada_alarms` open-window + corrective `work_orders` labor hours.
-   - **performance_ratio**: energy from `scada_telemetry` vs irradiance-expected; null-safe "insufficient data".
-   - **alarms**: counts by severity, top 5 recurring rules, mean acknowledge time.
-   - **work_orders**: opened/closed, MTTR hours, PM:CM ratio.
-   - **spend**: Σ `work_orders.total_cost` grouped by type, currency-formatted via `Intl`.
-3. UPSERT `om_reports` on `(project_id, report_type, period_start)` → `status='generated'`, `generated_at`, `generated_by`.
-4. Render PDF (see below), upload to `documents` bucket at `{company_id}/om-reports/{project_id}/{YYYY-MM}.pdf`; save `pdf_path`.
-5. Best-effort `insert into export_packages` — swallow `42P01`.
-6. `writeAuditLog('om_report.generate', ...)`.
-7. TODO comment: `// TODO(B12/P-117): register with scheduled_reports for monthly email delivery`.
+### Current state (verified)
+- `approval_instances` / `approvals` exist with the minimal P-040 shape and status CHECKs shown in the spec — the alter/drop-constraint idempotency will apply cleanly.
+- `approval_rules` / `approval_chain_steps` don't exist yet.
+- `app_role` enum includes every role the spec references (`finance_admin`, `legal_admin`, `company_admin`, `client_viewer`, `investor_viewer`, `lender_viewer`, etc.).
+- `project_phase_gates.approval_instance_id` already FKs into `approval_instances` — the ALTER path preserves it.
 
-List/query fn `listOmReports({ projectId? })` for the UI; `getOmReportDownloadUrl({ id })` returns a signed URL.
+### Deliverables
 
-### PDF — `src/lib/exports/om-report-pdf.ts`
-- Reuse P-047 (`certificate-pdf.ts` / `weekly-report-pdf.ts`) branding pattern.
-- Fetch `company_branding` (logo signed URL → data URL, skip on error); `primary_color` header band + `autoTable` header fill.
-- Sections mirror `data` jsonb; use `jspdf-autotable` for alarms/WO/spend tables.
-- Footer: company legal name + "Page X of Y".
-- Filename: `GridMind_OM_Report_<project-slug>_<YYYY-MM>.pdf`.
-- Text sanitizer: render `"O&M"` as plain ampersand — assert no `&;` artifacts.
+**1. Migration `supabase/migrations/0052_approval_engine.sql`**
+- Parts 1–4 verbatim from the spec: `is_external_viewer()` helper; `approval_rules` + `approval_chain_steps`; `create table if not exists` + `alter … add column if not exists` upgrades for `approval_instances` / `approvals`; drop/recreate status CHECKs; RLS enabled + idempotent `drop policy if exists`/`create policy` set; `set_updated_at` triggers; `audit_approval_changes` trigger writing to `audit_logs`; seed rules + chain steps with `on conflict do nothing`; indexes; grants (revoke `escalate_overdue_approvals` from public/anon/authenticated, grant to `service_role`; grant the three user-callable RPCs + `is_external_viewer` to `authenticated`).
 
-### UI — `src/routes/_authenticated/om.reports.tsx`
-- Table: period, type, status badge, `generated_at`, Download button (signed URL).
-- "Generate monthly report" dialog: project select + month picker (default = last month); spinner during generation; `sonner` toast on result.
-- Skeleton/empty/error states; nav entry added to `src/lib/nav-map.ts` under O&M.
+**2. Four RPCs (SECURITY DEFINER, `set search_path = public`)**
+- `start_approval_instance(rule_key, entity_type, entity_id, amount, metadata jsonb)` → looks up active rule for caller's company; returns `null` when no rule or `amount ≤ threshold_amount`; returns existing open (`pending`/`in_progress`) instance id for `(entity_type, entity_id)` if present; else inserts instance (`current_step=1`, `sla_due_at = now() + step-1 sla_hours` falling back to rule `sla_hours`), plus step-1 `approvals` rows for every `user_roles` holder of the step role in the company. Fallback: if no holders, create rows for all `company_admin`s. Returns the instance id.
+- `decide_approval(approval_id, decision, comment)` → decision in `('approved','rejected')`; caller must own the approval row; `comment` required on reject (raise `comment_required_on_reject`); idempotent re-click on same decision returns silently. On reject: mark row rejected, mark any remaining pending peers `skipped`, mark instance `rejected` + `decided_by`/`decided_at`/`completed_at`. On approve: mark row approved; if peers still pending, set instance `in_progress` and stop; else if a next chain step exists, bump `current_step`, insert fresh approver rows for that role (same fallback) with fresh `sla_due_at`; else mark instance `approved` + completion stamps. Legacy rule-less instances (no `rule_id`) complete on first approve.
+- `cancel_approval_instance(instance_id)` → allowed for `requested_by` or `company_admin`; only when status in `('pending','in_progress')`; marks instance `cancelled`, skips all pending approvals.
+- `escalate_overdue_approvals()` → service_role only; finds pending/in_progress instances past `sla_due_at` whose `metadata->>'escalated_at'` is null; stamps `metadata = metadata || jsonb_build_object('escalated_at', now())` and writes an `approval.escalated` row into `audit_logs`. Cron wiring is B13/P-123, not this ticket.
 
-### Tests — `tests/unit/om-reports.test.ts`
-- Availability math (downtime clamp, zero-period guard).
-- PR "insufficient data" branch.
-- Spend currency formatting; PM:CM ratio + MTTR calc.
-- Filename + O&M sanitizer.
+**3. Zod-validated server functions in `src/lib/approvals.functions.ts`**
+- `startApprovalInstance`, `decideApproval`, `cancelApprovalInstance` — thin `supabase.rpc(...)` wrappers behind `requireSupabaseAuth`; no direct table writes.
+- `listApprovalRules`, `upsertApprovalRule`, `toggleApprovalRule`, `deleteApprovalRule`, `setApprovalChainSteps` — company_admin-only CRUD (verified via `has_company_role('company_admin')` inside handler using `context.supabase`); each mutation calls `write_audit_log`.
 
-### Verification
-- Migration applied; typecheck + unit tests green.
-- Generate for a project → row upserted, PDF at expected path, five sections in `data` jsonb.
-- Re-run same period → single row (upsert).
-- Audit log written; `export_packages` insert (or graceful skip).
+**4. Admin UI `src/routes/_authenticated/settings.approval-rules.tsx`**
+- Company_admin gate (hide/redirect otherwise); tokens-only styling.
+- Rules table: name, entity_type, threshold (currency-formatted), SLA hours, `is_active` switch, edit/delete row actions.
+- Rule form (dialog, react-hook-form + zod): name, description, entity_type (select of the seeded entity types + free text), threshold_amount + threshold_currency, sla_hours, escalation_role, blocks_export toggle.
+- Chain-step editor inside the rule dialog: ordered list of `{step_order, role, sla_hours?}` with add / remove / reorder (↑↓); saved atomically via `setApprovalChainSteps` (delete-then-insert inside a single RPC to avoid orphan step numbers).
+- Sonner toasts, skeleton loading, empty state ("No approval rules yet"), error state with retry.
+- Add nav entry under Settings.
+
+**5. Types regeneration**
+- Regenerate `src/integrations/supabase/types.ts` after migration approval (auto-managed).
+
+### Explicitly out of scope (later tickets)
+- Wiring `start_approval_instance` into PO/proposal/gate/contract/change-order flows — the spec's "wiring note" says keep legacy inline fallbacks and revisit later.
+- Approval inbox / SLA countdown UI — P-112.
+- Cron trigger for `escalate_overdue_approvals` — B13/P-123.
+
+### Verification checklist (spec's ✅ block)
+Run after migration approval:
+1. Migration applies clean, re-runs as no-op.
+2. `start_approval_instance('po_threshold_finance', 'purchase_order', <uuid>, 60000, '{}')` → returns instance id with finance_admin approver rows and `sla_due_at ≈ now()+48h`; amount 40000 → `null`; second identical call → same instance id.
+3. Contract chain: legal_admin approve step 1 → step-2 finance_admin rows appear with fresh SLA → finance approve → instance `approved`.
+4. Reject without comment → `comment_required_on_reject`; with comment → instance `rejected`, peers `skipped`.
+5. `client_viewer` SELECTs see only own/assigned approvals.
+6. `/settings/approval-rules` CRUD works as company_admin, hidden otherwise; audit rows written.
+7. Existing P-040 gate approvals remain readable.

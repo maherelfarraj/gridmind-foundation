@@ -135,43 +135,115 @@ export type Database = {
         }
         Relationships: []
       }
-      approval_instances: {
+      approval_chain_steps: {
         Row: {
           company_id: string
           created_at: string
-          decided_at: string | null
-          decided_by: string | null
-          entity: string
-          entity_id: string
           id: string
-          metadata: Json
-          requested_by: string | null
-          status: string
+          role: Database["public"]["Enums"]["app_role"]
+          rule_id: string
+          sla_hours: number | null
+          step_order: number
           updated_at: string
         }
         Insert: {
           company_id: string
           created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          entity: string
-          entity_id: string
           id?: string
-          metadata?: Json
-          requested_by?: string | null
-          status?: string
+          role: Database["public"]["Enums"]["app_role"]
+          rule_id: string
+          sla_hours?: number | null
+          step_order: number
           updated_at?: string
         }
         Update: {
           company_id?: string
           created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          rule_id?: string
+          sla_hours?: number | null
+          step_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_chain_steps_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_chain_steps_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "approval_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_instances: {
+        Row: {
+          amount: number | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          decided_at: string | null
+          decided_by: string | null
+          entity: string
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          requested_at: string
+          requested_by: string | null
+          rule_id: string | null
+          rule_key: string | null
+          sla_due_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          decided_at?: string | null
+          decided_by?: string | null
+          entity: string
+          entity_id: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          requested_at?: string
+          requested_by?: string | null
+          rule_id?: string | null
+          rule_key?: string | null
+          sla_due_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
           decided_at?: string | null
           decided_by?: string | null
           entity?: string
           entity_id?: string
+          entity_type?: string
           id?: string
           metadata?: Json
+          requested_at?: string
           requested_by?: string | null
+          rule_id?: string | null
+          rule_key?: string | null
+          sla_due_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -197,6 +269,82 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "approval_instances_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "approval_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_rules: {
+        Row: {
+          blocks_export: boolean
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          entity_type: string
+          escalation_role: Database["public"]["Enums"]["app_role"] | null
+          id: string
+          is_active: boolean
+          name: string
+          rule_key: string
+          sla_hours: number
+          threshold_amount: number | null
+          threshold_currency: string
+          updated_at: string
+        }
+        Insert: {
+          blocks_export?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entity_type: string
+          escalation_role?: Database["public"]["Enums"]["app_role"] | null
+          id?: string
+          is_active?: boolean
+          name: string
+          rule_key: string
+          sla_hours?: number
+          threshold_amount?: number | null
+          threshold_currency?: string
+          updated_at?: string
+        }
+        Update: {
+          blocks_export?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entity_type?: string
+          escalation_role?: Database["public"]["Enums"]["app_role"] | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          rule_key?: string
+          sla_hours?: number
+          threshold_amount?: number | null
+          threshold_currency?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       approvals: {
@@ -206,9 +354,12 @@ export type Database = {
           company_id: string
           created_at: string
           decided_at: string | null
+          due_at: string | null
           id: string
           instance_id: string
           status: string
+          step_id: string | null
+          step_order: number
           updated_at: string
         }
         Insert: {
@@ -217,9 +368,12 @@ export type Database = {
           company_id: string
           created_at?: string
           decided_at?: string | null
+          due_at?: string | null
           id?: string
           instance_id: string
           status?: string
+          step_id?: string | null
+          step_order?: number
           updated_at?: string
         }
         Update: {
@@ -228,9 +382,12 @@ export type Database = {
           company_id?: string
           created_at?: string
           decided_at?: string | null
+          due_at?: string | null
           id?: string
           instance_id?: string
           status?: string
+          step_id?: string | null
+          step_order?: number
           updated_at?: string
         }
         Relationships: [
@@ -253,6 +410,13 @@ export type Database = {
             columns: ["instance_id"]
             isOneToOne: false
             referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "approval_chain_steps"
             referencedColumns: ["id"]
           },
         ]
@@ -8832,6 +8996,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      cancel_approval_instance: {
+        Args: { p_instance_id: string }
+        Returns: undefined
+      }
       consume_rate_limit: {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
         Returns: boolean
@@ -8844,6 +9012,11 @@ export type Database = {
         }
         Returns: string
       }
+      decide_approval: {
+        Args: { p_approval_id: string; p_comment?: string; p_decision: string }
+        Returns: undefined
+      }
+      escalate_overdue_approvals: { Args: never; Returns: number }
       get_po_by_share_token: {
         Args: { p_token: string }
         Returns: {
@@ -8889,7 +9062,18 @@ export type Database = {
       incorporate_change_order: { Args: { p_co_id: string }; Returns: Json }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
+      is_external_viewer: { Args: never; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
+      start_approval_instance: {
+        Args: {
+          p_amount?: number
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_rule_key: string
+        }
+        Returns: string
+      }
       storage_company_id: { Args: { p_name: string }; Returns: string }
       verify_api_key: {
         Args: { p_raw_key: string }
