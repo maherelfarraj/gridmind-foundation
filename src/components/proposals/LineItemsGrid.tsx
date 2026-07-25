@@ -237,7 +237,11 @@ export function LineItemsGrid({
             label={`Margin (${proposal.margin_pct}%)`}
             value={formatCurrency(marginAmt, proposal.currency_code)}
           />
-          <KpiTile label="Total" value={formatCurrency(total, proposal.currency_code)} status="good" />
+          <KpiTile
+            label="Total"
+            value={formatCurrency(total, proposal.currency_code)}
+            status="good"
+          />
         </KpiGrid>
       </div>
     </Card>

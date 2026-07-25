@@ -122,53 +122,53 @@ function CashFlowPage() {
         description={`Forecast vs actual by month, in ${list.data.baseCurrency}.`}
         actions={
           <div className="flex flex-wrap items-end gap-2">
-          <div>
-            <Label htmlFor="cf-from" className="text-xs">
-              From
-            </Label>
-            <Input
-              id="cf-from"
-              type="month"
-              value={from.slice(0, 7)}
-              onChange={(e) => setFrom(normalizePeriod(`${e.target.value}-01`))}
-              className="w-36"
-            />
-          </div>
-          <div>
-            <Label htmlFor="cf-to" className="text-xs">
-              To
-            </Label>
-            <Input
-              id="cf-to"
-              type="month"
-              value={to.slice(0, 7)}
-              onChange={(e) => setTo(normalizePeriod(`${e.target.value}-01`))}
-              className="w-36"
-            />
-          </div>
-          <div className="flex items-center gap-2 pb-2">
-            <Switch id="cf-orig" checked={showOriginal} onCheckedChange={setShowOriginal} />
-            <Label htmlFor="cf-orig" className="text-xs">
-              Show original currency
-            </Label>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadCashFlowCsv(`cash-flow-${projectId}.csv`, buildCashFlowCsv(list.data.rows))
-            }
-          >
-            <Download className="mr-1.5 h-4 w-4" /> CSV
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setEntryOpen(true)}
-            disabled={!canWrite}
-            title={canWrite ? undefined : "Requires finance_admin or company_admin"}
-          >
-            <Plus className="mr-1.5 h-4 w-4" /> Add entry
-          </Button>
+            <div>
+              <Label htmlFor="cf-from" className="text-xs">
+                From
+              </Label>
+              <Input
+                id="cf-from"
+                type="month"
+                value={from.slice(0, 7)}
+                onChange={(e) => setFrom(normalizePeriod(`${e.target.value}-01`))}
+                className="w-36"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cf-to" className="text-xs">
+                To
+              </Label>
+              <Input
+                id="cf-to"
+                type="month"
+                value={to.slice(0, 7)}
+                onChange={(e) => setTo(normalizePeriod(`${e.target.value}-01`))}
+                className="w-36"
+              />
+            </div>
+            <div className="flex items-center gap-2 pb-2">
+              <Switch id="cf-orig" checked={showOriginal} onCheckedChange={setShowOriginal} />
+              <Label htmlFor="cf-orig" className="text-xs">
+                Show original currency
+              </Label>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadCashFlowCsv(`cash-flow-${projectId}.csv`, buildCashFlowCsv(list.data.rows))
+              }
+            >
+              <Download className="mr-1.5 h-4 w-4" /> CSV
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setEntryOpen(true)}
+              disabled={!canWrite}
+              title={canWrite ? undefined : "Requires finance_admin or company_admin"}
+            >
+              <Plus className="mr-1.5 h-4 w-4" /> Add entry
+            </Button>
           </div>
         }
       />

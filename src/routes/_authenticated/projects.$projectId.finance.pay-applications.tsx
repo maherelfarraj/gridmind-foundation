@@ -109,28 +109,28 @@ function PayAppsPage() {
         description="Certified progress against signed contracts."
         actions={
           <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const csv = toPayAppCsv(rows);
-              const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `pay-applications-${projectId}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            disabled={rows.length === 0}
-          >
-            <Download className="mr-2 size-4" /> Export CSV
-          </Button>
-          {access.data.canCertify ? (
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 size-4" /> New pay app
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const csv = toPayAppCsv(rows);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `pay-applications-${projectId}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              disabled={rows.length === 0}
+            >
+              <Download className="mr-2 size-4" /> Export CSV
             </Button>
-          ) : null}
+            {access.data.canCertify ? (
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <Plus className="mr-2 size-4" /> New pay app
+              </Button>
+            ) : null}
           </div>
         }
       />

@@ -221,7 +221,9 @@ function PayAppDetail() {
             <ArrowLeft className="mr-2 size-4" /> Back
           </Link>
         </Button>
-        <h1 className="truncate text-lg font-semibold text-foreground">Pay app #{p.application_number}</h1>
+        <h1 className="truncate text-lg font-semibold text-foreground">
+          Pay app #{p.application_number}
+        </h1>
         <Badge variant={STATUS_VARIANTS[p.status]}>{payAppStatusLabel(p.status)}</Badge>
       </div>
 
