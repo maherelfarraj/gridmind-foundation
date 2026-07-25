@@ -71,8 +71,8 @@ describe("evaluateBreach", () => {
     );
     expect(b.response_breached).toBe(true);
     expect(b.resolution_breached).toBe(true);
-    // 5 days + 16 hours from response deadline = 6960; 2 days from resolution deadline = 2880
-    expect(b.breach_minutes).toBe(6960 + 2880);
+    // 4d16h past response deadline (6720 min) + 2d past resolution (2880 min).
+    expect(b.breach_minutes).toBe(6720 + 2880);
   });
 
   it("no breach when responded and resolved before due dates", () => {
