@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Atom,
   Building2,
+  CalendarClock,
   CalendarRange,
   ClipboardCheck,
   Eye,
