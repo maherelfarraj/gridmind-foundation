@@ -79,8 +79,16 @@ export function getDb(): Promise<IDBPDatabase<FieldDB>> {
   return cachedDb;
 }
 
-/** Test-only. Resets the cached connection so a fresh openDB is used. */
-export function __resetDbForTests() {
+/** Test-only. Closes and clears the cached connection. */
+export async function __resetDbForTests() {
+  if (cachedDb) {
+    try {
+      const db = await cachedDb;
+      db.close();
+    } catch {
+      /* ignore */
+    }
+  }
   cachedDb = null;
 }
 
