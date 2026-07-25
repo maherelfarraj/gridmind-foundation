@@ -176,6 +176,22 @@ function PunchDetailPage() {
             {item.project_name ?? "—"} · {item.area}
           </h1>
         </div>
+        {status !== "closed" && status !== "void" ? (
+          <Button size="sm" variant="outline" asChild>
+            <Link
+              to="/qaqc/ncrs/new"
+              search={{
+                projectId: item.project_id,
+                source: "punch_item",
+                sourceId: item.id,
+                discipline,
+                area: item.area ?? undefined,
+              }}
+            >
+              Raise NCR
+            </Link>
+          </Button>
+        ) : null}
       </header>
 
       {category === "A" && status !== "closed" && status !== "void" ? (
