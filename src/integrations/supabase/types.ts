@@ -884,6 +884,79 @@ export type Database = {
           },
         ]
       }
+      commissioning_certificates: {
+        Row: {
+          certificate_number: string
+          certificate_type: Database["public"]["Enums"]["commissioning_certificate_type"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          effective_date: string | null
+          id: string
+          payload: Json
+          pr_at_cod: number | null
+          project_id: string
+          signatures: Json
+          signed_pdf_path: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_number: string
+          certificate_type: Database["public"]["Enums"]["commissioning_certificate_type"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          payload?: Json
+          pr_at_cod?: number | null
+          project_id: string
+          signatures?: Json
+          signed_pdf_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_number?: string
+          certificate_type?: Database["public"]["Enums"]["commissioning_certificate_type"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          payload?: Json
+          pr_at_cod?: number | null
+          project_id?: string
+          signatures?: Json
+          signed_pdf_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissioning_certificates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_certificates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_certificates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissioning_tests: {
         Row: {
           area: string
@@ -7615,6 +7688,10 @@ export type Database = {
         | "approved"
         | "rejected"
         | "incorporated"
+      commissioning_certificate_type:
+        | "mechanical_completion"
+        | "cod"
+        | "ccc_transfer"
       commissioning_test_status:
         | "not_started"
         | "scheduled"
@@ -8008,6 +8085,11 @@ export const Constants = {
         "approved",
         "rejected",
         "incorporated",
+      ],
+      commissioning_certificate_type: [
+        "mechanical_completion",
+        "cod",
+        "ccc_transfer",
       ],
       commissioning_test_status: [
         "not_started",
