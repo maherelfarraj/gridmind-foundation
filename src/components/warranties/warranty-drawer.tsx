@@ -286,7 +286,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
             </div>
             {claimsQ.isLoading ? (
               <div className="text-sm text-muted-foreground">Loading…</div>
-            ) : (claimsQ.data ?? []).length === 0 ? (
+            ) : ((claimsQ.data as ClaimRow[] | undefined) ?? []).length === 0 ? (
               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                 No claims yet.
               </div>
