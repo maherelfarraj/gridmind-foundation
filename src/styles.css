@@ -130,7 +130,6 @@
   --input: oklch(0.9 0.012 250);
   --ring: oklch(0.55 0.06 252);
 
-
   /* Charts — low saturation industrial set */
   --chart-1: oklch(0.55 0.1 252); /* blue */
   --chart-2: oklch(0.6 0.09 155); /* green */
@@ -262,4 +261,3 @@
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
-

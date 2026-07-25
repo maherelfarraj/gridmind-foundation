@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -137,21 +139,12 @@ function AlarmsPage() {
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            <BellRing className="h-6 w-6" /> SCADA alarms
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Live plant health signals. Auto-refreshes every 30s.
-          </p>
-        </div>
-      </div>
+    <div className="page-shell">
+      <PageHeader title="SCADA alarms" description="Live plant health signals — auto-refreshes every 30 seconds." />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle className="text-base">Filters</CardTitle>
+          <CardTitle className="text-sm font-medium">Filters</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
               <SelectTrigger className="w-40">
@@ -202,19 +195,17 @@ function AlarmsPage() {
               ))}
             </div>
           ) : query.isError ? (
-            <div className="flex flex-col items-start gap-2 p-6">
-              <div className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" /> Failed to load alarms.
-              </div>
-              <Button variant="outline" onClick={() => query.refetch()}>
-                Retry
-              </Button>
-            </div>
+            <EmptyState
+              icon={AlertTriangle}
+              title="Failed to load alarms"
+              action={
+                <Button variant="outline" onClick={() => query.refetch()}>
+                  Retry
+                </Button>
+              }
+            />
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
-              <div className="font-medium">No active alarms — plant healthy</div>
-            </div>
+            <EmptyState icon={CheckCircle2} title="No active alarms — plant healthy" />
           ) : (
             <Table>
               <TableHeader>

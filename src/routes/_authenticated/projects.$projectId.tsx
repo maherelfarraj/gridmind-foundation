@@ -245,7 +245,7 @@ function MobilizationHeaderChip({ projectId }: { projectId: string }) {
     data.status === "in_progress" ? "Mobilization: in progress" : "Mobilization: not started";
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+      className="inline-flex items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning"
       aria-label={label}
     >
       <HardHat size={12} aria-hidden />

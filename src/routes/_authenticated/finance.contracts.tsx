@@ -38,6 +38,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { upsertContract } from "@/lib/contracts.functions";
 import {
@@ -136,32 +138,32 @@ function ContractsIndex() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Contracts</h1>
-          <p className="text-sm text-muted-foreground">
-            {rows.length} contract{rows.length === 1 ? "" : "s"} · Total value{" "}
-            {totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
-            <Download className="mr-2 size-4" /> Export CSV
-          </Button>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button
-                disabled={!canWrite}
-                title={canWrite ? undefined : "Requires finance/legal/company admin"}
-              >
-                <Plus className="mr-2 size-4" /> New contract
-              </Button>
-            </DialogTrigger>
-            <NewContractDialog onDone={() => setCreateOpen(false)} />
-          </Dialog>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Contracts"
+        description={`${rows.length} contract${rows.length === 1 ? "" : "s"} · Total value ${totalValue.toLocaleString(
+          undefined,
+          { maximumFractionDigits: 0 },
+        )}`}
+        actions={
+          <>
+            <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="mr-2 size-4" /> Export CSV
+            </Button>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={!canWrite}
+                  title={canWrite ? undefined : "Requires finance/legal/company admin"}
+                >
+                  <Plus className="mr-2 size-4" /> New contract
+                </Button>
+              </DialogTrigger>
+              <NewContractDialog onDone={() => setCreateOpen(false)} />
+            </Dialog>
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[240px] flex-1">
@@ -209,13 +211,11 @@ function ContractsIndex() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 p-12 text-center">
-            <FileText className="size-8 text-muted-foreground" />
-            <p className="font-medium">No contracts yet</p>
-            <p className="text-sm text-muted-foreground">
-              Create your first contract to start tracking obligations.
-            </p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No contracts yet"
+            description="Create your first contract to start tracking obligations."
+          />
         ) : (
           <Table>
             <TableHeader>

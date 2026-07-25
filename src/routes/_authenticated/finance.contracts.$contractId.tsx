@@ -54,6 +54,8 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { MilestoneBillDialog } from "@/components/finance/milestone-bill-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 import {
   bulkInsertObligations,
@@ -140,7 +142,7 @@ function ContractDetail() {
   const canWrite = access.data.canWrite;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-shell">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/finance/contracts">
@@ -149,27 +151,24 @@ function ContractDetail() {
         </Button>
       </div>
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">
-              {contract.contract_number}
-            </span>
+      <PageHeader
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            {contract.title}
             <Badge variant={statusVariant(contract.status)}>
               {contractStatusLabel(contract.status)}
             </Badge>
             {contract.retention_until && (
               <Badge variant="outline">Retention until {contract.retention_until}</Badge>
             )}
-          </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">{contract.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {contract.counterparty} · {contractLabelForType(contract.contract_type)}
-            {contract.value != null &&
-              ` · ${contract.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${contract.currency_code ?? ""}`}
-          </p>
-        </div>
-      </header>
+          </span>
+        }
+        description={`${contract.contract_number} · ${contract.counterparty} · ${contractLabelForType(contract.contract_type)}${
+          contract.value != null
+            ? ` · ${contract.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${contract.currency_code ?? ""}`
+            : ""
+        }`}
+      />
 
       <Tabs defaultValue="overview">
         <TabsList>
