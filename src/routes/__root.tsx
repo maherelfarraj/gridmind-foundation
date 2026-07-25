@@ -107,13 +107,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "GridMind EPC" },
       {
         name: "description",
-        content: "Energy Performance Certificate management powered by GridMind.",
+        content:
+          "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations.",
       },
       { name: "author", content: "GridMind EPC" },
       { property: "og:title", content: "GridMind EPC" },
       {
         property: "og:description",
-        content: "Energy Performance Certificate management powered by GridMind.",
+        content:
+          "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -258,7 +260,8 @@ function isAuthedPath(pathname: string): boolean {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showPublicHeader = !isAuthedPath(pathname);
+  // The public homepage is a standalone hero with its own sign-in CTA.
+  const showPublicHeader = !isAuthedPath(pathname) && pathname !== "/";
 
   useEffect(() => {
     // P-087 — boot offline queue sync triggers once, client-only.

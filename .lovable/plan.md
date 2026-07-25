@@ -1,26 +1,26 @@
-## Status confirmed first
+## Current state (verified)
 
-- `maher@next.jo` is signed up, attached to **GSI**, and holds **company_admin + super_admin**. No further bootstrap needed.
-- All 18 `@gridmind.captial` invites are still **pending** — none redeemed — so revoking them is clean.
+- `src/routes/index.tsx` already contains the new minimal hero exactly as specified: GridMind EPC wordmark, headline "The operating system for renewable EPC", the O&M subline, a single "Sign in" button linking to `/login`, and the three chips. All assessor/landlord/rating/SAP/certificate copy is gone from this file, and its `head()` meta is renewable-EPC wording. This was shipped and published in the previous turn.
+- Two leftovers still carry the wrong domain or break the "nothing else" requirement:
+  1. `src/routes/__root.tsx` lines 110 and 116 — sitewide `description` and `og:description` still read "Energy Performance Certificate management powered by GridMind." This is what link previews and search results show for the homepage's fallback metadata.
+  2. `src/routes/__root.tsx` renders the public `Header` on every non-authenticated path, including `/`. That header shows a second "Sign in" button plus a theme toggle above the hero, so the homepage is not the single-element page requested.
 
-## Intent (per your answer)
+## Changes
 
-The 18 are a **demo roster**. GSI must contain only real people, so they move to **Sandbox**.
+**1. Fix sitewide metadata (`src/routes/__root.tsx`)**
 
-## What I'll do
+Replace both "Energy Performance Certificate management powered by GridMind." strings with renewable-EPC wording, e.g. "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations." Leave title, theme-color, og:type, and twitter:card untouched.
 
-1. **Revoke from GSI** — set all 18 pending GSI invites to `revoked`, write one audit row per invite plus a single `admin.invite_batch_revoked` summary row under GSI. Their tokens stop working immediately.
-2. **Recreate under Sandbox** — re-issue the same 18 email → role mappings against the Sandbox tenant using the app's `create_invite` path (the guarded server function), not raw SQL.
-3. **Handle the two roles the guard blocks** — `create_invite` refuses `super_admin`. Rather than routing around it, `maher.elfarraj@gridmind.captial` will be issued as `company_admin` in Sandbox. That still leaves two `company_admin`s in the demo tenant (maher.elfarraj + company.admin), satisfying the no-lockout rule. If you want a true `super_admin` in Sandbox, tell me and I'll surface it as an explicit request instead of doing it silently.
-4. **Report** — a table of all 18 with: old GSI status (revoked), new Sandbox invite ID, role, and redeem link.
+**2. Make `/` header-free**
 
-## Standing rule going forward
+Extend the header-suppression logic so the public `Header` does not render on the exact path `/`. The homepage then shows only the hero. All other public routes (`/login`, `/docs/api`, etc.) keep the header unchanged, and authenticated paths keep their existing `AppShell` behaviour.
 
-No invites and no role rows inserted at SQL level. Every grant goes through `create_invite` / `grantRole`. If a guard blocks something, I stop and report the block to you rather than bypassing it. I'll save this as a project rule so it survives future sessions.
+## Not in scope
 
-## Technical notes
+No other route, component, doc, or database change. No new marketing sections.
 
-- Revocation touches `public.invites.status` only; rows are kept for the audit trail rather than deleted.
-- Sandbox tenant: `04a05a8d-7972-4f80-b935-508793df9772`. GSI: `1ab0730f-d6fa-4678-b1b7-7f752c80eceb`.
-- Invites are created as the authenticated super_admin so `create_invite`'s company-admin check passes; the actor is recorded in `invited_by`.
-- No frontend changes — Settings → Users & roles already lists invites per tenant.
+## Verify and ship
+
+- Load `/` in the preview and confirm: no top header, exactly one "Sign in" button, dark hero, three chips, no wrong-domain wording anywhere on the page.
+- Grep the `src/` tree for "assessor", "landlord", "SAP-style", "Energy Performance Certificate", "rating trend", "certificate management" and confirm zero matches.
+- Run lint and the unit suite to confirm nothing regressed, then republish.
