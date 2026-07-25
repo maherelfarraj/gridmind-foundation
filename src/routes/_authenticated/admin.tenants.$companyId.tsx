@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -137,7 +138,7 @@ function TenantDetailPage() {
   const dirty = draft !== currentPlan;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
+    <div className="page-shell max-w-4xl">
       <div>
         <Link
           to="/admin/tenants"
@@ -145,17 +146,21 @@ function TenantDetailPage() {
         >
           <ArrowLeft className="h-3 w-3" /> All tenants
         </Link>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold text-foreground">
-            {t.legal_name ?? t.name}
-          </h1>
-          <PlanBadge tier={currentPlan} />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Short name <span className="font-mono">{t.name}</span>
-          {t.contact_email ? <> · {t.contact_email}</> : null}
-        </p>
       </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            {t.legal_name ?? t.name}
+            <PlanBadge tier={currentPlan} />
+          </span>
+        }
+        description={
+          <>
+            Short name <span className="font-mono">{t.name}</span>
+            {t.contact_email ? <> · {t.contact_email}</> : null}
+          </>
+        }
+      />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>

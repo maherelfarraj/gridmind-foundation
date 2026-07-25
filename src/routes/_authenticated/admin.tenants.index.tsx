@@ -7,13 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Plus, Search } from "lucide-react";
+import { Building2 } from "lucide-react";
 
 import { createTenant, listTenants, type PlanTier, type TenantRow } from "@/lib/tenants.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Dialog,
   DialogContent,
@@ -132,16 +135,12 @@ function TenantsPage() {
   });
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-semibold text-foreground">Tenants</h1>
-          <p className="text-sm text-muted-foreground">
-            Platform super admin console for managing every GridMind tenant.
-          </p>
-        </div>
-        <CreateTenantDialog />
-      </div>
+    <div className="page-shell max-w-6xl">
+      <PageHeader
+        title="Tenants"
+        description="Platform super admin console for managing every GridMind tenant."
+        actions={<CreateTenantDialog />}
+      />
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -190,11 +189,8 @@ function TenantsPage() {
                 </TableRow>
               ) : (query.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    No tenants yet
+                  <TableCell colSpan={6} className="border-0 bg-transparent p-0">
+                    <EmptyState icon={Building2} title="No tenants yet" compact className="border-0 bg-transparent" />
                   </TableCell>
                 </TableRow>
               ) : (
