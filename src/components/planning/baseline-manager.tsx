@@ -2,11 +2,12 @@
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Lock, Trash2 } from "lucide-react";
+import { Lock, Trash2, History } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -74,9 +75,12 @@ export function BaselineManager({
         </DialogHeader>
 
         {baselines.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No baselines yet. Create one from the toolbar to snapshot the current schedule.
-          </p>
+          <EmptyState
+            icon={History}
+            title="No baselines yet"
+            description="Create one from the toolbar to snapshot the current schedule."
+            compact
+          />
         ) : (
           <ul className="flex flex-col gap-2">
             {baselines.map((b) => (
