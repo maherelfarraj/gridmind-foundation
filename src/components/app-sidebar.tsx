@@ -45,7 +45,25 @@ export function AppSidebar() {
     queryFn: () => rolesFn(),
     staleTime: 60_000,
   });
-  const isSuperAdmin = (rolesQuery.data ?? []).some((r) => r.role === "super_admin");
+  const roles = (rolesQuery.data ?? []).map((r) => r.role as string);
+  const isSuperAdmin = roles.includes("super_admin");
+  const EXTERNAL_VIEWERS = new Set([
+    "client_viewer",
+    "investor_viewer",
+    "lender_viewer",
+  ]);
+  const isOnlyExternalViewer =
+    roles.length > 0 && roles.every((r) => EXTERNAL_VIEWERS.has(r));
+
+  const pendingFn = useServerFn(getMyPendingCount);
+  const pendingQuery = useQuery({
+    queryKey: ["approvals", "pending-count"],
+    queryFn: () => pendingFn(),
+    enabled: !isOnlyExternalViewer,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const pendingCount = pendingQuery.data?.count ?? 0;
 
   const { activeCompanyId } = useActiveCompany();
   const modulesFn = useServerFn(listModuleAccess);
