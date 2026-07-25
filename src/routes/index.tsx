@@ -63,7 +63,10 @@ function LandingPage() {
         </p>
 
         <Button asChild size="lg" className="mt-10">
-          <Link to="/login">Sign in</Link>
+          <Link to={signedIn ? "/dashboard" : "/login"}>
+            {signedIn ? "Go to dashboard" : "Sign in"}
+          </Link>
+
         </Button>
 
         <ul className="mt-12 flex flex-wrap items-center justify-center gap-2">
