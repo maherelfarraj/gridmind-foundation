@@ -13,6 +13,7 @@ import {
   HardHat,
   Handshake,
   FileDown,
+  BookOpen,
   Inbox,
   KeyRound,
   LifeBuoy,
