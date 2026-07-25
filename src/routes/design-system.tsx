@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Activity, Gauge, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { ThemeToggle } from "@/components/theme-toggle";
+
 
 export const Route = createFileRoute("/design-system")({
   head: () => ({
