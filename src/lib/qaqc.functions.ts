@@ -254,7 +254,7 @@ export const getInspection = createServerFn({ method: "GET" })
     if (!row) httpError(404, "inspection_not_found");
     const roles = await currentRoles(context);
     const inspection: InspectionListItem = {
-      ...(row as InspectionRow),
+      ...((row as unknown) as InspectionRow),
       attachments: ((row as any).attachments ?? []) as QaqcAttachment[],
       project_name: (row as any).projects?.name ?? null,
       project_code: (row as any).projects?.code ?? null,
