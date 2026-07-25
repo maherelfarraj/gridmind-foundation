@@ -53,6 +53,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { MilestoneBillDialog } from "@/components/finance/milestone-bill-dialog";
 
 import {
   bulkInsertObligations,
