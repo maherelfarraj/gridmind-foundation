@@ -150,7 +150,7 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
 
     const { data: proj, error: pErr } = await context.supabase
       .from("projects")
-      .select("id, name, project_code, company_id")
+      .select("id, name, code, company_id")
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
@@ -196,7 +196,7 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
           ? Number((yc as any).contract_pr)
           : null,
       projectName: (proj as any).name ?? null,
-      projectCode: (proj as any).project_code ?? null,
+      projectCode: (proj as any).code ?? null,
       companyName: (co as any)?.name ?? null,
       companyLegalName: (co as any)?.legal_name ?? null,
       primaryColor: (br as any)?.primary_color ?? null,
