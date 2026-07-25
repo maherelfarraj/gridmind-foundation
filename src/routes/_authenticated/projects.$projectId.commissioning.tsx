@@ -257,7 +257,9 @@ function AreaSection({
   area: string;
   rows: CommissioningTestRow[];
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(true);
+
   const counts = useMemo(() => {
     const c: Record<CommissioningTestStatus, number> = {
       not_started: 0,
