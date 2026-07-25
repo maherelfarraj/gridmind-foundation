@@ -229,7 +229,10 @@ function matchCronApikey(header: string | null): boolean {
 export async function guardPublicHook(request: Request, opts: GuardOptions): Promise<GuardResult> {
   const admin = createServiceRoleClient();
   const mode = enforceMode();
+  const warnings: string[] = [];
   const clientIp = request.headers.get("cf-connecting-ip");
+
+
 
   // ---- Stage 1: auth (always blocks) -------------------------------------
   const authHeader = request.headers.get("authorization") ?? "";
