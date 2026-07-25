@@ -3336,6 +3336,79 @@ export type Database = {
           },
         ]
       }
+      investor_share_links: {
+        Row: {
+          access_count: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          label: string
+          last_accessed_at: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          scope: Json
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          access_count?: number
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          label: string
+          last_accessed_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          scope?: Json
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          access_count?: number
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          label?: string
+          last_accessed_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          scope?: Json
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_share_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_share_links_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accepted_at: string | null
@@ -9413,6 +9486,7 @@ export type Database = {
         Returns: string
       }
       redeem_invite: { Args: { p_token: string }; Returns: string }
+      resolve_share_link: { Args: { p_token_hash: string }; Returns: Json }
       start_approval_instance: {
         Args: {
           p_amount?: number
