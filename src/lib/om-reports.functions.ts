@@ -133,7 +133,7 @@ export const listOmReports = createServerFn({ method: "POST" })
     return (rows ?? []).map((r: any) => ({
       ...r,
       project_name: r.projects?.name ?? null,
-    })) as OmReportRow[];
+    })) as unknown as OmReportRow[];
   });
 
 // ---------------------------------------------------------------------------
