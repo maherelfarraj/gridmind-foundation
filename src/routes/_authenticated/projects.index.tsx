@@ -399,34 +399,29 @@ function SkeletonGrid() {
 }
 
 function EmptyState({ filtersActive }: { filtersActive: boolean }) {
-  return (
-    <Card className="flex flex-col items-center gap-3 border-dashed p-12 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <FolderPlus size={22} aria-hidden />
-      </div>
-      {filtersActive ? (
-        <>
-          <p className="text-sm font-medium text-foreground">No projects match your filters</p>
-          <p className="text-xs text-muted-foreground">
-            Adjust or clear the filters above to see more results.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="text-sm font-medium text-foreground">
-            No projects yet — create your first project
-          </p>
-          <Button asChild size="sm">
-            <Link to="/projects/new" search={{ step: 1 }}>
-              <Plus size={16} aria-hidden />
-              New project
-            </Link>
-          </Button>
-        </>
-      )}
-    </Card>
+  return filtersActive ? (
+    <SharedEmptyState
+      icon={FolderPlus}
+      title="No projects match your filters"
+      description="Adjust or clear the filters above to see more results."
+    />
+  ) : (
+    <SharedEmptyState
+      icon={FolderPlus}
+      title="No projects yet"
+      description="Create your first project to start phase-gated delivery."
+      action={
+        <Button asChild size="sm">
+          <Link to="/projects/new" search={{ step: 1 }}>
+            <Plus size={16} aria-hidden />
+            New project
+          </Link>
+        </Button>
+      }
+    />
   );
 }
+
 
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
