@@ -5,8 +5,10 @@ import {
   Outlet,
   useRouter,
 } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowLeft, HardHat, RefreshCw } from "lucide-react";
+
+import { mobilizationHeaderChipQueryOptions } from "@/lib/mobilization-query";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -131,6 +133,7 @@ function ProjectDetailLayout() {
           <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
             {project.status}
           </span>
+          <MobilizationHeaderChip projectId={projectId} />
         </div>
 
         <Card className="border-border bg-card p-5">
@@ -261,5 +264,24 @@ function DetailNotFound() {
         </Button>
       </Card>
     </div>
+  );
+}
+
+function MobilizationHeaderChip({ projectId }: { projectId: string }) {
+  const { data } = useQuery(mobilizationHeaderChipQueryOptions(projectId));
+  if (!data) return null;
+  if (data.status === "complete" || data.status === "none") return null;
+  const label =
+    data.status === "in_progress"
+      ? "Mobilization: in progress"
+      : "Mobilization: not started";
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+      aria-label={label}
+    >
+      <HardHat size={12} aria-hidden />
+      {label}
+    </span>
   );
 }
