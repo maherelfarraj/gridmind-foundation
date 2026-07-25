@@ -4480,6 +4480,105 @@ export type Database = {
           },
         ]
       }
+      preventive_maintenance_plans: {
+        Row: {
+          active: boolean
+          auto_generate: boolean
+          checklist: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          default_assignee: string | null
+          description: string | null
+          equipment_id: string | null
+          estimated_hours: number | null
+          frequency: Database["public"]["Enums"]["pm_frequency"]
+          id: string
+          interval_days: number
+          last_generated_at: string | null
+          next_due_date: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          auto_generate?: boolean
+          checklist?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          default_assignee?: string | null
+          description?: string | null
+          equipment_id?: string | null
+          estimated_hours?: number | null
+          frequency: Database["public"]["Enums"]["pm_frequency"]
+          id?: string
+          interval_days?: number
+          last_generated_at?: string | null
+          next_due_date: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          auto_generate?: boolean
+          checklist?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_assignee?: string | null
+          description?: string | null
+          equipment_id?: string | null
+          estimated_hours?: number | null
+          frequency?: Database["public"]["Enums"]["pm_frequency"]
+          id?: string
+          interval_days?: number
+          last_generated_at?: string | null
+          next_due_date?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preventive_maintenance_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preventive_maintenance_plans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preventive_maintenance_plans_default_assignee_fkey"
+            columns: ["default_assignee"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preventive_maintenance_plans_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preventive_maintenance_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -8574,6 +8673,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "invoiced"
+      pm_frequency: "weekly" | "monthly" | "quarterly" | "semiannual" | "annual"
       po_status:
         | "draft"
         | "pending_approval"
@@ -9032,6 +9132,7 @@ export const Constants = {
         "rejected",
         "invoiced",
       ],
+      pm_frequency: ["weekly", "monthly", "quarterly", "semiannual", "annual"],
       po_status: [
         "draft",
         "pending_approval",
