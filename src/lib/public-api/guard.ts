@@ -23,8 +23,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // --------------------------------------------------------------------------
 
 export interface GuardOptions {
-  /** Required scope on the api_key (e.g. "scada:telemetry:write"). */
-  scope: string;
+  /** Required scope on the api_key. Omit for cron-only routes where the
+   *  caller is authenticated via the Supabase `apikey` header instead. */
+  scope?: string;
   /** Logical route id used for rate-limit bucket keys + audit metadata. */
   route: string;
   /** Require HMAC signature verification. Defaults to false. */
@@ -35,15 +36,29 @@ export interface GuardOptions {
   rateRefillPerSec?: number;
   /** Optional raw request body (string). If omitted, guard will read it. */
   rawBody?: string;
+  /** Accept the Supabase `apikey` header as an alternative caller (pg_cron).
+   *  When enabled and no Bearer is present, guard matches `apikey` against
+   *  SUPABASE_PUBLISHABLE_KEY or CRON_APIKEY. Cron callers skip IP/HMAC/
+   *  scope checks; rate limit still applies. */
+  allowCron?: boolean;
+}
+
+export interface GuardCaller {
+  kind: "api_key" | "cron";
+  companyId: string | null;
+  keyId: string | null;
 }
 
 export interface GuardSuccess {
   ok: true;
-  keyId: string;
-  companyId: string;
+  /** @deprecated use caller.keyId */
+  keyId: string | null;
+  /** @deprecated use caller.companyId */
+  companyId: string | null;
   scopes: string[];
   rawBody: string;
   clientIp: string | null;
+  caller: GuardCaller;
 }
 
 export interface GuardFailure {
@@ -173,16 +188,30 @@ export async function auditGuardEvent(
 
 const REPLAY_WINDOW_SECONDS = 300;
 
-function jsonError(status: number, code: string, message?: string): Response {
+function jsonError(status: number, code: string, message?: string, extraHeaders?: Record<string, string>): Response {
   return new Response(JSON.stringify({ error: code, message: message ?? code }), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(extraHeaders ?? {}) },
   });
 }
 
 function enforceMode(): 'warn' | 'block' {
   const raw = (typeof process !== 'undefined' ? process.env?.PUBLIC_HOOK_ENFORCE : undefined) ?? 'block';
   return raw.toLowerCase() === 'warn' ? 'warn' : 'block';
+}
+
+function matchCronApikey(header: string | null): boolean {
+  if (!header) return false;
+  const provided = header.trim();
+  if (!provided) return false;
+  const env = typeof process !== 'undefined' ? process.env : undefined;
+  const candidates = [env?.SUPABASE_PUBLISHABLE_KEY, env?.CRON_APIKEY].filter(
+    (v): v is string => typeof v === 'string' && v.length > 0,
+  );
+  for (const expected of candidates) {
+    if (provided.length === expected.length && timingSafeEqual(provided, expected)) return true;
+  }
+  return false;
 }
 
 export async function guardPublicHook(
@@ -196,6 +225,49 @@ export async function guardPublicHook(
   // ---- Stage 1: auth (always blocks) -------------------------------------
   const authHeader = request.headers.get('authorization') ?? '';
   const bearer = /^Bearer\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim();
+
+  // ---- Cron caller branch (apikey header, no Bearer) ---------------------
+  if (!bearer && opts.allowCron && matchCronApikey(request.headers.get('apikey'))) {
+    const rawBody = opts.rawBody ?? (await request.clone().text());
+
+    // Rate limit (bucket keyed by route, shared across all cron hits).
+    const capacity = opts.rateCapacity ?? 120;
+    const refill = opts.rateRefillPerSec ?? 2;
+    const rateKey = `public_hook:cron:${opts.route}`;
+    const { data: allowed, error: rateErr } = await admin.rpc('consume_rate_limit', {
+      p_key: rateKey,
+      p_capacity: capacity,
+      p_refill_per_sec: refill,
+    });
+    if (rateErr) {
+      return { ok: false, response: jsonError(500, 'rate_limit_error', 'rate limiter unavailable') };
+    }
+    if (allowed !== true) {
+      await auditGuardEvent(admin, {
+        companyId: null,
+        action: 'public_hook.block',
+        route: opts.route,
+        reason: 'rate_limited',
+      });
+      return {
+        ok: false,
+        response: jsonError(429, 'rate_limited', 'too many requests', {
+          'retry-after': String(Math.max(1, Math.ceil(1 / refill))),
+        }),
+      };
+    }
+
+    return {
+      ok: true,
+      keyId: null,
+      companyId: null,
+      scopes: [],
+      rawBody,
+      clientIp,
+      caller: { kind: 'cron', companyId: null, keyId: null },
+    };
+  }
+
   if (!bearer) {
     await auditGuardEvent(admin, {
       companyId: null,
@@ -224,7 +296,7 @@ export async function guardPublicHook(
   }
 
   const scopes = keyRow.scopes ?? [];
-  if (!scopes.includes(opts.scope)) {
+  if (opts.scope && !scopes.includes(opts.scope)) {
     await auditGuardEvent(admin, {
       companyId: keyRow.company_id,
       keyId: keyRow.key_id,
@@ -329,7 +401,12 @@ export async function guardPublicHook(
       route: opts.route,
       reason: 'rate_limited',
     });
-    return { ok: false, response: jsonError(429, 'rate_limited', 'too many requests') };
+    return {
+      ok: false,
+      response: jsonError(429, 'rate_limited', 'too many requests', {
+        'retry-after': String(Math.max(1, Math.ceil(1 / refill))),
+      }),
+    };
   }
 
   return {
@@ -339,5 +416,6 @@ export async function guardPublicHook(
     scopes,
     rawBody,
     clientIp,
+    caller: { kind: 'api_key', companyId: keyRow.company_id, keyId: keyRow.key_id },
   };
 }

@@ -30,7 +30,9 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
-import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
+import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
+import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
+import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
@@ -272,9 +274,19 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   path: '/api/webhooks/esign',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronPmGenerateRoute = ApiCronPmGenerateRouteImport.update({
-  id: '/api/cron/pm-generate',
-  path: '/api/cron/pm-generate',
+const ApiCronScheduledReportsRoute = ApiCronScheduledReportsRouteImport.update({
+  id: '/api/cron/scheduled-reports',
+  path: '/api/cron/scheduled-reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronPmWorkOrdersRoute = ApiCronPmWorkOrdersRouteImport.update({
+  id: '/api/cron/pm-work-orders',
+  path: '/api/cron/pm-work-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronAuditRetentionRoute = ApiCronAuditRetentionRouteImport.update({
+  id: '/api/cron/audit-retention',
+  path: '/api/cron/audit-retention',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronApprovalEscalationsRoute =
@@ -1158,7 +1170,9 @@ export interface FileRoutesByFullPath {
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
+  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
+  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
@@ -1307,7 +1321,9 @@ export interface FileRoutesByTo {
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
+  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
+  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse': typeof AuthenticatedHseIndexRoute
@@ -1464,7 +1480,9 @@ export interface FileRoutesById {
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
+  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
+  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
@@ -1623,7 +1641,9 @@ export interface FileRouteTypes {
     | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
+    | '/api/cron/audit-retention'
+    | '/api/cron/pm-work-orders'
+    | '/api/cron/scheduled-reports'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse/'
@@ -1772,7 +1792,9 @@ export interface FileRouteTypes {
     | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
+    | '/api/cron/audit-retention'
+    | '/api/cron/pm-work-orders'
+    | '/api/cron/scheduled-reports'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse'
@@ -1928,7 +1950,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
     | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
+    | '/api/cron/audit-retention'
+    | '/api/cron/pm-work-orders'
+    | '/api/cron/scheduled-reports'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/_authenticated/hse/'
@@ -2040,7 +2064,9 @@ export interface RootRouteChildren {
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
-  ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
+  ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
+  ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
+  ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEventsRoute: typeof ApiPublicHooksEventsRoute
   ApiPublicHooksPingRoute: typeof ApiPublicHooksPingRoute
@@ -2196,11 +2222,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksEsignRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron/pm-generate': {
-      id: '/api/cron/pm-generate'
-      path: '/api/cron/pm-generate'
-      fullPath: '/api/cron/pm-generate'
-      preLoaderRoute: typeof ApiCronPmGenerateRouteImport
+    '/api/cron/scheduled-reports': {
+      id: '/api/cron/scheduled-reports'
+      path: '/api/cron/scheduled-reports'
+      fullPath: '/api/cron/scheduled-reports'
+      preLoaderRoute: typeof ApiCronScheduledReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/pm-work-orders': {
+      id: '/api/cron/pm-work-orders'
+      path: '/api/cron/pm-work-orders'
+      fullPath: '/api/cron/pm-work-orders'
+      preLoaderRoute: typeof ApiCronPmWorkOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/audit-retention': {
+      id: '/api/cron/audit-retention'
+      path: '/api/cron/audit-retention'
+      fullPath: '/api/cron/audit-retention'
+      preLoaderRoute: typeof ApiCronAuditRetentionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/approval-escalations': {
@@ -3773,7 +3813,9 @@ const rootRouteChildren: RootRouteChildren = {
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
-  ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
+  ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
+  ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
+  ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEventsRoute: ApiPublicHooksEventsRoute,
   ApiPublicHooksPingRoute: ApiPublicHooksPingRoute,
