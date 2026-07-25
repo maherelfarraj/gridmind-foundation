@@ -46,6 +46,7 @@ import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
 import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_authenticated/settings.company'
 import { Route as AuthenticatedSettingsApprovalRulesRouteImport } from './routes/_authenticated/settings.approval-rules'
+import { Route as AuthenticatedSettingsApiKeysRouteImport } from './routes/_authenticated/settings.api-keys'
 import { Route as AuthenticatedQaqcHeatmapRouteImport } from './routes/_authenticated/qaqc.heatmap'
 import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_authenticated/proposals.$proposalId'
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
@@ -365,6 +366,12 @@ const AuthenticatedSettingsApprovalRulesRoute =
   AuthenticatedSettingsApprovalRulesRouteImport.update({
     id: '/settings/approval-rules',
     path: '/settings/approval-rules',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsApiKeysRoute =
+  AuthenticatedSettingsApiKeysRouteImport.update({
+    id: '/settings/api-keys',
+    path: '/settings/api-keys',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQaqcHeatmapRoute =
@@ -1157,6 +1164,7 @@ export interface FileRoutesByFullPath {
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -1308,6 +1316,7 @@ export interface FileRoutesByTo {
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -1467,6 +1476,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
   '/_authenticated/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/_authenticated/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/_authenticated/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/_authenticated/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
@@ -1628,6 +1638,7 @@ export interface FileRouteTypes {
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/qaqc/heatmap'
+    | '/settings/api-keys'
     | '/settings/approval-rules'
     | '/settings/company'
     | '/settings/departments'
@@ -1779,6 +1790,7 @@ export interface FileRouteTypes {
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/qaqc/heatmap'
+    | '/settings/api-keys'
     | '/settings/approval-rules'
     | '/settings/company'
     | '/settings/departments'
@@ -1937,6 +1949,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/new'
     | '/_authenticated/proposals/$proposalId'
     | '/_authenticated/qaqc/heatmap'
+    | '/_authenticated/settings/api-keys'
     | '/_authenticated/settings/approval-rules'
     | '/_authenticated/settings/company'
     | '/_authenticated/settings/departments'
@@ -2332,6 +2345,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/approval-rules'
       fullPath: '/settings/approval-rules'
       preLoaderRoute: typeof AuthenticatedSettingsApprovalRulesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/api-keys': {
+      id: '/_authenticated/settings/api-keys'
+      path: '/settings/api-keys'
+      fullPath: '/settings/api-keys'
+      preLoaderRoute: typeof AuthenticatedSettingsApiKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/heatmap': {
@@ -3642,6 +3662,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
   AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
   AuthenticatedQaqcHeatmapRoute: typeof AuthenticatedQaqcHeatmapRoute
+  AuthenticatedSettingsApiKeysRoute: typeof AuthenticatedSettingsApiKeysRoute
   AuthenticatedSettingsApprovalRulesRoute: typeof AuthenticatedSettingsApprovalRulesRoute
   AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
@@ -3730,6 +3751,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,
   AuthenticatedProposalsProposalIdRoute: AuthenticatedProposalsProposalIdRoute,
   AuthenticatedQaqcHeatmapRoute: AuthenticatedQaqcHeatmapRoute,
+  AuthenticatedSettingsApiKeysRoute: AuthenticatedSettingsApiKeysRoute,
   AuthenticatedSettingsApprovalRulesRoute:
     AuthenticatedSettingsApprovalRulesRoute,
   AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
