@@ -9,6 +9,7 @@ import {
   FilePlus,
   FileText,
   Loader2,
+  Receipt,
   Sparkles,
   Trash2,
   Upload,
@@ -52,6 +53,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { MilestoneBillDialog } from "@/components/finance/milestone-bill-dialog";
 
 import {
   bulkInsertObligations,
@@ -546,6 +548,11 @@ function MarkSignedDialog({
 function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boolean }) {
   const qc = useQueryClient();
   const updateFn = useServerFn(updateScheduleOfValues);
+  const [billOpen, setBillOpen] = useState(false);
+  const canBill =
+    canWrite &&
+    ["signed", "active"].includes(contract.status) &&
+    (contract.schedule_of_values?.length ?? 0) > 0;
   const [lines, setLines] = useState<SovLine[]>(() =>
     contract.schedule_of_values.length
       ? contract.schedule_of_values
@@ -640,9 +647,24 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
           </TableBody>
         </Table>
         <div className="flex items-center justify-between gap-2">
-          <Button variant="outline" size="sm" disabled={!canWrite} onClick={addLine}>
-            <FilePlus className="mr-2 size-4" /> Add line
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={!canWrite} onClick={addLine}>
+              <FilePlus className="mr-2 size-4" /> Add line
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!canBill}
+              onClick={() => setBillOpen(true)}
+              title={
+                canBill
+                  ? "Create a draft receivable invoice against a SOV line"
+                  : "Contract must be signed and the SOV saved to bill milestones"
+              }
+            >
+              <Receipt className="mr-2 size-4" /> Bill milestone
+            </Button>
+          </div>
           <div className="text-right">
             <div className="text-xs text-muted-foreground">Total vs contract value</div>
             <div
@@ -672,6 +694,11 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
           </Button>
         </div>
       </CardContent>
+      <MilestoneBillDialog
+        contractId={contract.id}
+        open={billOpen}
+        onOpenChange={setBillOpen}
+      />
     </Card>
   );
 }
