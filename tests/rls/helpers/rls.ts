@@ -271,7 +271,7 @@ export async function setupFixtures(): Promise<Fixtures> {
 
   const cleanup = async () => {
     // Best-effort teardown; audit rows stay per project convention.
-    for (const cid of [depsA.companyId, depsB.companyId]) {
+    for (const cid of [depsA.companyId, depsB.companyId, orphanCo.id]) {
       // Delete tables that reference company_id in dependency-safe order.
       const tables: readonly string[] = [
         "scada_telemetry",
