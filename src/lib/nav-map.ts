@@ -2,6 +2,7 @@
 // the permission simulator, so they can't drift. Forward-looking routes are
 // fine here; they mirror the nav map as feature batches land.
 import {
+  AlertTriangle,
   Atom,
   Building2,
   CalendarRange,
