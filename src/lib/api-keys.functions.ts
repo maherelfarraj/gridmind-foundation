@@ -318,3 +318,114 @@ export const revokeApiKey = createServerFn({ method: "POST" })
       status: statusOf(row),
     };
   });
+
+// ---------- security: IP allowlist + HMAC signing secret -------------------
+//
+// The public-API guard (P-121) reads api_keys.allowed_ips (stage 2) and
+// api_keys.hmac_secret (stage 3). Both had no admin surface; this fn is it.
+//   - Allowlist entries are IPv4 addresses or CIDR blocks ("*" = any).
+//   - The HMAC secret is minted server-side (32 random bytes, base64url) and
+//     returned ONCE, exactly like the API key itself.
+
+/** IPv4 address or CIDR block, e.g. 203.0.113.7 or 203.0.113.0/24. */
+const ipEntrySchema = z
+  .string()
+  .trim()
+  .refine((v) => {
+    if (v === "*") return true;
+    const [addr, bitsRaw, ...rest] = v.split("/");
+    if (rest.length) return false;
+    const parts = addr.split(".");
+    if (parts.length !== 4) return false;
+    if (!parts.every((p) => /^\d{1,3}$/.test(p) && Number(p) <= 255)) return false;
+    if (bitsRaw === undefined) return true;
+    const bits = Number(bitsRaw);
+    return /^\d{1,2}$/.test(bitsRaw) && bits >= 0 && bits <= 32;
+  }, "must be an IPv4 address, CIDR block, or *");
+
+const securitySchema = z.object({
+  keyId: z.string().uuid(),
+  /** Full replacement list. Empty array = allow any IP (guard warns instead). */
+  allowedIps: z.array(ipEntrySchema).max(50).optional(),
+  /** Mint a fresh 32-byte HMAC secret and return it once. */
+  regenerateHmac: z.boolean().optional(),
+  /** Remove the HMAC secret (guard then only warns on missing signature). */
+  clearHmac: z.boolean().optional(),
+});
+
+export type ApiKeySecurityResult = {
+  key: ApiKeyRow;
+  /** Present only when a new signing secret was minted. Shown once. */
+  hmacSecret?: string;
+};
+
+export const updateApiKeySecurity = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: z.input<typeof securitySchema>) => securitySchema.parse(input))
+  .handler(async ({ context, data }): Promise<ApiKeySecurityResult> => {
+    requireSupabaseAuth(context);
+    await assertCompanyAdmin(context);
+    const companyId = await currentCompanyId(context);
+
+    if (data.regenerateHmac && data.clearHmac) httpError(400, "hmac_conflict");
+
+    const existing = await context.supabase
+      .from("api_keys")
+      .select("id, name, revoked_at")
+      .eq("id", data.keyId)
+      .eq("company_id", companyId)
+      .maybeSingle();
+    if (existing.error) throw existing.error;
+    const current = existing.data as { revoked_at: string | null } | null;
+    if (!current) httpError(404, "key_not_found");
+    if (current!.revoked_at) httpError(409, "key_revoked");
+
+    const patch: Record<string, unknown> = {};
+    if (data.allowedIps) {
+      patch.allowed_ips = Array.from(new Set(data.allowedIps.filter(Boolean)));
+    }
+    let hmacSecret: string | undefined;
+    if (data.regenerateHmac) {
+      const bytes = new Uint8Array(32); // 32 random bytes, per operator policy
+      crypto.getRandomValues(bytes);
+      hmacSecret = base64Url(bytes);
+      patch.hmac_secret = hmacSecret;
+    } else if (data.clearHmac) {
+      patch.hmac_secret = null;
+    }
+    if (Object.keys(patch).length === 0) httpError(400, "nothing_to_update");
+
+    const { data: updated, error } = await context.supabase
+      .from("api_keys")
+      .update(patch as never)
+      .eq("id", data.keyId)
+      .eq("company_id", companyId)
+      .select(`${SAFE_SELECT}, allowed_ips, hmac_secret`)
+      .single();
+    if (error) {
+      if ((error as { code?: string }).code === "42501") httpError(403, "forbidden_role");
+      throw error;
+    }
+
+    const { hmac_secret, ...row } = updated as { hmac_secret: string | null } & Omit<
+      ApiKeyRow,
+      "status" | "has_hmac"
+    >;
+    await writeAudit(context, companyId, "api_key.security_updated", row.id, {
+      name: row.name,
+      prefix: row.key_prefix,
+      allowed_ips: data.allowedIps ?? undefined,
+      hmac: data.regenerateHmac ? "regenerated" : data.clearHmac ? "cleared" : "unchanged",
+    });
+
+    return {
+      key: {
+        ...row,
+        scopes: (row.scopes ?? []) as ApiKeyScope[],
+        allowed_ips: (row.allowed_ips ?? []) as string[],
+        has_hmac: !!hmac_secret,
+        status: statusOf(row),
+      },
+      hmacSecret,
+    };
+  });
