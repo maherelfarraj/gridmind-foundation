@@ -5532,6 +5532,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_change_order: {
+        Args: { p_co_id: string; p_note?: string }
+        Returns: Json
+      }
       assert_can_grant_role: {
         Args: {
           p_company_id: string
@@ -5594,6 +5598,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      incorporate_change_order: { Args: { p_co_id: string }; Returns: Json }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
