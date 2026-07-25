@@ -1,107 +1,95 @@
-## P-090 — QA/QC punch items
+## P-091 — NCRs, submittals, transmittals
 
-Append the `qaqc_punch_items` table to migration `0042_qaqc.sql` (part 2), then build the punch-list UI: category board, rapid punch-walk capture, and role-gated signoff.
+### 1. Migration `0043_ncr_submittals_transmittals.sql`
 
-### 1. Migration — append to `supabase/migrations/0042_qaqc.sql`
+Ship the SQL exactly as specified, wrapped so it is idempotent (twice-clean):
+- `do $$ ... exception when duplicate_object ...` for all 5 enums.
+- `create table if not exists` for `ncrs`, `submittals`, `transmittals` with the columns listed.
+- `alter table ... enable row level security` + `drop policy if exists` before each `create policy` (select + write per table with the exact role gates).
+- GRANT select/insert/update to `authenticated`, GRANT all to `service_role`.
+- Indexes as specified.
+- `trg_updated_at` trigger on each of the three tables using existing `public.set_updated_at()`.
+- Numbering uniqueness comes from the specified UNIQUE constraints (`company_id, ncr_number`; `company_id, project_id, submittal_number, revision`; `company_id, transmittal_number`).
 
-Add exactly the SQL from the spec (guarded enums `punch_category` A/B/C and `punch_status` open/ready_for_review/closed/void; `qaqc_punch_items` table; RLS SELECT via `is_company_member`; write policy for construction_admin / foreman / field_technician / company_admin; GRANT select/insert/update to authenticated; `punch_project_status_idx`).
+Note: the existing project already has `0043_qaqc_punch.sql` (P-090). Migration files are timestamped, so this file will land as a new timestamped migration and coexist without conflict.
 
-Plus (to match project conventions used across 0042 part 1):
-- `create trigger trg_qaqc_punch_updated_at before update on public.qaqc_punch_items for each row execute function public.set_updated_at();`
+### 2. Domain rules — `src/lib/ncr.rules.ts`, `src/lib/submittals.rules.ts`, `src/lib/transmittals.rules.ts`
 
-### 2. Domain logic — `src/lib/qaqc.rules.ts` (extend)
+Pure helpers, split from `.functions.ts` per tss-serverfn-split rule:
+- Enum arrays + label maps for `ncr_source`, `ncr_disposition`, `ncr_status`, `submittal_status`, `transmittal_direction`.
+- Zod schemas: `ncrCreateInput`, `ncrDispositionInput` (custom refinement: `disposition = 'use_as_is'` requires non-empty `rootCause` + `correctiveAction`), `ncrCloseInput`, `submittalCreateInput`, `submittalReviewInput`, `submittalReviseInput`, `transmittalCreateInput` (items array with `document_id`, `description`, `revision`, `copies`), `transmittalSendInput`, `transmittalAckInput`.
+- `nextSeq(existing, prefix)` helper for `NCR-####`, `SUB-####`, `TRN-####`.
+- Role guards: `canWriteNcr(roles)`, `canWriteSubmittal(roles)`, `canWriteTransmittal(roles)`.
+- Semantic tint helpers for status badges (semantic tokens + amber/emerald/destructive tints already in use — no raw hex).
+- `daysBetween(a, b)` + `avgTurnaround(rows)` + `daysOpen(row)` for KPI math (pure, unit-testable).
 
-Add:
-- `PUNCH_CATEGORIES = ['A','B','C']` with `PUNCH_CATEGORY_LABELS` (A = before COD/energization, B = before handover, C = cosmetic).
-- `PUNCH_STATUSES = ['open','ready_for_review','closed','void']` + display labels + tint tokens.
-- Zod schemas: `punchInput` (create — projectId, walkDate, area, discipline, category, description, dueDate?, assignedTo?, photoIds[]); `punchUpdateInput`; `punchSignoffInput` (id + typed `signoffName` min 2 chars).
-- `nextPunchNumber(seq)` → `PN-0001` style formatter.
-- Helper `canSignoff(roles)` → true only for construction_admin/company_admin.
+### 3. Server functions
 
-### 3. Server functions — `src/lib/qaqc.functions.ts` (extend)
+Each in its own file to keep handlers thin:
 
-- `listPunchItems({ projectId?, category?, status?, discipline?, area?, search? })` — reads `qaqc_punch_items` joined to `projects(name,code)` and `profiles` (raised_by, assigned_to email); returns rows scoped by RLS.
-- `getPunchItem(id)` — detail with joined names + photo signed URLs derived from `site_photos` referenced by `photo_ids`.
-- `createPunchItem(input)` — resolves company, generates `PN-####` per-company with 5-retry unique-violation loop (mirrors inspection numbering), inserts with `raised_by=userId`, writes audit `punch.create`. Idempotency-friendly.
-- `updatePunchItem(input)` — patch fields, audit `punch.update`.
-- `markPunchReady(id)` — sets `status='ready_for_review'`, audit `punch.ready`.
-- `signoffPunchItem({ id, signoffName })` — server-side role check via `has_role`/`has_company_role` RPC; only construction_admin or company_admin succeed (throws `forbidden_role` otherwise). Updates `status='closed'`, `signoff_by=userId`, `signoff_name`, `signoff_at=now`, `closed_at=now`. Audit `punch.signoff`. Rejects unless current status is `ready_for_review`.
-- `voidPunchItem({ id, reason })` — construction_admin/company_admin only; sets `status='void'`, audit `punch.void`.
-- `getPunchWalkContext(projectId)` — project members (for assignee dropdown) via `project_members`+`profiles`.
+**`src/lib/ncr.functions.ts`**
+- `listNcrs({ projectId?, status?, disposition?, source?, search? })` — company-scoped, joined project name.
+- `getNcr({ id })` — includes source linkage summary (inspection number / punch number / observation id) when available.
+- `createNcr({ projectId, source, sourceId?, discipline?, area?, description, costImpact?, currencyCode? })` — allocates `NCR-####` with retry on 23505; role gate `canWriteNcr`; audit `ncr.raise`.
+- `setNcrDisposition({ id, disposition, rootCause?, correctiveAction? })` — validation refinement enforces `use_as_is` requirements; audit `ncr.disposition`.
+- `closeNcr({ id })` — sets `status='closed'`, `closed_by`, `closed_at`; audit `ncr.close`.
+- `voidNcr({ id, reason })` — status=void; audit `ncr.void`.
 
-All use `attachSupabaseAuth`, zod input validation, `httpError(...)` for policy/status violations.
+**`src/lib/submittals.functions.ts`**
+- `listSubmittals`, `getSubmittal`.
+- `createSubmittal({ projectId, title, specSection?, dueDate?, filePath? })` — starts at `R0`, status `draft`, allocates `SUB-####`.
+- `submitSubmittal({ id })` — status → `submitted`, sets `submitted_at`; audit `submittal.submit`.
+- `reviewSubmittal({ id, status: approved|approved_as_noted|revise_resubmit|rejected, reviewNotes? })` — sets `reviewed_by/at`; audit `submittal.review`.
+- `reviseSubmittal({ id, filePath?, title?, dueDate? })` — inserts NEW row: same `submittal_number`, incremented `revision` (`R0`→`R1`), status `draft`; audit `submittal.revise`.
+- `signSubmittalUpload({ projectId, fileName })` — signed upload URL under `documents` bucket at `{company_id}/submittals/{project_id}/{uuid}-{safeName}`.
 
-### 4. Query factory — `src/lib/qaqc-query.ts` (extend)
+**`src/lib/transmittals.functions.ts`**
+- `listTransmittals`, `getTransmittal`.
+- `createTransmittal({ projectId, direction, fromParty, toParty, subject, items[], responseDue? })` — allocates `TRN-####`.
+- `sendTransmittal({ id })` — status timestamp; audit `transmittal.send`.
+- `ackTransmittal({ id })` — sets `acknowledged_at`; audit `transmittal.ack`.
+- `listProjectDocuments({ projectId })` — read-only picker source from the existing `documents` table for the compose step.
 
-- `punchListQueryOptions(filters)`
-- `punchDetailQueryOptions(id)`
-- `punchWalkContextQueryOptions(projectId)`
-- `punchBoardKpiQueryOptions(projectId)` — derives `openA`, `openB`, `openC`, `readyForReview` counts from list.
+### 4. Query options — `src/lib/ncr-query.ts`, `src/lib/submittals-query.ts`, `src/lib/transmittals-query.ts`
+Standard `queryOptions` factories following the `qaqc-query.ts` shape (list, detail, and picker options).
 
-### 5. UI components — `src/components/qaqc/`
+### 5. Routes (mobile-friendly, semantic tokens only)
 
-- `punch-category-badge.tsx` — semantic tint per A/B/C with tooltip explaining the gate meaning.
-- `punch-status-badge.tsx` — badge for open / ready_for_review / closed / void.
-- `punch-board-column.tsx` — column of cards (Category header + count + list of `PunchCard`s).
-- `punch-card.tsx` — compact card: number, area, description snippet, assignee avatar/email, due-date pill, status badge, click → detail.
-- `punch-photo-strip.tsx` — thumbnails from signed URLs, click to open full-size.
-- `punch-signoff-dialog.tsx` — typed-name confirmation dialog with warning "Signoff is irreversible".
+All list routes share the same skeleton: header + KPI chips, `Card` filter bar with project/status/search + CSV export, then `Skeleton` while loading, `Alert` with retry on error, empty state with primary CTA, then a `Table`.
 
-### 6. Routes — `src/routes/_authenticated/`
+- `src/routes/_authenticated/qaqc.ncrs.index.tsx` — deep-linkable search params (`projectId`, `status`, `disposition`, `source`, `search`). KPI chips: open NCRs, avg days-open (from `daysOpen`), total `cost_impact` via `Intl.NumberFormat` per currency. CSV export via existing `objectsToCsv`/`downloadCsv`. "New NCR" button.
+- `src/routes/_authenticated/qaqc.ncrs.new.tsx` — accepts optional `source`, `sourceId`, `projectId` search params for deep-link prefills (from inspection/punch/observation pages).
+- `src/routes/_authenticated/qaqc.ncrs.$id.tsx` — detail page: source link back to originating record when present, disposition form with zod-enforced `use_as_is` guard (client-side error + disabled submit until root cause + corrective action are filled), corrective action textarea, close/void actions, cost impact display.
+- `src/routes/_authenticated/field.submittals.index.tsx` — list + KPI avg turnaround days (only rows with both `submitted_at` and `reviewed_at`). "New submittal" button.
+- `src/routes/_authenticated/field.submittals.$id.tsx` — detail: current revision row header, revision history table (all rows sharing `submittal_number`), file link (signed URL), Submit → Review (reviewer-only select + notes) → Bump revision actions with confirmation dialogs; file upload via signed URL.
+- `src/routes/_authenticated/field.transmittals.index.tsx` — list; overdue = `direction='outgoing' AND response_due < today AND acknowledged_at IS NULL` gets a `text-destructive` badge.
+- `src/routes/_authenticated/field.transmittals.$id.tsx` — detail with items table; Send / Acknowledge actions.
+- `src/routes/_authenticated/field.transmittals.new.tsx` — compose page: pick project → multi-select from `listProjectDocuments`, edit description/revision/copies per row, save.
 
-**`qaqc.punch.index.tsx`** — dual-view page.
-- Header KPI chips: **Open A items** (destructive tint when > 0, tooltip "Blocks COD / energization"), Open B, Open C, Ready for review.
-- View toggle: **Board** (default) | **List**, persisted via search param `view=board|list`.
-- Filters: project, discipline, area, status, search (search params, mirrors inspection list pattern).
-- Board view: three columns A / B / C, each column shows count + stacked `PunchCard`s. Card click → detail. "New punch walk" button top-right → `/qaqc/punch/walk?projectId=...`.
-- List view: table (Number, Walk date, Area, Discipline, Category, Description, Assignee, Due, Status), CSV export via `objectsToCsv`.
-- Skeleton, empty state (`No punch items yet — start a punch walk` + CTA), error state with retry.
+Cross-linking: from the QA inspection detail (`qaqc.inspections.$id.tsx`), when `result = 'fail'`, add a "Raise NCR" button linking to `/qaqc/ncrs/new?projectId=…&source=inspection&sourceId=…`. Same on punch item detail (`source=punch_item`) and any observation detail we have.
 
-**`qaqc.punch.walk.tsx`** — mobile-first rapid capture.
-- Step 1: pick project → area → discipline (persisted in local state, not reset between items).
-- Step 2: rapid-add form (react-hook-form + zod): description, category (A/B/C radio with tooltip), due date, assignee (from `getPunchWalkContext`), camera capture.
-  - Camera: `<input type="file" accept="image/*" capture="environment">` → uploads to `photos` bucket at `{companyId}/{projectId}/field/{walkDate}/` → inserts into `site_photos` → collects returned id into `photoIds[]`.
-- Submit → toast success → form resets to blank item (area/discipline preserved) → auto-focus description for **add another** loop.
-- Sticky bottom bar: "Add another" (primary) + "Done — back to board" (link back to `/qaqc/punch`).
-- Running counter chip: "3 items added this walk".
+### 6. Nav
 
-**`qaqc.punch.$id.tsx`** — detail.
-- Header: number, category badge (with tooltip), status badge, area · discipline · walk date.
-- Body cards: Description (editable if role can write & status not closed), Assignee/Due date (editable), Photo strip, Status timeline (Raised → Ready → Closed with names & timestamps derived from row + audit log optional).
-- Actions (role-aware, server-enforced too):
-  - `open` + assignee/foreman → **Mark ready for review** button.
-  - `ready_for_review` + construction_admin/company_admin → **Sign off** button → opens `PunchSignoffDialog` (typed full name required, checkbox "I confirm this punch item is closed"). On confirm calls `signoffPunchItem`. Irreversible.
-  - construction_admin/company_admin can **Void** with reason (small text field in a confirm dialog) at any non-closed state.
-- Optimistic status updates via `useMutation` with `onMutate` writing to detail cache; invalidate list + board KPI queries on success.
+Extend `src/lib/nav-map.ts` under `field_qaqc`: add "NCRs" → `/qaqc/ncrs`, "Submittals" → `/field/submittals`, "Transmittals" → `/field/transmittals` using existing `lucide-react` icons already imported (`ClipboardCheck`, `AlertTriangle`, `FileText` — verify at edit time).
 
-### 7. Nav map — `src/lib/nav-map.ts`
+### 7. Head metadata
 
-Add:
-```ts
-{ moduleKey: "field_qaqc", label: "Punch list", url: "/qaqc/punch", icon: ClipboardCheck },
-```
+Every new route gets its own `head()` with unique title/description/og:title/og:description/og:type/twitter:card (no og:image — these are internal ops screens with no meaningful hero).
 
-### 8. Tests
+### 8. Cross-link + tsgo
 
-- `tests/unit/qaqc-punch.test.ts`
-  - `nextPunchNumber(1)` → `PN-0001`, `(42)` → `PN-0042`.
-  - `canSignoff(['foreman'])` → false; `canSignoff(['construction_admin'])` → true; `canSignoff(['company_admin'])` → true; `canSignoff(['field_technician'])` → false.
-  - `punchInput` zod: rejects empty description, rejects invalid category.
-  - `punchSignoffInput` zod: rejects `signoffName` shorter than 2 chars.
-- `tests/rls/qaqc-punch.rls.test.ts` — stub verifying cross-tenant SELECT returns 0 rows and non-authorized role INSERT rejected.
+After writing routes, run `bunx tsgo --noEmit` and fix any type issues before finishing.
 
-### Verification checklist (spec)
+### Verification checklist (from the spec)
+- Migration re-runs cleanly (idempotent enums + `if not exists` + `drop policy if exists`).
+- RLS on all three tables; the existing RLS test harness will catch cross-tenant leakage; no dedicated new SQL test is required by the spec but I'll extend `tests/rls/` with a stub covering the three tables.
+- Deep-link prefill works: `/qaqc/ncrs/new?source=inspection&sourceId=…` populates the form; `use_as_is` disposition is blocked (client + server) without root cause + corrective action.
+- Revision bump creates a new row with the same `submittal_number` and `R1`.
+- Overdue transmittal shows `text-destructive` badge; ack sets timestamp.
+- `field_technician` can write NCRs but cannot write submittals (enforced by RLS write policies).
+- Every mutation calls `writeAuditLog` with the specified action strings.
 
-- Full `0042_qaqc.sql` applies twice cleanly (guarded enums + `if not exists`).
-- Cross-tenant SELECT → 0 rows.
-- Punch-walk rapid-add loop with camera → 3 items with photos, 1 category A.
-- Signoff flow: only construction_admin/company_admin succeed; typed name & timestamp recorded; status closes.
-- Board "Open A items" chip matches `count(category='A' AND status<>'closed' AND status<>'void')` — feeds Batch 10's COD gate.
-- Category tooltip renders A/B/C semantics.
-- Every mutation writes `writeAuditLog`.
-- Skeleton, empty, error states on both routes.
-
-### Files touched (summary)
-
-- Modified: `supabase/migrations/0042_qaqc.sql`, `src/lib/qaqc.rules.ts`, `src/lib/qaqc.functions.ts`, `src/lib/qaqc-query.ts`, `src/lib/nav-map.ts`.
-- New: `src/components/qaqc/{punch-category-badge,punch-status-badge,punch-board-column,punch-card,punch-photo-strip,punch-signoff-dialog}.tsx`; `src/routes/_authenticated/qaqc.punch.index.tsx`, `qaqc.punch.walk.tsx`, `qaqc.punch.$id.tsx`; `tests/unit/qaqc-punch.test.ts`, `tests/rls/qaqc-punch.rls.test.ts`.
+### Not in scope (out per instructions)
+- No email/notification hook on submittal review or transmittal send.
+- No PDF export (that's P-092).
+- No changes to existing punch/inspection functionality beyond the two "Raise NCR" deep links.
