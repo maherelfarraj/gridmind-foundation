@@ -25,6 +25,7 @@ import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
+import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
@@ -46,6 +47,7 @@ import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authe
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
 import { Route as AuthenticatedOmWorkOrdersRouteImport } from './routes/_authenticated/om.work-orders'
+import { Route as AuthenticatedOmMaintenancePlansRouteImport } from './routes/_authenticated/om.maintenance-plans'
 import { Route as AuthenticatedHseTrainingRouteImport } from './routes/_authenticated/hse.training'
 import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authenticated/hse.inspections'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
@@ -229,6 +231,11 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   path: '/api/webhooks/esign',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronPmGenerateRoute = ApiCronPmGenerateRouteImport.update({
+  id: '/api/cron/pm-generate',
+  path: '/api/cron/pm-generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
@@ -353,6 +360,12 @@ const AuthenticatedOmWorkOrdersRoute =
   AuthenticatedOmWorkOrdersRouteImport.update({
     id: '/om/work-orders',
     path: '/om/work-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOmMaintenancePlansRoute =
+  AuthenticatedOmMaintenancePlansRouteImport.update({
+    id: '/om/maintenance-plans',
+    path: '/om/maintenance-plans',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHseTrainingRoute =
@@ -1006,6 +1019,7 @@ export interface FileRoutesByFullPath {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
@@ -1027,6 +1041,7 @@ export interface FileRoutesByFullPath {
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -1144,6 +1159,7 @@ export interface FileRoutesByTo {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
@@ -1159,6 +1175,7 @@ export interface FileRoutesByTo {
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -1277,6 +1294,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/_authenticated/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/_authenticated/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/_authenticated/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
@@ -1298,6 +1316,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -1418,6 +1437,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/hse/inspections'
     | '/hse/training'
+    | '/om/maintenance-plans'
     | '/om/work-orders'
     | '/procurement/expediting'
     | '/procurement/matches'
@@ -1439,6 +1459,7 @@ export interface FileRouteTypes {
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/hse/'
     | '/projects/'
@@ -1556,6 +1577,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/hse/inspections'
     | '/hse/training'
+    | '/om/maintenance-plans'
     | '/om/work-orders'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
@@ -1571,6 +1593,7 @@ export interface FileRouteTypes {
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/hse'
     | '/projects'
@@ -1688,6 +1711,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/invoices'
     | '/_authenticated/hse/inspections'
     | '/_authenticated/hse/training'
+    | '/_authenticated/om/maintenance-plans'
     | '/_authenticated/om/work-orders'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
@@ -1709,6 +1733,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
+    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
@@ -1814,6 +1839,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PoTokenRoute: typeof PoTokenRoute
+  ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
 }
@@ -1930,6 +1956,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/esign'
       fullPath: '/api/webhooks/esign'
       preLoaderRoute: typeof ApiWebhooksEsignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/pm-generate': {
+      id: '/api/cron/pm-generate'
+      path: '/api/cron/pm-generate'
+      fullPath: '/api/cron/pm-generate'
+      preLoaderRoute: typeof ApiCronPmGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings/users': {
@@ -2077,6 +2110,13 @@ declare module '@tanstack/react-router' {
       path: '/om/work-orders'
       fullPath: '/om/work-orders'
       preLoaderRoute: typeof AuthenticatedOmWorkOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/om/maintenance-plans': {
+      id: '/_authenticated/om/maintenance-plans'
+      path: '/om/maintenance-plans'
+      fullPath: '/om/maintenance-plans'
+      preLoaderRoute: typeof AuthenticatedOmMaintenancePlansRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hse/training': {
@@ -3228,6 +3268,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedHseInspectionsRoute: typeof AuthenticatedHseInspectionsRoute
   AuthenticatedHseTrainingRoute: typeof AuthenticatedHseTrainingRoute
+  AuthenticatedOmMaintenancePlansRoute: typeof AuthenticatedOmMaintenancePlansRoute
   AuthenticatedOmWorkOrdersRoute: typeof AuthenticatedOmWorkOrdersRoute
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
@@ -3296,6 +3337,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedHseInspectionsRoute: AuthenticatedHseInspectionsRoute,
   AuthenticatedHseTrainingRoute: AuthenticatedHseTrainingRoute,
+  AuthenticatedOmMaintenancePlansRoute: AuthenticatedOmMaintenancePlansRoute,
   AuthenticatedOmWorkOrdersRoute: AuthenticatedOmWorkOrdersRoute,
   AuthenticatedProcurementExpeditingRoute:
     AuthenticatedProcurementExpeditingRoute,
@@ -3379,6 +3421,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
   PoTokenRoute: PoTokenRoute,
+  ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,
 }
