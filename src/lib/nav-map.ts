@@ -14,6 +14,7 @@ import {
   Handshake,
   FileDown,
   Inbox,
+  KeyRound,
   LifeBuoy,
   MailPlus,
   Package,
@@ -132,6 +133,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "admin", label: "Procurement", url: "/settings/procurement", icon: Receipt },
       { moduleKey: "admin", label: "Approval rules", url: "/settings/approval-rules", icon: ShieldCheck },
       { moduleKey: "admin", label: "Scheduled reports", url: "/settings/scheduled-reports", icon: CalendarClock },
+      { moduleKey: "admin", label: "API keys", url: "/settings/api-keys", icon: KeyRound },
       {
         moduleKey: "admin",
         label: "Permissions simulator",
