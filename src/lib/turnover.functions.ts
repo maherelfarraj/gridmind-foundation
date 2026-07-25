@@ -248,6 +248,15 @@ export const compileTurnoverPackage = createServerFn({ method: "POST" })
       if (!proj || (proj as any).company_id !== companyId)
         httpError(404, "project_not_found");
 
+      const { assertExportAllowed } = await import("@/lib/export-guard");
+      await assertExportAllowed(
+        context.supabase,
+        data.projectId,
+        "turnover_pack",
+      );
+
+
+
       // Existing row (may contain manual uploads to preserve).
       const { data: existing } = await context.supabase
         .from("turnover_packages")
