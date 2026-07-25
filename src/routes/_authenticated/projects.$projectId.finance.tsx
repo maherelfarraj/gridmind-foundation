@@ -3,7 +3,10 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
 
-const SUB_TABS = [{ to: "budget" as const, label: "Budget" }];
+const SUB_TABS = [
+  { to: "budget" as const, label: "Budget" },
+  { to: "evm" as const, label: "EVM" },
+];
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/finance",
