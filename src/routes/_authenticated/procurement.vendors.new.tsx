@@ -3,6 +3,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { VendorForm } from "@/components/procurement/vendor-form";
 import { useCreateVendor } from "@/lib/vendors-query";
 
@@ -27,33 +29,35 @@ function NewVendor() {
   const create = useCreateVendor();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
+    <div className="page-shell max-w-3xl">
+      <div className="space-y-1">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/vendors" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to vendors
         </Button>
-        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight">Onboard vendor</h1>
-        <p className="text-sm text-muted-foreground">
-          Capture identity and commercial terms. You can attach certifications after saving.
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-6">
-        <VendorForm
-          submitting={create.isPending}
-          submitLabel="Create vendor"
-          onCancel={() => navigate({ to: "/procurement/vendors" })}
-          onSubmit={(input) =>
-            create.mutate(input, {
-              onSuccess: ({ id }) =>
-                navigate({
-                  to: "/procurement/vendors/$vendorId",
-                  params: { vendorId: id },
-                }),
-            })
-          }
+        <PageHeader
+          title="Onboard vendor"
+          description="Capture identity and commercial terms. You can attach certifications after saving."
         />
       </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <VendorForm
+            submitting={create.isPending}
+            submitLabel="Create vendor"
+            onCancel={() => navigate({ to: "/procurement/vendors" })}
+            onSubmit={(input) =>
+              create.mutate(input, {
+                onSuccess: ({ id }) =>
+                  navigate({
+                    to: "/procurement/vendors/$vendorId",
+                    params: { vendorId: id },
+                  }),
+              })
+            }
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
