@@ -88,6 +88,7 @@ import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
+import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada-telemetry'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
 import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
 import { Route as AuthenticatedQaqcNcrsNewRouteImport } from './routes/_authenticated/qaqc.ncrs.new'
@@ -614,6 +615,12 @@ const AuthenticatedAdminTenantsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminTenantsRouteRoute,
+  } as any)
+const ApiPublicHooksScadaTelemetryRoute =
+  ApiPublicHooksScadaTelemetryRouteImport.update({
+    id: '/api/public/hooks/scada-telemetry',
+    path: '/api/public/hooks/scada-telemetry',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedQaqcPunchWalkRoute =
   AuthenticatedQaqcPunchWalkRouteImport.update({
@@ -1184,6 +1191,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -1329,6 +1337,7 @@ export interface FileRoutesByTo {
   '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -1484,6 +1493,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -1640,6 +1650,7 @@ export interface FileRouteTypes {
     | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
+    | '/api/public/hooks/scada-telemetry'
     | '/admin/tenants/'
     | '/field/dpr/'
     | '/field/mobilization/'
@@ -1785,6 +1796,7 @@ export interface FileRouteTypes {
     | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
+    | '/api/public/hooks/scada-telemetry'
     | '/admin/tenants'
     | '/field/dpr'
     | '/field/mobilization'
@@ -1939,6 +1951,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/ncrs/new'
     | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
+    | '/api/public/hooks/scada-telemetry'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
@@ -2005,6 +2018,7 @@ export interface RootRouteChildren {
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
+  ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2561,6 +2575,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AuthenticatedAdminTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminTenantsRouteRoute
+    }
+    '/api/public/hooks/scada-telemetry': {
+      id: '/api/public/hooks/scada-telemetry'
+      path: '/api/public/hooks/scada-telemetry'
+      fullPath: '/api/public/hooks/scada-telemetry'
+      preLoaderRoute: typeof ApiPublicHooksScadaTelemetryRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/qaqc/punch/walk': {
       id: '/_authenticated/qaqc/punch/walk'
@@ -3714,6 +3735,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
+  ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
