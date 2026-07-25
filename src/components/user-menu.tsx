@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 
 import { useAuth } from "@/routes/__root";
@@ -57,18 +58,16 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          {/* TODO: swap to <Link to="/profile"> once the route lands */}
-          <a href="/profile" className="flex cursor-pointer items-center gap-2">
+          <Link to="/settings/profile" className="flex cursor-pointer items-center gap-2">
             <UserIcon className="h-4 w-4" />
             <span>Profile</span>
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          {/* TODO: swap to <Link to="/settings"> once the route lands */}
-          <a href="/settings" className="flex cursor-pointer items-center gap-2">
+          <Link to="/settings/company" className="flex cursor-pointer items-center gap-2">
             <Settings className="h-4 w-4" />
             <span>Settings</span>
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

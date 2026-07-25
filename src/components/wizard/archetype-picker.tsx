@@ -73,7 +73,7 @@ export function ArchetypePicker({ planTier, greenHydrogenEnabled, value, onChang
                 </div>
                 {disabled ? (
                   <a
-                    href="/settings/billing"
+                    href="/settings/company"
                     onClick={(e) => e.stopPropagation()}
                     className="shrink-0"
                   >
