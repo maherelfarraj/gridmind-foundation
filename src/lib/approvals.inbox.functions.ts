@@ -399,15 +399,9 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       (a, b) => a.step_order - b.step_order,
     );
 
-    const metadata = i.metadata ?? {};
-    const escalated =
-      typeof (metadata as Json).escalated_at === "string"
-        ? ((metadata as Json).escalated_at as string)
-        : null;
-    const currency =
-      typeof (metadata as Json).currency === "string"
-        ? ((metadata as Json).currency as string)
-        : null;
+    const metadata: Json = i.metadata ?? {};
+    const escalated = pickString(metadata, "escalated_at");
+    const currency = pickString(metadata, "currency");
 
     return {
       id: i.id,
