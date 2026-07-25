@@ -91,7 +91,7 @@ function DprListPage() {
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="f-project">Project</Label>
-            <Select value={projectId} onValueChange={setProjectId}>
+            <Select value={projectId} onValueChange={(v) => setProjectId(v === "__all__" ? "" : v)}>
               <SelectTrigger id="f-project" className="h-11">
                 <SelectValue placeholder="All projects" />
               </SelectTrigger>
@@ -107,7 +107,7 @@ function DprListPage() {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="f-status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setStatus(v === "__all__" ? "" : v)}>
               <SelectTrigger id="f-status" className="h-11">
                 <SelectValue placeholder="Any status" />
               </SelectTrigger>
