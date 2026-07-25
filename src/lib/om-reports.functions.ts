@@ -197,7 +197,7 @@ export const generateOmReport = createServerFn({ method: "POST" })
     // ---- project + capacity ------------------------------------------------
     const { data: proj, error: pErr } = await context.supabase
       .from("projects")
-      .select("id, name, code, company_id, capacity_mw, currency_code")
+      .select("id, name, code, company_id, capacity_mw, project_financial_config(currency_code)")
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
@@ -205,7 +205,11 @@ export const generateOmReport = createServerFn({ method: "POST" })
     if ((proj as any).company_id !== companyId) httpError(403, "cross_company");
     const capacityKwp =
       (proj as any).capacity_mw != null ? Number((proj as any).capacity_mw) * 1000 : null;
-    const projectCurrency = ((proj as any).currency_code as string | null) ?? "USD";
+    // projects has no currency column — read it from project_financial_config.
+    const cfg = (proj as any).project_financial_config;
+    const projectCurrency =
+      ((Array.isArray(cfg) ? cfg[0]?.currency_code : cfg?.currency_code) as string | null) ?? "USD";
+
 
     // ---- period math -------------------------------------------------------
     const periodStartIso = `${data.periodStart}T00:00:00.000Z`;
