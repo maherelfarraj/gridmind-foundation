@@ -548,6 +548,11 @@ function MarkSignedDialog({
 function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boolean }) {
   const qc = useQueryClient();
   const updateFn = useServerFn(updateScheduleOfValues);
+  const [billOpen, setBillOpen] = useState(false);
+  const canBill =
+    canWrite &&
+    ["signed", "active"].includes(contract.status) &&
+    (contract.schedule_of_values?.length ?? 0) > 0;
   const [lines, setLines] = useState<SovLine[]>(() =>
     contract.schedule_of_values.length
       ? contract.schedule_of_values
