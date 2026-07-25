@@ -75,6 +75,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "field_qaqc", label: "HSE training", url: "/hse/training", icon: GraduationCap },
       { moduleKey: "field_qaqc", label: "QA/QC inspections", url: "/qaqc/inspections", icon: ClipboardCheck },
       { moduleKey: "field_qaqc", label: "QA/QC heatmap", url: "/qaqc/heatmap", icon: SlidersHorizontal },
+      { moduleKey: "field_qaqc", label: "Punch list", url: "/qaqc/punch", icon: ClipboardCheck },
       {
         moduleKey: "commissioning",
         label: "Commission & Turnover",

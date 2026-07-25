@@ -3,12 +3,20 @@ import { queryOptions } from "@tanstack/react-query";
 
 import {
   getInspection,
+  getPunchItem,
+  getPunchWalkContext,
   getQaqcHeatmap,
   listInspections,
   listInspectors,
+  listPunchItems,
   listQaqcProjects,
 } from "@/lib/qaqc.functions";
-import type { QaqcDiscipline, QaqcResult } from "@/lib/qaqc.rules";
+import type {
+  PunchCategory,
+  PunchStatus,
+  QaqcDiscipline,
+  QaqcResult,
+} from "@/lib/qaqc.rules";
 
 export { errorMessage } from "@/lib/hse-query";
 
@@ -63,3 +71,39 @@ export const qaqcHeatmapQueryOptions = (
       getQaqcHeatmap({ data: { projectId: projectId!, from, to } as any }),
     staleTime: 15_000,
   });
+
+// ---------------------------------------------------------------------------
+// P-090 — punch items
+// ---------------------------------------------------------------------------
+export interface PunchListFilters {
+  projectId?: string | null;
+  category?: PunchCategory | null;
+  status?: PunchStatus | null;
+  discipline?: QaqcDiscipline | null;
+  area?: string | null;
+  search?: string | null;
+}
+
+export const punchListQueryOptions = (filters: PunchListFilters) =>
+  queryOptions({
+    queryKey: ["qaqc", "punch", "list", filters],
+    queryFn: () => listPunchItems({ data: filters as any }),
+    staleTime: 10_000,
+  });
+
+export const punchDetailQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["qaqc", "punch", "item", id],
+    queryFn: () => getPunchItem({ data: { id } }),
+    staleTime: 5_000,
+  });
+
+export const punchWalkContextQueryOptions = (projectId: string | null) =>
+  queryOptions({
+    queryKey: ["qaqc", "punch", "walk-ctx", projectId],
+    enabled: !!projectId,
+    queryFn: () =>
+      getPunchWalkContext({ data: { projectId: projectId! } as any }),
+    staleTime: 30_000,
+  });
+
