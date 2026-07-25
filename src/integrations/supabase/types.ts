@@ -8160,6 +8160,133 @@ export type Database = {
         }
         Relationships: []
       }
+      work_orders: {
+        Row: {
+          assigned_to: string | null
+          closed_at: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          due_date: string | null
+          equipment_id: string | null
+          failure_cause: string | null
+          id: string
+          labor: Json
+          parts: Json
+          priority: Database["public"]["Enums"]["work_order_priority"]
+          project_id: string
+          resolution_notes: string | null
+          scheduled_date: string | null
+          source: string
+          status: Database["public"]["Enums"]["work_order_status"]
+          title: string
+          total_cost: number
+          type: Database["public"]["Enums"]["work_order_type"]
+          updated_at: string
+          wo_number: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          due_date?: string | null
+          equipment_id?: string | null
+          failure_cause?: string | null
+          id?: string
+          labor?: Json
+          parts?: Json
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          project_id: string
+          resolution_notes?: string | null
+          scheduled_date?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["work_order_status"]
+          title: string
+          total_cost?: number
+          type?: Database["public"]["Enums"]["work_order_type"]
+          updated_at?: string
+          wo_number: string
+        }
+        Update: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          due_date?: string | null
+          equipment_id?: string | null
+          failure_cause?: string | null
+          id?: string
+          labor?: Json
+          parts?: Json
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          project_id?: string
+          resolution_notes?: string | null
+          scheduled_date?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["work_order_status"]
+          title?: string
+          total_cost?: number
+          type?: Database["public"]["Enums"]["work_order_type"]
+          updated_at?: string
+          wo_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "work_orders_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -8555,6 +8682,16 @@ export type Database = {
         | "dust_storm"
         | "lightning"
         | "other"
+      work_order_priority: "low" | "medium" | "high" | "emergency"
+      work_order_status:
+        | "open"
+        | "assigned"
+        | "in_progress"
+        | "on_hold"
+        | "completed"
+        | "closed"
+        | "cancelled"
+      work_order_type: "preventive" | "corrective" | "predictive" | "inspection"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -9015,6 +9152,17 @@ export const Constants = {
         "lightning",
         "other",
       ],
+      work_order_priority: ["low", "medium", "high", "emergency"],
+      work_order_status: [
+        "open",
+        "assigned",
+        "in_progress",
+        "on_hold",
+        "completed",
+        "closed",
+        "cancelled",
+      ],
+      work_order_type: ["preventive", "corrective", "predictive", "inspection"],
     },
   },
 } as const
