@@ -1,4 +1,4 @@
-// P-093 — Commissioning core server functions.
+// P-093 / P-094 — Commissioning core server functions.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -7,6 +7,8 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
+import { withIdempotency } from "@/lib/offline-mirror";
+
 
 export const COMMISSIONING_TEST_TYPES = [
   "insulation_resistance",
