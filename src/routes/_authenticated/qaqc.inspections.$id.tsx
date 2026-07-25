@@ -156,6 +156,24 @@ function InspectionDetailPage() {
             {i.project_name ?? "—"} · {i.inspection_date}
           </span>
         </div>
+        {i.result === "fail" ? (
+          <div>
+            <Button size="sm" variant="outline" asChild>
+              <Link
+                to="/qaqc/ncrs/new"
+                search={{
+                  projectId: i.project_id,
+                  source: "inspection",
+                  sourceId: i.id,
+                  discipline: i.discipline,
+                  area: i.area ?? undefined,
+                }}
+              >
+                Raise NCR
+              </Link>
+            </Button>
+          </div>
+        ) : null}
       </header>
 
       <Card>
