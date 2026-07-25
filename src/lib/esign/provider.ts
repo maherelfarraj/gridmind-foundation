@@ -128,3 +128,57 @@ export function getEsignProvider(): ResolvedEsignProvider | null {
 export function isEsignConfigured(): boolean {
   return getEsignProvider() !== null;
 }
+
+// ---------------------------------------------------------------------------
+// P-126 — Inbound webhook verification (provider-specific)
+// ---------------------------------------------------------------------------
+
+import { timingSafeEqual, hmacSha256Hex } from "@/lib/public-api/guard";
+
+export type WebhookVerifyResult =
+  | { ok: true; providerName: string }
+  | { ok: false; reason: "not_configured" | "signature_missing" | "signature_expired" | "signature_mismatch" | "manual_token_mismatch"; providerName: string };
+
+const WEBHOOK_REPLAY_WINDOW_SECONDS = 300;
+
+/**
+ * Verify an inbound e-signature webhook. Provider-specific recipes:
+ *   - "manual" (dev):   header `x-manual-token` == ESIGN_WEBHOOK_SECRET
+ *   - default (docusign-style connect): header
+ *       `x-esign-signature: sha256=<hex>` = HMAC-SHA256(rawBody, secret)
+ *       and `x-esign-timestamp: <unix>` within ±300s.
+ */
+export async function verifyWebhook(
+  request: Request,
+  rawBody: string,
+): Promise<WebhookVerifyResult> {
+  const secret = process.env.ESIGN_WEBHOOK_SECRET;
+  const providerName =
+    (typeof process !== "undefined" && process.env?.ESIGN_PROVIDER) || "manual";
+  if (!secret) return { ok: false, reason: "not_configured", providerName };
+
+  if (providerName === "manual") {
+    const token = request.headers.get("x-manual-token") ?? "";
+    if (token.length === secret.length && timingSafeEqual(token, secret)) {
+      return { ok: true, providerName };
+    }
+    return { ok: false, reason: "manual_token_mismatch", providerName };
+  }
+
+  const sigHeader = request.headers.get("x-esign-signature") ?? "";
+  const tsHeader = request.headers.get("x-esign-timestamp") ?? "";
+  if (!sigHeader || !tsHeader) {
+    return { ok: false, reason: "signature_missing", providerName };
+  }
+  const ts = Number(tsHeader);
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!Number.isFinite(ts) || Math.abs(nowSec - ts) > WEBHOOK_REPLAY_WINDOW_SECONDS) {
+    return { ok: false, reason: "signature_expired", providerName };
+  }
+  const provided = sigHeader.toLowerCase().replace(/^sha256=/, "");
+  const expected = await hmacSha256Hex(secret, rawBody);
+  if (provided.length === expected.length && timingSafeEqual(provided, expected)) {
+    return { ok: true, providerName };
+  }
+  return { ok: false, reason: "signature_mismatch", providerName };
+}
