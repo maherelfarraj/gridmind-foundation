@@ -251,7 +251,7 @@ export const updateScadaConnector = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("scada_connectors")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.id);
     if (error) throw error;
 
