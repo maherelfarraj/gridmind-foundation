@@ -190,7 +190,12 @@ function TenantsPage() {
               ) : (query.data ?? []).length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="border-0 bg-transparent p-0">
-                    <EmptyState icon={Building2} title="No tenants yet" compact className="border-0 bg-transparent" />
+                    <EmptyState
+                      icon={Building2}
+                      title="No tenants yet"
+                      compact
+                      className="border-0 bg-transparent"
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

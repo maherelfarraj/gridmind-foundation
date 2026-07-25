@@ -397,116 +397,120 @@ function UsersPage() {
         actions={
           isAdmin && (
             <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
-              <UsersIcon className="mr-2 h-4 w-4" />
-              Bulk invite
-            </Button>
-            <Dialog
-              open={dialogOpen}
-              onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
-            >
-              <DialogTrigger asChild>
-                <Button>Invite member</Button>
-              </DialogTrigger>
-              <DialogContent>
-                {issuedLink ? (
-                  <>
-                    <DialogHeader>
-                      <DialogTitle>Invitation link</DialogTitle>
-                      <DialogDescription>
-                        Share this link with the recipient. It will only be shown once.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex items-center gap-2">
-                      <Input readOnly value={issuedLink} />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => copyLink(issuedLink)}
-                        aria-label="Copy link"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <DialogFooter>
-                      <Button type="button" onClick={closeDialog}>
-                        I&apos;ve shared it
-                      </Button>
-                    </DialogFooter>
-                  </>
-                ) : (
-                  <>
-                    <DialogHeader>
-                      <DialogTitle>Invite a teammate</DialogTitle>
-                      <DialogDescription>
-                        They&apos;ll receive a one-time link to join{" "}
-                        {snapshotQuery.data ? "your company" : "the workspace"}.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="teammate@company.com" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="role"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Role</FormLabel>
-                              <Select value={field.value} onValueChange={field.onChange}>
+              <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
+                <UsersIcon className="mr-2 h-4 w-4" />
+                Bulk invite
+              </Button>
+              <Dialog
+                open={dialogOpen}
+                onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
+              >
+                <DialogTrigger asChild>
+                  <Button>Invite member</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  {issuedLink ? (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle>Invitation link</DialogTitle>
+                        <DialogDescription>
+                          Share this link with the recipient. It will only be shown once.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center gap-2">
+                        <Input readOnly value={issuedLink} />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyLink(issuedLink)}
+                          aria-label="Copy link"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" onClick={closeDialog}>
+                          I&apos;ve shared it
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  ) : (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle>Invite a teammate</DialogTitle>
+                        <DialogDescription>
+                          They&apos;ll receive a one-time link to join{" "}
+                          {snapshotQuery.data ? "your company" : "the workspace"}.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a role" />
-                                  </SelectTrigger>
+                                  <Input
+                                    type="email"
+                                    placeholder="teammate@company.com"
+                                    {...field}
+                                  />
                                 </FormControl>
-                                <SelectContent>
-                                  {INVITE_ROLE_OPTIONS.map((role) => (
-                                    <SelectItem key={role} value={role}>
-                                      {humanizeRole(role)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <DialogFooter>
-                          <Button type="submit" disabled={createMut.isPending}>
-                            {createMut.isPending && (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <FormMessage />
+                              </FormItem>
                             )}
-                            Create invite
-                          </Button>
-                        </DialogFooter>
-                      </form>
-                    </Form>
-                  </>
-                )}
-              </DialogContent>
-            </Dialog>
-            {activeCompanyId ? (
-              <BulkInviteDialog
-                open={bulkOpen}
-                onOpenChange={setBulkOpen}
-                companyId={activeCompanyId}
-                memberEmails={memberEmails}
-                pendingEmails={pendingEmails}
-                onSuccess={invalidate}
-              />
-            ) : null}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="role"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Role</FormLabel>
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {INVITE_ROLE_OPTIONS.map((role) => (
+                                      <SelectItem key={role} value={role}>
+                                        {humanizeRole(role)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <DialogFooter>
+                            <Button type="submit" disabled={createMut.isPending}>
+                              {createMut.isPending && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              )}
+                              Create invite
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </>
+                  )}
+                </DialogContent>
+              </Dialog>
+              {activeCompanyId ? (
+                <BulkInviteDialog
+                  open={bulkOpen}
+                  onOpenChange={setBulkOpen}
+                  companyId={activeCompanyId}
+                  memberEmails={memberEmails}
+                  pendingEmails={pendingEmails}
+                  onSuccess={invalidate}
+                />
+              ) : null}
             </div>
           )
         }
@@ -604,7 +608,9 @@ function UsersPage() {
                     <TableCell colSpan={5} className="border-0 bg-transparent p-0">
                       <EmptyState
                         icon={UsersIcon}
-                        title={members.length === 0 ? "No members yet" : "No members match your search"}
+                        title={
+                          members.length === 0 ? "No members yet" : "No members match your search"
+                        }
                         compact
                         className="border-0 bg-transparent"
                       />
@@ -714,7 +720,9 @@ function UsersPage() {
                       <EmptyState
                         icon={Mail}
                         title={
-                          invites.length === 0 ? "No invites sent yet" : "No invites match your filter"
+                          invites.length === 0
+                            ? "No invites sent yet"
+                            : "No invites match your filter"
                         }
                         compact
                         className="border-0 bg-transparent"
