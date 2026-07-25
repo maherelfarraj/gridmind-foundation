@@ -92,10 +92,12 @@ export type Database = {
       }
       api_keys: {
         Row: {
+          allowed_ips: string[]
           company_id: string
           created_at: string
           created_by: string | null
           expires_at: string | null
+          hmac_secret: string | null
           id: string
           key_hash: string
           key_prefix: string
@@ -106,10 +108,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allowed_ips?: string[]
           company_id: string
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          hmac_secret?: string | null
           id?: string
           key_hash: string
           key_prefix: string
@@ -120,10 +124,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allowed_ips?: string[]
           company_id?: string
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          hmac_secret?: string | null
           id?: string
           key_hash?: string
           key_prefix?: string
@@ -9600,7 +9606,9 @@ export type Database = {
       verify_api_key: {
         Args: { p_raw_key: string }
         Returns: {
+          allowed_ips: string[]
           company_id: string
+          hmac_secret: string
           key_id: string
           scopes: string[]
         }[]
