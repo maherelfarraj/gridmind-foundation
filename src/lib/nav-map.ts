@@ -99,6 +99,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "om_scada", label: "PM plans", url: "/om/maintenance-plans", icon: CalendarRange },
       { moduleKey: "om_scada", label: "Warranties", url: "/om/warranties", icon: ShieldCheck },
       { moduleKey: "om_scada", label: "Service tickets", url: "/om/service-tickets", icon: LifeBuoy },
+      { moduleKey: "om_scada", label: "Monthly reports", url: "/om/reports", icon: FileDown },
       { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
       { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
     ],
