@@ -7975,6 +7975,179 @@ export type Database = {
           },
         ]
       }
+      warranty_claims: {
+        Row: {
+          attachments: Json
+          claim_number: string
+          claimed_amount: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          id: string
+          resolved_at: string | null
+          settled_amount: number | null
+          status: Database["public"]["Enums"]["warranty_claim_status"]
+          submitted_at: string | null
+          title: string
+          updated_at: string
+          warranty_id: string
+        }
+        Insert: {
+          attachments?: Json
+          claim_number: string
+          claimed_amount?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          settled_amount?: number | null
+          status?: Database["public"]["Enums"]["warranty_claim_status"]
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+          warranty_id: string
+        }
+        Update: {
+          attachments?: Json
+          claim_number?: string
+          claimed_amount?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          settled_amount?: number | null
+          status?: Database["public"]["Enums"]["warranty_claim_status"]
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+          warranty_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warranty_claims_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_claims_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_claims_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "warranty_claims_warranty_id_fkey"
+            columns: ["warranty_id"]
+            isOneToOne: false
+            referencedRelation: "warranty_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      warranty_contracts: {
+        Row: {
+          company_id: string
+          coverage_notes: string | null
+          created_at: string
+          created_by: string | null
+          document_path: string | null
+          end_date: string
+          equipment_id: string | null
+          id: string
+          project_id: string
+          start_date: string
+          terms: string | null
+          updated_at: string
+          vendor_id: string | null
+          warranty_type: Database["public"]["Enums"]["warranty_type"]
+        }
+        Insert: {
+          company_id: string
+          coverage_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_path?: string | null
+          end_date: string
+          equipment_id?: string | null
+          id?: string
+          project_id: string
+          start_date: string
+          terms?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          warranty_type?: Database["public"]["Enums"]["warranty_type"]
+        }
+        Update: {
+          company_id?: string
+          coverage_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_path?: string | null
+          end_date?: string
+          equipment_id?: string | null
+          id?: string
+          project_id?: string
+          start_date?: string
+          terms?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          warranty_type?: Database["public"]["Enums"]["warranty_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warranty_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_contracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_contracts_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warranty_contracts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wbs_items: {
         Row: {
           area: string | null
@@ -8773,6 +8946,18 @@ export type Database = {
         | "other"
       transmittal_direction: "outgoing" | "incoming"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
+      warranty_claim_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "settled"
+      warranty_type:
+        | "manufacturer"
+        | "epc_workmanship"
+        | "extended"
+        | "performance"
       wbs_item_type: "phase" | "package" | "discipline" | "task_group"
       weather_delay_type:
         | "rain"
@@ -9243,6 +9428,20 @@ export const Constants = {
       ],
       transmittal_direction: ["outgoing", "incoming"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
+      warranty_claim_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "settled",
+      ],
+      warranty_type: [
+        "manufacturer",
+        "epc_workmanship",
+        "extended",
+        "performance",
+      ],
       wbs_item_type: ["phase", "package", "discipline", "task_group"],
       weather_delay_type: [
         "rain",
