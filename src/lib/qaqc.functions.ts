@@ -913,3 +913,71 @@ export const voidPunchItem = createServerFn({ method: "POST" })
     };
   });
 
+// signed upload URL for a punch photo (photos bucket) ----------------------
+const punchPhotoUploadInput = z.object({
+  projectId: z.string().uuid(),
+  walkDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  fileName: z.string().trim().min(1).max(255),
+});
+export const signPunchPhotoUpload = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => punchPhotoUploadInput.parse(raw))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
+    const roles = await currentRoles(context);
+    if (!canPunchWrite(roles)) httpError(403, "forbidden");
+    const uuid =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const safeName = data.fileName.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 120);
+    const path = `${companyId}/${data.projectId}/qaqc-punch/${data.walkDate}/${uuid}-${safeName}`;
+    const { data: signed, error } = await context.supabase.storage
+      .from("photos")
+      .createSignedUploadUrl(path);
+    if (error) throw error;
+    return {
+      bucket: "photos",
+      path,
+      signedUrl: signed.signedUrl,
+      token: signed.token,
+    };
+  });
+
+// register a punch photo row in site_photos --------------------------------
+const registerPunchPhotoInput = z.object({
+  projectId: z.string().uuid(),
+  filePath: z.string().trim().min(1),
+  caption: z.string().trim().max(500).nullable().optional(),
+  discipline: z.enum(QAQC_DISCIPLINES).nullable().optional(),
+  area: z.string().trim().max(200).nullable().optional(),
+});
+export const registerPunchPhoto = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => registerPunchPhotoInput.parse(raw))
+  .handler(async ({ data, context }): Promise<{ id: string; file_path: string }> => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
+    const roles = await currentRoles(context);
+    if (!canPunchWrite(roles)) httpError(403, "forbidden");
+    const insert = {
+      company_id: companyId,
+      project_id: data.projectId,
+      file_path: data.filePath,
+      caption: data.caption ?? null,
+      discipline: data.discipline ?? null,
+      area: data.area ?? null,
+      uploaded_by: context.user!.id,
+    };
+    const { data: row, error } = await context.supabase
+      .from("site_photos")
+      .insert(insert as any)
+      .select("id, file_path")
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) httpError(500, "insert_failed");
+    return row as { id: string; file_path: string };
+  });
+
+
