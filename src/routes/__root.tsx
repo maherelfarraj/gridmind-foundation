@@ -255,6 +255,13 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const showPublicHeader = !isAuthedPath(pathname);
 
+  useEffect(() => {
+    // P-087 — boot offline queue sync triggers once, client-only.
+    void import("@/lib/offline/triggers").then(({ startOfflineTriggers }) => {
+      startOfflineTriggers();
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
