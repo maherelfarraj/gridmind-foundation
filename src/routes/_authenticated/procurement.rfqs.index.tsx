@@ -118,7 +118,11 @@ function RfqsIndex() {
         description="Invite vendors, collect bids, and level with TCO."
         actions={
           <>
-            <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
+            <Button
+              variant="outline"
+              onClick={() => downloadCsv(rows)}
+              disabled={rows.length === 0}
+            >
               <Download className="mr-2 h-4 w-4" /> Export CSV
             </Button>
             {canAuthor && (

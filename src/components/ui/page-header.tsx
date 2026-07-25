@@ -27,9 +27,7 @@ export function PageHeader({
         <As className="truncate font-display text-2xl font-semibold tracking-tight text-foreground">
           {title}
         </As>
-        {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        ) : null}
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
     </header>

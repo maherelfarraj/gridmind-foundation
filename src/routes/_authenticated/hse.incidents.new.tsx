@@ -106,7 +106,10 @@ function NewIncidentPage() {
 
   return (
     <div className="page-shell">
-      <PageHeader title="Log incident" description="Report an HSE incident within 24 hours of occurrence." />
+      <PageHeader
+        title="Log incident"
+        description="Report an HSE incident within 24 hours of occurrence."
+      />
 
       <div className="flex items-start gap-3 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
         <Info size={16} className="mt-0.5 text-primary" aria-hidden />

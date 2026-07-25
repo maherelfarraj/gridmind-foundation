@@ -54,11 +54,7 @@ export function KpiTile({
 }: KpiTileProps) {
   return (
     <Card
-      className={cn(
-        "flex flex-col gap-3 p-4 transition-colors",
-        STATUS_RING[status],
-        className,
-      )}
+      className={cn("flex flex-col gap-3 p-4 transition-colors", STATUS_RING[status], className)}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -74,10 +70,7 @@ export function KpiTile({
         ) : (
           <div className="flex flex-wrap items-baseline gap-2">
             <span
-              className={cn(
-                "truncate text-2xl font-semibold tracking-tight",
-                STATUS_VALUE[status],
-              )}
+              className={cn("truncate text-2xl font-semibold tracking-tight", STATUS_VALUE[status])}
             >
               {value}
             </span>

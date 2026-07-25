@@ -156,7 +156,11 @@ function VendorsIndex() {
         description="Supplier master — identity, commercial terms, and certifications."
         actions={
           <>
-            <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
+            <Button
+              variant="outline"
+              onClick={() => downloadCsv(rows)}
+              disabled={rows.length === 0}
+            >
               <Download className="mr-2 h-4 w-4" /> Export CSV
             </Button>
             {canWrite && (
@@ -264,8 +268,7 @@ function VendorsIndex() {
                   </div>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {(r.payment_terms ?? "—").toUpperCase().replace("_", " ")} ·{" "}
-                  {r.incoterms ?? "—"}
+                  {(r.payment_terms ?? "—").toUpperCase().replace("_", " ")} · {r.incoterms ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {r.currency_code ?? "—"}

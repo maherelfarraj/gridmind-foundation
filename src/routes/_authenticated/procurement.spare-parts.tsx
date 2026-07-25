@@ -292,97 +292,92 @@ function SparePartsPage() {
           description="Add your first part to seed the catalog."
         />
       ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Part #</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>On hand</TableHead>
-                <TableHead>Reorder</TableHead>
-                <TableHead>Safety</TableHead>
-                <TableHead>Lead time</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Unit cost</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => {
-                const low = isLowStock(r.qty_on_hand, r.reorder_point);
-                return (
-                  <TableRow key={r.id} className={low ? "bg-destructive/5" : undefined}>
-                    <TableCell className="font-mono text-xs">{r.part_number}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{r.name}</div>
-                      {r.compatible_equipment ? (
-                        <div className="text-xs text-muted-foreground">
-                          {r.compatible_equipment}
-                        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Part #</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Vendor</TableHead>
+              <TableHead>On hand</TableHead>
+              <TableHead>Reorder</TableHead>
+              <TableHead>Safety</TableHead>
+              <TableHead>Lead time</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Unit cost</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => {
+              const low = isLowStock(r.qty_on_hand, r.reorder_point);
+              return (
+                <TableRow key={r.id} className={low ? "bg-destructive/5" : undefined}>
+                  <TableCell className="font-mono text-xs">{r.part_number}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{r.name}</div>
+                    {r.compatible_equipment ? (
+                      <div className="text-xs text-muted-foreground">{r.compatible_equipment}</div>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="text-xs">{MATERIAL_CATEGORY_LABELS[r.category]}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.preferred_vendor_name ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{r.qty_on_hand}</span>
+                      <span className="text-xs text-muted-foreground">{r.uom}</span>
+                      {low ? (
+                        <Badge variant="destructive" className="text-[10px]">
+                          Low
+                        </Badge>
                       ) : null}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {MATERIAL_CATEGORY_LABELS[r.category]}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.preferred_vendor_name ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{r.qty_on_hand}</span>
-                        <span className="text-xs text-muted-foreground">{r.uom}</span>
-                        {low ? (
-                          <Badge variant="destructive" className="text-[10px]">
-                            Low
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>{r.reorder_point}</TableCell>
-                    <TableCell>{r.safety_stock}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.lead_time_days == null ? "—" : `${r.lead_time_days}d`}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.location ?? "—"}
-                    </TableCell>
-                    <TableCell>{fmtMoney(r.unit_cost, r.currency_code)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {access.canWrite ? (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => setAdjustingPart(r)}>
-                              Adjust
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label="Edit"
-                              onClick={() => setEditingPart(r)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label="Delete"
-                              onClick={() => {
-                                if (confirm(`Remove ${r.part_number}?`))
-                                  deleteMutation.mutate(r.id);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    </div>
+                  </TableCell>
+                  <TableCell>{r.reorder_point}</TableCell>
+                  <TableCell>{r.safety_stock}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.lead_time_days == null ? "—" : `${r.lead_time_days}d`}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.location ?? "—"}
+                  </TableCell>
+                  <TableCell>{fmtMoney(r.unit_cost, r.currency_code)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      {access.canWrite ? (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => setAdjustingPart(r)}>
+                            Adjust
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Edit"
+                            onClick={() => setEditingPart(r)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Delete"
+                            onClick={() => {
+                              if (confirm(`Remove ${r.part_number}?`)) deleteMutation.mutate(r.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
 
       <Dialog open={editingPart != null} onOpenChange={(o) => !o && setEditingPart(null)}>

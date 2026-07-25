@@ -135,9 +135,7 @@ function RfqDetail() {
                   <TableRow key={l.line_no}>
                     <TableCell>{l.line_no}</TableCell>
                     <TableCell className="font-medium">{l.description}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {l.spec ?? "—"}
-                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{l.spec ?? "—"}</TableCell>
                     <TableCell>{l.qty}</TableCell>
                     <TableCell>{l.uom}</TableCell>
                     <TableCell>{l.target_price != null ? l.target_price : "—"}</TableCell>

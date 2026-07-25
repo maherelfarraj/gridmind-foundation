@@ -6,6 +6,8 @@ import { ClipboardCheck, TrendingUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -77,15 +79,11 @@ function HeatmapPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <ClipboardCheck size={14} aria-hidden /> QA/QC
-        </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Quality heatmap
-        </h1>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Quality heatmap"
+        description="Inspection heatmap by area and discipline with fail-rate tints."
+      />
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
@@ -115,33 +113,33 @@ function HeatmapPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi
+      <KpiGrid columns={4}>
+        <KpiTile
           icon={ClipboardCheck}
           label="Total"
           value={summary ? summary.totals.total.toString() : "—"}
-          loading={heatmapQuery.isLoading}
+          isLoading={heatmapQuery.isLoading}
         />
-        <Kpi
+        <KpiTile
           icon={TrendingUp}
           label="Rework %"
           value={summary ? `${Math.round(summary.totals.reworkPct * 100)}%` : "—"}
-          loading={heatmapQuery.isLoading}
-          tone={summary && summary.totals.reworkPct > 0.15 ? "danger" : "default"}
+          isLoading={heatmapQuery.isLoading}
+          status={summary && summary.totals.reworkPct > 0.15 ? "bad" : "neutral"}
         />
-        <Kpi
+        <KpiTile
           icon={TrendingUp}
           label="Pass %"
           value={summary ? `${Math.round(summary.totals.passPct * 100)}%` : "—"}
-          loading={heatmapQuery.isLoading}
+          isLoading={heatmapQuery.isLoading}
         />
-        <Kpi
+        <KpiTile
           icon={ClipboardCheck}
           label="Open"
           value={summary ? String(summary.totals.pending + summary.totals.conditional) : "—"}
-          loading={heatmapQuery.isLoading}
+          isLoading={heatmapQuery.isLoading}
         />
-      </div>
+      </KpiGrid>
 
       {heatmapQuery.isError ? (
         <Card>
@@ -175,36 +173,5 @@ function HeatmapPage() {
         <HeatmapGrid data={summary} onCellClick={drill} />
       ) : null}
     </div>
-  );
-}
-
-interface KpiProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value: string;
-  loading?: boolean;
-  tone?: "default" | "danger";
-}
-function Kpi({ icon: Icon, label, value, loading, tone }: KpiProps) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Icon size={12} /> {label}
-        </div>
-        {loading ? (
-          <Skeleton className="h-8 w-20" />
-        ) : (
-          <div
-            className={
-              "font-display text-2xl font-semibold tabular-nums " +
-              (tone === "danger" ? "text-destructive" : "text-foreground")
-            }
-          >
-            {value}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }

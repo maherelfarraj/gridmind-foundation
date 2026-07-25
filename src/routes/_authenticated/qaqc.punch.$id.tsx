@@ -106,14 +106,14 @@ function PunchDetailPage() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Skeleton className="h-64" />
       </div>
     );
   }
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Alert variant="destructive">
           <AlertTitle>Could not load punch item</AlertTitle>
           <AlertDescription>{errorMessage(detailQuery.error) || "Not found"}</AlertDescription>
@@ -132,7 +132,7 @@ function PunchDetailPage() {
     signoffName.trim().toLowerCase() === signoffName.trim().replace(/\s+/g, " ").toLowerCase();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 md:p-8">
+    <div className="page-shell">
       <header className="flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/qaqc/punch">

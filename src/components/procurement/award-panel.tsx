@@ -106,110 +106,110 @@ export function AwardPanel({
       )}
 
       <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">#</TableHead>
-              <TableHead>Line</TableHead>
-              <TableHead className="w-[280px]">Awarded bid</TableHead>
-              <TableHead className="w-40 text-right">Amount</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rfq.lines.map((line) => {
-              const existing = awardByLine.get(line.line_no);
-              const winningBid = existing
-                ? (bids.find((b) => b.id === existing.rfq_bid_id) ?? null)
-                : null;
-              const pending = selection[line.line_no] ?? (existing ? existing.rfq_bid_id : "");
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-16">#</TableHead>
+            <TableHead>Line</TableHead>
+            <TableHead className="w-[280px]">Awarded bid</TableHead>
+            <TableHead className="w-40 text-right">Amount</TableHead>
+            <TableHead className="w-24" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rfq.lines.map((line) => {
+            const existing = awardByLine.get(line.line_no);
+            const winningBid = existing
+              ? (bids.find((b) => b.id === existing.rfq_bid_id) ?? null)
+              : null;
+            const pending = selection[line.line_no] ?? (existing ? existing.rfq_bid_id : "");
 
-              return (
-                <TableRow key={line.line_no}>
-                  <TableCell className="font-mono">{line.line_no}</TableCell>
-                  <TableCell>
-                    <div className="font-medium">{line.description}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {line.qty} {line.uom}
-                      {line.spec ? ` · ${line.spec}` : ""}
+            return (
+              <TableRow key={line.line_no}>
+                <TableCell className="font-mono">{line.line_no}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{line.description}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {line.qty} {line.uom}
+                    {line.spec ? ` · ${line.spec}` : ""}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {existing ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span className="font-medium">
+                        {winningBid?.vendor_name ?? "Unknown vendor"}
+                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {existing ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        <span className="font-medium">
-                          {winningBid?.vendor_name ?? "Unknown vendor"}
-                        </span>
-                      </div>
-                    ) : (
-                      <Select
-                        value={pending}
-                        onValueChange={(v) => setSelection((s) => ({ ...s, [line.line_no]: v }))}
-                        disabled={isDisabled || eligibleBids.length === 0}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select bid…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eligibleBids
-                            .filter((b) => b.lines.some((bl) => bl.line_no === line.line_no))
-                            .map((b) => {
-                              const bl = b.lines.find((x) => x.line_no === line.line_no);
-                              return (
-                                <SelectItem key={b.id} value={b.id}>
-                                  {b.vendor_name}
-                                  {bl
-                                    ? ` — ${fmtMoney(
-                                        Number(bl.unit_price) * Number(bl.qty),
-                                        rfq.currency_code,
-                                      )}`
-                                    : ""}
-                                </SelectItem>
-                              );
-                            })}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {existing ? fmtMoney(existing.awarded_amount, rfq.currency_code) : "—"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {existing ? (
-                      canAward && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Unaward line ${line.line_no}`}
-                          onClick={() => unaward.mutate(existing.id)}
-                          disabled={unaward.isPending}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )
-                    ) : (
+                  ) : (
+                    <Select
+                      value={pending}
+                      onValueChange={(v) => setSelection((s) => ({ ...s, [line.line_no]: v }))}
+                      disabled={isDisabled || eligibleBids.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select bid…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eligibleBids
+                          .filter((b) => b.lines.some((bl) => bl.line_no === line.line_no))
+                          .map((b) => {
+                            const bl = b.lines.find((x) => x.line_no === line.line_no);
+                            return (
+                              <SelectItem key={b.id} value={b.id}>
+                                {b.vendor_name}
+                                {bl
+                                  ? ` — ${fmtMoney(
+                                      Number(bl.unit_price) * Number(bl.qty),
+                                      rfq.currency_code,
+                                    )}`
+                                  : ""}
+                              </SelectItem>
+                            );
+                          })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  {existing ? fmtMoney(existing.awarded_amount, rfq.currency_code) : "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  {existing ? (
+                    canAward && (
                       <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const bidId = pending;
-                          if (!bidId) return;
-                          awardLine.mutate({
-                            rfqId: rfq.id,
-                            bidId,
-                            lineNo: line.line_no,
-                          });
-                        }}
-                        disabled={isDisabled || !pending || awardLine.isPending}
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Unaward line ${line.line_no}`}
+                        onClick={() => unaward.mutate(existing.id)}
+                        disabled={unaward.isPending}
                       >
-                        Award
+                        <X className="h-4 w-4" />
                       </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
+                    )
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const bidId = pending;
+                        if (!bidId) return;
+                        awardLine.mutate({
+                          rfqId: rfq.id,
+                          bidId,
+                          lineNo: line.line_no,
+                        });
+                      }}
+                      disabled={isDisabled || !pending || awardLine.isPending}
+                    >
+                      Award
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
       </Table>
     </section>
   );

@@ -892,9 +892,7 @@ function WitnessBlock({
 
       {existing ? (
         <div className="mt-3 rounded-md border border-success/30 bg-success/10 p-3 text-sm">
-          <p className="font-medium text-success">
-            Recorded — {test.utility_witness_name}
-          </p>
+          <p className="font-medium text-success">Recorded — {test.utility_witness_name}</p>
           <p className="text-xs text-muted-foreground">
             Witnessed at {formatDate(test.utility_witnessed_at)}
           </p>

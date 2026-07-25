@@ -187,7 +187,11 @@ function DisciplineBoardPage() {
       {projectId ? (
         <BoardBody projectId={projectId} from={range.from} to={range.to} />
       ) : (
-        <EmptyState icon={HardHat} title="Select a project" description="Choose a project to load the discipline board." />
+        <EmptyState
+          icon={HardHat}
+          title="Select a project"
+          description="Choose a project to load the discipline board."
+        />
       )}
     </div>
   );
@@ -253,13 +257,29 @@ function KpiRow({
         label="SPI (latest)"
         value={kpis.spi != null ? kpis.spi.toFixed(2) : "—"}
         icon={HardHat}
-        status={spiCpiTone(kpis.spi) === "success" ? "good" : spiCpiTone(kpis.spi) === "warning" ? "warning" : spiCpiTone(kpis.spi) === "destructive" ? "bad" : "neutral"}
+        status={
+          spiCpiTone(kpis.spi) === "success"
+            ? "good"
+            : spiCpiTone(kpis.spi) === "warning"
+              ? "warning"
+              : spiCpiTone(kpis.spi) === "destructive"
+                ? "bad"
+                : "neutral"
+        }
       />
       <KpiTile
         label="CPI (latest)"
         value={kpis.cpi != null ? kpis.cpi.toFixed(2) : "—"}
         icon={Wrench}
-        status={spiCpiTone(kpis.cpi) === "success" ? "good" : spiCpiTone(kpis.cpi) === "warning" ? "warning" : spiCpiTone(kpis.cpi) === "destructive" ? "bad" : "neutral"}
+        status={
+          spiCpiTone(kpis.cpi) === "success"
+            ? "good"
+            : spiCpiTone(kpis.cpi) === "warning"
+              ? "warning"
+              : spiCpiTone(kpis.cpi) === "destructive"
+                ? "bad"
+                : "neutral"
+        }
       />
       <KpiTile label="Manpower today" value={String(kpis.manpowerToday)} icon={Users} />
       <KpiTile
@@ -284,7 +304,9 @@ function DisciplineColumn({
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary/40 text-foreground">
           <Icon size={16} aria-hidden />
         </span>
-        <CardTitle className="text-sm font-medium">{DISCIPLINE_LABELS[column.discipline]}</CardTitle>
+        <CardTitle className="text-sm font-medium">
+          {DISCIPLINE_LABELS[column.discipline]}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {column.areas.length === 0 ? (

@@ -83,7 +83,10 @@ function NewDprPage() {
           <ArrowLeft className="mr-2 h-4 w-4" aria-hidden /> Back
         </Link>
       </Button>
-      <PageHeader title="New daily report" description="Start a draft for a project, date and shift." />
+      <PageHeader
+        title="New daily report"
+        description="Start a draft for a project, date and shift."
+      />
 
       <Card>
         <CardHeader className="pb-3">

@@ -150,7 +150,10 @@ function SubmittalsIndexPage() {
 
       <KpiGrid columns={3}>
         <KpiTile label="Open" value={String(open)} />
-        <KpiTile label="Avg turnaround" value={turnaround === null ? "—" : `${turnaround.toFixed(1)} d`} />
+        <KpiTile
+          label="Avg turnaround"
+          value={turnaround === null ? "—" : `${turnaround.toFixed(1)} d`}
+        />
         <KpiTile label="Total" value={String(rows.length)} />
       </KpiGrid>
 
@@ -287,7 +290,6 @@ function SubmittalsIndexPage() {
     </div>
   );
 }
-
 
 function NewSubmittalDialog({
   open,

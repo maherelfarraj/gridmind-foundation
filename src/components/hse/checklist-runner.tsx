@@ -2,7 +2,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ClipboardList, X } from "lucide-react";
 import {
   CHECKLIST_RESULTS,
   summarizeChecklist,
@@ -38,9 +39,7 @@ export function ChecklistRunner({ items, onChange }: Props) {
         </div>
       </div>
       {items.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-          No items yet — tap Add item.
-        </div>
+        <EmptyState icon={ClipboardList} title="No items yet" description="Tap Add item." compact />
       ) : null}
       {items.map((it, i) => (
         <div
