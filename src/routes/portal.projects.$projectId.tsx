@@ -165,7 +165,7 @@ function PortalProjectPage() {
         ) : null}
         {feed.exposure.photos ? (
           <TabsContent value="photos" className="mt-4">
-            <PhotosTab feed={feed} />
+            <PhotosTab feed={feed} projectId={projectId} />
           </TabsContent>
         ) : null}
         {feed.exposure.approvals ? (
