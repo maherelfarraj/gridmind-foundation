@@ -1709,12 +1709,13 @@ export const getSignedCopyDownloadUrl = createServerFn({ method: "POST" })
     const p = prop as any;
     if (!p.signed_copy_path) httpError(404, "no_signed_copy");
     try {
-      await assertExportAllowed(context.supabase, {
-        companyId: p.company_id,
-        projectId: p.project_id ?? null,
-      });
+      await assertExportAllowed(
+        context.supabase,
+        p.project_id ?? null,
+        "proposal_pdf",
+      );
     } catch (lockErr: any) {
-      httpError(lockErr?.statusCode ?? 409, "export_locked");
+      httpError(lockErr?.statusCode ?? 423, "export_locked");
     }
     const { data: signed, error: sErr } = await context.supabase.storage
       .from("documents")
