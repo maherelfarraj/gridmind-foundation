@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import {
+  attachSupabaseAuth,
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
@@ -104,7 +105,7 @@ export interface AlarmRow {
 
 // ---- rules CRUD ------------------------------------------------------------
 export const listAlarmRules = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator(
     (raw: unknown) =>
       z
@@ -125,7 +126,7 @@ export const listAlarmRules = createServerFn({ method: "GET" })
   });
 
 export const upsertAlarmRule = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => alarmRuleInputSchema.parse(raw))
   .handler(async ({ context, data }) => {
     await assertWriter(context);
@@ -174,7 +175,7 @@ export const upsertAlarmRule = createServerFn({ method: "POST" })
   });
 
 export const deleteAlarmRule = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     await assertWriter(context);
@@ -191,7 +192,7 @@ export const deleteAlarmRule = createServerFn({ method: "POST" })
 
 // ---- alarms listing + acknowledge -----------------------------------------
 export const listAlarms = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) =>
     z
       .object({
@@ -233,7 +234,7 @@ export const listAlarms = createServerFn({ method: "GET" })
   });
 
 export const acknowledgeAlarm = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => acknowledgeInputSchema.parse(raw))
   .handler(async ({ context, data }) => {
     await assertWriter(context);
