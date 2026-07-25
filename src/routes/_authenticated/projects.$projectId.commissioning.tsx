@@ -190,6 +190,15 @@ function CommissioningBoard() {
               Certificates
             </Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/projects/$projectId/commissioning/turnover"
+              params={{ projectId }}
+            >
+              <FileText size={14} aria-hidden />
+              Turnover pack
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
