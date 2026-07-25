@@ -58,8 +58,8 @@ export type TenantDeps = {
   opportunityId: string;
   costCodeId: string;
   vendorId: string;
-  scadaAssetId: string;
-  equipmentId: string;
+  scadaAssetId: string | null;
+  equipmentId: string | null;
 };
 
 export type Fixtures = {
@@ -155,16 +155,18 @@ async function seedTenant(
     .select("id")
     .single();
 
-  const { data: asset } = await svc
+  const { data: asset, error: assetErr } = await svc
     .from("scada_assets")
     .insert({
       company_id: co.id,
       project_id: proj.id,
-      tag: `AST-${label}`,
+      asset_key: `AST-${label}-${crypto.randomUUID().slice(0, 6)}`,
+      name: `Asset ${label}`,
       asset_type: "inverter",
     })
     .select("id")
     .single();
+  if (assetErr || !asset) throw assetErr ?? new Error("scada_asset insert failed");
 
   const { data: equip } = await svc
     .from("equipment_registry")
@@ -184,8 +186,8 @@ async function seedTenant(
     opportunityId: opp?.id ?? "",
     costCodeId: cc?.id ?? "",
     vendorId: vendor?.id ?? "",
-    scadaAssetId: asset?.id ?? "",
-    equipmentId: equip?.id ?? "",
+    scadaAssetId: asset?.id ?? null,
+    equipmentId: equip?.id ?? null,
   };
 }
 
@@ -666,7 +668,7 @@ export const MATRIX: TableSpec[] = [
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: "power_kw",
+      metric: "ac_power_kw",
       value: 100,
     }),
     insertAsA: (f) => ({
@@ -674,7 +676,7 @@ export const MATRIX: TableSpec[] = [
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: "power_kw",
+      metric: "ac_power_kw",
       value: 999,
     }),
   },
