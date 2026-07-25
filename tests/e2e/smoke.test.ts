@@ -365,7 +365,7 @@ describe.skipIf(!canRun)('P-133 e2e smoke: golden path', () => {
     console.info('[smoke] step 6 — verify audit rows');
     const actions = [
       'project.created',
-      'project_gate.passed',
+      'project_gate.approved',
       'po.approved',
       'proposal.export_pdf',
     ] as const;
