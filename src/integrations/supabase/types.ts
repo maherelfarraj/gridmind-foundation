@@ -9571,6 +9571,14 @@ export type Database = {
         Args: { p_approval_id: string; p_comment?: string; p_decision: string }
         Returns: undefined
       }
+      enforce_audit_log_retention: {
+        Args: never
+        Returns: {
+          company_id: string
+          deleted_count: number
+          entity: string
+        }[]
+      }
       escalate_overdue_approvals: { Args: never; Returns: number }
       get_po_by_share_token: {
         Args: { p_token: string }
