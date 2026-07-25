@@ -70,16 +70,16 @@ async function nameMap(
   if (clean.length === 0) return new Map();
   const { data, error } = await context.supabase
     .from("profiles")
-    .select("id, display_name, email")
+    .select("id, full_name, email")
     .in("id", clean as string[]);
   if (error) throw error;
   const map = new Map<string, string | null>();
   for (const p of (data ?? []) as Array<{
     id: string;
-    display_name: string | null;
+    full_name: string | null;
     email: string | null;
   }>) {
-    map.set(p.id, p.display_name ?? p.email ?? null);
+    map.set(p.id, p.full_name ?? p.email ?? null);
   }
   return map;
 }
