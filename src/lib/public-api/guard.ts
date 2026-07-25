@@ -297,7 +297,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       rawBody,
       clientIp,
       caller: { kind: "cron", companyId: null, keyId: null },
+      warnings,
+      mode,
     };
+
   }
 
   if (!bearer) {
