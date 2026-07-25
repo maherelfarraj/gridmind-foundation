@@ -76,6 +76,9 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "field_qaqc", label: "QA/QC inspections", url: "/qaqc/inspections", icon: ClipboardCheck },
       { moduleKey: "field_qaqc", label: "QA/QC heatmap", url: "/qaqc/heatmap", icon: SlidersHorizontal },
       { moduleKey: "field_qaqc", label: "Punch list", url: "/qaqc/punch", icon: ClipboardCheck },
+      { moduleKey: "field_qaqc", label: "NCRs", url: "/qaqc/ncrs", icon: AlertTriangle },
+      { moduleKey: "field_qaqc", label: "Submittals", url: "/field/submittals", icon: FileSignature },
+      { moduleKey: "field_qaqc", label: "Transmittals", url: "/field/transmittals", icon: MailPlus },
       {
         moduleKey: "commissioning",
         label: "Commission & Turnover",
