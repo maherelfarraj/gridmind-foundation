@@ -382,7 +382,7 @@ export const updateInspection = createServerFn({ method: "POST" })
     );
 
     return {
-      ...(updated as InspectionRow),
+      ...((updated as unknown) as InspectionRow),
       attachments: ((updated as any).attachments ?? []) as QaqcAttachment[],
     };
   });
