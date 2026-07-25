@@ -3397,6 +3397,121 @@ export type Database = {
           },
         ]
       }
+      ncrs: {
+        Row: {
+          area: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          corrective_action: string | null
+          cost_impact: number | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string
+          discipline: string | null
+          disposition: Database["public"]["Enums"]["ncr_disposition"]
+          id: string
+          ncr_number: string
+          project_id: string
+          raised_by: string | null
+          root_cause: string | null
+          source: Database["public"]["Enums"]["ncr_source"]
+          source_id: string | null
+          status: Database["public"]["Enums"]["ncr_status"]
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          corrective_action?: string | null
+          cost_impact?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description: string
+          discipline?: string | null
+          disposition?: Database["public"]["Enums"]["ncr_disposition"]
+          id?: string
+          ncr_number: string
+          project_id: string
+          raised_by?: string | null
+          root_cause?: string | null
+          source?: Database["public"]["Enums"]["ncr_source"]
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["ncr_status"]
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          corrective_action?: string | null
+          cost_impact?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string
+          discipline?: string | null
+          disposition?: Database["public"]["Enums"]["ncr_disposition"]
+          id?: string
+          ncr_number?: string
+          project_id?: string
+          raised_by?: string | null
+          root_cause?: string | null
+          source?: Database["public"]["Enums"]["ncr_source"]
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["ncr_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ncrs_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncrs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncrs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncrs_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "ncrs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncrs_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_prefs: {
         Row: {
           email_enabled: boolean
@@ -6240,6 +6355,95 @@ export type Database = {
           },
         ]
       }
+      submittals: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          file_path: string | null
+          id: string
+          project_id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          revision: string
+          spec_section: string | null
+          status: Database["public"]["Enums"]["submittal_status"]
+          submittal_number: string
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          project_id: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          revision?: string
+          spec_section?: string | null
+          status?: Database["public"]["Enums"]["submittal_status"]
+          submittal_number: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          project_id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          revision?: string
+          spec_section?: string | null
+          status?: Database["public"]["Enums"]["submittal_status"]
+          submittal_number?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submittals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submittals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submittals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submittals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -6428,6 +6632,82 @@ export type Database = {
             columns: ["po_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transmittals: {
+        Row: {
+          acknowledged_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          direction: Database["public"]["Enums"]["transmittal_direction"]
+          from_party: string
+          id: string
+          items: Json
+          project_id: string
+          response_due: string | null
+          sent_at: string | null
+          subject: string
+          to_party: string
+          transmittal_number: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          direction?: Database["public"]["Enums"]["transmittal_direction"]
+          from_party: string
+          id?: string
+          items?: Json
+          project_id: string
+          response_due?: string | null
+          sent_at?: string | null
+          subject: string
+          to_party: string
+          transmittal_number: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          direction?: Database["public"]["Enums"]["transmittal_direction"]
+          from_party?: string
+          id?: string
+          items?: Json
+          project_id?: string
+          response_due?: string | null
+          sent_at?: string | null
+          subject?: string
+          to_party?: string
+          transmittal_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transmittals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -7162,6 +7442,9 @@ export type Database = {
         | "access_logistics"
         | "permits_licenses"
       mobilization_status: "not_started" | "in_progress" | "complete"
+      ncr_disposition: "pending" | "rework" | "repair" | "use_as_is" | "scrap"
+      ncr_source: "inspection" | "punch_item" | "observation" | "other"
+      ncr_status: "open" | "in_progress" | "closed" | "void"
       observation_severity: "low" | "medium" | "high" | "critical"
       observation_status: "open" | "in_progress" | "closed"
       offline_queue_status: "pending" | "synced" | "failed"
@@ -7244,6 +7527,14 @@ export type Database = {
         | "completed"
         | "on_hold"
         | "cancelled"
+      submittal_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "approved_as_noted"
+        | "revise_resubmit"
+        | "rejected"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -7253,6 +7544,7 @@ export type Database = {
         | "clarification"
         | "award_announcement"
         | "other"
+      transmittal_direction: "outgoing" | "incoming"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
       wbs_item_type: "phase" | "package" | "discipline" | "task_group"
       weather_delay_type:
@@ -7541,6 +7833,9 @@ export const Constants = {
         "permits_licenses",
       ],
       mobilization_status: ["not_started", "in_progress", "complete"],
+      ncr_disposition: ["pending", "rework", "repair", "use_as_is", "scrap"],
+      ncr_source: ["inspection", "punch_item", "observation", "other"],
+      ncr_status: ["open", "in_progress", "closed", "void"],
       observation_severity: ["low", "medium", "high", "critical"],
       observation_status: ["open", "in_progress", "closed"],
       offline_queue_status: ["pending", "synced", "failed"],
@@ -7632,6 +7927,15 @@ export const Constants = {
         "on_hold",
         "cancelled",
       ],
+      submittal_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "approved_as_noted",
+        "revise_resubmit",
+        "rejected",
+      ],
       tender_event_type: [
         "pre_bid_meeting",
         "site_visit",
@@ -7642,6 +7946,7 @@ export const Constants = {
         "award_announcement",
         "other",
       ],
+      transmittal_direction: ["outgoing", "incoming"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
       wbs_item_type: ["phase", "package", "discipline", "task_group"],
       weather_delay_type: [
