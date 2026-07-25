@@ -322,7 +322,7 @@ export const exportOpportunitiesCsv = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const companyId = await getMyCompanyId(context);
-    await assertExportAllowed(context.supabase, { companyId });
+    await assertExportAllowed(context.supabase, null, "csv");
 
     let q = context.supabase
       .from("opportunities")
