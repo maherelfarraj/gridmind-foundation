@@ -9,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Download, FileText, Gauge, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { Download, FileText, Gauge, Handshake, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -197,6 +197,15 @@ function CommissioningBoard() {
             >
               <FileText size={14} aria-hidden />
               Turnover pack
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/projects/$projectId/commissioning/handover"
+              params={{ projectId }}
+            >
+              <Handshake size={14} aria-hidden />
+              Handover
             </Link>
           </Button>
           <Button
