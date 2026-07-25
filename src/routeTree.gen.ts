@@ -27,6 +27,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
+import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
@@ -249,6 +250,11 @@ const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
   id: '/hse/',
   path: '/hse/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
+  id: '/projects/$projectId',
+  path: '/projects/$projectId',
+  getParentRoute: () => PortalRoute,
 } as any)
 const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   id: '/api/webhooks/esign',
@@ -1111,6 +1117,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1253,6 +1260,7 @@ export interface FileRoutesByTo {
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
@@ -1403,6 +1411,7 @@ export interface FileRoutesById {
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1555,6 +1564,7 @@ export interface FileRouteTypes {
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/hse/'
     | '/projects/'
     | '/proposals/'
@@ -1697,6 +1707,7 @@ export interface FileRouteTypes {
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/hse'
     | '/projects'
     | '/proposals'
@@ -1846,6 +1857,7 @@ export interface FileRouteTypes {
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
@@ -2084,6 +2096,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/hse/'
       preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/portal/projects/$projectId': {
+      id: '/portal/projects/$projectId'
+      path: '/projects/$projectId'
+      fullPath: '/portal/projects/$projectId'
+      preLoaderRoute: typeof PortalProjectsProjectIdRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/api/webhooks/esign': {
       id: '/api/webhooks/esign'
@@ -3606,10 +3625,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface PortalRouteChildren {
   PortalIndexRoute: typeof PortalIndexRoute
+  PortalProjectsProjectIdRoute: typeof PortalProjectsProjectIdRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalIndexRoute: PortalIndexRoute,
+  PortalProjectsProjectIdRoute: PortalProjectsProjectIdRoute,
 }
 
 const PortalRouteWithChildren =
