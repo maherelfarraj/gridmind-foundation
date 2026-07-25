@@ -378,13 +378,12 @@ export const resolveShareLink = createServerFn({ method: "POST" })
       /* headers optional if not in a response context */
     }
 
-    // Rate limit per client IP (fail-open).
+    // Rate limit per client IP (fail-open). Only trust cf-connecting-ip —
+    // never x-forwarded-for (spoofable at the edge). See P-121 guard.
     const req = getRequest();
-    const ipHeader =
-      req.headers.get("x-forwarded-for") ??
-      req.headers.get("cf-connecting-ip") ??
-      "";
+    const ipHeader = req.headers.get("cf-connecting-ip") ?? "";
     const ip = ipHeader.split(",")[0]?.trim() || "unknown";
+
 
     const { createClient } = await import("@supabase/supabase-js");
     const supabaseUrl = process.env.SUPABASE_URL!;
