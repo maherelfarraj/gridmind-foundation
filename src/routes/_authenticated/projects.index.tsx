@@ -190,9 +190,7 @@ function ProjectsPage() {
         description={
           query.isLoading
             ? "Loading…"
-            : `${total} project${total === 1 ? "" : "s"}${
-                filtersActive ? " matching filters" : ""
-              }`
+            : `${total} project${total === 1 ? "" : "s"}${filtersActive ? " matching filters" : ""}`
         }
         actions={
           <>

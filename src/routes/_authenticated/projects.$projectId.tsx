@@ -7,6 +7,7 @@ import { mobilizationHeaderChipQueryOptions } from "@/lib/mobilization-query";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/projects/phase-badge";
@@ -95,9 +96,9 @@ function ProjectDetailLayout() {
   const deptSet = new Set(project.departments.map((d) => d.department));
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="page-shell max-w-6xl">
       {/* Header */}
-      <header className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link
             to="/projects"
@@ -110,24 +111,26 @@ function ProjectDetailLayout() {
           <span aria-hidden>/</span>
           <span className="font-mono">{project.code}</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {project.name}
-          </h1>
-          <span className="inline-flex items-center rounded-md border border-border bg-secondary/40 px-2 py-0.5 text-xs font-medium text-foreground">
-            {archetypeLabel}
-          </span>
-          <PhaseBadge phase={project.phase} />
-          <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
-            {project.status}
-          </span>
-          <MobilizationHeaderChip projectId={projectId} />
-        </div>
+        <PageHeader
+          title={project.name}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center rounded-md border border-border bg-secondary/40 px-2 py-0.5 text-xs font-medium text-foreground">
+                {archetypeLabel}
+              </span>
+              <PhaseBadge phase={project.phase} />
+              <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
+                {project.status}
+              </span>
+              <MobilizationHeaderChip projectId={projectId} />
+            </div>
+          }
+        />
 
         <Card className="p-5">
           <PhaseGateStepper gates={project.gates} />
         </Card>
-      </header>
+      </div>
 
       {/* Tab bar */}
       <nav aria-label="Project sections" className="flex flex-wrap gap-1 border-b border-border">

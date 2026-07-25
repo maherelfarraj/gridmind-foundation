@@ -95,9 +95,7 @@ function GatesTab() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="flex flex-col gap-4">
         {gates.length === 0 ? (
-          <Card className="p-6 text-sm text-muted-foreground">
-            No gates configured.
-          </Card>
+          <Card className="p-6 text-sm text-muted-foreground">No gates configured.</Card>
         ) : (
           gates.map((g) => <GateCard key={g.id} gate={g} projectId={projectId} canEdit={canEdit} />)
         )}
