@@ -32,6 +32,10 @@ export type ApiKeyRow = {
   revoked_at: string | null;
   created_at: string;
   status: "active" | "expired" | "revoked";
+  /** CIDR/IPv4 allowlist enforced by the public-API guard (empty = any IP). */
+  allowed_ips?: string[];
+  /** True when an HMAC signing secret is configured. Secret is never returned. */
+  has_hmac?: boolean;
 };
 
 export type CreatedKeyResult = {
