@@ -23,8 +23,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // --------------------------------------------------------------------------
 
 export interface GuardOptions {
-  /** Required scope on the api_key (e.g. "scada:telemetry:write"). */
-  scope: string;
+  /** Required scope on the api_key. Omit for cron-only routes where the
+   *  caller is authenticated via the Supabase `apikey` header instead. */
+  scope?: string;
   /** Logical route id used for rate-limit bucket keys + audit metadata. */
   route: string;
   /** Require HMAC signature verification. Defaults to false. */
@@ -35,15 +36,29 @@ export interface GuardOptions {
   rateRefillPerSec?: number;
   /** Optional raw request body (string). If omitted, guard will read it. */
   rawBody?: string;
+  /** Accept the Supabase `apikey` header as an alternative caller (pg_cron).
+   *  When enabled and no Bearer is present, guard matches `apikey` against
+   *  SUPABASE_PUBLISHABLE_KEY or CRON_APIKEY. Cron callers skip IP/HMAC/
+   *  scope checks; rate limit still applies. */
+  allowCron?: boolean;
+}
+
+export interface GuardCaller {
+  kind: "api_key" | "cron";
+  companyId: string | null;
+  keyId: string | null;
 }
 
 export interface GuardSuccess {
   ok: true;
-  keyId: string;
-  companyId: string;
+  /** @deprecated use caller.keyId */
+  keyId: string | null;
+  /** @deprecated use caller.companyId */
+  companyId: string | null;
   scopes: string[];
   rawBody: string;
   clientIp: string | null;
+  caller: GuardCaller;
 }
 
 export interface GuardFailure {
