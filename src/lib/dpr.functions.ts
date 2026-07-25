@@ -525,28 +525,41 @@ export const addManpowerRow = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const insert = {
-      company_id: header.company_id,
-      dpr_id: data.dprId,
-      trade: data.trade,
-      contractor: data.contractor ?? null,
-      headcount: data.headcount,
-      hours: data.hours as any,
-      notes: data.notes ?? null,
-    };
-    const { data: row, error } = await context.supabase
-      .from("manpower_logs")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await recomputeTotals(context, data.dprId);
-    await audit(context, "dpr.update", "manpower_logs", (row as any).id, {
-      dpr_id: data.dprId,
-      trade: data.trade,
-      headcount: data.headcount,
-    });
-    return row as ManpowerRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "manpower",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: header.company_id,
+          dpr_id: data.dprId,
+          trade: data.trade,
+          contractor: data.contractor ?? null,
+          headcount: data.headcount,
+          hours: data.hours as any,
+          notes: data.notes ?? null,
+        };
+        const { data: row, error } = await context.supabase
+          .from("manpower_logs")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await recomputeTotals(context, data.dprId);
+        await audit(context, "dpr.update", "manpower_logs", (row as any).id, {
+          dpr_id: data.dprId,
+          trade: data.trade,
+          headcount: data.headcount,
+        });
+        return row as ManpowerRow;
+      },
+    );
   });
 
 const manpowerIdInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid() });
