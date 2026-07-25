@@ -281,7 +281,7 @@ export const getIncident = createServerFn({ method: "GET" })
     const proj = (row as any).projects ?? null;
     return {
       incident: {
-        ...(row as IncidentRow),
+        ...((row as unknown) as IncidentRow),
         project_name: proj?.name ?? null,
         project_code: proj?.code ?? null,
       } as IncidentListItem,
