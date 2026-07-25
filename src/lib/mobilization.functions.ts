@@ -81,7 +81,7 @@ async function loadChecklistOrThrow(
     .maybeSingle();
   if (error) throw error;
   if (!data) httpError(404, "checklist_not_found");
-  return data as MobilizationRow;
+  return data as unknown as MobilizationRow;
 }
 
 async function audit(
@@ -175,7 +175,7 @@ export const listMobilizationChecklists = createServerFn({ method: "GET" })
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (rows ?? []) as MobilizationRow[];
+    return (rows ?? []) as unknown as unknown as MobilizationRow[];
   });
 
 export const getMobilizationChecklist = createServerFn({ method: "GET" })
@@ -245,7 +245,7 @@ export const createMobilizationChecklist = createServerFn({ method: "POST" })
       if ((error as any).code === "23505") httpError(409, "duplicate_name");
       throw error;
     }
-    const created = row as MobilizationRow;
+    const created = row as unknown as MobilizationRow;
     await audit(context, "mobilization.create", created.id, {
       project_id: created.project_id,
       name,
@@ -277,7 +277,7 @@ async function persistItemMutation(
     .maybeSingle();
   if (error) throw error;
   if (!row) httpError(404, "checklist_not_found");
-  return row as MobilizationRow;
+  return row as unknown as MobilizationRow;
 }
 
 export const toggleMobilizationItem = createServerFn({ method: "POST" })
@@ -381,7 +381,7 @@ export const completeMobilizationChecklist = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw error;
     if (!row) httpError(404, "checklist_not_found");
-    const done = row as MobilizationRow;
+    const done = row as unknown as MobilizationRow;
     await audit(context, "mobilization.complete", done.id, {
       project_id: done.project_id,
     });
