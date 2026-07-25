@@ -29,14 +29,6 @@ export const Route = createFileRoute("/api/public/hooks/echo")({
           rateCapacity: burst ? 3 : 120,
           rateRefillPerSec: burst ? 0.001 : 2,
         });
-
-        const guard = await guardPublicHook(request, {
-          route: ENDPOINT,
-          scope: "hooks:events",
-          requireSignature: !nosig,
-          rateCapacity: burst ? 3 : 120,
-          rateRefillPerSec: burst ? 0.001 : 2,
-        });
         if (!guard.ok) return guard.response;
 
         return Response.json({
