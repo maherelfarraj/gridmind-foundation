@@ -59,7 +59,13 @@ export interface GuardSuccess {
   rawBody: string;
   clientIp: string | null;
   caller: GuardCaller;
+  /** Warn-mode reasons that would have blocked under enforce=block.
+   *  Endpoints should surface these via an `x-guard-warn` response header. */
+  warnings: string[];
+  /** Current enforcement mode at guard evaluation time. */
+  mode: "warn" | "block";
 }
+
 
 export interface GuardFailure {
   ok: false;
