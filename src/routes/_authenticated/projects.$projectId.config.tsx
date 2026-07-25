@@ -24,7 +24,7 @@ function ConfigTab() {
 
   if (!project || !configs) {
     return (
-      <Card className="border-border bg-card p-6">
+      <Card className="p-6">
         <p className="text-sm text-muted-foreground">
           Configuration is unavailable for this project.
         </p>

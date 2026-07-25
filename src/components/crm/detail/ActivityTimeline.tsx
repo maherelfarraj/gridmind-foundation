@@ -39,7 +39,7 @@ export function ActivityTimeline({ opportunityId, items, isLoading, canWrite }: 
   };
 
   return (
-    <Card className="flex flex-col gap-3 border-border bg-card p-5">
+    <Card className="flex flex-col gap-3 p-5">
       <header className="flex items-center justify-between gap-2">
         <div>
           <h2 className="font-display text-sm font-semibold text-foreground">Activity</h2>
@@ -103,7 +103,7 @@ function TimelineRow({ item }: { item: ActivityItem }) {
     <li className="relative">
       <span
         className={cn(
-          "absolute -left-[26px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card",
+          "absolute -left-[26px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border",
           tone,
         )}
       >

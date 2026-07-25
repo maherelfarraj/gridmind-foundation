@@ -43,7 +43,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
         {value.map((l, i) => (
           <div
             key={i}
-            className="grid grid-cols-[110px_120px_1fr_120px_auto] items-center gap-2 rounded-md border border-border bg-card p-2"
+            className="grid grid-cols-[110px_120px_1fr_120px_auto] items-center gap-2 rounded-md border p-2"
           >
             <Select value={l.category} onValueChange={(v) => updateAt(i, { category: v })}>
               <SelectTrigger>

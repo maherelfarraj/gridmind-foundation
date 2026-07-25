@@ -124,7 +124,7 @@ function ProjectDetailLayout() {
           <MobilizationHeaderChip projectId={projectId} />
         </div>
 
-        <Card className="border-border bg-card p-5">
+        <Card className="p-5">
           <PhaseGateStepper gates={project.gates} />
         </Card>
       </header>
@@ -168,7 +168,7 @@ function DetailSkeleton() {
       <header className="flex flex-col gap-4">
         <Skeleton className="h-4 w-40" />
         <Skeleton className="h-8 w-96" />
-        <Card className="border-border bg-card p-5">
+        <Card className="p-5">
           <Skeleton className="h-16 w-full" />
         </Card>
       </header>
@@ -219,7 +219,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
 function DetailNotFound() {
   return (
     <div className="mx-auto flex w-full max-w-3xl">
-      <Card className="flex w-full flex-col items-start gap-3 border-border bg-card p-6">
+      <Card className="flex w-full flex-col items-start gap-3 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
           Project not available
         </h2>

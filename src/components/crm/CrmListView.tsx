@@ -99,7 +99,7 @@ export function CrmListView({ opportunities }: Props) {
 
   return (
     <div className="space-y-3">
-      <Card className="flex flex-wrap items-end gap-3 border-border bg-card p-3">
+      <Card className="flex flex-wrap items-end gap-3 p-3">
         <div className="relative min-w-[220px] flex-1">
           <Search
             size={16}
@@ -137,7 +137,7 @@ export function CrmListView({ opportunities }: Props) {
         </Button>
       </Card>
 
-      <Card className="border-border bg-card">
+      <Card className="">
         <Table>
           <TableHeader>
             <TableRow>

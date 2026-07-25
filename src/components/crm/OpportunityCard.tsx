@@ -57,7 +57,7 @@ export function OpportunityCard({ opp, readOnly }: Props) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group rounded-md border border-border bg-card p-3 shadow-sm transition-shadow",
+        "group rounded-md border p-3 shadow-sm transition-shadow",
         isDragging && "opacity-50 shadow-lg",
         !readOnly && "cursor-grab active:cursor-grabbing",
       )}

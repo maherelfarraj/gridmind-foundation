@@ -54,7 +54,7 @@ export function ArchetypePicker({ planTier, greenHydrogenEnabled, value, onChang
           >
             <Card
               className={cn(
-                "flex h-full flex-col gap-3 border-border bg-card p-5",
+                "flex h-full flex-col gap-3 p-5",
                 selected && "ring-2 ring-primary border-primary/40",
                 disabled && "opacity-60",
               )}

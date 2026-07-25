@@ -29,7 +29,7 @@ function OverviewTab() {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <Card className="border-border bg-card p-5">
+      <Card className="p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Key facts
         </h2>
@@ -47,7 +47,7 @@ function OverviewTab() {
         )}
       </Card>
 
-      <Card className="border-border bg-card p-5">
+      <Card className="p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Team
         </h2>

@@ -66,7 +66,7 @@ export function LeadsTab({ readOnly }: Props) {
         )}
       </div>
 
-      <Card className="border-border bg-card">
+      <Card className="">
         {query.isLoading ? (
           <div className="space-y-2 p-4">
             {Array.from({ length: 4 }).map((_, i) => (

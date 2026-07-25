@@ -28,7 +28,7 @@ export function DepartmentPlaceholder({
 
   if (!row) {
     return (
-      <Card className="border-border bg-card p-6">
+      <Card className="p-6">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {label}
         </h2>
@@ -42,7 +42,7 @@ export function DepartmentPlaceholder({
   const statusClass = STATUS_STYLES[row.status] ?? "bg-muted text-muted-foreground";
 
   return (
-    <Card className="flex flex-col gap-4 border-border bg-card p-6">
+    <Card className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold text-foreground">{label}</h2>
         <span

@@ -212,7 +212,7 @@ function ProjectsPage() {
         </div>
       </header>
 
-      <Card className="flex flex-wrap items-end gap-3 border-border bg-card p-4">
+      <Card className="flex flex-wrap items-end gap-3 p-4">
         <div className="relative min-w-[220px] flex-1">
           <Search
             size={16}
@@ -364,7 +364,7 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
       params={{ projectId: row.id }}
       className="block rounded-lg outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
     >
-      <Card className="flex h-full flex-col gap-4 border-border bg-card p-5 transition-colors hover:border-primary/50">
+      <Card className="flex h-full flex-col gap-4 p-5 transition-colors hover:border-primary/50">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold text-foreground">{row.name}</h3>
@@ -399,7 +399,7 @@ function SkeletonGrid() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="flex flex-col gap-4 border-border bg-card p-5">
+        <Card key={i} className="flex flex-col gap-4 p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-2/3" />
@@ -423,7 +423,7 @@ function SkeletonGrid() {
 
 function EmptyState({ filtersActive }: { filtersActive: boolean }) {
   return (
-    <Card className="flex flex-col items-center gap-3 border-dashed border-border bg-card p-12 text-center">
+    <Card className="flex flex-col items-center gap-3 border-dashed p-12 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
         <FolderPlus size={22} aria-hidden />
       </div>

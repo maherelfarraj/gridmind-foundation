@@ -33,7 +33,7 @@ export function TemplatePicker({ templates, value, onChange }: Props) {
           >
             <Card
               className={cn(
-                "flex h-full flex-col gap-3 border-border bg-card p-5",
+                "flex h-full flex-col gap-3 p-5",
                 selected && "ring-2 ring-primary border-primary/40",
               )}
             >
@@ -76,7 +76,7 @@ export function TemplatePicker({ templates, value, onChange }: Props) {
       >
         <Card
           className={cn(
-            "flex h-full flex-col gap-3 border-dashed border-border bg-card p-5",
+            "flex h-full flex-col gap-3 border-dashed p-5",
             value === null && "ring-2 ring-primary border-primary/40",
           )}
         >
