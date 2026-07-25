@@ -258,7 +258,7 @@ function CertificateCard({
             variant="outline"
             className={cn(
               row.status === "signed"
-                ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                ? "border-success/30 bg-success/10 text-success"
                 : "bg-muted text-foreground",
             )}
           >
@@ -315,7 +315,7 @@ function CertificateCard({
                         <CheckCircle2
                           size={12}
                           aria-hidden
-                          className="text-emerald-600 dark:text-emerald-400"
+                          className="text-success"
                         />
                       ) : (
                         <span className="inline-block h-3 w-3 rounded-full border border-border" />
@@ -616,7 +616,7 @@ function SignDialog({
         </div>
 
         {state?.cert.certificate_type === "cod" ? (
-          <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+          <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-foreground">
             <AlertCircle size={12} aria-hidden className="mt-0.5" />
             <span>
               COD requires zero open category A punch items and at least one passing performance

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, Inbox, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
@@ -178,18 +180,16 @@ function ChangeOrdersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Change orders</h1>
-          <p className="text-sm text-muted-foreground">
-            Log scope changes and their cost and schedule impact.
-          </p>
-        </div>
-        <Button size="sm" onClick={() => setOpen(true)}>
-          <Plus className="mr-2 size-4" /> New change order
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Change orders"
+        description="Log scope changes and their cost and schedule impact."
+        actions={
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <Plus className="mr-2 size-4" /> New change order
+          </Button>
+        }
+      />
 
       <Card className={cn("p-4", bucketTone)}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -236,11 +236,15 @@ function ChangeOrdersPage() {
 
       <Card className="overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            {rows.length === 0
-              ? "No change orders yet."
-              : "No change orders match the current filters."}
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title={rows.length === 0 ? "No change orders yet" : "No matching change orders"}
+            description={
+              rows.length === 0
+                ? "Log a change order to track scope, cost, and schedule impact."
+                : "Try adjusting your search or filters."
+            }
+          />
         ) : (
           <Table>
             <TableHeader>

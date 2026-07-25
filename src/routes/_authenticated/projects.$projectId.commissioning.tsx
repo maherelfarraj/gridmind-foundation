@@ -95,11 +95,11 @@ const STATUS_LABELS: Record<CommissioningTestStatus, string> = {
 function statusTint(s: CommissioningTestStatus): string {
   switch (s) {
     case "passed":
-      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+      return "bg-success/15 text-success border-success/30";
     case "failed":
       return "bg-destructive/15 text-destructive border-destructive/30";
     case "in_progress":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+      return "bg-warning/15 text-warning border-warning/30";
     case "scheduled":
       return "bg-primary/15 text-primary border-primary/30";
     case "on_hold":

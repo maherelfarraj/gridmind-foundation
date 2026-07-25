@@ -182,7 +182,7 @@ function PerformanceWorkspace() {
               (rows[0]?.variance_pct == null
                 ? "text-muted-foreground"
                 : rows[0].variance_pct >= 0
-                  ? "text-emerald-600 dark:text-emerald-400"
+                  ? "text-success"
                   : "text-destructive")
             }
           >
@@ -448,7 +448,7 @@ function TestRow({
             variant="outline"
             className={
               row.variance_pct >= 0
-                ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                ? "border-success/40 text-success"
                 : "border-destructive/40 text-destructive"
             }
           >
@@ -654,7 +654,7 @@ function NewPrDialog({
                   (previewVariance == null
                     ? "text-muted-foreground"
                     : previewVariance >= 0
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : "text-destructive")
                 }
               >

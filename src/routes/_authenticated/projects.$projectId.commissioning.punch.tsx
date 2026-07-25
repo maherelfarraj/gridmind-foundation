@@ -70,7 +70,7 @@ function categoryTint(cat: Category): string {
     case "A":
       return "bg-destructive/15 text-destructive border-destructive/30";
     case "B":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+      return "bg-warning/15 text-warning border-warning/30";
     case "C":
       return "bg-muted text-muted-foreground border-border";
   }
@@ -314,7 +314,7 @@ function PunchLaneCard({
           className={cn(
             "shrink-0 text-xs",
             isClosed
-              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+              ? "bg-success/15 text-success border-success/30"
               : "bg-muted text-foreground",
           )}
         >
@@ -333,7 +333,7 @@ function PunchLaneCard({
               className={cn(
                 "text-[10px]",
                 has
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                  ? "bg-success/15 text-success border-success/30"
                   : "bg-muted text-muted-foreground",
               )}
             >

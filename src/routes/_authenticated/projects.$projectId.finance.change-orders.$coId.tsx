@@ -166,7 +166,7 @@ function CoDetailPage() {
   const locked = isChangeOrderLocked(co.status);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
       <div>
         <Link
           to="/projects/$projectId/finance/change-orders"
@@ -177,11 +177,11 @@ function CoDetailPage() {
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{co.co_number}</h1>
-            <Badge variant="outline" className={cn("capitalize", STATUS_TONE[co.status])}>
+            <h1 className="truncate text-lg font-semibold text-foreground">{co.co_number}</h1>
+            <Badge variant="outline" className={cn("capitalize shrink-0", STATUS_TONE[co.status])}>
               {co.status.replace(/_/g, " ")}
             </Badge>
           </div>

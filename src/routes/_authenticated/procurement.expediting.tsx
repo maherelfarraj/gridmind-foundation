@@ -287,7 +287,15 @@ function ExpeditingPage() {
                     kpi.total === 0 ? "—" : `${kpi.ready}/${kpi.total} · ${kpi.pct.toFixed(0)}%`
                   }
                   hint="Delivered or ETA confirmed"
-                  status={kpi.total === 0 ? "neutral" : kpi.band === "green" ? "good" : kpi.band === "amber" ? "warning" : "bad"}
+                  status={
+                    kpi.total === 0
+                      ? "neutral"
+                      : kpi.band === "green"
+                        ? "good"
+                        : kpi.band === "amber"
+                          ? "warning"
+                          : "bad"
+                  }
                 />
               </div>
             </TooltipTrigger>

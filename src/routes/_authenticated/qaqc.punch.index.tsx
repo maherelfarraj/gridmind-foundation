@@ -314,7 +314,7 @@ function KpiTile({
     tone === "destructive"
       ? "border-destructive/40 bg-destructive/10 text-destructive"
       : tone === "warning"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+        ? "border-warning/30 bg-warning/10 text-warning"
         : "border-border bg-card text-foreground";
   return (
     <Card className={`border ${toneClass}`}>

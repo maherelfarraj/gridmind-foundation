@@ -3,9 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Search } from "lucide-react";
-
-import { Inbox, ShieldAlert } from "lucide-react";
+import { Download, Inbox, Search, ShieldAlert } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

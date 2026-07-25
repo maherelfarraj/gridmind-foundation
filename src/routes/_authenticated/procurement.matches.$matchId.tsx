@@ -21,6 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MatchStatusBadge } from "@/components/procurement/match-status-badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { getMatch, getMatchWriteAccess } from "@/lib/match.functions";
 import {
   matchDetailQueryOptions,
@@ -75,48 +76,22 @@ function MatchDetail() {
   const pct = m.po_total > 0 ? ((m.amount_variance ?? 0) / m.po_total) * 100 : 0;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-4">
+    <div className="page-shell max-w-4xl">
       <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to matches
       </Button>
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Scale className="h-3.5 w-3.5" /> Procurement · Match
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            {m.vendor_invoice_number}
-          </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <MatchStatusBadge status={m.status} />
-            {m.po_number && (
-              <>
-                <span>·</span>
-                <Link
-                  to="/procurement/pos/$poId"
-                  params={{ poId: m.po_id }}
-                  className="underline-offset-4 hover:underline"
-                >
-                  PO {m.po_number}
-                </Link>
-              </>
-            )}
-            {m.vendor_name && (
-              <>
-                <span>·</span>
-                <span>{m.vendor_name}</span>
-              </>
-            )}
-            {m.invoice_date && (
-              <>
-                <span>·</span>
-                <span>Invoice {m.invoice_date}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title={m.vendor_invoice_number}
+        description={[
+          m.po_number ? `PO ${m.po_number}` : null,
+          m.vendor_name,
+          m.invoice_date ? `Invoice ${m.invoice_date}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        actions={<MatchStatusBadge status={m.status} />}
+      />
 
       {m.payment_release_blocked && (
         <div className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">

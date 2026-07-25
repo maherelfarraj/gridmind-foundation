@@ -109,7 +109,11 @@ function PosIndex() {
           value={kpi.cycle != null ? `${kpi.cycle.toFixed(1)} d` : "—"}
           hint="Created → Issued (avg)"
         />
-        <KpiTile label="Pending approval" value={String(kpi.pending)} hint="Awaiting CFO sign-off" />
+        <KpiTile
+          label="Pending approval"
+          value={String(kpi.pending)}
+          hint="Awaiting CFO sign-off"
+        />
         <KpiTile label="Total POs" value={String(kpi.total)} hint="Across all statuses" />
       </KpiGrid>
 
@@ -140,11 +144,7 @@ function PosIndex() {
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="No POs yet"
-          description="Award an RFQ to generate one."
-        />
+        <EmptyState icon={Receipt} title="No POs yet" description="Award an RFQ to generate one." />
       ) : (
         <div className="rounded-md border border-border">
           <Table>
@@ -192,5 +192,3 @@ function PosIndex() {
     </div>
   );
 }
-
-

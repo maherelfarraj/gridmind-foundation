@@ -91,7 +91,7 @@ export function ClaimDialog({ warrantyId, endDate, isOmAdmin }: Props) {
           <Plus className="mr-1 h-3 w-3" /> New claim
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>New warranty claim</DialogTitle>
         </DialogHeader>

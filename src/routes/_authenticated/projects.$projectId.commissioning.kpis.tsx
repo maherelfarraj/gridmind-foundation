@@ -210,7 +210,7 @@ function PrAtCodTile({ data }: { data: CommissioningKpisPayload }) {
           className={cn(
             "border",
             k.passing
-              ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+              ? "border-success/30 bg-success/10 text-success"
               : "border-destructive/30 bg-destructive/15 text-destructive",
           )}
         >
@@ -334,9 +334,9 @@ function SecondaryStrip({ data }: { data: CommissioningKpisPayload }) {
               >
                 <p className="text-xs font-medium text-foreground">{formatTestType(t.test_type)}</p>
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                  <span className="text-emerald-600 dark:text-emerald-300">✓ {t.passed}</span>
+                  <span className="text-success">✓ {t.passed}</span>
                   <span className="text-destructive">✕ {t.failed}</span>
-                  <span className="text-amber-600 dark:text-amber-300">↻ {t.in_progress}</span>
+                  <span className="text-warning">↻ {t.in_progress}</span>
                   <span className="text-muted-foreground">· {t.not_started}</span>
                 </div>
               </div>

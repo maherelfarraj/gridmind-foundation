@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { supabase } from "@/integrations/supabase/client";
 import { createDraftGrn, getReceivableForPo, listReceivablePos } from "@/lib/grn.functions";
 import {
@@ -77,7 +78,7 @@ function NewReceipt() {
 
   if (!po) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-4">
+      <div className="page-shell max-w-lg">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
@@ -271,16 +272,11 @@ function ReceivingEditor({
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-4 pb-32">
+    <div className="page-shell max-w-3xl pb-32">
       <Button variant="ghost" size="sm" onClick={onCancel}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
-      <header>
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Receive against PO
-        </div>
-        <h1 className="font-display text-xl font-bold">{poNumber}</h1>
-      </header>
+      <PageHeader title={poNumber} description="Receive against PO" />
 
       {badLines.length > 0 && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">

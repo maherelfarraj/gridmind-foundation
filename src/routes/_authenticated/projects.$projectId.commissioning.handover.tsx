@@ -85,7 +85,7 @@ function PrereqRow({ ok, label }: { ok: boolean; label: string }) {
     <li className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm">
       <span className="flex items-center gap-2">
         {ok ? (
-          <CheckCircle2 size={16} aria-hidden className="text-emerald-500" />
+          <CheckCircle2 size={16} aria-hidden className="text-success" />
         ) : (
           <XCircle size={16} aria-hidden className="text-destructive" />
         )}
@@ -95,7 +95,7 @@ function PrereqRow({ ok, label }: { ok: boolean; label: string }) {
         variant="outline"
         className={cn(
           ok
-            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            ? "border-success/30 bg-success/10 text-success"
             : "border-destructive/30 bg-destructive/10 text-destructive",
         )}
       >
@@ -123,7 +123,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 function actionTone(action: string): string {
   if (action === "gate.transition_approved" || action === "handover.ccc_signed")
-    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+    return "border-success/30 bg-success/10 text-success";
   if (action === "gate.transition_rejected")
     return "border-destructive/30 bg-destructive/10 text-destructive";
   if (action === "project.phase_change") return "border-primary/30 bg-primary/10 text-primary";
@@ -239,9 +239,9 @@ function BoardBody({
   return (
     <>
       {gateApproved ? (
-        <Card className="border-emerald-500/30 bg-emerald-500/10 p-4">
+        <Card className="border-success/30 bg-success/10 p-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 size={20} className="text-emerald-500" aria-hidden />
+            <CheckCircle2 size={20} className="text-success" aria-hidden />
             <div className="flex-1">
               <p className="font-medium text-foreground">Project transferred to Operations</p>
               <p className="text-sm text-muted-foreground">
@@ -304,7 +304,7 @@ function BoardBody({
                   variant="outline"
                   className={cn(
                     cccCertificate.status === "signed"
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      ? "border-success/30 bg-success/10 text-success"
                       : "bg-muted text-foreground",
                   )}
                 >
@@ -347,9 +347,9 @@ function BoardBody({
                   variant="outline"
                   className={cn(
                     handoverGate.status === "approved"
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      ? "border-success/30 bg-success/10 text-success"
                       : handoverGate.status === "in_review"
-                        ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        ? "border-warning/30 bg-warning/10 text-warning"
                         : handoverGate.status === "rejected"
                           ? "border-destructive/30 bg-destructive/10 text-destructive"
                           : "bg-muted text-foreground",
@@ -367,7 +367,7 @@ function BoardBody({
                   >
                     <span className="flex items-center gap-2">
                       {item.done ? (
-                        <CheckCircle2 size={12} className="text-emerald-500" aria-hidden />
+                        <CheckCircle2 size={12} className="text-success" aria-hidden />
                       ) : (
                         <AlertTriangle size={12} className="text-muted-foreground" aria-hidden />
                       )}

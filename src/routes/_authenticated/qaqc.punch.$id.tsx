@@ -239,7 +239,7 @@ function PunchDetailPage() {
       {item.signoff_at ? (
         <Card>
           <CardContent className="flex flex-col gap-1 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <div className="flex items-center gap-2 text-sm font-medium text-success">
               <Check className="h-4 w-4" /> Closed
             </div>
             <div className="text-sm text-foreground">

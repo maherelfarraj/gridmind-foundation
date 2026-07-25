@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/ui/page-header";
 import { getMatchContextForPo, getMatchWriteAccess, listMatchablePos } from "@/lib/match.functions";
 import { amountVariancePct, computeVariances, deriveMatchStatus } from "@/lib/match-rules";
 import {
@@ -70,7 +71,7 @@ function NewMatch() {
 
   if (!po) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-4">
+      <div className="page-shell max-w-lg">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
@@ -208,21 +209,15 @@ function MatchForm({ poId }: { poId: string }) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-4 pb-32">
+    <div className="page-shell max-w-3xl pb-32">
       <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
-      <header>
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Match invoice against PO
-        </div>
-        <h1 className="font-display text-xl font-bold">{ctx.po_number}</h1>
-        <p className="text-sm text-muted-foreground">
-          {ctx.vendor_name ?? "—"} · PO total{" "}
-          <span className="font-medium">{formatCurrency(ctx.po_total, ctx.currency_code)}</span>
-        </p>
-      </header>
+      <PageHeader
+        title={ctx.po_number}
+        description={`${ctx.vendor_name ?? "—"} · PO total ${formatCurrency(ctx.po_total, ctx.currency_code)}`}
+      />
 
       <Card>
         <CardHeader className="pb-2">

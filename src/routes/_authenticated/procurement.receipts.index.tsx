@@ -24,6 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { GrnStatusBadge } from "@/components/procurement/grn-status-badge";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import { listGrns, listReceivablePos } from "@/lib/grn.functions";
 import { GRN_STATUSES, type GrnStatus } from "@/lib/grn-rules";
 import { grnListQueryOptions, receivablePosQueryOptions } from "@/lib/grn-query";
@@ -118,26 +120,21 @@ function ReceiptsIndex() {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <PackageOpen className="h-3.5 w-3.5" /> Procurement · Goods Receipts
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Goods Receipts</h1>
-          <p className="text-sm text-muted-foreground">
-            Log deliveries against issued POs — lot IDs, condition, and photos.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          <Button size="sm" onClick={handleNew} disabled={receivable.data.length === 0}>
-            <Plus className="mr-2 h-4 w-4" /> New receipt
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Goods Receipts"
+        description="Log deliveries against issued POs — lot IDs, condition, and photos."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export CSV
+            </Button>
+            <Button size="sm" onClick={handleNew} disabled={receivable.data.length === 0}>
+              <Plus className="mr-2 h-4 w-4" /> New receipt
+            </Button>
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[220px] flex-1">
@@ -166,11 +163,13 @@ function ReceiptsIndex() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No goods receipts yet — start one against an issued PO.
-        </div>
+        <EmptyState
+          icon={PackageOpen}
+          title="No goods receipts yet"
+          description="Start one against an issued PO."
+        />
       ) : (
-        <div className="rounded-md border border-border">
+        <div>
           <Table>
             <TableHeader>
               <TableRow>

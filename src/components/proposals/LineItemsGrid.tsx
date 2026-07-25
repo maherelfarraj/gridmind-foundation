@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Inbox, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { useSaveLineItems } from "@/lib/proposal-query";
 import type { ProposalDetail, ProposalLineItem } from "@/lib/proposal.functions";
 
@@ -131,9 +133,12 @@ export function LineItemsGrid({
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No line items yet. {!readOnly && "Click “Add line” to get started."}
-        </div>
+        <EmptyState
+          icon={Inbox}
+          title="No line items yet"
+          description={!readOnly ? 'Click "Add line" to get started.' : undefined}
+          compact
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -221,35 +226,20 @@ export function LineItemsGrid({
         </div>
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4 sm:grid-cols-4">
-        <Tile label="Subtotal" value={formatCurrency(subtotal, proposal.currency_code)} />
-        <Tile
-          label={`Contingency (${proposal.contingency_pct}%)`}
-          value={formatCurrency(contingencyAmt, proposal.currency_code)}
-        />
-        <Tile
-          label={`Margin (${proposal.margin_pct}%)`}
-          value={formatCurrency(marginAmt, proposal.currency_code)}
-        />
-        <Tile label="Total" value={formatCurrency(total, proposal.currency_code)} strong />
+      <div className="mt-4 border-t border-border pt-4">
+        <KpiGrid label="Line item totals">
+          <KpiTile label="Subtotal" value={formatCurrency(subtotal, proposal.currency_code)} />
+          <KpiTile
+            label={`Contingency (${proposal.contingency_pct}%)`}
+            value={formatCurrency(contingencyAmt, proposal.currency_code)}
+          />
+          <KpiTile
+            label={`Margin (${proposal.margin_pct}%)`}
+            value={formatCurrency(marginAmt, proposal.currency_code)}
+          />
+          <KpiTile label="Total" value={formatCurrency(total, proposal.currency_code)} status="good" />
+        </KpiGrid>
       </div>
     </Card>
-  );
-}
-
-function Tile({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <div className="rounded-md border border-border bg-muted/30 p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div
-        className={
-          strong
-            ? "text-lg font-semibold tabular-nums text-foreground"
-            : "text-sm tabular-nums text-foreground"
-        }
-      >
-        {value}
-      </div>
-    </div>
   );
 }

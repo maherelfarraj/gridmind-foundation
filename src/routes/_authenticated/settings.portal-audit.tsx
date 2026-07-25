@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Download,
   Eye,
-  Loader2,
   MessageSquare,
   ShieldCheck,
   Share2,
@@ -29,6 +28,9 @@ import {
 } from "@/lib/portal-audit.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -153,58 +155,49 @@ function PortalAuditPage() {
 
   if (isForbidden) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-3 p-10 text-center">
-        <AlertTriangle className="h-8 w-8 text-destructive" />
-        <h1 className="font-display text-xl font-semibold text-foreground">Company admins only</h1>
-        <p className="text-sm text-muted-foreground">
-          Portal audit is restricted to company_admin. Ask an administrator for access.
-        </p>
+      <div className="page-shell max-w-3xl">
+        <EmptyState
+          icon={AlertTriangle}
+          title="Company admins only"
+          description="Portal audit is restricted to company_admin. Ask an administrator for access."
+        />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Portal audit
-          </h1>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Every portal view, ticket, approval decision, and investor share-link access. Read-only.
-          Retention follows your audit_log_retention_policies.
-        </p>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Portal audit"
+        description="Every portal view, ticket, approval decision, and investor share-link access."
+      />
 
-      {/* Stat tiles */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile
+      <KpiGrid>
+        <KpiTile
           icon={Eye}
           label="Total events"
-          value={summary?.total ?? null}
-          loading={summaryQuery.isLoading}
+          value={(summary?.total ?? 0).toLocaleString()}
+          isLoading={summaryQuery.isLoading}
         />
-        <Tile
+        <KpiTile
           icon={Users}
           label="Unique viewers"
-          value={summary?.unique_actors ?? null}
-          loading={summaryQuery.isLoading}
+          value={(summary?.unique_actors ?? 0).toLocaleString()}
+          isLoading={summaryQuery.isLoading}
         />
-        <Tile
+        <KpiTile
           icon={MessageSquare}
           label="Tickets raised"
-          value={summary?.by_event["portal.ticket_raised"] ?? 0}
-          loading={summaryQuery.isLoading}
+          value={(summary?.by_event["portal.ticket_raised"] ?? 0).toLocaleString()}
+          isLoading={summaryQuery.isLoading}
         />
-        <Tile
+        <KpiTile
           icon={ShieldCheck}
           label="Approvals decided"
-          value={summary?.by_event["portal.approval_decided"] ?? 0}
-          loading={summaryQuery.isLoading}
+          value={(summary?.by_event["portal.approval_decided"] ?? 0).toLocaleString()}
+          isLoading={summaryQuery.isLoading}
         />
-      </div>
+      </KpiGrid>
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4">
@@ -310,13 +303,11 @@ function PortalAuditPage() {
           </Button>
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-10 text-center">
-          <Activity className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">No portal activity yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Once portal members log in or share links are viewed, events appear here.
-          </p>
-        </div>
+        <EmptyState
+          icon={Activity}
+          title="No portal activity yet"
+          description="Once portal members log in or share links are viewed, events appear here."
+        />
       ) : (
         <EventsTable rows={rows} />
       )}
@@ -335,33 +326,6 @@ function FilterField({ label, children }: { label: string; children: React.React
   );
 }
 
-function Tile({
-  icon: Icon,
-  label,
-  value,
-  loading,
-}: {
-  icon: typeof Eye;
-  label: string;
-  value: number | null;
-  loading: boolean;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </div>
-      <div className="mt-2 font-display text-3xl font-semibold text-foreground">
-        {loading ? (
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        ) : (
-          (value ?? 0).toLocaleString()
-        )}
-      </div>
-    </div>
-  );
-}
 
 function EventsTable({ rows }: { rows: PortalAuditRow[] }) {
   return (
