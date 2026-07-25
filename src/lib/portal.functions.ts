@@ -702,3 +702,25 @@ export const listAdminProjects = createServerFn({ method: "GET" })
       return (data ?? []) as Array<{ id: string; name: string; code: string | null }>;
     },
   );
+
+// Called after a user redeems an invite: activate any pending portal
+// membership rows for their email + company and stamp user_id/accepted_at.
+export const linkAcceptedPortalInvites = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<{ linked: number }> => {
+    requireSupabaseAuth(context);
+    const email = (context.user!.email ?? "").toLowerCase();
+    if (!email) return { linked: 0 };
+    const { data, error } = await context.supabase
+      .from("portal_memberships")
+      .update({
+        user_id: context.user!.id,
+        status: "active",
+        accepted_at: new Date().toISOString(),
+      })
+      .eq("email", email)
+      .eq("status", "invited")
+      .select("id");
+    if (error) throw error;
+    return { linked: (data ?? []).length };
+  });
