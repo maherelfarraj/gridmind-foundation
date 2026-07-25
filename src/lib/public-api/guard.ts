@@ -478,5 +478,8 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
     rawBody,
     clientIp,
     caller: { kind: "api_key", companyId: keyRow.company_id, keyId: keyRow.key_id },
+    warnings,
+    mode,
   };
 }
+
