@@ -5,8 +5,10 @@ import {
   Outlet,
   useRouter,
 } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowLeft, HardHat, RefreshCw } from "lucide-react";
+
+import { mobilizationHeaderChipQueryOptions } from "@/lib/mobilization-query";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
