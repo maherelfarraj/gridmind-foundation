@@ -32,6 +32,7 @@ import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.pro
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
 import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/webhook-dispatch'
+import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/storage-check'
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
 import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
@@ -289,6 +290,11 @@ const ApiWebhooksCalendarRoute = ApiWebhooksCalendarRouteImport.update({
 const ApiCronWebhookDispatchRoute = ApiCronWebhookDispatchRouteImport.update({
   id: '/api/cron/webhook-dispatch',
   path: '/api/cron/webhook-dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronStorageCheckRoute = ApiCronStorageCheckRouteImport.update({
+  id: '/api/cron/storage-check',
+  path: '/api/cron/storage-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronScheduledReportsRoute = ApiCronScheduledReportsRouteImport.update({
@@ -1222,6 +1228,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -1380,6 +1387,7 @@ export interface FileRoutesByTo {
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -1546,6 +1554,7 @@ export interface FileRoutesById {
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -1714,6 +1723,7 @@ export interface FileRouteTypes {
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -1872,6 +1882,7 @@ export interface FileRouteTypes {
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -2037,6 +2048,7 @@ export interface FileRouteTypes {
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -2154,6 +2166,7 @@ export interface RootRouteChildren {
   ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
   ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
+  ApiCronStorageCheckRoute: typeof ApiCronStorageCheckRoute
   ApiCronWebhookDispatchRoute: typeof ApiCronWebhookDispatchRoute
   ApiWebhooksCalendarRoute: typeof ApiWebhooksCalendarRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
@@ -2324,6 +2337,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/webhook-dispatch'
       fullPath: '/api/cron/webhook-dispatch'
       preLoaderRoute: typeof ApiCronWebhookDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/storage-check': {
+      id: '/api/cron/storage-check'
+      path: '/api/cron/storage-check'
+      fullPath: '/api/cron/storage-check'
+      preLoaderRoute: typeof ApiCronStorageCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/scheduled-reports': {
@@ -3963,6 +3983,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
   ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
+  ApiCronStorageCheckRoute: ApiCronStorageCheckRoute,
   ApiCronWebhookDispatchRoute: ApiCronWebhookDispatchRoute,
   ApiWebhooksCalendarRoute: ApiWebhooksCalendarRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,

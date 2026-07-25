@@ -9630,6 +9630,12 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      list_storage_object_policies: {
+        Args: never
+        Returns: {
+          policyname: string
+        }[]
+      }
       portal_assert_access: {
         Args: { p_project_id: string }
         Returns: {
