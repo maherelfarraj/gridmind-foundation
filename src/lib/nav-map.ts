@@ -2,6 +2,7 @@
 // the permission simulator, so they can't drift. Forward-looking routes are
 // fine here; they mirror the nav map as feature batches land.
 import {
+  Radio,
   AlertTriangle,
   Atom,
   Building2,
@@ -88,6 +89,7 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: ClipboardCheck,
       },
       { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om", icon: Wrench },
+      { moduleKey: "om_scada", label: "SCADA connectors", url: "/om/scada/connectors", icon: Radio },
       { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
       { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
     ],
