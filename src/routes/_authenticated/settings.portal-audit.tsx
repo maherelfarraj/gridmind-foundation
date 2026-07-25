@@ -42,9 +42,6 @@ import {
 import { DataTable, RelativeTime, type DataTableColumn } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-
-
-
 const DAYS_PRESETS = [
   { value: 1, label: "24h" },
   { value: 7, label: "7d" },
@@ -391,7 +388,6 @@ function EventsTable({ rows }: { rows: PortalAuditRow[] }) {
     />
   );
 }
-
 
 function MetaDetail({ metadata }: { metadata: unknown }) {
   if (!metadata || typeof metadata !== "object") {

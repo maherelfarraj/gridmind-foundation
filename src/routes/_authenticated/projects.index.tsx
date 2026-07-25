@@ -281,7 +281,6 @@ function ProjectsPage() {
               onPageChange={(page) => navigate({ search: (prev) => ({ ...prev, page }) })}
             />
           ) : null}
-
         </>
       )}
     </div>
@@ -421,7 +420,6 @@ function EmptyState({ filtersActive }: { filtersActive: boolean }) {
     />
   );
 }
-
 
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (

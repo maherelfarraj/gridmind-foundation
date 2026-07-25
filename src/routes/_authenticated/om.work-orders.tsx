@@ -408,7 +408,8 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
       header: "Assignee",
       hideBelow: "lg",
       cell: (r) =>
-        r.assignee_name ?? r.assignee_email ?? <span className="text-muted-foreground">Unassigned</span>,
+        r.assignee_name ??
+        r.assignee_email ?? <span className="text-muted-foreground">Unassigned</span>,
     },
     {
       id: "due",
@@ -460,4 +461,3 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
     />
   );
 }
-

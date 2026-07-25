@@ -109,9 +109,7 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
             <StatusBadge status="escalated" label="Escalated" icon={AlertTriangle} />
           )}
           <span className="min-w-0 truncate font-medium text-foreground">{row.title}</span>
-          {amount && (
-            <span className="text-sm text-muted-foreground tabular-nums">· {amount}</span>
-          )}
+          {amount && <span className="text-sm text-muted-foreground tabular-nums">· {amount}</span>}
         </div>
         <div className="flex shrink-0 items-center gap-2">{slaBadge(row)}</div>
       </div>
@@ -131,7 +129,6 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
     </button>
   );
 }
-
 
 function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void }) {
   const listFn = useServerFn(listMyApprovals);
