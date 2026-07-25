@@ -125,7 +125,10 @@ function BomWorkspace({ projectId }: { projectId: string }) {
               title="No BOM yet"
               description="Generate a preliminary BOM from the archetype configuration."
               action={
-                <Button onClick={() => generate.mutate()} disabled={!roles.canWrite || generate.isPending}>
+                <Button
+                  onClick={() => generate.mutate()}
+                  disabled={!roles.canWrite || generate.isPending}
+                >
                   {generate.isPending ? "Generating…" : "Generate BOM"}
                 </Button>
               }

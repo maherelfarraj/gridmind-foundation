@@ -168,23 +168,23 @@ function WbsPage() {
         description="Build the project WBS and align schedule tasks to disciplines."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setImportOpen(true)}
-            disabled={!canWrite}
-          >
-            <Upload size={14} aria-hidden />
-            Import IFC packages
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleQuickAddRoot}
-            disabled={!canWrite || createMut.isPending}
-          >
-            <Plus size={14} aria-hidden />
-            Add root item
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              disabled={!canWrite}
+            >
+              <Upload size={14} aria-hidden />
+              Import IFC packages
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleQuickAddRoot}
+              disabled={!canWrite || createMut.isPending}
+            >
+              <Plus size={14} aria-hidden />
+              Add root item
+            </Button>
           </div>
         }
       />

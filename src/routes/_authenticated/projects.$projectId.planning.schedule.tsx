@@ -191,7 +191,10 @@ function SchedulePage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Schedule" description="Gantt view with baseline lock and variance tracking." />
+      <SectionHeader
+        title="Schedule"
+        description="Gantt view with baseline lock and variance tracking."
+      />
 
       {!canWrite && (
         <Card className="p-4 text-sm text-muted-foreground">

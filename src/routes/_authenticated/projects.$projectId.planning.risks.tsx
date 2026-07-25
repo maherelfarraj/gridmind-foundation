@@ -151,7 +151,10 @@ function RisksPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Risks" description="Probability × impact register with mitigation tracking." />
+      <SectionHeader
+        title="Risks"
+        description="Probability × impact register with mitigation tracking."
+      />
 
       {!canWrite && (
         <Card className="p-4 text-sm text-muted-foreground">
