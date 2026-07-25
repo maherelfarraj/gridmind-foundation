@@ -73,7 +73,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Lifecycle",
     items: [
       { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm/pipeline", icon: Handshake },
-      { moduleKey: "engineering", label: "Engineering", url: "/engineering", icon: PencilRuler },
+      { moduleKey: "engineering", label: "Engineering", url: "/projects", icon: PencilRuler },
       { moduleKey: "procurement", label: "Procurement", url: "/procurement/vendors", icon: Truck },
       { moduleKey: "procurement", label: "RFQs", url: "/procurement/rfqs", icon: MailPlus },
       {
@@ -122,7 +122,7 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         moduleKey: "planning_budget",
         label: "Planning & Budget",
-        url: "/planning",
+        url: "/projects",
         icon: CalendarRange,
       },
       {
@@ -138,7 +138,7 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/finance/debit-notes",
         icon: Scale,
       },
-      { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
+      { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field/dpr", icon: HardHat },
       {
         moduleKey: "field_qaqc",
         label: "Mobilization",
@@ -196,10 +196,10 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         moduleKey: "commissioning",
         label: "Commission & Turnover",
-        url: "/commissioning",
+        url: "/projects",
         icon: ClipboardCheck,
       },
-      { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om", icon: Wrench },
+      { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om/scada", icon: Wrench },
       { moduleKey: "om_scada", label: "SCADA dashboard", url: "/om/scada", icon: Gauge },
       {
         moduleKey: "om_scada",
@@ -229,8 +229,8 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: LifeBuoy,
       },
       { moduleKey: "om_scada", label: "Monthly reports", url: "/om/reports", icon: FileDown },
-      { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
-      { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
+      { moduleKey: "portals", label: "Client & Investor Portals", url: "/settings/portal-members", icon: Users },
+      { moduleKey: "green_hydrogen", label: "Green H₂", url: "/projects", icon: Atom },
     ],
   },
   {
