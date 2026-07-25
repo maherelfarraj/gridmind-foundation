@@ -264,6 +264,92 @@ export type Database = {
           },
         ]
       }
+      bank_facilities: {
+        Row: {
+          commitment_amount: number
+          company_id: string
+          covenants: Json
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          drawn_amount: number
+          facility_type: Database["public"]["Enums"]["facility_type"]
+          id: string
+          interest_rate_pct: number | null
+          lender_name: string
+          margin_pct: number | null
+          maturity_date: string | null
+          project_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          commitment_amount: number
+          company_id: string
+          covenants?: Json
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          drawn_amount?: number
+          facility_type: Database["public"]["Enums"]["facility_type"]
+          id?: string
+          interest_rate_pct?: number | null
+          lender_name: string
+          margin_pct?: number | null
+          maturity_date?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          commitment_amount?: number
+          company_id?: string
+          covenants?: Json
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          drawn_amount?: number
+          facility_type?: Database["public"]["Enums"]["facility_type"]
+          id?: string
+          interest_rate_pct?: number | null
+          lender_name?: string
+          margin_pct?: number | null
+          maturity_date?: string | null
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_facilities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_facilities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_facilities_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "bank_facilities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       baseline_snapshots: {
         Row: {
           company_id: string
@@ -2379,6 +2465,92 @@ export type Database = {
           },
         ]
       }
+      lcoe_scenarios: {
+        Row: {
+          annual_energy_mwh: number
+          assumptions: Json
+          capex: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          degradation_pct: number
+          discount_rate_pct: number
+          id: string
+          lcoe: number | null
+          name: string
+          opex_annual: number
+          project_id: string
+          project_life_years: number
+          updated_at: string
+        }
+        Insert: {
+          annual_energy_mwh: number
+          assumptions?: Json
+          capex: number
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          degradation_pct?: number
+          discount_rate_pct: number
+          id?: string
+          lcoe?: number | null
+          name: string
+          opex_annual: number
+          project_id: string
+          project_life_years?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_energy_mwh?: number
+          assumptions?: Json
+          capex?: number
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          degradation_pct?: number
+          discount_rate_pct?: number
+          id?: string
+          lcoe?: number | null
+          name?: string
+          opex_annual?: number
+          project_id?: string
+          project_life_years?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lcoe_scenarios_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lcoe_scenarios_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lcoe_scenarios_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "lcoe_scenarios_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           account_name: string | null
@@ -2438,6 +2610,86 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lender_dd_items: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_path: string | null
+          due_date: string | null
+          id: string
+          owner_id: string | null
+          project_id: string
+          response_note: string | null
+          status: Database["public"]["Enums"]["dd_item_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_path?: string | null
+          due_date?: string | null
+          id?: string
+          owner_id?: string | null
+          project_id: string
+          response_note?: string | null
+          status?: Database["public"]["Enums"]["dd_item_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_path?: string | null
+          due_date?: string | null
+          id?: string
+          owner_id?: string | null
+          project_id?: string
+          response_note?: string | null
+          status?: Database["public"]["Enums"]["dd_item_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lender_dd_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lender_dd_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lender_dd_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lender_dd_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -2870,6 +3122,105 @@ export type Database = {
           },
           {
             foreignKeyName: "pay_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ppa_terms: {
+        Row: {
+          annual_energy_mwh: number | null
+          availability_target_pct: number | null
+          capacity_mw: number | null
+          company_id: string
+          contract_id: string | null
+          counterparty: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          escalation_pct: number
+          id: string
+          liquidated_damages: Json
+          name: string
+          notes: string | null
+          project_id: string
+          tariff: number
+          term_years: number
+          updated_at: string
+        }
+        Insert: {
+          annual_energy_mwh?: number | null
+          availability_target_pct?: number | null
+          capacity_mw?: number | null
+          company_id: string
+          contract_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          escalation_pct?: number
+          id?: string
+          liquidated_damages?: Json
+          name: string
+          notes?: string | null
+          project_id: string
+          tariff: number
+          term_years: number
+          updated_at?: string
+        }
+        Update: {
+          annual_energy_mwh?: number | null
+          availability_target_pct?: number | null
+          capacity_mw?: number | null
+          company_id?: string
+          contract_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          escalation_pct?: number
+          id?: string
+          liquidated_damages?: Json
+          name?: string
+          notes?: string | null
+          project_id?: string
+          tariff?: number
+          term_years?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ppa_terms_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ppa_terms_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ppa_terms_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ppa_terms_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "ppa_terms_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -5667,6 +6018,12 @@ export type Database = {
         | "consulting"
         | "lease"
         | "other"
+      dd_item_status:
+        | "not_started"
+        | "in_progress"
+        | "submitted"
+        | "accepted"
+        | "waived"
       debit_note_status: "draft" | "issued" | "settled" | "cancelled"
       delivery_status: "pending" | "success" | "failed"
       document_category:
@@ -5687,6 +6044,13 @@ export type Database = {
         | "general"
       drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
       expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
+      facility_type:
+        | "term_loan"
+        | "revolver"
+        | "construction_loan"
+        | "letter_of_credit"
+        | "bond"
+        | "equity"
       grn_status: "draft" | "confirmed" | "has_defects" | "closed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       invoice_direction: "receivable" | "payable"
@@ -5984,6 +6348,13 @@ export const Constants = {
         "lease",
         "other",
       ],
+      dd_item_status: [
+        "not_started",
+        "in_progress",
+        "submitted",
+        "accepted",
+        "waived",
+      ],
       debit_note_status: ["draft", "issued", "settled", "cancelled"],
       delivery_status: ["pending", "success", "failed"],
       document_category: [
@@ -6006,6 +6377,14 @@ export const Constants = {
       ],
       drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
       expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
+      facility_type: [
+        "term_loan",
+        "revolver",
+        "construction_loan",
+        "letter_of_credit",
+        "bond",
+        "equity",
+      ],
       grn_status: ["draft", "confirmed", "has_defects", "closed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       invoice_direction: ["receivable", "payable"],

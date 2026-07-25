@@ -1,105 +1,83 @@
-## P-081 — Change order workflow, budget & schedule propagation, approval hook
+## P-082 — Project finance: PPA, LCOE, Lender DD, Bank facilities
 
-Table `change_orders` (migration 0036) and minimal CRUD (P-079) already exist. This batch adds the workflow, propagation, and UI. No schema migration is required — all needed columns (`status`, `submitted_by/at`, `approved_by/at`, `approval_instance_id`, `budget_impact`, `schedule_impact_days`, `wbs_item_id`) are in place, and `budgets.current_amount` is already a generated column (`original_amount + approved_changes`). `approval_rules` does not exist yet, so the inline fallback path ships now.
+Batch 08 finale. Four new tables + one route with four tabs. `documents` bucket already exists (private) and its `storage.objects` policies scope writes by the first path segment (`company_id`), so the spec's `{company_id}/lender-dd/{project_id}/…` path works as-is.
 
-### 1. Rules (`src/lib/change-orders.rules.ts`)
-- Add `BudgetImpactBalanced` helper: `sumBudgetImpact(lines) === amount` within ±$0.01; used both client-side (form disable) and server-side (reject).
-- Add allowed-transition map:
-  - draft → submitted, draft edits allowed
-  - submitted → under_review | approved | rejected
-  - under_review → approved | rejected
-  - approved → incorporated
-  - rejected: terminal, edits blocked
-  - incorporated: locked (no edits, no status change)
-- Add `exposurePct(approvedCoAmount, contractValue)` + bucket `{ ok | warn (>5%) | danger (>10%) }`.
-- Add `shiftUnstartedTasks(tasks, days)` pure helper: returns `{ shifted: Task[], skipped: Task[] }`, only tasks with `status === 'not_started'` are shifted; used by server + surfaced in warning banner.
+### 1. Migration `0038_project_finance.sql`
+Ship as spec, with the small guardrails our other migrations use:
+- Wrap both enum creates in `DO $$ BEGIN ... EXCEPTION WHEN duplicate_object THEN NULL; END $$;` (spec allows a guarded do-block; makes the migration re-runnable).
+- Tables verbatim from the spec (columns, defaults, CHECK on `bank_facilities.drawn_amount ≤ commitment_amount`).
+- `updated_at` maintained by the shared `set_updated_at` trigger on all four tables (matches the pattern from earlier batches — no bespoke function).
+- Grants as spec: `authenticated` gets `SELECT, INSERT, UPDATE`; no DELETE grant (7-year retention). Add `GRANT ALL … TO service_role` for admin/edge paths.
+- RLS policies exactly per spec (SELECT scoped by `is_company_member`; writes gated by finance/company admin, DD adds `legal_admin`).
+- Indexes as spec.
 
-### 2. Server functions (`src/lib/change-orders.functions.ts`)
-Extend the existing file. Roles enforced via `has_company_role`:
-- create/edit/submit: `project_admin` | `finance_admin` | `company_admin`
-- approve/reject/incorporate: `finance_admin` | `company_admin`
+### 2. Rules module `src/lib/project-finance.rules.ts`
+Pure, testable helpers, one Zod schema per entity + shared types:
+- `computeLcoe({ capex, opex_annual, discount_rate_pct, annual_energy_mwh, degradation_pct, project_life_years })` — the discounted-numerator / discounted-denominator formula from the spec; guards `annualEnergy > 0`, `r ≥ 0`, `life ≥ 1`.
+- `ppaYearOneRevenue(tariff, annualEnergyMwh)`.
+- `facilityUtilizationPct(drawn, commitment)` + `over-commitment` guard.
+- `ddReadinessPct(items)` = `(accepted + waived) / total`; helper `ddReadinessBucket(pct)` → `ok ≥ 80 | warn`.
+- `isOverdue(dueDate)` for DD rows.
+- Zod: `PpaUpsertSchema`, `LcoeUpsertSchema` (no `lcoe` field — server computes), `DdUpsertSchema`, `DdStatusChangeSchema`, `FacilityUpsertSchema`, `FacilityDrawdownSchema`.
 
-New RPCs (each in one server transaction using an RPC where multi-row updates are needed — see §3):
-- `submitChangeOrder({ id })` — draft → submitted; sets `submitted_by/at`; if `approval_instances` table has usable rows (checked with a try/catch insert), create instance with `entity='change_orders'`, `entity_id=co.id`, `metadata={ amount, threshold_bucket }`, store id in `approval_instance_id`; otherwise leave null (inline fallback). Audit `co.submit`.
-- `approveChangeOrder({ id, note? })` — calls new SQL RPC `approve_change_order(co_id, note)` that:
-  1. Verifies status ∈ {submitted, under_review}; locks row.
-  2. For each `budget_impact` line, upserts `budgets.approved_changes += amount` for matching `(project_id, cost_code_id, latest version)`; errors if no matching budget row.
-  3. Sets `status='approved'`, `approved_by/at`.
-  4. Returns `{ budgets_touched: uuid[] }`.
-  Then writes audit `co.approve` with `{ co_id, budgets_touched, note }`. Schedule shift is NOT applied here (spec: only on incorporate).
-- `rejectChangeOrder({ id, note })` — note required (zod min 1); status → rejected; audit `co.reject` with note.
-- `incorporateChangeOrder({ id })` — RPC `incorporate_change_order(co_id)`:
-  1. Verifies status = 'approved'; locks row.
-  2. If `schedule_impact_days > 0` and `wbs_item_id` set, updates all `schedule_tasks` where `wbs_item_id = co.wbs_item_id AND status = 'not_started'`, setting `start_date = start_date + days`, `end_date = end_date + days`. Returns list of shifted task ids.
-  3. Sets `status='incorporated'`.
-  4. Returns `{ tasks_shifted: uuid[] }`.
-  Audit `co.incorporate` with `{ co_id, tasks_shifted, days }`.
-- Harden existing `upsertChangeOrder`: block edits when `status ∈ {approved, rejected, incorporated}`; when submitting a new row (`status='submitted'`), validate `Σ budget_impact = amount` (reject otherwise, HTTP 422).
+Unit tests `tests/unit/project-finance-rules.test.ts`:
+- LCOE hand-calc: capex $120M, opex $1.8M, r=7%, 260 GWh, 25y, 0.5% deg ≈ `$0.0637 /kWh` (verify our implementation to 4 decimals).
+- PPA year-one revenue $55 × 260,000 MWh = $14.3M.
+- Utilization boundary: draw = commitment → 100%; over-draw returns error before hitting DB.
+- DD readiness 5/6 accepted+waived → 83.3% → `ok`.
 
-### 3. Migration `0038_change_order_workflow.sql`
-Two SECURITY DEFINER functions (search_path=public) — pure SQL because they mutate multiple rows atomically:
-- `public.approve_change_order(p_co_id uuid, p_note text)` returns `jsonb` — asserts caller role via `has_company_role`, does the budget upsert loop over `co.budget_impact`, updates CO. Errors if any `budget_impact` cost_code has no matching latest-version budget row.
-- `public.incorporate_change_order(p_co_id uuid)` returns `jsonb` — asserts role, shifts unstarted tasks, updates CO.
-- Grants EXECUTE to `authenticated`, and both functions re-check role inside.
-No new tables, no RLS changes.
+### 3. Server functions
+Split by entity to keep files tight — every mutation is `createServerFn + zod + requireSupabaseAuth + writeAuditLog`:
 
-### 4. Query helpers (`src/lib/change-orders.query.ts`)
-Extend with:
-- `changeOrderDetailQueryOptions(coId)` — CO + linked contract (title, signed_amount, currency) + wbs item + affected budgets rows + audit trail (last 20 events for entity).
-- `contractsForProjectQueryOptions(projectId)` — signed/active contracts for the select.
-- `budgetsForProjectQueryOptions(projectId)` — latest-version budget rows keyed by cost_code_id (drives the budget_impact grid and validation).
-- `projectApprovedCoExposureQueryOptions(projectId)` — sum of amounts where status ∈ {approved, incorporated}, grouped by contract, for the KPI tile.
+- `src/lib/ppa.functions.ts` — `listPpaTerms(projectId)`, `upsertPpaTerms`, `getPpaAccess`. Audit `ppa.create` / `ppa.update`.
+- `src/lib/lcoe.functions.ts` — `listLcoeScenarios(projectId)`, `upsertLcoeScenario` (computes and persists `lcoe`), `deleteLcoeScenario` blocked (no delete grant); audit `lcoe.save`.
+- `src/lib/lender-dd.functions.ts` — `listDdItems(projectId)`, `upsertDdItem`, `changeDdStatus({ id, status, note? })` (audit `dd.status_change` with `{ from, to, note }`), `signDdDocumentUploadUrl({ projectId, filename, mime })` returning a `documents` bucket signed upload URL rooted at `{company_id}/lender-dd/{project_id}/…` (mirrors `opportunity.functions.ts` upload helper).
+- `src/lib/bank-facilities.functions.ts` — `listBankFacilities(projectId?)`, `upsertBankFacility`, `recordFacilityDrawdown({ id, amount })` (validates `drawn + amount ≤ commitment`, updates `drawn_amount`, audit `facility.drawdown` with `{ amount, previous_drawn, new_drawn }`), `getBankFacilitiesAccess`.
 
-### 5. UI
+Roles enforced via existing `has_company_role` RPC:
+- Finance/company admin write everywhere.
+- Legal admin additionally writes DD (matches RLS).
+- Read is anyone in the company (RLS SELECT).
 
-**List page** `projects/$projectId/finance/change-orders.tsx` (rewrite of the P-079 stub):
-- Header: "Change orders" + `New CO` button.
-- KPI strip: **Approved CO exposure** tile — `Σ approved+incorporated / Σ contract values`, tokenized colors (`ok`, `warn amber >5%`, `danger destructive >10%`), per-contract breakdown popover.
-- Toolbar: search (co_number/title), status filter (multi), CSV export (`co-YYYYMMDD.csv`).
-- Table columns: `co_number`, `title`, contract name, signed amount (Intl currency), schedule impact days, status badge (tokenized per status), updated_at (`date-fns` `formatDistanceToNow`). Row → detail link.
-- Skeleton, empty ("No change orders yet"), and error states via existing `payAppErrorMessage`-style helper (add `changeOrderErrorMessage`).
+### 4. Query modules
+- `src/lib/ppa.query.ts`
+- `src/lib/lcoe.query.ts`
+- `src/lib/lender-dd.query.ts`
+- `src/lib/bank-facilities.query.ts`
+Each exports `list/detail/access queryOptions` (staleTime 15–30s) and a shared `projectFinanceErrorMessage(err)` (put in a new `src/lib/project-finance-query.ts` re-exported by all four to avoid duplication).
 
-**Detail page** `projects/$projectId/finance/change-orders.$coId.tsx` (new):
-- Header with `co_number`, title, status pill, and impact chip row:
-  - Amount chip — Intl currency, signed; destructive when `abs(amount) > 5% * contract.signed_amount`.
-  - Schedule impact chip — `+N days` / `0`.
-- Sections:
-  1. **Overview** — description, contract link, WBS item, submitted/approved metadata.
-  2. **Budget impact table** — cost code, code name, current budget, impact amount, new current amount preview; total row with Σ = amount checkmark.
-  3. **Schedule preview** — if `wbs_item_id` set and days > 0, list unstarted tasks that would shift, with new dates (uses `shiftUnstartedTasks`). Started tasks shown as "untouched (started)".
-  4. **Approval trail** — submitted_by / at, approved_by / at, note, and the last audit events for this CO.
-- Action bar (role- and status-gated):
-  - draft: **Edit**, **Submit**
-  - submitted / under_review: **Approve**, **Reject** (dialog, mandatory note)
-  - approved: **Incorporate** (confirmation dialog listing tasks that will shift)
-  - rejected / incorporated: no actions; banner explaining lock.
+### 5. Routes
+Layout: `src/routes/_authenticated/projects.$projectId.finance.project-finance.tsx` — sub-tab bar (PPA | LCOE | Lender DD | Facilities) via `<Outlet />`, mirroring `projects.$projectId.finance.tsx`.
 
-**Create/Edit dialog** (react-hook-form + zod):
-- Fields: title, description, contract select (signed/active only), currency (locked to contract currency if set), amount (money input, sign toggle for cost add vs credit), schedule_impact_days (int spinner, default 0), wbs_item_id select (filtered to project).
-- Budget impact grid: rows for every latest-version budget in the project; user enters amount per row; live Σ vs amount indicator; submit disabled when unbalanced. Server re-validates.
-- On save: draft. Separate **Submit** button on the detail page triggers `submitChangeOrder`.
+Add tab entry `{ to: 'project-finance', label: 'Project finance' }` to the existing Finance layout `src/routes/_authenticated/projects.$projectId.finance.tsx` so it shows up under the Finance module.
 
-**Navigation**: add "Change orders" to `src/lib/nav-map.ts` under the project Finance section (if not already), and add sub-nav link inside the Finance layout.
+Leaf routes (each with `head()`, `loader → ensureQueryData`, `errorComponent` with retry, `notFoundComponent`, skeleton and empty states, CSV export button):
 
-### 6. Audit events (five, matching spec)
-`co.create`, `co.submit`, `co.approve`, `co.reject`, `co.incorporate` — all with `{ co_id, ...ctx }` metadata; `co.approve` includes `budgets_touched`, `co.incorporate` includes `tasks_shifted` + `days`.
+- `projects.$projectId.finance.project-finance.ppa.tsx` — table (name, counterparty, term, tariff, currency, capacity, annual MWh, year-1 revenue), header KPI: portfolio year-1 revenue Σ; `Add PPA` opens a **drawer form** with fields per spec including a lightweight `LiquidatedDamagesEditor` (jsonb key/value grid) and a linked-contract select filtered to signed/active contracts on the project. Derived "Year-1 revenue" tile inside the drawer updates live.
 
-### 7. Tests (`tests/unit/change-orders-rules.test.ts`)
-- `nextChangeOrderNumber` year-scoped rollover (existing).
-- `sumBudgetImpact` balance check within tolerance.
-- Transition matrix (allowed / forbidden pairs).
-- `exposurePct` bucket boundaries (5%, 10%).
-- `shiftUnstartedTasks` — skips started/in_progress/complete, shifts `not_started` by N days preserving duration.
+- `projects.$projectId.finance.project-finance.lcoe.tsx` — split view. Left: scenarios table (name, capex, opex, r, energy, life, LCOE, updated). Right: drawer form for create/edit with a live **hand-calc preview** (uses the pure `computeLcoe`) so users see the number before saving; server recomputes and persists on submit. **Compare panel** below: Recharts `BarChart` of LCOE per scenario using token colors (`hsl(var(--primary))`, `hsl(var(--accent))`, etc.) and a sensitivity note: "Lowest LCOE scenario: {name} at r = {rate}%".
 
-### 8. Verification (matches the propagation checklist)
-1. Create CO-2026-0001 "+$450k" with `budget_impact` mapped to `02-2000 Equipment` — verify server rejects when `Σ ≠ amount`.
-2. Submit → approve as `finance_admin` — read `budgets` row, confirm `approved_changes += 450000` and `current_amount` moved (generated column).
-3. Set `schedule_impact_days=21` on the CO, incorporate — verify `not_started` tasks under the linked WBS shifted +21 days, started tasks untouched, CO now locked (Edit disabled, no further status changes).
-4. Reject flow — dialog requires note; audit row includes note.
-5. Confirm all five audit rows exist for the CO.
-6. Exposure tile colors: seed one project with 6% and one with 12% approved exposure and eyeball the KPI badge.
+- `projects.$projectId.finance.project-finance.dd.tsx` — checklist grouped by category (technical, legal, financial, hse, insurance, esg — collapsible groups with counts). Row shows title, status pill, owner avatar, due date (destructive text if `dueDate < today` and status ∉ accepted|waived), document link/upload button, response note popover. Status change is a small `<Select>` — inline mutation, audited. Header KPI tile **DD readiness** (`ddReadinessPct`) with `warn` / `ok` tokenized colors and a small "n of m complete" caption. `Add item` drawer. Document upload posts to signed URL from `signDdDocumentUploadUrl`, then stores the returned `document_path` on the row (mirrors existing `opportunity` upload flow); rejects non-PDF/DOCX and >20 MB client-side.
 
-### Technical notes
-- `approve_change_order` / `incorporate_change_order` are SQL SECURITY DEFINER functions because we need atomic multi-row writes; RLS is re-enforced via explicit `has_company_role` checks and by joining through `change_orders.company_id`.
-- `approval_instances` insert is best-effort (wrapped in try/catch); when it fails or the table is missing (it exists but unused today), CO simply keeps `approval_instance_id = null` and inline Approve/Reject remains authoritative. Field name is stable so Batch 12 can back-fill without a schema change.
-- All money math uses `numeric(14,2)` server-side; client uses `Intl.NumberFormat`. Dates via `date-fns`. Design tokens only; no raw hex.
+- `projects.$projectId.finance.project-finance.facilities.tsx` — table columns: lender, type, commitment, drawn, **utilization %** as a horizontal bar (`div` with width % using token colors — no raw hex), rate, maturity, status. KPI header: portfolio utilization (Σ drawn / Σ commitment). Row action `Record drawdown` opens a small dialog; `Add facility` drawer form (lender, type, currency, commitment, rate, margin, maturity, covenants grid — jsonb array of `{name, threshold, measured_at, status}`). DB CHECK provides the belt; server also validates for a friendly toast.
+
+Navigation: add to `src/lib/nav-map.ts` under the project Finance section (a "Project finance" entry). Sub-tabs are surfaced via the layout above.
+
+### 6. UI conventions
+- All colors from semantic tokens (`bg-muted`, `text-destructive`, `bg-primary/10`, `border-emerald-500/40` reserved for status greens as done in Change orders).
+- Money via `Intl.NumberFormat` with each row's `currency_code`.
+- Dates via `date-fns` (`format`, `isBefore`).
+- Skeleton = 4-row shimmering table rows; empty = card with headline + `Add` CTA; error = card + `Try again` calling `router.invalidate()` + Query `reset()`.
+- CSV export button on every list tab, filename `{tab}-YYYYMMDD.csv`.
+
+### 7. Verification checklist
+1. Apply the migration twice — second run is a no-op (guarded enum + `IF NOT EXISTS`).
+2. Confirm all four tables have RLS enabled (`SELECT relrowsecurity FROM pg_class`) and that a member of company A cannot read company B's rows.
+3. Add a PPA: term 25y, tariff $55, annual energy 260,000 MWh → drawer year-1 revenue reads $14,300,000.
+4. Create LCOE scenario: capex 120,000,000, opex 1,800,000, r 7%, 260,000 MWh, life 25 → persisted `lcoe` matches unit-test hand-calc (~$0.0637/kWh). Add a second scenario; verify bar chart renders both bars and sensitivity note.
+5. DD: create six items across categories, walk one from `not_started → in_progress → submitted → accepted`, waive one, leave one overdue in `submitted` → readiness KPI updates and overdue row shows destructive text; upload a PDF and confirm the stored `document_path` begins with `{company_id}/lender-dd/{project_id}/`.
+6. Facility: create $80M construction loan, record $30M drawdown → utilization bar reads 37.5%; attempt $60M drawdown → server returns 422 (over-commitment), DB CHECK prevents any partial write.
+7. Grep `audit_logs` for `ppa.*`, `lcoe.save`, `dd.status_change`, `facility.drawdown` after each action.
+8. Skeleton renders during `useQuery.isPending`; empty state visible on a fresh project; CSV downloads a UTF-8 file with the right header row on all four tabs.
+
+Batch 09 (Field/HSE/QAQC) kickoff once green.
