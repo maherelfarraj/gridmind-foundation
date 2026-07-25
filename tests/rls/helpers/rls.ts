@@ -58,8 +58,8 @@ export type TenantDeps = {
   opportunityId: string;
   costCodeId: string;
   vendorId: string;
-  scadaAssetId: string;
-  equipmentId: string;
+  scadaAssetId: string | null;
+  equipmentId: string | null;
 };
 
 export type Fixtures = {
