@@ -438,7 +438,7 @@ function SignedPdfLink({ path }: { path: string }) {
 const issueSchema = z.object({
   certificateNumber: z.string().min(2).max(80),
   effectiveDate: z.string().min(4).max(20),
-  scopeNotes: z.string().max(4000).optional().default(""),
+  scopeNotes: z.string().max(4000),
 });
 
 function IssueDialog({
