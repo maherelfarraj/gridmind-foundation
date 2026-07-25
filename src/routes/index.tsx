@@ -29,6 +29,23 @@ export const Route = createFileRoute("/")({
 const CHIPS = ["Phase-gated delivery", "Finance-grade controls", "Field-first, offline-ready"];
 
 function LandingPage() {
+  const navigate = useNavigate();
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      if (data.session) {
+        setSignedIn(true);
+        navigate({ to: "/dashboard", replace: true });
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
+
   return (
     <main className="dark flex min-h-screen items-center justify-center bg-background px-6 py-24">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
