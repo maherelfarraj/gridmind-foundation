@@ -2123,6 +2123,91 @@ export type Database = {
           },
         ]
       }
+      equipment_registry: {
+        Row: {
+          commissioning_date: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_type: Database["public"]["Enums"]["equipment_type"]
+          id: string
+          install_date: string | null
+          location_text: string | null
+          manufacturer: string | null
+          model: string | null
+          nameplate_capacity_kw: number | null
+          project_id: string
+          serial_number: string | null
+          specs: Json
+          status: Database["public"]["Enums"]["equipment_status"]
+          tag: string
+          updated_at: string
+          warranty_end_date: string | null
+        }
+        Insert: {
+          commissioning_date?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_type: Database["public"]["Enums"]["equipment_type"]
+          id?: string
+          install_date?: string | null
+          location_text?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          nameplate_capacity_kw?: number | null
+          project_id: string
+          serial_number?: string | null
+          specs?: Json
+          status?: Database["public"]["Enums"]["equipment_status"]
+          tag: string
+          updated_at?: string
+          warranty_end_date?: string | null
+        }
+        Update: {
+          commissioning_date?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_type?: Database["public"]["Enums"]["equipment_type"]
+          id?: string
+          install_date?: string | null
+          location_text?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          nameplate_capacity_kw?: number | null
+          project_id?: string
+          serial_number?: string | null
+          specs?: Json
+          status?: Database["public"]["Enums"]["equipment_status"]
+          tag?: string
+          updated_at?: string
+          warranty_end_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_registry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_registry_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_registry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evm_snapshots: {
         Row: {
           actual_cost: number
@@ -6497,6 +6582,150 @@ export type Database = {
           },
         ]
       }
+      scada_assets: {
+        Row: {
+          asset_key: string
+          asset_type: Database["public"]["Enums"]["scada_asset_type"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_id: string | null
+          id: string
+          metadata: Json
+          name: string
+          project_id: string
+          site_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_key: string
+          asset_type: Database["public"]["Enums"]["scada_asset_type"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          project_id: string
+          site_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_key?: string
+          asset_type?: Database["public"]["Enums"]["scada_asset_type"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          project_id?: string
+          site_label?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_assets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_assets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_assets_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scada_connectors: {
+        Row: {
+          company_id: string
+          config: Json
+          connector_type: Database["public"]["Enums"]["scada_connector_type"]
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_seen_at: string | null
+          name: string
+          project_id: string
+          status: Database["public"]["Enums"]["scada_connector_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          config?: Json
+          connector_type: Database["public"]["Enums"]["scada_connector_type"]
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_seen_at?: string | null
+          name: string
+          project_id: string
+          status?: Database["public"]["Enums"]["scada_connector_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          config?: Json
+          connector_type?: Database["public"]["Enums"]["scada_connector_type"]
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_seen_at?: string | null
+          name?: string
+          project_id?: string
+          status?: Database["public"]["Enums"]["scada_connector_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_connectors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_connectors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_connectors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schedule_tasks: {
         Row: {
           company_id: string
@@ -7890,6 +8119,19 @@ export type Database = {
         | "survey"
         | "general"
       drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
+      equipment_status: "active" | "inactive" | "spare" | "decommissioned"
+      equipment_type:
+        | "inverter"
+        | "module_string"
+        | "tracker"
+        | "transformer"
+        | "meter"
+        | "weather_station"
+        | "bess_container"
+        | "battery_rack"
+        | "pcs"
+        | "switchgear"
+        | "other"
       expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
       facility_type:
         | "term_loan"
@@ -8034,6 +8276,21 @@ export type Database = {
         | "withdrawn"
       rfq_status: "draft" | "issued" | "closed" | "awarded" | "cancelled"
       risk_status: "open" | "mitigating" | "realized" | "closed"
+      scada_asset_type:
+        | "inverter"
+        | "meter"
+        | "weather_station"
+        | "plant_controller"
+        | "bess"
+        | "combiner"
+      scada_connector_status: "active" | "disabled" | "error"
+      scada_connector_type:
+        | "modbus_tcp"
+        | "iec61850"
+        | "sunspec"
+        | "mqtt"
+        | "vendor_api"
+        | "csv_import"
       schedule_task_status:
         | "not_started"
         | "in_progress"
@@ -8296,6 +8553,20 @@ export const Constants = {
         "general",
       ],
       drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
+      equipment_status: ["active", "inactive", "spare", "decommissioned"],
+      equipment_type: [
+        "inverter",
+        "module_string",
+        "tracker",
+        "transformer",
+        "meter",
+        "weather_station",
+        "bess_container",
+        "battery_rack",
+        "pcs",
+        "switchgear",
+        "other",
+      ],
       expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
       facility_type: [
         "term_loan",
@@ -8456,6 +8727,23 @@ export const Constants = {
       ],
       rfq_status: ["draft", "issued", "closed", "awarded", "cancelled"],
       risk_status: ["open", "mitigating", "realized", "closed"],
+      scada_asset_type: [
+        "inverter",
+        "meter",
+        "weather_station",
+        "plant_controller",
+        "bess",
+        "combiner",
+      ],
+      scada_connector_status: ["active", "disabled", "error"],
+      scada_connector_type: [
+        "modbus_tcp",
+        "iec61850",
+        "sunspec",
+        "mqtt",
+        "vendor_api",
+        "csv_import",
+      ],
       schedule_task_status: [
         "not_started",
         "in_progress",
