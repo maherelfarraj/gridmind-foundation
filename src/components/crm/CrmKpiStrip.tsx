@@ -40,7 +40,13 @@ export function CrmKpiStrip({ data, isLoading }: Props) {
   return (
     <KpiGrid label="CRM key performance indicators">
       {items.map((it) => (
-        <KpiTile key={it.label} label={it.label} value={it.value} hint={it.hint} isLoading={isLoading} />
+        <KpiTile
+          key={it.label}
+          label={it.label}
+          value={it.value}
+          hint={it.hint}
+          isLoading={isLoading}
+        />
       ))}
     </KpiGrid>
   );

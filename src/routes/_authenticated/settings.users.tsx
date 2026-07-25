@@ -8,6 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import {
   AlertTriangle,
+import { Users as UsersIcon2, Inbox } from "lucide-react";
   Copy,
   Download,
   Loader2,
@@ -82,6 +83,9 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BulkInviteDialog } from "@/components/bulk-invite-dialog";
+import { Mail } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/_authenticated/settings/users")({
   head: () => ({
@@ -387,18 +391,13 @@ function UsersPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Users
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Workspace members, roles, and pending invitations.
-          </p>
-        </div>
-        {isAdmin && (
-          <div className="flex items-center gap-2">
+    <div className="page-shell max-w-5xl">
+      <PageHeader
+        title="Users"
+        description="Workspace members, roles, and pending invitations."
+        actions={
+          isAdmin && (
+            <div className="flex items-center gap-2">
             <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
               <UsersIcon className="mr-2 h-4 w-4" />
               Bulk invite
@@ -509,9 +508,10 @@ function UsersPage() {
                 onSuccess={invalidate}
               />
             ) : null}
-          </div>
-        )}
-      </div>
+            </div>
+          )
+        }
+      />
 
       {membersQuery.data && adminCount === 1 && (
         <div className="flex items-start gap-3 rounded-lg border border-accent bg-accent/40 p-4 text-accent-foreground">
@@ -602,8 +602,13 @@ function UsersPage() {
                 )}
                 {membersQuery.data && filteredMembers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                      {members.length === 0 ? "No members yet." : "No members match your search."}
+                    <TableCell colSpan={5} className="border-0 bg-transparent p-0">
+                      <EmptyState
+                        icon={UsersIcon}
+                        title={members.length === 0 ? "No members yet" : "No members match your search"}
+                        compact
+                        className="border-0 bg-transparent"
+                      />
                     </TableCell>
                   </TableRow>
                 )}
@@ -706,10 +711,15 @@ function UsersPage() {
                 )}
                 {invitesQuery.data && filteredInvites.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                      {invites.length === 0
-                        ? "No invites sent yet."
-                        : "No invites match your filter."}
+                    <TableCell colSpan={6} className="border-0 bg-transparent p-0">
+                      <EmptyState
+                        icon={Mail}
+                        title={
+                          invites.length === 0 ? "No invites sent yet" : "No invites match your filter"
+                        }
+                        compact
+                        className="border-0 bg-transparent"
+                      />
                     </TableCell>
                   </TableRow>
                 )}

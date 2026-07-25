@@ -35,9 +35,7 @@ export function BudgetKpiStrip({ budgets }: Props) {
   );
 
   if (totals.length === 0) {
-    return (
-      <EmptyState icon={Banknote} title="No budgets yet" compact />
-    );
+    return <EmptyState icon={Banknote} title="No budgets yet" compact />;
   }
 
   return (

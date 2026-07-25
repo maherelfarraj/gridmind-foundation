@@ -35,7 +35,11 @@ export function EvmKpiStrip({ latest }: { latest: EvmSnapshotRow | null }) {
 
   return (
     <KpiGrid columns={6} label="EVM key performance indicators">
-      <KpiTile icon={Wallet} label="BAC" value={fmt(latest.currency_code, latest.budget_at_completion)} />
+      <KpiTile
+        icon={Wallet}
+        label="BAC"
+        value={fmt(latest.currency_code, latest.budget_at_completion)}
+      />
       <KpiTile
         icon={Target}
         label="PV (Planned)"
@@ -46,7 +50,11 @@ export function EvmKpiStrip({ latest }: { latest: EvmSnapshotRow | null }) {
         label="EV (Earned)"
         value={fmt(latest.currency_code, latest.earned_value)}
       />
-      <KpiTile icon={Coins} label="AC (Actual)" value={fmt(latest.currency_code, latest.actual_cost)} />
+      <KpiTile
+        icon={Coins}
+        label="AC (Actual)"
+        value={fmt(latest.currency_code, latest.actual_cost)}
+      />
       <KpiTile
         icon={Gauge}
         label="SPI"
