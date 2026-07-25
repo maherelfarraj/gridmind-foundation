@@ -11,6 +11,12 @@ import {
   submitDpr,
   upsertDprHeader,
 } from "@/lib/dpr.functions";
+import {
+  recordUtilityWitness,
+  reopenCommissioningTest,
+  saveCommissioningTestResult,
+} from "@/lib/commissioning.functions";
+
 
 export type Dispatcher = (
   payload: Record<string, unknown>,
