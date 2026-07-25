@@ -1,48 +1,118 @@
-## P-098 — Turnover / As-built Pack
+## What to build
 
-### Migration `supabase/migrations/0046_turnover_packages.sql`
-Idempotent SQL exactly as specified: `turnover_packages` (unique `project_id`) + defensive `export_packages` (no prior owning migration), RLS enabled, SELECT via `is_company_member`, writes gated by `construction_admin`/`project_admin`/`company_admin`, GRANTs to `authenticated` (+ `service_role`), `set_updated_at()` trigger, project index. `drop policy if exists` before each `create policy` for repeat-run safety.
+The Care/Custody/Control (CCC) ceremony that closes the project: prerequisite gauntlet → dual-signed CCC certificate → auto-driven Handover phase gate → project advances to `handover` / `status='completed'`, unlocking O&M/SCADA (Batch 11). Read-only, immutable gate history rendered straight from `audit_logs` (append-only; DB triggers from Batch 04 already log every gate/phase change).
 
-### `src/lib/turnover.rules.ts`
-- `TURNOVER_SECTIONS` — ordered list: `as_builts`, `warranties`, `om_manual`, `test_reports`, `certificates` (all `required: true`, labels use plain ampersand "O&M").
-- `computeSectionsComplete(sections)` → boolean.
-- Zod schemas for compile/deliver payloads.
+## Migration — `0047_handover_gate_checklist.sql`
 
-### `src/lib/turnover.functions.ts` (thin — helpers imported from `.server.ts` to satisfy tss-serverfn-split)
-- `getTurnoverPack({ project_id })` — returns row + branding + `permissions.canWrite`.
-- `compileTurnoverPackage({ project_id })` — `requireSupabaseAuth`, role check, then:
-  - **As-builts**: query `drawing_revisions` joined to `drawing_register` for latest per drawing where revision flagged as-built/IFC; copy each file inside `documents`/`drawings` bucket into `closeout/{company_id}/turnover/{project_id}/as-built/` via storage `copy`; record `{label, file_path, source:'drawing_register', revision, document_date}`.
-  - **Warranties**: `documents` with `category='warranty'` for the project + any items already present in existing pack row (manual uploads persist).
-  - **O&M manual**: manual uploads only (persisted items retained).
-  - **Test reports**: `commissioning_tests.witness_file_path` where present + `performance_tests.report_file_path` where set.
-  - **Certificates**: `commissioning_certificates` where status='signed' → `signed_pdf_path`.
-  - Upsert row; each section `complete = items.length >= 1`; when all required complete → `status='ready'`, `compiled_at=now()`, `compiled_by=userId`, render branded PDF index and set `index_pdf_path`, insert `export_packages` row (`package_type='turnover_pack'`).
-  - `writeAuditLog('turnover.compiled', ..., { status, sections_complete })`.
-- `addTurnoverItems({ project_id, section_key, items })` — allow manual uploads to `om_manual`/`warranties`; merges into `sections`.
-- `markTurnoverDelivered({ project_id, accepted_by? })` — requires `status in ('ready','delivered')`; sets `delivered_at`, optional `accepted_by/accepted_at`; audit `turnover.delivered`.
+The existing `handover` gates in the DB only have `punch_list_closed` in their checklist. Realign so the P-040 engine's `checklist_incomplete` guard actually gates on the CCC + turnover.
 
-### `src/lib/turnover.server.ts`
-Section definitions, storage-copy helper, DB queries for each section source, and the PDF-index builder invocation wrapper.
+- Update every existing `project_phase_gates` row where `phase='handover'` so `checklist` becomes the three items below (preserving `done`/`done_by`/`done_at` for any pre-existing key).
+- Update the template used when new projects are seeded (search for the seeder in the `handover` migration; adjust its default JSON to match).
 
-### `src/lib/exports/turnover-index-pdf.ts`
-`jspdf` + `jspdf-autotable` branded index: header (logo, primary/accent bands, project name), section headings, autoTable columns `Document | Source | Revision | Date`. `sanitize()` from existing helper (normalizes `&amp;` → `&`) applied to every string so "O&M" renders literally — no "O&M;" artifact.
+Checklist template:
 
-### `src/routes/_authenticated/projects.$projectId.commissioning.turnover.tsx`
-- Section checklist cards (5 sections, tick + count + required badge).
-- Compile button (role-gated) — disabled while `status='compiling'` and a compile is in-flight; toast on 409 with missing sections.
-- Upload dialogs for `om_manual` (multi-file) and `warranties` (multi-file) → upload to `closeout/{company}/turnover/{project}/{section}/…` then `addTurnoverItems`.
-- When `status='ready'|'delivered'|'accepted'`: "Download index PDF" (signed URL) + "Mark delivered" dialog (optional `accepted_by`).
-- **client_viewer branch**: if role is `client_viewer`, render only the index-PDF download when `status in ('delivered','accepted')`; otherwise empty state "Turnover pack not delivered yet".
-- States: skeleton, empty ("Turnover pack not compiled yet"), error with retry.
+```text
+[
+  { key: "ccc_signed",         label: "Care, Custody & Control certificate signed", required: true },
+  { key: "turnover_delivered", label: "Turnover pack delivered",                    required: true },
+  { key: "punch_list_closed",  label: "Category A punch list closed",               required: true }
+]
+```
 
-### Header link
-Add "Turnover pack" `Link` in `src/routes/_authenticated/projects.$projectId.commissioning.tsx` next to Certificates.
+No table/schema DDL; policies unchanged.
 
-### Tests
-- `tests/unit/turnover.rules.test.ts` — section completion transitions, missing-required detection, ampersand preservation in labels.
-- `tests/unit/turnover-index-pdf.test.ts` — smoke render + asserts PDF byte stream contains literal `O&M` and no `O&amp;M` / `O&M;`.
+## Server logic
 
-### Governance checks satisfied
-- Unique `project_id` (one pack per project) — enforced by migration.
-- Status transitions gated server-side (`compiling → ready` only when all required complete; `ready → delivered` requires ready pack).
-- All mutations audited; `client_viewer` read is delivered-only (server + UI).
+### `src/lib/handover.rules.ts` (new)
+
+- `HandoverPrereqKey = 'cod_signed' | 'no_open_category_a_punch' | 'turnover_delivered'`
+- `HANDOVER_REASON_LABELS: Record<HandoverPrereqKey, string>` (reason strings surfaced on the client)
+- `cccTransferPayloadSchema` — zod: `epc_entity_name`, `owner_entity_name`, `effective_at` (ISO), `scope_notes` (max 2000), `witness_notes?`
+- `signCccTransferInputSchema` — `{ projectId, certificateId, payload, signatures: [contractor, client, (utility?)] }` where each signature is `{ party, signer_name, signer_role?, png_data_url }` (mirrors P-097 `addSignature` shape)
+
+### `src/lib/handover.server.ts` (new, per tanstack-serverfn-split)
+
+Pure helpers, no `createServerFn`:
+
+- `checkHandoverPrereqs(client, companyId, projectId)` → returns `{ passes: HandoverPrereqKey[], reasons: { key, label }[] }` by concurrently querying:
+  1. `commissioning_certificates` where `certificate_type='cod'` and `status='signed'` for the project.
+  2. `qaqc_punch_items` open Category A count (reuses the same predicate `assertNoOpenCategoryAPunch` uses internally — factor a helper `hasOpenCategoryAPunch()` in that module and import it here so no logic duplication).
+  3. `turnover_packages.status IN ('delivered','accepted')`.
+- `uploadSignaturePng(client, companyId, projectId, party, dataUrl)` — writes to `closeout/{companyId}/certificates/{projectId}/ccc-{party}-{ts}.png` and returns the object path. Reuses the exact helper from P-097 if one already exists; otherwise mirrors it.
+- `assembleHandoverHistory(client, companyId, projectId)` — pulls `audit_logs` where `company_id = current` AND (`entity='project_phase_gates'` and `metadata->>'project_id' = projectId`) OR (`entity='projects'` and `entity_id = projectId`) OR (`entity='commissioning_certificates'` and `entity_id IN (...)` — first fetch the project's cert ids). Order `created_at DESC`, limit 200. Joins actor `profiles(full_name,email)` in a second small query.
+
+### `src/lib/handover.functions.ts` (new — handlers only, imports from `.server.ts`)
+
+All wrapped with `attachSupabaseAuth` + `requireSupabaseAuth`; role gate uses `user_roles` and the existing `assertGateAdmin`/roles helpers.
+
+- `getHandoverBoard({ projectId })` — read. Returns:
+  ```text
+  { project, company, branding, prereqs, cccCertificate | null,
+    handoverGate, gateApprovalInstance | null, history[], permissions }
+  ```
+  `permissions.canExecute` = role in {construction_admin, project_admin, company_admin}; read allowed for those plus om_admin, engineer, client_viewer.
+- `signCccTransfer({ projectId, certificateId, payload, signatures })` — write. Steps, in order:
+  1. Load current `commissioning_certificates` row; assert `certificate_type='ccc_transfer'`, company matches, current status ≠ 'signed'.
+  2. Re-run `checkHandoverPrereqs`. If any fails, throw with `statusCode: 409` and body `{ error:'handover_prereqs_failed', reasons: [...] }` (matches `httpError` shape used by `commissioning-certificates.functions.ts` so the existing error middleware passes it through untouched).
+  3. Upload the two/three signature PNGs; build `signatures` array (party, signer_name, signer_role, signed_at, png_path).
+  4. Update the certificate row: `payload=<zod-parsed>`, `signatures=<full>`, `effective_date=payload.effective_at::date`, `status='signed'`.
+  5. `writeAuditLog('handover.ccc_signed','commissioning_certificates', certId, { project_id, effective_date, parties: [...] })` — via existing `write_audit_log` RPC.
+  6. Drive the Handover gate:
+     - Load `project_phase_gates` where `project_id=? AND phase='handover'`.
+     - Auto-complete checklist items `ccc_signed`, `turnover_delivered`, `punch_list_closed` — set `done=true`, `done_by=auth.uid()`, `done_at=now()`; preserve unknown items untouched.
+     - If `status='locked'`, flip to `'open'`. If already `'open'`, leave.
+     - Inline the `requestGateTransition` logic (create `approval_instances` row, insert `approvals` rows for all `company_admin`s, set gate `status='in_review'` + `approval_instance_id`). Audit `gate.transition_requested` — the same event Batch 04's engine logs. Don't call the exported server-fn (would double-authenticate and re-validate).
+  7. Return `{ certificate, gate, approvalInstanceId }`.
+- No new endpoint for approve — the existing P-040 `approveGateTransition` (Batch 04) already: sets `projects.phase='handover'`, `projects.status='completed'` when `gate.phase='handover'`, logs `project.phase_change` + `gate.approved`. Reuse as-is.
+
+Error contract: all `httpError` throws use `statusCode: 409` + JSON body with a `reasons` array so the shared TanStack error middleware forwards `{ statusCode, body }` unchanged and the client can render tooltip reasons.
+
+## UI — `src/routes/_authenticated/projects/$projectId/commissioning/handover.tsx`
+
+TanStack Query loader (`ensureQueryData` → `useSuspenseQuery`), `head()` with unique title/description/OG. `errorComponent` + `notFoundComponent` per Start conventions.
+
+Empty state — when no COD certificate signed yet: card reading `Handover not started — complete COD first` with a `Link` to `/projects/$projectId/commissioning/certificates`.
+
+Full workspace layout (semantic tokens only — `bg-card`, `text-muted-foreground`, `border-border`, `text-destructive`, `bg-emerald-500/10`, etc. — never hex):
+
+1. **Prerequisite checklist card** — three rows (COD signed, no open Cat-A punch, turnover delivered) each with a check/x icon + tooltip on the fail reason; live from `prereqs`.
+2. **CCC transfer form** — EPC legal entity, Owner legal entity, effective datetime, scope notes; two `SignaturePad` (contractor, client) + optional utility signer. Uses the P-097 `signature-pad.tsx` component untouched. Signer name inputs above each pad. Submit button `Sign & advance to Handover` — disabled unless all prereqs pass AND both required signatures are drawn AND form validates; disabled state shows a Tooltip listing the failing reasons.
+3. **Handover gate card** — shows current gate status, checklist snapshot, and (once in review) `Approvers pending: N of M` from `approval_instances`/`approvals`. If gate is approved, show a success banner `Project transferred to Operations` and a `Link` to the O&M sidebar entry (existing route pattern from Batch 11 gating, keyed on `projects.phase='handover'`).
+4. **Gate history timeline** — vertical list rendered from `history[]`: timestamp, actor name, action badge (`gate.transition_requested`, `gate.approved`, `handover.ccc_signed`, `project.phase_change`, `gate.rejected`, `certificate.signed`), and a metadata chip line. Newest first. No mutations available — read-only. Toast on 409 mutation errors surfaces `reasons[]`.
+
+States: `Skeleton` cards during load; error card with retry (`router.invalidate()` + `reset()`); empty state above.
+
+## Header wiring
+
+Add a `Turnover pack → Handover` link in `src/routes/_authenticated/projects.$projectId.commissioning.tsx` header (next to Certificates / Turnover), using the same outline button + `KeyRound` (or `Handshake`) icon.
+
+## Tests — `tests/unit/handover.test.ts`
+
+- `checkHandoverPrereqs` returns all three failures when nothing done.
+- Each prereq flips green independently.
+- `signCccTransferInputSchema` rejects <2000-char scope notes overflow, invalid ISO date, missing parties.
+- `handover.rules.ts` reason labels exist for every `HandoverPrereqKey`.
+- (RLS test not needed — `commissioning_certificates` policies already covered in P-097.)
+
+Manual QA gauntlet (from the prompt):
+
+- [ ] CCC blocked → 409 with `reasons` while any prereq fails.
+- [ ] All green → sign → `handover.ccc_signed` audited → gate → `in_review`.
+- [ ] Approve gate → `projects.phase='handover'`, `status='completed'` → O&M unlocks.
+- [ ] Timeline shows every phase/gate/certificate event newest-first.
+- [ ] Repo grep confirms zero `UPDATE`/`DELETE` on `audit_logs`.
+
+## Files touched
+
+```text
+supabase/migrations/0047_handover_gate_checklist.sql        (new)
+src/lib/handover.rules.ts                                   (new)
+src/lib/handover.server.ts                                  (new)
+src/lib/handover.functions.ts                               (new)
+src/lib/commissioning-punch.functions.ts                    (export helper `hasOpenCategoryAPunch`)
+src/routes/_authenticated/projects.$projectId.commissioning.handover.tsx  (new)
+src/routes/_authenticated/projects.$projectId.commissioning.tsx           (add header link)
+tests/unit/handover.test.ts                                 (new)
+```
+
+No new tables, no new buckets, no changes to `audit_logs` (append-only preserved).
