@@ -260,7 +260,8 @@ function isAuthedPath(pathname: string): boolean {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showPublicHeader = !isAuthedPath(pathname);
+  // The public homepage is a standalone hero with its own sign-in CTA.
+  const showPublicHeader = !isAuthedPath(pathname) && pathname !== "/";
 
   useEffect(() => {
     // P-087 — boot offline queue sync triggers once, client-only.
