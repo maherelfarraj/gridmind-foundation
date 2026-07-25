@@ -26,6 +26,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
+import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
@@ -240,6 +241,12 @@ const ApiCronPmGenerateRoute = ApiCronPmGenerateRouteImport.update({
   path: '/api/cron/pm-generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronApprovalEscalationsRoute =
+  ApiCronApprovalEscalationsRouteImport.update({
+    id: '/api/cron/approval-escalations',
+    path: '/api/cron/approval-escalations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
@@ -1072,6 +1079,7 @@ export interface FileRoutesByFullPath {
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
@@ -1210,6 +1218,7 @@ export interface FileRoutesByTo {
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/hse': typeof AuthenticatedHseIndexRoute
@@ -1355,6 +1364,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
@@ -1502,6 +1512,7 @@ export interface FileRouteTypes {
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/hse/'
@@ -1640,6 +1651,7 @@ export interface FileRouteTypes {
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
+    | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/hse'
@@ -1784,6 +1796,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
+    | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/_authenticated/hse/'
@@ -1890,6 +1903,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PoTokenRoute: typeof PoTokenRoute
+  ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
@@ -2014,6 +2028,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/pm-generate'
       fullPath: '/api/cron/pm-generate'
       preLoaderRoute: typeof ApiCronPmGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/approval-escalations': {
+      id: '/api/cron/approval-escalations'
+      path: '/api/cron/approval-escalations'
+      fullPath: '/api/cron/approval-escalations'
+      preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings/users': {
@@ -3509,6 +3530,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
   PoTokenRoute: PoTokenRoute,
+  ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,

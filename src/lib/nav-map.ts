@@ -12,6 +12,7 @@ import {
   HardHat,
   Handshake,
   FileDown,
+  Inbox,
   LifeBuoy,
   MailPlus,
   Package,
