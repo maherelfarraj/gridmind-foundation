@@ -3,12 +3,20 @@ import { queryOptions } from "@tanstack/react-query";
 
 import {
   getInspection,
+  getPunchItem,
+  getPunchWalkContext,
   getQaqcHeatmap,
   listInspections,
   listInspectors,
+  listPunchItems,
   listQaqcProjects,
 } from "@/lib/qaqc.functions";
-import type { QaqcDiscipline, QaqcResult } from "@/lib/qaqc.rules";
+import type {
+  PunchCategory,
+  PunchStatus,
+  QaqcDiscipline,
+  QaqcResult,
+} from "@/lib/qaqc.rules";
 
 export { errorMessage } from "@/lib/hse-query";
 
