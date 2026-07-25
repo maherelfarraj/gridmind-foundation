@@ -151,4 +151,17 @@ export const NAV_SECTIONS: NavSection[] = [
       },
     ],
   },
+  {
+    label: "Help & Docs",
+    items: [
+      {
+        moduleKey: "admin",
+        label: "API docs",
+        url: "/docs/api",
+        icon: BookOpen,
+        alwaysVisible: true,
+        hideFromExternalViewers: true,
+      },
+    ],
+  },
 ];
