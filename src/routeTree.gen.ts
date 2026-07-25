@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -158,6 +159,11 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRout
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
 
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
@@ -1049,6 +1055,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/portal': typeof PortalRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1197,6 +1204,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/portal': typeof PortalRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1338,6 +1346,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/portal': typeof PortalRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -1488,6 +1497,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/design-system'
+    | '/portal'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -1636,6 +1646,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/design-system'
+    | '/portal'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -1776,6 +1787,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accept-invite'
     | '/design-system'
+    | '/portal'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
     | '/(auth)/reset-password'
@@ -1927,6 +1939,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  PortalRoute: typeof PortalRoute
   PoTokenRoute: typeof PoTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
@@ -1936,6 +1949,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/design-system': {
       id: '/design-system'
       path: '/design-system'
@@ -3573,6 +3593,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
+  PortalRoute: PortalRoute,
   PoTokenRoute: PoTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
