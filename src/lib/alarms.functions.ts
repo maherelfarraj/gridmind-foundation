@@ -113,6 +113,7 @@ export const listAlarmRules = createServerFn({ method: "GET" })
         .parse(raw ?? {}),
   )
   .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     let q = context.supabase
       .from("alarm_rules")
@@ -129,6 +130,7 @@ export const upsertAlarmRule = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => alarmRuleInputSchema.parse(raw))
   .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
     await assertWriter(context);
     const companyId = await currentCompanyId(context);
     const payload = {
@@ -178,6 +180,7 @@ export const deleteAlarmRule = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
     await assertWriter(context);
     const companyId = await currentCompanyId(context);
     const { error } = await context.supabase
@@ -204,6 +207,7 @@ export const listAlarms = createServerFn({ method: "GET" })
       .parse(raw ?? {}),
   )
   .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     let q = context.supabase
       .from("scada_alarms")
@@ -237,6 +241,7 @@ export const acknowledgeAlarm = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => acknowledgeInputSchema.parse(raw))
   .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
     await assertWriter(context);
     const companyId = await currentCompanyId(context);
     const { data: updated, error } = await context.supabase
