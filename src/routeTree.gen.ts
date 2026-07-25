@@ -23,6 +23,7 @@ import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
+import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
@@ -182,6 +183,11 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
+  id: '/hse/',
+  path: '/hse/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   id: '/api/webhooks/esign',
   path: '/api/webhooks/esign',
@@ -764,6 +770,7 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -859,6 +866,7 @@ export interface FileRoutesByTo {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -961,6 +969,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -1065,6 +1074,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
+    | '/hse/'
     | '/projects/'
     | '/proposals/'
     | '/admin/tenants/$companyId'
@@ -1160,6 +1170,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
+    | '/hse'
     | '/projects'
     | '/proposals'
     | '/admin/tenants/$companyId'
@@ -1261,6 +1272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
     | '/api/webhooks/esign'
+    | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
@@ -1434,6 +1446,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/': {
+      id: '/_authenticated/hse/'
+      path: '/hse'
+      fullPath: '/hse/'
+      preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/webhooks/esign': {
@@ -2467,6 +2486,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
+  AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
   AuthenticatedCrmOpportunitiesOpportunityIdRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
@@ -2518,6 +2538,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
+  AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
   AuthenticatedCrmOpportunitiesOpportunityIdRoute:
