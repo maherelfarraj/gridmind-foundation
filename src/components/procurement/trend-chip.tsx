@@ -19,7 +19,7 @@ export function TrendChip({
     good == null
       ? "text-muted-foreground"
       : good
-        ? "text-[color:var(--color-success,theme(colors.emerald.600))]"
+        ? "text-success"
         : "text-destructive";
   const Icon =
     t.direction === "up" ? ArrowUpRight : t.direction === "down" ? ArrowDownRight : Minus;
