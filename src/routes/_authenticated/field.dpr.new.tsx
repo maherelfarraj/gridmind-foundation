@@ -66,7 +66,7 @@ function NewDprPage() {
       }),
     onSuccess: (row) => {
       toast.success("Draft created");
-      navigate({ to: "/field/dpr/$dprId", params: { dprId: row.id } });
+      navigate({ to: "/field/dpr/$dprId", params: { dprId: row.id }, search: { step: 1 } });
     },
     onError: (e) => {
       const msg = errorMessage(e);

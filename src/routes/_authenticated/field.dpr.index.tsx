@@ -179,6 +179,7 @@ function DprListPage() {
               <Link
                 to="/field/dpr/$dprId"
                 params={{ dprId: r.id }}
+                search={{ step: 1 }}
                 className="block rounded-md border border-border bg-card p-3 hover:bg-muted/30"
               >
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
