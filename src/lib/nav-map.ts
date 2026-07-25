@@ -61,6 +61,8 @@ export const NAV_SECTIONS: NavSection[] = [
 
       { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
       { moduleKey: "planning_budget", label: "Contracts", url: "/finance/contracts", icon: FileSignature },
+      { moduleKey: "planning_budget", label: "Invoices", url: "/finance/invoices", icon: Receipt },
+      { moduleKey: "planning_budget", label: "Debit notes", url: "/finance/debit-notes", icon: Scale },
       { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
       {
         moduleKey: "commissioning",
