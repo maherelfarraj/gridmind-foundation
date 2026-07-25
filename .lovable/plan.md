@@ -1,50 +1,43 @@
-## P-111 — Approval Rules Engine
+## P-112 — Approval Inbox + SLA Countdowns + Escalation Cron
 
-Upgrade P-040's minimal `approval_instances` / `approvals` tables into a full engine with threshold rules, sequential chains, per-step SLAs, audit triggers, and four RPCs. Add a company_admin rules-admin UI. Wiring into existing PO/proposal/gate/contract flows is deferred (this ticket ships engine + admin only).
+Ship the `/approvals` workspace that consumes the P-111 engine RPCs, plus a service-role-guarded cron endpoint for `escalate_overdue_approvals`.
 
-### Current state (verified)
-- `approval_instances` / `approvals` exist with the minimal P-040 shape and status CHECKs shown in the spec — the alter/drop-constraint idempotency will apply cleanly.
-- `approval_rules` / `approval_chain_steps` don't exist yet.
-- `app_role` enum includes every role the spec references (`finance_admin`, `legal_admin`, `company_admin`, `client_viewer`, `investor_viewer`, `lender_viewer`, etc.).
-- `project_phase_gates.approval_instance_id` already FKs into `approval_instances` — the ALTER path preserves it.
+### Files
 
-### Deliverables
+1. **`src/lib/approvals.inbox.functions.ts`** — new server fns (all `requireSupabaseAuth`, zod-validated, DTO-only):
+   - `listMyApprovals({ tab: "pending" | "decided" | "all" })` — joins `approvals` → `approval_instances`; Pending = `approver_id = auth.uid() AND status='pending'` ordered by `sla_due_at asc`; Decided-by-me = my rows with status in approved/rejected/skipped; All = `company_admin`-only fleet view. Enrich each row with instance metadata, requester profile display name, chain step (current + total), and `escalated_at` flag. Returns compact rows for the list.
+   - `getApprovalInstance({ instanceId })` — full chain (all approvals grouped by step with approver profile + decision timestamps), instance metadata, and `audit_logs` where `entity='approval_instances' AND entity_id=instanceId`, newest first.
+   - `getMyPendingCount()` — cheap count for the sidebar badge (refetch every 60 s).
+   - `decideApproval({ approvalId, decision, comment })` wraps the P-111 `decide_approval` RPC; enforce comment on reject server-side too.
 
-**1. Migration `supabase/migrations/0052_approval_engine.sql`**
-- Parts 1–4 verbatim from the spec: `is_external_viewer()` helper; `approval_rules` + `approval_chain_steps`; `create table if not exists` + `alter … add column if not exists` upgrades for `approval_instances` / `approvals`; drop/recreate status CHECKs; RLS enabled + idempotent `drop policy if exists`/`create policy` set; `set_updated_at` triggers; `audit_approval_changes` trigger writing to `audit_logs`; seed rules + chain steps with `on conflict do nothing`; indexes; grants (revoke `escalate_overdue_approvals` from public/anon/authenticated, grant to `service_role`; grant the three user-callable RPCs + `is_external_viewer` to `authenticated`).
+2. **`src/routes/_authenticated/approvals.tsx`** — inbox route:
+   - `ApprovalInbox` with shadcn `Tabs` — Pending / Decided by me / All (All hidden unless `has_company_role('company_admin')`, gated by `canManageApprovalRules`-style helper).
+   - Each row: entity-type `Badge`, title from `metadata.title` (fallback `${entity_type} ${slice(entity_id,0,8)}`), requester, "Step {n}/{total} — {role}", `Intl.NumberFormat` amount when present, SLA countdown badge with 3 tiers (muted / `bg-accent` / `bg-destructive`) computed with `date-fns/formatDistanceToNowStrict`, and "Escalated" badge when `metadata.escalated_at` is set. Company_admin All-tab pins escalated rows to the top.
+   - `ApprovalDetailDrawer` (shadcn `Sheet`) fetched via `getApprovalInstance`: chain stepper (done ✓ with approver + timestamp, current highlighted, future muted), entity deep-link renderer that maps entity_type→route (e.g. `/procurement/pos/$id`) and falls back to plain text when no route registered, full comment history, and audit trail.
+   - `DecideDialog` — comment textarea, Reject requires non-empty (`disabled` submit until then), optimistic remove from Pending via `queryClient.setQueryData` with rollback on error, `sonner` toasts, invalidates pending-count + inbox + `["approvals","instance",id]` on success.
+   - Skeleton / empty ("You're all caught up ☕") / error-with-retry on every panel.
 
-**2. Four RPCs (SECURITY DEFINER, `set search_path = public`)**
-- `start_approval_instance(rule_key, entity_type, entity_id, amount, metadata jsonb)` → looks up active rule for caller's company; returns `null` when no rule or `amount ≤ threshold_amount`; returns existing open (`pending`/`in_progress`) instance id for `(entity_type, entity_id)` if present; else inserts instance (`current_step=1`, `sla_due_at = now() + step-1 sla_hours` falling back to rule `sla_hours`), plus step-1 `approvals` rows for every `user_roles` holder of the step role in the company. Fallback: if no holders, create rows for all `company_admin`s. Returns the instance id.
-- `decide_approval(approval_id, decision, comment)` → decision in `('approved','rejected')`; caller must own the approval row; `comment` required on reject (raise `comment_required_on_reject`); idempotent re-click on same decision returns silently. On reject: mark row rejected, mark any remaining pending peers `skipped`, mark instance `rejected` + `decided_by`/`decided_at`/`completed_at`. On approve: mark row approved; if peers still pending, set instance `in_progress` and stop; else if a next chain step exists, bump `current_step`, insert fresh approver rows for that role (same fallback) with fresh `sla_due_at`; else mark instance `approved` + completion stamps. Legacy rule-less instances (no `rule_id`) complete on first approve.
-- `cancel_approval_instance(instance_id)` → allowed for `requested_by` or `company_admin`; only when status in `('pending','in_progress')`; marks instance `cancelled`, skips all pending approvals.
-- `escalate_overdue_approvals()` → service_role only; finds pending/in_progress instances past `sla_due_at` whose `metadata->>'escalated_at'` is null; stamps `metadata = metadata || jsonb_build_object('escalated_at', now())` and writes an `approval.escalated` row into `audit_logs`. Cron wiring is B13/P-123, not this ticket.
+3. **`src/routes/api/cron/approval-escalations.ts`** — POST-only server route. Reads `process.env.CRON_APIKEY` inside handler, checks `apikey` header with `timingSafeEqual`, 401 otherwise. Loads `supabaseAdmin` via `await import("@/integrations/supabase/client.server")` and calls `.rpc("escalate_overdue_approvals")`. Returns `{ escalated: number }`. `// TODO(B13/P-123): wrap with guardPublicHook`.
 
-**3. Zod-validated server functions in `src/lib/approvals.functions.ts`**
-- `startApprovalInstance`, `decideApproval`, `cancelApprovalInstance` — thin `supabase.rpc(...)` wrappers behind `requireSupabaseAuth`; no direct table writes.
-- `listApprovalRules`, `upsertApprovalRule`, `toggleApprovalRule`, `deleteApprovalRule`, `setApprovalChainSteps` — company_admin-only CRUD (verified via `has_company_role('company_admin')` inside handler using `context.supabase`); each mutation calls `write_audit_log`.
+4. **`src/lib/nav-map.ts`** — add `{ moduleKey: "workspace", label: "Approvals", url: "/approvals", icon: Inbox }` visible to all internal roles. External viewer roles (`client_viewer`, `investor_viewer`, `lender_viewer`) already route to `/portal`; the nav item guard filters them out here.
 
-**4. Admin UI `src/routes/_authenticated/settings.approval-rules.tsx`**
-- Company_admin gate (hide/redirect otherwise); tokens-only styling.
-- Rules table: name, entity_type, threshold (currency-formatted), SLA hours, `is_active` switch, edit/delete row actions.
-- Rule form (dialog, react-hook-form + zod): name, description, entity_type (select of the seeded entity types + free text), threshold_amount + threshold_currency, sla_hours, escalation_role, blocks_export toggle.
-- Chain-step editor inside the rule dialog: ordered list of `{step_order, role, sla_hours?}` with add / remove / reorder (↑↓); saved atomically via `setApprovalChainSteps` (delete-then-insert inside a single RPC to avoid orphan step numbers).
-- Sonner toasts, skeleton loading, empty state ("No approval rules yet"), error state with retry.
-- Add nav entry under Settings.
+5. **`src/components/app-sidebar.tsx`** — attach the live pending-count `Badge` next to the Approvals item using `getMyPendingCount` (60 s `refetchInterval`, `staleTime: 30_000`). Hide item when the user's only roles are the three external viewer roles.
 
-**5. Types regeneration**
-- Regenerate `src/integrations/supabase/types.ts` after migration approval (auto-managed).
+6. **Secret** — generate `CRON_APIKEY` via `secrets--generate_secret` (32 chars). Not exposed to browser.
 
-### Explicitly out of scope (later tickets)
-- Wiring `start_approval_instance` into PO/proposal/gate/contract/change-order flows — the spec's "wiring note" says keep legacy inline fallbacks and revisit later.
-- Approval inbox / SLA countdown UI — P-112.
-- Cron trigger for `escalate_overdue_approvals` — B13/P-123.
+### RLS / data access
 
-### Verification checklist (spec's ✅ block)
-Run after migration approval:
-1. Migration applies clean, re-runs as no-op.
-2. `start_approval_instance('po_threshold_finance', 'purchase_order', <uuid>, 60000, '{}')` → returns instance id with finance_admin approver rows and `sla_due_at ≈ now()+48h`; amount 40000 → `null`; second identical call → same instance id.
-3. Contract chain: legal_admin approve step 1 → step-2 finance_admin rows appear with fresh SLA → finance approve → instance `approved`.
-4. Reject without comment → `comment_required_on_reject`; with comment → instance `rejected`, peers `skipped`.
-5. `client_viewer` SELECTs see only own/assigned approvals.
-6. `/settings/approval-rules` CRUD works as company_admin, hidden otherwise; audit rows written.
-7. Existing P-040 gate approvals remain readable.
+- All reads through `requireSupabaseAuth` → RLS already restricts `approvals` / `approval_instances` / `audit_logs` to company members. No new policies needed.
+- `escalate_overdue_approvals` remains callable only by `service_role` (grants set in P-111 migration); cron endpoint uses `supabaseAdmin`.
+
+### Verification
+
+- Typecheck (`bunx tsgo --noEmit`).
+- psql check: create synthetic pending approvals with varied `sla_due_at`, confirm ordering + overdue bucket; POST cron without apikey → 401, with apikey → escalates + writes `approval.escalated` audit rows.
+- Manual smoke via preview: pending badge updates after decide; reject-without-comment disabled; company_admin sees All tab; external viewer role sees no nav item.
+
+### Out of scope (deferred)
+
+- Real HMAC + IP allowlist on cron → B13/P-123.
+- Entity deep-link routes that don't yet exist stay plain text.
+- pg_cron schedule wiring lands with the guarded endpoint in B13.

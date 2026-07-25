@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { listModuleAccess } from "@/lib/modules.functions";
+import { getMyPendingCount } from "@/lib/approvals.inbox.functions";
 import { useActiveCompany } from "@/components/company-switcher";
 import { NAV_SECTIONS } from "@/lib/nav-map";
+import { Badge } from "@/components/ui/badge";
 
 import {
   Sidebar,
@@ -43,7 +45,25 @@ export function AppSidebar() {
     queryFn: () => rolesFn(),
     staleTime: 60_000,
   });
-  const isSuperAdmin = (rolesQuery.data ?? []).some((r) => r.role === "super_admin");
+  const roles = (rolesQuery.data ?? []).map((r) => r.role as string);
+  const isSuperAdmin = roles.includes("super_admin");
+  const EXTERNAL_VIEWERS = new Set([
+    "client_viewer",
+    "investor_viewer",
+    "lender_viewer",
+  ]);
+  const isOnlyExternalViewer =
+    roles.length > 0 && roles.every((r) => EXTERNAL_VIEWERS.has(r));
+
+  const pendingFn = useServerFn(getMyPendingCount);
+  const pendingQuery = useQuery({
+    queryKey: ["approvals", "pending-count"],
+    queryFn: () => pendingFn(),
+    enabled: !isOnlyExternalViewer,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const pendingCount = pendingQuery.data?.count ?? 0;
 
   const { activeCompanyId } = useActiveCompany();
   const modulesFn = useServerFn(listModuleAccess);
@@ -90,6 +110,7 @@ export function AppSidebar() {
       <SidebarContent>
         {NAV_SECTIONS.map((section) => {
           const items = section.items.filter((item) => {
+            if (item.hideFromExternalViewers && isOnlyExternalViewer) return false;
             if (item.requiresSuperAdmin && !isSuperAdmin) return false;
             if (item.alwaysVisible) return true;
             if (item.moduleKey === "admin") return visibleModules.has("admin");
@@ -108,6 +129,8 @@ export function AppSidebar() {
                   {items.map((item) => {
                     const active = isActive(item.url);
                     const Icon = item.icon;
+                    const showBadge =
+                      item.url === "/approvals" && pendingCount > 0;
                     return (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton
@@ -119,6 +142,14 @@ export function AppSidebar() {
                           <a href={item.url} className="flex items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{item.label}</span>
+                            {showBadge && !collapsed && (
+                              <Badge
+                                variant="secondary"
+                                className="ml-auto h-5 min-w-5 justify-center px-1.5 text-xs"
+                              >
+                                {pendingCount > 99 ? "99+" : pendingCount}
+                              </Badge>
+                            )}
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
