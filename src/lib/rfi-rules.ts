@@ -14,7 +14,7 @@ export interface RfiLite {
 /** Compute the next `RFI-####` given the list of existing numbers. */
 export function nextRfiNumber(existing: string[]): string {
   const nums = existing
-    .map((n) => /^RFI-(\d+)$/i.exec(n ?? "")?.[1])
+    .map((n) => /^RFI-(\d{4,})$/i.exec(n ?? "")?.[1])
     .filter((x): x is string => Boolean(x))
     .map((x) => parseInt(x, 10))
     .filter((n) => Number.isFinite(n));
