@@ -61,20 +61,14 @@ export const Route = createFileRoute("/api/cron/pm-work-orders")({
 
         // Aggregate per-company counts from touched plan IDs.
         const perCompany = new Map<string, { generated: number; skipped: number }>();
-        if (summary.touched.length > 0) {
+        if (summary.plan_ids.length > 0) {
           const { data: planRows } = await admin
             .from("preventive_maintenance_plans")
             .select("id, company_id")
-            .in("id", summary.touched);
-          const planCompany = new Map<string, string>();
+            .in("id", summary.plan_ids);
           for (const p of (planRows ?? []) as Array<{ id: string; company_id: string }>) {
-            planCompany.set(p.id, p.company_id);
-          }
-          for (const planId of summary.touched) {
-            const c = planCompany.get(planId);
-            if (!c) continue;
-            const row = perCompany.get(c) ?? { generated: 0, skipped: 0 };
-            perCompany.set(c, row);
+            const row = perCompany.get(p.company_id) ?? { generated: 0, skipped: 0 };
+            perCompany.set(p.company_id, row);
           }
         }
 
