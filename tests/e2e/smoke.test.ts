@@ -245,10 +245,10 @@ describe.skipIf(!canRun)('P-133 e2e smoke: golden path', () => {
     expect((unlockNext ?? []).length).toBe(1);
 
     await client.rpc('write_audit_log', {
-      p_action: 'project_gate.passed',
+      p_action: 'project_gate.approved',
       p_entity: 'project_phase_gates',
       p_entity_id: state.devGateId!,
-      p_metadata: { from: 'open', to: 'passed', via: 'e2e_smoke' },
+      p_metadata: { from: 'open', to: 'approved', via: 'e2e_smoke' },
     });
 
     // ------------------------------------------------------------------- 4
