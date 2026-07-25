@@ -105,8 +105,7 @@ export function AwardPanel({
         </p>
       )}
 
-      <div className="overflow-x-auto rounded border border-border">
-        <Table>
+      <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-16">#</TableHead>
@@ -211,8 +210,7 @@ export function AwardPanel({
               );
             })}
           </TableBody>
-        </Table>
-      </div>
+      </Table>
     </section>
   );
 }

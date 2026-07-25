@@ -150,8 +150,7 @@ export function BidTabulationTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-border">
-        <Table>
+      <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="min-w-[200px]">Vendor</TableHead>
@@ -242,8 +241,7 @@ export function BidTabulationTable({
               );
             })}
           </TableBody>
-        </Table>
-      </div>
+      </Table>
     </div>
   );
 }

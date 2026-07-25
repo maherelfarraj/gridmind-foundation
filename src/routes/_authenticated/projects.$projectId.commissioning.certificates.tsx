@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -123,17 +124,13 @@ function CertificatesPage() {
   }, [board?.rows]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Certificates
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Mechanical Completion and Commercial Operation Date, with signed evidence.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="Certificates"
+        description="Mechanical Completion and Commercial Operation Date, with signed evidence."
+        actions={
+          <>
           <Button asChild variant="outline" size="sm">
             <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
@@ -149,8 +146,9 @@ function CertificatesPage() {
             <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
             Refresh
           </Button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {query.isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
@@ -308,7 +306,7 @@ function CertificateCard({
                 return (
                   <li
                     key={p}
-                    className="flex items-center justify-between rounded-md border border-border bg-card px-2 py-1 text-xs"
+                    className="flex items-center justify-between rounded-md border bg-card px-2 py-1 text-xs"
                   >
                     <span className="flex items-center gap-2">
                       {s ? (
@@ -357,7 +355,7 @@ function SignedPdfLink({ path }: { path: string }) {
     if (data?.signedUrl) setUrl(data.signedUrl);
   };
   return (
-    <div className="flex items-center justify-between rounded-md border border-border bg-card p-2 text-xs">
+    <div className="flex items-center justify-between rounded-md border bg-card p-2 text-xs">
       <span className="flex items-center gap-1.5 text-muted-foreground">
         <FileText size={12} aria-hidden />
         Signed certificate

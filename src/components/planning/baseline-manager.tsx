@@ -65,7 +65,7 @@ export function BaselineManager({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Baselines</DialogTitle>
           <DialogDescription>

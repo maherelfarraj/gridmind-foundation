@@ -37,6 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   adjustStock,
@@ -225,45 +228,40 @@ function SparePartsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Package className="h-3.5 w-3.5" /> Procurement · Spare parts
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Spare parts catalog</h1>
-          <p className="text-sm text-muted-foreground">
-            Track on-hand quantities, reorder points, and preferred vendors for O&amp;M consumables.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-          {access.canWrite ? (
-            <Button size="sm" onClick={() => setEditingPart("new")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add part
+    <div className="page-shell">
+      <PageHeader
+        title="Spare parts catalog"
+        description="Track on-hand quantities, reorder points, and preferred vendors for O&M consumables."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
             </Button>
-          ) : null}
-        </div>
-      </header>
+            {access.canWrite ? (
+              <Button size="sm" onClick={() => setEditingPart("new")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add part
+              </Button>
+            ) : null}
+          </>
+        }
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Kpi label="Parts tracked" value={String(rows.length)} hint="In catalog" />
-        <Kpi
+      <KpiGrid columns={3}>
+        <KpiTile label="Parts tracked" value={String(rows.length)} hint="In catalog" />
+        <KpiTile
           label="Below reorder point"
           value={`${lowStockCount} part${lowStockCount === 1 ? "" : "s"}`}
           hint="Time to restock"
-          tone={lowStockCount > 0 ? "destructive" : "muted"}
+          status={lowStockCount > 0 ? "bad" : "neutral"}
         />
-        <Kpi
+        <KpiTile
           label="On-hand value"
           value={totalValue === 0 ? "—" : fmtMoney(totalValue, rows[0]?.currency_code ?? "USD")}
           hint="Qty × unit cost"
         />
-      </div>
+      </KpiGrid>
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -288,11 +286,12 @@ function SparePartsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No spare parts found — add your first part to seed the catalog.
-        </div>
+        <EmptyState
+          icon={Package}
+          title="No spare parts found"
+          description="Add your first part to seed the catalog."
+        />
       ) : (
-        <div className="rounded-md border border-border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -384,7 +383,6 @@ function SparePartsPage() {
               })}
             </TableBody>
           </Table>
-        </div>
       )}
 
       <Dialog open={editingPart != null} onOpenChange={(o) => !o && setEditingPart(null)}>
@@ -407,27 +405,6 @@ function SparePartsPage() {
           />
         ) : null}
       </Dialog>
-    </div>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  hint,
-  tone = "muted",
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  tone?: "muted" | "destructive";
-}) {
-  const valueClass = tone === "destructive" ? "text-destructive" : "text-foreground";
-  return (
-    <div className="rounded-md border border-border p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>{value}</div>
-      <div className="text-xs text-muted-foreground">{hint}</div>
     </div>
   );
 }

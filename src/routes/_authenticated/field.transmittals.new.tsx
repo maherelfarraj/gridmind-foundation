@@ -148,7 +148,7 @@ function NewTransmittalPage() {
     !createMut.isPending;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-24 md:p-6">
+    <div className="page-shell pb-24">
       <header className="flex flex-col gap-2">
         <Link
           to="/field/transmittals"

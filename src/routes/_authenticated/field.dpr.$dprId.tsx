@@ -144,13 +144,13 @@ function DprDetailPage() {
         </Link>
       </Button>
 
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-        <div className="min-w-0">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+        <div className="min-w-0 space-y-1">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">Daily report</div>
           <h1 className="truncate font-display text-xl font-semibold text-foreground sm:text-2xl">
             {project?.name ?? header.project_id}
           </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {header.report_date} · {header.shift} shift
           </p>
         </div>

@@ -8,8 +8,18 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -147,16 +157,12 @@ function InspectionListPage() {
     (to ? 1 : 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <ClipboardCheck size={14} aria-hidden /> QA/QC
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Inspections
-          </h1>
-          <div className="flex gap-2">
+    <div className="page-shell">
+      <PageHeader
+        title="Inspections"
+        description="All quality-control inspections with ITP references and rework tracking."
+        actions={
+          <>
             <Button asChild variant="outline" size="sm">
               <Link to="/qaqc/heatmap">Heatmap</Link>
             </Button>
@@ -168,9 +174,9 @@ function InspectionListPage() {
                 <Plus size={14} aria-hidden /> New inspection
               </Link>
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
@@ -291,60 +297,53 @@ function InspectionListPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <ClipboardCheck size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">No inspections recorded yet.</div>
-          </CardContent>
-        </Card>
+        <EmptyState icon={ClipboardCheck} title="No inspections recorded yet" />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
-                <th className="px-3 py-2 text-left">Number</th>
-                <th className="px-3 py-2 text-left">Date</th>
-                <th className="px-3 py-2 text-left">Discipline</th>
-                <th className="px-3 py-2 text-left">Area</th>
-                <th className="px-3 py-2 text-left">ITP ref</th>
-                <th className="px-3 py-2 text-left">Result</th>
-                <th className="px-3 py-2 text-left">Rework</th>
-                <th className="px-3 py-2 text-left">Project</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr
-                  key={r.id}
-                  className="cursor-pointer border-b border-border last:border-0 hover:bg-accent"
-                  onClick={() =>
-                    navigate({
-                      to: "/qaqc/inspections/$id",
-                      params: { id: r.id },
-                    })
-                  }
-                >
-                  <td className="px-3 py-2 font-medium text-foreground">{r.inspection_number}</td>
-                  <td className="px-3 py-2 tabular-nums">{r.inspection_date}</td>
-                  <td className="px-3 py-2 capitalize">{r.discipline}</td>
-                  <td className="px-3 py-2">{r.area}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.itp_reference ?? "—"}</td>
-                  <td className="px-3 py-2">
-                    <QaqcResultBadge result={r.result} />
-                  </td>
-                  <td className="px-3 py-2">
-                    {r.rework_required ? (
-                      <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.project_name ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Number</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Discipline</TableHead>
+              <TableHead>Area</TableHead>
+              <TableHead>ITP ref</TableHead>
+              <TableHead>Result</TableHead>
+              <TableHead>Rework</TableHead>
+              <TableHead>Project</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow
+                key={r.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate({
+                    to: "/qaqc/inspections/$id",
+                    params: { id: r.id },
+                  })
+                }
+              >
+                <TableCell className="font-medium text-foreground">{r.inspection_number}</TableCell>
+                <TableCell className="tabular-nums">{r.inspection_date}</TableCell>
+                <TableCell className="capitalize">{r.discipline}</TableCell>
+                <TableCell>{r.area}</TableCell>
+                <TableCell className="text-muted-foreground">{r.itp_reference ?? "—"}</TableCell>
+                <TableCell>
+                  <QaqcResultBadge result={r.result} />
+                </TableCell>
+                <TableCell>
+                  {r.rework_required ? (
+                    <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">{r.project_name ?? "—"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

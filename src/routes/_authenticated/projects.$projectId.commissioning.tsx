@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -144,17 +146,13 @@ function CommissioningBoard() {
   }, [rows]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Commissioning test board
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Stage 6 — assign, track and close out site tests by area.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="Commissioning test board"
+        description="Stage 6 — assign, track and close out site tests by area."
+        actions={
+          <>
           <Button asChild variant="outline" size="sm">
             <Link to="/projects/$projectId/commissioning/punch" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
@@ -206,11 +204,12 @@ function CommissioningBoard() {
               Assign tests
             </Button>
           ) : null}
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* filters */}
-      <Card className="border-border bg-card p-4">
+      <Card className="p-4">
         <div className="flex flex-wrap items-center gap-2">
           <FilterChip
             active={testType === null}
@@ -255,7 +254,7 @@ function CommissioningBoard() {
       ) : query.isError ? (
         <BoardError onRetry={() => query.refetch()} />
       ) : groups.length === 0 ? (
-        <EmptyState canWrite={canWrite} onAssign={() => setDialogOpen(true)} />
+        <NoTestsEmptyState canWrite={canWrite} onAssign={() => setDialogOpen(true)} />
       ) : (
         <div className="flex flex-col gap-3">
           {groups.map(([area, list]) => (
@@ -290,7 +289,7 @@ function AreaSection({ area, rows }: { area: string; rows: CommissioningTestRow[
   }, [rows]);
 
   return (
-    <Card className="border-border bg-card">
+    <Card>
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
           <button
@@ -512,7 +511,7 @@ function AssignDialog({
               {COMMISSIONING_TEST_TYPES.map((t) => (
                 <label
                   key={t}
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
                 >
                   <Checkbox checked={selected.includes(t)} onCheckedChange={() => toggleType(t)} />
                   <span>{COMMISSIONING_TEST_TYPE_LABELS[t]}</span>
@@ -563,7 +562,7 @@ function AssignDialog({
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-md border border-border bg-secondary/30 px-3 py-2">
+          <div className="flex items-center justify-between rounded-md border bg-secondary/30 px-3 py-2">
             <div>
               <p className="text-sm font-medium text-foreground">Utility witness required</p>
               <p className="text-xs text-muted-foreground">
@@ -635,7 +634,7 @@ function BoardSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {[0, 1, 2].map((i) => (
-        <Card key={i} className="border-border bg-card p-4">
+        <Card key={i} className="p-4">
           <Skeleton className="h-5 w-40" />
           <Skeleton className="mt-3 h-24 w-full" />
         </Card>
@@ -646,40 +645,40 @@ function BoardSkeleton() {
 
 function BoardError({ onRetry }: { onRetry: () => void }) {
   return (
-    <Card className="border-destructive/40 bg-card p-6">
-      <h3 className="font-display text-lg font-semibold text-foreground">
-        Couldn&rsquo;t load commissioning tests
-      </h3>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Something went wrong loading the board. Try again.
-      </p>
-      <Button className="mt-3" size="sm" onClick={onRetry}>
-        <RefreshCw size={14} aria-hidden />
-        Retry
-      </Button>
+    <Card className="border-destructive/40 p-6">
+      <EmptyState
+        title=""Couldn&rsquo;t load commissioning tests""
+        description=""Something went wrong loading the board. Try again.""
+        action={
+          <Button size="sm" onClick={onRetry}>
+            <RefreshCw size={14} aria-hidden />
+            Retry
+          </Button>
+        }
+      />
     </Card>
   );
 }
 
-function EmptyState({ canWrite, onAssign }: { canWrite: boolean; onAssign: () => void }) {
+function NoTestsEmptyState({ canWrite, onAssign }: { canWrite: boolean; onAssign: () => void }) {
   return (
-    <Card className="flex flex-col items-start gap-3 border-border bg-card p-6">
-      <h3 className="font-display text-lg font-semibold text-foreground">
-        No commissioning tests assigned yet
-      </h3>
-      <p className="text-sm text-muted-foreground">
-        Group tests by area and assign them to your commissioning team to get started.
-      </p>
-      {canWrite ? (
-        <Button size="sm" onClick={onAssign}>
-          <Plus size={14} aria-hidden />
-          Assign tests
-        </Button>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          You don&rsquo;t have permission to assign tests.
-        </p>
-      )}
+    <Card className="p-6">
+      <EmptyState
+        title=""No commissioning tests assigned yet""
+        description=""Group tests by area and assign them to your commissioning team to get started.""
+        action={
+          canWrite ? (
+            <Button size="sm" onClick={onAssign}>
+              <Plus size={14} aria-hidden />
+              Assign tests
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              You don&rsquo;t have permission to assign tests.
+            </p>
+          )
+        }
+      />
     </Card>
   );
 }

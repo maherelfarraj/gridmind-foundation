@@ -105,7 +105,7 @@ function RevisionRow({
   const download = useDownloadRevision();
   const who = rev.issued_by_profile ?? rev.created_by_profile;
   return (
-    <Card className="flex flex-col gap-3 border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm font-semibold text-foreground">

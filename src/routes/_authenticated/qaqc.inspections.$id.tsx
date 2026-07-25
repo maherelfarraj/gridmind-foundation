@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -102,14 +103,14 @@ function InspectionDetailPage() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-4xl p-4">
+      <div className="page-shell">
         <Skeleton className="h-64" />
       </div>
     );
   }
   if (detailQuery.isError || !data) {
     return (
-      <div className="mx-auto w-full max-w-4xl p-4">
+      <div className="page-shell">
         <Card>
           <CardContent className="p-4 text-sm text-destructive">
             {errorMessage(detailQuery.error) || "Not found"}
@@ -127,51 +128,49 @@ function InspectionDetailPage() {
       : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
+    <div className="page-shell">
+      <div>
         <Link
           to="/qaqc/inspections"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={12} /> Back to inspections
         </Link>
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <ClipboardCheck size={14} aria-hidden /> QA/QC
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {i.inspection_number}
-          </h1>
-          <QaqcResultBadge result={i.result} />
-          {i.rework_required ? (
-            <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
-          ) : null}
-          <Badge variant="outline" className="capitalize">
-            {i.discipline}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            {i.project_name ?? "—"} · {i.inspection_date}
-          </span>
-        </div>
-        {i.result === "fail" ? (
-          <div>
-            <Button size="sm" variant="outline" asChild>
-              <Link
-                to="/qaqc/ncrs/new"
-                search={{
-                  projectId: i.project_id,
-                  source: "inspection",
-                  sourceId: i.id,
-                  discipline: i.discipline,
-                  area: i.area ?? undefined,
-                }}
-              >
-                Raise NCR
-              </Link>
-            </Button>
-          </div>
-        ) : null}
-      </header>
+        <PageHeader
+          title={i.inspection_number}
+          description="QA/QC inspection detail, result, and attachments."
+          actions={
+            <>
+              <QaqcResultBadge result={i.result} />
+              {i.rework_required ? (
+                <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
+              ) : null}
+              <Badge variant="outline" className="capitalize">
+                {i.discipline}
+              </Badge>
+              {i.result === "fail" ? (
+                <Button size="sm" variant="outline" asChild>
+                  <Link
+                    to="/qaqc/ncrs/new"
+                    search={{
+                      projectId: i.project_id,
+                      source: "inspection",
+                      sourceId: i.id,
+                      discipline: i.discipline,
+                      area: i.area ?? undefined,
+                    }}
+                  >
+                    Raise NCR
+                  </Link>
+                </Button>
+              ) : null}
+            </>
+          }
+        />
+        <span className="text-xs text-muted-foreground">
+          {i.project_name ?? "—"} · {i.inspection_date}
+        </span>
+      </div>
 
       <Card>
         <CardHeader>

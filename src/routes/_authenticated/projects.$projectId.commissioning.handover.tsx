@@ -438,10 +438,7 @@ function BoardBody({
         ) : (
           <ol className="mt-3 flex flex-col gap-2">
             {board.history.map((h) => (
-              <li
-                key={h.id}
-                className="flex items-start gap-3 rounded-md border bg-card px-3 py-2"
-              >
+              <li key={h.id} className="flex items-start gap-3 rounded-md border bg-card px-3 py-2">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className={cn("text-xs", actionTone(h.action))}>

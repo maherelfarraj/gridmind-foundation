@@ -97,7 +97,7 @@ function MobilizationDetailPage() {
   const showAmberBanner = !isComplete && !progress.allRequiredDone;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="page-shell">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link
           to="/field/mobilization"
@@ -532,7 +532,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function DetailSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <div className="page-shell">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-8 w-80" />
       <Skeleton className="h-3 w-full" />

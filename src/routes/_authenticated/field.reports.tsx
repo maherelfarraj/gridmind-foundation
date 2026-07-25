@@ -84,7 +84,7 @@ function WeeklyReportPage() {
   const dto = data.data;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 pb-16">
+    <div className="page-shell pb-16">
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
           <FileDown size={14} aria-hidden /> Field

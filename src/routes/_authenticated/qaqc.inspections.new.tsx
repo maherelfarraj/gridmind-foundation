@@ -4,13 +4,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ClipboardCheck, Upload, X } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -131,21 +132,16 @@ function NewInspectionPage() {
   const reworkRequired = form.watch("reworkRequired");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
+    <div className="page-shell">
+      <div>
         <Link
           to="/qaqc/inspections"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={12} /> Back to inspections
         </Link>
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <ClipboardCheck size={14} aria-hidden /> QA/QC
-        </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          New inspection
-        </h1>
-      </header>
+        <PageHeader title="New inspection" description="Log a new quality-control inspection." />
+      </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card>
