@@ -1,87 +1,87 @@
-# P-084 — Mobilization Checklist Module
+## P-085 — Discipline board
 
-Per-project site mobilization checklist proving readiness before field work starts.
+Read-only Field ▸ Discipline board at `/field/discipline-board` that rolls up DPR quantities into a Civil / Mechanical / Electrical view per area, with SPI / CPI / manpower / weather header KPIs.
 
-## 1. Migration — `supabase/migrations/0040_mobilization_checklists.sql`
+### Schema note (small migration needed)
 
-Run the exact SQL from the request:
-- Enums `mobilization_category` (6 values) and `mobilization_status` in guarded `do $$ ... $$` blocks.
-- Table `public.mobilization_checklists` with `company_id`, `project_id`, `name`, `status`, `items jsonb` (default `[]`), `started_at`, `completed_at`, `created_by`, timestamps, unique `(company_id, project_id, name)`.
-- RLS enabled: SELECT via `is_company_member`, ALL via role check (`construction_admin` / `foreman` / `company_admin`) using `has_company_role`.
-- GRANT `select, insert, update` to `authenticated` (no delete, per convention).
-- Index `mobilization_project_idx (company_id, project_id, status)`.
-- Attach existing `trg_updated_at` trigger for the `updated_at` column.
+The spec says planned qty and area come from `wbs_items`, but the current `wbs_items` table has no `planned_quantity`, `uom`, or `area` columns. I'll ship migration `0041_wbs_planned_quantity.sql`:
+- add nullable `planned_quantity numeric(14,3)`, `uom text`, `area text` to `public.wbs_items`
+- no policy or grant changes (existing `wbs_select` / `wbs_write` still apply)
+- no backfill; missing planned_quantity ⇒ "No baseline" in the UI
 
-## 2. Server functions — `src/lib/mobilization.functions.ts`
+If you'd rather source planned qty elsewhere, tell me and I'll rework this piece.
 
-All wrapped with `createServerFn` + `requireSupabaseAuth`, Zod-validated, and each mutation calls the existing `write_audit_log` RPC.
+### Server (`src/lib/discipline-board.functions.ts`)
 
-- `listMobilizationChecklists({ projectId })` — company-scoped list ordered by `created_at desc`.
-- `getMobilizationChecklist({ checklistId })` — single fetch.
-- `createMobilizationChecklist({ projectId, name? })` — seeds default items spanning the six categories:
-  - cabins_facilities: site cabins & welfare, laydown area
-  - fencing_security: perimeter fencing & gates, security & lighting
-  - hse_induction: HSE induction for all site personnel (item carries `roster: []` array of `{name, company, inducted_at}`)
-  - utilities_comms: water, power, comms
-  - access_logistics: site access roads & signage
-  - permits_licenses: permits & licenses
-  Each item: `{key, label, category, required, status:'not_started', evidence_path:null, completed_by:null, completed_at:null, notes:null}`. Audit `mobilization.create`.
-- `toggleMobilizationItem({ checklistId, itemKey, status, notes? })` — mutates the item within `items`, sets `completed_by`/`completed_at` on completion, recomputes overall status (`not_started` / `in_progress`), and audits `mobilization.item_complete`.
-- `updateInductionRoster({ checklistId, itemKey, roster })` — replaces the induction roster array; item status auto-updates if roster length > 0.
-- `attachEvidence({ checklistId, itemKey, evidencePath })` — sets `evidence_path` (path relative to `documents` bucket).
-- `completeMobilizationChecklist({ checklistId })` — server-enforced guard: throws if any `required` item is not `complete`; sets `status='complete'`, `completed_at=now()`. Audit `mobilization.complete`.
+One `createServerFn` + `requireSupabaseAuth`, Zod-validated input `{ projectId, from, to }` (defaults to last 30 days). Returns a plain DTO — no class instances, no Response.
 
-Storage: uploads go to the private `documents` bucket under `{company_id}/mobilization/{project_id}/{checklistId}/{itemKey}-{filename}` (company UUID first — matches existing `storage_company_id` policy). Client uses the existing `supabase` storage helper; server stores only the returned `path`.
+Pipeline inside the handler (all through `context.supabase`, RLS as caller):
+1. Load submitted/approved `construction_daily_reports` in range → collect `id`s, dates, `total_manpower`.
+2. Expand `quantities` jsonb into rows `{ report_date, wbs_item_id, discipline, area, qty, uom }` (JS side).
+3. Join `wbs_items` for `planned_quantity`, `uom`, `area`, `discipline` fallback, `name`.
+4. Load `weather_delays` in range for lost-hours totals + this-week sum.
+5. Load today's `manpower_logs` via DPRs where `report_date = today` → sum `headcount`.
+6. Load latest `evm_snapshots` row for project (order by `snapshot_date desc limit 1`) → `spi`, `cpi`.
 
-## 3. UI routes (Tailwind semantic tokens only — no raw hex)
+Return DTO:
+```ts
+{
+  hasDprs: boolean,
+  kpis: { spi: number|null, cpi: number|null, manpowerToday: number, weatherHoursThisWeek: number },
+  columns: {
+    discipline: 'civil'|'mechanical'|'electrical',
+    areas: {
+      area: string,
+      wbsName: string|null,
+      uom: string|null,
+      installedToDate: number,
+      plannedQty: number|null,      // null ⇒ "No baseline"
+      progressPct: number|null,     // null when no baseline
+      rate7d: number,               // avg qty/day last 7 reporting days
+      ratePrev7d: number,           // for trend arrow
+    }[]
+  }[]
+}
+```
+Rate math uses distinct reporting days in the window, not calendar days, to avoid divide-by-zero on quiet sites. Disciplines outside civil/mech/elec are dropped (surfaced only if user later asks).
 
-Both routes are pathless siblings of the existing `_authenticated/` tree since no `/field` routes exist yet.
+### UI
 
-### `src/routes/_authenticated/field.mobilization.tsx`
-- Project picker (reuses existing company-scoped project query pattern).
-- Checklist grid with status badge, progress bar = `requiredComplete / requiredTotal`, updated timestamp.
-- "New checklist" button → calls `createMobilizationChecklist`.
-- Loading skeleton, empty state ("No mobilization checklist yet — create one to begin site setup"), error state with retry button.
+- Route: `src/routes/_authenticated/field.discipline-board.tsx` (public inside `_authenticated`, no per-route auth gate).
+- Loader primes `ensureQueryData` with `queryOptions` keyed on `{ projectId, from, to }`.
+- `errorComponent` + `notFoundComponent` on the route; skeleton via `useSuspenseQuery`.
+- Filters: project `Select` (required, from existing projects query) + shadcn date-range popover (default last 30 days), URL-persisted via `validateSearch` + `loaderDeps`.
+- Header KPI chips (all semantic tokens):
+  - SPI / CPI — green ≥1.0 (`bg-success/10 text-success`), amber 0.9–1.0 (`bg-warning/10 text-warning`), red <0.9 (`bg-destructive/10 text-destructive`); "—" when no snapshot.
+  - Manpower today (sum `manpower_logs.headcount` for today's DPRs).
+  - Weather hours lost this week.
+- Three columns (`grid grid-cols-1 md:grid-cols-3`) with lucide `HardHat` / `Wrench` / `Zap` headers.
+- Each area card: name, `Progress` bar with % + `installed / planned uom`, KPI row `{rate7d} {uom}/day` with `ArrowUp/Down/Right` vs `ratePrev7d`. "No baseline" pill instead of bar when `plannedQty == null`.
+- Empty states: per column ("No {discipline} quantities reported yet — submit a DPR."), and board-level ("No field data yet — capture your first daily report.") when `hasDprs === false`.
+- CSV export button → client-side blob of the flattened `columns[].areas[]` rollup with headers `discipline,area,wbs_name,uom,installed,planned,progress_pct,rate_7d,rate_prev_7d`.
+- Nav: add `Discipline board` entry under Field in `src/lib/nav-map.ts`.
 
-### `src/routes/_authenticated/field.mobilization.$checklistId.tsx`
-- Header: name, status chip, overall progress.
-- Amber banner while any required item is incomplete ("Site not yet ready for field work").
-- Sections grouped by the six categories, each collapsible.
-- Per item: checkbox / status toggle, notes textarea, evidence upload (input → storage → `attachEvidence`), download link if `evidence_path` set.
-- HSE induction card: inline roster editor (add/remove attendees, name + company + inducted_at date) calling `updateInductionRoster`.
-- "Mark checklist complete" button — disabled client-side until required items done; server still enforces.
-- All mutations use `useServerFn` + `useMutation` with `queryClient.invalidateQueries`.
+Read-only page; no mutations, no audit writes, no new roles/policies.
 
-## 4. Project header chip integration (P-038)
+### Files
 
-In `src/routes/_authenticated/projects.$projectId.tsx` header, fetch the latest mobilization checklist for the project and render a read-only chip:
-- `Mobilization: not started` (muted) if no rows or all not_started.
-- `Mobilization: in progress` (amber semantic token) while any exist and none complete.
-- Hide chip once at least one checklist is complete (spec: "until complete").
+New:
+- `supabase/migrations/0041_wbs_planned_quantity.sql`
+- `src/lib/discipline-board.rules.ts` (rate/progress/trend helpers, disciplines enum)
+- `src/lib/discipline-board.functions.ts`
+- `src/lib/discipline-board-query.ts`
+- `src/routes/_authenticated/field.discipline-board.tsx`
+- `tests/unit/discipline-board.test.ts` (rate/trend/progress + "no baseline" cases)
 
-Adds one lightweight query keyed on `['mobilization-header', projectId]`.
+Edited:
+- `src/lib/nav-map.ts` (add Discipline board entry)
 
-## 5. Navigation
+### Acceptance checklist
 
-Add "Field → Mobilization" entry to `src/lib/nav-map.ts` visible to roles: `construction_admin`, `foreman` (write), plus `field_technician`, `project_admin`, `hse_admin` (read). RLS in DB still enforces write authorization.
-
-## 6. Tests
-
-- `tests/rls/mobilization.rls.test.ts` — stub verifying: cross-tenant SELECT denial, field_technician write denial, `has_company_role` write acceptance, unique constraint on `(company_id, project_id, name)`.
-- `tests/unit/mobilization-progress.test.ts` — pure helper `computeProgress(items)` returning `{requiredComplete, requiredTotal, allRequiredDone}`; assert the complete-guard math.
-
-## Technical notes
-
-- Items live inside the `items` jsonb column (single-row semantics). All mutations do `select ... for update` semantics by reading-then-updating within one server fn call using the authenticated `context.supabase`.
-- Overall status transitions computed server-side after every item mutation: any `in_progress|complete` → `in_progress`; none touched → `not_started`; explicit complete only via `completeMobilizationChecklist`.
-- Evidence upload uses signed URLs from the existing documents-bucket helpers (matches drawings/pay-app pattern).
-- No delete grant → checklists are archived by convention, not removed.
-
-## Verification steps
-
-1. Apply migration; run `supabase--linter` and fix any warnings tied to this migration only.
-2. With Prairie Winds project: create checklist → confirm 6 categories seeded with HSE roster item.
-3. Complete items → progress bar reflects required-only math; attempt to complete with one required item open → server throws.
-4. Upload a fencing photo → confirm path `{company}/mobilization/{project}/...` and persistence.
-5. Project header shows "Mobilization: in progress" chip until complete.
-6. Confirm `field_technician` read-only; audit rows written per mutation.
+- Three columns render; installed ÷ planned per (area, discipline).
+- No baseline → text pill, no bar, no NaN/∞.
+- 7-day rolling rate uses reporting days; trend arrow vs prior 7 days.
+- SPI/CPI chips from latest `evm_snapshots`, threshold classes correct; today's manpower from `manpower_logs`; weather chip sums `weather_delays` this week.
+- Board-level empty state when no DPRs; per-column empties when a discipline has no rows.
+- CSV mirrors on-screen rollup exactly.
+- Typecheck clean; new unit tests pass.
