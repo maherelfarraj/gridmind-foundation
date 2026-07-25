@@ -23,6 +23,7 @@ import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
+import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
@@ -43,6 +44,8 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
+import { Route as AuthenticatedHseTrainingRouteImport } from './routes/_authenticated/hse.training'
+import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authenticated/hse.inspections'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
@@ -56,6 +59,7 @@ import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/
 import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './routes/_authenticated/procurement.receipts.index'
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
+import { Route as AuthenticatedHseIncidentsIndexRouteImport } from './routes/_authenticated/hse.incidents.index'
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
@@ -77,6 +81,8 @@ import { Route as AuthenticatedProcurementReceiptsGrnIdRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
+import { Route as AuthenticatedHseIncidentsNewRouteImport } from './routes/_authenticated/hse.incidents.new'
+import { Route as AuthenticatedHseIncidentsIdRouteImport } from './routes/_authenticated/hse.incidents.$id'
 import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
 import { Route as AuthenticatedFieldMobilizationChecklistIdRouteImport } from './routes/_authenticated/field.mobilization.$checklistId'
 import { Route as AuthenticatedFieldDprNewRouteImport } from './routes/_authenticated/field.dpr.new'
@@ -182,6 +188,11 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
+  id: '/hse/',
+  path: '/hse/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   id: '/api/webhooks/esign',
   path: '/api/webhooks/esign',
@@ -301,6 +312,18 @@ const AuthenticatedProcurementExpeditingRoute =
     path: '/procurement/expediting',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseTrainingRoute =
+  AuthenticatedHseTrainingRouteImport.update({
+    id: '/hse/training',
+    path: '/hse/training',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseInspectionsRoute =
+  AuthenticatedHseInspectionsRouteImport.update({
+    id: '/hse/inspections',
+    path: '/hse/inspections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFinanceInvoicesRoute =
   AuthenticatedFinanceInvoicesRouteImport.update({
     id: '/finance/invoices',
@@ -378,6 +401,12 @@ const AuthenticatedProcurementMatchesIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
+  } as any)
+const AuthenticatedHseIncidentsIndexRoute =
+  AuthenticatedHseIncidentsIndexRouteImport.update({
+    id: '/hse/incidents/',
+    path: '/hse/incidents/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldMobilizationIndexRoute =
   AuthenticatedFieldMobilizationIndexRouteImport.update({
@@ -504,6 +533,18 @@ const AuthenticatedProcurementMatchesMatchIdRoute =
     id: '/$matchId',
     path: '/$matchId',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
+  } as any)
+const AuthenticatedHseIncidentsNewRoute =
+  AuthenticatedHseIncidentsNewRouteImport.update({
+    id: '/hse/incidents/new',
+    path: '/hse/incidents/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseIncidentsIdRoute =
+  AuthenticatedHseIncidentsIdRouteImport.update({
+    id: '/hse/incidents/$id',
+    path: '/hse/incidents/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFinanceContractsContractIdRoute =
   AuthenticatedFinanceContractsContractIdRouteImport.update({
@@ -744,6 +785,8 @@ export interface FileRoutesByFullPath {
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/hse/training': typeof AuthenticatedHseTrainingRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -764,6 +807,7 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -772,6 +816,8 @@ export interface FileRoutesByFullPath {
   '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
+  '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
+  '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -793,6 +839,7 @@ export interface FileRoutesByFullPath {
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -845,6 +892,8 @@ export interface FileRoutesByTo {
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/hse/training': typeof AuthenticatedHseTrainingRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -859,6 +908,7 @@ export interface FileRoutesByTo {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -867,6 +917,8 @@ export interface FileRoutesByTo {
   '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
+  '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
+  '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -887,6 +939,7 @@ export interface FileRoutesByTo {
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/hse/incidents': typeof AuthenticatedHseIncidentsIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -941,6 +994,8 @@ export interface FileRoutesById {
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/_authenticated/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/_authenticated/hse/training': typeof AuthenticatedHseTrainingRoute
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -961,6 +1016,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
@@ -969,6 +1025,8 @@ export interface FileRoutesById {
   '/_authenticated/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/_authenticated/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
+  '/_authenticated/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
+  '/_authenticated/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -990,6 +1048,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/_authenticated/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/_authenticated/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -1045,6 +1104,8 @@ export interface FileRouteTypes {
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
+    | '/hse/inspections'
+    | '/hse/training'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -1065,6 +1126,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
+    | '/hse/'
     | '/projects/'
     | '/proposals/'
     | '/admin/tenants/$companyId'
@@ -1073,6 +1135,8 @@ export interface FileRouteTypes {
     | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
     | '/finance/contracts/$contractId'
+    | '/hse/incidents/$id'
+    | '/hse/incidents/new'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -1094,6 +1158,7 @@ export interface FileRouteTypes {
     | '/admin/tenants/'
     | '/field/dpr/'
     | '/field/mobilization/'
+    | '/hse/incidents/'
     | '/procurement/matches/'
     | '/procurement/pos/'
     | '/procurement/receipts/'
@@ -1146,6 +1211,8 @@ export interface FileRouteTypes {
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
+    | '/hse/inspections'
+    | '/hse/training'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/scorecards'
@@ -1160,6 +1227,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/users'
     | '/api/webhooks/esign'
+    | '/hse'
     | '/projects'
     | '/proposals'
     | '/admin/tenants/$companyId'
@@ -1168,6 +1236,8 @@ export interface FileRouteTypes {
     | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
     | '/finance/contracts/$contractId'
+    | '/hse/incidents/$id'
+    | '/hse/incidents/new'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -1188,6 +1258,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/field/dpr'
     | '/field/mobilization'
+    | '/hse/incidents'
     | '/procurement/matches'
     | '/procurement/pos'
     | '/procurement/receipts'
@@ -1241,6 +1312,8 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
+    | '/_authenticated/hse/inspections'
+    | '/_authenticated/hse/training'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -1261,6 +1334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
     | '/api/webhooks/esign'
+    | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
@@ -1269,6 +1343,8 @@ export interface FileRouteTypes {
     | '/_authenticated/field/dpr/new'
     | '/_authenticated/field/mobilization/$checklistId'
     | '/_authenticated/finance/contracts/$contractId'
+    | '/_authenticated/hse/incidents/$id'
+    | '/_authenticated/hse/incidents/new'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
     | '/_authenticated/procurement/pos/$poId'
@@ -1290,6 +1366,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
+    | '/_authenticated/hse/incidents/'
     | '/_authenticated/procurement/matches/'
     | '/_authenticated/procurement/pos/'
     | '/_authenticated/procurement/receipts/'
@@ -1436,6 +1513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hse/': {
+      id: '/_authenticated/hse/'
+      path: '/hse'
+      fullPath: '/hse/'
+      preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/webhooks/esign': {
       id: '/api/webhooks/esign'
       path: '/api/webhooks/esign'
@@ -1576,6 +1660,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hse/training': {
+      id: '/_authenticated/hse/training'
+      path: '/hse/training'
+      fullPath: '/hse/training'
+      preLoaderRoute: typeof AuthenticatedHseTrainingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/inspections': {
+      id: '/_authenticated/hse/inspections'
+      path: '/hse/inspections'
+      fullPath: '/hse/inspections'
+      preLoaderRoute: typeof AuthenticatedHseInspectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/finance/invoices': {
       id: '/_authenticated/finance/invoices'
       path: '/finance/invoices'
@@ -1666,6 +1764,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/matches/'
       preLoaderRoute: typeof AuthenticatedProcurementMatchesIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
+    }
+    '/_authenticated/hse/incidents/': {
+      id: '/_authenticated/hse/incidents/'
+      path: '/hse/incidents'
+      fullPath: '/hse/incidents/'
+      preLoaderRoute: typeof AuthenticatedHseIncidentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/mobilization/': {
       id: '/_authenticated/field/mobilization/'
@@ -1813,6 +1918,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/matches/$matchId'
       preLoaderRoute: typeof AuthenticatedProcurementMatchesMatchIdRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
+    }
+    '/_authenticated/hse/incidents/new': {
+      id: '/_authenticated/hse/incidents/new'
+      path: '/hse/incidents/new'
+      fullPath: '/hse/incidents/new'
+      preLoaderRoute: typeof AuthenticatedHseIncidentsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/incidents/$id': {
+      id: '/_authenticated/hse/incidents/$id'
+      path: '/hse/incidents/$id'
+      fullPath: '/hse/incidents/$id'
+      preLoaderRoute: typeof AuthenticatedHseIncidentsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/contracts/$contractId': {
       id: '/_authenticated/finance/contracts/$contractId'
@@ -2448,6 +2567,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
+  AuthenticatedHseInspectionsRoute: typeof AuthenticatedHseInspectionsRoute
+  AuthenticatedHseTrainingRoute: typeof AuthenticatedHseTrainingRoute
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2467,14 +2588,18 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
+  AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
   AuthenticatedCrmOpportunitiesOpportunityIdRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   AuthenticatedFieldDprDprIdRoute: typeof AuthenticatedFieldDprDprIdRoute
   AuthenticatedFieldDprNewRoute: typeof AuthenticatedFieldDprNewRoute
   AuthenticatedFieldMobilizationChecklistIdRoute: typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  AuthenticatedHseIncidentsIdRoute: typeof AuthenticatedHseIncidentsIdRoute
+  AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
   AuthenticatedFieldDprIndexRoute: typeof AuthenticatedFieldDprIndexRoute
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
+  AuthenticatedHseIncidentsIndexRoute: typeof AuthenticatedHseIncidentsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -2488,6 +2613,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
+  AuthenticatedHseInspectionsRoute: AuthenticatedHseInspectionsRoute,
+  AuthenticatedHseTrainingRoute: AuthenticatedHseTrainingRoute,
   AuthenticatedProcurementExpeditingRoute:
     AuthenticatedProcurementExpeditingRoute,
   AuthenticatedProcurementMatchesRoute:
@@ -2518,6 +2645,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
+  AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
   AuthenticatedCrmOpportunitiesOpportunityIdRoute:
@@ -2526,9 +2654,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldDprNewRoute: AuthenticatedFieldDprNewRoute,
   AuthenticatedFieldMobilizationChecklistIdRoute:
     AuthenticatedFieldMobilizationChecklistIdRoute,
+  AuthenticatedHseIncidentsIdRoute: AuthenticatedHseIncidentsIdRoute,
+  AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
   AuthenticatedFieldDprIndexRoute: AuthenticatedFieldDprIndexRoute,
   AuthenticatedFieldMobilizationIndexRoute:
     AuthenticatedFieldMobilizationIndexRoute,
+  AuthenticatedHseIncidentsIndexRoute: AuthenticatedHseIncidentsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

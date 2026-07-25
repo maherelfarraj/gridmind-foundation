@@ -24,3 +24,13 @@ export function downloadCsv(filename: string, csv: string) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+// Convenience: build CSV from an array of homogeneous plain objects.
+export function objectsToCsv(rows: Record<string, unknown>[]): string {
+  if (rows.length === 0) return "";
+  const headers = Object.keys(rows[0]);
+  return toCsv(
+    headers,
+    rows.map((r) => headers.map((h) => r[h])),
+  );
+}
