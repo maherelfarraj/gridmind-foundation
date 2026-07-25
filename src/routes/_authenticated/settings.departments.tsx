@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/settings/departments")({
   head: () => ({
@@ -143,16 +144,11 @@ function DepartmentsPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Departments
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          The nine fixed GridMind EPC departments. Assign one or more admins per department —
-          assignments are audit-logged and enforced by the database.
-        </p>
-      </div>
+    <div className="page-shell max-w-6xl">
+      <PageHeader
+        title="Departments"
+        description="The nine fixed GridMind EPC departments. Assign one or more admins per department."
+      />
 
       {membersQuery.isError && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
