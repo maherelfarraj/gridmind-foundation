@@ -694,6 +694,11 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
           </Button>
         </div>
       </CardContent>
+      <MilestoneBillDialog
+        contractId={contract.id}
+        open={billOpen}
+        onOpenChange={setBillOpen}
+      />
     </Card>
   );
 }
