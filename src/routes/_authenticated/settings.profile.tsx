@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -139,7 +140,7 @@ function SettingsProfilePage() {
 
   if (settingsQuery.isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <div className="page-shell max-w-3xl">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-72 w-full" />
         <Skeleton className="h-48 w-full" />
@@ -150,7 +151,7 @@ function SettingsProfilePage() {
 
   if (settingsQuery.isError || !settingsQuery.data) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="page-shell max-w-3xl">
         <Card className="border-destructive/40">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -172,15 +173,11 @@ function SettingsProfilePage() {
   const { profile, avatarSignedUrl, notificationPrefs } = settingsQuery.data;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Profile settings
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your name, avatar, language, and notification preferences.
-        </p>
-      </div>
+    <div className="page-shell max-w-3xl">
+      <PageHeader
+        title="Profile settings"
+        description="Manage your name, avatar, language, and notification preferences."
+      />
 
       <ProfileCard profile={profile} avatarSignedUrl={avatarSignedUrl} onSaved={invalidate} />
 

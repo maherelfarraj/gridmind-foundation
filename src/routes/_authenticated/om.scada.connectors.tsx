@@ -123,10 +123,7 @@ function ScadaConnectorsPage() {
       />
 
       <KpiGrid columns={3}>
-        <KpiTile
-          label="Active connectors"
-          value={`${kpis.activeCount} / ${kpis.totalCount}`}
-        />
+        <KpiTile label="Active connectors" value={`${kpis.activeCount} / ${kpis.totalCount}`} />
         <KpiTile label="Assets mapped" value={kpis.assetsMapped} />
         <KpiTile
           label="Last telemetry seen"

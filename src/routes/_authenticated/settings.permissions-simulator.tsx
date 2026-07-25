@@ -39,6 +39,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/settings/permissions-simulator")({
   head: () => ({
@@ -108,7 +109,7 @@ function PermissionsSimulatorPage() {
 
   if (rolesQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-6xl p-6">
+      <div className="page-shell max-w-6xl">
         <Skeleton className="h-8 w-64" />
       </div>
     );
@@ -116,7 +117,7 @@ function PermissionsSimulatorPage() {
 
   if (!isAllowed) {
     return (
-      <div className="mx-auto w-full max-w-6xl p-6">
+      <div className="page-shell max-w-6xl">
         <Card>
           <CardHeader>
             <CardTitle>Access denied</CardTitle>
@@ -130,16 +131,16 @@ function PermissionsSimulatorPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Permissions simulator
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Preview only — actual access is enforced by RLS and{" "}
-          <span className="font-mono">has_role()</span> on every request.
-        </p>
-      </div>
+    <div className="page-shell max-w-6xl">
+      <PageHeader
+        title="Permissions simulator"
+        description={
+          <>
+            Preview only — actual access is enforced by RLS and{" "}
+            <span className="font-mono">has_role()</span> on every request.
+          </>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* Left panel — role picker */}

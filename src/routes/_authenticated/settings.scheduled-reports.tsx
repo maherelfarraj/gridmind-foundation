@@ -235,7 +235,7 @@ function ScheduledReportsPage() {
                     </TableCell>
                     <TableCell>
                       {r.last_run_status === "success" && (
-                        <Badge className="bg-emerald-500/15 text-emerald-600">
+                        <Badge className="bg-success/15 text-success">
                           <CheckCircle2 className="mr-1 h-3 w-3" /> Success
                         </Badge>
                       )}

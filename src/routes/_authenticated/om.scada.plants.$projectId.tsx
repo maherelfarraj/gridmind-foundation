@@ -167,5 +167,3 @@ function PlantBody({ data }: { data: PlantDetailPayload }) {
     </>
   );
 }
-
-

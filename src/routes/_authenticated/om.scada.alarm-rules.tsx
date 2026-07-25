@@ -178,7 +178,10 @@ function AlarmRulesPage() {
               }
             />
           ) : (query.data ?? []).length === 0 ? (
-            <EmptyState title="No rules yet" description='Click "New rule" to create your first alarm rule.' />
+            <EmptyState
+              title="No rules yet"
+              description='Click "New rule" to create your first alarm rule.'
+            />
           ) : (
             <Table>
               <TableHeader>

@@ -335,7 +335,9 @@ function KanbanColumn({
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2">
         {rows.length === 0 ? (
-          <p className="px-1 py-3 text-xs text-muted-foreground uppercase tracking-wide">No cards</p>
+          <p className="px-1 py-3 text-xs text-muted-foreground uppercase tracking-wide">
+            No cards
+          </p>
         ) : (
           rows.map((r) => <KanbanCard key={r.id} row={r} onOpen={onOpen} />)
         )}
@@ -413,7 +415,11 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
           {rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={8} className="border-0 bg-transparent p-0">
-                <EmptyState title="No work orders yet" compact className="border-0 bg-transparent" />
+                <EmptyState
+                  title="No work orders yet"
+                  compact
+                  className="border-0 bg-transparent"
+                />
               </TableCell>
             </TableRow>
           ) : (

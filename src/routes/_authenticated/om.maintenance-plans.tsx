@@ -107,7 +107,11 @@ function MaintenancePlansPage() {
         description="Schedule recurring work that auto-generates preventive work orders when due."
         actions={
           <>
-            <Button variant="outline" onClick={() => gen.mutate(undefined)} disabled={gen.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => gen.mutate(undefined)}
+              disabled={gen.isPending}
+            >
               <Play className="mr-2 h-4 w-4" />
               Generate all now
             </Button>

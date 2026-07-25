@@ -140,7 +140,10 @@ function AlarmsPage() {
 
   return (
     <div className="page-shell">
-      <PageHeader title="SCADA alarms" description="Live plant health signals — auto-refreshes every 30 seconds." />
+      <PageHeader
+        title="SCADA alarms"
+        description="Live plant health signals — auto-refreshes every 30 seconds."
+      />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">

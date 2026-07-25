@@ -54,7 +54,7 @@ function statusBadge(status: SignalStatus) {
   }
   if (status === "warn") {
     return (
-      <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 uppercase tracking-wide hover:bg-amber-500/15">
+      <Badge className="bg-warning/15 text-warning border border-warning/30 uppercase tracking-wide hover:bg-warning/15">
         Warn
       </Badge>
     );
@@ -68,7 +68,7 @@ function statusBadge(status: SignalStatus) {
 
 function statusIcon(status: SignalStatus) {
   if (status === "crit") return <ShieldAlert className="h-4 w-4 text-destructive" />;
-  if (status === "warn") return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+  if (status === "warn") return <AlertTriangle className="h-4 w-4 text-warning" />;
   return <CheckCircle2 className="h-4 w-4 text-primary" />;
 }
 
