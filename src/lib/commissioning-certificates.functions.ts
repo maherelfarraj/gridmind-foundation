@@ -513,7 +513,7 @@ export const addSignature = createServerFn({ method: "POST" })
 
     const { data: updated, error: uErr } = await context.supabase
       .from("commissioning_certificates")
-      .update(updates)
+      .update(updates as any)
       .eq("id", (current as any).id)
       .select(
         "id, company_id, project_id, certificate_type, certificate_number, status, effective_date, pr_at_cod, payload, signatures, signed_pdf_path, created_at, updated_at",
