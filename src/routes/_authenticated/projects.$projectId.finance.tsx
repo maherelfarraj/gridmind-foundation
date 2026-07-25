@@ -9,6 +9,7 @@ const SUB_TABS = [
   { to: "cash-flow" as const, label: "Cash flow" },
   { to: "pay-applications" as const, label: "Pay applications" },
   { to: "change-orders" as const, label: "Change orders" },
+  { to: "project-finance" as const, label: "Project finance" },
 ];
 
 export const Route = createFileRoute(
