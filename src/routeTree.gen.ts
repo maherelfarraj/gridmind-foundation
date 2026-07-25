@@ -127,6 +127,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from
 import { Route as AuthenticatedProjectsProjectIdCommissioningTurnoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.turnover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningPunchRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.punch'
 import { Route as AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.performance'
+import { Route as AuthenticatedProjectsProjectIdCommissioningKpisRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.kpis'
 import { Route as AuthenticatedProjectsProjectIdCommissioningHandoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.handover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.certificates'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
@@ -832,6 +833,12 @@ const AuthenticatedProjectsProjectIdCommissioningPerformanceRoute =
     path: '/performance',
     getParentRoute: () => AuthenticatedProjectsProjectIdCommissioningRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCommissioningKpisRoute =
+  AuthenticatedProjectsProjectIdCommissioningKpisRouteImport.update({
+    id: '/kpis',
+    path: '/kpis',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCommissioningRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCommissioningHandoverRoute =
   AuthenticatedProjectsProjectIdCommissioningHandoverRouteImport.update({
     id: '/handover',
@@ -1027,6 +1034,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
+  '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
   '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
@@ -1150,6 +1158,7 @@ export interface FileRoutesByTo {
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
+  '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
   '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
@@ -1282,6 +1291,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/_authenticated/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/_authenticated/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
+  '/_authenticated/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
   '/_authenticated/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/_authenticated/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/_authenticated/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
@@ -1415,6 +1425,7 @@ export interface FileRouteTypes {
     | '/qaqc/punch/'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
+    | '/projects/$projectId/commissioning/kpis'
     | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
@@ -1538,6 +1549,7 @@ export interface FileRouteTypes {
     | '/qaqc/punch'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
+    | '/projects/$projectId/commissioning/kpis'
     | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
@@ -1669,6 +1681,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/punch/'
     | '/_authenticated/projects/$projectId/commissioning/certificates'
     | '/_authenticated/projects/$projectId/commissioning/handover'
+    | '/_authenticated/projects/$projectId/commissioning/kpis'
     | '/_authenticated/projects/$projectId/commissioning/performance'
     | '/_authenticated/projects/$projectId/commissioning/punch'
     | '/_authenticated/projects/$projectId/commissioning/turnover'
@@ -2541,6 +2554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCommissioningRoute
     }
+    '/_authenticated/projects/$projectId/commissioning/kpis': {
+      id: '/_authenticated/projects/$projectId/commissioning/kpis'
+      path: '/kpis'
+      fullPath: '/projects/$projectId/commissioning/kpis'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningKpisRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCommissioningRoute
+    }
     '/_authenticated/projects/$projectId/commissioning/handover': {
       id: '/_authenticated/projects/$projectId/commissioning/handover'
       path: '/handover'
@@ -2800,6 +2820,7 @@ const AuthenticatedProcurementVendorsRouteWithChildren =
 interface AuthenticatedProjectsProjectIdCommissioningRouteChildren {
   AuthenticatedProjectsProjectIdCommissioningCertificatesRoute: typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   AuthenticatedProjectsProjectIdCommissioningHandoverRoute: typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
+  AuthenticatedProjectsProjectIdCommissioningKpisRoute: typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
   AuthenticatedProjectsProjectIdCommissioningPerformanceRoute: typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   AuthenticatedProjectsProjectIdCommissioningPunchRoute: typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   AuthenticatedProjectsProjectIdCommissioningTurnoverRoute: typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
@@ -2812,6 +2833,8 @@ const AuthenticatedProjectsProjectIdCommissioningRouteChildren: AuthenticatedPro
       AuthenticatedProjectsProjectIdCommissioningCertificatesRoute,
     AuthenticatedProjectsProjectIdCommissioningHandoverRoute:
       AuthenticatedProjectsProjectIdCommissioningHandoverRoute,
+    AuthenticatedProjectsProjectIdCommissioningKpisRoute:
+      AuthenticatedProjectsProjectIdCommissioningKpisRoute,
     AuthenticatedProjectsProjectIdCommissioningPerformanceRoute:
       AuthenticatedProjectsProjectIdCommissioningPerformanceRoute,
     AuthenticatedProjectsProjectIdCommissioningPunchRoute:
