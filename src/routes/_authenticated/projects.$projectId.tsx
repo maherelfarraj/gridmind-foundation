@@ -34,6 +34,7 @@ const STATIC_TABS = [
   { key: "gates" as const, label: "Gates" },
   { key: "config" as const, label: "Config" },
   { key: "planning/wbs" as const, label: "Planning" },
+  { key: "commissioning" as const, label: "Commissioning" },
 ];
 
 // Department tabs — only render when the project has that department row.
@@ -50,6 +51,7 @@ type TabKey =
   | "gates"
   | "config"
   | "planning/wbs"
+  | "commissioning"
   | "engineering"
   | "procurement"
   | "construction"

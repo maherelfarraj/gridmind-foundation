@@ -85,6 +85,7 @@ import { Route as AuthenticatedProjectsProjectIdFinanceRouteImport } from './rou
 import { Route as AuthenticatedProjectsProjectIdEngineeringRouteImport } from './routes/_authenticated/projects.$projectId.engineering'
 import { Route as AuthenticatedProjectsProjectIdConstructionRouteImport } from './routes/_authenticated/projects.$projectId.construction'
 import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
+import { Route as AuthenticatedProjectsProjectIdCommissioningRouteImport } from './routes/_authenticated/projects.$projectId.commissioning'
 import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes/_authenticated/procurement.vendors.new'
 import { Route as AuthenticatedProcurementVendorsVendorIdRouteImport } from './routes/_authenticated/procurement.vendors.$vendorId'
 import { Route as AuthenticatedProcurementRfqsNewRouteImport } from './routes/_authenticated/procurement.rfqs.new'
@@ -573,6 +574,12 @@ const AuthenticatedProjectsProjectIdConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCommissioningRoute =
+  AuthenticatedProjectsProjectIdCommissioningRouteImport.update({
+    id: '/commissioning',
+    path: '/commissioning',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
 const AuthenticatedProcurementVendorsNewRoute =
   AuthenticatedProcurementVendorsNewRouteImport.update({
     id: '/new',
@@ -943,6 +950,7 @@ export interface FileRoutesByFullPath {
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
+  '/projects/$projectId/commissioning': typeof AuthenticatedProjectsProjectIdCommissioningRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
@@ -1060,6 +1068,7 @@ export interface FileRoutesByTo {
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
+  '/projects/$projectId/commissioning': typeof AuthenticatedProjectsProjectIdCommissioningRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
@@ -1184,6 +1193,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
   '/_authenticated/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/_authenticated/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
+  '/_authenticated/projects/$projectId/commissioning': typeof AuthenticatedProjectsProjectIdCommissioningRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/_authenticated/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
   '/_authenticated/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
@@ -1310,6 +1320,7 @@ export interface FileRouteTypes {
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
     | '/procurement/vendors/new'
+    | '/projects/$projectId/commissioning'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/engineering'
@@ -1427,6 +1438,7 @@ export interface FileRouteTypes {
     | '/procurement/rfqs/new'
     | '/procurement/vendors/$vendorId'
     | '/procurement/vendors/new'
+    | '/projects/$projectId/commissioning'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
     | '/projects/$projectId/finance'
@@ -1550,6 +1562,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/rfqs/new'
     | '/_authenticated/procurement/vendors/$vendorId'
     | '/_authenticated/procurement/vendors/new'
+    | '/_authenticated/projects/$projectId/commissioning'
     | '/_authenticated/projects/$projectId/config'
     | '/_authenticated/projects/$projectId/construction'
     | '/_authenticated/projects/$projectId/engineering'
@@ -2152,6 +2165,13 @@ declare module '@tanstack/react-router' {
       path: '/config'
       fullPath: '/projects/$projectId/config'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdConfigRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
+    '/_authenticated/projects/$projectId/commissioning': {
+      id: '/_authenticated/projects/$projectId/commissioning'
+      path: '/commissioning'
+      fullPath: '/projects/$projectId/commissioning'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
     }
     '/_authenticated/procurement/vendors/new': {
@@ -2836,6 +2856,7 @@ const AuthenticatedProjectsProjectIdPlanningRouteWithChildren =
   )
 
 interface AuthenticatedProjectsProjectIdRouteChildren {
+  AuthenticatedProjectsProjectIdCommissioningRoute: typeof AuthenticatedProjectsProjectIdCommissioningRoute
   AuthenticatedProjectsProjectIdConfigRoute: typeof AuthenticatedProjectsProjectIdConfigRoute
   AuthenticatedProjectsProjectIdConstructionRoute: typeof AuthenticatedProjectsProjectIdConstructionRoute
   AuthenticatedProjectsProjectIdEngineeringRoute: typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
@@ -2850,6 +2871,8 @@ interface AuthenticatedProjectsProjectIdRouteChildren {
 
 const AuthenticatedProjectsProjectIdRouteChildren: AuthenticatedProjectsProjectIdRouteChildren =
   {
+    AuthenticatedProjectsProjectIdCommissioningRoute:
+      AuthenticatedProjectsProjectIdCommissioningRoute,
     AuthenticatedProjectsProjectIdConfigRoute:
       AuthenticatedProjectsProjectIdConfigRoute,
     AuthenticatedProjectsProjectIdConstructionRoute:
