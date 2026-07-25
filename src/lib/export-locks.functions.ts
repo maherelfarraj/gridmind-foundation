@@ -40,7 +40,8 @@ async function assertLockRole(context: AuthContext) {
 }
 
 async function currentCompanyId(context: AuthContext): Promise<string> {
-  const uid = context.user.id;
+  const uid = context.user?.id;
+  if (!uid) throw Object.assign(new Error("not_authenticated"), { statusCode: 401 });
   const { data, error } = await context.supabase
     .from("profiles")
     .select("company_id")
