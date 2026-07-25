@@ -424,7 +424,7 @@ export interface AuditEventLite {
   id: string;
   action: string;
   actor_id: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
   created_at: string;
 }
 
@@ -522,7 +522,7 @@ export const getChangeOrderDetail = createServerFn({ method: "GET" })
         id: a.id,
         action: a.action,
         actor_id: a.actor_id ?? null,
-        metadata: (a.metadata ?? {}) as Record<string, unknown>,
+        metadata: (a.metadata ?? {}) as Record<string, any>,
         created_at: a.created_at,
       })) as AuditEventLite[];
 
