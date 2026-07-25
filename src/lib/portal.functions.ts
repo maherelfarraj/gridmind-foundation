@@ -438,7 +438,7 @@ export const raisePortalTicket = createServerFn({ method: "POST" })
     const { data: id, error } = await context.supabase.rpc("portal_raise_ticket", {
       p_project_id: data.projectId,
       p_subject: data.subject,
-      p_body: data.body ?? null,
+      p_body: data.body ?? "",
       p_category: data.category ?? "general",
       p_priority: data.priority,
     });
