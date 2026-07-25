@@ -35,7 +35,7 @@ function toRow(r: any): LcoeRow {
     project_life_years: Number(r.project_life_years),
     currency_code: r.currency_code,
     lcoe: r.lcoe == null ? null : Number(r.lcoe),
-    assumptions: (r.assumptions ?? {}) as Record<string, unknown>,
+    assumptions: (r.assumptions ?? {}) as Record<string, any>,
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
@@ -76,7 +76,7 @@ export const upsertLcoeScenario = createServerFn({ method: "POST" })
       project_life_years: data.project_life_years,
     });
 
-    const payload: Record<string, unknown> = {
+    const payload: Record<string, any> = {
       project_id: data.project_id,
       name: data.name,
       capex: data.capex,

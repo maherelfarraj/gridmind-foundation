@@ -39,7 +39,7 @@ function toRow(r: any): PpaRow {
       r.availability_target_pct == null
         ? null
         : Number(r.availability_target_pct),
-    liquidated_damages: (r.liquidated_damages ?? {}) as Record<string, unknown>,
+    liquidated_damages: (r.liquidated_damages ?? {}) as Record<string, any>,
     notes: r.notes ?? null,
     created_at: r.created_at,
     updated_at: r.updated_at,
@@ -122,7 +122,7 @@ export const upsertPpaTerms = createServerFn({ method: "POST" })
       httpError(403, "forbidden");
     }
     const companyId = await currentCompanyId(context as AuthContext);
-    const payload: Record<string, unknown> = {
+    const payload: Record<string, any> = {
       project_id: data.project_id,
       name: data.name,
       counterparty: data.counterparty ?? null,
