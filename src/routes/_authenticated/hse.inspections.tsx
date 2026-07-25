@@ -40,7 +40,7 @@ import {
   type InspectionInput,
   type InspectionStatus,
 } from "@/lib/hse.rules";
-import { toCsv, downloadCsv } from "@/lib/csv";
+import { objectsToCsv, downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/hse/inspections")({
   head: () => ({
@@ -148,7 +148,7 @@ function InspectionsPage() {
   };
 
   const exportCsv = () => {
-    const csv = toCsv(
+    const csv = objectsToCsv(
       rows.map((r) => ({
         date: r.inspection_date,
         project: r.project_name ?? "",

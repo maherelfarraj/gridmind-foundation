@@ -23,7 +23,7 @@ import {
   incidentListQueryOptions,
 } from "@/lib/hse-query";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
-import { toCsv, downloadCsv } from "@/lib/csv";
+import { objectsToCsv, downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/hse/incidents/")({
   head: () => ({
@@ -63,7 +63,7 @@ function IncidentListPage() {
   const rows = listQuery.data ?? [];
 
   const exportCsv = () => {
-    const csv = toCsv(
+    const csv = objectsToCsv(
       rows.map((r) => ({
         incident_number: r.incident_number,
         project: r.project_name ?? "",

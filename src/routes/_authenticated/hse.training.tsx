@@ -36,7 +36,7 @@ import {
 } from "@/lib/hse.functions";
 import type { TrainingInput } from "@/lib/hse.rules";
 import { supabase } from "@/integrations/supabase/client";
-import { toCsv, downloadCsv } from "@/lib/csv";
+import { objectsToCsv, downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/hse/training")({
   head: () => ({
@@ -157,7 +157,7 @@ function TrainingPage() {
   };
 
   const exportCsv = () => {
-    const csv = toCsv(
+    const csv = objectsToCsv(
       rows.map((r) => ({
         person: r.person_name,
         course: r.course,
