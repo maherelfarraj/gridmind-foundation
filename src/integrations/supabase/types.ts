@@ -2358,6 +2358,273 @@ export type Database = {
           },
         ]
       }
+      hse_incidents: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          corrective_actions: Json
+          created_at: string
+          created_by: string | null
+          days_away_from_work: number
+          description: string
+          id: string
+          incident_number: string
+          incident_type: Database["public"]["Enums"]["hse_incident_type"]
+          location: string | null
+          medical_treatment: boolean
+          occurred_at: string
+          osha_recordable: boolean
+          persons_involved: string | null
+          project_id: string
+          reported_at: string
+          restricted_duty: boolean
+          severity: Database["public"]["Enums"]["hse_incident_severity"]
+          status: Database["public"]["Enums"]["hse_incident_status"]
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          corrective_actions?: Json
+          created_at?: string
+          created_by?: string | null
+          days_away_from_work?: number
+          description: string
+          id?: string
+          incident_number: string
+          incident_type: Database["public"]["Enums"]["hse_incident_type"]
+          location?: string | null
+          medical_treatment?: boolean
+          occurred_at: string
+          osha_recordable?: boolean
+          persons_involved?: string | null
+          project_id: string
+          reported_at?: string
+          restricted_duty?: boolean
+          severity?: Database["public"]["Enums"]["hse_incident_severity"]
+          status?: Database["public"]["Enums"]["hse_incident_status"]
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          corrective_actions?: Json
+          created_at?: string
+          created_by?: string | null
+          days_away_from_work?: number
+          description?: string
+          id?: string
+          incident_number?: string
+          incident_type?: Database["public"]["Enums"]["hse_incident_type"]
+          location?: string | null
+          medical_treatment?: boolean
+          occurred_at?: string
+          osha_recordable?: boolean
+          persons_involved?: string | null
+          project_id?: string
+          reported_at?: string
+          restricted_duty?: boolean
+          severity?: Database["public"]["Enums"]["hse_incident_severity"]
+          status?: Database["public"]["Enums"]["hse_incident_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hse_incidents_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_incidents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_incidents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_incidents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hse_inspections: {
+        Row: {
+          area: string | null
+          checklist: Json
+          closed_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          findings_count: number
+          id: string
+          inspection_date: string
+          inspection_type: string
+          inspector_id: string | null
+          open_findings: number
+          project_id: string
+          status: Database["public"]["Enums"]["hse_inspection_status"]
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          checklist?: Json
+          closed_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          findings_count?: number
+          id?: string
+          inspection_date: string
+          inspection_type?: string
+          inspector_id?: string | null
+          open_findings?: number
+          project_id: string
+          status?: Database["public"]["Enums"]["hse_inspection_status"]
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          checklist?: Json
+          closed_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          findings_count?: number
+          id?: string
+          inspection_date?: string
+          inspection_type?: string
+          inspector_id?: string | null
+          open_findings?: number
+          project_id?: string
+          status?: Database["public"]["Enums"]["hse_inspection_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hse_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_inspections_inspector_id_fkey"
+            columns: ["inspector_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hse_training_records: {
+        Row: {
+          certificate_path: string | null
+          company_id: string
+          completed_on: string
+          course: string
+          created_at: string
+          created_by: string | null
+          expires_on: string | null
+          id: string
+          person_name: string
+          profile_id: string | null
+          project_id: string | null
+          provider: string | null
+          updated_at: string
+        }
+        Insert: {
+          certificate_path?: string | null
+          company_id: string
+          completed_on: string
+          course: string
+          created_at?: string
+          created_by?: string | null
+          expires_on?: string | null
+          id?: string
+          person_name: string
+          profile_id?: string | null
+          project_id?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certificate_path?: string | null
+          company_id?: string
+          completed_on?: string
+          course?: string
+          created_at?: string
+          created_by?: string | null
+          expires_on?: string | null
+          id?: string
+          person_name?: string
+          profile_id?: string | null
+          project_id?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hse_training_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_training_records_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_training_records_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hse_training_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ifc_release_signoffs: {
         Row: {
           company_id: string
@@ -6628,6 +6895,20 @@ export type Database = {
         | "bond"
         | "equity"
       grn_status: "draft" | "confirmed" | "has_defects" | "closed"
+      hse_incident_severity:
+        | "minor"
+        | "moderate"
+        | "major"
+        | "critical"
+        | "fatal"
+      hse_incident_status: "open" | "investigating" | "closed"
+      hse_incident_type:
+        | "injury"
+        | "near_miss"
+        | "property_damage"
+        | "environmental"
+        | "security"
+      hse_inspection_status: "scheduled" | "completed" | "closed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       invoice_direction: "receivable" | "payable"
       invoice_status:
@@ -6982,6 +7263,22 @@ export const Constants = {
         "equity",
       ],
       grn_status: ["draft", "confirmed", "has_defects", "closed"],
+      hse_incident_severity: [
+        "minor",
+        "moderate",
+        "major",
+        "critical",
+        "fatal",
+      ],
+      hse_incident_status: ["open", "investigating", "closed"],
+      hse_incident_type: [
+        "injury",
+        "near_miss",
+        "property_damage",
+        "environmental",
+        "security",
+      ],
+      hse_inspection_status: ["scheduled", "completed", "closed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       invoice_direction: ["receivable", "payable"],
       invoice_status: [
