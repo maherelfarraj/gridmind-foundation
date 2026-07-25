@@ -6171,6 +6171,7 @@ export type Database = {
       }
       wbs_items: {
         Row: {
+          area: string | null
           budgeted_amount: number | null
           code: string
           company_id: string
@@ -6184,11 +6185,14 @@ export type Database = {
           item_type: Database["public"]["Enums"]["wbs_item_type"]
           name: string
           parent_id: string | null
+          planned_quantity: number | null
           project_id: string
           sort_order: number
+          uom: string | null
           updated_at: string
         }
         Insert: {
+          area?: string | null
           budgeted_amount?: number | null
           code: string
           company_id: string
@@ -6202,11 +6206,14 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["wbs_item_type"]
           name: string
           parent_id?: string | null
+          planned_quantity?: number | null
           project_id: string
           sort_order?: number
+          uom?: string | null
           updated_at?: string
         }
         Update: {
+          area?: string | null
           budgeted_amount?: number | null
           code?: string
           company_id?: string
@@ -6220,8 +6227,10 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["wbs_item_type"]
           name?: string
           parent_id?: string | null
+          planned_quantity?: number | null
           project_id?: string
           sort_order?: number
+          uom?: string | null
           updated_at?: string
         }
         Relationships: [
