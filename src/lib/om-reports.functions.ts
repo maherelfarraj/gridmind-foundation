@@ -415,7 +415,7 @@ export const generateOmReport = createServerFn({ method: "POST" })
     }
 
     return {
-      report: saved as OmReportRow,
+      report: saved as unknown as OmReportRow,
       branding: {
         primaryColor: (brandingRes.data as any)?.primary_color ?? null,
         accentColor: (brandingRes.data as any)?.accent_color ?? null,
