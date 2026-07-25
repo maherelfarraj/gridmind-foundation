@@ -1,69 +1,61 @@
+# P-075 — Budgets, cost codes, PO commitment import
 
-## P-074 — Risk Register
+Adds the finance backbone: hierarchical cost codes mapped to WBS, versioned budgets with a generated `current_amount`, and a PO commitment import that snapshots issued POs into `budgets.po_commitments`. Follows the same rules-and-server-fn pattern used for schedule/risks.
 
-Schema is in place from P-071 (`risks` table, generated `score = probability × impact`, `risk_status` enum, append-only via missing DELETE grant). `category` is `text` — validated via zod against the fixed list. No migration.
+## Migration — `supabase/migrations/0033_budgets_cost_codes.sql`
 
-### Server (`createServerFn` + zod + `requireSupabaseAuth`)
+Filename bumped to `0033_` because `0032_planning_baseline.sql` already exists (P-071 renumbered). SQL body is exactly the spec block, plus:
+- `create trigger set_updated_at_cost_codes before update on public.cost_codes for each row execute function public.set_updated_at();`
+- Same trigger on `public.budgets`.
+- `service_role` gets `all` on both tables (matches project convention; the spec grant block covers `authenticated` and deliberately omits DELETE on budgets for the 7-year retention rule).
 
-- `src/lib/risks.rules.ts` — pure helpers + zod schemas:
-  - `RISK_CATEGORIES = ['schedule','cost','technical','hse','commercial','regulatory']`, `RISK_STATUSES = ['open','mitigating','realized','closed']`.
-  - `riskCreateSchema`, `riskUpdateSchema` (partial), `riskDeleteSchema` — title 1..200, description, category enum, probability/impact 1..5 int, status enum, owner_id uuid|null, mitigation text, contingency_amount ≥ 0, currency_code 3-letter, target_close_date, identified_at.
-  - `scoreOf(p,i)`, `bandForScore(s)` (`low <5`, `medium <10`, `high <15`, `critical ≥15`).
-  - `registerAgeDays(rows, today)` → days since max(identified_at); `bandForAge(days)` → `ok ≤14`, `warning 15–30`, `destructive >30`.
-  - `matrixCells(rows)` → 5×5 buckets keyed by `${p}-${i}` with chip lists.
-  - `heatCellClass(p,i)` — returns semantic token class scaled by score (e.g. `bg-primary/5`, `bg-primary/10`, `bg-warning/15`, `bg-destructive/15`, `bg-destructive/25`) — never raw hex.
-  - `sumContingency(rows)` over `open`+`mitigating` only.
-  - `formatCurrency(amount, code)` — `Intl.NumberFormat` with fallback.
+Financial immutability rule: no DELETE grant on `budgets` — new versions supersede. `cost_codes` keeps DELETE (they're metadata, not financial ledger rows).
 
-- `src/lib/risks.functions.ts`:
-  - `getRisksAccess` → `{ canWrite }` from `has_company_role('project_admin'|'hse_admin'|'finance_admin'|'company_admin')`.
-  - `listRisks({projectId})` — joins `profiles` for owner full_name/email.
-  - `listProjectMembers({projectId})` — profiles in same company for the owner select.
-  - `createRisk`, `updateRisk`, `deleteRisk` (write roles above).
-    - `createRisk` defaults `identified_at = today`, `status = 'open'`.
-    - `updateRisk`: when status transitions to `closed` sets `closed_at = now()`; when moving out of `closed` clears it. Emits `risk.status_change` audit in addition to `risk.update` on status change.
-  - Every mutation calls `write_audit_log` (`risk.create` / `risk.update` / `risk.status_change` / `risk.delete`).
+## Server layer
 
-- `src/lib/risks.query.ts` — `queryOptions` for access, risks list, project members; `riskErrorMessage(err)`.
+- `src/lib/budget.rules.ts` — pure logic + zod:
+  - `costCodeCreateSchema`, `costCodeUpdateSchema` (code regex `^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$`, name, description, parent_id, wbs_item_id).
+  - `budgetUpsertSchema` (project_id, cost_code_id, original_amount ≥ 0, approved_changes, currency_code, notes, wbs_item_id).
+  - `poAssignmentSchema` — array of `{ po_id, cost_code_id }`.
+  - `variance(current, committed, actual)` and `varianceBand(v)` → `ok | warning | destructive` for color tokens.
+  - `sumSnapshot(entries)` and `buildPoSnapshotEntry(po)`.
+  - `groupCostCodesByParent(rows)` — tree builder for the UI.
+- `src/lib/budget.functions.ts` (`createServerFn` + `requireSupabaseAuth`):
+  - `getBudgetAccess` → `{ canWriteCostCodes, canWriteBudgets }` via `has_company_role` (`finance_admin`/`project_admin`/`company_admin` for cost codes; `finance_admin`/`company_admin` for budgets).
+  - `listCostCodes({ projectId })`, `createCostCode`, `updateCostCode`, `deleteCostCode` (soft-guard: refuse when a budget row references it).
+  - `listBudgets({ projectId })` returning cost code join + wbs code/name.
+  - `upsertBudget` — writes version 1 on first save; when `original_amount`/`currency_code` change on an existing row, insert new `version = max+1` (supersede) rather than mutating; simple `notes`/`wbs_item_id` edits update in place.
+  - `listProjectPurchaseOrders({ projectId })` — POs in `issued`/`approved`/`acknowledged` states, projected to `{ id, po_number, vendor_name, total_amount, currency_code }`.
+  - `importPoCommitments({ projectId, assignments })` — groups assignments per cost code, replaces `po_commitments` snapshot, recomputes `committed_amount = sum(amount)` on each affected budget row, `write_audit_log('budget.import_commitments', 'budgets', budget.id, { po_ids, total })` per row.
+  - Every mutation audit-logs: `cost_code.create|update|delete`, `budget.create|update|supersede`, `budget.import_commitments`.
+- `src/lib/budget.query.ts` — `queryOptions` wrappers + `budgetErrorMessage`.
+- `src/lib/budget.csv.ts` — CSV export: cost code, name, WBS, current, committed, actual, variance, currency.
 
-### UI
+## UI
 
-- `src/routes/_authenticated/projects.$projectId.planning.tsx` — add `{ to: 'risks', label: 'Risks' }` to `SUB_TABS`.
-- `src/routes/_authenticated/projects.$projectId.planning.risks.tsx` — leaf route with `head()` metadata, `pendingComponent` skeleton, `errorComponent` (retry via `router.invalidate()`), orchestrator component holding tab state (`matrix` | `register`) and selected risk drawer state.
-- `src/components/planning/risk-kpi-strip.tsx` — 4 cards: open risks count, high-risk count (score ≥ 15, destructive text), contingency exposure (Intl-formatted; groups by currency if mixed — shows primary + "+N more" tooltip), register age (green/amber/destructive with tooltip "Risk register freshness — review monthly").
-- `src/components/planning/risk-matrix.tsx` — 5×5 grid, x = impact 1→5, y = probability 5→1 (top-left = high P / low I). Each cell = `heatCellClass(p,i)` background, header rows/cols labelled (Very Low → Very High). Chips render truncated title with tooltip; click opens drawer. Empty cells show subtle dot.
-- `src/components/planning/risk-register-table.tsx` — server data + client filter/search:
-  - Columns: title, category badge, P, I, Score (bold; destructive when ≥15), Owner (profiles.full_name || email fallback), Status badge, Target close, Age (days since identified_at).
-  - Toolbar: search (title/description), category filter, status filter, "New risk" (role-gated), "Export CSV".
-  - Empty state: "No risks logged — a stale register fails lender due diligence." Skeleton loading, error retry.
-- `src/components/planning/risk-drawer.tsx` — shadcn `Sheet` + react-hook-form + zod:
-  - Fields: title, description textarea, category `Select`, probability `Slider` 1–5 + label (Very Low..Very High), impact same, live score preview with band chip, owner `Select` (project members), mitigation textarea, contingency amount input + currency `Select` (3-letter, default from project or `USD`), target close date (shadcn date picker with `pointer-events-auto`), status `Select` with allowed transitions from current (`open → mitigating`, `mitigating → realized|closed`, closed → open reopen).
-  - Submit disabled when `!canWrite`.
-- `src/lib/risks.csv.ts` — CSV export: title, category, probability, impact, score, status, owner, identified_at, target_close_date, contingency_amount, currency_code.
+- `src/routes/_authenticated/projects.$projectId.finance.tsx` — new pathless finance layout with sub-tabs (Budget for now; future EVM/change orders slot in). Follows the planning sub-tab pattern.
+- `src/routes/_authenticated/projects.$projectId.finance.budget.tsx` — orchestrator route with `head()`, `pendingComponent` skeleton, `errorComponent` (retry via `router.invalidate()`).
+- `src/components/finance/budget-kpi-strip.tsx` — 4 cards: total budget (current), total committed, total actual, total variance (colored via `varianceBand`). Intl currency formatter locked to project's dominant currency (falls back to first budget row).
+- `src/components/finance/budget-tree-table.tsx` — tree-table grouped by `parent_id`. Columns: code, name, WBS select (inline `wbs_item_id` update via `updateCostCode`), original, approved changes, current (generated, read-only, muted), committed, actual, variance (signed with band color). Expand/collapse parents. Empty state ("No cost codes yet — start with a standard EPC breakdown"). Role-gated inline edits.
+- `src/components/finance/cost-code-dialog.tsx` — create/edit cost code (react-hook-form + zod).
+- `src/components/finance/import-commitments-dialog.tsx` — the money moment: lists POs from `listProjectPurchaseOrders`, each row has a cost-code `Select`; running-sum preview per cost code; "Import" calls `importPoCommitments` and toasts committed totals. Skeleton while POs load, empty state when no eligible POs.
+- Toolbar: "New cost code", "Import PO commitments", "Export CSV".
 
-Cell heat scale (semantic tokens only):
+## Verification
 
-```text
-score 1–4   → bg-muted/40
-score 5–8   → bg-primary/10
-score 9–12  → bg-warning/15
-score 13–14 → bg-warning/25
-score 15–19 → bg-destructive/15
-score 20–25 → bg-destructive/25
-```
+1. Migration runs twice cleanly; `supabase--linter` clean for new tables.
+2. `supabase--read_query` checks: RLS enabled; DELETE not granted to authenticated on `budgets`; generated column `current_amount = original_amount + approved_changes`.
+3. `tests/unit/budget-rules.test.ts` — variance/band, snapshot sum, tree grouping, schema rejects (negative amount, bad code).
+4. `bunx tsgo --noEmit` clean.
+5. Preview smoke: create the three cost codes, map WBS, import Batch 07 POs → committed matches PO totals, variance updates live, audit log entries present, CSV export works, non-finance user is blocked from writes.
 
-### Verification (in build mode)
+## Non-goals
 
-1. `tests/unit/risks-rules.test.ts` — `scoreOf`, `bandForScore`, `registerAgeDays` + `bandForAge` boundaries (14/15/30/31), `matrixCells` placement, `sumContingency` (excludes realized/closed), `heatCellClass` returns token class strings only, category/probability zod validation.
-2. `bunx tsgo --noEmit` clean.
-3. Preview smoke: log the three acceptance risks, edit grid-delay impact 4→3 (chip moves live), verify KPI bands, transition open→mitigating→closed and confirm `closed_at` + audit rows in `audit_logs`, CSV export.
+- No change-order approval UI (P-081 owns `approved_changes` mutation).
+- No actual-invoice ingestion (P-080).
+- No EVM math or S-curve (P-076).
+- Multi-currency conversion out of scope — budgets stored in their own `currency_code`; KPIs sum per currency; mixed-currency projects show per-currency subtotals rather than an FX-converted grand total.
 
-### Non-goals
+## Follow-ups
 
-- No bulk import / template library (defer to later).
-- No mitigation task linkage to `schedule_tasks` (out of scope for P-074).
-- No historical trend chart of risk scores over time.
-
-### Follow-up after green
-
-P-075 — budgets + cost codes migration.
+P-076 — EVM snapshots (PV/EV/AC, SPI/CPI) reading from these budget rows.
