@@ -20,6 +20,7 @@ export async function isSupabaseUp(): Promise<boolean> {
   try {
     if (!URL || !ANON || !SERVICE) return false;
     const res = await fetch(`${URL}/auth/v1/health`, {
+      headers: { apikey: ANON },
       signal: AbortSignal.timeout(3_000),
     });
     return res.ok;
@@ -27,6 +28,7 @@ export async function isSupabaseUp(): Promise<boolean> {
     return false;
   }
 }
+
 
 export function serviceClient(): SupabaseClient<Database> {
   return createClient<Database>(URL, SERVICE, {
