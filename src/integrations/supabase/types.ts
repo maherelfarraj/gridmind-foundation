@@ -5347,6 +5347,121 @@ export type Database = {
           },
         ]
       }
+      qaqc_punch_items: {
+        Row: {
+          area: string
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["punch_category"]
+          closed_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          discipline: Database["public"]["Enums"]["qaqc_discipline"]
+          due_date: string | null
+          id: string
+          photo_ids: Json
+          project_id: string
+          punch_number: string
+          raised_by: string | null
+          signoff_at: string | null
+          signoff_by: string | null
+          signoff_name: string | null
+          status: Database["public"]["Enums"]["punch_status"]
+          updated_at: string
+          walk_date: string
+        }
+        Insert: {
+          area: string
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["punch_category"]
+          closed_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          discipline: Database["public"]["Enums"]["qaqc_discipline"]
+          due_date?: string | null
+          id?: string
+          photo_ids?: Json
+          project_id: string
+          punch_number: string
+          raised_by?: string | null
+          signoff_at?: string | null
+          signoff_by?: string | null
+          signoff_name?: string | null
+          status?: Database["public"]["Enums"]["punch_status"]
+          updated_at?: string
+          walk_date: string
+        }
+        Update: {
+          area?: string
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["punch_category"]
+          closed_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          discipline?: Database["public"]["Enums"]["qaqc_discipline"]
+          due_date?: string | null
+          id?: string
+          photo_ids?: Json
+          project_id?: string
+          punch_number?: string
+          raised_by?: string | null
+          signoff_at?: string | null
+          signoff_by?: string | null
+          signoff_name?: string | null
+          status?: Database["public"]["Enums"]["punch_status"]
+          updated_at?: string
+          walk_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qaqc_punch_items_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_signoff_by_fkey"
+            columns: ["signoff_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -7110,6 +7225,8 @@ export type Database = {
         | "rejected"
         | "expired"
         | "superseded"
+      punch_category: "A" | "B" | "C"
+      punch_status: "open" | "ready_for_review" | "closed" | "void"
       qaqc_discipline: "civil" | "mechanical" | "electrical"
       qaqc_result: "pending" | "pass" | "fail" | "conditional"
       rfq_bid_status:
@@ -7494,6 +7611,8 @@ export const Constants = {
         "expired",
         "superseded",
       ],
+      punch_category: ["A", "B", "C"],
+      punch_status: ["open", "ready_for_review", "closed", "void"],
       qaqc_discipline: ["civil", "mechanical", "electrical"],
       qaqc_result: ["pending", "pass", "fail", "conditional"],
       rfq_bid_status: [
