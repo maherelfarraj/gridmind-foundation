@@ -326,68 +326,75 @@ function FilterField({ label, children }: { label: string; children: React.React
   );
 }
 
+// POL-3 — shared DataTable standard: relative timestamps with absolute on hover.
 function EventsTable({ rows }: { rows: PortalAuditRow[] }) {
+  const columns: DataTableColumn<PortalAuditRow>[] = [
+    {
+      id: "when",
+      header: "When",
+      width: "10rem",
+      cell: (r) => <RelativeTime value={r.created_at} className="text-muted-foreground" />,
+    },
+    {
+      id: "event",
+      header: "Event",
+      cell: (r) => {
+        const meta = EVENT_LABELS[r.event];
+        const EventIcon = meta?.icon ?? Activity;
+        return <StatusBadge status="active" label={meta?.label ?? r.event} icon={EventIcon} />;
+      },
+    },
+    {
+      id: "actor",
+      header: "Actor",
+      cell: (r) =>
+        r.actor_email ? (
+          <span className="font-mono text-xs">{r.actor_email}</span>
+        ) : r.event === "share_link.viewed" ? (
+          <span className="text-xs italic text-muted-foreground">share link visitor</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "project",
+      header: "Project",
+      hideBelow: "md",
+      cell: (r) =>
+        r.project_name ?? <span className="font-mono text-xs">{r.project_id.slice(0, 8)}</span>,
+    },
+    {
+      id: "membership",
+      header: "Membership",
+      hideBelow: "lg",
+      cell: (r) =>
+        r.membership_email ? (
+          <span className="font-mono text-xs">{r.membership_email}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "detail",
+      header: "Detail",
+      hideBelow: "lg",
+      className: "max-w-md",
+      cell: (r) => <MetaDetail metadata={r.metadata} />,
+    },
+  ];
+
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-40">When</TableHead>
-            <TableHead>Event</TableHead>
-            <TableHead>Actor</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Membership</TableHead>
-            <TableHead>Detail</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((r) => {
-            const meta = EVENT_LABELS[r.event];
-            const EventIcon = meta?.icon ?? Activity;
-            return (
-              <TableRow key={r.id}>
-                <TableCell className="text-xs text-muted-foreground">
-                  <div>{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</div>
-                  <div className="font-mono">
-                    {format(new Date(r.created_at), "yyyy-MM-dd HH:mm")}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className="gap-1 bg-primary/10 text-primary">
-                    <EventIcon className="h-3 w-3" />
-                    {meta?.label ?? r.event}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-sm">
-                  {r.actor_email ? (
-                    <span className="font-mono text-xs">{r.actor_email}</span>
-                  ) : r.event === "share_link.viewed" ? (
-                    <span className="text-xs italic text-muted-foreground">share link visitor</span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-xs">
-                  {r.project_name ?? <span className="font-mono">{r.project_id.slice(0, 8)}</span>}
-                </TableCell>
-                <TableCell className="text-xs">
-                  {r.membership_email ? (
-                    <span className="font-mono">{r.membership_email}</span>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="max-w-md">
-                  <MetaDetail metadata={r.metadata} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable
+      columns={columns}
+      rows={rows}
+      getRowId={(r) => r.id}
+      emptyTitle="No portal events yet"
+      emptyDescription="Client portal activity will appear here."
+      stickyFirstColumn
+    />
   );
 }
+
 
 function MetaDetail({ metadata }: { metadata: unknown }) {
   if (!metadata || typeof metadata !== "object") {

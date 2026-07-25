@@ -14,6 +14,8 @@ import {
   type InboxRow,
 } from "@/lib/approvals.inbox.functions";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge, statusLabel } from "@/components/ui/status-badge";
+import { formatDateTime, formatMoney, formatRelative } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -53,37 +55,24 @@ function slaBadge(row: InboxRow) {
   const due = row.sla_due_at ?? row.step_due_at;
   if (!due) return null;
   const dueDate = new Date(due);
-  const now = Date.now();
-  const diffMs = dueDate.getTime() - now;
+  const diffMs = dueDate.getTime() - Date.now();
   const overdue = diffMs < 0;
   const within24 = !overdue && diffMs < 24 * 60 * 60 * 1000;
   const label = overdue
     ? `+${formatDistanceToNow(dueDate)} overdue`
     : `${formatDistanceToNow(dueDate)} left`;
-  const cls = overdue
-    ? "bg-destructive text-destructive-foreground"
-    : within24
-      ? "bg-accent text-accent-foreground"
-      : "bg-muted text-muted-foreground";
   return (
-    <Badge className={cls}>
-      <Clock className="mr-1 h-3 w-3" />
-      {label}
-    </Badge>
+    <StatusBadge
+      status={overdue ? "overdue" : within24 ? "due_soon" : "scheduled"}
+      label={label}
+      icon={Clock}
+    />
   );
 }
 
 function formatAmount(row: InboxRow) {
   if (row.amount == null) return null;
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: row.currency ?? "USD",
-      maximumFractionDigits: 0,
-    }).format(row.amount);
-  } catch {
-    return `${row.amount}`;
-  }
+  return formatMoney(row.amount, row.currency ?? "USD");
 }
 
 function entityLink(row: InboxRow): string | null {
@@ -104,25 +93,27 @@ function entityLink(row: InboxRow): string | null {
   }
 }
 
+// POL-3 — approvals inbox is card-based at every width (one-hand usable at 390px).
 function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => void }) {
   const amount = formatAmount(row);
   return (
     <button
       type="button"
       onClick={() => onOpen(row.instance_id)}
-      className="flex w-full flex-col gap-2 rounded-lg border border-border bg-card p-4 text-left transition hover:border-primary/50 hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex w-full flex-col gap-2 rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="outline">{row.entity_type}</Badge>
-        {row.escalated_at && (
-          <Badge className="bg-destructive text-destructive-foreground">
-            <AlertTriangle className="mr-1 h-3 w-3" />
-            Escalated
-          </Badge>
-        )}
-        <span className="font-medium text-foreground">{row.title}</span>
-        {amount && <span className="text-sm text-muted-foreground">· {amount}</span>}
-        <div className="ml-auto flex items-center gap-2">{slaBadge(row)}</div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <Badge variant="mutedOutline">{statusLabel(row.entity_type)}</Badge>
+          {row.escalated_at && (
+            <StatusBadge status="escalated" label="Escalated" icon={AlertTriangle} />
+          )}
+          <span className="min-w-0 truncate font-medium text-foreground">{row.title}</span>
+          {amount && (
+            <span className="text-sm text-muted-foreground tabular-nums">· {amount}</span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">{slaBadge(row)}</div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span>
@@ -130,16 +121,17 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
           {row.step_role ? ` · ${row.step_role}` : ""}
         </span>
         {row.requester_name && <span>Requested by {row.requester_name}</span>}
-        <span>{formatDistanceToNow(new Date(row.requested_at), { addSuffix: true })}</span>
+        <span title={formatDateTime(row.requested_at)}>{formatRelative(row.requested_at)}</span>
         {row.approval_status !== "pending" && (
-          <Badge variant="secondary" className="ml-auto">
-            {row.approval_status}
-          </Badge>
+          <span className="ml-auto">
+            <StatusBadge status={row.approval_status} />
+          </span>
         )}
       </div>
     </button>
   );
 }
+
 
 function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void }) {
   const listFn = useServerFn(listMyApprovals);

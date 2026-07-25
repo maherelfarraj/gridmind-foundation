@@ -1,4 +1,5 @@
-import { Badge } from "@/components/ui/badge";
+// POL-3: canonical StatusBadge map.
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { GrnStatus } from "@/lib/grn-rules";
 
 const LABELS: Record<GrnStatus, string> = {
@@ -8,13 +9,6 @@ const LABELS: Record<GrnStatus, string> = {
   closed: "Closed",
 };
 
-const VARIANTS: Record<GrnStatus, "secondary" | "default" | "destructive" | "outline"> = {
-  draft: "secondary",
-  confirmed: "default",
-  has_defects: "destructive",
-  closed: "outline",
-};
-
 export function GrnStatusBadge({ status }: { status: GrnStatus }) {
-  return <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>;
+  return <StatusBadge status={status} label={LABELS[status]} />;
 }

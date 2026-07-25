@@ -22,14 +22,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { PageHeader } from "@/components/ui/page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatDate, formatMoney } from "@/lib/format";
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objectsToCsv, downloadCsv } from "@/lib/csv";
 import {
@@ -395,69 +391,73 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
 }
 
 // ---------------------------------------------------------------------------
+// POL-3 — shared DataTable standard (numeric right-aligned, card list on mobile).
 function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string) => void }) {
+  const columns: DataTableColumn<WorkOrderRow>[] = [
+    {
+      id: "wo",
+      header: "WO #",
+      cell: (r) => <span className="font-mono text-xs">{r.wo_number}</span>,
+    },
+    { id: "title", header: "Title", cell: (r) => <span className="font-medium">{r.title}</span> },
+    { id: "type", header: "Type", hideBelow: "lg", cell: (r) => <StatusBadge status={r.type} /> },
+    { id: "priority", header: "Priority", cell: (r) => <StatusBadge status={r.priority} /> },
+    { id: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      id: "assignee",
+      header: "Assignee",
+      hideBelow: "lg",
+      cell: (r) =>
+        r.assignee_name ?? r.assignee_email ?? <span className="text-muted-foreground">Unassigned</span>,
+    },
+    {
+      id: "due",
+      header: "Due",
+      hideBelow: "md",
+      cell: (r) =>
+        isOverdue(r.due_date, r.status) ? (
+          <span className="font-medium text-destructive">{formatDate(r.due_date)}</span>
+        ) : (
+          <span className="text-muted-foreground">{formatDate(r.due_date)}</span>
+        ),
+    },
+    {
+      id: "cost",
+      header: "Cost",
+      numeric: true,
+      cell: (r) => formatMoney(r.total_cost, "USD"),
+    },
+  ];
+
   return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>WO #</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Assignee</TableHead>
-            <TableHead>Due</TableHead>
-            <TableHead className="text-right">Cost</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="border-0 bg-transparent p-0">
-                <EmptyState
-                  title="No work orders yet"
-                  compact
-                  className="border-0 bg-transparent"
-                />
-              </TableCell>
-            </TableRow>
-          ) : (
-            rows.map((r) => {
-              const overdue = isOverdue(r.due_date, r.status);
-              return (
-                <TableRow
-                  key={r.id}
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => onOpen(r.id)}
-                >
-                  <TableCell className="font-mono text-xs">{r.wo_number}</TableCell>
-                  <TableCell>{r.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{r.type}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={priorityCls(r.priority)}>{r.priority}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{r.status.replace("_", " ")}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {r.assignee_name ?? r.assignee_email ?? (
-                      <span className="text-muted-foreground">Unassigned</span>
-                    )}
-                  </TableCell>
-                  <TableCell className={overdue ? "font-semibold text-destructive" : ""}>
-                    {r.due_date ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono">{money(r.total_cost)}</TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
-      {WORK_ORDER_STATUSES.length > 0 ? null : null /* keep import used in table view too */}
-    </div>
+    <DataTable
+      columns={columns}
+      rows={rows}
+      getRowId={(r) => r.id}
+      onRowClick={(r) => onOpen(r.id)}
+      emptyTitle="No work orders yet"
+      emptyDescription="Corrective and preventive work orders appear here."
+      mobileCard={(r) => ({
+        primary: (
+          <span className="flex flex-col">
+            <span>{r.title}</span>
+            <span className="font-mono text-xs text-muted-foreground">{r.wo_number}</span>
+          </span>
+        ),
+        badge: <StatusBadge status={r.status} />,
+        fields: [
+          { label: "Priority", value: <StatusBadge status={r.priority} /> },
+          {
+            label: "Due",
+            value: isOverdue(r.due_date, r.status) ? (
+              <span className="font-medium text-destructive">{formatDate(r.due_date)}</span>
+            ) : (
+              formatDate(r.due_date)
+            ),
+          },
+        ],
+      })}
+    />
   );
 }
+
