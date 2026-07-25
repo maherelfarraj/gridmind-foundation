@@ -107,7 +107,7 @@ function PunchIndexPage() {
   function updateSearch(patch: Partial<z.infer<typeof searchSchema>>) {
     navigate({
       to: "/qaqc/punch",
-      search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, ...patch }),
+      search: ((prev: any) => ({ ...prev, ...patch })) as any,
     });
   }
 

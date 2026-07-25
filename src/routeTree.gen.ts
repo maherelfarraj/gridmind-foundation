@@ -54,6 +54,7 @@ import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_auth
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
+import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcInspectionsIndexRouteImport } from './routes/_authenticated/qaqc.inspections.index'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
@@ -375,6 +376,12 @@ const AuthenticatedAdminTenantsRouteRoute =
     id: '/tenants',
     path: '/tenants',
     getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedQaqcPunchIndexRoute =
+  AuthenticatedQaqcPunchIndexRouteImport.update({
+    id: '/qaqc/punch/',
+    path: '/qaqc/punch/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQaqcInspectionsIndexRoute =
   AuthenticatedQaqcInspectionsIndexRouteImport.update({
@@ -878,6 +885,7 @@ export interface FileRoutesByFullPath {
   '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -982,6 +990,7 @@ export interface FileRoutesByTo {
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
@@ -1095,6 +1104,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -1209,6 +1219,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors/'
     | '/projects/$projectId/'
     | '/qaqc/inspections/'
+    | '/qaqc/punch/'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/ifc-release'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/qaqc/inspections'
+    | '/qaqc/punch'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/reviews'
@@ -1425,6 +1437,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
     | '/_authenticated/qaqc/inspections/'
+    | '/_authenticated/qaqc/punch/'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
@@ -1781,6 +1794,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/tenants'
       preLoaderRoute: typeof AuthenticatedAdminTenantsRouteRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/qaqc/punch/': {
+      id: '/_authenticated/qaqc/punch/'
+      path: '/qaqc/punch'
+      fullPath: '/qaqc/punch/'
+      preLoaderRoute: typeof AuthenticatedQaqcPunchIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/inspections/': {
       id: '/_authenticated/qaqc/inspections/'
@@ -2684,6 +2704,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
   AuthenticatedHseIncidentsIndexRoute: typeof AuthenticatedHseIncidentsIndexRoute
   AuthenticatedQaqcInspectionsIndexRoute: typeof AuthenticatedQaqcInspectionsIndexRoute
+  AuthenticatedQaqcPunchIndexRoute: typeof AuthenticatedQaqcPunchIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -2749,6 +2770,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHseIncidentsIndexRoute: AuthenticatedHseIncidentsIndexRoute,
   AuthenticatedQaqcInspectionsIndexRoute:
     AuthenticatedQaqcInspectionsIndexRoute,
+  AuthenticatedQaqcPunchIndexRoute: AuthenticatedQaqcPunchIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
