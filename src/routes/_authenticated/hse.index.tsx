@@ -7,8 +7,8 @@ import {
   CalendarClock,
   ClipboardCheck,
   GraduationCap,
+  Inbox,
   Plus,
-  Shield,
   ShieldAlert,
   TrendingUp,
 } from "lucide-react";
@@ -30,7 +30,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { errorMessage, hseDashboardQueryOptions, hseProjectsQueryOptions } from "@/lib/hse-query";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
-import { Inbox } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/hse/")({
   head: () => ({
@@ -212,38 +211,5 @@ function HseDashboardPage() {
         </Card>
       </div>
     </TooltipProvider>
-  );
-}
-
-interface KpiProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value: string;
-  hint?: string;
-  loading?: boolean;
-}
-function KpiCard({ icon: Icon, label, value, hint, loading }: KpiProps) {
-  const body = (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Icon size={12} /> {label}
-        </div>
-        {loading ? (
-          <Skeleton className="h-8 w-16" />
-        ) : (
-          <div className="font-display text-2xl font-semibold tabular-nums text-foreground">
-            {value}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-  if (!hint) return body;
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{body}</TooltipTrigger>
-      <TooltipContent>{hint}</TooltipContent>
-    </Tooltip>
   );
 }

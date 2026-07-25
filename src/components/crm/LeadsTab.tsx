@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus } from "lucide-react";
+import { Inbox, Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -74,9 +75,7 @@ export function LeadsTab({ readOnly }: Props) {
             ))}
           </div>
         ) : (query.data ?? []).length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No leads yet — create your first one.
-          </div>
+          <EmptyState icon={Inbox} title="No leads yet" description="Create your first one." />
         ) : (
           <Table>
             <TableHeader>

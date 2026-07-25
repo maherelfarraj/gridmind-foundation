@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -27,6 +26,7 @@ import {
   risksListQueryOptions,
 } from "@/lib/risks.query";
 import { registerAgeDays, sumContingency, riskWritableSchema } from "@/lib/risks.rules";
+import { SectionHeader } from "@/components/ui/page-header";
 
 import { RiskDrawer } from "@/components/planning/risk-drawer";
 import { RiskKpiStrip } from "@/components/planning/risk-kpi-strip";
@@ -148,13 +148,8 @@ function RisksPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <ShieldAlert size={18} aria-hidden className="text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold text-foreground">Risks</h2>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader title="Risks" description="Probability × impact register with mitigation tracking." />
 
       {!canWrite && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">

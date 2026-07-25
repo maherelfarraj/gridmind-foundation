@@ -1,9 +1,11 @@
-import { Zap, Info } from "lucide-react";
+import { BarChart3, Info, Zap } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { useRunYieldStub } from "@/lib/proposal-query";
 import type { ProposalDetail } from "@/lib/proposal.functions";
 
@@ -52,21 +54,23 @@ export function YieldSimulationCard({
       </div>
 
       {!yr ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No simulation yet. Configure the array and click{" "}
-          <span className="font-medium text-foreground">Run simulation</span>.
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="No simulation yet"
+          description='Configure the array and click "Run simulation".'
+          compact
+        />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Tile label="P50 (annual)" value={`${formatNumber(yr.p50_kwh)} kWh`} strong />
-            <Tile label="P90 (annual)" value={`${formatNumber(yr.p90_kwh)} kWh`} />
-            <Tile
+          <KpiGrid label="Yield simulation results">
+            <KpiTile label="P50 (annual)" value={`${formatNumber(yr.p50_kwh)} kWh`} status="good" />
+            <KpiTile label="P90 (annual)" value={`${formatNumber(yr.p90_kwh)} kWh`} />
+            <KpiTile
               label="Specific yield"
               value={`${formatNumber(yr.specific_yield_kwh_kwp)} kWh/kWp`}
             />
-            <Tile label="Performance ratio" value={yr.performance_ratio.toFixed(3)} />
-          </div>
+            <KpiTile label="Performance ratio" value={yr.performance_ratio.toFixed(3)} />
+          </KpiGrid>
 
           <div className="mt-4 h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -109,22 +113,5 @@ export function YieldSimulationCard({
         <span>Placeholder engine — replaced by PVsyst import in Stage 2 (Engineering).</span>
       </div>
     </Card>
-  );
-}
-
-function Tile({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <div className="rounded-md border border-border bg-muted/30 p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div
-        className={
-          strong
-            ? "text-lg font-semibold tabular-nums text-foreground"
-            : "text-sm tabular-nums text-foreground"
-        }
-      >
-        {value}
-      </div>
-    </div>
   );
 }

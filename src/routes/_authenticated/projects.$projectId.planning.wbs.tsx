@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FolderTree, Plus, Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import { WbsTree } from "@/components/planning/wbs-tree";
 import { WbsDetailForm } from "@/components/planning/wbs-detail-form";
 import { IfcImportDialog } from "@/components/planning/ifc-import-dialog";
 import { TaskAlignmentPanel } from "@/components/planning/task-alignment-panel";
+import { SectionHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/wbs")({
   head: () => ({
@@ -159,15 +160,12 @@ function WbsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <FolderTree size={18} className="text-muted-foreground" aria-hidden />
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Work Breakdown Structure
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-6">
+      <SectionHeader
+        title="Work Breakdown Structure"
+        description="Build the project WBS and align schedule tasks to disciplines."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -185,8 +183,9 @@ function WbsPage() {
             <Plus size={14} aria-hidden />
             Add root item
           </Button>
-        </div>
-      </header>
+          </div>
+        }
+      />
 
       {!canWrite && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">

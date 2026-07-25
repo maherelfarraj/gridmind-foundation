@@ -37,7 +37,9 @@ import {
 } from "@/lib/portal.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -149,16 +151,11 @@ function PortalMembersPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Portal members
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Invite external stakeholders (clients, investors, lenders) to a curated project portal.
-          Exposure toggles gate what each member sees at the RPC layer — not just in the UI.
-        </p>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Portal members"
+        description="Invite external clients, investors, and lenders to a curated project portal."
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -189,33 +186,26 @@ function PortalMembersPage() {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : membersQuery.error ? (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-6 text-sm text-destructive">
-          <ShieldAlert className="mb-2 h-5 w-5" />
-          Could not load portal members. Refresh to retry.
-        </div>
+        <EmptyState
+          icon={ShieldAlert}
+          title="Could not load portal members"
+          description="Refresh to retry."
+        />
       ) : !projectId ? (
         <EmptyState
+          icon={Mail}
           title="No projects yet"
-          body="Create a project first, then invite external portal members."
+          description="Create a project first, then invite external portal members."
         />
       ) : (membersQuery.data ?? []).length === 0 ? (
         <EmptyState
+          icon={Mail}
           title="No portal members yet"
-          body="Invite a client, investor, or lender to see this project's curated portal."
+          description="Invite a client, investor, or lender to see this project's curated portal."
         />
       ) : (
         <MembersTable projectId={projectId} rows={membersQuery.data ?? []} />
       )}
-    </div>
-  );
-}
-
-function EmptyState({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-10 text-center">
-      <Mail className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-      <h2 className="text-base font-semibold text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
     </div>
   );
 }
@@ -543,7 +533,7 @@ function InviteDialog({ projectId }: { projectId: string }) {
         <UserPlus className="mr-2 h-4 w-4" />
         Invite portal member
       </Button>
-      <DialogContent className="max-w-lg">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Invite portal member</DialogTitle>
           <DialogDescription>
