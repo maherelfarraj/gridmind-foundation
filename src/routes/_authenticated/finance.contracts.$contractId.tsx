@@ -86,7 +86,7 @@ import {
   type ObligationStatus,
   type SovLine,
 } from "@/lib/contracts.rules";
-// pdf-text.client dynamically imported inside handler to satisfy server import protection
+// pdf-text-extractor dynamically imported inside handler (uses pdfjs-dist worker; browser-only)
 
 export const Route = createFileRoute("/_authenticated/finance/contracts/$contractId")({
   head: () => ({
@@ -924,7 +924,7 @@ function ExtractClausesDialog({
       let text = "";
       if (source === "file") {
         if (!file) throw new Error("Choose a PDF file first.");
-        const { extractPdfText } = await import("@/lib/pdf-text.client");
+        const { extractPdfText } = await import("@/lib/pdf-text-extractor");
         text = await extractPdfText(file);
         if (text.trim().length < 20) {
           throw new Error("Couldn’t extract enough text from that PDF.");
