@@ -7,6 +7,8 @@ const SUB_TABS = [
   { to: "budget" as const, label: "Budget" },
   { to: "evm" as const, label: "EVM" },
   { to: "cash-flow" as const, label: "Cash flow" },
+  { to: "pay-applications" as const, label: "Pay applications" },
+  { to: "change-orders" as const, label: "Change orders" },
 ];
 
 export const Route = createFileRoute(
