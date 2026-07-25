@@ -48,6 +48,9 @@ export type ObservationSeverity = (typeof OBSERVATION_SEVERITIES)[number];
 // ---------------------------------------------------------------------------
 // zod schemas
 // ---------------------------------------------------------------------------
+/** Optional client idempotency key used by the offline queue. */
+const idem = z.string().uuid().optional();
+
 export const dprHeaderInput = z.object({
   id: z.string().uuid().optional(),
   projectId: z.string().uuid(),
@@ -58,6 +61,7 @@ export const dprHeaderInput = z.object({
   temperatureLowC: z.number().min(-50).max(70).nullable().optional(),
   workSummary: z.string().trim().max(4000).nullable().optional(),
   constraintsNotes: z.string().trim().max(4000).nullable().optional(),
+  clientIdempotencyKey: idem,
 });
 export type DprHeaderInput = z.infer<typeof dprHeaderInput>;
 
@@ -68,6 +72,7 @@ export const manpowerRowInput = z.object({
   headcount: z.number().int().min(0).max(9999),
   hours: z.number().min(0).max(24),
   notes: z.string().trim().max(500).nullable().optional(),
+  clientIdempotencyKey: idem,
 });
 
 export const weatherDelayInput = z.object({
@@ -78,6 +83,7 @@ export const weatherDelayInput = z.object({
   lostHours: z.number().min(0).max(24),
   wbsItemId: z.string().uuid().nullable().optional(),
   impactNotes: z.string().trim().max(1000).nullable().optional(),
+  clientIdempotencyKey: idem,
 });
 
 export const quantityRowInput = z.object({
@@ -87,6 +93,7 @@ export const quantityRowInput = z.object({
   quantity: z.number().min(0).max(1_000_000),
   uom: z.string().trim().max(30).nullable().optional(),
   notes: z.string().trim().max(500).nullable().optional(),
+  clientIdempotencyKey: idem,
 });
 
 export const attachPhotoInput = z.object({
@@ -97,6 +104,7 @@ export const attachPhotoInput = z.object({
   caption: z.string().trim().max(500).nullable().optional(),
   area: z.string().trim().max(120).nullable().optional(),
   discipline: z.string().trim().max(60).nullable().optional(),
+  clientIdempotencyKey: idem,
 });
 
 export const observationInput = z.object({
@@ -111,11 +119,13 @@ export const observationInput = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .nullable()
     .optional(),
+  clientIdempotencyKey: idem,
 });
 
 export const submitDprInput = z.object({
   id: z.string().uuid(),
   acknowledgeNoPhotos: z.boolean().default(false),
+  clientIdempotencyKey: idem,
 });
 
 // ---------------------------------------------------------------------------
