@@ -45,6 +45,7 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
+import { Route as AuthenticatedOmWorkOrdersRouteImport } from './routes/_authenticated/om.work-orders'
 import { Route as AuthenticatedHseTrainingRouteImport } from './routes/_authenticated/hse.training'
 import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authenticated/hse.inspections'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
@@ -346,6 +347,12 @@ const AuthenticatedProcurementExpeditingRoute =
   AuthenticatedProcurementExpeditingRouteImport.update({
     id: '/procurement/expediting',
     path: '/procurement/expediting',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOmWorkOrdersRoute =
+  AuthenticatedOmWorkOrdersRouteImport.update({
+    id: '/om/work-orders',
+    path: '/om/work-orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHseTrainingRoute =
@@ -999,6 +1006,7 @@ export interface FileRoutesByFullPath {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -1136,6 +1144,7 @@ export interface FileRoutesByTo {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -1268,6 +1277,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/_authenticated/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/_authenticated/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -1408,6 +1418,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/hse/inspections'
     | '/hse/training'
+    | '/om/work-orders'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -1545,6 +1556,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/hse/inspections'
     | '/hse/training'
+    | '/om/work-orders'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/scorecards'
@@ -1676,6 +1688,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/invoices'
     | '/_authenticated/hse/inspections'
     | '/_authenticated/hse/training'
+    | '/_authenticated/om/work-orders'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -2057,6 +2070,13 @@ declare module '@tanstack/react-router' {
       path: '/procurement/expediting'
       fullPath: '/procurement/expediting'
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/om/work-orders': {
+      id: '/_authenticated/om/work-orders'
+      path: '/om/work-orders'
+      fullPath: '/om/work-orders'
+      preLoaderRoute: typeof AuthenticatedOmWorkOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hse/training': {
@@ -3208,6 +3228,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedHseInspectionsRoute: typeof AuthenticatedHseInspectionsRoute
   AuthenticatedHseTrainingRoute: typeof AuthenticatedHseTrainingRoute
+  AuthenticatedOmWorkOrdersRoute: typeof AuthenticatedOmWorkOrdersRoute
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
@@ -3275,6 +3296,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedHseInspectionsRoute: AuthenticatedHseInspectionsRoute,
   AuthenticatedHseTrainingRoute: AuthenticatedHseTrainingRoute,
+  AuthenticatedOmWorkOrdersRoute: AuthenticatedOmWorkOrdersRoute,
   AuthenticatedProcurementExpeditingRoute:
     AuthenticatedProcurementExpeditingRoute,
   AuthenticatedProcurementMatchesRoute:
