@@ -23,7 +23,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { InvoiceDetailDrawer } from "@/components/finance/invoice-detail-drawer";
+import { Inbox } from "lucide-react";
 import { downloadCsv } from "@/lib/csv";
 import { toInvoicesCsv } from "@/lib/invoices.csv";
 import { invoicesAccessQueryOptions, invoicesListQueryOptions } from "@/lib/invoices.query";
@@ -88,28 +91,26 @@ function InvoicesPage() {
   const rows = rowsQ.data.rows;
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Invoices</h1>
-          <p className="text-sm text-muted-foreground">
-            Payable and receivable invoices across the company.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={rows.length === 0}
-          onClick={() =>
-            downloadCsv(
-              `invoices-${new Date().toISOString().slice(0, 10)}.csv`,
-              toInvoicesCsv(rows),
-            )
-          }
-        >
-          <Download className="mr-2 size-4" /> Export CSV
-        </Button>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Invoices"
+        description="Payable and receivable invoices across the company."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={rows.length === 0}
+            onClick={() =>
+              downloadCsv(
+                `invoices-${new Date().toISOString().slice(0, 10)}.csv`,
+                toInvoicesCsv(rows),
+              )
+            }
+          >
+            <Download className="mr-2 size-4" /> Export CSV
+          </Button>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-64">
@@ -157,13 +158,11 @@ function InvoicesPage() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">No invoices yet</p>
-            <p className="mt-1">
-              Create receivable invoices from a contract&apos;s Bill milestone action, or ingest
-              payable invoices from Procurement.
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="No invoices yet"
+            description="Create receivable invoices from a contract's Bill milestone action, or ingest payable invoices from Procurement."
+          />
         ) : (
           <Table>
             <TableHeader>

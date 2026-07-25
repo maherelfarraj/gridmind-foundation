@@ -137,7 +137,7 @@ export function CrmListView({ opportunities }: Props) {
         </Button>
       </Card>
 
-      <Card className="">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow>
