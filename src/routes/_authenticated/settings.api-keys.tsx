@@ -115,6 +115,7 @@ function ApiKeysPage() {
   const create = useServerFn(createApiKey);
   const rotate = useServerFn(rotateApiKey);
   const revoke = useServerFn(revokeApiKey);
+  const updateSecurity = useServerFn(updateApiKeySecurity);
 
   const query = useQuery({ queryKey: ["api-keys"], queryFn: () => list() });
 
@@ -122,11 +123,38 @@ function ApiKeysPage() {
   const [showRaw, setShowRaw] = useState<{
     raw: string;
     name: string;
-    mode: "created" | "rotated";
+    mode: "created" | "rotated" | "hmac";
   } | null>(null);
   const [rotateConfirm, setRotateConfirm] = useState<ApiKeyRow | null>(null);
   const [revokeConfirm, setRevokeConfirm] = useState<ApiKeyRow | null>(null);
+  const [securityKey, setSecurityKey] = useState<ApiKeyRow | null>(null);
+  const [ipsDraft, setIpsDraft] = useState("");
   const [copied, setCopied] = useState(false);
+
+  const securityMut = useMutation({
+    mutationFn: async (input: {
+      keyId: string;
+      allowedIps?: string[];
+      regenerateHmac?: boolean;
+      clearHmac?: boolean;
+    }): Promise<ApiKeySecurityResult> => updateSecurity({ data: input }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ["api-keys"] });
+      setSecurityKey(null);
+      if (res.hmacSecret) {
+        setShowRaw({ raw: res.hmacSecret, name: res.key.name, mode: "hmac" });
+      } else {
+        toast.success("Key security updated");
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update key security"),
+  });
+
+  function openSecurity(k: ApiKeyRow) {
+    setSecurityKey(k);
+    setIpsDraft((k.allowed_ips ?? []).join("\n"));
+  }
+
 
   const form = useForm<CreateForm>({
     resolver: zodResolver(createFormSchema),
