@@ -38,7 +38,8 @@ export const Route = createFileRoute("/api/public/hooks/scada-telemetry")({
         if (!guard.ok) return guard.response;
 
         const admin = createServiceRoleClient();
-        const companyId = guard.companyId;
+        // Scope guard rejected cron callers upstream; api_key callers always carry a companyId.
+        const companyId = guard.caller.companyId!;
 
         // ---- Body parse (single read via guard.rawBody) --------------------
         let json: unknown;
