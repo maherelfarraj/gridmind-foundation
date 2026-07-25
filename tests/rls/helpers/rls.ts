@@ -184,8 +184,8 @@ async function seedTenant(
     opportunityId: opp?.id ?? "",
     costCodeId: cc?.id ?? "",
     vendorId: vendor?.id ?? "",
-    scadaAssetId: asset?.id ?? "",
-    equipmentId: equip?.id ?? "",
+    scadaAssetId: asset?.id ?? null,
+    equipmentId: equip?.id ?? null,
   };
 }
 
