@@ -561,6 +561,114 @@ export type Database = {
           },
         ]
       }
+      cash_flows: {
+        Row: {
+          amount: number
+          amount_base: number | null
+          base_currency_code: string | null
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate_to_base: number | null
+          id: string
+          kind: Database["public"]["Enums"]["cash_flow_kind"]
+          notes: string | null
+          period: string
+          project_id: string
+          reference_id: string | null
+          reference_type: string | null
+          updated_at: string
+          voided: boolean
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          amount_base?: number | null
+          base_currency_code?: string | null
+          category: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate_to_base?: number | null
+          id?: string
+          kind: Database["public"]["Enums"]["cash_flow_kind"]
+          notes?: string | null
+          period: string
+          project_id: string
+          reference_id?: string | null
+          reference_type?: string | null
+          updated_at?: string
+          voided?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          amount_base?: number | null
+          base_currency_code?: string | null
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          direction?: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate_to_base?: number | null
+          id?: string
+          kind?: Database["public"]["Enums"]["cash_flow_kind"]
+          notes?: string | null
+          period?: string
+          project_id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          updated_at?: string
+          voided?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flows_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flows_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flows_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cash_flows_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flows_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -4879,6 +4987,8 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
+      cash_flow_direction: "inflow" | "outflow"
+      cash_flow_kind: "forecast" | "actual"
       delivery_status: "pending" | "success" | "failed"
       document_category:
         | "drawing"
@@ -5152,6 +5262,8 @@ export const Constants = {
         "investor_viewer",
         "lender_viewer",
       ],
+      cash_flow_direction: ["inflow", "outflow"],
+      cash_flow_kind: ["forecast", "actual"],
       delivery_status: ["pending", "success", "failed"],
       document_category: [
         "drawing",
