@@ -262,7 +262,7 @@ export const startApprovalInstance = createServerFn({ method: "POST" })
         p_rule_key: data.rule_key,
         p_entity_type: data.entity_type,
         p_entity_id: data.entity_id,
-        p_amount: data.amount ?? null,
+        p_amount: data.amount ?? undefined,
         p_metadata: (data.metadata ?? {}) as never,
       },
     );
@@ -278,7 +278,7 @@ export const decideApproval = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("decide_approval", {
       p_approval_id: data.approval_id,
       p_decision: data.decision,
-      p_comment: data.comment ?? null,
+      p_comment: data.comment ?? undefined,
     });
     if (error) throw error;
     return { ok: true };
