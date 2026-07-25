@@ -177,25 +177,24 @@ export const Route = createFileRoute("/api/public/hooks/scada/telemetry")({
           },
         } as never);
 
-        // ---- 6. downstream alarms (fire-and-forget) ------------------------
-        // TODO(P-105): swap for a strongly-typed call once alarms.functions lands.
+        // ---- 6. downstream alarms (P-105) ----------------------------------
+        // Fire-and-forget: evaluator runs under service-role, so raises bypass
+        // RLS. Failures never break ingest.
         try {
-          const mod: Record<string, unknown> = await import(
-            /* @vite-ignore */ "@/lib/alarms.functions" as string
-          ).catch(() => ({}));
-          const fn = mod?.evaluateAlarmRules;
-          if (typeof fn === "function") {
-            void (fn as (a: unknown) => unknown)({
-              data: {
-                company_id: companyId,
-                asset_ids: Array.from(
-                  new Set(accepted.map((r) => r.scada_asset_id)),
-                ),
-              },
-            });
-          }
+          const { evaluateAlarmRules } = await import("@/lib/alarms.server");
+          await evaluateAlarmRules(
+            admin,
+            companyId,
+            accepted.map((r) => ({
+              scada_asset_id: r.scada_asset_id,
+              project_id: r.project_id,
+              metric: r.metric,
+              value: r.value,
+              ts: new Date(r.ts).toISOString(),
+            })),
+          );
         } catch {
-          // alarms module not landed yet — safe to ignore.
+          // best-effort; do not fail ingest on alarm eval errors.
         }
 
         // Only allow all-invalid to surface as 400 (matches "no rows accepted").
