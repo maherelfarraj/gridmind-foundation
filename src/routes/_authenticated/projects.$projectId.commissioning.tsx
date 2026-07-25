@@ -153,57 +153,57 @@ function CommissioningBoard() {
         description="Stage 6 — assign, track and close out site tests by area."
         actions={
           <>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/punch" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Punch closure
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/performance" params={{ projectId }}>
-              <Gauge size={14} aria-hidden />
-              Performance tests
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
-              <FileText size={14} aria-hidden />
-              Certificates
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/turnover" params={{ projectId }}>
-              <FileText size={14} aria-hidden />
-              Turnover pack
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/handover" params={{ projectId }}>
-              <Handshake size={14} aria-hidden />
-              Handover
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning/kpis" params={{ projectId }}>
-              <BarChart3 size={14} aria-hidden />
-              KPIs
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportCsv(rows)}
-            disabled={rows.length === 0}
-          >
-            <Download size={14} aria-hidden />
-            CSV
-          </Button>
-          {canWrite ? (
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
-              <Plus size={14} aria-hidden />
-              Assign tests
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/punch" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Punch closure
+              </Link>
             </Button>
-          ) : null}
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/performance" params={{ projectId }}>
+                <Gauge size={14} aria-hidden />
+                Performance tests
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
+                <FileText size={14} aria-hidden />
+                Certificates
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/turnover" params={{ projectId }}>
+                <FileText size={14} aria-hidden />
+                Turnover pack
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/handover" params={{ projectId }}>
+                <Handshake size={14} aria-hidden />
+                Handover
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning/kpis" params={{ projectId }}>
+                <BarChart3 size={14} aria-hidden />
+                KPIs
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportCsv(rows)}
+              disabled={rows.length === 0}
+            >
+              <Download size={14} aria-hidden />
+              CSV
+            </Button>
+            {canWrite ? (
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <Plus size={14} aria-hidden />
+                Assign tests
+              </Button>
+            ) : null}
           </>
         }
       />
@@ -647,8 +647,8 @@ function BoardError({ onRetry }: { onRetry: () => void }) {
   return (
     <Card className="border-destructive/40 p-6">
       <EmptyState
-        title=""Couldn&rsquo;t load commissioning tests""
-        description=""Something went wrong loading the board. Try again.""
+        title="Couldn't load commissioning tests"
+        description="Something went wrong loading the board. Try again."
         action={
           <Button size="sm" onClick={onRetry}>
             <RefreshCw size={14} aria-hidden />
@@ -664,8 +664,8 @@ function NoTestsEmptyState({ canWrite, onAssign }: { canWrite: boolean; onAssign
   return (
     <Card className="p-6">
       <EmptyState
-        title=""No commissioning tests assigned yet""
-        description=""Group tests by area and assign them to your commissioning team to get started.""
+        title="No commissioning tests assigned yet"
+        description="Group tests by area and assign them to your commissioning team to get started."
         action={
           canWrite ? (
             <Button size="sm" onClick={onAssign}>

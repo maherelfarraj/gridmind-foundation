@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -206,7 +207,9 @@ export function MarkupViewer({ revision, projectId }: Props) {
           Markups ({markups.length})
         </p>
         {markups.length === 0 ? (
-          <Card className="p-4 text-sm text-muted-foreground">No markups yet.</Card>
+          <Card className="p-4">
+            <EmptyState icon={MessageSquare} title="No markups yet" compact />
+          </Card>
         ) : (
           <ul className="flex flex-col gap-2">
             {markups.map((m, i) => (

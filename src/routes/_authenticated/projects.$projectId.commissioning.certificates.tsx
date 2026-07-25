@@ -131,21 +131,21 @@ function CertificatesPage() {
         description="Mechanical Completion and Commercial Operation Date, with signed evidence."
         actions={
           <>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Back to tests
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
-            Refresh
-          </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Back to tests
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
+              Refresh
+            </Button>
           </>
         }
       />
@@ -310,11 +310,7 @@ function CertificateCard({
                   >
                     <span className="flex items-center gap-2">
                       {s ? (
-                        <CheckCircle2
-                          size={12}
-                          aria-hidden
-                          className="text-success"
-                        />
+                        <CheckCircle2 size={12} aria-hidden className="text-success" />
                       ) : (
                         <span className="inline-block h-3 w-3 rounded-full border border-border" />
                       )}

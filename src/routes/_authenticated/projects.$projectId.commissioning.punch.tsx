@@ -125,21 +125,21 @@ function PunchClosureBoard() {
         description="Multi-party signoffs by category — category A must close before COD."
         actions={
           <>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Back to tests
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
-            Refresh
-          </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Back to tests
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
+              Refresh
+            </Button>
           </>
         }
       />
@@ -212,10 +212,7 @@ function PunchClosureBoard() {
         </Card>
       ) : items.length === 0 ? (
         <Card className="p-6">
-          <EmptyState
-            icon={ShieldCheck}
-            title="No open punch items — ready for COD review"
-          />
+          <EmptyState icon={ShieldCheck} title="No open punch items — ready for COD review" />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
@@ -309,9 +306,7 @@ function PunchLaneCard({
           variant="outline"
           className={cn(
             "shrink-0 text-xs",
-            isClosed
-              ? "bg-success/15 text-success border-success/30"
-              : "bg-muted text-foreground",
+            isClosed ? "bg-success/15 text-success border-success/30" : "bg-muted text-foreground",
           )}
         >
           {isClosed ? "Closed" : "Open"}

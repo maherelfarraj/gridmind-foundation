@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -99,17 +100,15 @@ function NewNcrPage() {
   const canSubmit = !!projectId && description.trim().length >= 4 && !createMut.isPending;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 pb-24 md:p-6">
-      <header className="flex flex-col gap-2">
+    <div className="page-shell">
+      <div>
         <Link
           to="/qaqc/ncrs"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={12} /> Back to NCRs
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Raise NCR
-        </h1>
+        <PageHeader title="Raise NCR" description="Raise a non-conformance report." />
         {sp.source && sp.sourceId ? (
           <Alert>
             <AlertTitle>Prefilled from {NCR_SOURCE_LABELS[sp.source]}</AlertTitle>
@@ -118,7 +117,7 @@ function NewNcrPage() {
             </AlertDescription>
           </Alert>
         ) : null}
-      </header>
+      </div>
 
       <Card>
         <CardHeader>

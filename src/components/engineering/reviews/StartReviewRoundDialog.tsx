@@ -85,7 +85,7 @@ function DialogInner({
   const canSubmit = chosen.length > 0 && !start.isPending;
 
   return (
-    <DialogContent className="sm:max-w-lg">
+    <DialogContent>
       <DialogHeader>
         <DialogTitle>Start review round</DialogTitle>
         <DialogDescription>

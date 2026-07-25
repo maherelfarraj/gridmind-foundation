@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Dialog,
   DialogContent,
@@ -116,14 +117,14 @@ function NcrDetailPage() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Skeleton className="h-64" />
       </div>
     );
   }
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Alert variant="destructive">
           <AlertTitle>Could not load NCR</AlertTitle>
           <AlertDescription>{errorMessage(detailQuery.error) || "Not found"}</AlertDescription>
@@ -141,32 +142,32 @@ function NcrDetailPage() {
       : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-24 md:p-6">
-      <header className="flex flex-col gap-2">
+    <div className="page-shell">
+      <div>
         <Link
           to="/qaqc/ncrs"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={12} /> Back to NCRs
         </Link>
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <AlertTriangle size={14} aria-hidden /> NCR
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {ncr.ncr_number}
-          </h1>
-          <Badge className={ncrStatusTint(ncr.status)} variant="outline">
-            {NCR_STATUS_LABELS[ncr.status]}
-          </Badge>
-          <Badge className={ncrDispositionTint(ncr.disposition)} variant="outline">
-            {NCR_DISPOSITION_LABELS[ncr.disposition]}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            {ncr.project_name ?? "—"} · {daysOpen(ncr)} days open
-          </span>
-        </div>
-      </header>
+        <PageHeader
+          title={ncr.ncr_number}
+          description="Non-conformance report detail and disposition."
+          actions={
+            <>
+              <Badge className={ncrStatusTint(ncr.status)} variant="outline">
+                {NCR_STATUS_LABELS[ncr.status]}
+              </Badge>
+              <Badge className={ncrDispositionTint(ncr.disposition)} variant="outline">
+                {NCR_DISPOSITION_LABELS[ncr.disposition]}
+              </Badge>
+            </>
+          }
+        />
+        <span className="text-xs text-muted-foreground">
+          {ncr.project_name ?? "—"} · {daysOpen(ncr)} days open
+        </span>
+      </div>
 
       <Card>
         <CardHeader>
