@@ -1,7 +1,7 @@
 // P-085 — Discipline board: read-only civil / mechanical / electrical rollup.
 import { useMemo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownRight,
   ArrowRight,
