@@ -35,6 +35,7 @@ import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/s
 import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
+import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
 import { Route as AuthenticatedSettingsScheduledReportsRouteImport } from './routes/_authenticated/settings.scheduled-reports'
@@ -301,6 +302,12 @@ const ApiCronApprovalEscalationsRoute =
     id: '/api/cron/approval-escalations',
     path: '/api/cron/approval-escalations',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedSettingsWebhooksRoute =
+  AuthenticatedSettingsWebhooksRouteImport.update({
+    id: '/settings/webhooks',
+    path: '/settings/webhooks',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
@@ -1183,6 +1190,7 @@ export interface FileRoutesByFullPath {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
@@ -1336,6 +1344,7 @@ export interface FileRoutesByTo {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
@@ -1497,6 +1506,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
@@ -1660,6 +1670,7 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
+    | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
@@ -1813,6 +1824,7 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
+    | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
@@ -1973,6 +1985,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/scheduled-reports'
     | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
+    | '/_authenticated/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
@@ -2282,6 +2295,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/cron/approval-escalations'
       preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings/webhooks': {
+      id: '/_authenticated/settings/webhooks'
+      path: '/settings/webhooks'
+      fullPath: '/settings/webhooks'
+      preLoaderRoute: typeof AuthenticatedSettingsWebhooksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/users': {
       id: '/_authenticated/settings/users'
@@ -3695,6 +3715,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsScheduledReportsRoute: typeof AuthenticatedSettingsScheduledReportsRoute
   AuthenticatedSettingsShareLinksRoute: typeof AuthenticatedSettingsShareLinksRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
+  AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
@@ -3788,6 +3809,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsScheduledReportsRoute,
   AuthenticatedSettingsShareLinksRoute: AuthenticatedSettingsShareLinksRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
+  AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,

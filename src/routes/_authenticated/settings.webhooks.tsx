@@ -111,16 +111,20 @@ const SUGGESTED_EVENTS = [
 ];
 
 const createFormSchema = z.object({
-  url: z.string().trim().url("must be a valid URL").refine((v) => {
-    try {
-      return new URL(v).protocol === "https:";
-    } catch {
-      return false;
-    }
-  }, "must be https"),
-  description: z.string().trim().max(500).optional().default(""),
+  url: z
+    .string()
+    .trim()
+    .url("must be a valid URL")
+    .refine((v) => {
+      try {
+        return new URL(v).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, "must be https"),
+  description: z.string().trim().max(500),
   events: z.string().trim().min(1, "at least one event").max(2000),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 type CreateForm = z.infer<typeof createFormSchema>;
 
