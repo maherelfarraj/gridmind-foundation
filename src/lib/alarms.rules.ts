@@ -89,11 +89,11 @@ export const alarmRuleInputSchema = z.object({
   metric: z.enum(TELEMETRY_METRICS),
   condition: z.enum(ALARM_CONDITIONS),
   threshold: z.number().finite(),
-  dead_band: z.number().finite().min(0).default(0),
-  duration_seconds: z.number().int().min(0).max(60 * 60 * 24).default(0),
-  severity: z.enum(ALARM_SEVERITIES).default("warning"),
-  escalation_route: escalationRouteSchema.default([]),
-  enabled: z.boolean().default(true),
+  dead_band: z.number().finite().min(0),
+  duration_seconds: z.number().int().min(0).max(60 * 60 * 24),
+  severity: z.enum(ALARM_SEVERITIES),
+  escalation_route: escalationRouteSchema,
+  enabled: z.boolean(),
 });
 export type AlarmRuleInput = z.infer<typeof alarmRuleInputSchema>;
 
