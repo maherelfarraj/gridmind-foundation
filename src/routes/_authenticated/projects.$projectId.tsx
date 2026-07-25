@@ -51,6 +51,7 @@ type TabKey =
   | "gates"
   | "config"
   | "planning/wbs"
+  | "commissioning"
   | "engineering"
   | "procurement"
   | "construction"
