@@ -100,7 +100,8 @@ function NcrIndexPage() {
   const setSearchParam = (patch: Partial<z.infer<typeof searchSchema>>) => {
     void navigate({
       to: "/qaqc/ncrs",
-      search: (prev) => ({ ...prev, ...patch }),
+      search: (prev: Record<string, unknown>) =>
+        ({ ...prev, ...patch }) as z.infer<typeof searchSchema>,
       replace: true,
     });
   };
