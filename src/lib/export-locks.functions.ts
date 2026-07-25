@@ -128,7 +128,7 @@ export const lockExport = createServerFn({ method: "POST" })
         project_id: data.project_id,
         export_type: data.export_type,
         reason: data.reason,
-        locked_by: context.user.id,
+        locked_by: context.user?.id ?? null,
       } as never)
       .select("id")
       .single();
