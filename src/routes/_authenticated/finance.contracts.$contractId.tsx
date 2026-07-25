@@ -9,6 +9,7 @@ import {
   FilePlus,
   FileText,
   Loader2,
+  Receipt,
   Sparkles,
   Trash2,
   Upload,
