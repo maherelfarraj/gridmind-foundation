@@ -5,7 +5,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-
 export const Route = createFileRoute("/design-system")({
   head: () => ({
     meta: [
@@ -133,7 +132,12 @@ function DesignSystemPage() {
         <section className="space-y-4">
           <h2 className="section-title">KPI tiles</h2>
           <KpiGrid label="Design system KPI samples">
-            <KpiTile label="Active projects" value="12" hint="All lifecycle stages" icon={Activity} />
+            <KpiTile
+              label="Active projects"
+              value="12"
+              hint="All lifecycle stages"
+              icon={Activity}
+            />
             <KpiTile
               label="Schedule perf."
               value="1.04"
@@ -202,7 +206,6 @@ function DesignSystemPage() {
             <Button variant="link">Link</Button>
           </div>
         </section>
-
       </div>
     </div>
   );

@@ -97,9 +97,9 @@ const STATUS_TONE: Record<ChangeOrderStatus, string> = {
   draft: "bg-muted text-muted-foreground",
   submitted: "bg-primary/10 text-primary border-primary/30",
   under_review: "bg-primary/10 text-primary border-primary/30",
-  approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  approved: "bg-success/10 text-success border-success/30",
   rejected: "bg-destructive/10 text-destructive border-destructive/30",
-  incorporated: "bg-emerald-500/15 text-emerald-700 border-emerald-500/40",
+  incorporated: "bg-success/15 text-success border-success/40",
 };
 
 function StatusBadge({ status }: { status: ChangeOrderStatus }) {
@@ -140,8 +140,8 @@ function ChangeOrdersPage() {
     bucket === "danger"
       ? "border-destructive/40 bg-destructive/5 text-destructive"
       : bucket === "warn"
-        ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
-        : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
+        ? "border-warning/40 bg-warning/10 text-warning"
+        : "border-success/40 bg-success/10 text-success";
 
   const exportCsv = () => {
     const header = [
@@ -459,7 +459,7 @@ function NewCoDialog({ projectId, onClose }: { projectId: string; onClose: () =>
               <div
                 className={cn(
                   "text-xs tabular-nums",
-                  balanced ? "text-emerald-600" : "text-destructive",
+                  balanced ? "text-success" : "text-destructive",
                 )}
               >
                 Σ {money(impactSum, currency)} / target {money(signedAmount, currency)}{" "}

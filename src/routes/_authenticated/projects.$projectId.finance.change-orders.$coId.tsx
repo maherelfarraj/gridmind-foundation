@@ -94,9 +94,9 @@ const STATUS_TONE: Record<ChangeOrderStatus, string> = {
   draft: "bg-muted text-muted-foreground",
   submitted: "bg-primary/10 text-primary border-primary/30",
   under_review: "bg-primary/10 text-primary border-primary/30",
-  approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  approved: "bg-success/10 text-success border-success/30",
   rejected: "bg-destructive/10 text-destructive border-destructive/30",
-  incorporated: "bg-emerald-500/15 text-emerald-700 border-emerald-500/40",
+  incorporated: "bg-success/15 text-success border-success/40",
 };
 
 function CoDetailPage() {

@@ -85,7 +85,7 @@ export function BudgetTreeTable({
 
   if (costCodes.length === 0) {
     return (
-      <Card className="border-border bg-card p-8 text-center text-sm text-muted-foreground">
+      <Card className="p-8 text-center text-sm text-muted-foreground">
         No cost codes yet — start with a standard EPC breakdown (e.g. 01-1000 Engineering, 02-2000
         Equipment, 03-3000 Civil).
       </Card>
@@ -110,7 +110,7 @@ export function BudgetTreeTable({
   };
 
   return (
-    <Card className="border-border bg-card">
+    <Card className="">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">

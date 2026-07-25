@@ -12,6 +12,8 @@ import { LeadsTab } from "@/components/crm/LeadsTab";
 import { NewOpportunityDialog } from "@/components/crm/NewOpportunityDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { crmKpisQueryOptions, opportunitiesQueryOptions } from "@/lib/crm-query";
@@ -66,25 +68,23 @@ function CrmPipelinePage() {
   const opportunities = oppsQuery.data ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">CRM Pipeline</h1>
-          <p className="text-sm text-muted-foreground">
-            Track opportunities, leads, and win-rate across your EPC portfolio.
-          </p>
-        </div>
-        {!readOnly && (
-          <NewOpportunityDialog
-            trigger={
-              <Button>
-                <Plus size={16} aria-hidden />
-                New opportunity
-              </Button>
-            }
-          />
-        )}
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="CRM pipeline"
+        description="Track opportunities, leads, and win-rate across your EPC portfolio."
+        actions={
+          !readOnly && (
+            <NewOpportunityDialog
+              trigger={
+                <Button>
+                  <Plus size={16} aria-hidden />
+                  New opportunity
+                </Button>
+              }
+            />
+          )
+        }
+      />
 
       <CrmKpiStrip data={kpisQuery.data} isLoading={kpisQuery.isLoading} />
 
@@ -119,21 +119,23 @@ function CrmPipelinePage() {
       ) : oppsQuery.isLoading ? (
         <BoardSkeleton />
       ) : opportunities.length === 0 && tab === "board" ? (
-        <Card className="flex flex-col items-center gap-3 border-dashed border-border bg-card p-12 text-center">
-          <p className="text-sm font-medium text-foreground">
-            No opportunities yet — create your first one
-          </p>
-          {!readOnly && (
-            <NewOpportunityDialog
-              trigger={
-                <Button size="sm">
-                  <Plus size={16} aria-hidden />
-                  New opportunity
-                </Button>
-              }
-            />
-          )}
-        </Card>
+        <EmptyState
+          icon={Plus}
+          title="No opportunities yet"
+          description="Create your first one to start tracking your pipeline."
+          action={
+            !readOnly && (
+              <NewOpportunityDialog
+                trigger={
+                  <Button size="sm">
+                    <Plus size={16} aria-hidden />
+                    New opportunity
+                  </Button>
+                }
+              />
+            )
+          }
+        />
       ) : tab === "board" ? (
         <CrmPipelineBoard opportunities={opportunities} readOnly={readOnly} />
       ) : (

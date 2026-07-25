@@ -265,7 +265,7 @@ function BudgetPage() {
       </header>
 
       {!access.canWriteBudgets && (
-        <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
+        <Card className="p-3 text-sm text-muted-foreground">
           You have read-only access to budgets. Contact a finance or company admin to edit financial
           rows.
         </Card>

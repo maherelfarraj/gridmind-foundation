@@ -103,8 +103,8 @@ const STATUS_TONE: Record<DdItemStatus, string> = {
   not_started: "bg-muted text-muted-foreground",
   in_progress: "bg-primary/10 text-primary border-primary/30",
   submitted: "bg-primary/10 text-primary border-primary/30",
-  accepted: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  waived: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  accepted: "bg-success/10 text-success border-success/30",
+  waived: "bg-warning/10 text-warning border-warning/30",
 };
 
 function DdTab() {
@@ -120,8 +120,8 @@ function DdTab() {
   const bucket = ddReadinessBucket(summary.readinessPct);
   const bucketTone =
     bucket === "ok"
-      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
-      : "border-amber-500/40 bg-amber-500/10 text-amber-700";
+      ? "border-success/40 bg-success/10 text-success"
+      : "border-warning/40 bg-warning/10 text-warning";
 
   const grouped = useMemo(() => {
     const g: Record<string, DdItemRow[]> = {};
