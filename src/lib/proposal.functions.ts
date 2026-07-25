@@ -1543,12 +1543,13 @@ export const sendProposalForSignature = createServerFn({ method: "POST" })
     if (p.esign_status === "completed") httpError(409, "already_signed");
 
     try {
-      await assertExportAllowed(context.supabase, {
-        companyId: p.company_id,
-        projectId: p.project_id ?? null,
-      });
+      await assertExportAllowed(
+        context.supabase,
+        p.project_id ?? null,
+        "proposal_pdf",
+      );
     } catch (lockErr: any) {
-      httpError(lockErr?.statusCode ?? 409, "export_locked");
+      httpError(lockErr?.statusCode ?? 423, "export_locked");
     }
 
     const bytes = decodeBase64(data.pdfBase64);
