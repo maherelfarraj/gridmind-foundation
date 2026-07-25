@@ -339,12 +339,37 @@ function ApiKeysPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {k.expires_at ? format(new Date(k.expires_at), "yyyy-MM-dd") : "—"}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Badge variant={k.has_hmac ? "default" : "outline"} className="text-[10px]">
+                          {k.has_hmac ? "HMAC set" : "No HMAC"}
+                        </Badge>
+                        <Badge
+                          variant={(k.allowed_ips?.length ?? 0) > 0 ? "default" : "outline"}
+                          className="text-[10px]"
+                        >
+                          {(k.allowed_ips?.length ?? 0) > 0
+                            ? `${k.allowed_ips!.length} IP${k.allowed_ips!.length > 1 ? "s" : ""}`
+                            : "Any IP"}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell>{statusBadge(k.status)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={k.status === "revoked"}
+                          onClick={() => openSecurity(k)}
+                        >
+                          <Lock className="mr-1 h-3.5 w-3.5" />
+                          Security
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+
                           disabled={k.status === "revoked"}
                           onClick={() => setRotateConfirm(k)}
                         >
