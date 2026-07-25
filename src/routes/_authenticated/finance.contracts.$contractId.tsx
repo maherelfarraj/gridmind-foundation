@@ -924,6 +924,7 @@ function ExtractClausesDialog({
       let text = "";
       if (source === "file") {
         if (!file) throw new Error("Choose a PDF file first.");
+        const { extractPdfText } = await import("@/lib/pdf-text.client");
         text = await extractPdfText(file);
         if (text.trim().length < 20) {
           throw new Error("Couldn’t extract enough text from that PDF.");
