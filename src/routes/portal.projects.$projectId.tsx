@@ -329,7 +329,7 @@ function MilestonesTab({ feed }: { feed: PortalFeed }) {
 
 // ---------------------------------------------------------------------------
 
-function PhotosTab({ feed }: { feed: PortalFeed }) {
+function PhotosTab({ feed, projectId }: { feed: PortalFeed; projectId: string }) {
   const photos = feed.photos ?? [];
   if (photos.length === 0) {
     return (
@@ -342,16 +342,23 @@ function PhotosTab({ feed }: { feed: PortalFeed }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
       {photos.map((p) => (
-        <PortalPhoto key={p.id} path={p.storage_path} caption={p.caption} />
+        <PortalPhoto
+          key={p.id}
+          projectId={projectId}
+          path={p.storage_path}
+          caption={p.caption}
+        />
       ))}
     </div>
   );
 }
 
 function PortalPhoto({
+  projectId,
   path,
   caption,
 }: {
+  projectId: string;
   path: string;
   caption: string | null;
 }) {
@@ -359,7 +366,7 @@ function PortalPhoto({
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
-    signFn({ data: { storagePath: path } })
+    signFn({ data: { projectId, path } })
       .then((r) => {
         if (!cancelled) setUrl(r.url);
       })
@@ -367,7 +374,7 @@ function PortalPhoto({
     return () => {
       cancelled = true;
     };
-  }, [path, signFn]);
+  }, [projectId, path, signFn]);
   return (
     <figure className="overflow-hidden rounded-md border border-border bg-muted">
       <div className="aspect-square bg-muted">
