@@ -86,6 +86,7 @@ export type CapturedError = {
   statusCode?: number;
   cause?: string;
   route?: string;
+  path?: string;
   requestId?: string;
   userHash?: string | null;
 };
