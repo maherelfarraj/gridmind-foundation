@@ -93,19 +93,31 @@ export const Route = createFileRoute("/api/webhooks/calendar")({
         // Look up the channel binding. Table may not exist yet.
         let mapping: { company_id: string | null; project_id: string | null } | null = null;
         try {
-          const { data, error } = await admin
-            .from("integration_connections" as unknown as never)
+          const client = admin as unknown as {
+            from: (t: string) => {
+              select: (c: string) => {
+                eq: (col: string, val: string) => {
+                  maybeSingle: () => Promise<{
+                    data: { company_id: string | null; project_id: string | null } | null;
+                    error: { code?: string; message: string } | null;
+                  }>;
+                };
+              };
+            };
+          };
+          const { data, error } = await client
+            .from("integration_connections")
             .select("company_id, project_id")
             .eq("channel_id", channelId)
             .maybeSingle();
           if (error) {
-            const code = (error as { code?: string }).code ?? "";
+            const code = error.code ?? "";
             if (code === "42P01" || code === "PGRST205") {
               return jsonResponse(200, { skipped: true, reason: "table_missing" });
             }
             return jsonResponse(500, { error: "db_error", message: error.message });
           }
-          mapping = (data as typeof mapping) ?? null;
+          mapping = data ?? null;
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           if (/does not exist|42P01|PGRST205/i.test(message)) {
@@ -119,25 +131,9 @@ export const Route = createFileRoute("/api/webhooks/calendar")({
         }
 
         if (resourceState === "exists") {
-          // TODO(B14): enqueue a full schedule sync for the mapped project.
-          if (mapping.company_id) {
-            try {
-              await admin.from("notifications").insert({
-                company_id: mapping.company_id,
-                user_id: null,
-                kind: "calendar_update",
-                title: "Calendar updated",
-                body: "External calendar reported changes — schedule sync pending.",
-                metadata: {
-                  channel_id: channelId,
-                  resource_id: resourceId,
-                  project_id: mapping.project_id,
-                },
-              });
-            } catch {
-              /* notifications is best-effort */
-            }
-          }
+          // TODO(B14): enqueue a full schedule sync for the mapped project +
+          // fan out a "Calendar updated" notification to project members
+          // (notifications.user_id is NOT NULL — requires member lookup).
           await auditGuardEvent(admin, {
             companyId: mapping.company_id,
             action: "calendar.webhook_received",
@@ -150,6 +146,7 @@ export const Route = createFileRoute("/api/webhooks/calendar")({
             },
           });
         }
+
 
         return jsonResponse(200, { ok: true, state: resourceState || "unknown" });
       },
