@@ -458,6 +458,109 @@ export type Database = {
           },
         ]
       }
+      budgets: {
+        Row: {
+          actual_amount: number
+          approved_changes: number
+          committed_amount: number
+          company_id: string
+          cost_code_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          current_amount: number | null
+          id: string
+          notes: string | null
+          original_amount: number
+          po_commitments: Json
+          project_id: string
+          updated_at: string
+          version: number
+          wbs_item_id: string | null
+        }
+        Insert: {
+          actual_amount?: number
+          approved_changes?: number
+          committed_amount?: number
+          company_id: string
+          cost_code_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          current_amount?: number | null
+          id?: string
+          notes?: string | null
+          original_amount?: number
+          po_commitments?: Json
+          project_id: string
+          updated_at?: string
+          version?: number
+          wbs_item_id?: string | null
+        }
+        Update: {
+          actual_amount?: number
+          approved_changes?: number
+          committed_amount?: number
+          company_id?: string
+          cost_code_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          current_amount?: number | null
+          id?: string
+          notes?: string | null
+          original_amount?: number
+          po_commitments?: Json
+          project_id?: string
+          updated_at?: string
+          version?: number
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "budgets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -611,6 +714,87 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_codes: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_id: string | null
+          project_id: string
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_id?: string | null
+          project_id: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_id?: string | null
+          project_id?: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_codes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_codes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_codes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_codes_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
             referencedColumns: ["id"]
           },
         ]
