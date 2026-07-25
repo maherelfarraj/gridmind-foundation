@@ -165,6 +165,15 @@ function CommissioningBoard() {
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <Link
+              to="/projects/$projectId/commissioning/punch"
+              params={{ projectId }}
+            >
+              <ShieldCheck size={14} aria-hidden />
+              Punch closure
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link
               to="/projects/$projectId/commissioning/performance"
               params={{ projectId }}
             >

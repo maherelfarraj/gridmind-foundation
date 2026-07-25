@@ -5734,6 +5734,7 @@ export type Database = {
           assigned_to: string | null
           category: Database["public"]["Enums"]["punch_category"]
           closed_at: string | null
+          closed_by: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -5750,6 +5751,7 @@ export type Database = {
           signoff_name: string | null
           status: Database["public"]["Enums"]["punch_status"]
           updated_at: string
+          utility_witness_required: boolean
           walk_date: string
         }
         Insert: {
@@ -5757,6 +5759,7 @@ export type Database = {
           assigned_to?: string | null
           category?: Database["public"]["Enums"]["punch_category"]
           closed_at?: string | null
+          closed_by?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -5773,6 +5776,7 @@ export type Database = {
           signoff_name?: string | null
           status?: Database["public"]["Enums"]["punch_status"]
           updated_at?: string
+          utility_witness_required?: boolean
           walk_date: string
         }
         Update: {
@@ -5780,6 +5784,7 @@ export type Database = {
           assigned_to?: string | null
           category?: Database["public"]["Enums"]["punch_category"]
           closed_at?: string | null
+          closed_by?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -5796,12 +5801,20 @@ export type Database = {
           signoff_name?: string | null
           status?: Database["public"]["Enums"]["punch_status"]
           updated_at?: string
+          utility_witness_required?: boolean
           walk_date?: string
         }
         Relationships: [
           {
             foreignKeyName: "qaqc_punch_items_assigned_to_fkey"
             columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_punch_items_closed_by_fkey"
+            columns: ["closed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
