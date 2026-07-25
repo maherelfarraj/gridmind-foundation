@@ -767,28 +767,41 @@ export const attachPhoto = createServerFn({ method: "POST" })
       const roles = await currentRoles(context);
       assertEditable(header, roles, userId);
     }
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      dpr_id: data.dprId ?? null,
-      observation_id: data.observationId ?? null,
-      file_path: data.filePath,
-      caption: data.caption ?? null,
-      discipline: data.discipline ?? null,
-      area: data.area ?? null,
-      uploaded_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("site_photos")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "photo.attach", "site_photos", (row as any).id, {
-      dpr_id: data.dprId ?? null,
-      observation_id: data.observationId ?? null,
-    });
-    return row as SitePhotoRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "photo",
+        action: "attach",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
+          dpr_id: data.dprId ?? null,
+          observation_id: data.observationId ?? null,
+          file_path: data.filePath,
+          caption: data.caption ?? null,
+          discipline: data.discipline ?? null,
+          area: data.area ?? null,
+          uploaded_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("site_photos")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "photo.attach", "site_photos", (row as any).id, {
+          dpr_id: data.dprId ?? null,
+          observation_id: data.observationId ?? null,
+        });
+        return row as SitePhotoRow;
+      },
+    );
   });
 
 const removePhotoInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid().nullable().optional() });
