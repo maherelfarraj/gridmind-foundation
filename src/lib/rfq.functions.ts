@@ -253,15 +253,25 @@ export const listProjectsForRfq = createServerFn({ method: "GET" })
       context,
     }): Promise<Array<{ id: string; name: string; currency_code: string | null }>> => {
       requireSupabaseAuth(context);
+      // projects has no currency column — the per-project currency lives in
+      // project_financial_config (P-045). Join it so the RFQ form can default.
       const { data, error } = await context.supabase
         .from("projects")
-        .select("id, name, currency_code")
+        .select("id, name, project_financial_config(currency_code)")
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
-      return (data ?? []) as any[];
+      return ((data ?? []) as any[]).map((p) => ({
+        id: p.id as string,
+        name: p.name as string,
+        currency_code:
+          (Array.isArray(p.project_financial_config)
+            ? p.project_financial_config[0]?.currency_code
+            : p.project_financial_config?.currency_code) ?? null,
+      }));
     },
   );
+
 
 // ---------------------------------------------------------------------------
 // save draft (insert or update while status='draft')
