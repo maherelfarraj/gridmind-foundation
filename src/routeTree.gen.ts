@@ -133,6 +133,7 @@ import { Route as AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImp
 import { Route as AuthenticatedProjectsProjectIdCommissioningKpisRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.kpis'
 import { Route as AuthenticatedProjectsProjectIdCommissioningHandoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.handover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.certificates'
+import { Route as AuthenticatedOmScadaPlantsProjectIdRouteImport } from './routes/_authenticated/om.scada.plants.$projectId'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.index'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.ppa'
@@ -872,6 +873,12 @@ const AuthenticatedProjectsProjectIdCommissioningCertificatesRoute =
     path: '/certificates',
     getParentRoute: () => AuthenticatedProjectsProjectIdCommissioningRoute,
   } as any)
+const AuthenticatedOmScadaPlantsProjectIdRoute =
+  AuthenticatedOmScadaPlantsProjectIdRouteImport.update({
+    id: '/om/scada/plants/$projectId',
+    path: '/om/scada/plants/$projectId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute =
   AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport.update({
     id: '/',
@@ -1055,6 +1062,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -1182,6 +1190,7 @@ export interface FileRoutesByTo {
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
+  '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -1318,6 +1327,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/_authenticated/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/_authenticated/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/_authenticated/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/_authenticated/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -1455,6 +1465,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections/'
     | '/qaqc/ncrs/'
     | '/qaqc/punch/'
+    | '/om/scada/plants/$projectId'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
     | '/projects/$projectId/commissioning/kpis'
@@ -1582,6 +1593,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections'
     | '/qaqc/ncrs'
     | '/qaqc/punch'
+    | '/om/scada/plants/$projectId'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
     | '/projects/$projectId/commissioning/kpis'
@@ -1717,6 +1729,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/inspections/'
     | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
+    | '/_authenticated/om/scada/plants/$projectId'
     | '/_authenticated/projects/$projectId/commissioning/certificates'
     | '/_authenticated/projects/$projectId/commissioning/handover'
     | '/_authenticated/projects/$projectId/commissioning/kpis'
@@ -2636,6 +2649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCommissioningRoute
     }
+    '/_authenticated/om/scada/plants/$projectId': {
+      id: '/_authenticated/om/scada/plants/$projectId'
+      path: '/om/scada/plants/$projectId'
+      fullPath: '/om/scada/plants/$projectId'
+      preLoaderRoute: typeof AuthenticatedOmScadaPlantsProjectIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/$projectId/finance/project-finance/': {
       id: '/_authenticated/projects/$projectId/finance/project-finance/'
       path: '/'
@@ -3196,6 +3216,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQaqcInspectionsIndexRoute: typeof AuthenticatedQaqcInspectionsIndexRoute
   AuthenticatedQaqcNcrsIndexRoute: typeof AuthenticatedQaqcNcrsIndexRoute
   AuthenticatedQaqcPunchIndexRoute: typeof AuthenticatedQaqcPunchIndexRoute
+  AuthenticatedOmScadaPlantsProjectIdRoute: typeof AuthenticatedOmScadaPlantsProjectIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -3278,6 +3299,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedQaqcInspectionsIndexRoute,
   AuthenticatedQaqcNcrsIndexRoute: AuthenticatedQaqcNcrsIndexRoute,
   AuthenticatedQaqcPunchIndexRoute: AuthenticatedQaqcPunchIndexRoute,
+  AuthenticatedOmScadaPlantsProjectIdRoute:
+    AuthenticatedOmScadaPlantsProjectIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
