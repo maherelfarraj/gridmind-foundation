@@ -55,6 +55,7 @@ import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
+import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
 import { Route as AuthenticatedQaqcInspectionsIndexRouteImport } from './routes/_authenticated/qaqc.inspections.index'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
@@ -63,11 +64,15 @@ import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
 import { Route as AuthenticatedHseIncidentsIndexRouteImport } from './routes/_authenticated/hse.incidents.index'
+import { Route as AuthenticatedFieldTransmittalsIndexRouteImport } from './routes/_authenticated/field.transmittals.index'
+import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/_authenticated/field.submittals.index'
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
 import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
+import { Route as AuthenticatedQaqcNcrsNewRouteImport } from './routes/_authenticated/qaqc.ncrs.new'
+import { Route as AuthenticatedQaqcNcrsIdRouteImport } from './routes/_authenticated/qaqc.ncrs.$id'
 import { Route as AuthenticatedQaqcInspectionsNewRouteImport } from './routes/_authenticated/qaqc.inspections.new'
 import { Route as AuthenticatedQaqcInspectionsIdRouteImport } from './routes/_authenticated/qaqc.inspections.$id'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
@@ -91,6 +96,9 @@ import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './ro
 import { Route as AuthenticatedHseIncidentsNewRouteImport } from './routes/_authenticated/hse.incidents.new'
 import { Route as AuthenticatedHseIncidentsIdRouteImport } from './routes/_authenticated/hse.incidents.$id'
 import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
+import { Route as AuthenticatedFieldTransmittalsNewRouteImport } from './routes/_authenticated/field.transmittals.new'
+import { Route as AuthenticatedFieldTransmittalsIdRouteImport } from './routes/_authenticated/field.transmittals.$id'
+import { Route as AuthenticatedFieldSubmittalsIdRouteImport } from './routes/_authenticated/field.submittals.$id'
 import { Route as AuthenticatedFieldMobilizationChecklistIdRouteImport } from './routes/_authenticated/field.mobilization.$checklistId'
 import { Route as AuthenticatedFieldDprNewRouteImport } from './routes/_authenticated/field.dpr.new'
 import { Route as AuthenticatedFieldDprDprIdRouteImport } from './routes/_authenticated/field.dpr.$dprId'
@@ -385,6 +393,12 @@ const AuthenticatedQaqcPunchIndexRoute =
     path: '/qaqc/punch/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedQaqcNcrsIndexRoute =
+  AuthenticatedQaqcNcrsIndexRouteImport.update({
+    id: '/qaqc/ncrs/',
+    path: '/qaqc/ncrs/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQaqcInspectionsIndexRoute =
   AuthenticatedQaqcInspectionsIndexRouteImport.update({
     id: '/qaqc/inspections/',
@@ -433,6 +447,18 @@ const AuthenticatedHseIncidentsIndexRoute =
     path: '/hse/incidents/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFieldTransmittalsIndexRoute =
+  AuthenticatedFieldTransmittalsIndexRouteImport.update({
+    id: '/field/transmittals/',
+    path: '/field/transmittals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldSubmittalsIndexRoute =
+  AuthenticatedFieldSubmittalsIndexRouteImport.update({
+    id: '/field/submittals/',
+    path: '/field/submittals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFieldMobilizationIndexRoute =
   AuthenticatedFieldMobilizationIndexRouteImport.update({
     id: '/field/mobilization/',
@@ -463,6 +489,17 @@ const AuthenticatedQaqcPunchIdRoute =
     path: '/qaqc/punch/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedQaqcNcrsNewRoute =
+  AuthenticatedQaqcNcrsNewRouteImport.update({
+    id: '/qaqc/ncrs/new',
+    path: '/qaqc/ncrs/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQaqcNcrsIdRoute = AuthenticatedQaqcNcrsIdRouteImport.update({
+  id: '/qaqc/ncrs/$id',
+  path: '/qaqc/ncrs/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedQaqcInspectionsNewRoute =
   AuthenticatedQaqcInspectionsNewRouteImport.update({
     id: '/qaqc/inspections/new',
@@ -600,6 +637,24 @@ const AuthenticatedFinanceContractsContractIdRoute =
     id: '/$contractId',
     path: '/$contractId',
     getParentRoute: () => AuthenticatedFinanceContractsRoute,
+  } as any)
+const AuthenticatedFieldTransmittalsNewRoute =
+  AuthenticatedFieldTransmittalsNewRouteImport.update({
+    id: '/field/transmittals/new',
+    path: '/field/transmittals/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldTransmittalsIdRoute =
+  AuthenticatedFieldTransmittalsIdRouteImport.update({
+    id: '/field/transmittals/$id',
+    path: '/field/transmittals/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldSubmittalsIdRoute =
+  AuthenticatedFieldSubmittalsIdRouteImport.update({
+    id: '/field/submittals/$id',
+    path: '/field/submittals/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldMobilizationChecklistIdRoute =
   AuthenticatedFieldMobilizationChecklistIdRouteImport.update({
@@ -865,6 +920,9 @@ export interface FileRoutesByFullPath {
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
   '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  '/field/submittals/$id': typeof AuthenticatedFieldSubmittalsIdRoute
+  '/field/transmittals/$id': typeof AuthenticatedFieldTransmittalsIdRoute
+  '/field/transmittals/new': typeof AuthenticatedFieldTransmittalsNewRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
@@ -888,11 +946,15 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/qaqc/ncrs/$id': typeof AuthenticatedQaqcNcrsIdRoute
+  '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
+  '/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
@@ -901,6 +963,7 @@ export interface FileRoutesByFullPath {
   '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
@@ -973,6 +1036,9 @@ export interface FileRoutesByTo {
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
   '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  '/field/submittals/$id': typeof AuthenticatedFieldSubmittalsIdRoute
+  '/field/transmittals/$id': typeof AuthenticatedFieldTransmittalsIdRoute
+  '/field/transmittals/new': typeof AuthenticatedFieldTransmittalsNewRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
@@ -995,11 +1061,15 @@ export interface FileRoutesByTo {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/qaqc/ncrs/$id': typeof AuthenticatedQaqcNcrsIdRoute
+  '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/field/submittals': typeof AuthenticatedFieldSubmittalsIndexRoute
+  '/field/transmittals': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/hse/incidents': typeof AuthenticatedHseIncidentsIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
@@ -1008,6 +1078,7 @@ export interface FileRoutesByTo {
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -1088,6 +1159,9 @@ export interface FileRoutesById {
   '/_authenticated/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
   '/_authenticated/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/_authenticated/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  '/_authenticated/field/submittals/$id': typeof AuthenticatedFieldSubmittalsIdRoute
+  '/_authenticated/field/transmittals/$id': typeof AuthenticatedFieldTransmittalsIdRoute
+  '/_authenticated/field/transmittals/new': typeof AuthenticatedFieldTransmittalsNewRoute
   '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/_authenticated/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/_authenticated/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
@@ -1111,11 +1185,15 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/_authenticated/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/_authenticated/qaqc/ncrs/$id': typeof AuthenticatedQaqcNcrsIdRoute
+  '/_authenticated/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
+  '/_authenticated/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
+  '/_authenticated/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/_authenticated/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
@@ -1124,6 +1202,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
+  '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
@@ -1205,6 +1284,9 @@ export interface FileRouteTypes {
     | '/field/dpr/$dprId'
     | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
+    | '/field/submittals/$id'
+    | '/field/transmittals/$id'
+    | '/field/transmittals/new'
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
@@ -1228,11 +1310,15 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/qaqc/inspections/$id'
     | '/qaqc/inspections/new'
+    | '/qaqc/ncrs/$id'
+    | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/admin/tenants/'
     | '/field/dpr/'
     | '/field/mobilization/'
+    | '/field/submittals/'
+    | '/field/transmittals/'
     | '/hse/incidents/'
     | '/procurement/matches/'
     | '/procurement/pos/'
@@ -1241,6 +1327,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors/'
     | '/projects/$projectId/'
     | '/qaqc/inspections/'
+    | '/qaqc/ncrs/'
     | '/qaqc/punch/'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
@@ -1313,6 +1400,9 @@ export interface FileRouteTypes {
     | '/field/dpr/$dprId'
     | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
+    | '/field/submittals/$id'
+    | '/field/transmittals/$id'
+    | '/field/transmittals/new'
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
@@ -1335,11 +1425,15 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/qaqc/inspections/$id'
     | '/qaqc/inspections/new'
+    | '/qaqc/ncrs/$id'
+    | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/admin/tenants'
     | '/field/dpr'
     | '/field/mobilization'
+    | '/field/submittals'
+    | '/field/transmittals'
     | '/hse/incidents'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -1348,6 +1442,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/qaqc/inspections'
+    | '/qaqc/ncrs'
     | '/qaqc/punch'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/ifc-release'
@@ -1427,6 +1522,9 @@ export interface FileRouteTypes {
     | '/_authenticated/field/dpr/$dprId'
     | '/_authenticated/field/dpr/new'
     | '/_authenticated/field/mobilization/$checklistId'
+    | '/_authenticated/field/submittals/$id'
+    | '/_authenticated/field/transmittals/$id'
+    | '/_authenticated/field/transmittals/new'
     | '/_authenticated/finance/contracts/$contractId'
     | '/_authenticated/hse/incidents/$id'
     | '/_authenticated/hse/incidents/new'
@@ -1450,11 +1548,15 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/qaqc/inspections/$id'
     | '/_authenticated/qaqc/inspections/new'
+    | '/_authenticated/qaqc/ncrs/$id'
+    | '/_authenticated/qaqc/ncrs/new'
     | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
+    | '/_authenticated/field/submittals/'
+    | '/_authenticated/field/transmittals/'
     | '/_authenticated/hse/incidents/'
     | '/_authenticated/procurement/matches/'
     | '/_authenticated/procurement/pos/'
@@ -1463,6 +1565,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
     | '/_authenticated/qaqc/inspections/'
+    | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
@@ -1828,6 +1931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQaqcPunchIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/qaqc/ncrs/': {
+      id: '/_authenticated/qaqc/ncrs/'
+      path: '/qaqc/ncrs'
+      fullPath: '/qaqc/ncrs/'
+      preLoaderRoute: typeof AuthenticatedQaqcNcrsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/qaqc/inspections/': {
       id: '/_authenticated/qaqc/inspections/'
       path: '/qaqc/inspections'
@@ -1884,6 +1994,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHseIncidentsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/field/transmittals/': {
+      id: '/_authenticated/field/transmittals/'
+      path: '/field/transmittals'
+      fullPath: '/field/transmittals/'
+      preLoaderRoute: typeof AuthenticatedFieldTransmittalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/submittals/': {
+      id: '/_authenticated/field/submittals/'
+      path: '/field/submittals'
+      fullPath: '/field/submittals/'
+      preLoaderRoute: typeof AuthenticatedFieldSubmittalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/field/mobilization/': {
       id: '/_authenticated/field/mobilization/'
       path: '/field/mobilization'
@@ -1917,6 +2041,20 @@ declare module '@tanstack/react-router' {
       path: '/qaqc/punch/$id'
       fullPath: '/qaqc/punch/$id'
       preLoaderRoute: typeof AuthenticatedQaqcPunchIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qaqc/ncrs/new': {
+      id: '/_authenticated/qaqc/ncrs/new'
+      path: '/qaqc/ncrs/new'
+      fullPath: '/qaqc/ncrs/new'
+      preLoaderRoute: typeof AuthenticatedQaqcNcrsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qaqc/ncrs/$id': {
+      id: '/_authenticated/qaqc/ncrs/$id'
+      path: '/qaqc/ncrs/$id'
+      fullPath: '/qaqc/ncrs/$id'
+      preLoaderRoute: typeof AuthenticatedQaqcNcrsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/inspections/new': {
@@ -2079,6 +2217,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/finance/contracts/$contractId'
       preLoaderRoute: typeof AuthenticatedFinanceContractsContractIdRouteImport
       parentRoute: typeof AuthenticatedFinanceContractsRoute
+    }
+    '/_authenticated/field/transmittals/new': {
+      id: '/_authenticated/field/transmittals/new'
+      path: '/field/transmittals/new'
+      fullPath: '/field/transmittals/new'
+      preLoaderRoute: typeof AuthenticatedFieldTransmittalsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/transmittals/$id': {
+      id: '/_authenticated/field/transmittals/$id'
+      path: '/field/transmittals/$id'
+      fullPath: '/field/transmittals/$id'
+      preLoaderRoute: typeof AuthenticatedFieldTransmittalsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/submittals/$id': {
+      id: '/_authenticated/field/submittals/$id'
+      path: '/field/submittals/$id'
+      fullPath: '/field/submittals/$id'
+      preLoaderRoute: typeof AuthenticatedFieldSubmittalsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/mobilization/$checklistId': {
       id: '/_authenticated/field/mobilization/$checklistId'
@@ -2736,16 +2895,24 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldDprDprIdRoute: typeof AuthenticatedFieldDprDprIdRoute
   AuthenticatedFieldDprNewRoute: typeof AuthenticatedFieldDprNewRoute
   AuthenticatedFieldMobilizationChecklistIdRoute: typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  AuthenticatedFieldSubmittalsIdRoute: typeof AuthenticatedFieldSubmittalsIdRoute
+  AuthenticatedFieldTransmittalsIdRoute: typeof AuthenticatedFieldTransmittalsIdRoute
+  AuthenticatedFieldTransmittalsNewRoute: typeof AuthenticatedFieldTransmittalsNewRoute
   AuthenticatedHseIncidentsIdRoute: typeof AuthenticatedHseIncidentsIdRoute
   AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
   AuthenticatedQaqcInspectionsIdRoute: typeof AuthenticatedQaqcInspectionsIdRoute
   AuthenticatedQaqcInspectionsNewRoute: typeof AuthenticatedQaqcInspectionsNewRoute
+  AuthenticatedQaqcNcrsIdRoute: typeof AuthenticatedQaqcNcrsIdRoute
+  AuthenticatedQaqcNcrsNewRoute: typeof AuthenticatedQaqcNcrsNewRoute
   AuthenticatedQaqcPunchIdRoute: typeof AuthenticatedQaqcPunchIdRoute
   AuthenticatedQaqcPunchWalkRoute: typeof AuthenticatedQaqcPunchWalkRoute
   AuthenticatedFieldDprIndexRoute: typeof AuthenticatedFieldDprIndexRoute
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
+  AuthenticatedFieldSubmittalsIndexRoute: typeof AuthenticatedFieldSubmittalsIndexRoute
+  AuthenticatedFieldTransmittalsIndexRoute: typeof AuthenticatedFieldTransmittalsIndexRoute
   AuthenticatedHseIncidentsIndexRoute: typeof AuthenticatedHseIncidentsIndexRoute
   AuthenticatedQaqcInspectionsIndexRoute: typeof AuthenticatedQaqcInspectionsIndexRoute
+  AuthenticatedQaqcNcrsIndexRoute: typeof AuthenticatedQaqcNcrsIndexRoute
   AuthenticatedQaqcPunchIndexRoute: typeof AuthenticatedQaqcPunchIndexRoute
 }
 
@@ -2802,18 +2969,29 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldDprNewRoute: AuthenticatedFieldDprNewRoute,
   AuthenticatedFieldMobilizationChecklistIdRoute:
     AuthenticatedFieldMobilizationChecklistIdRoute,
+  AuthenticatedFieldSubmittalsIdRoute: AuthenticatedFieldSubmittalsIdRoute,
+  AuthenticatedFieldTransmittalsIdRoute: AuthenticatedFieldTransmittalsIdRoute,
+  AuthenticatedFieldTransmittalsNewRoute:
+    AuthenticatedFieldTransmittalsNewRoute,
   AuthenticatedHseIncidentsIdRoute: AuthenticatedHseIncidentsIdRoute,
   AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
   AuthenticatedQaqcInspectionsIdRoute: AuthenticatedQaqcInspectionsIdRoute,
   AuthenticatedQaqcInspectionsNewRoute: AuthenticatedQaqcInspectionsNewRoute,
+  AuthenticatedQaqcNcrsIdRoute: AuthenticatedQaqcNcrsIdRoute,
+  AuthenticatedQaqcNcrsNewRoute: AuthenticatedQaqcNcrsNewRoute,
   AuthenticatedQaqcPunchIdRoute: AuthenticatedQaqcPunchIdRoute,
   AuthenticatedQaqcPunchWalkRoute: AuthenticatedQaqcPunchWalkRoute,
   AuthenticatedFieldDprIndexRoute: AuthenticatedFieldDprIndexRoute,
   AuthenticatedFieldMobilizationIndexRoute:
     AuthenticatedFieldMobilizationIndexRoute,
+  AuthenticatedFieldSubmittalsIndexRoute:
+    AuthenticatedFieldSubmittalsIndexRoute,
+  AuthenticatedFieldTransmittalsIndexRoute:
+    AuthenticatedFieldTransmittalsIndexRoute,
   AuthenticatedHseIncidentsIndexRoute: AuthenticatedHseIncidentsIndexRoute,
   AuthenticatedQaqcInspectionsIndexRoute:
     AuthenticatedQaqcInspectionsIndexRoute,
+  AuthenticatedQaqcNcrsIndexRoute: AuthenticatedQaqcNcrsIndexRoute,
   AuthenticatedQaqcPunchIndexRoute: AuthenticatedQaqcPunchIndexRoute,
 }
 
