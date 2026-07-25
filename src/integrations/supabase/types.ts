@@ -884,6 +884,107 @@ export type Database = {
           },
         ]
       }
+      commissioning_tests: {
+        Row: {
+          area: string
+          assigned_to: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          equipment_ref: string | null
+          id: string
+          notes: string | null
+          planned_date: string | null
+          project_id: string
+          result: Json
+          started_at: string | null
+          status: Database["public"]["Enums"]["commissioning_test_status"]
+          string_ref: string | null
+          test_type: Database["public"]["Enums"]["commissioning_test_type"]
+          updated_at: string
+          utility_witness_name: string | null
+          utility_witness_required: boolean
+          utility_witnessed_at: string | null
+          witness_file_path: string | null
+        }
+        Insert: {
+          area: string
+          assigned_to?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          equipment_ref?: string | null
+          id?: string
+          notes?: string | null
+          planned_date?: string | null
+          project_id: string
+          result?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["commissioning_test_status"]
+          string_ref?: string | null
+          test_type: Database["public"]["Enums"]["commissioning_test_type"]
+          updated_at?: string
+          utility_witness_name?: string | null
+          utility_witness_required?: boolean
+          utility_witnessed_at?: string | null
+          witness_file_path?: string | null
+        }
+        Update: {
+          area?: string
+          assigned_to?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          equipment_ref?: string | null
+          id?: string
+          notes?: string | null
+          planned_date?: string | null
+          project_id?: string
+          result?: Json
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["commissioning_test_status"]
+          string_ref?: string | null
+          test_type?: Database["public"]["Enums"]["commissioning_test_type"]
+          updated_at?: string
+          utility_witness_name?: string | null
+          utility_witness_required?: boolean
+          utility_witnessed_at?: string | null
+          witness_file_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissioning_tests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_tests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_tests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_tests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -3900,6 +4001,91 @@ export type Database = {
           },
         ]
       }
+      performance_tests: {
+        Row: {
+          company_id: string
+          contract_value: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          measured_value: number | null
+          metered_energy_mwh: number | null
+          notes: string | null
+          period_end: string | null
+          period_start: string | null
+          plane_of_array_kwh_m2: number | null
+          project_id: string
+          report_file_path: string | null
+          results: Json
+          status: string
+          test_type: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contract_value?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          measured_value?: number | null
+          metered_energy_mwh?: number | null
+          notes?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          plane_of_array_kwh_m2?: number | null
+          project_id: string
+          report_file_path?: string | null
+          results?: Json
+          status?: string
+          test_type?: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contract_value?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          measured_value?: number | null
+          metered_energy_mwh?: number | null
+          notes?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          plane_of_array_kwh_m2?: number | null
+          project_id?: string
+          report_file_path?: string | null
+          results?: Json
+          status?: string
+          test_type?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_tests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_tests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_tests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppa_terms: {
         Row: {
           annual_energy_mwh: number | null
@@ -5222,6 +5408,83 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      punch_signoffs: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          evidence_file_path: string | null
+          id: string
+          notes: string | null
+          project_id: string
+          punch_item_id: string
+          signed_at: string
+          signed_by: string | null
+          signer_name: string | null
+          signoff_party: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          evidence_file_path?: string | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          punch_item_id: string
+          signed_at?: string
+          signed_by?: string | null
+          signer_name?: string | null
+          signoff_party: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          evidence_file_path?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          punch_item_id?: string
+          signed_at?: string
+          signed_by?: string | null
+          signer_name?: string | null
+          signoff_party?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "punch_signoffs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_signoffs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_signoffs_punch_item_id_fkey"
+            columns: ["punch_item_id"]
+            isOneToOne: false
+            referencedRelation: "qaqc_punch_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_signoffs_signed_by_fkey"
+            columns: ["signed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -7336,6 +7599,22 @@ export type Database = {
         | "approved"
         | "rejected"
         | "incorporated"
+      commissioning_test_status:
+        | "not_started"
+        | "scheduled"
+        | "in_progress"
+        | "passed"
+        | "failed"
+        | "on_hold"
+      commissioning_test_type:
+        | "insulation_resistance"
+        | "hipot"
+        | "iv_curve"
+        | "string_test"
+        | "continuity"
+        | "earth_resistance"
+        | "functional"
+        | "other"
       contract_status:
         | "draft"
         | "negotiation"
@@ -7713,6 +7992,24 @@ export const Constants = {
         "approved",
         "rejected",
         "incorporated",
+      ],
+      commissioning_test_status: [
+        "not_started",
+        "scheduled",
+        "in_progress",
+        "passed",
+        "failed",
+        "on_hold",
+      ],
+      commissioning_test_type: [
+        "insulation_resistance",
+        "hipot",
+        "iv_curve",
+        "string_test",
+        "continuity",
+        "earth_resistance",
+        "functional",
+        "other",
       ],
       contract_status: [
         "draft",
