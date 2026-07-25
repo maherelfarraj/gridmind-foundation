@@ -59,6 +59,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -512,8 +513,8 @@ function ApiKeysPage() {
               <p className="text-xs text-muted-foreground">
                 Sign each request with HMAC-SHA256 over{" "}
                 <code className="font-mono">{`{timestamp}.{raw body}`}</code> and send it as{" "}
-                <code className="font-mono">x-gm-signature</code> with{" "}
-                <code className="font-mono">x-gm-timestamp</code> (300s replay window). See{" "}
+                <code className="font-mono">x-signature</code> with{" "}
+                <code className="font-mono">x-timestamp</code> (300s replay window). See{" "}
                 <a className="underline" href="/docs/api" target="_blank" rel="noreferrer">
                   API docs
                 </a>
@@ -568,6 +569,98 @@ function ApiKeysPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ---------------- Security dialog (IP allowlist + HMAC) ---------------- */}
+      <Dialog open={!!securityKey} onOpenChange={(o) => !o && setSecurityKey(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Security — {securityKey?.name}</DialogTitle>
+            <DialogDescription>
+              The public-API guard checks the IP allowlist and the HMAC signature on every request to
+              this key.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="allowedIps">Allowed IPs</Label>
+              <Textarea
+                id="allowedIps"
+                rows={4}
+                className="font-mono text-xs"
+                placeholder={"203.0.113.7\n203.0.113.0/24"}
+                value={ipsDraft}
+                onChange={(e) => setIpsDraft(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                One IPv4 address or CIDR block per line — prefer an exact gateway egress IP (/32).
+                Leave empty to allow any IP.
+              </p>
+              <Button
+                size="sm"
+                disabled={securityMut.isPending}
+                onClick={() =>
+                  securityKey &&
+                  securityMut.mutate({
+                    keyId: securityKey.id,
+                    allowedIps: ipsDraft
+                      .split(/[\n,]/)
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
+                }
+              >
+                {securityMut.isPending ? "Saving…" : "Save allowlist"}
+              </Button>
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <Label className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                HMAC signing secret
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {securityKey?.has_hmac
+                  ? "A secret is configured. Regenerating invalidates the current one immediately."
+                  : "No secret configured — signed requests cannot be verified yet."}{" "}
+                HMAC-SHA256, 32 random bytes, shown once.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={securityMut.isPending}
+                  onClick={() =>
+                    securityKey &&
+                    securityMut.mutate({ keyId: securityKey.id, regenerateHmac: true })
+                  }
+                >
+                  <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+                  {securityKey?.has_hmac ? "Regenerate secret" : "Generate secret"}
+                </Button>
+                {securityKey?.has_hmac && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={securityMut.isPending}
+                    onClick={() =>
+                      securityKey && securityMut.mutate({ keyId: securityKey.id, clearHmac: true })
+                    }
+                  >
+                    Remove secret
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSecurityKey(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
