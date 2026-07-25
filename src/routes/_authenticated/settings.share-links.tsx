@@ -368,9 +368,6 @@ function CreateLinkDialog() {
         if (!next) setCreatedUrl(null);
       }}
     >
-      <Dialog>
-        {/* trigger */}
-      </Dialog>
       <Button onClick={() => setOpen(true)}>
         <LinkIcon className="mr-2 h-4 w-4" />
         Create link
