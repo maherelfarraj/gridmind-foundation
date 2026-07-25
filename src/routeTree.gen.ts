@@ -89,6 +89,7 @@ import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './route
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada-telemetry'
+import { Route as ApiPublicHooksPingRouteImport } from './routes/api/public/hooks/ping'
 import { Route as ApiPublicHooksEventsRouteImport } from './routes/api/public/hooks/events'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
 import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
@@ -623,6 +624,11 @@ const ApiPublicHooksScadaTelemetryRoute =
     path: '/api/public/hooks/scada-telemetry',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPingRoute = ApiPublicHooksPingRouteImport.update({
+  id: '/api/public/hooks/ping',
+  path: '/api/public/hooks/ping',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksEventsRoute = ApiPublicHooksEventsRouteImport.update({
   id: '/api/public/hooks/events',
   path: '/api/public/hooks/events',
@@ -1198,6 +1204,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
+  '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
@@ -1345,6 +1352,7 @@ export interface FileRoutesByTo {
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
+  '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
@@ -1502,6 +1510,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
+  '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
@@ -1660,6 +1669,7 @@ export interface FileRouteTypes {
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/api/public/hooks/events'
+    | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
     | '/admin/tenants/'
     | '/field/dpr/'
@@ -1807,6 +1817,7 @@ export interface FileRouteTypes {
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/api/public/hooks/events'
+    | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
     | '/admin/tenants'
     | '/field/dpr'
@@ -1963,6 +1974,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
     | '/api/public/hooks/events'
+    | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
@@ -2031,6 +2043,7 @@ export interface RootRouteChildren {
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEventsRoute: typeof ApiPublicHooksEventsRoute
+  ApiPublicHooksPingRoute: typeof ApiPublicHooksPingRoute
   ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
 }
 
@@ -2594,6 +2607,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/scada-telemetry'
       fullPath: '/api/public/hooks/scada-telemetry'
       preLoaderRoute: typeof ApiPublicHooksScadaTelemetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/ping': {
+      id: '/api/public/hooks/ping'
+      path: '/api/public/hooks/ping'
+      fullPath: '/api/public/hooks/ping'
+      preLoaderRoute: typeof ApiPublicHooksPingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/events': {
@@ -3756,6 +3776,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEventsRoute: ApiPublicHooksEventsRoute,
+  ApiPublicHooksPingRoute: ApiPublicHooksPingRoute,
   ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,
 }
 export const routeTree = rootRouteImport
