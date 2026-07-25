@@ -43,7 +43,7 @@ export type WebhookDeliveryRow = {
   next_retry_at: string | null;
   delivered_at: string | null;
   created_at: string;
-  payload: unknown;
+  payload: Record<string, unknown> | null;
 };
 
 export type CreatedEndpointResult = {
