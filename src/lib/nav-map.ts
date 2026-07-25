@@ -43,6 +43,8 @@ export interface NavItem {
   requiresSuperAdmin?: boolean;
   /** When true, the item is shown to every authenticated user regardless of module/plan gating. */
   alwaysVisible?: boolean;
+  /** When true, external viewer roles (client/investor/lender viewer) cannot see this item. */
+  hideFromExternalViewers?: boolean;
 }
 
 export interface NavSection {
