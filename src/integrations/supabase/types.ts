@@ -826,6 +826,178 @@ export type Database = {
           },
         ]
       }
+      contract_obligations: {
+        Row: {
+          clause_ref: string | null
+          company_id: string
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          extracted_by_ai: boolean
+          id: string
+          owner_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clause_ref?: string | null
+          company_id: string
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          extracted_by_ai?: boolean
+          id?: string
+          owner_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          clause_ref?: string | null
+          company_id?: string
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          extracted_by_ai?: boolean
+          id?: string
+          owner_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_obligations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_obligations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_obligations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_obligations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          company_id: string
+          contract_number: string
+          contract_type: Database["public"]["Enums"]["contract_type"]
+          counterparty: string
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          effective_date: string | null
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          project_id: string | null
+          retention_until: string | null
+          schedule_of_values: Json
+          signed_at: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          company_id: string
+          contract_number: string
+          contract_type?: Database["public"]["Enums"]["contract_type"]
+          counterparty: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          project_id?: string | null
+          retention_until?: string | null
+          schedule_of_values?: Json
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          company_id?: string
+          contract_number?: string
+          contract_type?: Database["public"]["Enums"]["contract_type"]
+          counterparty?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          project_id?: string | null
+          retention_until?: string | null
+          schedule_of_values?: Json
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cost_codes: {
         Row: {
           code: string
@@ -4989,6 +5161,21 @@ export type Database = {
         | "lender_viewer"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
+      contract_status:
+        | "draft"
+        | "negotiation"
+        | "signed"
+        | "active"
+        | "completed"
+        | "terminated"
+      contract_type:
+        | "epc"
+        | "ppa"
+        | "supply"
+        | "service"
+        | "consulting"
+        | "lease"
+        | "other"
       delivery_status: "pending" | "success" | "failed"
       document_category:
         | "drawing"
@@ -5264,6 +5451,23 @@ export const Constants = {
       ],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
+      contract_status: [
+        "draft",
+        "negotiation",
+        "signed",
+        "active",
+        "completed",
+        "terminated",
+      ],
+      contract_type: [
+        "epc",
+        "ppa",
+        "supply",
+        "service",
+        "consulting",
+        "lease",
+        "other",
+      ],
       delivery_status: ["pending", "success", "failed"],
       document_category: [
         "drawing",
