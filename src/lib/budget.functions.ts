@@ -81,12 +81,9 @@ const COST_CODE_ROLES = [
 const BUDGET_ROLES = ["finance_admin", "company_admin"] as const;
 
 // POs that represent real commitments (post-approval).
-const COMMITTED_PO_STATUSES = [
-  "approved",
-  "issued",
-  "partially_received",
-  "received",
-] as const;
+const COMMITTED_PO_STATUSES: Array<
+  "approved" | "issued" | "partially_received" | "received"
+> = ["approved", "issued", "partially_received", "received"];
 
 // ---------------------------------------------------------------------------
 // Helpers
