@@ -365,7 +365,7 @@ export const updateInspection = createServerFn({ method: "POST" })
 
     const { data: updated, error } = await context.supabase
       .from("qaqc_inspections")
-      .update(patch)
+      .update(patch as any)
       .eq("id", data.id)
       .eq("company_id", companyId)
       .select("*")
