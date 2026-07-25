@@ -3031,6 +3031,70 @@ export type Database = {
           },
         ]
       }
+      mobilization_checklists: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          items: Json
+          name: string
+          project_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["mobilization_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          name: string
+          project_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["mobilization_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json
+          name?: string
+          project_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["mobilization_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobilization_checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobilization_checklists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobilization_checklists_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_access_rules: {
         Row: {
           company_id: string
@@ -6589,6 +6653,14 @@ export type Database = {
         | "steel"
         | "concrete"
         | "other"
+      mobilization_category:
+        | "cabins_facilities"
+        | "fencing_security"
+        | "hse_induction"
+        | "utilities_comms"
+        | "access_logistics"
+        | "permits_licenses"
+      mobilization_status: "not_started" | "in_progress" | "complete"
       observation_severity: "low" | "medium" | "high" | "critical"
       observation_status: "open" | "in_progress" | "closed"
       offline_queue_status: "pending" | "synced" | "failed"
@@ -6939,6 +7011,15 @@ export const Constants = {
         "concrete",
         "other",
       ],
+      mobilization_category: [
+        "cabins_facilities",
+        "fencing_security",
+        "hse_induction",
+        "utilities_comms",
+        "access_logistics",
+        "permits_licenses",
+      ],
+      mobilization_status: ["not_started", "in_progress", "complete"],
       observation_severity: ["low", "medium", "high", "critical"],
       observation_status: ["open", "in_progress", "closed"],
       offline_queue_status: ["pending", "synced", "failed"],
