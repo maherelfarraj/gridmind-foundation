@@ -1,49 +1,49 @@
-## P-109 — Service Tickets + SLA Timers + Breach Log
+## P-110 — Monthly O&M Report PDF
 
-### Migration (new timestamped file, warranty/sla domain)
-Add enums (`ticket_category`, `ticket_status` via guarded `do`-blocks), tables `service_tickets` and `sla_records` exactly per spec, with GRANTs to `authenticated`, RLS enabled, member-SELECT + om_admin/company_admin writes, `set_updated_at` triggers, and the two indexes. `ticket_number` = `ST-YYYY-NNNN` per company.
+### Migration `supabase/migrations/0051_om_reports.sql`
+- Guarded enums: `om_report_type` (monthly/quarterly/annual), `om_report_status` (draft/generated/sent).
+- Table `om_reports` per spec (unique `project_id, report_type, period_start`).
+- RLS enabled: `is_company_member` SELECT; writes gated by `om_admin`/`company_admin`.
+- GRANTs to `authenticated`; `set_updated_at()` trigger; index `(company_id, period_start desc)`.
 
-### Server layer
-- `src/lib/service-tickets.rules.ts` — SLA policy map constant:
-  - emergency 1h/8h, high 4h/24h, medium 8h/72h, low 24h/168h
-  - Credit constants: response 5%, resolution 10%, cap 20% of monthly O&M fee
-  - Pure helpers: `computeDueDates(priority, createdAt)`, `evaluateBreach(sla, now)`, `computeCredit(response_breached, resolution_breached, monthlyFee)`
-  - Zod schemas for create/update, plus countdown-status classifier (`on_track` | `warning <25%` | `breached`)
-- `src/lib/service-tickets.server.ts` — `generateTicketNumber(companyId)` with retry (mirrors `generateClaimNumber`)
-- `src/lib/service-tickets.functions.ts` (`createServerFn` + `requireSupabaseAuth`):
-  - `listTickets({ projectId?, status?, priority?, search? })` with joined assignee name and its `sla_records` row
-  - `getTicket({ id })`
-  - `createTicket(input)` → inserts ticket + matching `sla_records` in one flow, audits `ticket.create`
-  - `updateTicket(input)` → on status transition set `responded_at` (first non-open), `resolved_at` (resolved/closed); re-evaluate breach flags + `breach_minutes` server-side; audits `ticket.update` / `ticket.resolve`
-  - `applySlaCredit({ ticketId, monthlyFee, currencyCode })` → recomputes credit %, stores `credit_amount`, audits `sla.credit_apply`
-  - `listBreaches({ projectId? })` for the Breach log tab
+### Server logic — `src/lib/om-reports.functions.ts` + `.server.ts` + `.rules.ts`
+`generateOmReport({ projectId, periodStart, periodEnd })` with `requireSupabaseAuth`:
+1. `assertExportAllowed` (graceful 42P01 fallback).
+2. Aggregate `data` jsonb — five sections:
+   - **availability**: `1 − downtime_hours / period_hours`, downtime = critical `scada_alarms` open-window + corrective `work_orders` labor hours.
+   - **performance_ratio**: energy from `scada_telemetry` vs irradiance-expected; null-safe "insufficient data".
+   - **alarms**: counts by severity, top 5 recurring rules, mean acknowledge time.
+   - **work_orders**: opened/closed, MTTR hours, PM:CM ratio.
+   - **spend**: Σ `work_orders.total_cost` grouped by type, currency-formatted via `Intl`.
+3. UPSERT `om_reports` on `(project_id, report_type, period_start)` → `status='generated'`, `generated_at`, `generated_by`.
+4. Render PDF (see below), upload to `documents` bucket at `{company_id}/om-reports/{project_id}/{YYYY-MM}.pdf`; save `pdf_path`.
+5. Best-effort `insert into export_packages` — swallow `42P01`.
+6. `writeAuditLog('om_report.generate', ...)`.
+7. TODO comment: `// TODO(B12/P-117): register with scheduled_reports for monthly email delivery`.
 
-### UI — `/om/service-tickets` (route: `om.service-tickets.tsx`)
-Tabs component with two tabs:
-1. **Tickets** — table (number, title, priority badge, status, assignee, live SLA countdown chip). Chip color from `sla-status` helper: on-track (success token), <25% (warning), breached (destructive). Countdown re-renders on a 30s tick. Row click → drawer.
-2. **Breach log** — table joining `sla_records` where any breach flag is true; columns: ticket, breach type, breach_minutes, credit_pct, credit_amount. CSV export button (reuse pattern from warranties).
+List/query fn `listOmReports({ projectId? })` for the UI; `getOmReportDownloadUrl({ id })` returns a signed URL.
 
-Components:
-- `service-ticket-dialog.tsx` — react-hook-form + zod for create/edit: project, title, description, category, priority, assignee, optional `related_work_order_id` (async combobox of open WOs on same project).
-- `service-ticket-drawer.tsx` — details + status transitions (buttons that call `updateTicket`) + SLA panel (due timestamps, responded_at, resolved_at, breach flags) + "Apply SLA credit" mini-form (monthly fee input + currency) invoking `applySlaCredit`.
-- `sla-countdown-chip.tsx` — pure display component driven by rules helper.
+### PDF — `src/lib/exports/om-report-pdf.ts`
+- Reuse P-047 (`certificate-pdf.ts` / `weekly-report-pdf.ts`) branding pattern.
+- Fetch `company_branding` (logo signed URL → data URL, skip on error); `primary_color` header band + `autoTable` header fill.
+- Sections mirror `data` jsonb; use `jspdf-autotable` for alarms/WO/spend tables.
+- Footer: company legal name + "Page X of Y".
+- Filename: `GridMind_OM_Report_<project-slug>_<YYYY-MM>.pdf`.
+- Text sanitizer: render `"O&M"` as plain ampersand — assert no `&;` artifacts.
 
-All lists have skeleton/empty/error states; every mutation audited; strictly semantic tokens.
+### UI — `src/routes/_authenticated/om.reports.tsx`
+- Table: period, type, status badge, `generated_at`, Download button (signed URL).
+- "Generate monthly report" dialog: project select + month picker (default = last month); spinner during generation; `sonner` toast on result.
+- Skeleton/empty/error states; nav entry added to `src/lib/nav-map.ts` under O&M.
 
-### Navigation
-Add "Service Tickets" (Ticket icon) under O&M in `src/lib/nav-map.ts`.
+### Tests — `tests/unit/om-reports.test.ts`
+- Availability math (downtime clamp, zero-period guard).
+- PR "insufficient data" branch.
+- Spend currency formatting; PM:CM ratio + MTTR calc.
+- Filename + O&M sanitizer.
 
-### Tests — `tests/unit/service-tickets.test.ts`
-- `computeDueDates` returns correct offsets per priority
-- `evaluateBreach` flips flags and sets `breach_minutes` when `now > due`
-- `computeCredit`: response only → 5%; both → 15%; capped at 20% of monthly fee; `credit_amount` math
-- Countdown classifier boundaries (100%, 25%, 0% remaining)
-- Zod create schema requires title, project, priority
-
-### Verification checklist
-- Emergency ticket → sla_records with 1h/8h; medium → 8h/72h
-- Force breach via update with backdated `created_at` in test → chip destructive, `breach_minutes` set
-- Credit computation stored (5/10/15/20% cap) against a supplied monthly fee
-- Breach log CSV export works
-- Link a ticket to the INV-01-01 work order
-- RLS: cross-company user cannot see tickets/SLA rows
+### Verification
+- Migration applied; typecheck + unit tests green.
+- Generate for a project → row upserted, PDF at expected path, five sections in `data` jsonb.
+- Re-run same period → single row (upsert).
+- Audit log written; `export_packages` insert (or graceful skip).
