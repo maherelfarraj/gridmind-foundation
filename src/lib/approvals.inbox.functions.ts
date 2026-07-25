@@ -50,15 +50,24 @@ export interface InboxRow {
   title: string;
 }
 
+function asObject(json: Json | null | undefined): { [k: string]: Json | undefined } {
+  return json && typeof json === "object" && !Array.isArray(json)
+    ? (json as { [k: string]: Json | undefined })
+    : {};
+}
+function pickString(json: Json | null | undefined, key: string): string | null {
+  const v = asObject(json)[key];
+  return typeof v === "string" && v.length > 0 ? v : null;
+}
+
 function deriveTitle(
-  metadata: Json,
+  metadata: Json | null | undefined,
   entityType: string,
   entityId: string,
 ): string {
-  const m = metadata as Json;
   for (const k of ["title", "name", "reference", "po_number", "contract_number"]) {
-    const v = m[k];
-    if (typeof v === "string" && v.trim().length > 0) return v;
+    const v = pickString(metadata, k);
+    if (v && v.trim().length > 0) return v;
   }
   return `${entityType} ${entityId.slice(0, 8)}`;
 }
