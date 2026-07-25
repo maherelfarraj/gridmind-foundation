@@ -69,13 +69,13 @@ export const Route = createFileRoute("/api/cron/storage-check")({
         const admin = createServiceRoleClient();
         const failures: Failure[] = [];
 
-        // 1. Bucket existence + non-public.
-        const buckets = await admin
-          .schema("storage" as never)
-          .from("buckets")
-          .select("id, name, public")
-          .in("id", REQUIRED_BUCKETS as unknown as string[]);
+        const rpc = admin.rpc as unknown as LooseRpc;
 
+        // 1. Bucket existence + non-public (via SECURITY DEFINER helper — the
+        //    Supabase JS client blocks non-standard schemas by default).
+        const buckets = await rpc("list_storage_buckets_status", {
+          _ids: REQUIRED_BUCKETS as unknown as string[],
+        });
         if (buckets.error) {
           failures.push({
             reason: "query_failed",
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/cron/storage-check")({
               failures.push({ bucket: name, reason: "missing_bucket" });
               continue;
             }
-            if (row.public) {
+            if (row.is_public) {
               failures.push({ bucket: name, reason: "bucket_is_public" });
             }
           }
@@ -99,13 +99,7 @@ export const Route = createFileRoute("/api/cron/storage-check")({
         // 2. Storage RLS policies on storage.objects. We assert that ALL four
         //    required policies exist; they gate every bucket via a common
         //    company-scoped predicate, so their presence covers each bucket.
-        // Types regenerate after this migration lands; cast to bypass the
-        // stale RPC name until then.
-        const policies = await (
-          admin.rpc as unknown as (
-            name: string,
-          ) => Promise<{ data: unknown; error: { message: string } | null }>
-        )("list_storage_object_policies");
+        const policies = await rpc("list_storage_object_policies");
         let policyNames: string[] = [];
         if (policies.error) {
           // Fallback path: helper RPC may not exist in older environments.
