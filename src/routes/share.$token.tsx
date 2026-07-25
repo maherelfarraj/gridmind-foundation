@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { Ban, Clock, Link2Off, ShieldAlert } from "lucide-react";
 
 import { resolveShareLink, type ShareLinkResolveResult } from "@/lib/share-links.functions";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SectionHeader as UiSectionHeader } from "@/components/ui/page-header";
 
 const TOKEN_RE = /^[a-f0-9]{64}$/i;
 
@@ -165,15 +167,11 @@ function FeedView({ feed }: { feed: Feed }) {
 }
 
 function SectionHeader({ title }: { title: string }) {
-  return <h2 className="font-display text-lg font-semibold tracking-tight">{title}</h2>;
+  return <UiSectionHeader title={title} />;
 }
 
 function EmptySection({ label }: { label: string }) {
-  return (
-    <div className="rounded-lg border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
-      {label}
-    </div>
-  );
+  return <EmptyState title={label} compact />;
 }
 
 function fmtNum(n: number | null | undefined, digits = 2): string {
