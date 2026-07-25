@@ -124,6 +124,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport } 
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
+import { Route as AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.performance'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.index'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.ppa'
@@ -809,6 +810,12 @@ const AuthenticatedProjectsProjectIdEngineeringBomRoute =
     path: '/bom',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCommissioningPerformanceRoute =
+  AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport.update({
+    id: '/performance',
+    path: '/performance',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCommissioningRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute =
   AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport.update({
     id: '/',
@@ -990,6 +997,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -1108,6 +1116,7 @@ export interface FileRoutesByTo {
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
+  '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
@@ -1235,6 +1244,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/_authenticated/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
@@ -1363,6 +1373,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections/'
     | '/qaqc/ncrs/'
     | '/qaqc/punch/'
+    | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/ifc-release'
@@ -1481,6 +1492,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections'
     | '/qaqc/ncrs'
     | '/qaqc/punch'
+    | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/reviews'
@@ -1607,6 +1619,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/inspections/'
     | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
+    | '/_authenticated/projects/$projectId/commissioning/performance'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
@@ -2455,6 +2468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/commissioning/performance': {
+      id: '/_authenticated/projects/$projectId/commissioning/performance'
+      path: '/performance'
+      fullPath: '/projects/$projectId/commissioning/performance'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCommissioningRoute
+    }
     '/_authenticated/projects/$projectId/finance/project-finance/': {
       id: '/_authenticated/projects/$projectId/finance/project-finance/'
       path: '/'
@@ -2698,11 +2718,14 @@ const AuthenticatedProcurementVendorsRouteWithChildren =
   )
 
 interface AuthenticatedProjectsProjectIdCommissioningRouteChildren {
+  AuthenticatedProjectsProjectIdCommissioningPerformanceRoute: typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute: typeof AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute
 }
 
 const AuthenticatedProjectsProjectIdCommissioningRouteChildren: AuthenticatedProjectsProjectIdCommissioningRouteChildren =
   {
+    AuthenticatedProjectsProjectIdCommissioningPerformanceRoute:
+      AuthenticatedProjectsProjectIdCommissioningPerformanceRoute,
     AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute:
       AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute,
   }

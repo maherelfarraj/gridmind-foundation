@@ -5038,6 +5038,7 @@ export type Database = {
         Row: {
           availability_pct: number | null
           company_id: string
+          contract_pr: number | null
           created_at: string
           degradation_pct: number | null
           ghi_kwh_m2: number | null
@@ -5054,6 +5055,7 @@ export type Database = {
         Insert: {
           availability_pct?: number | null
           company_id: string
+          contract_pr?: number | null
           created_at?: string
           degradation_pct?: number | null
           ghi_kwh_m2?: number | null
@@ -5070,6 +5072,7 @@ export type Database = {
         Update: {
           availability_pct?: number | null
           company_id?: string
+          contract_pr?: number | null
           created_at?: string
           degradation_pct?: number | null
           ghi_kwh_m2?: number | null

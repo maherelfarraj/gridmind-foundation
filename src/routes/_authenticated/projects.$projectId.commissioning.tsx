@@ -2,13 +2,14 @@
 import { useMemo, useState } from "react";
 import {
   createFileRoute,
+  Link,
   useRouter,
 } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Download, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { Download, Gauge, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -162,6 +163,15 @@ function CommissioningBoard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/projects/$projectId/commissioning/performance"
+              params={{ projectId }}
+            >
+              <Gauge size={14} aria-hidden />
+              Performance tests
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
