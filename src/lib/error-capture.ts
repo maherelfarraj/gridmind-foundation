@@ -85,13 +85,19 @@ export type CapturedError = {
   stack?: string;
   statusCode?: number;
   cause?: string;
-  path?: string;
+  route?: string;
   requestId?: string;
+  userHash?: string | null;
 };
 
 export type CaptureContext = {
+  /** Request URL pathname — logged as `route`. */
   path?: string;
+  route?: string;
+  /** Inbound x-request-id, or minted here when absent. */
   requestId?: string;
+  /** Authenticated user id — never logged raw; hashed to a 12-char digest. */
+  userId?: string | null;
 };
 
 function generateErrorRef(): string {
@@ -100,6 +106,27 @@ function generateErrorRef(): string {
     return `err_${uuid.slice(0, 8)}`;
   } catch {
     return `err_${Math.random().toString(36).slice(2, 10)}`;
+  }
+}
+
+export function mintRequestId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `req_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+  }
+}
+
+/** sha256(userId).slice(0,12) — one-way, non-reversible tag safe to log. */
+async function hashUserId(userId: string | null | undefined): Promise<string | null> {
+  if (!userId) return null;
+  try {
+    const enc = new TextEncoder().encode(userId);
+    const digest = await crypto.subtle.digest("SHA-256", enc);
+    const bytes = Array.from(new Uint8Array(digest));
+    return bytes.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+  } catch {
+    return null;
   }
 }
 
@@ -121,7 +148,7 @@ function normalizeError(error: unknown): { message: string; stack?: string; stat
   return { message: String(error ?? "Unknown error") };
 }
 
-function sanitizePath(path?: string): string | undefined {
+function sanitizeRoute(path?: string): string | undefined {
   if (!path) return path;
   // Never log the raw invite token; strip query entirely on the accept-invite route.
   if (path.startsWith("/accept-invite")) {
@@ -130,33 +157,43 @@ function sanitizePath(path?: string): string | undefined {
   return path;
 }
 
-export function captureError(
-  error: unknown,
-  context: CaptureContext = {},
-): { errorRef: string; captured: CapturedError } {
+export type CaptureResult = { errorRef: string; requestId: string; captured: CapturedError };
+
+export function captureError(error: unknown, context: CaptureContext = {}): CaptureResult {
   const errorRef = generateErrorRef();
+  const requestId = context.requestId ?? mintRequestId();
   const normalized = normalizeError(error);
-  const sanitizedPath = sanitizePath(context.path);
+  const route = sanitizeRoute(context.route ?? context.path);
+
+  // Async hash — do not block error response; log the enriched line when ready.
+  const hashPromise = hashUserId(context.userId ?? null);
+
   const captured: CapturedError = {
     message: normalized.message,
     stack: normalized.stack,
     statusCode: normalized.statusCode,
     cause: normalized.cause,
-    path: sanitizedPath,
-    requestId: context.requestId,
+    route,
+    requestId,
   };
 
-  originalConsoleError(
-    JSON.stringify({
-      level: "error",
-      errorRef,
-      message: captured.message,
-      statusCode: captured.statusCode,
-      path: captured.path,
-    }),
-  );
+  hashPromise.then((userHash) => {
+    captured.userHash = userHash;
+    originalConsoleError(
+      JSON.stringify({
+        level: "error",
+        errorRef,
+        requestId,
+        route,
+        userHash,
+        statusCode: captured.statusCode,
+        message: captured.message,
+      }),
+    );
+  });
 
-  return { errorRef, captured };
+  return { errorRef, requestId, captured };
 }
+
 
 
