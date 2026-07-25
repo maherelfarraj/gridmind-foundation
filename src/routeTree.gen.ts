@@ -31,6 +31,7 @@ import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cro
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
+import { Route as AuthenticatedSettingsPortalMembersRouteImport } from './routes/_authenticated/settings.portal-members'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
@@ -269,6 +270,12 @@ const AuthenticatedSettingsProcurementRoute =
   AuthenticatedSettingsProcurementRouteImport.update({
     id: '/settings/procurement',
     path: '/settings/procurement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsPortalMembersRoute =
+  AuthenticatedSettingsPortalMembersRouteImport.update({
+    id: '/settings/portal-members',
+    path: '/settings/portal-members',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsPermissionsSimulatorRoute =
@@ -1083,6 +1090,7 @@ export interface FileRoutesByFullPath {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
@@ -1223,6 +1231,7 @@ export interface FileRoutesByTo {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
@@ -1370,6 +1379,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/_authenticated/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
@@ -1519,6 +1529,7 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
@@ -1659,6 +1670,7 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
@@ -1805,6 +1817,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/permissions-simulator'
+    | '/_authenticated/settings/portal-members'
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
@@ -2075,6 +2088,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/procurement'
       fullPath: '/settings/procurement'
       preLoaderRoute: typeof AuthenticatedSettingsProcurementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/portal-members': {
+      id: '/_authenticated/settings/portal-members'
+      path: '/settings/portal-members'
+      fullPath: '/settings/portal-members'
+      preLoaderRoute: typeof AuthenticatedSettingsPortalMembersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/permissions-simulator': {
@@ -3411,6 +3431,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  AuthenticatedSettingsPortalMembersRoute: typeof AuthenticatedSettingsPortalMembersRoute
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
@@ -3497,6 +3518,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsPermissionsSimulatorRoute:
     AuthenticatedSettingsPermissionsSimulatorRoute,
+  AuthenticatedSettingsPortalMembersRoute:
+    AuthenticatedSettingsPortalMembersRoute,
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
