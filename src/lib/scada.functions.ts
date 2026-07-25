@@ -151,7 +151,7 @@ export const listScadaConnectors = createServerFn({ method: "GET" })
         status: r.status as string,
         last_seen_at: (r.last_seen_at as string | null) ?? null,
         last_error: (r.last_error as string | null) ?? null,
-        config: (r.config as Record<string, unknown>) ?? {},
+        config: (r.config as Json) ?? {},
         assets_count: countsById.get(r.id as string) ?? 0,
         updated_at: r.updated_at as string,
       };
