@@ -1,9 +1,30 @@
 // P-047 — Client-side branded proposal PDF builder.
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { format, parseISO } from "date-fns";
-
-const DEFAULT_PRIMARY = "#1e40af";
+import {
+  contentWidth,
+  createDoc,
+  createExportTheme,
+  docBody,
+  docH1,
+  docH2,
+  docTable,
+  downloadBlob,
+  drawBigNumbers,
+  drawCoverFooterBand,
+  drawFooters,
+  drawHeaderBand,
+  ensureSpace,
+  fitLogo,
+  FONT,
+  fmtDate,
+  fmtMoney,
+  fmtNum,
+  imageFormat,
+  mm,
+  NEUTRAL,
+  PAGE,
+  sanitize,
+  slugify,
+} from "@/lib/exports/theme";
 
 export interface ProposalPdfData {
   proposal: any;
@@ -29,82 +50,12 @@ export interface ProposalPdfData {
   yieldResult: any | null;
 }
 
-function sanitize(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  return String(v)
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&;/g, "&");
-}
-
-function hexToRgb(hex: string | null | undefined): [number, number, number] {
-  const s = (hex ?? "").trim();
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
-  const raw = m ? m[1] : DEFAULT_PRIMARY.slice(1);
-  return [
-    parseInt(raw.slice(0, 2), 16),
-    parseInt(raw.slice(2, 4), 16),
-    parseInt(raw.slice(4, 6), 16),
-  ];
-}
-
-async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
-  if (!url) return null;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return await new Promise<string | null>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-}
-
-function slug(s: string, max = 40): string {
-  return (
-    (s || "untitled")
-      .replace(/[^A-Za-z0-9_-]+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .slice(0, max) || "untitled"
-  );
-}
-
 export function proposalPdfFilename(
   accountName: string | null | undefined,
   title: string | null | undefined,
   version: number | null | undefined,
 ): string {
-  return `GridMind_Proposal_${slug(accountName ?? "Account")}_${slug(title ?? "Proposal")}_v${version ?? 1}.pdf`;
-}
-
-function fmtMoney(n: unknown, currency: string): string {
-  const v = Number(n ?? 0);
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
-  }
-}
-
-function fmtNum(n: unknown, digits = 0): string {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: digits,
-    minimumFractionDigits: digits,
-  }).format(v);
+  return `GridMind_Proposal_${slugify(accountName ?? "Account")}_${slugify(title ?? "Proposal")}_v${version ?? 1}.pdf`;
 }
 
 export async function buildProposalPdf(
@@ -112,86 +63,120 @@ export async function buildProposalPdf(
 ): Promise<{ blob: Blob; filename: string }> {
   const { proposal, lineItems, opportunity, company, branding, yieldResult } = data;
   const currency = proposal.currency_code || "USD";
-  const primary = hexToRgb(branding.primaryColor);
-  const logoDataUrl = await fetchLogoDataUrl(branding.logoSignedUrl);
 
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const theme = await createExportTheme(
+    {
+      primaryColor: branding.primaryColor,
+      accentColor: branding.accentColor,
+      footerText: branding.footerText,
+      logoSignedUrl: branding.logoSignedUrl,
+    },
+    { name: company.name, legal_name: company.legal_name },
+  );
+
+  const doc = createDoc();
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 40;
+  const width = contentWidth(doc);
+  const clientName = sanitize(opportunity?.account_name || opportunity?.name || "—");
+  const proposalTitle = sanitize(proposal.title || "Proposal");
 
-  const footerLabel = sanitize(branding.footerText || company.legal_name || company.name);
-
-  const drawFooter = () => {
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(120);
-      doc.text(footerLabel, margin, pageH - 20);
-      doc.text(`Page ${i} of ${pageCount}`, pageW - margin, pageH - 20, {
-        align: "right",
-      });
-    }
-    doc.setTextColor(0);
-  };
-
-  // --- Cover / header band ---
-  doc.setFillColor(primary[0], primary[1], primary[2]);
-  doc.rect(0, 0, pageW, 90, "F");
-
-  if (logoDataUrl) {
+  // --- Cover page --------------------------------------------------------
+  // Vertical rhythm is tightened deliberately: logo → title → proposal
+  // number/revision → "Prepared for" block → big-number row (~60% down the
+  // page) → cover footer band. No large dead zone in the middle.
+  if (theme.logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, "PNG", margin, 20, 120, 50, undefined, "FAST");
+      const { w, h } = fitLogo(doc, theme.logoDataUrl, mm(20), mm(70));
+      doc.addImage(
+        theme.logoDataUrl,
+        imageFormat(theme.logoDataUrl),
+        (pageW - w) / 2,
+        mm(20),
+        w,
+        h,
+        undefined,
+        "FAST",
+      );
     } catch {
-      // silently skip broken image
+      // a broken logo must never break a document
     }
   }
 
-  doc.setTextColor(255);
+  let y = mm(48);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text(sanitize(proposal.title || "Proposal"), pageW - margin, 45, {
-    align: "right",
-  });
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`v${proposal.version ?? 1}`, pageW - margin, 65, { align: "right" });
-  doc.setTextColor(0);
+  doc.setFontSize(22);
+  doc.setTextColor(theme.primary[0], theme.primary[1], theme.primary[2]);
+  const titleLines = doc.splitTextToSize(proposalTitle, width);
+  doc.text(titleLines, pageW / 2, y, { align: "center" });
+  y += titleLines.length * mm(9) + mm(4);
 
-  let y = 120;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("Prepared for", margin, y);
   doc.setFont("helvetica", "normal");
-  doc.text(sanitize(opportunity?.account_name || opportunity?.name || "—"), margin + 90, y);
-  y += 16;
+  doc.setFontSize(FONT.body);
+  doc.setTextColor(NEUTRAL.muted[0], NEUTRAL.muted[1], NEUTRAL.muted[2]);
+  doc.text(
+    `Proposal #${sanitize(proposal.proposal_number ?? proposal.id ?? "—")} · Revision ${proposal.version ?? 1}`,
+    pageW / 2,
+    y,
+    {
+      align: "center",
+    },
+  );
+  y += mm(12);
+
+  const left = PAGE.margin;
   doc.setFont("helvetica", "bold");
-  doc.text("Date", margin, y);
+  doc.setFontSize(FONT.h2);
+  doc.setTextColor(NEUTRAL.ink[0], NEUTRAL.ink[1], NEUTRAL.ink[2]);
+  doc.text("Prepared for", left, y);
+  y += mm(7);
+
   doc.setFont("helvetica", "normal");
-  doc.text(format(new Date(), "PP"), margin + 90, y);
-  y += 16;
-  if (proposal.valid_until) {
-    doc.setFont("helvetica", "bold");
-    doc.text("Valid until", margin, y);
-    doc.setFont("helvetica", "normal");
-    try {
-      doc.text(format(parseISO(proposal.valid_until), "PP"), margin + 90, y);
-    } catch {
-      doc.text(sanitize(proposal.valid_until), margin + 90, y);
-    }
-    y += 16;
+  doc.setFontSize(FONT.body);
+  doc.setTextColor(NEUTRAL.body[0], NEUTRAL.body[1], NEUTRAL.body[2]);
+  const preparedForLines: string[] = [clientName];
+  if (company.contact_email) preparedForLines.push(sanitize(company.contact_email));
+  if (company.phone) preparedForLines.push(sanitize(company.phone));
+  preparedForLines.push(`Date: ${fmtDate(new Date().toISOString())}`);
+  if (proposal.valid_until) preparedForLines.push(`Valid until: ${fmtDate(proposal.valid_until)}`);
+  for (const line of preparedForLines) {
+    doc.text(line, left, y);
+    y += mm(6);
   }
 
-  // --- Executive summary ---
-  y += 14;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Executive summary", margin, y);
-  y += 6;
-
+  // Big-number block row anchored around 60% down the page so the cover
+  // reads as one continuous composition rather than logo/title up top and
+  // an empty gap before the footer band.
   const array = (proposal.array_config as any) ?? {};
   const dcMw = Number(array.dc_capacity_kw ?? 0) / 1000;
+  const bigNumbersY = Math.max(y + mm(10), pageH * 0.6);
+  y = drawBigNumbers(
+    doc,
+    theme,
+    [
+      { label: "Capacity", value: dcMw > 0 ? `${fmtNum(dcMw, 2)} MW` : "—" },
+      {
+        label: "P50 annual yield",
+        value: yieldResult?.p50_kwh != null ? `${fmtNum(yieldResult.p50_kwh, 0)} kWh` : "—",
+      },
+      { label: "Total price", value: fmtMoney(proposal.total, currency) },
+    ],
+    bigNumbersY,
+    { perRow: 3 },
+  );
+
+  // The page footer already prints the legal name (left slot), so the cover
+  // footer band carries a document label instead of repeating it.
+  drawCoverFooterBand(doc, theme, "EPC Proposal");
+
+  // --- Content pages -------------------------------------------------------
+  doc.addPage();
+  const revisionSubtitle = `Revision ${proposal.version ?? 1}`;
+  const pageHeader = { title: proposalTitle, subtitle: revisionSubtitle };
+  y = drawHeaderBand(doc, theme, proposalTitle, revisionSubtitle);
+
+  // Executive summary
+  y = docH2(doc, theme, "Executive summary", y);
   const summaryRows: Array<[string, string]> = [
     ["Archetype", sanitize(proposal.archetype ?? "—")],
     ["Capacity", dcMw > 0 ? `${fmtNum(dcMw, 2)} MW DC` : "—"],
@@ -210,26 +195,21 @@ export async function buildProposalPdf(
         : "—",
     ],
   ];
-  autoTable(doc, {
-    startY: y + 4,
-    margin: { left: margin, right: margin },
+  y = docTable(doc, theme, {
+    startY: y,
+    pageHeader,
     theme: "plain",
-    styles: { fontSize: 10, cellPadding: 4 },
-    body: summaryRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
-    columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 130 },
-    },
+    body: summaryRows,
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: mm(46) } },
   });
-  y = (doc as any).lastAutoTable.finalY + 20;
+  y += mm(8);
 
-  // --- Scope & pricing ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Scope & pricing", margin, y);
-
-  autoTable(doc, {
-    startY: y + 8,
-    margin: { left: margin, right: margin },
+  // Scope & pricing
+  y = ensureSpace(doc, theme, y, mm(30), proposalTitle);
+  y = docH2(doc, theme, "Scope & pricing", y);
+  y = docTable(doc, theme, {
+    startY: y,
+    pageHeader,
     head: [["Category", "Description", "Qty", "Unit", "Unit price", "Total"]],
     body: (lineItems ?? []).map((li: any) => [
       sanitize(li.category ?? ""),
@@ -239,19 +219,13 @@ export async function buildProposalPdf(
       fmtMoney(li.unit_price, currency),
       fmtMoney(li.line_total, currency),
     ]),
-    styles: { fontSize: 9, cellPadding: 4 },
-    headStyles: {
-      fillColor: primary,
-      textColor: 255,
-      fontStyle: "bold",
-    },
     columnStyles: {
       2: { halign: "right" },
       4: { halign: "right" },
       5: { halign: "right" },
     },
   });
-  y = (doc as any).lastAutoTable.finalY + 10;
+  y += mm(4);
 
   const contingencyAmt =
     (Number(proposal.subtotal ?? 0) * Number(proposal.contingency_pct ?? 0)) / 100;
@@ -260,28 +234,24 @@ export async function buildProposalPdf(
     [`Contingency (${fmtNum(proposal.contingency_pct, 2)}%)`, fmtMoney(contingencyAmt, currency)],
     ["Total", fmtMoney(proposal.total, currency)],
   ];
-  autoTable(doc, {
+  y = ensureSpace(doc, theme, y, mm(24), proposalTitle);
+  y = docTable(doc, theme, {
     startY: y,
-    margin: { left: pageW - margin - 240, right: margin },
+    pageHeader,
     theme: "plain",
-    styles: { fontSize: 10, cellPadding: 3 },
-    body: totalsRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
+    margin: { left: pageW - PAGE.margin - mm(85), right: PAGE.margin },
+    body: totalsRows,
+    totalRows: [totalsRows.length - 1],
     columnStyles: {
-      0: { fontStyle: "bold", halign: "right", cellWidth: 140 },
-      1: { halign: "right", cellWidth: 100 },
+      0: { fontStyle: "bold", halign: "right", cellWidth: mm(50) },
+      1: { halign: "right", cellWidth: mm(35) },
     },
   });
-  y = (doc as any).lastAutoTable.finalY + 20;
+  y += mm(10);
 
-  // --- Yield summary ---
-  if (y > pageH - 200) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Yield summary", margin, y);
-
+  // Yield summary
+  y = ensureSpace(doc, theme, y, mm(60), proposalTitle);
+  y = docH2(doc, theme, "Yield summary", y);
   const yieldRows: Array<[string, string]> = [
     ["Engine", "gridmind-stub-v1 (placeholder)"],
     [
@@ -303,17 +273,14 @@ export async function buildProposalPdf(
       yieldResult?.performance_ratio != null ? fmtNum(yieldResult.performance_ratio, 3) : "—",
     ],
   ];
-  autoTable(doc, {
-    startY: y + 8,
-    margin: { left: margin, right: margin },
+  y = docTable(doc, theme, {
+    startY: y,
+    pageHeader,
     theme: "plain",
-    styles: { fontSize: 10, cellPadding: 4 },
-    body: yieldRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
-    columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 160 },
-    },
+    body: yieldRows,
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: mm(56) } },
   });
-  y = (doc as any).lastAutoTable.finalY + 6;
+  y += mm(4);
 
   const monthly: number[] = Array.isArray(yieldResult?.monthly) ? yieldResult.monthly : [];
   if (monthly.length === 12) {
@@ -331,69 +298,41 @@ export async function buildProposalPdf(
       "Nov",
       "Dec",
     ];
-    autoTable(doc, {
-      startY: y + 6,
-      margin: { left: margin, right: margin },
+    y = ensureSpace(doc, theme, y, mm(18), proposalTitle);
+    y = docTable(doc, theme, {
+      startY: y,
+      pageHeader,
       head: [months],
       body: [monthly.map((v) => fmtNum(v, 0))],
-      styles: { fontSize: 8, halign: "right", cellPadding: 3 },
-      headStyles: {
-        fillColor: primary,
-        textColor: 255,
-        halign: "right",
-      },
+      styles: { halign: "right" },
+      headStyles: { halign: "right" },
     });
-    y = (doc as any).lastAutoTable.finalY + 20;
+    y += mm(8);
   }
 
-  // --- Terms ---
-  if (y > pageH - 160) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Terms", margin, y);
-  y += 14;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  // Terms
+  y = ensureSpace(doc, theme, y, mm(40), proposalTitle);
+  y = docH2(doc, theme, "Terms", y);
   const termLines: string[] = [
     `Currency: ${sanitize(currency)}`,
     proposal.valid_until
-      ? `Validity: quote valid until ${(() => {
-          try {
-            return format(parseISO(proposal.valid_until), "PP");
-          } catch {
-            return sanitize(proposal.valid_until);
-          }
-        })()}.`
+      ? `Validity: quote valid until ${fmtDate(proposal.valid_until)}.`
       : "Validity: see cover.",
   ];
   for (const line of termLines) {
-    doc.text(sanitize(line), margin, y);
-    y += 14;
+    y = docBody(doc, line, y, width);
   }
   if (proposal.notes) {
-    y += 6;
-    const notes = doc.splitTextToSize(sanitize(proposal.notes), pageW - 2 * margin);
-    doc.text(notes, margin, y);
-    y += notes.length * 12;
+    y += mm(2);
+    y = ensureSpace(doc, theme, y, mm(20), proposalTitle);
+    y = docBody(doc, proposal.notes, y, width);
   }
 
-  drawFooter();
+  drawFooters(doc, theme);
 
   const blob = doc.output("blob");
   const filename = proposalPdfFilename(opportunity?.account_name, proposal.title, proposal.version);
   return { blob, filename };
 }
 
-export function downloadBlob(filename: string, blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
+export { downloadBlob };
