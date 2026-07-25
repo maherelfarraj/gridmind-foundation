@@ -21,6 +21,7 @@ import {
   redeemInviteRpc,
   type AnonPeekResult,
 } from "@/lib/invites.functions";
+import { linkAcceptedPortalInvites } from "@/lib/portal.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -352,6 +353,7 @@ function SignedInAccept({ token }: { token: string }) {
   const queryClient = useQueryClient();
   const peekFn = useServerFn(peekInvite);
   const redeemFn = useServerFn(redeemInviteRpc);
+  const linkPortalFn = useServerFn(linkAcceptedPortalInvites);
 
   const peek = useQuery({
     queryKey: ["invite-peek", token],
@@ -360,7 +362,16 @@ function SignedInAccept({ token }: { token: string }) {
   });
 
   const redeem = useMutation({
-    mutationFn: () => redeemFn({ data: { token } }),
+    mutationFn: async () => {
+      const res = await redeemFn({ data: { token } });
+      // Best-effort: activate matching pending portal memberships.
+      try {
+        await linkPortalFn();
+      } catch {
+        // Non-fatal — main invite acceptance already succeeded.
+      }
+      return res;
+    },
     onSuccess: () => {
       toast.success("Invitation accepted");
       queryClient.invalidateQueries();

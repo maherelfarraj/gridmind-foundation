@@ -4625,6 +4625,224 @@ export type Database = {
           },
         ]
       }
+      portal_audit_events: {
+        Row: {
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          event: string
+          id: string
+          membership_id: string | null
+          metadata: Json
+          project_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          event: string
+          id?: string
+          membership_id?: string | null
+          metadata?: Json
+          project_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          membership_id?: string | null
+          metadata?: Json
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_audit_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_audit_events_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "portal_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_memberships: {
+        Row: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          exposure: Json
+          id: string
+          invite_id: string | null
+          invited_by: string | null
+          last_seen_at: string | null
+          project_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          exposure?: Json
+          id?: string
+          invite_id?: string | null
+          invited_by?: string | null
+          last_seen_at?: string | null
+          project_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          exposure?: Json
+          id?: string
+          invite_id?: string | null
+          invited_by?: string | null
+          last_seen_at?: string | null
+          project_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_memberships_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_memberships_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_memberships_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_memberships_project_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_tickets: {
+        Row: {
+          body: string | null
+          category: string
+          company_id: string
+          created_at: string
+          id: string
+          membership_id: string | null
+          priority: string
+          project_id: string
+          raised_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          company_id: string
+          created_at?: string
+          id?: string
+          membership_id?: string | null
+          priority?: string
+          project_id: string
+          raised_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          membership_id?: string | null
+          priority?: string
+          project_id?: string
+          raised_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_tickets_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "portal_memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_tickets_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_tickets_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppa_terms: {
         Row: {
           annual_energy_mwh: number | null
@@ -9055,6 +9273,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _portal_log: {
+        Args: {
+          p_actor_id: string
+          p_company_id: string
+          p_event: string
+          p_membership_id: string
+          p_metadata: Json
+          p_project_id: string
+        }
+        Returns: undefined
+      }
       approve_change_order: {
         Args: { p_co_id: string; p_note?: string }
         Returns: Json
@@ -9142,6 +9371,47 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      portal_assert_access: {
+        Args: { p_project_id: string }
+        Returns: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          exposure: Json
+          id: string
+          invite_id: string | null
+          invited_by: string | null
+          last_seen_at: string | null
+          project_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "portal_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      portal_decide_approval: {
+        Args: { p_approval_id: string; p_comment: string; p_decision: string }
+        Returns: undefined
+      }
+      portal_get_feed: { Args: { p_project_id: string }; Returns: Json }
+      portal_raise_ticket: {
+        Args: {
+          p_body: string
+          p_category: string
+          p_priority: string
+          p_project_id: string
+          p_subject: string
+        }
+        Returns: string
+      }
       redeem_invite: { Args: { p_token: string }; Returns: string }
       start_approval_instance: {
         Args: {

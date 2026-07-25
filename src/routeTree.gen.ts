@@ -9,11 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -25,12 +27,14 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
+import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
+import { Route as AuthenticatedSettingsPortalMembersRouteImport } from './routes/_authenticated/settings.portal-members'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
@@ -157,6 +161,11 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRout
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
 
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
@@ -179,6 +188,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
 } as any)
 const PoTokenRoute = PoTokenRouteImport.update({
   id: '/po/$token',
@@ -237,6 +251,11 @@ const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
   path: '/hse/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
+  id: '/projects/$projectId',
+  path: '/projects/$projectId',
+  getParentRoute: () => PortalRoute,
+} as any)
 const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   id: '/api/webhooks/esign',
   path: '/api/webhooks/esign',
@@ -269,6 +288,12 @@ const AuthenticatedSettingsProcurementRoute =
   AuthenticatedSettingsProcurementRouteImport.update({
     id: '/settings/procurement',
     path: '/settings/procurement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsPortalMembersRoute =
+  AuthenticatedSettingsPortalMembersRouteImport.update({
+    id: '/settings/portal-members',
+    path: '/settings/portal-members',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsPermissionsSimulatorRoute =
@@ -1042,6 +1067,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/portal': typeof PortalRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1050,6 +1076,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1083,12 +1110,14 @@ export interface FileRoutesByFullPath {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1197,6 +1226,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/portal': typeof PortalIndexRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
@@ -1223,12 +1253,14 @@ export interface FileRoutesByTo {
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
@@ -1329,6 +1361,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/portal': typeof PortalRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -1337,6 +1370,7 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1370,12 +1404,14 @@ export interface FileRoutesById {
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  '/_authenticated/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
+  '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1478,6 +1514,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/design-system'
+    | '/portal'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -1486,6 +1523,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/po/$token'
+    | '/portal/'
     | '/admin/tenants'
     | '/crm/pipeline'
     | '/field/discipline-board'
@@ -1519,12 +1557,14 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/hse/'
     | '/projects/'
     | '/proposals/'
@@ -1633,6 +1673,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/po/$token'
+    | '/portal'
     | '/crm/pipeline'
     | '/field/discipline-board'
     | '/field/reports'
@@ -1659,12 +1700,14 @@ export interface FileRouteTypes {
     | '/settings/departments'
     | '/settings/modules'
     | '/settings/permissions-simulator'
+    | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
     | '/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/hse'
     | '/projects'
     | '/proposals'
@@ -1764,6 +1807,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accept-invite'
     | '/design-system'
+    | '/portal'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
     | '/(auth)/reset-password'
@@ -1772,6 +1816,7 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/dashboard'
     | '/po/$token'
+    | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/field/discipline-board'
@@ -1805,12 +1850,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/permissions-simulator'
+    | '/_authenticated/settings/portal-members'
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
+    | '/portal/projects/$projectId'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
@@ -1914,6 +1961,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  PortalRoute: typeof PortalRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
@@ -1923,6 +1971,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/design-system': {
       id: '/design-system'
       path: '/design-system'
@@ -1957,6 +2012,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/po/$token': {
       id: '/po/$token'
@@ -2035,6 +2097,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/portal/projects/$projectId': {
+      id: '/portal/projects/$projectId'
+      path: '/projects/$projectId'
+      fullPath: '/portal/projects/$projectId'
+      preLoaderRoute: typeof PortalProjectsProjectIdRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/api/webhooks/esign': {
       id: '/api/webhooks/esign'
       path: '/api/webhooks/esign'
@@ -2075,6 +2144,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/procurement'
       fullPath: '/settings/procurement'
       preLoaderRoute: typeof AuthenticatedSettingsProcurementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/portal-members': {
+      id: '/_authenticated/settings/portal-members'
+      path: '/settings/portal-members'
+      fullPath: '/settings/portal-members'
+      preLoaderRoute: typeof AuthenticatedSettingsPortalMembersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/permissions-simulator': {
@@ -3411,6 +3487,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
+  AuthenticatedSettingsPortalMembersRoute: typeof AuthenticatedSettingsPortalMembersRoute
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
@@ -3497,6 +3574,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsPermissionsSimulatorRoute:
     AuthenticatedSettingsPermissionsSimulatorRoute,
+  AuthenticatedSettingsPortalMembersRoute:
+    AuthenticatedSettingsPortalMembersRoute,
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
@@ -3544,12 +3623,26 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface PortalRouteChildren {
+  PortalIndexRoute: typeof PortalIndexRoute
+  PortalProjectsProjectIdRoute: typeof PortalProjectsProjectIdRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalIndexRoute: PortalIndexRoute,
+  PortalProjectsProjectIdRoute: PortalProjectsProjectIdRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
+  PortalRoute: PortalRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
