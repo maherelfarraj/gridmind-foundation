@@ -86,7 +86,7 @@ import {
   type ObligationStatus,
   type SovLine,
 } from "@/lib/contracts.rules";
-import { extractPdfText } from "@/lib/pdf-text.client";
+// pdf-text.client dynamically imported inside handler to satisfy server import protection
 
 export const Route = createFileRoute("/_authenticated/finance/contracts/$contractId")({
   head: () => ({
