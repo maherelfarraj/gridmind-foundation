@@ -1,7 +1,7 @@
 // P-116 — Portal audit viewer at /settings/portal-audit.
 // company_admin only. Read-only view over portal_audit_events with filters,
 // stat tiles, and CSV export.
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
