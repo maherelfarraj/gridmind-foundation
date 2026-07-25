@@ -10,6 +10,7 @@ import { API_KEY_SCOPES } from "@/lib/public-api/scopes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -124,30 +125,21 @@ function ApiDocsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BookOpen className="h-4 w-4" />
-            Integrator reference
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">GridMind EPC Public API</h1>
-          <p className="text-sm text-muted-foreground">
-            Signed, rate-limited HTTP endpoints for SCADA vendors, third-party automation, and
-            outbound webhook consumers. See{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">docs/public-api-signing.md</code>{" "}
-            in the repo for runnable code samples.
-          </p>
-        </div>
-        {isCompanyAdmin ? (
-          <Button asChild size="sm">
-            <Link to="/settings/api-keys">
-              <KeyRound className="mr-1.5 h-4 w-4" />
-              Manage keys
-            </Link>
-          </Button>
-        ) : null}
-      </header>
+    <div className="page-shell max-w-5xl">
+      <PageHeader
+        title="GridMind EPC Public API"
+        description="Signed, rate-limited HTTP endpoints for SCADA vendors, third-party automation, and webhook consumers."
+        actions={
+          isCompanyAdmin ? (
+            <Button asChild size="sm">
+              <Link to="/settings/api-keys">
+                <KeyRound className="mr-1.5 h-4 w-4" />
+                Manage keys
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
 
       {/* Authentication */}
       <Card>
