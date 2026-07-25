@@ -326,7 +326,6 @@ function FilterField({ label, children }: { label: string; children: React.React
   );
 }
 
-
 function EventsTable({ rows }: { rows: PortalAuditRow[] }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">

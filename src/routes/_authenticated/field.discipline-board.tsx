@@ -29,6 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import {
   disciplineBoardProjectsQueryOptions,
@@ -113,22 +116,15 @@ function DisciplineBoardPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <HardHat size={14} aria-hidden /> Field
-        </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Discipline board
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Civil, mechanical and electrical progress per area — rolled up from your daily reports.
-        </p>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Discipline board"
+        description="Civil, mechanical and electrical progress per area, rolled up from your daily reports."
+      />
 
-      <Card className="border-border bg-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
+          <CardTitle className="text-sm font-medium">Filters</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
@@ -191,11 +187,7 @@ function DisciplineBoardPage() {
       {projectId ? (
         <BoardBody projectId={projectId} from={range.from} to={range.to} />
       ) : (
-        <Card className="border-border bg-card">
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Select a project to load the discipline board.
-          </CardContent>
-        </Card>
+        <EmptyState icon={HardHat} title="Select a project" description="Choose a project to load the discipline board." />
       )}
     </div>
   );
@@ -220,14 +212,11 @@ function BoardBody({ projectId, from, to }: { projectId: string; from: string; t
   const data = query.data!;
   if (!data.hasDprs) {
     return (
-      <Card className="border-border bg-card">
-        <CardContent className="py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No field data yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Capture your first daily report to see progress here.
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={HardHat}
+        title="No field data yet"
+        description="Capture your first daily report to see progress here."
+      />
     );
   }
 
@@ -248,40 +237,6 @@ function BoardBody({ projectId, from, to }: { projectId: string; from: string; t
   );
 }
 
-function KpiChip({
-  label,
-  value,
-  tone,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  tone: "success" | "warning" | "destructive" | "muted";
-  icon: LucideIcon;
-}) {
-  const toneClass =
-    tone === "success"
-      ? "bg-success/10 text-success"
-      : tone === "warning"
-        ? "bg-warning/10 text-warning"
-        : tone === "destructive"
-          ? "bg-destructive/10 text-destructive"
-          : "bg-muted text-muted-foreground";
-  return (
-    <Card className="border-border bg-card">
-      <CardContent className="flex items-center gap-3 py-4">
-        <span className={cn("flex h-9 w-9 items-center justify-center rounded-md", toneClass)}>
-          <Icon size={16} aria-hidden />
-        </span>
-        <div className="flex flex-col">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-          <span className="font-display text-lg font-semibold text-foreground">{value}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function KpiRow({
   kpis,
 }: {
@@ -293,32 +248,27 @@ function KpiRow({
   };
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <KpiChip
+    <KpiGrid columns={4}>
+      <KpiTile
         label="SPI (latest)"
         value={kpis.spi != null ? kpis.spi.toFixed(2) : "—"}
-        tone={spiCpiTone(kpis.spi)}
         icon={HardHat}
+        status={spiCpiTone(kpis.spi) === "success" ? "good" : spiCpiTone(kpis.spi) === "warning" ? "warning" : spiCpiTone(kpis.spi) === "destructive" ? "bad" : "neutral"}
       />
-      <KpiChip
+      <KpiTile
         label="CPI (latest)"
         value={kpis.cpi != null ? kpis.cpi.toFixed(2) : "—"}
-        tone={spiCpiTone(kpis.cpi)}
         icon={Wrench}
+        status={spiCpiTone(kpis.cpi) === "success" ? "good" : spiCpiTone(kpis.cpi) === "warning" ? "warning" : spiCpiTone(kpis.cpi) === "destructive" ? "bad" : "neutral"}
       />
-      <KpiChip
-        label="Manpower today"
-        value={String(kpis.manpowerToday)}
-        tone="muted"
-        icon={Users}
-      />
-      <KpiChip
+      <KpiTile label="Manpower today" value={String(kpis.manpowerToday)} icon={Users} />
+      <KpiTile
         label="Weather hours (week)"
         value={kpis.weatherHoursThisWeek.toFixed(1)}
-        tone={kpis.weatherHoursThisWeek > 0 ? "warning" : "muted"}
         icon={CloudRain}
+        status={kpis.weatherHoursThisWeek > 0 ? "warning" : "neutral"}
       />
-    </div>
+    </KpiGrid>
   );
 }
 
@@ -329,19 +279,21 @@ function DisciplineColumn({
 }) {
   const Icon = DISCIPLINE_ICON[column.discipline];
   return (
-    <Card className="border-border bg-card">
+    <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary/40 text-foreground">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary/40 text-foreground">
           <Icon size={16} aria-hidden />
         </span>
-        <CardTitle className="text-base">{DISCIPLINE_LABELS[column.discipline]}</CardTitle>
+        <CardTitle className="text-sm font-medium">{DISCIPLINE_LABELS[column.discipline]}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {column.areas.length === 0 ? (
-          <p className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground">
-            No {DISCIPLINE_LABELS[column.discipline].toLowerCase()} quantities reported yet — submit
-            a DPR.
-          </p>
+          <EmptyState
+            compact
+            icon={Icon}
+            title={`No ${DISCIPLINE_LABELS[column.discipline].toLowerCase()} quantities yet`}
+            description="Submit a DPR to populate this column."
+          />
         ) : (
           column.areas.map((a) => <AreaCard key={a.area} area={a} />)
         )}
@@ -362,19 +314,19 @@ function AreaCard({ area }: { area: AreaRollup }) {
   const uomLabel = area.uom ?? "units";
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-background/40 p-3">
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-foreground">{area.area}</span>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+        <div className="min-w-0 flex flex-col">
+          <span className="truncate text-sm font-medium text-foreground">{area.area}</span>
           {area.wbsName ? (
-            <span className="text-xs text-muted-foreground">{area.wbsName}</span>
+            <span className="truncate text-xs text-muted-foreground">{area.wbsName}</span>
           ) : null}
         </div>
         {area.plannedQty == null ? (
-          <span className="rounded-md border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          <span className="shrink-0 rounded-md border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
             No baseline
           </span>
         ) : (
-          <span className="text-xs font-medium text-foreground">
+          <span className="shrink-0 text-xs font-medium text-foreground">
             {formatQty(area.installedToDate)} / {formatQty(area.plannedQty)} {uomLabel}
           </span>
         )}
@@ -405,7 +357,7 @@ function AreaCard({ area }: { area: AreaRollup }) {
 function BoardSkeleton() {
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-20 w-full" />
         ))}
@@ -433,13 +385,7 @@ function BoardErrorState({ error }: { error: Error }) {
 }
 
 function BoardNotFoundState() {
-  return (
-    <Card className="border-border bg-card">
-      <CardContent className="py-10 text-center text-sm text-muted-foreground">
-        Board not found.
-      </CardContent>
-    </Card>
-  );
+  return <EmptyState icon={HardHat} title="Board not found" />;
 }
 
 function formatQty(n: number): string {
