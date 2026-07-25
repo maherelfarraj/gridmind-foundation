@@ -107,13 +107,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "GridMind EPC" },
       {
         name: "description",
-        content: "Energy Performance Certificate management powered by GridMind.",
+        content:
+          "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations.",
       },
       { name: "author", content: "GridMind EPC" },
       { property: "og:title", content: "GridMind EPC" },
       {
         property: "og:description",
-        content: "Energy Performance Certificate management powered by GridMind.",
+        content:
+          "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
