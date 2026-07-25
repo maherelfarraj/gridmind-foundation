@@ -24,6 +24,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { listPos } from "@/lib/po.functions";
 import { PO_STATUSES, type PoStatus } from "@/lib/po-rules";
 import { posListQueryOptions } from "@/lib/po-query";
@@ -94,28 +97,21 @@ function PosIndex() {
   }, [rows]);
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Receipt className="h-3.5 w-3.5" /> Procurement · Purchase Orders
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Purchase Orders</h1>
-          <p className="text-sm text-muted-foreground">
-            Awarded RFQs create POs here. CFO approval is required above the company threshold.
-          </p>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Purchase Orders"
+        description="Awarded RFQs create POs here; CFO approval is required above threshold."
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Kpi
+      <KpiGrid columns={3}>
+        <KpiTile
           label="PO cycle time"
           value={kpi.cycle != null ? `${kpi.cycle.toFixed(1)} d` : "—"}
           hint="Created → Issued (avg)"
         />
-        <Kpi label="Pending approval" value={String(kpi.pending)} hint="Awaiting CFO sign-off" />
-        <Kpi label="Total POs" value={String(kpi.total)} hint="Across all statuses" />
-      </div>
+        <KpiTile label="Pending approval" value={String(kpi.pending)} hint="Awaiting CFO sign-off" />
+        <KpiTile label="Total POs" value={String(kpi.total)} hint="Across all statuses" />
+      </KpiGrid>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
@@ -144,9 +140,11 @@ function PosIndex() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No POs yet — award an RFQ to generate one.
-        </div>
+        <EmptyState
+          icon={Receipt}
+          title="No POs yet"
+          description="Award an RFQ to generate one."
+        />
       ) : (
         <div className="rounded-md border border-border">
           <Table>
@@ -195,12 +193,4 @@ function PosIndex() {
   );
 }
 
-function Kpi({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="rounded-md border border-border p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-1 font-display text-2xl font-semibold">{value}</div>
-      <div className="text-xs text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
+
