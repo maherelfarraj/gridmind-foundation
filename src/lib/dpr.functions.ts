@@ -846,29 +846,42 @@ export const createObservation = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const userId = context.user!.id;
     const project = await projectCompany(context, data.projectId);
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      dpr_id: data.dprId ?? null,
-      discipline: data.discipline || "general",
-      area: data.area ?? null,
-      severity: data.severity,
-      status: "open",
-      description: data.description,
-      due_date: data.dueDate ?? null,
-      raised_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("field_observations")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "observation.create", "field_observations", (row as any).id, {
-      dpr_id: data.dprId ?? null,
-      severity: data.severity,
-    });
-    return row as ObservationRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "observation",
+        action: "create",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
+          dpr_id: data.dprId ?? null,
+          discipline: data.discipline || "general",
+          area: data.area ?? null,
+          severity: data.severity,
+          status: "open",
+          description: data.description,
+          due_date: data.dueDate ?? null,
+          raised_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("field_observations")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "observation.create", "field_observations", (row as any).id, {
+          dpr_id: data.dprId ?? null,
+          severity: data.severity,
+        });
+        return row as ObservationRow;
+      },
+    );
   });
 
 // ---------------------------------------------------------------------------
