@@ -766,5 +766,3 @@ function TicketPriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-// Unused import guard
-export { useMemo };
