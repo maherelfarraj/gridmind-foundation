@@ -21,6 +21,17 @@ export const Route = createFileRoute("/api/public/hooks/echo")({
         const url = new URL(request.url);
         const nosig = url.searchParams.get("nosig") === "1";
         const burst = url.searchParams.get("burst") === "1";
+        const debug = url.searchParams.get("debug") === "1";
+
+        if (debug) {
+          const raw = await request.clone().text();
+          return Response.json({
+            debug: true,
+            bodyLen: raw.length,
+            bodyBytes: Array.from(new TextEncoder().encode(raw)).slice(0, 40),
+            body: raw,
+          });
+        }
 
         const guard = await guardPublicHook(request, {
           route: ENDPOINT,
