@@ -7,16 +7,8 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  currentCompanyId,
-  hasAnyRole,
-  httpError,
-  writeAudit,
-} from "@/lib/project-finance-shared";
-import {
-  PpaUpsertSchema,
-  type PpaRow,
-} from "@/lib/project-finance.rules";
+import { currentCompanyId, hasAnyRole, httpError, writeAudit } from "@/lib/project-finance-shared";
+import { PpaUpsertSchema, type PpaRow } from "@/lib/project-finance.rules";
 
 const WRITE_ROLES = ["finance_admin", "company_admin"] as const;
 
@@ -33,12 +25,9 @@ function toRow(r: any): PpaRow {
     currency_code: r.currency_code,
     escalation_pct: Number(r.escalation_pct ?? 0),
     capacity_mw: r.capacity_mw == null ? null : Number(r.capacity_mw),
-    annual_energy_mwh:
-      r.annual_energy_mwh == null ? null : Number(r.annual_energy_mwh),
+    annual_energy_mwh: r.annual_energy_mwh == null ? null : Number(r.annual_energy_mwh),
     availability_target_pct:
-      r.availability_target_pct == null
-        ? null
-        : Number(r.availability_target_pct),
+      r.availability_target_pct == null ? null : Number(r.availability_target_pct),
     liquidated_damages: (r.liquidated_damages ?? {}) as Record<string, any>,
     notes: r.notes ?? null,
     created_at: r.created_at,
@@ -48,9 +37,7 @@ function toRow(r: any): PpaRow {
 
 export const listPpaTerms = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rows: PpaRow[] }> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -64,9 +51,7 @@ export const listPpaTerms = createServerFn({ method: "GET" })
 
 export const listPpaContractCandidates = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -100,18 +85,14 @@ export const listPpaContractCandidates = createServerFn({ method: "GET" })
 
 export const getProjectFinanceAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<{ canWrite: boolean; canWriteDd: boolean }> => {
-      requireSupabaseAuth(context);
-      const [canWrite, ddExtra] = await Promise.all([
-        hasAnyRole(context as AuthContext, WRITE_ROLES),
-        hasAnyRole(context as AuthContext, ["legal_admin"] as const),
-      ]);
-      return { canWrite, canWriteDd: canWrite || ddExtra };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canWrite: boolean; canWriteDd: boolean }> => {
+    requireSupabaseAuth(context);
+    const [canWrite, ddExtra] = await Promise.all([
+      hasAnyRole(context as AuthContext, WRITE_ROLES),
+      hasAnyRole(context as AuthContext, ["legal_admin"] as const),
+    ]);
+    return { canWrite, canWriteDd: canWrite || ddExtra };
+  });
 
 export const upsertPpaTerms = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])

@@ -98,14 +98,12 @@ const API_KEY = process.env.GRIDMIND_API_KEY!;
 async function ping() {
   const body = JSON.stringify({ probe: "hello" });
   const ts = Math.floor(Date.now() / 1000).toString();
-  const sig = createHmac("sha256", API_KEY)
-    .update(`${ts}.${body}`)
-    .digest("hex");
+  const sig = createHmac("sha256", API_KEY).update(`${ts}.${body}`).digest("hex");
 
   const res = await fetch(`${BASE_URL}/api/public/hooks/ping`, {
     method: "POST",
     headers: {
-      "authorization": `Bearer ${API_KEY}`,
+      authorization: `Bearer ${API_KEY}`,
       "content-type": "application/json",
       "x-timestamp": ts,
       "x-signature": `sha256=${sig}`,
@@ -178,15 +176,15 @@ Guidelines:
 
 ## 5. Error catalog (quick reference)
 
-| Code                 | HTTP | Meaning                                                  |
-| -------------------- | ---- | -------------------------------------------------------- |
-| `unauthorized`       | 401  | Missing/invalid/revoked Bearer key.                      |
-| `insufficient_scope` | 403  | Key lacks the required scope.                            |
-| `ip_not_allowed`     | 403  | Caller IP not in the key's allowlist (enforced mode).    |
-| `signature_expired`  | 401  | `x-timestamp` outside the 300 s replay window.           |
-| `signature_invalid`  | 401  | HMAC mismatch — usually re-serialized body.              |
-| `rate_limited`       | 429  | Bucket empty — honor `Retry-After`.                      |
-| `invalid_payload`    | 400  | Body failed schema validation.                           |
+| Code                 | HTTP | Meaning                                               |
+| -------------------- | ---- | ----------------------------------------------------- |
+| `unauthorized`       | 401  | Missing/invalid/revoked Bearer key.                   |
+| `insufficient_scope` | 403  | Key lacks the required scope.                         |
+| `ip_not_allowed`     | 403  | Caller IP not in the key's allowlist (enforced mode). |
+| `signature_expired`  | 401  | `x-timestamp` outside the 300 s replay window.        |
+| `signature_invalid`  | 401  | HMAC mismatch — usually re-serialized body.           |
+| `rate_limited`       | 429  | Bucket empty — honor `Retry-After`.                   |
+| `invalid_payload`    | 400  | Body failed schema validation.                        |
 
 ---
 

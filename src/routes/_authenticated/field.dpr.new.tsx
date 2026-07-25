@@ -17,10 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  dprProjectsQueryOptions,
-  errorMessage,
-} from "@/lib/dpr-query";
+import { dprProjectsQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { upsertDprHeader } from "@/lib/dpr.functions";
 import { SHIFTS, type Shift } from "@/lib/dpr.rules";
 
@@ -89,9 +86,7 @@ function NewDprPage() {
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
           <CalendarPlus size={14} aria-hidden /> Field
         </div>
-        <h1 className="font-display text-2xl font-semibold text-foreground">
-          New daily report
-        </h1>
+        <h1 className="font-display text-2xl font-semibold text-foreground">New daily report</h1>
       </header>
 
       <Card>
@@ -150,9 +145,7 @@ function NewDprPage() {
               </Select>
             </div>
           </div>
-          {dupError && (
-            <p className="text-sm text-destructive">{dupError}</p>
-          )}
+          {dupError && <p className="text-sm text-destructive">{dupError}</p>}
           <Button
             type="button"
             className="h-11"

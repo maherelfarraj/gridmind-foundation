@@ -7,17 +7,8 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  currentCompanyId,
-  hasAnyRole,
-  httpError,
-  writeAudit,
-} from "@/lib/project-finance-shared";
-import {
-  computeLcoe,
-  LcoeUpsertSchema,
-  type LcoeRow,
-} from "@/lib/project-finance.rules";
+import { currentCompanyId, hasAnyRole, httpError, writeAudit } from "@/lib/project-finance-shared";
+import { computeLcoe, LcoeUpsertSchema, type LcoeRow } from "@/lib/project-finance.rules";
 
 const WRITE_ROLES = ["finance_admin", "company_admin"] as const;
 
@@ -43,9 +34,7 @@ function toRow(r: any): LcoeRow {
 
 export const listLcoeScenarios = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rows: LcoeRow[] }> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -99,13 +88,11 @@ export const upsertLcoeScenario = createServerFn({ method: "POST" })
         .maybeSingle();
       if (error) throw error;
       const row = toRow(upd);
-      await writeAudit(
-        context as AuthContext,
-        "lcoe.save",
-        "lcoe_scenarios",
-        row.id,
-        { project_id: row.project_id, lcoe: row.lcoe, name: row.name },
-      );
+      await writeAudit(context as AuthContext, "lcoe.save", "lcoe_scenarios", row.id, {
+        project_id: row.project_id,
+        lcoe: row.lcoe,
+        name: row.name,
+      });
       return row;
     }
 
@@ -120,12 +107,10 @@ export const upsertLcoeScenario = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw error;
     const row = toRow(ins);
-    await writeAudit(
-      context as AuthContext,
-      "lcoe.save",
-      "lcoe_scenarios",
-      row.id,
-      { project_id: row.project_id, lcoe: row.lcoe, name: row.name },
-    );
+    await writeAudit(context as AuthContext, "lcoe.save", "lcoe_scenarios", row.id, {
+      project_id: row.project_id,
+      lcoe: row.lcoe,
+      name: row.name,
+    });
     return row;
   });

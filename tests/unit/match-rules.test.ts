@@ -21,9 +21,7 @@ describe("computeVariances", () => {
     expect(v.amount_variance).toBe(0);
     expect(v.qty_variance_pct).toBe(0);
     expect(v.price_variance_pct).toBe(0);
-    expect(
-      deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 }),
-    ).toBe("matched");
+    expect(deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 })).toBe("matched");
   });
 
   it("+8% on amount blocks payment", () => {
@@ -35,9 +33,9 @@ describe("computeVariances", () => {
     });
     expect(v.amount_variance).toBe(800);
     expect(amountVariancePct(v.amount_variance, 10000)).toBe(8);
-    expect(
-      deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 }),
-    ).toBe("variance_blocked");
+    expect(deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 })).toBe(
+      "variance_blocked",
+    );
   });
 
   it("per-line qty variance uses received qty and picks worst line", () => {
@@ -66,9 +64,9 @@ describe("computeVariances", () => {
       invoiceLines: [{ po_line_no: 1, qty: 100, unit_price: 106 }],
     });
     expect(v.price_variance_pct).toBe(6);
-    expect(
-      deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 }),
-    ).toBe("variance_blocked");
+    expect(deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 })).toBe(
+      "variance_blocked",
+    );
   });
 
   it("threshold exactly at variance still matches", () => {
@@ -78,9 +76,7 @@ describe("computeVariances", () => {
       grnQtyByLine: { 1: 100 },
       invoiceAmount: 10500,
     });
-    expect(
-      deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 }),
-    ).toBe("matched");
+    expect(deriveMatchStatus({ variances: v, poTotal: 10000, thresholdPct: 5 })).toBe("matched");
   });
 });
 
@@ -115,14 +111,10 @@ describe("zod payloads", () => {
 
 describe("assertInvoicePath", () => {
   it("accepts a path scoped to {company}/invoices/{match}/", () => {
-    expect(() =>
-      assertInvoicePath("co/invoices/mid/x.pdf", "co", "mid"),
-    ).not.toThrow();
+    expect(() => assertInvoicePath("co/invoices/mid/x.pdf", "co", "mid")).not.toThrow();
   });
   it("rejects wrong prefix and path traversal", () => {
     expect(() => assertInvoicePath("bad/x.pdf", "co", "mid")).toThrow();
-    expect(() =>
-      assertInvoicePath("co/invoices/mid/../x.pdf", "co", "mid"),
-    ).toThrow();
+    expect(() => assertInvoicePath("co/invoices/mid/../x.pdf", "co", "mid")).toThrow();
   });
 });

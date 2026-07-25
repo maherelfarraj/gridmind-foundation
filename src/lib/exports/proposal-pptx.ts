@@ -318,20 +318,9 @@ export async function buildProposalPptx(
     titleBar(s, "Solution");
     const rows: Array<[string, string]> = [
       ["Archetype", clean(cfg.archetype ?? p.archetype ?? "—")],
-      [
-        "AC Capacity",
-        cfg.ac_capacity_mw != null ? `${cfg.ac_capacity_mw} MW` : "—",
-      ],
-      [
-        "DC Capacity",
-        cfg.dc_capacity_mw != null ? `${cfg.dc_capacity_mw} MW` : "—",
-      ],
-      [
-        "Storage",
-        cfg.storage_capacity_mwh != null
-          ? `${cfg.storage_capacity_mwh} MWh`
-          : "—",
-      ],
+      ["AC Capacity", cfg.ac_capacity_mw != null ? `${cfg.ac_capacity_mw} MW` : "—"],
+      ["DC Capacity", cfg.dc_capacity_mw != null ? `${cfg.dc_capacity_mw} MW` : "—"],
+      ["Storage", cfg.storage_capacity_mwh != null ? `${cfg.storage_capacity_mwh} MWh` : "—"],
       ["Tracking", clean(cfg.tracking ?? "—")],
       ["Tilt", cfg.tilt_deg != null ? `${cfg.tilt_deg}°` : "—"],
       ["GCR", cfg.gcr != null ? String(cfg.gcr) : "—"],
@@ -438,24 +427,20 @@ export async function buildProposalPptx(
         "Nov",
         "Dec",
       ];
-      s.addChart(
-        pptx.ChartType.bar,
-        [{ name: "Monthly P50 (GWh)", labels, values: monthly }],
-        {
-          x: 0.7,
-          y: 2.9,
-          w: 11.9,
-          h: 3.6,
-          barDir: "col",
-          chartColors: [primary],
-          showLegend: false,
-          showTitle: false,
-          catAxisLabelFontFace: font,
-          valAxisLabelFontFace: font,
-          catAxisLabelFontSize: 10,
-          valAxisLabelFontSize: 10,
-        },
-      );
+      s.addChart(pptx.ChartType.bar, [{ name: "Monthly P50 (GWh)", labels, values: monthly }], {
+        x: 0.7,
+        y: 2.9,
+        w: 11.9,
+        h: 3.6,
+        barDir: "col",
+        chartColors: [primary],
+        showLegend: false,
+        showTitle: false,
+        catAxisLabelFontFace: font,
+        valAxisLabelFontFace: font,
+        catAxisLabelFontSize: 10,
+        valAxisLabelFontSize: 10,
+      });
     } else {
       s.addText("Yield simulation pending", {
         x: 0.7,
@@ -600,32 +585,30 @@ export async function buildProposalPptx(
         fontFace: font,
       });
     } else {
-      const bullets: PptxGenJS.TextProps[] = data.tenderEvents
-        .slice(0, 10)
-        .flatMap((e) => {
-          const head = `${clean(e.event_type).replace(/_/g, " ").toUpperCase()} — ${fmtDate(e.event_at)}`;
-          const parts: PptxGenJS.TextProps[] = [
-            {
-              text: head,
-              options: {
-                bold: true,
-                fontSize: 14,
-                color: primary,
-                bullet: { code: "25A0" },
-                breakLine: true,
-              },
+      const bullets: PptxGenJS.TextProps[] = data.tenderEvents.slice(0, 10).flatMap((e) => {
+        const head = `${clean(e.event_type).replace(/_/g, " ").toUpperCase()} — ${fmtDate(e.event_at)}`;
+        const parts: PptxGenJS.TextProps[] = [
+          {
+            text: head,
+            options: {
+              bold: true,
+              fontSize: 14,
+              color: primary,
+              bullet: { code: "25A0" },
+              breakLine: true,
             },
-          ];
-          const detail = clean(e.title ?? e.notes ?? "");
-          if (detail) {
-            parts.push({
-              text: `   ${detail}`,
-              options: { fontSize: 13, color: "374151", breakLine: true },
-            });
-          }
-          parts.push({ text: " ", options: { fontSize: 6, breakLine: true } });
-          return parts;
-        });
+          },
+        ];
+        const detail = clean(e.title ?? e.notes ?? "");
+        if (detail) {
+          parts.push({
+            text: `   ${detail}`,
+            options: { fontSize: 13, color: "374151", breakLine: true },
+          });
+        }
+        parts.push({ text: " ", options: { fontSize: 6, breakLine: true } });
+        return parts;
+      });
       s.addText(bullets, {
         x: 0.7,
         y: 1.0,
@@ -641,8 +624,8 @@ export async function buildProposalPptx(
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Terms & contact");
-    const notes = clean(p.notes) ||
-      "Standard EPC terms apply. Pricing valid through the date shown below.";
+    const notes =
+      clean(p.notes) || "Standard EPC terms apply. Pricing valid through the date shown below.";
     s.addText(notes, {
       x: 0.7,
       y: 1.0,

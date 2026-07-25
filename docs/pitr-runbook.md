@@ -72,22 +72,23 @@ Delete the `pitr-drill-YYYY-MM-DD` branch from Lovable Cloud → Branches once t
 For a real recovery, restore into a **staging branch first**, verify with steps 4a–4d against a known-good production snapshot, and only then promote via the Lovable Cloud console's **Promote branch → production** action. Never restore in place — an in-place restore is destructive and cannot itself be rolled back.
 
 If the failure blast radius is limited to a single table or company, prefer:
+
 1. `audit_logs` reconstruction: pull the missing entities from the restored branch via CSV export → import back into production.
 2. Company-scoped restore: use the RLS-scoped export from Cloud → Advanced → Export data on the restored branch, then re-insert into production under the correct `company_id`.
 
 ## Escalation
 
-| Failure mode | First contact | Backup |
-| --- | --- | --- |
-| Restore window unavailable | Platform on-call (PagerDuty rotation `gridmind-platform`) | Cloud vendor support (ticket, P1) |
-| Restored branch never reaches Healthy | Platform on-call | Cloud vendor support (ticket, P1) |
-| Verification query mismatch | Platform on-call | Data-eng lead |
-| Cannot delete branch after drill | Workspace admin | — |
+| Failure mode                          | First contact                                             | Backup                            |
+| ------------------------------------- | --------------------------------------------------------- | --------------------------------- |
+| Restore window unavailable            | Platform on-call (PagerDuty rotation `gridmind-platform`) | Cloud vendor support (ticket, P1) |
+| Restored branch never reaches Healthy | Platform on-call                                          | Cloud vendor support (ticket, P1) |
+| Verification query mismatch           | Platform on-call                                          | Data-eng lead                     |
+| Cannot delete branch after drill      | Workspace admin                                           | —                                 |
 
 ## Drill log
 
 Append newest-first. Never edit an existing row — corrections go in a new row that references the mistaken one.
 
-| Drill date (UTC) | Restore timestamp (UTC) | Operator | Branch name | Result (PASS/FAIL) | Notes |
-| --- | --- | --- | --- | --- | --- |
-| _yyyy-mm-dd_ | _yyyy-mm-ddThh:mm:ssZ_ | _name_ | _pitr-drill-yyyy-mm-dd_ | _PASS/FAIL_ | _link to incident, deltas, timing_ |
+| Drill date (UTC) | Restore timestamp (UTC) | Operator | Branch name             | Result (PASS/FAIL) | Notes                              |
+| ---------------- | ----------------------- | -------- | ----------------------- | ------------------ | ---------------------------------- |
+| _yyyy-mm-dd_     | _yyyy-mm-ddThh:mm:ssZ_  | _name_   | _pitr-drill-yyyy-mm-dd_ | _PASS/FAIL_        | _link to incident, deltas, timing_ |

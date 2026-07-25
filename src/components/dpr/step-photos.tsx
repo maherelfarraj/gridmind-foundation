@@ -17,12 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { dprDetailQueryOptions, errorMessage } from "@/lib/dpr-query";
 import {
@@ -34,11 +29,7 @@ import {
   type ObservationRow,
   type SitePhotoRow,
 } from "@/lib/dpr.functions";
-import {
-  OBSERVATION_SEVERITIES,
-  photoObjectPath,
-  type ObservationSeverity,
-} from "@/lib/dpr.rules";
+import { OBSERVATION_SEVERITIES, photoObjectPath, type ObservationSeverity } from "@/lib/dpr.rules";
 
 interface Props {
   header: DprRow;
@@ -181,13 +172,9 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
           {photos.length === 0 && (
             <div className="rounded-md border border-warning-foreground/30 bg-warning/15 p-3 text-sm text-warning-foreground">
               <div className="flex items-start gap-2">
-                <AlertTriangle
-                  className="mt-0.5 h-4 w-4 shrink-0"
-                  aria-hidden
-                />
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <div>
-                  No photos attached — site photos <b>SHOULD</b> accompany every
-                  DPR.
+                  No photos attached — site photos <b>SHOULD</b> accompany every DPR.
                 </div>
               </div>
             </div>
@@ -203,7 +190,6 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
                   >
                     <div className="aspect-square w-full bg-muted">
                       {url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={url}
                           alt={p.caption ?? "Site photo"}
@@ -304,10 +290,7 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
           ) : (
             <ul className="flex flex-col gap-2">
               {observations.map((o) => (
-                <li
-                  key={o.id}
-                  className="rounded-md border border-border bg-card p-3"
-                >
+                <li key={o.id} className="rounded-md border border-border bg-card p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium text-foreground">
                       {o.description}

@@ -5,10 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const PHASE_ORDER = ["development", "ntp", "cod", "handover"] as const;
 type Phase = (typeof PHASE_ORDER)[number];
@@ -61,12 +58,10 @@ export const getGateHistory = createServerFn({ method: "GET" })
 
     const actorIds = Array.from(
       new Set(
-        (rows ?? [])
-          .map((r: any) => r.actor_id)
-          .filter((v: string | null): v is string => !!v),
+        (rows ?? []).map((r: any) => r.actor_id).filter((v: string | null): v is string => !!v),
       ),
     );
-    let actorMap: Record<string, { full_name: string | null; email: string | null }> = {};
+    const actorMap: Record<string, { full_name: string | null; email: string | null }> = {};
     if (actorIds.length > 0) {
       const { data: profs } = await context.supabase
         .from("profiles")
@@ -85,8 +80,8 @@ export const getGateHistory = createServerFn({ method: "GET" })
       id: r.id,
       action: r.action,
       actor_id: r.actor_id,
-      actor_name: r.actor_id ? actorMap[r.actor_id]?.full_name ?? null : null,
-      actor_email: r.actor_id ? actorMap[r.actor_id]?.email ?? null : null,
+      actor_name: r.actor_id ? (actorMap[r.actor_id]?.full_name ?? null) : null,
+      actor_email: r.actor_id ? (actorMap[r.actor_id]?.email ?? null) : null,
       metadata: r.metadata ?? {},
       created_at: r.created_at,
     }));
@@ -204,9 +199,7 @@ export const requestGateTransition = createServerFn({ method: "POST" })
       .eq("role", "company_admin");
     if (aErr) throw aErr;
 
-    const approverIds = Array.from(
-      new Set((admins ?? []).map((r: any) => r.user_id as string)),
-    );
+    const approverIds = Array.from(new Set((admins ?? []).map((r: any) => r.user_id as string)));
     if (approverIds.length === 0) httpError(409, "no_approvers");
 
     const { error: apErr } = await context.supabase.from("approvals").insert(
@@ -319,9 +312,7 @@ export const decideGateTransition = createServerFn({ method: "POST" })
 
       // Advance project phase.
       const idx = PHASE_ORDER.indexOf(gate.phase as Phase);
-      const nextPhase = idx >= 0 && idx < PHASE_ORDER.length - 1
-        ? PHASE_ORDER[idx + 1]
-        : null;
+      const nextPhase = idx >= 0 && idx < PHASE_ORDER.length - 1 ? PHASE_ORDER[idx + 1] : null;
       const projUpdate: { phase?: Phase; status?: string } = {};
       if (nextPhase) projUpdate.phase = nextPhase;
       if (gate.phase === "handover") projUpdate.status = "completed";
@@ -332,7 +323,6 @@ export const decideGateTransition = createServerFn({ method: "POST" })
           .eq("id", gate.project_id);
         if (pErr) throw pErr;
       }
-
 
       // Open the next gate by sort order.
       const { data: nextGate } = await context.supabase

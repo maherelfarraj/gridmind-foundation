@@ -15,13 +15,7 @@ const SUB_TABS = [
   { to: "uploads" as const, label: "Site data uploads" },
 ];
 
-
-
-
-
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering")({
   component: EngineeringLayout,
 });
 
@@ -34,12 +28,7 @@ function EngineeringLayout() {
         className="flex flex-wrap gap-1 border-b border-border"
       >
         {SUB_TABS.map((t) => (
-          <SubTabLink
-            key={t.to || "index"}
-            to={t.to}
-            label={t.label}
-            projectId={projectId}
-          />
+          <SubTabLink key={t.to || "index"} to={t.to} label={t.label} projectId={projectId} />
         ))}
       </nav>
       <Outlet />
@@ -56,9 +45,7 @@ function SubTabLink({
   label: string;
   projectId: string;
 }) {
-  const target = to
-    ? `/projects/$projectId/engineering/${to}`
-    : `/projects/$projectId/engineering`;
+  const target = to ? `/projects/$projectId/engineering/${to}` : `/projects/$projectId/engineering`;
   return (
     <Link
       to={target as any}

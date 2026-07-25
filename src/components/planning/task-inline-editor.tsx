@@ -8,11 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -30,11 +26,7 @@ import {
   type ScheduleTaskStatus,
 } from "@/lib/schedule.rules";
 import type { ScheduleTaskRow } from "@/lib/schedule.functions";
-import {
-  WBS_DISCIPLINES,
-  WBS_DISCIPLINE_LABEL,
-  type WbsDiscipline,
-} from "@/lib/wbs-rules";
+import { WBS_DISCIPLINES, WBS_DISCIPLINE_LABEL, type WbsDiscipline } from "@/lib/wbs-rules";
 
 const NONE = "__none";
 
@@ -62,14 +54,7 @@ function toIso(d: Date): string {
   return format(d, "yyyy-MM-dd");
 }
 
-export function TaskInlineEditor({
-  task,
-  siblings,
-  canWrite,
-  onSave,
-  onDelete,
-  saving,
-}: Props) {
+export function TaskInlineEditor({ task, siblings, canWrite, onSave, onDelete, saving }: Props) {
   const [name, setName] = useState(task.name);
   const [discipline, setDiscipline] = useState<WbsDiscipline | "">(
     (task.discipline ?? "") as WbsDiscipline | "",
@@ -79,9 +64,7 @@ export function TaskInlineEditor({
   const [progress, setProgress] = useState<number>(task.progress_pct);
   const [status, setStatus] = useState<ScheduleTaskStatus>(task.status);
   const [milestone, setMilestone] = useState<boolean>(task.is_milestone);
-  const [preds, setPreds] = useState<Set<string>>(
-    () => new Set(task.predecessor_ids),
-  );
+  const [preds, setPreds] = useState<Set<string>>(() => new Set(task.predecessor_ids));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -145,9 +128,7 @@ export function TaskInlineEditor({
           <Label>Discipline</Label>
           <Select
             value={discipline === "" ? NONE : discipline}
-            onValueChange={(v) =>
-              setDiscipline(v === NONE ? "" : (v as WbsDiscipline))
-            }
+            onValueChange={(v) => setDiscipline(v === NONE ? "" : (v as WbsDiscipline))}
             disabled={!canWrite}
           >
             <SelectTrigger>
@@ -185,26 +166,14 @@ export function TaskInlineEditor({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DatePopover
-          label="Start"
-          value={start}
-          onChange={setStart}
-          disabled={!canWrite}
-        />
-        <DatePopover
-          label="End"
-          value={end}
-          onChange={setEnd}
-          disabled={!canWrite}
-        />
+        <DatePopover label="Start" value={start} onChange={setStart} disabled={!canWrite} />
+        <DatePopover label="End" value={end} onChange={setEnd} disabled={!canWrite} />
       </div>
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <Label>Progress</Label>
-          <span className="text-xs font-medium text-foreground">
-            {progress}%
-          </span>
+          <span className="text-xs font-medium text-foreground">{progress}%</span>
         </div>
         <Slider
           value={[progress]}
@@ -231,9 +200,7 @@ export function TaskInlineEditor({
       <div className="flex flex-col gap-1">
         <Label>Predecessors</Label>
         {others.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            No other tasks to depend on.
-          </p>
+          <p className="text-xs text-muted-foreground">No other tasks to depend on.</p>
         ) : (
           <ScrollArea className="max-h-32 rounded border border-border p-1">
             <ul className="flex flex-col gap-1">
@@ -272,12 +239,7 @@ export function TaskInlineEditor({
           <Trash2 size={14} aria-hidden />
           Delete
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleSave}
-          disabled={!canWrite || saving}
-        >
+        <Button type="button" size="sm" onClick={handleSave} disabled={!canWrite || saving}>
           Save
         </Button>
       </div>

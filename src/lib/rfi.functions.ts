@@ -2,25 +2,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
-import {
-  computeKpis,
-  nextRfiNumber,
-  type RfiKpis,
-  type RfiStatus,
-} from "@/lib/rfi-rules";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { computeKpis, nextRfiNumber, type RfiKpis, type RfiStatus } from "@/lib/rfi-rules";
 
 // ---------------------------------------------------------------------------
 // constants + errors
 // ---------------------------------------------------------------------------
-const ADMIN_ROLES = [
-  "engineering_admin",
-  "project_admin",
-  "super_admin",
-] as const;
+const ADMIN_ROLES = ["engineering_admin", "project_admin", "super_admin"] as const;
 
 const DISCIPLINES = [
   "civil",
@@ -157,9 +145,7 @@ export const listRfis = createServerFn({ method: "GET" })
     if (data.assignee) q = q.eq("routed_to", data.assignee);
     if (data.search && data.search.trim().length > 0) {
       const s = data.search.trim().replace(/[%_]/g, "");
-      q = q.or(
-        `subject.ilike.%${s}%,rfi_number.ilike.%${s}%,question.ilike.%${s}%`,
-      );
+      q = q.or(`subject.ilike.%${s}%,rfi_number.ilike.%${s}%,question.ilike.%${s}%`);
     }
     const { data: rows, error } = await q;
     if (error) throw error;
@@ -177,18 +163,15 @@ function toRfiRow(r: any): RfiRow {
     priority: r.priority,
     status: r.status,
     raised_by: r.raised_by,
-    raised_by_name:
-      r.raised_profile?.full_name ?? r.raised_profile?.email ?? null,
+    raised_by_name: r.raised_profile?.full_name ?? r.raised_profile?.email ?? null,
     routed_to: r.routed_to,
-    routed_to_name:
-      r.routed_profile?.full_name ?? r.routed_profile?.email ?? null,
+    routed_to_name: r.routed_profile?.full_name ?? r.routed_profile?.email ?? null,
     drawing_id: r.drawing_id,
     drawing_number: r.drawing?.drawing_number ?? null,
     due_date: r.due_date,
     answer: r.answer,
     answered_by: r.answered_by,
-    answered_by_name:
-      r.answered_profile?.full_name ?? r.answered_profile?.email ?? null,
+    answered_by_name: r.answered_profile?.full_name ?? r.answered_profile?.email ?? null,
     answered_at: r.answered_at,
     closed_at: r.closed_at,
     cost_impact: !!r.cost_impact,
@@ -203,9 +186,7 @@ function toRfiRow(r: any): RfiRow {
 // ---------------------------------------------------------------------------
 export const getRfi = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfiId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ rfiId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<RfiRow> => {
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase
@@ -225,9 +206,7 @@ export const getRfi = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const listRoutableMembers = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<RoutableMember[]> => {
     requireSupabaseAuth(context);
     const project = await loadProjectCompany(context, data.projectId);
@@ -249,18 +228,21 @@ export const listRoutableMembers = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const getMyRfiRole = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
-  .handler(async ({ data, context }): Promise<{
-    userId: string;
-    isAdmin: boolean;
-  }> => {
-    requireSupabaseAuth(context);
-    const project = await loadProjectCompany(context, data.projectId);
-    const isAdmin = await isAdminOfCompany(context, project.company_id);
-    return { userId: context.user.id, isAdmin };
-  });
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{
+      userId: string;
+      isAdmin: boolean;
+    }> => {
+      requireSupabaseAuth(context);
+      const project = await loadProjectCompany(context, data.projectId);
+      const isAdmin = await isAdminOfCompany(context, project.company_id);
+      return { userId: context.user.id, isAdmin };
+    },
+  );
 
 // ---------------------------------------------------------------------------
 // raiseRfi
@@ -332,11 +314,7 @@ export const raiseRfi = createServerFn({ method: "POST" })
       const msg = String((iErr as any).message ?? "");
       const code = String((iErr as any).code ?? "");
       if (code === "23505" || msg.toLowerCase().includes("duplicate")) {
-        httpError(
-          409,
-          "rfi_duplicate_number",
-          `RFI number ${number} was just taken. Try again.`,
-        );
+        httpError(409, "rfi_duplicate_number", `RFI number ${number} was just taken. Try again.`);
       }
       throw iErr;
     }
@@ -396,9 +374,7 @@ export const answerRfi = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const closeRfi = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfiId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ rfiId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const rfi = await loadRfi(context, data.rfiId);
@@ -428,9 +404,7 @@ export const closeRfi = createServerFn({ method: "POST" })
 export const voidRfi = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ rfiId: z.string().uuid(), reason: z.string().min(3).max(500) })
-      .parse(input),
+    z.object({ rfiId: z.string().uuid(), reason: z.string().min(3).max(500) }).parse(input),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
@@ -461,18 +435,14 @@ export interface RfiKpiResult extends RfiKpis {
 
 export const getRfiKpis = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<RfiKpiResult> => {
     requireSupabaseAuth(context);
     const since = new Date();
     since.setDate(since.getDate() - 90);
     const { data: rows, error } = await context.supabase
       .from("rfis")
-      .select(
-        "status, due_date, created_at, answered_at, raised_by, routed_to",
-      )
+      .select("status, due_date, created_at, answered_at, raised_by, routed_to")
       .eq("project_id", data.projectId)
       .gte("created_at", since.toISOString());
     if (error) throw error;

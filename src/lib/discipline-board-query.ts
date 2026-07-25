@@ -1,10 +1,7 @@
 // P-085 — Query options for the discipline board.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getDisciplineBoard,
-  listDisciplineBoardProjects,
-} from "@/lib/discipline-board.functions";
+import { getDisciplineBoard, listDisciplineBoardProjects } from "@/lib/discipline-board.functions";
 
 export const disciplineBoardProjectsQueryOptions = () =>
   queryOptions({
@@ -13,11 +10,7 @@ export const disciplineBoardProjectsQueryOptions = () =>
     staleTime: 60_000,
   });
 
-export const disciplineBoardQueryOptions = (
-  projectId: string,
-  from: string,
-  to: string,
-) =>
+export const disciplineBoardQueryOptions = (projectId: string, from: string, to: string) =>
   queryOptions({
     queryKey: ["discipline-board", projectId, from, to],
     queryFn: () => getDisciplineBoard({ data: { projectId, from, to } }),

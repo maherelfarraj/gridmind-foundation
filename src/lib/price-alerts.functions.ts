@@ -37,11 +37,7 @@ export interface PriceAlertRow {
   updated_at: string;
 }
 
-const WRITE_ROLES = [
-  "procurement_admin",
-  "procurement_officer",
-  "company_admin",
-] as const;
+const WRITE_ROLES = ["procurement_admin", "procurement_officer", "company_admin"] as const;
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
@@ -65,9 +61,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
 
 async function hasAnyWriteRole(context: AuthContext): Promise<boolean> {
   const results = await Promise.all(
-    WRITE_ROLES.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    WRITE_ROLES.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -200,9 +194,7 @@ export const recordPriceObservation = createServerFn({ method: "POST" })
       if (!current) httpError(404, "alert_not_found");
 
       const previous =
-        (current as any).index_price == null
-          ? null
-          : Number((current as any).index_price);
+        (current as any).index_price == null ? null : Number((current as any).index_price);
       const changePct = computeChangePct(previous, data.index_price);
       const threshold = Number((current as any).alert_threshold_pct);
       const triggered = shouldTrigger(changePct, threshold);
@@ -246,9 +238,7 @@ export const recordPriceObservation = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const acknowledgePriceAlert = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PriceAlertRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyWriteRole(context))) httpError(403, "forbidden");
@@ -271,9 +261,7 @@ export const acknowledgePriceAlert = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const deletePriceAlert = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyWriteRole(context))) httpError(403, "forbidden");

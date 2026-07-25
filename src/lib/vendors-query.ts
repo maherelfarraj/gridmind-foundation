@@ -155,8 +155,7 @@ export function useAttachVendorCertification(vendorId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(attachVendorCertification);
   return useMutation({
-    mutationFn: (certification: CertificationInput) =>
-      fn({ data: { vendorId, certification } }),
+    mutationFn: (certification: CertificationInput) => fn({ data: { vendorId, certification } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendor", vendorId] });
       toast.success("Certification attached");
@@ -177,4 +176,3 @@ export function useRemoveVendorCertification(vendorId: string) {
     onError: (err) => toast.error(errorMessage(err)),
   });
 }
-

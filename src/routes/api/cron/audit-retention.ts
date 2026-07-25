@@ -66,10 +66,7 @@ export const Route = createFileRoute("/api/cron/audit-retention")({
         const perCompany = new Map<string, number>();
         let totalDeleted = 0;
         for (const r of rows) {
-          const n =
-            typeof r.deleted_count === "string"
-              ? Number(r.deleted_count)
-              : r.deleted_count;
+          const n = typeof r.deleted_count === "string" ? Number(r.deleted_count) : r.deleted_count;
           if (!Number.isFinite(n) || n <= 0) continue;
           perCompany.set(r.company_id, (perCompany.get(r.company_id) ?? 0) + n);
           totalDeleted += n;

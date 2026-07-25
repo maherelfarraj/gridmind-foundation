@@ -64,18 +64,14 @@ export function PhaseGateStepper({
   }
 
   return (
-    <ol
-      className={cn("flex w-full items-start gap-0", className)}
-      aria-label="Project phase gates"
-    >
+    <ol className={cn("flex w-full items-start gap-0", className)} aria-label="Project phase gates">
       {PHASE_ORDER.map((phase, idx) => {
         const gate = byPhase.get(phase);
         const status = normStatus(gate?.status);
         const isLast = idx === PHASE_ORDER.length - 1;
 
         // Connector color reflects progress: primary if this step is approved.
-        const connectorTone =
-          status === "approved" ? "bg-primary" : "bg-border";
+        const connectorTone = status === "approved" ? "bg-primary" : "bg-border";
 
         return (
           <li
@@ -94,12 +90,7 @@ export function PhaseGateStepper({
                 <StatusIcon status={status} />
               </div>
               <div className="flex flex-col items-center gap-0.5">
-                <span
-                  className={cn(
-                    "text-xs font-medium",
-                    LABEL_TONE[status],
-                  )}
-                >
+                <span className={cn("text-xs font-medium", LABEL_TONE[status])}>
                   {PHASE_LABELS[phase]}
                 </span>
                 <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -107,12 +98,7 @@ export function PhaseGateStepper({
                 </span>
               </div>
             </div>
-            {!isLast && (
-              <div
-                aria-hidden
-                className={cn("mt-4 h-0.5 flex-1", connectorTone)}
-              />
-            )}
+            {!isLast && <div aria-hidden className={cn("mt-4 h-0.5 flex-1", connectorTone)} />}
           </li>
         );
       })}

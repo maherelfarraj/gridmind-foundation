@@ -83,9 +83,7 @@ function StateShell({ state }: { state: "invalid" | "revoked" | "expired" }) {
       <BrandBar />
       <main className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 py-24 text-center">
         <div className="rounded-full border border-border bg-card p-4">{copy.icon}</div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          {copy.title}
-        </h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">{copy.title}</h1>
         <p className="text-sm text-muted-foreground">{copy.body}</p>
       </main>
     </div>
@@ -106,19 +104,11 @@ function BrandBar({ feed }: { feed?: Feed } = {}) {
               className="h-8 w-auto"
             />
           ) : (
-            <span className="font-display text-lg font-semibold tracking-tight">
-              GridMind EPC
-            </span>
+            <span className="font-display text-lg font-semibold tracking-tight">GridMind EPC</span>
           )}
-          {feed ? (
-            <span className="text-sm text-muted-foreground">
-              {feed.company.name}
-            </span>
-          ) : null}
+          {feed ? <span className="text-sm text-muted-foreground">{feed.company.name}</span> : null}
         </div>
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          Shared view
-        </span>
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">Shared view</span>
       </div>
     </header>
   );
@@ -133,9 +123,7 @@ function FeedView({ feed }: { feed: Feed }) {
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
             {feed.role === "lender_viewer" ? "Lender view" : "Investor view"}
           </span>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            {feed.label}
-          </h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">{feed.label}</h1>
           <p className="text-sm text-muted-foreground">
             Access valid through {format(new Date(feed.expires_at), "PPP")} · Read-only
           </p>
@@ -146,13 +134,8 @@ function FeedView({ feed }: { feed: Feed }) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {feed.projects.map((p) => (
-              <div
-                key={p.id}
-                className="rounded-lg border border-border bg-card p-4"
-              >
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Project
-                </div>
+              <div key={p.id} className="rounded-lg border border-border bg-card p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Project</div>
                 <div className="mt-1 text-base font-semibold">{p.name}</div>
                 {p.phase ? (
                   <div className="mt-2 inline-flex rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
@@ -182,11 +165,7 @@ function FeedView({ feed }: { feed: Feed }) {
 }
 
 function SectionHeader({ title }: { title: string }) {
-  return (
-    <h2 className="font-display text-lg font-semibold tracking-tight">
-      {title}
-    </h2>
-  );
+  return <h2 className="font-display text-lg font-semibold tracking-tight">{title}</h2>;
 }
 
 function EmptySection({ label }: { label: string }) {
@@ -253,9 +232,7 @@ function KpiSection({ feed }: { feed: Feed }) {
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </span>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
       <span className="text-base font-semibold text-foreground">{value}</span>
     </div>
   );
@@ -341,9 +318,7 @@ function FinancialsSection({ feed }: { feed: Feed }) {
   return (
     <section className="flex flex-col gap-3">
       <SectionHeader title="Financials" />
-      <p className="text-xs text-muted-foreground">
-        Lender view · aggregated cash flow to date
-      </p>
+      <p className="text-xs text-muted-foreground">Lender view · aggregated cash flow to date</p>
       {rows.length === 0 ? (
         <EmptySection label="No cash flow published yet." />
       ) : (

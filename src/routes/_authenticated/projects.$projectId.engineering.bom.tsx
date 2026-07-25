@@ -23,22 +23,18 @@ import { BomHeader } from "@/components/engineering/bom-header";
 import { BomTable } from "@/components/engineering/bom-table";
 import { BOM_CATEGORY_LABEL } from "@/lib/calculators/bom";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/bom",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/bom")({
   head: () => ({
     meta: [
       { title: "Bill of materials — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Generate a preliminary BOM from the project's engineering configuration.",
+        content: "Generate a preliminary BOM from the project's engineering configuration.",
       },
       { property: "og:title", content: "Bill of materials — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Generate a preliminary BOM from the project's engineering configuration.",
+        content: "Generate a preliminary BOM from the project's engineering configuration.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -68,12 +64,8 @@ function BomWorkspace({ projectId }: { projectId: string }) {
   const detailFn = useServerFn(getBomSnapshot);
   const rolesFn = useServerFn(getMyBomRoles);
 
-  const { data: snapshots } = useSuspenseQuery(
-    bomSnapshotsQueryOptions(listFn, projectId),
-  );
-  const { data: roles } = useSuspenseQuery(
-    bomRolesQueryOptions(rolesFn, projectId),
-  );
+  const { data: snapshots } = useSuspenseQuery(bomSnapshotsQueryOptions(listFn, projectId));
+  const { data: roles } = useSuspenseQuery(bomRolesQueryOptions(rolesFn, projectId));
 
   const [selectedId, setSelectedId] = useState<string | undefined>();
   useEffect(() => {
@@ -83,9 +75,7 @@ function BomWorkspace({ projectId }: { projectId: string }) {
     }
   }, [snapshots, selectedId]);
 
-  const { data: detail } = useSuspenseQuery(
-    bomSnapshotDetailQueryOptions(detailFn, selectedId),
-  );
+  const { data: detail } = useSuspenseQuery(bomSnapshotDetailQueryOptions(detailFn, selectedId));
 
   const generate = useGenerateBom(projectId);
   const release = useReleaseBom(selectedId ?? "", projectId);
@@ -99,10 +89,7 @@ function BomWorkspace({ projectId }: { projectId: string }) {
     detail.snapshot.status === "released" ||
     detail.snapshot.status === "superseded";
 
-  const csvHref = useMemo(
-    () => (detail ? buildCsv(detail.lines) : null),
-    [detail],
-  );
+  const csvHref = useMemo(() => (detail ? buildCsv(detail.lines) : null), [detail]);
 
   const onExport = () => {
     if (!csvHref || !detail) return;
@@ -172,9 +159,7 @@ function EmptyState({
 }
 
 function Skeleton() {
-  return (
-    <div className="h-64 animate-pulse rounded-md border border-border bg-muted/40" />
-  );
+  return <div className="h-64 animate-pulse rounded-md border border-border bg-muted/40" />;
 }
 
 function csvEscape(v: unknown): string {

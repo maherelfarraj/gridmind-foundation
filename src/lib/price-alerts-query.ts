@@ -2,10 +2,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import {
-  getPriceAlertAccess,
-  listPriceAlerts,
-} from "@/lib/price-alerts.functions";
+import { getPriceAlertAccess, listPriceAlerts } from "@/lib/price-alerts.functions";
 
 export function priceAlertsListQueryOptions(
   fn: ReturnType<typeof useServerFn<typeof listPriceAlerts>>,

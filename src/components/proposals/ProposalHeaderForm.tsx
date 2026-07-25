@@ -80,11 +80,7 @@ export function ProposalHeaderForm({
         <div className="sm:col-span-2">
           <Label htmlFor="title">Proposal title</Label>
           <Input id="title" disabled={readOnly} {...register("title")} />
-          {errors.title && (
-            <p className="mt-1 text-xs text-destructive">
-              {errors.title.message}
-            </p>
-          )}
+          {errors.title && <p className="mt-1 text-xs text-destructive">{errors.title.message}</p>}
         </div>
 
         <div>
@@ -117,9 +113,7 @@ export function ProposalHeaderForm({
             type="date"
             disabled={readOnly}
             defaultValue={
-              proposal.valid_until
-                ? format(new Date(proposal.valid_until), "yyyy-MM-dd")
-                : ""
+              proposal.valid_until ? format(new Date(proposal.valid_until), "yyyy-MM-dd") : ""
             }
             {...register("valid_until", {
               setValueAs: (v) => (v ? v : null),

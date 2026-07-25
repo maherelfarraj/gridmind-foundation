@@ -4,10 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // Constants + types
@@ -36,13 +33,7 @@ export const DRAWING_DISCIPLINES = [
 ] as const;
 export type DrawingDiscipline = (typeof DRAWING_DISCIPLINES)[number];
 
-export const DRAWING_STATUSES = [
-  "draft",
-  "IFD",
-  "IFC",
-  "as_built",
-  "superseded",
-] as const;
+export const DRAWING_STATUSES = ["draft", "IFD", "IFC", "as_built", "superseded"] as const;
 export type DrawingStatus = (typeof DRAWING_STATUSES)[number];
 
 const WRITE_ROLES = [
@@ -52,16 +43,8 @@ const WRITE_ROLES = [
   "company_admin",
   "super_admin",
 ] as const;
-const STATUS_TRANSITION_ROLES = [
-  "engineering_admin",
-  "project_admin",
-  "super_admin",
-] as const;
-const SIGNOFF_DECIDE_ROLES = [
-  "engineering_admin",
-  "project_admin",
-  "super_admin",
-] as const;
+const STATUS_TRANSITION_ROLES = ["engineering_admin", "project_admin", "super_admin"] as const;
+const SIGNOFF_DECIDE_ROLES = ["engineering_admin", "project_admin", "super_admin"] as const;
 
 export interface DrawingRow {
   id: string;
@@ -177,9 +160,7 @@ async function loadDrawingWithCompany(
 }> {
   const { data, error } = await context.supabase
     .from("drawing_register")
-    .select(
-      "id, company_id, project_id, current_status, locked, drawing_number",
-    )
+    .select("id, company_id, project_id, current_status, locked, drawing_number")
     .eq("id", drawingId)
     .maybeSingle();
   if (error) throw error;
@@ -187,11 +168,7 @@ async function loadDrawingWithCompany(
   return data as any;
 }
 
-async function assertRole(
-  context: any,
-  companyId: string,
-  roles: readonly string[],
-) {
+async function assertRole(context: any, companyId: string, roles: readonly string[]) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")
@@ -286,8 +263,8 @@ export const listDrawings = createServerFn({ method: "GET" })
       rows: ((rows ?? []) as any[]).map((r) => ({
         ...r,
         current_revision: Array.isArray(r.current_revision)
-          ? r.current_revision[0] ?? null
-          : r.current_revision ?? null,
+          ? (r.current_revision[0] ?? null)
+          : (r.current_revision ?? null),
       })) as DrawingRow[],
       total: count ?? 0,
     };
@@ -325,12 +302,10 @@ export const getDrawing = createServerFn({ method: "GET" })
     const list = (revs ?? []) as any[];
     const uids = Array.from(
       new Set(
-        list
-          .flatMap((r) => [r.issued_by, r.created_by])
-          .filter((v): v is string => Boolean(v)),
+        list.flatMap((r) => [r.issued_by, r.created_by]).filter((v): v is string => Boolean(v)),
       ),
     );
-    let profiles: Record<string, { full_name: string | null; email: string | null }> = {};
+    const profiles: Record<string, { full_name: string | null; email: string | null }> = {};
     if (uids.length > 0) {
       const { data: ps } = await context.supabase
         .from("profiles")
@@ -343,8 +318,8 @@ export const getDrawing = createServerFn({ method: "GET" })
 
     const revisions: RevisionRow[] = list.map((r) => ({
       ...r,
-      issued_by_profile: r.issued_by ? profiles[r.issued_by] ?? null : null,
-      created_by_profile: r.created_by ? profiles[r.created_by] ?? null : null,
+      issued_by_profile: r.issued_by ? (profiles[r.issued_by] ?? null) : null,
+      created_by_profile: r.created_by ? (profiles[r.created_by] ?? null) : null,
     }));
 
     return { drawing: drawing as any, revisions };
@@ -382,7 +357,11 @@ export const createDrawing = createServerFn({ method: "POST" })
       .single();
     if (error) {
       if ((error as any).code === "23505") {
-        httpError(409, "drawing_number_taken", `Drawing number ${data.drawingNumber} already exists in this project.`);
+        httpError(
+          409,
+          "drawing_number_taken",
+          `Drawing number ${data.drawingNumber} already exists in this project.`,
+        );
       }
       throw error;
     }
@@ -417,7 +396,11 @@ export const getRevisionUploadUrl = createServerFn({ method: "POST" })
       httpError(400, "unsupported_extension");
     }
     if (drawing.locked) {
-      httpError(409, "drawing_locked", "Drawing is locked (IFC/as-built). Create a superseded revision by transitioning the current one first.");
+      httpError(
+        409,
+        "drawing_locked",
+        "Drawing is locked (IFC/as-built). Create a superseded revision by transitioning the current one first.",
+      );
     }
 
     const { data: revs, error: rErr } = await context.supabase
@@ -631,10 +614,8 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
           `IFC blocked — ${pending} reviewer(s) still pending. Have every reviewer sign, or waive with a comment.`,
         );
       }
-      autoCloseRoundId =
-        (round as any).status === "open" ? ((round as any).id as string) : null;
+      autoCloseRoundId = (round as any).status === "open" ? ((round as any).id as string) : null;
     }
-
 
     const now = new Date().toISOString();
     const nextRevisionUpdate: Record<string, any> = { status: data.toStatus };
@@ -663,18 +644,12 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
 
     // Audit trigger on drawing_revisions writes drawing_revision.status_changed;
     // we also emit drawing.status_changed at the register level.
-    await audit(
-      context,
-      "drawing.status_changed",
-      "drawing_register",
-      drawing.id,
-      {
-        from: fromStatus,
-        to: data.toStatus,
-        revision_id: rev.id,
-        revision_code: (rev as any).revision_code,
-      },
-    );
+    await audit(context, "drawing.status_changed", "drawing_register", drawing.id, {
+      from: fromStatus,
+      to: data.toStatus,
+      revision_id: rev.id,
+      revision_code: (rev as any).revision_code,
+    });
 
     // Auto-close the completed review round when we promoted to IFC.
     if (autoCloseRoundId) {
@@ -688,7 +663,6 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
     return { ok: true, toStatus: data.toStatus, revisionId: rev.id };
   });
 
-
 // ---------------------------------------------------------------------------
 // Sign-off workflow (approval_instances entity='drawing')
 // ---------------------------------------------------------------------------
@@ -699,9 +673,7 @@ export const listDrawingSignoffs = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
       .from("approval_instances")
-      .select(
-        "id, status, requested_by, decided_by, decided_at, metadata, created_at",
-      )
+      .select("id, status, requested_by, decided_by, decided_at, metadata, created_at")
       .eq("entity", "drawing")
       .eq("entity_id", data.drawingId)
       .order("created_at", { ascending: false });
@@ -830,10 +802,8 @@ export const listMarkups = createServerFn({ method: "GET" })
     if (error) throw error;
 
     const list = (rows ?? []) as any[];
-    const uids = Array.from(
-      new Set(list.map((r) => r.reviewer_id).filter(Boolean) as string[]),
-    );
-    let profiles: Record<string, { full_name: string | null; email: string | null }> = {};
+    const uids = Array.from(new Set(list.map((r) => r.reviewer_id).filter(Boolean) as string[]));
+    const profiles: Record<string, { full_name: string | null; email: string | null }> = {};
     if (uids.length > 0) {
       const { data: ps } = await context.supabase
         .from("profiles")
@@ -845,7 +815,7 @@ export const listMarkups = createServerFn({ method: "GET" })
     }
     return list.map((r) => ({
       ...r,
-      reviewer: r.reviewer_id ? profiles[r.reviewer_id] ?? null : null,
+      reviewer: r.reviewer_id ? (profiles[r.reviewer_id] ?? null) : null,
     }));
   });
 
@@ -944,9 +914,7 @@ export const updateMarkupStatus = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const getRevisionDownloadUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ revisionId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ revisionId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: rev, error } = await context.supabase
@@ -974,9 +942,7 @@ export const getRevisionDownloadUrl = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const getMyDrawingRoles = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const project = await loadProjectCompany(context, data.projectId);

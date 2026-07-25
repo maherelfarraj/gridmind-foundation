@@ -25,11 +25,7 @@ import {
 import type { YieldScenarioRow } from "@/lib/yield.functions";
 import { LOSS_KEYS } from "@/lib/yield.functions";
 
-export function YieldComparison({
-  scenarios,
-}: {
-  scenarios: YieldScenarioRow[];
-}) {
+export function YieldComparison({ scenarios }: { scenarios: YieldScenarioRow[] }) {
   const withResults = useMemo(
     () => scenarios.filter((s) => s.results?.p50_mwh != null),
     [scenarios],
@@ -82,10 +78,7 @@ export function YieldComparison({
           {withResults.map((s) => {
             const active = selected.includes(s.id);
             return (
-              <label
-                key={s.id}
-                className="flex items-center gap-2 text-sm"
-              >
+              <label key={s.id} className="flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={active}
                   onCheckedChange={() => toggle(s.id)}
@@ -173,20 +166,13 @@ export function YieldComparison({
               {rows.map((s) => {
                 const p50 = s.results.p50_mwh ?? 0;
                 const basep50 = base?.results?.p50_mwh ?? null;
-                const delta =
-                  basep50 && basep50 > 0
-                    ? ((p50 - basep50) / basep50) * 100
-                    : null;
+                const delta = basep50 && basep50 > 0 ? ((p50 - basep50) / basep50) * 100 : null;
                 return (
                   <TableRow key={s.id}>
                     <TableCell>{s.scenario_name}</TableCell>
+                    <TableCell className="text-right">{p50.toFixed(0)}</TableCell>
                     <TableCell className="text-right">
-                      {p50.toFixed(0)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {delta == null
-                        ? "—"
-                        : `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`}
+                      {delta == null ? "—" : `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`}
                     </TableCell>
                   </TableRow>
                 );

@@ -15,9 +15,7 @@ describe("RFQ number generator", () => {
     expect(nextRfqNumber([])).toBe("RFQ-0001");
   });
   it("increments from max, ignoring gaps and malformed rows", () => {
-    expect(nextRfqNumber(["RFQ-0001", "RFQ-0003", "DRAFT-XYZ", ""])).toBe(
-      "RFQ-0004",
-    );
+    expect(nextRfqNumber(["RFQ-0001", "RFQ-0003", "DRAFT-XYZ", ""])).toBe("RFQ-0004");
   });
   it("format and parse round-trip", () => {
     expect(formatRfqNumber(42)).toBe("RFQ-0042");
@@ -31,11 +29,15 @@ const rfqLines: RfqLine[] = [
   { line_no: 2, description: "Inverters 250kW", qty: 10, uom: "pcs", target_price: 15000 },
 ];
 
-function bid(id: string, name: string, opts: {
-  status?: BidInput["status"];
-  lines: BidInput["lines"];
-  validityDate?: string | null;
-}): BidInput {
+function bid(
+  id: string,
+  name: string,
+  opts: {
+    status?: BidInput["status"];
+    lines: BidInput["lines"];
+    validityDate?: string | null;
+  },
+): BidInput {
   return {
     bidId: id,
     vendorId: `v-${id}`,

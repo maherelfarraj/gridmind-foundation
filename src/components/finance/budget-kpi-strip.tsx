@@ -66,10 +66,7 @@ function CurrencyRow({ t }: { t: CurrencyTotals }) {
         : "text-foreground";
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <Kpi
-        icon={<Banknote size={16} aria-hidden />}
-        label={`Budget (${t.currency_code})`}
-      >
+      <Kpi icon={<Banknote size={16} aria-hidden />} label={`Budget (${t.currency_code})`}>
         <span className="text-2xl font-semibold text-foreground">
           {formatMoney(t.current, t.currency_code)}
         </span>

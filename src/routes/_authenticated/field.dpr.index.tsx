@@ -2,14 +2,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  CalendarClock,
-  ClipboardList,
-  ImageOff,
-  Plus,
-  Search,
-} from "lucide-react";
+import { AlertTriangle, CalendarClock, ClipboardList, ImageOff, Plus, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,11 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  dprListQueryOptions,
-  dprProjectsQueryOptions,
-  errorMessage,
-} from "@/lib/dpr-query";
+import { dprListQueryOptions, dprProjectsQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { ExportWeeklyReportButton } from "@/components/field/ExportWeeklyReportButton";
 import { format, startOfISOWeek, subWeeks } from "date-fns";
 
@@ -82,16 +71,13 @@ function DprListPage() {
             Daily reports
           </h1>
           <p className="text-sm text-muted-foreground">
-            Capture manpower, weather, installed quantities and site photos —
-            fast, one-handed, in the field.
+            Capture manpower, weather, installed quantities and site photos — fast, one-handed, in
+            the field.
           </p>
         </div>
         <ExportWeeklyReportButton
           projectId={projectId || null}
-          weekStart={format(
-            startOfISOWeek(subWeeks(new Date(), 1)),
-            "yyyy-MM-dd",
-          )}
+          weekStart={format(startOfISOWeek(subWeeks(new Date(), 1)), "yyyy-MM-dd")}
           variant="outline"
           size="sm"
         />
@@ -163,24 +149,14 @@ function DprListPage() {
             <AlertTriangle className="h-4 w-4" aria-hidden />
             <span className="text-sm font-medium">Failed to load reports</span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {errorMessage(listQuery.error)}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => listQuery.refetch()}
-          >
+          <p className="mt-1 text-sm text-muted-foreground">{errorMessage(listQuery.error)}</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => listQuery.refetch()}>
             Retry
           </Button>
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-muted/30 p-8 text-center">
-          <ClipboardList
-            className="mx-auto mb-3 h-8 w-8 text-muted-foreground"
-            aria-hidden
-          />
+          <ClipboardList className="mx-auto mb-3 h-8 w-8 text-muted-foreground" aria-hidden />
           <p className="text-sm text-muted-foreground">
             No daily reports yet — tap <b>New Report</b>.
           </p>
@@ -205,8 +181,7 @@ function DprListPage() {
                       {r.project_name ?? r.project_id}
                     </div>
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {r.total_manpower} on site ·{" "}
-                      {Number(r.total_hours).toFixed(1)} h
+                      {r.total_manpower} on site · {Number(r.total_hours).toFixed(1)} h
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
@@ -239,11 +214,7 @@ function DprListPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const variant =
-    status === "approved"
-      ? "default"
-      : status === "submitted"
-        ? "secondary"
-        : "outline";
+    status === "approved" ? "default" : status === "submitted" ? "secondary" : "outline";
   return (
     <Badge variant={variant as any} className="capitalize">
       {status}

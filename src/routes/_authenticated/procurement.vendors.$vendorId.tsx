@@ -28,9 +28,7 @@ import {
   vendorWriteAccessQueryOptions,
 } from "@/lib/vendors-query";
 
-export const Route = createFileRoute(
-  "/_authenticated/procurement/vendors/$vendorId",
-)({
+export const Route = createFileRoute("/_authenticated/procurement/vendors/$vendorId")({
   head: () => ({
     meta: [
       { title: "Vendor — GridMind EPC" },
@@ -44,9 +42,7 @@ export const Route = createFileRoute(
   }),
   component: VendorDetail,
   notFoundComponent: () => (
-    <div className="py-16 text-center text-sm text-muted-foreground">
-      Vendor not found.
-    </div>
+    <div className="py-16 text-center text-sm text-muted-foreground">Vendor not found.</div>
   ),
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
@@ -83,9 +79,7 @@ function VendorDetail() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to vendors
           </Button>
           <div className="mt-2 flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold tracking-tight">
-              {vendor.name}
-            </h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight">{vendor.name}</h1>
             <Badge variant="outline" className="capitalize">
               {vendor.status.replace("_", " ")}
             </Badge>
@@ -96,9 +90,7 @@ function VendorDetail() {
         </div>
         {canWrite && (
           <div className="w-52 space-y-1.5">
-            <label className="text-xs uppercase tracking-wide text-muted-foreground">
-              Status
-            </label>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">Status</label>
             <Select
               value={vendor.status}
               onValueChange={(v) => changeStatus.mutate(v as VendorStatus)}

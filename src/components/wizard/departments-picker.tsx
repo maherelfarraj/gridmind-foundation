@@ -30,11 +30,7 @@ export function DepartmentsPicker({ value, onChange }: Props) {
             htmlFor={id}
             className="flex items-center gap-2 rounded-md border border-border bg-card p-3 text-sm text-foreground"
           >
-            <Checkbox
-              id={id}
-              checked={checked}
-              onCheckedChange={(v) => toggle(d, Boolean(v))}
-            />
+            <Checkbox id={id} checked={checked} onCheckedChange={(v) => toggle(d, Boolean(v))} />
             <Label htmlFor={id} className="cursor-pointer">
               {DEPARTMENT_LABELS[d]}
             </Label>

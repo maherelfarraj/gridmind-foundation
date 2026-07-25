@@ -16,20 +16,20 @@ export interface ActiveExportLock {
  * a manual lock or a pending approval instance with blocks_export=true.
  * Silent-safe when the migration is not applied (returns false).
  */
-export function useIsExportLocked(
-  projectId: string | null | undefined,
-  exportType: ExportType,
-) {
+export function useIsExportLocked(projectId: string | null | undefined, exportType: ExportType) {
   return useQuery({
     queryKey: ["export-lock", projectId ?? null, exportType],
     enabled: Boolean(projectId),
     refetchInterval: 30_000,
     queryFn: async (): Promise<boolean> => {
       if (!projectId) return false;
-      const { data, error } = await supabase.rpc("is_export_locked" as never, {
-        p_project_id: projectId,
-        p_export_type: exportType,
-      } as never);
+      const { data, error } = await supabase.rpc(
+        "is_export_locked" as never,
+        {
+          p_project_id: projectId,
+          p_export_type: exportType,
+        } as never,
+      );
       if (error) {
         const code = (error as { code?: string }).code;
         if (code === "42P01" || code === "42883") return false;

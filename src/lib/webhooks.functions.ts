@@ -30,8 +30,6 @@ export type JsonValue =
   | { [key: string]: JsonValue }
   | JsonValue[];
 
-
-
 export type WebhookEndpointRow = {
   id: string;
   url: string;
@@ -124,8 +122,7 @@ async function writeAudit(
   } as never);
 }
 
-const ENDPOINT_SELECT =
-  "id, url, description, events, is_active, created_at, updated_at";
+const ENDPOINT_SELECT = "id, url, description, events, is_active, created_at, updated_at";
 
 // URL must be https-only. Rejects http://, ws://, javascript:, data:, etc.
 const httpsUrlSchema = z
@@ -142,7 +139,14 @@ const httpsUrlSchema = z
   }, "url_must_be_https");
 
 const eventsSchema = z
-  .array(z.string().trim().min(3).max(80).regex(/^[a-z0-9._*-]+$/i))
+  .array(
+    z
+      .string()
+      .trim()
+      .min(3)
+      .max(80)
+      .regex(/^[a-z0-9._*-]+$/i),
+  )
   .min(1, "at least one event")
   .max(64)
   .transform((arr) => Array.from(new Set(arr)));
@@ -167,7 +171,13 @@ export const listWebhookEndpoints = createServerFn({ method: "GET" })
 
 const createEndpointSchema = z.object({
   url: httpsUrlSchema,
-  description: z.string().trim().max(500).nullable().optional().transform((v) => v ?? null),
+  description: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
   events: eventsSchema,
   isActive: z.boolean().default(true),
 });
@@ -297,17 +307,15 @@ export const rotateWebhookEndpointSecret = createServerFn({ method: "POST" })
 
     const { createServiceRoleClient } = await import("@/integrations/supabase/admin");
     const admin = createServiceRoleClient();
-    const sec = await admin
-      .from("webhook_endpoint_secrets")
-      .upsert(
-        {
-          endpoint_id: data.id,
-          company_id: companyId,
-          secret: raw,
-          updated_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "endpoint_id" },
-      );
+    const sec = await admin.from("webhook_endpoint_secrets").upsert(
+      {
+        endpoint_id: data.id,
+        company_id: companyId,
+        secret: raw,
+        updated_at: new Date().toISOString(),
+      } as never,
+      { onConflict: "endpoint_id" },
+    );
     if (sec.error) throw sec.error;
 
     await writeAudit(context, companyId, "webhook_endpoint.rotated", data.id, {
@@ -467,9 +475,7 @@ const setAllowlistSchema = z.object({
 
 export const setWebhookAllowlistEntry = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: z.input<typeof setAllowlistSchema>) =>
-    setAllowlistSchema.parse(input),
-  )
+  .inputValidator((input: z.input<typeof setAllowlistSchema>) => setAllowlistSchema.parse(input))
   .handler(async ({ context, data }): Promise<AllowlistRow> => {
     requireSupabaseAuth(context);
     await assertCompanyAdmin(context);
@@ -496,9 +502,7 @@ export const setWebhookAllowlistEntry = createServerFn({ method: "POST" })
     await context.supabase.from("audit_logs").insert({
       company_id: companyId,
       actor_id: context.user!.id,
-      action: data.enabled
-        ? "webhook_allowlist.enabled"
-        : "webhook_allowlist.disabled",
+      action: data.enabled ? "webhook_allowlist.enabled" : "webhook_allowlist.disabled",
       entity: "webhook_export_allowlist",
       entity_id: null,
       metadata: { table: data.table, enabled: data.enabled },

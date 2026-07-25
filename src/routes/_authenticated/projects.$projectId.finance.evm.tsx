@@ -1,11 +1,7 @@
 // P-076 — EVM workspace: KPIs + S-curve + capture flow.
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, LineChart, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -15,32 +11,24 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { captureEvmSnapshot } from "@/lib/evm.functions";
-import {
-  evmAccessQueryOptions,
-  evmErrorMessage,
-  evmSnapshotsQueryOptions,
-} from "@/lib/evm.query";
+import { evmAccessQueryOptions, evmErrorMessage, evmSnapshotsQueryOptions } from "@/lib/evm.query";
 import { buildEvmCsv, downloadCsv } from "@/lib/evm.csv";
 import { EvmKpiStrip } from "@/components/finance/evm-kpi-strip";
 import { EvmSCurve } from "@/components/finance/evm-s-curve";
 import { CaptureEvmDialog } from "@/components/finance/capture-evm-dialog";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/evm",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/evm")({
   head: () => ({
     meta: [
       { title: "EVM — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Earned value management: PV/EV/AC, SPI/CPI, EAC and immutable snapshot S-curve.",
+        content: "Earned value management: PV/EV/AC, SPI/CPI, EAC and immutable snapshot S-curve.",
       },
       { property: "og:title", content: "EVM — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Lender-ready earned value performance: SPI, CPI, EAC vs BAC with an S-curve.",
+        content: "Lender-ready earned value performance: SPI, CPI, EAC vs BAC with an S-curve.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -89,8 +77,8 @@ function EvmPage() {
         <div>
           <h2 className="text-lg font-semibold">Earned value</h2>
           <p className="text-sm text-muted-foreground">
-            SPI/CPI computed from your WBS budgets and schedule progress.
-            Snapshots are immutable audit records.
+            SPI/CPI computed from your WBS budgets and schedule progress. Snapshots are immutable
+            audit records.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -98,12 +86,7 @@ function EvmPage() {
             variant="outline"
             size="sm"
             disabled={rows.length === 0}
-            onClick={() =>
-              downloadCsv(
-                `evm-${projectId.slice(0, 8)}.csv`,
-                buildEvmCsv(rows),
-              )
-            }
+            onClick={() => downloadCsv(`evm-${projectId.slice(0, 8)}.csv`, buildEvmCsv(rows))}
           >
             <Download className="mr-2 h-4 w-4" /> Export CSV
           </Button>
@@ -121,8 +104,7 @@ function EvmPage() {
           <div>
             <div className="font-medium">No EVM snapshots yet</div>
             <p className="text-sm text-muted-foreground">
-              Capture your first snapshot after budgets and PO commitments are
-              imported.
+              Capture your first snapshot after budgets and PO commitments are imported.
             </p>
           </div>
           {access.data.canCapture ? (
@@ -169,9 +151,7 @@ function EvmError({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <Card className="p-6">
       <div className="mb-2 font-medium">Couldn't load EVM data</div>
-      <p className="mb-4 text-sm text-muted-foreground">
-        {evmErrorMessage(error)}
-      </p>
+      <p className="mb-4 text-sm text-muted-foreground">{evmErrorMessage(error)}</p>
       <Button variant="outline" onClick={() => reset()}>
         Retry
       </Button>

@@ -82,12 +82,7 @@ async function loadCo(ctx: AuthContext, id: string): Promise<ChangeOrderRow> {
   return toRow(data);
 }
 
-async function audit(
-  ctx: AuthContext,
-  action: string,
-  id: string,
-  meta: Record<string, unknown>,
-) {
+async function audit(ctx: AuthContext, action: string, id: string, meta: Record<string, unknown>) {
   await ctx.supabase.rpc("write_audit_log", {
     p_action: action,
     p_entity: "change_orders",
@@ -101,9 +96,7 @@ async function audit(
 // ---------------------------------------------------------------------------
 export const listChangeOrders = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rows: ChangeOrderRow[] }> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -120,16 +113,14 @@ export const listChangeOrders = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const getChangeOrderAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({ context }): Promise<{ canWrite: boolean; canApprove: boolean }> => {
-      requireSupabaseAuth(context);
-      const [canWrite, canApprove] = await Promise.all([
-        hasAnyRole(context, WRITE_ROLES),
-        hasAnyRole(context, APPROVE_ROLES),
-      ]);
-      return { canWrite, canApprove };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canWrite: boolean; canApprove: boolean }> => {
+    requireSupabaseAuth(context);
+    const [canWrite, canApprove] = await Promise.all([
+      hasAnyRole(context, WRITE_ROLES),
+      hasAnyRole(context, APPROVE_ROLES),
+    ]);
+    return { canWrite, canApprove };
+  });
 
 // ---------------------------------------------------------------------------
 // Upsert (draft only for edits when unlocked)
@@ -179,9 +170,7 @@ export const upsertChangeOrder = createServerFn({ method: "POST" })
       .eq("company_id", companyId)
       .ilike("co_number", `CO-${year}-%`);
     if (nErr) throw nErr;
-    const coNumber = nextChangeOrderNumber(
-      ((nums ?? []) as any[]).map((r) => String(r.co_number)),
-    );
+    const coNumber = nextChangeOrderNumber(((nums ?? []) as any[]).map((r) => String(r.co_number)));
     const { data: ins, error: iErr } = await context.supabase
       .from("change_orders")
       .insert({
@@ -216,9 +205,7 @@ export const upsertChangeOrder = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const submitChangeOrder = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<ChangeOrderRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, WRITE_ROLES))) httpError(403, "forbidden");
@@ -360,9 +347,7 @@ export const rejectChangeOrder = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const incorporateChangeOrder = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<ChangeOrderRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, APPROVE_ROLES))) httpError(403, "forbidden");
@@ -430,9 +415,7 @@ export interface AuditEventLite {
 
 export const getChangeOrderDetail = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -493,7 +476,7 @@ export const getChangeOrderDetail = createServerFn({ method: "GET" })
 
       const contract = (contractRes as any).data as ContractLite | null;
       const wbs = (wbsRes as any).data as WbsItemLite | null;
-      const costCodes = (((ccRes as any).data ?? []) as any[]) as CostCodeLite[];
+      const costCodes = ((ccRes as any).data ?? []) as any[] as CostCodeLite[];
       const rawBudgets = ((budgetsRes as any).data ?? []) as any[];
       // Latest version per cost_code_id
       const seen = new Set<string>();
@@ -536,9 +519,7 @@ export const getChangeOrderDetail = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const listCoPickers = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -583,8 +564,8 @@ export const listCoPickers = createServerFn({ method: "GET" })
         value: r.value == null ? null : Number(r.value),
         currency_code: r.currency_code,
       })) as ContractLite[];
-      const wbsItems = (((wbsRes as any).data ?? []) as any[]) as WbsItemLite[];
-      const costCodes = (((ccRes as any).data ?? []) as any[]) as CostCodeLite[];
+      const wbsItems = ((wbsRes as any).data ?? []) as any[] as WbsItemLite[];
+      const costCodes = ((ccRes as any).data ?? []) as any[] as CostCodeLite[];
       const rawBudgets = ((budgetsRes as any).data ?? []) as any[];
       const seen = new Set<string>();
       const budgets: BudgetRowLite[] = [];

@@ -73,8 +73,7 @@ export function useStartReviewRound(projectId: string) {
       qc.invalidateQueries({ queryKey: ["review-rounds", projectId] });
       toast.success("Review round opened");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Failed to open round"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to open round"),
   });
 }
 
@@ -92,8 +91,7 @@ export function useSubmitSignoff(roundId: string, projectId: string) {
       qc.invalidateQueries({ queryKey: ["review-rounds", projectId] });
       toast.success("Sign-off recorded");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Sign-off failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Sign-off failed"),
   });
 }
 
@@ -101,15 +99,13 @@ export function useWaiveSignoff(roundId: string, projectId: string) {
   const fn = useServerFn(waiveSignoff);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { signoffId: string; comment: string }) =>
-      fn({ data: input }),
+    mutationFn: (input: { signoffId: string; comment: string }) => fn({ data: input }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["review-round", roundId] });
       qc.invalidateQueries({ queryKey: ["review-rounds", projectId] });
       toast.success("Waived");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Waiver failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Waiver failed"),
   });
 }
 
@@ -123,7 +119,6 @@ export function useCloseReviewRound(roundId: string, projectId: string) {
       qc.invalidateQueries({ queryKey: ["review-rounds", projectId] });
       toast.success("Round closed");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Close failed"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Close failed"),
   });
 }

@@ -24,12 +24,7 @@ export const RISK_CATEGORY_LABEL: Record<RiskCategory, string> = {
   regulatory: "Regulatory",
 };
 
-export const RISK_STATUSES = [
-  "open",
-  "mitigating",
-  "realized",
-  "closed",
-] as const;
+export const RISK_STATUSES = ["open", "mitigating", "realized", "closed"] as const;
 export type RiskStatus = (typeof RISK_STATUSES)[number];
 
 export const RISK_STATUS_LABEL: Record<RiskStatus, string> = {
@@ -67,9 +62,7 @@ export interface RiskLite {
 // ---------------------------------------------------------------------------
 // Zod
 // ---------------------------------------------------------------------------
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use ISO date YYYY-MM-DD");
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use ISO date YYYY-MM-DD");
 
 export const riskWritableSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200),
@@ -80,12 +73,7 @@ export const riskWritableSchema = z.object({
   status: z.enum(RISK_STATUSES),
   owner_id: z.string().uuid().nullable().optional(),
   mitigation: z.string().trim().max(4000).nullable().optional(),
-  contingency_amount: z
-    .number()
-    .min(0)
-    .max(1_000_000_000)
-    .nullable()
-    .optional(),
+  contingency_amount: z.number().min(0).max(1_000_000_000).nullable().optional(),
   currency_code: z
     .string()
     .trim()
@@ -111,8 +99,7 @@ export const riskDeleteSchema = z.object({ id: z.string().uuid() });
 // Score / bands
 // ---------------------------------------------------------------------------
 export function scoreOf(probability: number, impact: number): number {
-  return Math.max(1, Math.min(5, probability)) *
-    Math.max(1, Math.min(5, impact));
+  return Math.max(1, Math.min(5, probability)) * Math.max(1, Math.min(5, impact));
 }
 
 export type ScoreBand = "low" | "medium" | "high" | "critical";
@@ -208,7 +195,13 @@ export function sumContingency<
     contingency_amount: number | null;
     currency_code: string | null;
   },
->(rows: T[]): { totalsByCurrency: Record<string, number>; primary: { code: string; amount: number } | null; otherCount: number } {
+>(
+  rows: T[],
+): {
+  totalsByCurrency: Record<string, number>;
+  primary: { code: string; amount: number } | null;
+  otherCount: number;
+} {
   const totals: Record<string, number> = {};
   for (const r of rows) {
     if (r.status !== "open" && r.status !== "mitigating") continue;
@@ -261,10 +254,7 @@ export function allowedStatusTransitions(current: RiskStatus): RiskStatus[] {
 // ---------------------------------------------------------------------------
 // Age helper for the register table.
 // ---------------------------------------------------------------------------
-export function ageOfRow(
-  row: { identified_at: string },
-  today: Date = new Date(),
-): number {
+export function ageOfRow(row: { identified_at: string }, today: Date = new Date()): number {
   const d = parseISO(row.identified_at);
   if (Number.isNaN(d.getTime())) return 0;
   return Math.max(0, differenceInCalendarDays(today, d));

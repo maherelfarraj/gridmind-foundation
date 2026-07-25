@@ -21,13 +21,7 @@ export const INCIDENT_TYPE_LABELS: Record<IncidentType, string> = {
   security: "Security",
 };
 
-export const INCIDENT_SEVERITIES = [
-  "minor",
-  "moderate",
-  "major",
-  "critical",
-  "fatal",
-] as const;
+export const INCIDENT_SEVERITIES = ["minor", "moderate", "major", "critical", "fatal"] as const;
 export type IncidentSeverity = (typeof INCIDENT_SEVERITIES)[number];
 
 export const INCIDENT_STATUSES = ["open", "investigating", "closed"] as const;
@@ -46,7 +40,11 @@ export const correctiveActionSchema = z.object({
   id: z.string().uuid().optional(),
   action: z.string().trim().min(1).max(500),
   owner: z.string().trim().max(200).nullable().optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   done_at: z.string().datetime().nullable().optional(),
 });
 export type CorrectiveAction = z.infer<typeof correctiveActionSchema>;
@@ -94,7 +92,11 @@ export const inspectionInput = z.object({
   area: z.string().trim().max(200).nullable().optional(),
   checklist: z.array(checklistItemSchema).default([]),
   status: z.enum(INSPECTION_STATUSES).default("scheduled"),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 export type InspectionInput = z.infer<typeof inspectionInput>;
 
@@ -106,7 +108,11 @@ export const trainingInput = z.object({
   course: z.string().trim().min(1).max(200),
   provider: z.string().trim().max(200).nullable().optional(),
   completedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  expiresOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  expiresOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   certificatePath: z.string().trim().max(500).nullable().optional(),
 });
 export type TrainingInput = z.infer<typeof trainingInput>;
@@ -116,10 +122,7 @@ export type TrainingInput = z.infer<typeof trainingInput>;
 // ---------------------------------------------------------------------------
 const MS_PER_HOUR = 3_600_000;
 
-export function hoursSinceOccurred(
-  occurredAt: string | Date,
-  now: Date = new Date(),
-): number {
+export function hoursSinceOccurred(occurredAt: string | Date, now: Date = new Date()): number {
   const t = new Date(occurredAt).getTime();
   return (now.getTime() - t) / MS_PER_HOUR;
 }
@@ -150,8 +153,7 @@ export function incidentTimingBadge(
   const elapsed = hoursSinceOccurred(occurredAt, now);
   if (reportedAt) {
     const reportedGap =
-      (new Date(reportedAt).getTime() - new Date(occurredAt).getTime()) /
-      MS_PER_HOUR;
+      (new Date(reportedAt).getTime() - new Date(occurredAt).getTime()) / MS_PER_HOUR;
     if (reportedGap > 24) {
       return { kind: "late", hoursLate: reportedGap - 24 };
     }
@@ -174,9 +176,7 @@ export function isInUnloggedWindow(
   const elapsed = hoursSinceOccurred(occurredAt, now);
   if (elapsed >= 24) return false;
   if (!reportedAt) return true;
-  const gap =
-    (new Date(reportedAt).getTime() - new Date(occurredAt).getTime()) /
-    MS_PER_HOUR;
+  const gap = (new Date(reportedAt).getTime() - new Date(occurredAt).getTime()) / MS_PER_HOUR;
   return gap < 24;
 }
 
@@ -184,10 +184,7 @@ export function isInUnloggedWindow(
 // TRIR
 // ---------------------------------------------------------------------------
 /** TRIR = (OSHA recordables × 200,000) / manpower hours. Null if hours ≤ 0. */
-export function computeTrir(
-  recordables: number,
-  hours: number,
-): number | null {
+export function computeTrir(recordables: number, hours: number): number | null {
   if (!Number.isFinite(hours) || hours <= 0) return null;
   if (!Number.isFinite(recordables) || recordables < 0) return null;
   return (recordables * 200_000) / hours;
@@ -200,9 +197,7 @@ export interface ChecklistSummary {
   findingsCount: number;
   openFindings: number;
 }
-export function summarizeChecklist(
-  items: readonly ChecklistItem[],
-): ChecklistSummary {
+export function summarizeChecklist(items: readonly ChecklistItem[]): ChecklistSummary {
   let findings = 0;
   let open = 0;
   for (const it of items) {
@@ -234,10 +229,7 @@ export function trainingExpiryStatus(
 // ---------------------------------------------------------------------------
 // incident number sequencing
 // ---------------------------------------------------------------------------
-export function nextIncidentNumber(
-  existing: readonly string[],
-  prefix = "HSE-",
-): string {
+export function nextIncidentNumber(existing: readonly string[], prefix = "HSE-"): string {
   let max = 0;
   for (const n of existing) {
     if (!n?.startsWith(prefix)) continue;
@@ -261,9 +253,7 @@ export function canEditIncident(roles: readonly string[]): boolean {
 }
 export function canWriteInspection(roles: readonly string[]): boolean {
   return (
-    roles.includes("hse_admin") ||
-    roles.includes("company_admin") ||
-    roles.includes("super_admin")
+    roles.includes("hse_admin") || roles.includes("company_admin") || roles.includes("super_admin")
   );
 }
 export const canWriteTraining = canWriteInspection;

@@ -17,12 +17,7 @@ import { DEPARTMENTS, type Department } from "@/lib/permissions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -46,14 +41,12 @@ export const Route = createFileRoute("/_authenticated/settings/departments")({
       { title: "Departments — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Configure the nine GridMind EPC departments and assign their admins.",
+        content: "Configure the nine GridMind EPC departments and assign their admins.",
       },
       { property: "og:title", content: "Departments — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Configure the nine GridMind EPC departments and assign their admins.",
+        content: "Configure the nine GridMind EPC departments and assign their admins.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -66,9 +59,7 @@ function initialsOf(m: CompanyMemberRow): string {
   const src = (m.fullName ?? m.email ?? "?").trim();
   const parts = src.split(/\s+/).filter(Boolean);
   const letters =
-    parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
-      : src.slice(0, 2);
+    parts.length >= 2 ? `${parts[0][0]}${parts[parts.length - 1][0]}` : src.slice(0, 2);
   return letters.toUpperCase();
 }
 
@@ -109,10 +100,8 @@ function DepartmentsPage() {
       members: snapshot.members.map((m) => {
         if (m.userId !== userId) return m;
         const has = m.roles.includes(role);
-        if (action === "grant" && !has)
-          return { ...m, roles: [...m.roles, role] };
-        if (action === "revoke" && has)
-          return { ...m, roles: m.roles.filter((r) => r !== role) };
+        if (action === "grant" && !has) return { ...m, roles: [...m.roles, role] };
+        if (action === "revoke" && has) return { ...m, roles: m.roles.filter((r) => r !== role) };
         return m;
       }),
     };
@@ -139,11 +128,7 @@ function DepartmentsPage() {
     },
     onMutate: (vars) => {
       setBusyKey(`${vars.role}:${vars.targetUserId}`);
-      const snapshot = applyRoleLocally(
-        vars.targetUserId,
-        vars.role,
-        vars.action,
-      );
+      const snapshot = applyRoleLocally(vars.targetUserId, vars.role, vars.action);
       return { snapshot };
     },
     onError: (err, _vars, ctx) => {
@@ -151,9 +136,7 @@ function DepartmentsPage() {
       toast.error(err instanceof Error ? err.message : "Update failed");
     },
     onSuccess: (vars) => {
-      toast.success(
-        vars.action === "grant" ? "Admin assigned" : "Admin removed",
-      );
+      toast.success(vars.action === "grant" ? "Admin assigned" : "Admin removed");
       queryClient.invalidateQueries({ queryKey: membersKey });
     },
     onSettled: () => setBusyKey(null),
@@ -166,9 +149,8 @@ function DepartmentsPage() {
           Departments
         </h1>
         <p className="text-sm text-muted-foreground">
-          The nine fixed GridMind EPC departments. Assign one or more admins per
-          department — assignments are audit-logged and enforced by the
-          database.
+          The nine fixed GridMind EPC departments. Assign one or more admins per department —
+          assignments are audit-logged and enforced by the database.
         </p>
       </div>
 
@@ -206,14 +188,9 @@ function DepartmentsPage() {
         {!membersQuery.isLoading &&
           DEPARTMENTS.map((dept) => {
             const Icon = dept.icon;
-            const admins = members.filter((m) =>
-              m.roles.includes(dept.adminRole),
-            );
+            const admins = members.filter((m) => m.roles.includes(dept.adminRole));
             return (
-              <Card
-                key={dept.key}
-                className="flex flex-col border-border bg-card"
-              >
+              <Card key={dept.key} className="flex flex-col border-border bg-card">
                 <CardHeader className="flex flex-row items-center gap-3 space-y-0">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-accent text-accent-foreground">
                     <Icon className="h-5 w-5" />
@@ -228,17 +205,13 @@ function DepartmentsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1 space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    {dept.responsibilities}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{dept.responsibilities}</p>
                   <div>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Admins
                     </p>
                     {admins.length === 0 ? (
-                      <p className="text-sm text-muted-foreground/80">
-                        No admin assigned.
-                      </p>
+                      <p className="text-sm text-muted-foreground/80">No admin assigned.</p>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {admins.map((m) => {
@@ -250,16 +223,12 @@ function DepartmentsPage() {
                               className="inline-flex items-center gap-2 rounded-full border border-border bg-background py-1 pl-1 pr-2 text-sm"
                             >
                               <Avatar className="h-6 w-6">
-                                {m.avatarUrl ? (
-                                  <AvatarImage src={m.avatarUrl} alt="" />
-                                ) : null}
+                                {m.avatarUrl ? <AvatarImage src={m.avatarUrl} alt="" /> : null}
                                 <AvatarFallback className="text-[10px]">
                                   {initialsOf(m)}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="text-foreground">
-                                {displayName(m)}
-                              </span>
+                              <span className="text-foreground">{displayName(m)}</span>
                               {isAdmin && (
                                 <button
                                   type="button"
@@ -295,11 +264,7 @@ function DepartmentsPage() {
                     size="sm"
                     disabled={!isAdmin}
                     onClick={() => setPickerFor(dept)}
-                    title={
-                      isAdmin
-                        ? undefined
-                        : "Only company admins can assign department admins"
-                    }
+                    title={isAdmin ? undefined : "Only company admins can assign department admins"}
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Assign admin
@@ -353,15 +318,10 @@ function AssignAdminDialog({
     >
       <DialogContent className="p-0 sm:max-w-md">
         <DialogHeader className="border-b border-border px-4 pb-3 pt-4">
-          <DialogTitle>
-            Assign {department?.name} admin
-          </DialogTitle>
+          <DialogTitle>Assign {department?.name} admin</DialogTitle>
           <DialogDescription>
             Pick a member to grant{" "}
-            <span className="font-mono text-xs">
-              {department?.adminRole}
-            </span>
-            .
+            <span className="font-mono text-xs">{department?.adminRole}</span>.
           </DialogDescription>
         </DialogHeader>
         <Command>
@@ -377,20 +337,12 @@ function AssignAdminDialog({
                   className="flex items-center gap-3"
                 >
                   <Avatar className="h-7 w-7">
-                    {m.avatarUrl ? (
-                      <AvatarImage src={m.avatarUrl} alt="" />
-                    ) : null}
-                    <AvatarFallback className="text-[10px]">
-                      {initialsOf(m)}
-                    </AvatarFallback>
+                    {m.avatarUrl ? <AvatarImage src={m.avatarUrl} alt="" /> : null}
+                    <AvatarFallback className="text-[10px]">{initialsOf(m)}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="text-sm text-foreground">
-                      {m.fullName ?? "—"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {m.email ?? ""}
-                    </span>
+                    <span className="text-sm text-foreground">{m.fullName ?? "—"}</span>
+                    <span className="text-xs text-muted-foreground">{m.email ?? ""}</span>
                   </div>
                 </CommandItem>
               ))}

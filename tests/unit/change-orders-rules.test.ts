@@ -17,9 +17,7 @@ describe("nextChangeOrderNumber", () => {
   });
   it("increments same-year max", () => {
     const d = new Date("2026-06-01T00:00:00Z");
-    expect(nextChangeOrderNumber(["CO-2026-0001", "CO-2026-0003"], d)).toBe(
-      "CO-2026-0004",
-    );
+    expect(nextChangeOrderNumber(["CO-2026-0001", "CO-2026-0003"], d)).toBe("CO-2026-0004");
   });
 });
 

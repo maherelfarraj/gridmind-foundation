@@ -76,7 +76,11 @@ export function hasCleared(
 }
 
 export const escalationStepSchema = z.object({
-  after_minutes: z.number().int().min(0).max(60 * 24 * 30),
+  after_minutes: z
+    .number()
+    .int()
+    .min(0)
+    .max(60 * 24 * 30),
   notify_role: z.enum(NOTIFY_ROLES),
 });
 export const escalationRouteSchema = z.array(escalationStepSchema).max(10);
@@ -90,7 +94,11 @@ export const alarmRuleInputSchema = z.object({
   condition: z.enum(ALARM_CONDITIONS),
   threshold: z.number().finite(),
   dead_band: z.number().finite().min(0),
-  duration_seconds: z.number().int().min(0).max(60 * 60 * 24),
+  duration_seconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(60 * 60 * 24),
   severity: z.enum(ALARM_SEVERITIES),
   escalation_route: escalationRouteSchema,
   enabled: z.boolean(),

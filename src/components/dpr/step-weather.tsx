@@ -25,10 +25,7 @@ import {
   type DprRow,
   type WeatherDelayRow,
 } from "@/lib/dpr.functions";
-import {
-  WEATHER_DELAY_TYPES,
-  type WeatherDelayType,
-} from "@/lib/dpr.rules";
+import { WEATHER_DELAY_TYPES, type WeatherDelayType } from "@/lib/dpr.rules";
 
 const DELAY_LABELS: Record<WeatherDelayType, string> = {
   rain: "Rain",
@@ -199,8 +196,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">
-                      {DELAY_LABELS[d.delay_type as WeatherDelayType] ??
-                        d.delay_type}
+                      {DELAY_LABELS[d.delay_type as WeatherDelayType] ?? d.delay_type}
                       {" · "}
                       {Number(d.lost_hours).toFixed(1)} h lost
                     </div>
@@ -236,10 +232,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <Label>Type</Label>
-                  <Select
-                    value={type}
-                    onValueChange={(v) => setType(v as WeatherDelayType)}
-                  >
+                  <Select value={type} onValueChange={(v) => setType(v as WeatherDelayType)}>
                     <SelectTrigger className="h-11">
                       <SelectValue />
                     </SelectTrigger>

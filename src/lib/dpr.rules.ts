@@ -1,14 +1,7 @@
 // P-086 — DPR rules, schemas, and pure helpers.
 import { z } from "zod";
 
-export const TRADES = [
-  "civil",
-  "mechanical",
-  "electrical",
-  "hse",
-  "general",
-  "other",
-] as const;
+export const TRADES = ["civil", "mechanical", "electrical", "hse", "general", "other"] as const;
 export type Trade = (typeof TRADES)[number];
 
 export const TRADE_LABELS: Record<Trade, string> = {
@@ -37,12 +30,7 @@ export type DprStatus = (typeof DPR_STATUSES)[number];
 export const SHIFTS = ["day", "night"] as const;
 export type Shift = (typeof SHIFTS)[number];
 
-export const OBSERVATION_SEVERITIES = [
-  "low",
-  "medium",
-  "high",
-  "critical",
-] as const;
+export const OBSERVATION_SEVERITIES = ["low", "medium", "high", "critical"] as const;
 export type ObservationSeverity = (typeof OBSERVATION_SEVERITIES)[number];
 
 // ---------------------------------------------------------------------------
@@ -78,8 +66,16 @@ export const manpowerRowInput = z.object({
 export const weatherDelayInput = z.object({
   dprId: z.string().uuid(),
   delayType: z.enum(WEATHER_DELAY_TYPES),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  startTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .nullable()
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .nullable()
+    .optional(),
   lostHours: z.number().min(0).max(24),
   wbsItemId: z.string().uuid().nullable().optional(),
   impactNotes: z.string().trim().max(1000).nullable().optional(),
@@ -163,15 +159,11 @@ export function canEditDpr(
 ): boolean {
   if (status !== "draft") return false;
   if (isCreator) return true;
-  return roles.some((r) =>
-    ["foreman", "construction_admin", "company_admin"].includes(r),
-  );
+  return roles.some((r) => ["foreman", "construction_admin", "company_admin"].includes(r));
 }
 
 export function canApproveDpr(roles: readonly string[]): boolean {
-  return roles.some((r) =>
-    ["construction_admin", "company_admin"].includes(r),
-  );
+  return roles.some((r) => ["construction_admin", "company_admin"].includes(r));
 }
 
 /** Normalize a WBS discipline text into the canonical set. */
@@ -205,15 +197,12 @@ export function photoObjectPath(
 }
 
 /** Server-side submit validation. Returns null when OK, else an error code. */
-export function submitBlockedReason(
-  args: {
-    manpowerCount: number;
-    photoCount: number;
-    acknowledgeNoPhotos: boolean;
-  },
-): string | null {
+export function submitBlockedReason(args: {
+  manpowerCount: number;
+  photoCount: number;
+  acknowledgeNoPhotos: boolean;
+}): string | null {
   if (args.manpowerCount <= 0) return "manpower_required";
-  if (args.photoCount <= 0 && !args.acknowledgeNoPhotos)
-    return "photos_required_ack";
+  if (args.photoCount <= 0 && !args.acknowledgeNoPhotos) return "photos_required_ack";
   return null;
 }

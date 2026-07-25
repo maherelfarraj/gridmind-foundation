@@ -92,25 +92,21 @@ export const listApprovalRules = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
-    const [{ data: rules, error: rulesErr }, { data: steps, error: stepsErr }] =
-      await Promise.all([
-        context.supabase
-          .from("approval_rules")
-          .select("*")
-          .eq("company_id", companyId)
-          .order("name", { ascending: true }),
-        context.supabase
-          .from("approval_chain_steps")
-          .select("id, rule_id, step_order, role, sla_hours")
-          .eq("company_id", companyId)
-          .order("step_order", { ascending: true }),
-      ]);
+    const [{ data: rules, error: rulesErr }, { data: steps, error: stepsErr }] = await Promise.all([
+      context.supabase
+        .from("approval_rules")
+        .select("*")
+        .eq("company_id", companyId)
+        .order("name", { ascending: true }),
+      context.supabase
+        .from("approval_chain_steps")
+        .select("id, rule_id, step_order, role, sla_hours")
+        .eq("company_id", companyId)
+        .order("step_order", { ascending: true }),
+    ]);
     if (rulesErr) throw rulesErr;
     if (stepsErr) throw stepsErr;
-    const stepsByRule = new Map<
-      string,
-      ApprovalRuleRow["steps"]
-    >();
+    const stepsByRule = new Map<string, ApprovalRuleRow["steps"]>();
     for (const s of (steps ?? []) as Array<{
       id: string;
       rule_id: string;
@@ -127,9 +123,10 @@ export const listApprovalRules = createServerFn({ method: "GET" })
       });
       stepsByRule.set(s.rule_id, list);
     }
-    return ((rules ?? []) as unknown as Omit<ApprovalRuleRow, "steps">[]).map(
-      (r) => ({ ...r, steps: stepsByRule.get(r.id) ?? [] }),
-    );
+    return ((rules ?? []) as unknown as Omit<ApprovalRuleRow, "steps">[]).map((r) => ({
+      ...r,
+      steps: stepsByRule.get(r.id) ?? [],
+    }));
   });
 
 // ---- Rule create / update --------------------------------------------------
@@ -233,9 +230,7 @@ export const toggleApprovalRule = createServerFn({ method: "POST" })
 
 export const deleteApprovalRule = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     await assertCompanyAdmin(context);
@@ -256,16 +251,13 @@ export const startApprovalInstance = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => startApprovalSchema.parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
-    const { data: instanceId, error } = await context.supabase.rpc(
-      "start_approval_instance",
-      {
-        p_rule_key: data.rule_key,
-        p_entity_type: data.entity_type,
-        p_entity_id: data.entity_id,
-        p_amount: data.amount ?? undefined,
-        p_metadata: (data.metadata ?? {}) as never,
-      },
-    );
+    const { data: instanceId, error } = await context.supabase.rpc("start_approval_instance", {
+      p_rule_key: data.rule_key,
+      p_entity_type: data.entity_type,
+      p_entity_id: data.entity_id,
+      p_amount: data.amount ?? undefined,
+      p_metadata: (data.metadata ?? {}) as never,
+    });
     if (error) throw error;
     return { instance_id: (instanceId as string | null) ?? null };
   });

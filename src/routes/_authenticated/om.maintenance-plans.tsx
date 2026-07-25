@@ -9,13 +9,7 @@ import { Pencil, Play, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -40,17 +34,14 @@ export const Route = createFileRoute("/_authenticated/om/maintenance-plans")({
       { title: "Preventive maintenance plans · GridMind EPC" },
       {
         name: "description",
-        content:
-          "Schedule recurring maintenance plans that auto-generate preventive work orders.",
+        content: "Schedule recurring maintenance plans that auto-generate preventive work orders.",
       },
     ],
   }),
   component: MaintenancePlansPage,
   errorComponent: ({ error, reset }) => (
     <div className="p-6">
-      <div className="text-sm text-destructive">
-        Failed to load PM plans: {error.message}
-      </div>
+      <div className="text-sm text-destructive">Failed to load PM plans: {error.message}</div>
       <Button className="mt-2" size="sm" onClick={reset}>
         Retry
       </Button>
@@ -113,16 +104,12 @@ function MaintenancePlansPage() {
         <div>
           <h1 className="text-xl font-semibold">Preventive maintenance plans</h1>
           <p className="text-sm text-muted-foreground">
-            Schedule recurring work. Auto-generation creates a preventive work order
-            the day a plan is due.
+            Schedule recurring work. Auto-generation creates a preventive work order the day a plan
+            is due.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => gen.mutate(undefined)}
-            disabled={gen.isPending}
-          >
+          <Button variant="outline" onClick={() => gen.mutate(undefined)} disabled={gen.isPending}>
             <Play className="mr-2 h-4 w-4" />
             Generate all now
           </Button>
@@ -134,8 +121,7 @@ function MaintenancePlansPage() {
         <CardHeader>
           <CardTitle>Plans</CardTitle>
           <CardDescription>
-            PM:CM ratio improves whenever a preventive WO is generated ahead of a
-            failure.
+            PM:CM ratio improves whenever a preventive WO is generated ahead of a failure.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -174,24 +160,18 @@ function MaintenancePlansPage() {
                   <TableRow key={p.id}>
                     <TableCell>
                       <div className="font-medium">{p.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {p.project_name}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{p.project_name}</div>
                     </TableCell>
                     <TableCell>
                       {p.equipment_tag ? (
                         <Badge variant="outline">{p.equipment_tag}</Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">
-                          Project-wide
-                        </span>
+                        <span className="text-xs text-muted-foreground">Project-wide</span>
                       )}
                     </TableCell>
                     <TableCell className="capitalize">
                       {p.frequency}
-                      <div className="text-xs text-muted-foreground">
-                        every {p.interval_days}d
-                      </div>
+                      <div className="text-xs text-muted-foreground">every {p.interval_days}d</div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
@@ -200,16 +180,12 @@ function MaintenancePlansPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {p.last_generated_at
-                        ? new Date(p.last_generated_at).toLocaleString()
-                        : "—"}
+                      {p.last_generated_at ? new Date(p.last_generated_at).toLocaleString() : "—"}
                     </TableCell>
                     <TableCell>
                       <Switch
                         checked={p.auto_generate}
-                        onCheckedChange={(v) =>
-                          toggle.mutate({ id: p.id, auto_generate: v })
-                        }
+                        onCheckedChange={(v) => toggle.mutate({ id: p.id, auto_generate: v })}
                       />
                     </TableCell>
                     <TableCell>

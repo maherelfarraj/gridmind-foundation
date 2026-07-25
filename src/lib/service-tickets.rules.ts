@@ -80,14 +80,12 @@ export function evaluateBreach(sla: SlaSnapshot, now: Date = new Date()): Breach
   const respondedMs = sla.responded_at ? new Date(sla.responded_at).getTime() : null;
   const resolvedMs = sla.resolved_at ? new Date(sla.resolved_at).getTime() : null;
 
-  const responseBreachedAt =
-    respondedMs != null ? respondedMs : nowMs;
+  const responseBreachedAt = respondedMs != null ? respondedMs : nowMs;
   const responseBreached =
     (respondedMs == null && nowMs > responseDue) ||
     (respondedMs != null && respondedMs > responseDue);
 
-  const resolutionBreachedAt =
-    resolvedMs != null ? resolvedMs : nowMs;
+  const resolutionBreachedAt = resolvedMs != null ? resolvedMs : nowMs;
   const resolutionBreached =
     (resolvedMs == null && nowMs > resolutionDue) ||
     (resolvedMs != null && resolvedMs > resolutionDue);
@@ -138,11 +136,10 @@ export type CountdownStatus = "on_track" | "warning" | "breached";
  * Classify the remaining time for a countdown chip.
  * warning triggers when less than 25% of the total SLA window remains.
  */
-export function classifyCountdown(opts: {
-  createdAtISO: string;
-  dueAtISO: string;
-  now?: Date;
-}): { status: CountdownStatus; msRemaining: number } {
+export function classifyCountdown(opts: { createdAtISO: string; dueAtISO: string; now?: Date }): {
+  status: CountdownStatus;
+  msRemaining: number;
+} {
   const created = new Date(opts.createdAtISO).getTime();
   const due = new Date(opts.dueAtISO).getTime();
   const now = (opts.now ?? new Date()).getTime();

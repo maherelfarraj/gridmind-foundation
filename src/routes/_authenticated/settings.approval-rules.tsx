@@ -18,13 +18,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,8 +127,7 @@ function ApprovalRulesPage() {
   const [deleteTarget, setDeleteTarget] = useState<ApprovalRuleRow | null>(null);
 
   const toggle = useMutation({
-    mutationFn: (v: { id: string; is_active: boolean }) =>
-      toggleFn({ data: v }),
+    mutationFn: (v: { id: string; is_active: boolean }) => toggleFn({ data: v }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["approval-rules"] });
       toast.success("Rule updated");
@@ -169,9 +162,7 @@ function ApprovalRulesPage() {
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" /> Approval rules
             </CardTitle>
-            <CardDescription>
-              Only company admins can view or edit approval rules.
-            </CardDescription>
+            <CardDescription>Only company admins can view or edit approval rules.</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -186,8 +177,8 @@ function ApprovalRulesPage() {
             Approval rules
           </h1>
           <p className="text-sm text-muted-foreground">
-            Threshold triggers and sequential approver chains applied across
-            POs, proposals, gates, contracts and change orders.
+            Threshold triggers and sequential approver chains applied across POs, proposals, gates,
+            contracts and change orders.
           </p>
         </div>
         <Button onClick={() => setCreating(true)}>
@@ -204,9 +195,7 @@ function ApprovalRulesPage() {
           ) : rules.isError ? (
             <div className="flex flex-col items-center gap-3 p-10 text-center">
               <AlertCircle className="h-8 w-8 text-destructive" />
-              <p className="text-sm text-muted-foreground">
-                {(rules.error as Error).message}
-              </p>
+              <p className="text-sm text-muted-foreground">{(rules.error as Error).message}</p>
               <Button variant="outline" onClick={() => rules.refetch()}>
                 Retry
               </Button>
@@ -214,9 +203,7 @@ function ApprovalRulesPage() {
           ) : (rules.data ?? []).length === 0 ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <ShieldCheck className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                No approval rules yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No approval rules yet.</p>
               <Button variant="outline" onClick={() => setCreating(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Create your first rule
               </Button>
@@ -239,9 +226,7 @@ function ApprovalRulesPage() {
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="font-medium">{r.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {r.rule_key}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{r.rule_key}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{r.entity_type}</Badge>
@@ -249,18 +234,13 @@ function ApprovalRulesPage() {
                     <TableCell>
                       {r.threshold_amount == null
                         ? "—"
-                        : formatCurrency(
-                            r.threshold_amount,
-                            r.threshold_currency,
-                          )}
+                        : formatCurrency(r.threshold_amount, r.threshold_currency)}
                     </TableCell>
                     <TableCell>{r.sla_hours} h</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {r.steps.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">
-                            No steps
-                          </span>
+                          <span className="text-xs text-muted-foreground">No steps</span>
                         ) : (
                           r.steps
                             .slice()
@@ -276,9 +256,7 @@ function ApprovalRulesPage() {
                     <TableCell>
                       <Switch
                         checked={r.is_active}
-                        onCheckedChange={(v) =>
-                          toggle.mutate({ id: r.id, is_active: v })
-                        }
+                        onCheckedChange={(v) => toggle.mutate({ id: r.id, is_active: v })}
                         disabled={toggle.isPending}
                       />
                     </TableCell>
@@ -326,16 +304,13 @@ function ApprovalRulesPage() {
         />
       )}
 
-      <AlertDialog
-        open={deleteTarget != null}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
-      >
+      <AlertDialog open={deleteTarget != null} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this approval rule?</AlertDialogTitle>
             <AlertDialogDescription>
-              Historical instances remain but no new approvals will be triggered
-              by this rule. This action cannot be undone.
+              Historical instances remain but no new approvals will be triggered by this rule. This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -344,9 +319,7 @@ function ApprovalRulesPage() {
               onClick={() => deleteTarget && del.mutate(deleteTarget.id)}
               disabled={del.isPending}
             >
-              {del.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {del.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -388,8 +361,7 @@ function RuleDialog(props: {
         threshold_currency: props.initial.threshold_currency,
         sla_hours: props.initial.sla_hours,
         escalation_role:
-          (props.initial.escalation_role as ApprovalRuleInput["escalation_role"]) ??
-          null,
+          (props.initial.escalation_role as ApprovalRuleInput["escalation_role"]) ?? null,
         blocks_export: props.initial.blocks_export,
         is_active: props.initial.is_active,
         steps: props.initial.steps
@@ -437,9 +409,7 @@ function RuleDialog(props: {
     <Dialog open={props.open} onOpenChange={(v) => !v && props.onClose()}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {props.initial ? "Edit approval rule" : "New approval rule"}
-          </DialogTitle>
+          <DialogTitle>{props.initial ? "Edit approval rule" : "New approval rule"}</DialogTitle>
           <DialogDescription>
             Define when the approval fires and who approves in what order.
           </DialogDescription>
@@ -516,10 +486,7 @@ function RuleDialog(props: {
                   <FormItem>
                     <FormLabel>Entity type</FormLabel>
                     <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
+                      <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -569,9 +536,7 @@ function RuleDialog(props: {
                       <Input
                         {...field}
                         maxLength={3}
-                        onChange={(e) =>
-                          field.onChange(e.target.value.toUpperCase())
-                        }
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                       />
                     </FormControl>
                     <FormMessage />
@@ -651,8 +616,8 @@ function RuleDialog(props: {
                 <div>
                   <h3 className="text-sm font-semibold">Approver chain</h3>
                   <p className="text-xs text-muted-foreground">
-                    Approvals run in order. Each step waits for all approvers at
-                    that role before advancing.
+                    Approvals run in order. Each step waits for all approvers at that role before
+                    advancing.
                   </p>
                 </div>
                 <Button
@@ -672,10 +637,7 @@ function RuleDialog(props: {
               </div>
               <div className="space-y-2">
                 {stepsFA.fields.map((f, i) => (
-                  <div
-                    key={f.id}
-                    className="grid grid-cols-[auto_1fr_140px_auto] items-end gap-2"
-                  >
+                  <div key={f.id} className="grid grid-cols-[auto_1fr_140px_auto] items-end gap-2">
                     <div className="flex flex-col items-center gap-1 pt-6">
                       <Button
                         type="button"
@@ -687,17 +649,12 @@ function RuleDialog(props: {
                       >
                         <ArrowUp className="h-3 w-3" />
                       </Button>
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {i + 1}
-                      </span>
+                      <span className="text-xs font-semibold text-muted-foreground">{i + 1}</span>
                       <Button
                         type="button"
                         size="icon"
                         variant="ghost"
-                        onClick={() =>
-                          i < stepsFA.fields.length - 1 &&
-                          stepsFA.move(i, i + 1)
-                        }
+                        onClick={() => i < stepsFA.fields.length - 1 && stepsFA.move(i, i + 1)}
                         disabled={i === stepsFA.fields.length - 1}
                         aria-label="Move down"
                       >
@@ -711,10 +668,7 @@ function RuleDialog(props: {
                         <FormItem>
                           <FormLabel>Approver role</FormLabel>
                           <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
+                            <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -778,9 +732,7 @@ function RuleDialog(props: {
                 Cancel
               </Button>
               <Button type="submit" disabled={save.isPending}>
-                {save.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save rule
               </Button>
             </DialogFooter>

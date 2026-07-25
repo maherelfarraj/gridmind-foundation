@@ -49,10 +49,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
     roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as never })),
   );
@@ -470,9 +467,7 @@ export const listWorkOrderProjects = createServerFn({ method: "GET" })
 
 export const listEquipmentForProject = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ project_id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase

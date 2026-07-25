@@ -2,11 +2,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import {
-  getScheduleAccess,
-  listBaselines,
-  listScheduleTasks,
-} from "@/lib/schedule.functions";
+import { getScheduleAccess, listBaselines, listScheduleTasks } from "@/lib/schedule.functions";
 
 export function scheduleAccessQueryOptions(
   fn: ReturnType<typeof useServerFn<typeof getScheduleAccess>>,

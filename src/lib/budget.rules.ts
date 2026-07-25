@@ -88,11 +88,7 @@ export type PoAssignment = z.infer<typeof poAssignmentSchema>;
 // ---------------------------------------------------------------------------
 export type VarianceBand = "ok" | "warning" | "destructive";
 
-export function variance(
-  current: number,
-  committed: number,
-  actual: number,
-): number {
+export function variance(current: number, committed: number, actual: number): number {
   return round2(current - committed - actual);
 }
 
@@ -147,9 +143,7 @@ export interface CostCodeTreeNode extends CostCodeNode {
   depth: number;
 }
 
-export function groupCostCodesByParent(
-  rows: CostCodeNode[],
-): CostCodeTreeNode[] {
+export function groupCostCodesByParent(rows: CostCodeNode[]): CostCodeTreeNode[] {
   const byId = new Map<string, CostCodeTreeNode>();
   for (const r of rows) {
     byId.set(r.id, { ...r, children: [], depth: 0 });
@@ -197,14 +191,13 @@ export function totalsByCurrency(budgets: BudgetLite[]): CurrencyTotals[] {
   const map = new Map<string, CurrencyTotals>();
   for (const b of budgets) {
     const key = b.currency_code;
-    const t =
-      map.get(key) ?? {
-        currency_code: key,
-        current: 0,
-        committed: 0,
-        actual: 0,
-        variance: 0,
-      };
+    const t = map.get(key) ?? {
+      currency_code: key,
+      current: 0,
+      committed: 0,
+      actual: 0,
+      variance: 0,
+    };
     t.current += Number(b.current_amount) || 0;
     t.committed += Number(b.committed_amount) || 0;
     t.actual += Number(b.actual_amount) || 0;
@@ -216,9 +209,7 @@ export function totalsByCurrency(budgets: BudgetLite[]): CurrencyTotals[] {
     t.actual = round2(t.actual);
     t.variance = variance(t.current, t.committed, t.actual);
   }
-  return [...map.values()].sort((a, b) =>
-    a.currency_code.localeCompare(b.currency_code),
-  );
+  return [...map.values()].sort((a, b) => a.currency_code.localeCompare(b.currency_code));
 }
 
 export function formatMoney(amount: number, currency: string): string {

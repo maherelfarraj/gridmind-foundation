@@ -105,9 +105,7 @@ export function CostCodeDialog({
   }, [open, mode, costCode, form]);
 
   const parentOptions =
-    mode === "edit"
-      ? costCodeOptions.filter((c) => c.id !== costCode?.id)
-      : costCodeOptions;
+    mode === "edit" ? costCodeOptions.filter((c) => c.id !== costCode?.id) : costCodeOptions;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,18 +115,11 @@ export function CostCodeDialog({
             {mode === "create" ? "New cost code" : `Edit ${costCode?.code}`}
           </DialogTitle>
         </DialogHeader>
-        <form
-          className="flex flex-col gap-3"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
+        <form className="flex flex-col gap-3" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-1">
               <Label htmlFor="cc-code">Code</Label>
-              <Input
-                id="cc-code"
-                placeholder="01-1000"
-                {...form.register("code")}
-              />
+              <Input id="cc-code" placeholder="01-1000" {...form.register("code")} />
               {form.formState.errors.code && (
                 <p className="mt-1 text-xs text-destructive">
                   {form.formState.errors.code.message}
@@ -137,11 +128,7 @@ export function CostCodeDialog({
             </div>
             <div className="col-span-2">
               <Label htmlFor="cc-name">Name</Label>
-              <Input
-                id="cc-name"
-                placeholder="Engineering"
-                {...form.register("name")}
-              />
+              <Input id="cc-name" placeholder="Engineering" {...form.register("name")} />
               {form.formState.errors.name && (
                 <p className="mt-1 text-xs text-destructive">
                   {form.formState.errors.name.message}
@@ -152,11 +139,7 @@ export function CostCodeDialog({
 
           <div>
             <Label htmlFor="cc-desc">Description</Label>
-            <Textarea
-              id="cc-desc"
-              rows={2}
-              {...form.register("description")}
-            />
+            <Textarea id="cc-desc" rows={2} {...form.register("description")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -164,9 +147,7 @@ export function CostCodeDialog({
               <Label>Parent</Label>
               <Select
                 value={form.watch("parent_id") ?? NONE}
-                onValueChange={(v) =>
-                  form.setValue("parent_id", v === NONE ? null : v)
-                }
+                onValueChange={(v) => form.setValue("parent_id", v === NONE ? null : v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None" />
@@ -185,9 +166,7 @@ export function CostCodeDialog({
               <Label>Mapped WBS</Label>
               <Select
                 value={form.watch("wbs_item_id") ?? NONE}
-                onValueChange={(v) =>
-                  form.setValue("wbs_item_id", v === NONE ? null : v)
-                }
+                onValueChange={(v) => form.setValue("wbs_item_id", v === NONE ? null : v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None" />
@@ -231,11 +210,7 @@ export function CostCodeDialog({
               )}
             </div>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={saving}>

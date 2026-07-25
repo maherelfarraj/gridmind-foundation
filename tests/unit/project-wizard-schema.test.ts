@@ -22,9 +22,7 @@ describe("makeProjectBasicsSchema", () => {
     const res = schema.safeParse(base);
     expect(res.success).toBe(false);
     if (!res.success) {
-      expect(
-        res.error.issues.some((i) => i.path.join(".") === "capacity_mwh"),
-      ).toBe(true);
+      expect(res.error.issues.some((i) => i.path.join(".") === "capacity_mwh")).toBe(true);
     }
     expect(schema.safeParse({ ...base, capacity_mwh: 240 }).success).toBe(true);
   });
@@ -49,9 +47,7 @@ describe("makeProjectBasicsSchema", () => {
   it("enforces project code regex", () => {
     const schema = makeProjectBasicsSchema("utility_pv");
     expect(schema.safeParse({ ...base, code: "ab" }).success).toBe(false);
-    expect(schema.safeParse({ ...base, code: "TOOLONGCODE12" }).success).toBe(
-      false,
-    );
+    expect(schema.safeParse({ ...base, code: "TOOLONGCODE12" }).success).toBe(false);
     expect(schema.safeParse({ ...base, code: "PV-01" }).success).toBe(true);
   });
 });

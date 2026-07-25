@@ -106,9 +106,7 @@ export async function generatePmWorkOrders(
       due_date: plan.next_due_date,
       source: "pm_plan",
     };
-    const { error: eIns } = await client
-      .from("work_orders")
-      .insert(payload as never);
+    const { error: eIns } = await client.from("work_orders").insert(payload as never);
     if (eIns) {
       // If unique conflict on wo_number, retry once with a fresh number.
       if ((eIns as { code?: string }).code === "23505") {

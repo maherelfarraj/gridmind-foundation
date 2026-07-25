@@ -29,19 +29,12 @@ function NewVendor() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/procurement/vendors" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/vendors" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to vendors
         </Button>
-        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight">
-          Onboard vendor
-        </h1>
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight">Onboard vendor</h1>
         <p className="text-sm text-muted-foreground">
-          Capture identity and commercial terms. You can attach certifications
-          after saving.
+          Capture identity and commercial terms. You can attach certifications after saving.
         </p>
       </div>
 

@@ -44,15 +44,14 @@ export function CashFlowEntryDialog(props: {
   const currencies = useSuspenseQuery(currenciesQueryOptions());
 
   const [period, setPeriod] = useState(defaultPeriod);
-  const [direction, setDirection] =
-    useState<(typeof CASH_FLOW_DIRECTIONS)[number]>("outflow");
+  const [direction, setDirection] = useState<(typeof CASH_FLOW_DIRECTIONS)[number]>("outflow");
   const [kind, setKind] = useState<(typeof CASH_FLOW_KINDS)[number]>("forecast");
-  const [category, setCategory] =
-    useState<(typeof CASH_FLOW_CATEGORIES)[number]>("po_payment");
+  const [category, setCategory] = useState<(typeof CASH_FLOW_CATEGORIES)[number]>("po_payment");
   const [amount, setAmount] = useState<string>("");
   const [currency, setCurrency] = useState(props.baseCurrency);
-  const [referenceType, setReferenceType] =
-    useState<(typeof CASH_FLOW_REFERENCE_TYPES)[number] | "none">("none");
+  const [referenceType, setReferenceType] = useState<
+    (typeof CASH_FLOW_REFERENCE_TYPES)[number] | "none"
+  >("none");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -81,8 +80,7 @@ export function CashFlowEntryDialog(props: {
         <DialogHeader>
           <DialogTitle>Add cash-flow entry</DialogTitle>
           <DialogDescription>
-            FX rate is captured at entry time from the FX table — historical rows
-            never restate.
+            FX rate is captured at entry time from the FX table — historical rows never restate.
           </DialogDescription>
         </DialogHeader>
 
@@ -90,10 +88,7 @@ export function CashFlowEntryDialog(props: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Direction</Label>
-              <Select
-                value={direction}
-                onValueChange={(v) => setDirection(v as any)}
-              >
+              <Select value={direction} onValueChange={(v) => setDirection(v as any)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -142,18 +137,11 @@ export function CashFlowEntryDialog(props: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Month</Label>
-              <Input
-                type="date"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-              />
+              <Input type="date" value={period} onChange={(e) => setPeriod(e.target.value)} />
             </div>
             <div>
               <Label>Reference</Label>
-              <Select
-                value={referenceType}
-                onValueChange={(v) => setReferenceType(v as any)}
-              >
+              <Select value={referenceType} onValueChange={(v) => setReferenceType(v as any)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -209,8 +197,8 @@ export function CashFlowEntryDialog(props: {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Base currency: <span className="font-medium">{props.baseCurrency}</span>.
-            Amounts are converted at the FX rate on or before the entry month.
+            Base currency: <span className="font-medium">{props.baseCurrency}</span>. Amounts are
+            converted at the FX rate on or before the entry month.
           </p>
         </div>
 
@@ -222,10 +210,7 @@ export function CashFlowEntryDialog(props: {
           >
             Cancel
           </Button>
-          <Button
-            onClick={submit}
-            disabled={props.submitting || !amount || Number(amount) < 0}
-          >
+          <Button onClick={submit} disabled={props.submitting || !amount || Number(amount) < 0}>
             {props.submitting ? "Saving…" : "Add entry"}
           </Button>
         </DialogFooter>

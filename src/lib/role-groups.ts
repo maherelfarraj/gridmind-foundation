@@ -32,13 +32,7 @@ export const ROLE_GROUPS: RoleGroup[] = [
   {
     key: "operational",
     label: "Operational",
-    roles: [
-      "engineer",
-      "sales",
-      "procurement_officer",
-      "foreman",
-      "field_technician",
-    ],
+    roles: ["engineer", "sales", "procurement_officer", "foreman", "field_technician"],
   },
   {
     key: "external",
@@ -47,9 +41,7 @@ export const ROLE_GROUPS: RoleGroup[] = [
   },
 ];
 
-export const GRANTABLE_ROLES: GrantableRole[] = ROLE_GROUPS.flatMap(
-  (g) => g.roles,
-);
+export const GRANTABLE_ROLES: GrantableRole[] = ROLE_GROUPS.flatMap((g) => g.roles);
 
 // Compile-time exhaustiveness: any new app_role (other than super_admin)
 // added to the enum will fail typecheck here until it is grouped above.

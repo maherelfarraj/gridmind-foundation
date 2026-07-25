@@ -1,15 +1,7 @@
 // P-094 — Mobile-first commissioning test execution capture.
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  createFileRoute,
-  Link,
-  useRouter,
-} from "@tanstack/react-router";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -87,8 +79,7 @@ function ExecuteCommissioningTest() {
   });
 
   if (query.isLoading) return <ExecuteSkeleton />;
-  if (query.isError)
-    return <ExecuteError onRetry={() => query.refetch()} />;
+  if (query.isError) return <ExecuteError onRetry={() => query.refetch()} />;
 
   const payload = query.data;
   if (!payload || !payload.test) return <NotFoundPanel projectId={projectId} />;
@@ -134,16 +125,8 @@ function ExecuteBody({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-3 pb-32 pt-4 sm:px-6">
       <header className="flex flex-col gap-2">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="w-fit -ml-2 h-9 px-2"
-        >
-          <Link
-            to="/projects/$projectId/commissioning"
-            params={{ projectId }}
-          >
+        <Button asChild variant="ghost" size="sm" className="w-fit -ml-2 h-9 px-2">
+          <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
             <ArrowLeft size={16} aria-hidden />
             Back to board
           </Link>
@@ -164,12 +147,7 @@ function ExecuteBody({
       </header>
 
       {test.utility_witness_required ? (
-        <WitnessBlock
-          test={test}
-          canExecute={canExecute}
-          readOnly={readOnly}
-          onChange={onChange}
-        />
+        <WitnessBlock test={test} canExecute={canExecute} readOnly={readOnly} onChange={onChange} />
       ) : null}
 
       <ResultForm
@@ -182,9 +160,7 @@ function ExecuteBody({
         }}
       />
 
-      {readOnly && canReopen ? (
-        <ReopenPanel test={test} onDone={onChange} />
-      ) : null}
+      {readOnly && canReopen ? <ReopenPanel test={test} onDone={onChange} /> : null}
     </div>
   );
 }
@@ -217,17 +193,13 @@ function ResultForm({
 
   // ---- shared fields
   const [notes, setNotes] = useState<string>(
-    typeof initial.notes === "string" ? initial.notes : test.notes ?? "",
+    typeof initial.notes === "string" ? initial.notes : (test.notes ?? ""),
   );
 
   // ---- IR
-  const [irVoltage, setIrVoltage] = useState<string>(
-    numToStr(initial.testVoltageVdc),
-  );
+  const [irVoltage, setIrVoltage] = useState<string>(numToStr(initial.testVoltageVdc));
   const [irMohm, setIrMohm] = useState<string>(numToStr(initial.measuredMohm));
-  const [irAmbient, setIrAmbient] = useState<string>(
-    numToStr(initial.ambientC),
-  );
+  const [irAmbient, setIrAmbient] = useState<string>(numToStr(initial.ambientC));
   const [irThreshold, setIrThreshold] = useState<string>(
     numToStr(initial.passThresholdMohm) || "1",
   );
@@ -236,14 +208,10 @@ function ResultForm({
   const [hipotKv, setHipotKv] = useState<string>(numToStr(initial.testVoltageKv));
   const [hipotSec, setHipotSec] = useState<string>(numToStr(initial.durationS));
   const [hipotLeak, setHipotLeak] = useState<string>(numToStr(initial.leakageMa));
-  const [hipotBreak, setHipotBreak] = useState<boolean>(
-    Boolean(initial.breakdown),
-  );
+  const [hipotBreak, setHipotBreak] = useState<boolean>(Boolean(initial.breakdown));
 
   // ---- Continuity / earth / functional / other
-  const [measuredValue, setMeasuredValue] = useState<string>(
-    numToStr(initial.measuredValue),
-  );
+  const [measuredValue, setMeasuredValue] = useState<string>(numToStr(initial.measuredValue));
   const [measuredUnit, setMeasuredUnit] = useState<string>(
     typeof initial.unit === "string" ? initial.unit : defaultUnit(test.test_type),
   );
@@ -260,9 +228,7 @@ function ResultForm({
   >(() => {
     const arr = Array.isArray(initial.strings) ? initial.strings : [];
     if (arr.length === 0)
-      return [
-        { label: "String 1", vocV: "", iscA: "", polarityOk: true, passed: true },
-      ];
+      return [{ label: "String 1", vocV: "", iscA: "", polarityOk: true, passed: true }];
     return arr.map((s: any, i: number) => ({
       label: String(s.label ?? `String ${i + 1}`),
       vocV: numToStr(s.vocV),
@@ -273,9 +239,7 @@ function ResultForm({
   });
 
   // ---- IV curve
-  const [ivPoints, setIvPoints] = useState<
-    Array<{ voltageV: string; currentA: string }>
-  >(() => {
+  const [ivPoints, setIvPoints] = useState<Array<{ voltageV: string; currentA: string }>>(() => {
     const arr = Array.isArray(initial.iv_points) ? initial.iv_points : [];
     if (arr.length === 0)
       return [
@@ -295,9 +259,7 @@ function ResultForm({
         voltageV: Number(p.voltageV),
         currentA: Number(p.currentA),
       }))
-      .filter(
-        (p) => Number.isFinite(p.voltageV) && Number.isFinite(p.currentA),
-      );
+      .filter((p) => Number.isFinite(p.voltageV) && Number.isFinite(p.currentA));
     return computeIvSummary(numeric);
   }, [ivPoints, test.test_type]);
 
@@ -323,9 +285,7 @@ function ResultForm({
             voltageV: Number(p.voltageV),
             currentA: Number(p.currentA),
           }))
-          .filter(
-            (p) => Number.isFinite(p.voltageV) && Number.isFinite(p.currentA),
-          );
+          .filter((p) => Number.isFinite(p.voltageV) && Number.isFinite(p.currentA));
         return { iv_points: points, summary: ivSummary };
       }
       case "string_test":
@@ -383,9 +343,7 @@ function ResultForm({
         toast.success("Saved offline — will sync when back online");
       } else {
         toast.success(
-          submitStatusRef.current === "passed"
-            ? "Test marked passed"
-            : "Test marked failed",
+          submitStatusRef.current === "passed" ? "Test marked passed" : "Test marked failed",
         );
         onSaved();
       }
@@ -415,15 +373,10 @@ function ResultForm({
     <>
       <Card className="border-border bg-card p-4">
         {failure ? (
-          <Alert
-            variant="destructive"
-            className="mb-4 border-destructive/40 bg-destructive/10"
-          >
+          <Alert variant="destructive" className="mb-4 border-destructive/40 bg-destructive/10">
             <AlertTriangle className="h-4 w-4" aria-hidden />
             <AlertTitle>
-              {failure.reason === "witness_required"
-                ? "Utility witness required"
-                : "Couldn’t save"}
+              {failure.reason === "witness_required" ? "Utility witness required" : "Couldn’t save"}
             </AlertTitle>
             <AlertDescription>{failure.message}</AlertDescription>
           </Alert>
@@ -433,8 +386,7 @@ function ResultForm({
             <WifiOff className="h-4 w-4" aria-hidden />
             <AlertTitle>Saved offline</AlertTitle>
             <AlertDescription>
-              Your test result is queued and will sync automatically when you’re
-              back online.
+              Your test result is queued and will sync automatically when you’re back online.
             </AlertDescription>
           </Alert>
         ) : null}
@@ -511,18 +463,12 @@ function ResultForm({
             />
             <div className="col-span-2 flex items-center justify-between rounded-md border border-border bg-secondary/40 px-3 py-3">
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  Breakdown observed
-                </p>
+                <p className="text-sm font-medium text-foreground">Breakdown observed</p>
                 <p className="text-xs text-muted-foreground">
                   If yes, this test must be marked failed.
                 </p>
               </div>
-              <Switch
-                checked={hipotBreak}
-                onCheckedChange={setHipotBreak}
-                disabled={disabled}
-              />
+              <Switch checked={hipotBreak} onCheckedChange={setHipotBreak} disabled={disabled} />
             </div>
           </FieldGrid>
         ) : null}
@@ -540,9 +486,7 @@ function ResultForm({
                     value={s.label}
                     onChange={(e) =>
                       setStrings((prev) =>
-                        prev.map((r, idx) =>
-                          idx === i ? { ...r, label: e.target.value } : r,
-                        ),
+                        prev.map((r, idx) => (idx === i ? { ...r, label: e.target.value } : r)),
                       )
                     }
                     disabled={disabled}
@@ -552,9 +496,7 @@ function ResultForm({
                     type="button"
                     size="icon"
                     variant="ghost"
-                    onClick={() =>
-                      setStrings((prev) => prev.filter((_, idx) => idx !== i))
-                    }
+                    onClick={() => setStrings((prev) => prev.filter((_, idx) => idx !== i))}
                     disabled={disabled || strings.length === 1}
                     aria-label="Remove string"
                   >
@@ -568,11 +510,7 @@ function ResultForm({
                   step="0.01"
                   value={s.vocV}
                   onChange={(v) =>
-                    setStrings((prev) =>
-                      prev.map((r, idx) =>
-                        idx === i ? { ...r, vocV: v } : r,
-                      ),
-                    )
+                    setStrings((prev) => prev.map((r, idx) => (idx === i ? { ...r, vocV: v } : r)))
                   }
                   disabled={disabled}
                 />
@@ -583,11 +521,7 @@ function ResultForm({
                   step="0.01"
                   value={s.iscA}
                   onChange={(v) =>
-                    setStrings((prev) =>
-                      prev.map((r, idx) =>
-                        idx === i ? { ...r, iscA: v } : r,
-                      ),
-                    )
+                    setStrings((prev) => prev.map((r, idx) => (idx === i ? { ...r, iscA: v } : r)))
                   }
                   disabled={disabled}
                 />
@@ -597,9 +531,7 @@ function ResultForm({
                     checked={s.polarityOk}
                     onCheckedChange={(v) =>
                       setStrings((prev) =>
-                        prev.map((r, idx) =>
-                          idx === i ? { ...r, polarityOk: v } : r,
-                        ),
+                        prev.map((r, idx) => (idx === i ? { ...r, polarityOk: v } : r)),
                       )
                     }
                     disabled={disabled}
@@ -611,9 +543,7 @@ function ResultForm({
                     checked={s.passed}
                     onCheckedChange={(v) =>
                       setStrings((prev) =>
-                        prev.map((r, idx) =>
-                          idx === i ? { ...r, passed: v } : r,
-                        ),
+                        prev.map((r, idx) => (idx === i ? { ...r, passed: v } : r)),
                       )
                     }
                     disabled={disabled}
@@ -654,10 +584,10 @@ function ResultForm({
           />
         ) : null}
 
-        {(test.test_type === "continuity" ||
-          test.test_type === "earth_resistance" ||
-          test.test_type === "functional" ||
-          test.test_type === "other") ? (
+        {test.test_type === "continuity" ||
+        test.test_type === "earth_resistance" ||
+        test.test_type === "functional" ||
+        test.test_type === "other" ? (
           <FieldGrid>
             <TextField
               id="mv"
@@ -743,9 +673,7 @@ function IvCurveEditor({
   disabled,
 }: {
   points: Array<{ voltageV: string; currentA: string }>;
-  onChange: (
-    p: Array<{ voltageV: string; currentA: string }>,
-  ) => void;
+  onChange: (p: Array<{ voltageV: string; currentA: string }>) => void;
   summary: CommissioningIvSummary | null;
   disabled: boolean;
 }) {
@@ -794,9 +722,7 @@ function IvCurveEditor({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() =>
-              onChange([...points, { voltageV: "", currentA: "" }])
-            }
+            onClick={() => onChange([...points, { voltageV: "", currentA: "" }])}
             disabled={disabled}
           >
             <Plus size={14} aria-hidden />
@@ -815,12 +741,7 @@ function IvCurveEditor({
             className="font-mono text-xs"
           />
           <div className="mt-2 flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setPasteOpen(false)}
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={() => setPasteOpen(false)}>
               Cancel
             </Button>
             <Button type="button" size="sm" onClick={applyPaste}>
@@ -836,10 +757,7 @@ function IvCurveEditor({
         <div />
       </div>
       {points.map((p, i) => (
-        <div
-          key={i}
-          className="grid grid-cols-[1fr_1fr_auto] items-center gap-2"
-        >
+        <div key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
           <Input
             className="h-11 font-mono"
             type="number"
@@ -847,11 +765,7 @@ function IvCurveEditor({
             inputMode="decimal"
             value={p.voltageV}
             onChange={(e) =>
-              onChange(
-                points.map((r, idx) =>
-                  idx === i ? { ...r, voltageV: e.target.value } : r,
-                ),
-              )
+              onChange(points.map((r, idx) => (idx === i ? { ...r, voltageV: e.target.value } : r)))
             }
             disabled={disabled}
           />
@@ -862,11 +776,7 @@ function IvCurveEditor({
             inputMode="decimal"
             value={p.currentA}
             onChange={(e) =>
-              onChange(
-                points.map((r, idx) =>
-                  idx === i ? { ...r, currentA: e.target.value } : r,
-                ),
-              )
+              onChange(points.map((r, idx) => (idx === i ? { ...r, currentA: e.target.value } : r)))
             }
             disabled={disabled}
           />
@@ -943,14 +853,12 @@ function WitnessBlock({
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `w-${Date.now()}`;
-      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const safeName = file.name.replace(/[^\w.-]+/g, "_");
       const objectPath = `${test.company_id}/witness/${test.project_id}/${test.id}/${uuid}-${safeName}`;
-      const { error: upErr } = await supabase.storage
-        .from("closeout")
-        .upload(objectPath, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
+      const { error: upErr } = await supabase.storage.from("closeout").upload(objectPath, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
       if (upErr) throw upErr;
 
       await recordUtilityWitness({
@@ -996,8 +904,8 @@ function WitnessBlock({
         </div>
       ) : (
         <p className="mt-2 text-sm text-muted-foreground">
-          No witness recorded yet. Upload the signed form or photo before you
-          can mark this test passed.
+          No witness recorded yet. Upload the signed form or photo before you can mark this test
+          passed.
         </p>
       )}
 
@@ -1023,12 +931,7 @@ function WitnessBlock({
               className="h-11 file:mr-2 file:rounded file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-sm"
             />
           </div>
-          <Button
-            type="button"
-            onClick={submit}
-            disabled={uploading}
-            className="h-11 self-start"
-          >
+          <Button type="button" onClick={submit} disabled={uploading} className="h-11 self-start">
             {uploading ? (
               <Loader2 size={16} className="animate-spin" aria-hidden />
             ) : (
@@ -1045,13 +948,7 @@ function WitnessBlock({
 // ---------------------------------------------------------------------------
 // Reopen
 // ---------------------------------------------------------------------------
-function ReopenPanel({
-  test,
-  onDone,
-}: {
-  test: CommissioningTestDetail;
-  onDone: () => void;
-}) {
+function ReopenPanel({ test, onDone }: { test: CommissioningTestDetail; onDone: () => void }) {
   const mutation = useMutation({
     mutationFn: () =>
       reopenCommissioningTest({
@@ -1074,9 +971,7 @@ function ReopenPanel({
     <Card className="border-border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-display text-base font-semibold text-foreground">
-            Re-open test
-          </h3>
+          <h3 className="font-display text-base font-semibold text-foreground">Re-open test</h3>
           <p className="text-sm text-muted-foreground">
             Sets status back to In progress. Audited as{" "}
             <code className="font-mono text-xs">commissioning.test_reopened</code>.
@@ -1087,11 +982,7 @@ function ReopenPanel({
           variant="outline"
           size="sm"
           onClick={() => {
-            if (
-              typeof window !== "undefined" &&
-              !window.confirm("Re-open this test?")
-            )
-              return;
+            if (typeof window !== "undefined" && !window.confirm("Re-open this test?")) return;
             mutation.mutate();
           }}
           disabled={mutation.isPending}
@@ -1151,11 +1042,7 @@ function TextField({
   );
 }
 
-function StatusChip({
-  status,
-}: {
-  status: CommissioningTestDetail["status"];
-}) {
+function StatusChip({ status }: { status: CommissioningTestDetail["status"] }) {
   const tint =
     status === "passed"
       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
@@ -1206,17 +1093,12 @@ function NotFoundPanel({ projectId }: { projectId: string }) {
   return (
     <div className="mx-auto max-w-3xl px-3 pt-4 sm:px-6">
       <Card className="border-border bg-card p-6">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Test not found
-        </h2>
+        <h2 className="font-display text-lg font-semibold text-foreground">Test not found</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           This commissioning test doesn’t exist or you don’t have access to it.
         </p>
         <Button asChild size="sm" className="mt-3">
-          <Link
-            to="/projects/$projectId/commissioning"
-            params={{ projectId }}
-          >
+          <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
             <ArrowLeft size={14} aria-hidden />
             Back to board
           </Link>
@@ -1249,8 +1131,7 @@ function defaultUnit(t: CommissioningTestType): string {
 }
 function isOfflineError(err: unknown): boolean {
   if (typeof navigator !== "undefined" && !navigator.onLine) return true;
-  if (err instanceof TypeError && /fetch|network/i.test(err.message))
-    return true;
+  if (err instanceof TypeError && /fetch|network/i.test(err.message)) return true;
   return false;
 }
 function parseHttpError(err: unknown): {
@@ -1279,9 +1160,7 @@ function parseHttpError(err: unknown): {
   if (status === 409 && code === "witness_required") {
     return {
       reason: "witness_required",
-      message:
-        msg ??
-        "Utility witness record required before this test can be marked passed.",
+      message: msg ?? "Utility witness record required before this test can be marked passed.",
     };
   }
   return {

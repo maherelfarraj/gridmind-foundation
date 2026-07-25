@@ -3,10 +3,7 @@ import { AlertOctagon, CheckCircle2, ClipboardList, Gauge } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  bandForFinishVariance,
-  type VarianceBand,
-} from "@/lib/schedule.rules";
+import { bandForFinishVariance, type VarianceBand } from "@/lib/schedule.rules";
 
 interface Props {
   total: number;
@@ -36,9 +33,7 @@ export function ScheduleKpiStrip({
         <span className="text-2xl font-semibold text-foreground">{total}</span>
       </Kpi>
       <Kpi icon={<Gauge size={16} aria-hidden />} label="% complete (weighted)">
-        <span className="text-2xl font-semibold text-foreground">
-          {weightedPct.toFixed(1)}%
-        </span>
+        <span className="text-2xl font-semibold text-foreground">{weightedPct.toFixed(1)}%</span>
       </Kpi>
       <Kpi icon={<AlertOctagon size={16} aria-hidden />} label="Overdue">
         <span
@@ -52,16 +47,10 @@ export function ScheduleKpiStrip({
       </Kpi>
       <Kpi
         icon={<CheckCircle2 size={16} aria-hidden />}
-        label={
-          baselineName
-            ? `Finish variance vs ${baselineName}`
-            : "Finish variance"
-        }
+        label={baselineName ? `Finish variance vs ${baselineName}` : "Finish variance"}
       >
         {finishVariance == null ? (
-          <span className="text-sm text-muted-foreground">
-            No baseline selected
-          </span>
+          <span className="text-sm text-muted-foreground">No baseline selected</span>
         ) : (
           <span className={cn("text-2xl font-semibold", BAND_TEXT[band])}>
             {finishVariance > 0 ? "+" : ""}

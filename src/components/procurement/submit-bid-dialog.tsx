@@ -119,10 +119,7 @@ export function SubmitBidDialog({
         <DialogHeader>
           <DialogTitle>Record bid — {bid.vendor_name}</DialogTitle>
         </DialogHeader>
-        <form
-          className="space-y-4"
-          onSubmit={form.handleSubmit(submit)}
-        >
+        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <div className="space-y-1">
               <Label>Total price</Label>
@@ -130,8 +127,7 @@ export function SubmitBidDialog({
                 type="number"
                 step="any"
                 {...form.register("totalPrice", {
-                  setValueAs: (v) =>
-                    v === "" || v == null ? null : Number(v),
+                  setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
                 })}
               />
             </div>
@@ -145,8 +141,7 @@ export function SubmitBidDialog({
                 type="number"
                 min={0}
                 {...form.register("leadTimeDays", {
-                  setValueAs: (v) =>
-                    v === "" || v == null ? null : Number(v),
+                  setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
                 })}
               />
             </div>
@@ -177,9 +172,7 @@ export function SubmitBidDialog({
                 {fields.map((field, idx) => (
                   <TableRow key={field.id}>
                     <TableCell>{(field as any).line_no}</TableCell>
-                    <TableCell className="text-sm">
-                      {(field as any).description}
-                    </TableCell>
+                    <TableCell className="text-sm">{(field as any).description}</TableCell>
                     <TableCell>
                       <Input
                         type="number"
@@ -204,21 +197,16 @@ export function SubmitBidDialog({
                       <Input
                         type="number"
                         min={0}
-                        {...form.register(
-                          `lines.${idx}.lead_time_days` as const,
-                          {
-                            setValueAs: (v) =>
-                              v === "" || v == null ? null : Number(v),
-                          },
-                        )}
+                        {...form.register(`lines.${idx}.lead_time_days` as const, {
+                          setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
+                        })}
                       />
                     </TableCell>
                     <TableCell>
                       <Input
-                        {...form.register(
-                          `lines.${idx}.exceptions` as const,
-                          { setValueAs: (v) => (v === "" ? null : v) },
-                        )}
+                        {...form.register(`lines.${idx}.exceptions` as const, {
+                          setValueAs: (v) => (v === "" ? null : v),
+                        })}
                       />
                     </TableCell>
                   </TableRow>
@@ -228,16 +216,12 @@ export function SubmitBidDialog({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Attachment uploads land in the next iteration — bid save preserves any
-            attachments already on the record.
+            Attachment uploads land in the next iteration — bid save preserves any attachments
+            already on the record.
           </p>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>

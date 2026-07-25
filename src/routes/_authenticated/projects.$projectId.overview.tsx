@@ -6,17 +6,13 @@ import { format, parseISO } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/overview",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/overview")({
   component: OverviewTab,
 });
 
 function OverviewTab() {
   const { projectId } = Route.useParams();
-  const { data: project } = useSuspenseQuery(
-    projectDetailQueryOptions(projectId),
-  );
+  const { data: project } = useSuspenseQuery(projectDetailQueryOptions(projectId));
 
   if (!project) return null;
 
@@ -29,9 +25,7 @@ function OverviewTab() {
   const site = [project.site_name, project.site_region, project.site_country]
     .filter(Boolean)
     .join(", ");
-  const cod = project.target_cod
-    ? format(parseISO(project.target_cod), "PP")
-    : "—";
+  const cod = project.target_cod ? format(parseISO(project.target_cod), "PP") : "—";
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -44,10 +38,7 @@ function OverviewTab() {
           <Fact label="Target COD" value={cod} />
           <Fact label="Site" value={site || "—"} className="col-span-2" />
           <Fact label="Offtaker" value={project.offtaker || "—"} />
-          <Fact
-            label="Status"
-            value={<span className="capitalize">{project.status}</span>}
-          />
+          <Fact label="Status" value={<span className="capitalize">{project.status}</span>} />
         </dl>
         {project.description && (
           <p className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
@@ -61,14 +52,11 @@ function OverviewTab() {
           Team
         </h2>
         {project.members.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            No members assigned yet.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">No members assigned yet.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-3">
             {project.members.map((m) => {
-              const label =
-                m.full_name ?? m.email ?? m.user_id.slice(0, 8);
+              const label = m.full_name ?? m.email ?? m.user_id.slice(0, 8);
               const initials = getInitials(m.full_name, m.email);
               const isAdmin = m.user_id === project.project_admin_id;
               return (
@@ -77,9 +65,7 @@ function OverviewTab() {
                     {initials}
                   </span>
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {label}
-                    </span>
+                    <span className="truncate text-sm font-medium text-foreground">{label}</span>
                     <span className="truncate text-xs text-muted-foreground">
                       {m.project_role.replace(/_/g, " ")}
                       {isAdmin ? " · Project admin" : ""}
@@ -106,9 +92,7 @@ function Fact({
 }) {
   return (
     <div className={className}>
-      <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
       <dd className="mt-1 text-sm text-foreground">{value}</dd>
     </div>
   );

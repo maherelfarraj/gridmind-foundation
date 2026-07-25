@@ -42,9 +42,7 @@ import {
 } from "@/lib/turnover.functions";
 import type { TurnoverSectionKey } from "@/lib/turnover.rules";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/commissioning/turnover",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning/turnover")({
   head: () => ({
     meta: [
       { title: "Turnover pack | GridMind EPC" },
@@ -63,12 +61,8 @@ export const Route = createFileRoute(
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  errorComponent: ({ error, reset }) => (
-    <ErrorState message={error.message} onRetry={reset} />
-  ),
-  notFoundComponent: () => (
-    <ErrorState message="Turnover pack not found." onRetry={() => void 0} />
-  ),
+  errorComponent: ({ error, reset }) => <ErrorState message={error.message} onRetry={reset} />,
+  notFoundComponent: () => <ErrorState message="Turnover pack not found." onRetry={() => void 0} />,
   loader: ({ params, context }) =>
     context.queryClient.ensureQueryData({
       queryKey: ["turnover", params.projectId],
@@ -77,13 +71,7 @@ export const Route = createFileRoute(
   component: TurnoverRoute,
 });
 
-function ErrorState({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="p-6">
       <Card>
@@ -141,19 +129,12 @@ function TurnoverRoute() {
   const [compiling, setCompiling] = useState(false);
   const [deliverOpen, setDeliverOpen] = useState(false);
   const [acceptedBy, setAcceptedBy] = useState("");
-  const [uploadingKey, setUploadingKey] = useState<TurnoverSectionKey | null>(
-    null,
-  );
-  const fileInputRefs = useRef<
-    Record<string, HTMLInputElement | null>
-  >({});
+  const [uploadingKey, setUploadingKey] = useState<TurnoverSectionKey | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  const isClientOnly =
-    !board.permissions.canReadFull &&
-    board.roles.includes("client_viewer");
+  const isClientOnly = !board.permissions.canReadFull && board.roles.includes("client_viewer");
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["turnover", projectId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["turnover", projectId] });
 
   async function handleCompile() {
     try {
@@ -193,12 +174,10 @@ function TurnoverRoute() {
           })),
           compiledAt: res.pack.compiled_at ?? new Date().toISOString(),
         });
-        const up = await supabase.storage
-          .from("closeout")
-          .upload(res.indexPdfTargetPath, bytes, {
-            contentType: "application/pdf",
-            upsert: true,
-          });
+        const up = await supabase.storage.from("closeout").upload(res.indexPdfTargetPath, bytes, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
         if (up.error) throw up.error;
         await attachFn({
           data: {
@@ -220,10 +199,7 @@ function TurnoverRoute() {
     }
   }
 
-  async function handleUpload(
-    sectionKey: "om_manual" | "warranties",
-    files: FileList | null,
-  ) {
+  async function handleUpload(sectionKey: "om_manual" | "warranties", files: FileList | null) {
     if (!files || files.length === 0) return;
     try {
       setUploadingKey(sectionKey);
@@ -237,12 +213,10 @@ function TurnoverRoute() {
       for (const file of Array.from(files)) {
         const safeName = file.name.replace(/[^A-Za-z0-9._-]/g, "_");
         const path = `${board.companyId}/turnover/${projectId}/${sectionKey}/${Date.now()}-${safeName}`;
-        const up = await supabase.storage
-          .from("closeout")
-          .upload(path, file, {
-            contentType: file.type || "application/octet-stream",
-            upsert: false,
-          });
+        const up = await supabase.storage.from("closeout").upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
         if (up.error) throw up.error;
         uploadedItems.push({
           label: file.name,
@@ -302,8 +276,7 @@ function TurnoverRoute() {
   // ---------------------------------------------------------------------
   if (isClientOnly) {
     const delivered =
-      board.pack &&
-      (board.pack.status === "delivered" || board.pack.status === "accepted");
+      board.pack && (board.pack.status === "delivered" || board.pack.status === "accepted");
     return (
       <div className="p-6">
         <Header board={board} projectId={projectId} />
@@ -329,9 +302,7 @@ function TurnoverRoute() {
                 </span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Turnover pack not delivered yet.
-              </p>
+              <p className="text-sm text-muted-foreground">Turnover pack not delivered yet.</p>
             )}
           </CardContent>
         </Card>
@@ -393,11 +364,7 @@ function TurnoverRoute() {
             {board.permissions.canWrite &&
             pack &&
             (pack.status === "ready" || pack.status === "delivered") ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setDeliverOpen(true)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => setDeliverOpen(true)}>
                 <CheckCircle2 size={14} aria-hidden />
                 Mark delivered
               </Button>
@@ -409,9 +376,7 @@ function TurnoverRoute() {
       {!pack ? (
         <Card>
           <CardContent className="flex flex-col items-start gap-3 py-10">
-            <p className="text-sm text-muted-foreground">
-              Turnover pack not compiled yet.
-            </p>
+            <p className="text-sm text-muted-foreground">Turnover pack not compiled yet.</p>
             {board.permissions.canWrite ? (
               <Button size="sm" onClick={handleCompile} disabled={compiling}>
                 <RefreshCw size={14} aria-hidden />
@@ -431,17 +396,9 @@ function TurnoverRoute() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base">
                       {s.complete ? (
-                        <CheckCircle2
-                          size={16}
-                          aria-hidden
-                          className="text-emerald-500"
-                        />
+                        <CheckCircle2 size={16} aria-hidden className="text-emerald-500" />
                       ) : (
-                        <Circle
-                          size={16}
-                          aria-hidden
-                          className="text-muted-foreground"
-                        />
+                        <Circle size={16} aria-hidden className="text-muted-foreground" />
                       )}
                       {s.label}
                     </CardTitle>
@@ -460,10 +417,7 @@ function TurnoverRoute() {
                         multiple
                         className="hidden"
                         onChange={(e) =>
-                          handleUpload(
-                            s.key as "om_manual" | "warranties",
-                            e.target.files,
-                          )
+                          handleUpload(s.key as "om_manual" | "warranties", e.target.files)
                         }
                       />
                       <Button
@@ -473,11 +427,7 @@ function TurnoverRoute() {
                         onClick={() => fileInputRefs.current[s.key]?.click()}
                       >
                         {isBusy ? (
-                          <Loader2
-                            size={14}
-                            className="animate-spin"
-                            aria-hidden
-                          />
+                          <Loader2 size={14} className="animate-spin" aria-hidden />
                         ) : (
                           <Upload size={14} aria-hidden />
                         )}
@@ -529,8 +479,8 @@ function TurnoverRoute() {
           <DialogHeader>
             <DialogTitle>Mark pack as delivered</DialogTitle>
             <DialogDescription>
-              Delivery timestamps the handover. Fill acceptance name only when
-              the client has formally accepted.
+              Delivery timestamps the handover. Fill acceptance name only when the client has
+              formally accepted.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -555,21 +505,12 @@ function TurnoverRoute() {
   );
 }
 
-function Header({
-  board,
-  projectId,
-}: {
-  board: TurnoverBoard;
-  projectId: string;
-}) {
+function Header({ board, projectId }: { board: TurnoverBoard; projectId: string }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
       <div>
         <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2">
-          <Link
-            to="/projects/$projectId/commissioning"
-            params={{ projectId }}
-          >
+          <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
             <ArrowLeft size={14} aria-hidden />
             Back to commissioning
           </Link>

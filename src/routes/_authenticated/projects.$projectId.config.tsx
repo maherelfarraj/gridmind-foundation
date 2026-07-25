@@ -3,42 +3,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { Card } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArchetypeConfigForm } from "@/components/projects/config/archetype-config-form";
 import { archetypeConfigsQueryOptions } from "@/lib/archetype-configs-query";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
-import {
-  ARCHETYPE_CONFIG_MAP,
-  CONFIG_LABELS,
-} from "@/lib/schemas/archetype-configs";
+import { ARCHETYPE_CONFIG_MAP, CONFIG_LABELS } from "@/lib/schemas/archetype-configs";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/config",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/config")({
   loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(
-      projectDetailQueryOptions(params.projectId),
-    );
-    context.queryClient.ensureQueryData(
-      archetypeConfigsQueryOptions(params.projectId),
-    );
+    context.queryClient.ensureQueryData(projectDetailQueryOptions(params.projectId));
+    context.queryClient.ensureQueryData(archetypeConfigsQueryOptions(params.projectId));
   },
   component: ConfigTab,
 });
 
 function ConfigTab() {
   const { projectId } = Route.useParams();
-  const { data: project } = useSuspenseQuery(
-    projectDetailQueryOptions(projectId),
-  );
-  const { data: configs } = useSuspenseQuery(
-    archetypeConfigsQueryOptions(projectId),
-  );
+  const { data: project } = useSuspenseQuery(projectDetailQueryOptions(projectId));
+  const { data: configs } = useSuspenseQuery(archetypeConfigsQueryOptions(projectId));
 
   if (!project || !configs) {
     return (

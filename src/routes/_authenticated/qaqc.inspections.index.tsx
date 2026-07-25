@@ -40,14 +40,19 @@ const searchSchema = z.object({
   result: z.enum(QAQC_RESULTS).optional(),
   area: z.string().max(200).optional(),
   reworkOnly: z.boolean().optional(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   search: z.string().max(200).optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/qaqc/inspections/")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "QA/QC inspections — GridMind EPC" },
@@ -155,12 +160,7 @@ function InspectionListPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/qaqc/heatmap">Heatmap</Link>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportCsv}
-              disabled={rows.length === 0}
-            >
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
               Export CSV
             </Button>
             <Button asChild size="sm">
@@ -224,11 +224,7 @@ function InspectionListPage() {
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs">Area</Label>
-            <Input
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              placeholder="Any area"
-            />
+            <Input value={area} onChange={(e) => setArea(e.target.value)} placeholder="Any area" />
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs">From</Label>
@@ -298,9 +294,7 @@ function InspectionListPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
             <ClipboardCheck size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">
-              No inspections recorded yet.
-            </div>
+            <div className="text-sm text-muted-foreground">No inspections recorded yet.</div>
           </CardContent>
         </Card>
       ) : (
@@ -330,30 +324,22 @@ function InspectionListPage() {
                     })
                   }
                 >
-                  <td className="px-3 py-2 font-medium text-foreground">
-                    {r.inspection_number}
-                  </td>
+                  <td className="px-3 py-2 font-medium text-foreground">{r.inspection_number}</td>
                   <td className="px-3 py-2 tabular-nums">{r.inspection_date}</td>
                   <td className="px-3 py-2 capitalize">{r.discipline}</td>
                   <td className="px-3 py-2">{r.area}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {r.itp_reference ?? "—"}
-                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">{r.itp_reference ?? "—"}</td>
                   <td className="px-3 py-2">
                     <QaqcResultBadge result={r.result} />
                   </td>
                   <td className="px-3 py-2">
                     {r.rework_required ? (
-                      <Badge className="bg-destructive/10 text-destructive">
-                        Rework
-                      </Badge>
+                      <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {r.project_name ?? "—"}
-                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">{r.project_name ?? "—"}</td>
                 </tr>
               ))}
             </tbody>

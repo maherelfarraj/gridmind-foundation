@@ -102,9 +102,7 @@ interface Props {
 export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Props) {
   const listFn = useServerFn(listDrawings);
   const rolesFn = useServerFn(getMyDrawingRoles);
-  const { data: rolesData } = useSuspenseQuery(
-    drawingRolesQueryOptions(rolesFn, projectId),
-  );
+  const { data: rolesData } = useSuspenseQuery(drawingRolesQueryOptions(rolesFn, projectId));
   const { data } = useSuspenseQuery(
     drawingsListQueryOptions(listFn, projectId, {
       search: filters.q ?? null,

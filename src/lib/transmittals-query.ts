@@ -42,7 +42,6 @@ export const projectDocumentsQueryOptions = (projectId: string | null) =>
   queryOptions({
     queryKey: ["transmittals", "documents", projectId],
     enabled: !!projectId,
-    queryFn: () =>
-      listProjectDocuments({ data: { projectId: projectId! } as any }),
+    queryFn: () => listProjectDocuments({ data: { projectId: projectId! } as any }),
     staleTime: 30_000,
   });

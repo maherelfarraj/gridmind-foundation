@@ -26,8 +26,7 @@ export const Route = createFileRoute("/_authenticated/proposals/")({
       { property: "og:title", content: "Proposals — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Draft, price, and simulate EPC proposals with immutable versioned history.",
+        content: "Draft, price, and simulate EPC proposals with immutable versioned history.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -63,18 +62,12 @@ function ProposalsListPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-brand text-2xl font-semibold text-foreground">
-            Proposals
-          </h1>
+          <h1 className="font-brand text-2xl font-semibold text-foreground">Proposals</h1>
           <p className="text-sm text-muted-foreground">
             All commercial proposals across your opportunities.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.invalidate()}
-        >
+        <Button variant="outline" size="sm" onClick={() => router.invalidate()}>
           <RefreshCw size={14} aria-hidden />
           Refresh
         </Button>
@@ -84,9 +77,7 @@ function ProposalsListPage() {
         {q.isLoading ? (
           <div className="p-6 text-sm text-muted-foreground">Loading…</div>
         ) : q.isError ? (
-          <div className="p-6 text-sm text-destructive">
-            Failed to load proposals.
-          </div>
+          <div className="p-6 text-sm text-destructive">Failed to load proposals.</div>
         ) : !q.data || q.data.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             <FileText size={24} aria-hidden className="mx-auto mb-2 opacity-50" />
@@ -133,9 +124,7 @@ function ProposalsListPage() {
                     </td>
                     <td className="p-3 tabular-nums">v{p.version}</td>
                     <td className="p-3">
-                      <Badge className={statusColor(p.status)}>
-                        {p.status}
-                      </Badge>
+                      <Badge className={statusColor(p.status)}>{p.status}</Badge>
                     </td>
                     <td className="p-3 text-right tabular-nums">
                       {new Intl.NumberFormat("en-US", {
@@ -163,7 +152,6 @@ function ProposalsListPage() {
                         />
                       </div>
                     </td>
-
                   </tr>
                 ))}
               </tbody>

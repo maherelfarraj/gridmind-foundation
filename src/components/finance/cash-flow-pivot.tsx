@@ -120,9 +120,7 @@ export function CashFlowPivot(props: {
                       <div
                         className={cn(
                           "text-xs",
-                          cell.actual === 0
-                            ? "text-muted-foreground"
-                            : "text-primary",
+                          cell.actual === 0 ? "text-muted-foreground" : "text-primary",
                         )}
                       >
                         {fmt(cell.actual, baseCurrency)}
@@ -141,15 +139,10 @@ export function CashFlowPivot(props: {
           )}
           {pivot.rows.length > 0 && (
             <TableRow className="bg-muted/40 font-medium">
-              <TableCell className="sticky left-0 z-10 bg-muted/40">
-                Column totals
-              </TableCell>
+              <TableCell className="sticky left-0 z-10 bg-muted/40">Column totals</TableCell>
               <TableCell />
               {pivot.months.map((m) => (
-                <TableCell
-                  key={m}
-                  className="text-right whitespace-nowrap tabular-nums"
-                >
+                <TableCell key={m} className="text-right whitespace-nowrap tabular-nums">
                   <div>{fmt(pivot.columnTotals[m].forecast, baseCurrency)}</div>
                   <div className="text-xs text-primary">
                     {fmt(pivot.columnTotals[m].actual, baseCurrency)}
@@ -165,9 +158,7 @@ export function CashFlowPivot(props: {
 
       {rawRows.some((r) => !r.voided) && (
         <div className="border-t border-border p-3">
-          <div className="mb-2 text-xs font-medium uppercase text-muted-foreground">
-            Entries
-          </div>
+          <div className="mb-2 text-xs font-medium uppercase text-muted-foreground">Entries</div>
           <div className="grid gap-2">
             {rawRows
               .filter((r) => !r.voided)
@@ -208,11 +199,7 @@ export function CashFlowPivot(props: {
                         @ {r.fx_rate_to_base?.toFixed(4)}
                       </span>
                     )}
-                    {r.notes && (
-                      <span className="text-muted-foreground italic">
-                        {r.notes}
-                      </span>
-                    )}
+                    {r.notes && <span className="text-muted-foreground italic">{r.notes}</span>}
                   </div>
                   {canVoid && (
                     <Button

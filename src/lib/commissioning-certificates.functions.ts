@@ -25,11 +25,7 @@ import {
   type CertSignature,
 } from "@/lib/commissioning-certificates.rules";
 
-function httpError(
-  status: number,
-  code: string,
-  metadata?: Record<string, unknown>,
-): never {
+function httpError(status: number, code: string, metadata?: Record<string, unknown>): never {
   throw Object.assign(new Error(code), {
     statusCode: status,
     body: JSON.stringify({ error: code, ...(metadata ?? {}) }),
@@ -111,11 +107,7 @@ export interface CertificatesBoard {
   permissions: { canIssue: boolean; canSign: boolean };
 }
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "project_admin",
-  "company_admin",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "project_admin", "company_admin"]);
 
 // ---------------------------------------------------------------------------
 // listCertificates
@@ -165,18 +157,14 @@ export const listCertificates = createServerFn({ method: "GET" })
     ]);
     if (rErr) throw rErr;
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(404, "project_not_found");
+    if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
     const existingNumbers = ((existing ?? []) as { certificate_number: string }[]).map(
       (r) => r.certificate_number,
     );
 
     const suggestedNumbers = {
-      mechanical_completion: suggestCertNumber(
-        "mechanical_completion",
-        existingNumbers,
-      ),
+      mechanical_completion: suggestCertNumber("mechanical_completion", existingNumbers),
       cod: suggestCertNumber("cod", existingNumbers),
       ccc_transfer: suggestCertNumber("ccc_transfer", existingNumbers),
     } as Record<CertificateType, string>;
@@ -224,72 +212,66 @@ export const listCertificates = createServerFn({ method: "GET" })
 export const issueCertificate = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => issueCertInput.parse(raw))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ id: string; row: CommissioningCertificateRow }> => {
-      requireSupabaseAuth(context);
-      const companyId = await currentCompanyId(context);
-      const roles = await currentRoles(context);
-      if (!roles.some((r) => WRITE_ROLES.has(r))) httpError(403, "forbidden");
+  .handler(async ({ data, context }): Promise<{ id: string; row: CommissioningCertificateRow }> => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
+    const roles = await currentRoles(context);
+    if (!roles.some((r) => WRITE_ROLES.has(r))) httpError(403, "forbidden");
 
-      const { data: proj } = await context.supabase
-        .from("projects")
-        .select("company_id")
-        .eq("id", data.projectId)
-        .maybeSingle();
-      if (!proj || (proj as any).company_id !== companyId)
-        httpError(404, "project_not_found");
+    const { data: proj } = await context.supabase
+      .from("projects")
+      .select("company_id")
+      .eq("id", data.projectId)
+      .maybeSingle();
+    if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
-      // Ensure number begins with the correct prefix.
-      const prefix = CERT_PREFIX[data.type];
-      const normalizedNumber = data.certificateNumber.trim();
-      if (!normalizedNumber.startsWith(prefix)) {
-        httpError(400, "bad_certificate_number_prefix", { expected: prefix });
-      }
+    // Ensure number begins with the correct prefix.
+    const prefix = CERT_PREFIX[data.type];
+    const normalizedNumber = data.certificateNumber.trim();
+    if (!normalizedNumber.startsWith(prefix)) {
+      httpError(400, "bad_certificate_number_prefix", { expected: prefix });
+    }
 
-      const { data: inserted, error } = await context.supabase
-        .from("commissioning_certificates")
-        .insert({
-          company_id: companyId,
-          project_id: data.projectId,
-          certificate_type: data.type,
-          certificate_number: normalizedNumber,
-          status: "pending_signatures",
-          effective_date: data.effectiveDate,
-          payload: { scope_notes: data.scopeNotes ?? "" },
-          signatures: [],
-          created_by: context.user!.id,
-        })
-        .select(
-          "id, company_id, project_id, certificate_type, certificate_number, status, effective_date, pr_at_cod, payload, signatures, signed_pdf_path, created_at, updated_at",
-        )
-        .single();
-
-      if (error) {
-        if ((error as any).code === "23505") {
-          httpError(409, "certificate_already_exists", { type: data.type });
-        }
-        throw error;
-      }
-
-      const row = {
-        ...(inserted as any),
+    const { data: inserted, error } = await context.supabase
+      .from("commissioning_certificates")
+      .insert({
+        company_id: companyId,
+        project_id: data.projectId,
+        certificate_type: data.type,
+        certificate_number: normalizedNumber,
+        status: "pending_signatures",
+        effective_date: data.effectiveDate,
+        payload: { scope_notes: data.scopeNotes ?? "" },
         signatures: [],
-        payload: (inserted as any).payload ?? {},
-      } as CommissioningCertificateRow;
+        created_by: context.user!.id,
+      })
+      .select(
+        "id, company_id, project_id, certificate_type, certificate_number, status, effective_date, pr_at_cod, payload, signatures, signed_pdf_path, created_at, updated_at",
+      )
+      .single();
 
-      await audit(context, "certificate.issued", "commissioning_certificates", row.id, {
-        certificate_type: row.certificate_type,
-        certificate_number: row.certificate_number,
-        effective_date: row.effective_date,
-        project_id: row.project_id,
-      });
+    if (error) {
+      if ((error as any).code === "23505") {
+        httpError(409, "certificate_already_exists", { type: data.type });
+      }
+      throw error;
+    }
 
-      return { id: row.id, row };
-    },
-  );
+    const row = {
+      ...(inserted as any),
+      signatures: [],
+      payload: (inserted as any).payload ?? {},
+    } as CommissioningCertificateRow;
+
+    await audit(context, "certificate.issued", "commissioning_certificates", row.id, {
+      certificate_type: row.certificate_type,
+      certificate_number: row.certificate_number,
+      effective_date: row.effective_date,
+      project_id: row.project_id,
+    });
+
+    return { id: row.id, row };
+  });
 
 // ---------------------------------------------------------------------------
 // addSignature — appends signature, applies COD guards, flips status
@@ -486,10 +468,11 @@ export const addSignature = createServerFn({ method: "POST" })
         .select("category, status")
         .eq("company_id", companyId)
         .eq("project_id", (current as any).project_id);
-      const summary = { A: { open: 0, closed: 0 }, B: { open: 0, closed: 0 }, C: { open: 0, closed: 0 } } as Record<
-        "A" | "B" | "C",
-        { open: number; closed: number }
-      >;
+      const summary = {
+        A: { open: 0, closed: 0 },
+        B: { open: 0, closed: 0 },
+        C: { open: 0, closed: 0 },
+      } as Record<"A" | "B" | "C", { open: number; closed: number }>;
       for (const r of (punchRows ?? []) as { category: "A" | "B" | "C"; status: string }[]) {
         const b = summary[r.category];
         if (!b) continue;
@@ -570,8 +553,7 @@ export const attachSignedPdf = createServerFn({ method: "POST" })
       .select("id, company_id, status")
       .eq("id", data.certificateId)
       .maybeSingle();
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "certificate_not_found");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "certificate_not_found");
     if ((row as any).status !== "signed") httpError(409, "certificate_not_signed");
 
     const { error } = await context.supabase
@@ -580,9 +562,15 @@ export const attachSignedPdf = createServerFn({ method: "POST" })
       .eq("id", data.certificateId);
     if (error) throw error;
 
-    await audit(context, "certificate.pdf_attached", "commissioning_certificates", data.certificateId, {
-      file_path: data.filePath,
-    });
+    await audit(
+      context,
+      "certificate.pdf_attached",
+      "commissioning_certificates",
+      data.certificateId,
+      {
+        file_path: data.filePath,
+      },
+    );
     return { ok: true };
   });
 

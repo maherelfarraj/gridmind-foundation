@@ -1,11 +1,7 @@
 // P-082 — PPA terms tab.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,13 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -47,10 +37,7 @@ import {
   projectFinanceAccessQueryOptions,
   projectFinanceErrorMessage,
 } from "@/lib/project-finance.query";
-import {
-  ppaYearOneRevenue,
-  type PpaRow,
-} from "@/lib/project-finance.rules";
+import { ppaYearOneRevenue, type PpaRow } from "@/lib/project-finance.rules";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/finance/project-finance/ppa",
@@ -60,8 +47,7 @@ export const Route = createFileRoute(
       { title: "PPA terms — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Power purchase agreement terms — counterparty, tariff, escalation, LDs.",
+        content: "Power purchase agreement terms — counterparty, tariff, escalation, LDs.",
       },
       { property: "og:title", content: "PPA terms — GridMind EPC" },
       {
@@ -74,20 +60,14 @@ export const Route = createFileRoute(
   }),
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
-        ppaListQueryOptions(params.projectId),
-      ),
-      context.queryClient.ensureQueryData(
-        ppaContractsQueryOptions(params.projectId),
-      ),
+      context.queryClient.ensureQueryData(ppaListQueryOptions(params.projectId)),
+      context.queryClient.ensureQueryData(ppaContractsQueryOptions(params.projectId)),
       context.queryClient.ensureQueryData(projectFinanceAccessQueryOptions()),
     ]);
   },
   errorComponent: ({ error, reset }) => (
     <Card className="p-4">
-      <p className="text-sm text-destructive">
-        {projectFinanceErrorMessage(error)}
-      </p>
+      <p className="text-sm text-destructive">{projectFinanceErrorMessage(error)}</p>
       <Button size="sm" variant="outline" className="mt-3" onClick={reset}>
         Try again
       </Button>
@@ -236,12 +216,8 @@ function PpaTab() {
                   }}
                 >
                   <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {r.counterparty ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {r.term_years}y
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{r.counterparty ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">{r.term_years}y</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.tariff.toLocaleString(undefined, {
                       style: "currency",
@@ -257,18 +233,13 @@ function PpaTab() {
                     {r.annual_energy_mwh?.toLocaleString() ?? "—"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums font-medium">
-                    {money(
-                      ppaYearOneRevenue(r.tariff, r.annual_energy_mwh),
-                      r.currency_code,
-                    )}
+                    {money(ppaYearOneRevenue(r.tariff, r.annual_energy_mwh), r.currency_code)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.availability_target_pct == null ? (
                       "—"
                     ) : (
-                      <Badge variant="outline">
-                        {r.availability_target_pct}%
-                      </Badge>
+                      <Badge variant="outline">{r.availability_target_pct}%</Badge>
                     )}
                   </TableCell>
                 </TableRow>
@@ -308,15 +279,11 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
 
   const [name, setName] = useState(initial?.name ?? "");
   const [counterparty, setCounterparty] = useState(initial?.counterparty ?? "");
-  const [contractId, setContractId] = useState<string>(
-    initial?.contract_id ?? "",
-  );
+  const [contractId, setContractId] = useState<string>(initial?.contract_id ?? "");
   const [termYears, setTermYears] = useState(String(initial?.term_years ?? 25));
   const [tariff, setTariff] = useState(String(initial?.tariff ?? "55"));
   const [currency, setCurrency] = useState(initial?.currency_code ?? "USD");
-  const [escalation, setEscalation] = useState(
-    String(initial?.escalation_pct ?? 0),
-  );
+  const [escalation, setEscalation] = useState(String(initial?.escalation_pct ?? 0));
   const [capacity, setCapacity] = useState(
     initial?.capacity_mw == null ? "" : String(initial.capacity_mw),
   );
@@ -324,9 +291,7 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
     initial?.annual_energy_mwh == null ? "" : String(initial.annual_energy_mwh),
   );
   const [availability, setAvailability] = useState(
-    initial?.availability_target_pct == null
-      ? ""
-      : String(initial.availability_target_pct),
+    initial?.availability_target_pct == null ? "" : String(initial.availability_target_pct),
   );
   const [ldEntries, setLdEntries] = useState<Array<[string, string]>>(() => {
     const src = initial?.liquidated_damages ?? {};
@@ -352,9 +317,7 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
           capacity_mw: capacity ? Number(capacity) : null,
           annual_energy_mwh: energy ? Number(energy) : null,
           availability_target_pct: availability ? Number(availability) : null,
-          liquidated_damages: Object.fromEntries(
-            ldEntries.filter(([k]) => k.trim().length > 0),
-          ),
+          liquidated_damages: Object.fromEntries(ldEntries.filter(([k]) => k.trim().length > 0)),
           notes: notes || null,
         },
       }),
@@ -386,10 +349,7 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <Label>Counterparty</Label>
-              <Input
-                value={counterparty}
-                onChange={(e) => setCounterparty(e.target.value)}
-              />
+              <Input value={counterparty} onChange={(e) => setCounterparty(e.target.value)} />
             </div>
             <div className="grid gap-1.5">
               <Label>Linked contract</Label>
@@ -534,9 +494,7 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      onClick={() =>
-                        setLdEntries((ee) => ee.filter((_, ix) => ix !== i))
-                      }
+                      onClick={() => setLdEntries((ee) => ee.filter((_, ix) => ix !== i))}
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -548,21 +506,14 @@ function PpaDrawer({ projectId, initial, contracts, onClose }: PpaDrawerProps) {
 
           <div className="grid gap-1.5">
             <Label>Notes</Label>
-            <Textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
+            <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
         <SheetFooter className="mt-6 gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            disabled={!canSave || mut.isPending}
-            onClick={() => mut.mutate()}
-          >
+          <Button disabled={!canSave || mut.isPending} onClick={() => mut.mutate()}>
             {mut.isPending ? "Saving…" : initial ? "Update" : "Create"}
           </Button>
         </SheetFooter>

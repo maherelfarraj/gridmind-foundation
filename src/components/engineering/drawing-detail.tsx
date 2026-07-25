@@ -10,22 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  getDrawing,
-  getMyDrawingRoles,
-  type RevisionRow,
-} from "@/lib/drawings.functions";
-import {
-  drawingQueryOptions,
-  drawingRolesQueryOptions,
-} from "@/lib/drawings-query";
+import { getDrawing, getMyDrawingRoles, type RevisionRow } from "@/lib/drawings.functions";
+import { drawingQueryOptions, drawingRolesQueryOptions } from "@/lib/drawings-query";
 import { statusBadgeClass } from "./drawing-register-table";
 import { RevisionTimeline } from "./revision-timeline";
 import { UploadRevisionDialog } from "./upload-revision-dialog";
 import { SignoffCard } from "./signoff-card";
 import { MarkupViewer } from "./markup-viewer";
 import { StartReviewRoundDialog } from "./reviews/StartReviewRoundDialog";
-
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
@@ -77,10 +69,7 @@ export function DrawingDetail({ drawingId, projectId }: Props) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Button asChild variant="ghost" size="sm">
-          <Link
-            to="/projects/$projectId/engineering/drawings"
-            params={{ projectId }}
-          >
+          <Link to="/projects/$projectId/engineering/drawings" params={{ projectId }}>
             <ChevronLeft size={14} />
             Back to register
           </Link>
@@ -109,9 +98,7 @@ export function DrawingDetail({ drawingId, projectId }: Props) {
                 </span>
               )}
             </span>
-            <h1 className="font-display text-xl font-semibold text-foreground">
-              {drawing.title}
-            </h1>
+            <h1 className="font-display text-xl font-semibold text-foreground">{drawing.title}</h1>
           </div>
           {roles.canWrite && (
             <UploadRevisionDialog
@@ -150,10 +137,7 @@ export function DrawingDetail({ drawingId, projectId }: Props) {
                       className="flex items-center gap-2 rounded border border-border px-2 py-1"
                     >
                       <span className="text-xs">Rev {r.revision_code}</span>
-                      <StartReviewRoundDialog
-                        projectId={projectId}
-                        revisionId={r.id}
-                      />
+                      <StartReviewRoundDialog projectId={projectId} revisionId={r.id} />
                     </div>
                   ))}
               </div>
@@ -169,9 +153,7 @@ export function DrawingDetail({ drawingId, projectId }: Props) {
           ) : (
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Revision:
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">Revision:</span>
                 {revisions.map((r) => (
                   <Button
                     key={r.id}

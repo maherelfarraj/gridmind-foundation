@@ -67,9 +67,7 @@ export function computeResponsiveness(
   const cutoff = new Date(now.getTime() - STALE_CONTACT_DAYS * 24 * 3600 * 1000);
   let penalties = 0;
   for (const l of logs) {
-    const stale =
-      !l.last_vendor_contact_at ||
-      new Date(l.last_vendor_contact_at) < cutoff;
+    const stale = !l.last_vendor_contact_at || new Date(l.last_vendor_contact_at) < cutoff;
     const delayed = l.status === "delayed";
     if (stale || delayed) penalties += 1;
   }
@@ -84,8 +82,7 @@ export function trend(
 ): { delta: number; direction: TrendDirection } | null {
   if (current == null || prior == null) return null;
   const delta = round2(current - prior);
-  const direction: TrendDirection =
-    delta > 0.01 ? "up" : delta < -0.01 ? "down" : "flat";
+  const direction: TrendDirection = delta > 0.01 ? "up" : delta < -0.01 ? "down" : "flat";
   return { delta, direction };
 }
 

@@ -21,11 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -69,24 +65,14 @@ export function RaiseRfiDialog({ projectId }: { projectId: string }) {
       <DialogTrigger asChild>
         <Button>Raise RFI</Button>
       </DialogTrigger>
-      {open && (
-        <Inner projectId={projectId} onDone={() => setOpen(false)} />
-      )}
+      {open && <Inner projectId={projectId} onDone={() => setOpen(false)} />}
     </Dialog>
   );
 }
 
-function Inner({
-  projectId,
-  onDone,
-}: {
-  projectId: string;
-  onDone: () => void;
-}) {
+function Inner({ projectId, onDone }: { projectId: string; onDone: () => void }) {
   const membersFn = useServerFn(listRoutableMembers);
-  const { data: members } = useSuspenseQuery(
-    routableMembersQueryOptions(membersFn, projectId),
-  );
+  const { data: members } = useSuspenseQuery(routableMembersQueryOptions(membersFn, projectId));
   const raise = useRaiseRfi(projectId);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
@@ -131,18 +117,12 @@ function Inner({
           <Label htmlFor="rfi-subject">Subject</Label>
           <Input id="rfi-subject" {...form.register("subject")} />
           {form.formState.errors.subject && (
-            <p className="mt-1 text-xs text-destructive">
-              {form.formState.errors.subject.message}
-            </p>
+            <p className="mt-1 text-xs text-destructive">{form.formState.errors.subject.message}</p>
           )}
         </div>
         <div>
           <Label htmlFor="rfi-question">Question</Label>
-          <Textarea
-            id="rfi-question"
-            rows={4}
-            {...form.register("question")}
-          />
+          <Textarea id="rfi-question" rows={4} {...form.register("question")} />
           {form.formState.errors.question && (
             <p className="mt-1 text-xs text-destructive">
               {form.formState.errors.question.message}
@@ -154,9 +134,7 @@ function Inner({
             <Label>Discipline</Label>
             <Select
               value={form.watch("discipline")}
-              onValueChange={(v) =>
-                form.setValue("discipline", v as (typeof DISCIPLINES)[number])
-              }
+              onValueChange={(v) => form.setValue("discipline", v as (typeof DISCIPLINES)[number])}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -174,9 +152,7 @@ function Inner({
             <Label>Priority</Label>
             <Select
               value={form.watch("priority")}
-              onValueChange={(v) =>
-                form.setValue("priority", v as (typeof PRIORITIES)[number])
-              }
+              onValueChange={(v) => form.setValue("priority", v as (typeof PRIORITIES)[number])}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -243,11 +219,7 @@ function Inner({
         </div>
         <div className="flex gap-4 text-sm">
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              {...form.register("costImpact")}
-              className="accent-primary"
-            />
+            <input type="checkbox" {...form.register("costImpact")} className="accent-primary" />
             Cost impact
           </label>
           <label className="flex items-center gap-2">
@@ -260,12 +232,7 @@ function Inner({
           </label>
         </div>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onDone}
-            disabled={raise.isPending}
-          >
+          <Button type="button" variant="outline" onClick={onDone} disabled={raise.isPending}>
             Cancel
           </Button>
           <Button type="submit" disabled={raise.isPending}>

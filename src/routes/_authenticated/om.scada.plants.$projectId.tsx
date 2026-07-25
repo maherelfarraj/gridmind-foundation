@@ -3,15 +3,7 @@ import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { format } from "date-fns";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 
@@ -20,10 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPlantDetail } from "@/lib/scada-dashboard.functions";
 import type { PlantDetailPayload } from "@/lib/scada-dashboard.rules";
-import {
-  AvailabilityBadge,
-  PowerCurveCard,
-} from "@/routes/_authenticated/om.scada.index";
+import { AvailabilityBadge, PowerCurveCard } from "@/routes/_authenticated/om.scada.index";
 import { plantAvailabilityBadge } from "@/lib/scada-dashboard.rules";
 
 const REFRESH_MS = 30_000;
@@ -115,14 +104,8 @@ function PlantBody({ data }: { data: PlantDetailPayload }) {
     <>
       <div className="grid gap-4 md:grid-cols-4">
         <MiniTile label="Capacity" value={`${p?.capacityMw.toFixed(2) ?? "—"} MW`} />
-        <MiniTile
-          label="Current power"
-          value={`${p?.currentPowerKw.toFixed(1) ?? "—"} kW`}
-        />
-        <MiniTile
-          label="Energy today"
-          value={`${p?.todayEnergyKwh.toFixed(1) ?? "—"} kWh`}
-        />
+        <MiniTile label="Current power" value={`${p?.currentPowerKw.toFixed(1) ?? "—"} kW`} />
+        <MiniTile label="Energy today" value={`${p?.todayEnergyKwh.toFixed(1) ?? "—"} kWh`} />
         <div>
           <div className="text-xs text-muted-foreground">Availability</div>
           <div className="mt-1">
@@ -190,9 +173,7 @@ function MiniTile({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-normal text-muted-foreground">
-          {label}
-        </CardTitle>
+        <CardTitle className="text-sm font-normal text-muted-foreground">{label}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="font-display text-2xl font-bold tabular-nums">{value}</div>

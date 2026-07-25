@@ -1,25 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-  computeEvm,
-  indexHealth,
-  plannedPercentAtDate,
-} from "@/lib/evm.rules";
+import { computeEvm, indexHealth, plannedPercentAtDate } from "@/lib/evm.rules";
 
 describe("plannedPercentAtDate", () => {
   it("returns 0 before start", () => {
-    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-01-05")).toBe(
-      0,
-    );
+    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-01-05")).toBe(0);
   });
   it("returns 100 after end", () => {
-    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-02-01")).toBe(
-      100,
-    );
+    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-02-01")).toBe(100);
   });
   it("interpolates linearly at midpoint", () => {
-    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-01-15")).toBe(
-      50,
-    );
+    expect(plannedPercentAtDate("2026-01-10", "2026-01-20", "2026-01-15")).toBe(50);
   });
 });
 

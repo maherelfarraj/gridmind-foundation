@@ -2,10 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { RfqBidStatus, RfqStatus } from "@/lib/rfq-rules";
 
-const RFQ_VARIANTS: Record<
-  RfqStatus,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
+const RFQ_VARIANTS: Record<RfqStatus, "default" | "secondary" | "outline" | "destructive"> = {
   draft: "outline",
   issued: "default",
   closed: "secondary",
@@ -21,10 +18,7 @@ export function RfqStatusBadge({ status }: { status: RfqStatus }) {
   );
 }
 
-const BID_VARIANTS: Record<
-  RfqBidStatus,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
+const BID_VARIANTS: Record<RfqBidStatus, "default" | "secondary" | "outline" | "destructive"> = {
   invited: "outline",
   submitted: "default",
   under_review: "secondary",

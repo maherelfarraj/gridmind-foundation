@@ -15,10 +15,7 @@ import {
   type WbsDiscipline,
   type WbsItemType,
 } from "@/lib/wbs-rules";
-import {
-  buildIfcProposals,
-  type IfcPackageProposal,
-} from "@/lib/wbs.server";
+import { buildIfcProposals, type IfcPackageProposal } from "@/lib/wbs.server";
 
 // ---------------------------------------------------------------------------
 // row shapes
@@ -67,14 +64,9 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -135,8 +127,7 @@ function toRow(r: any): WbsItemRow {
     discipline: r.discipline,
     description: r.description,
     sort_order: r.sort_order ?? 0,
-    budgeted_amount:
-      r.budgeted_amount == null ? null : Number(r.budgeted_amount),
+    budgeted_amount: r.budgeted_amount == null ? null : Number(r.budgeted_amount),
     currency_code: r.currency_code,
     ifc_package_ref: r.ifc_package_ref,
     created_by: r.created_by,
@@ -181,9 +172,7 @@ export const listWbsTree = createServerFn({ method: "GET" })
 export const listCurrenciesForWbs = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .handler(
-    async ({
-      context,
-    }): Promise<Array<{ code: string; name: string; symbol: string | null }>> => {
+    async ({ context }): Promise<Array<{ code: string; name: string; symbol: string | null }>> => {
       requireSupabaseAuth(context);
       const { data, error } = await context.supabase
         .from("currencies")
@@ -373,10 +362,7 @@ export const deleteWbsItem = createServerFn({ method: "POST" })
       };
     }
 
-    const { error } = await context.supabase
-      .from("wbs_items")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("wbs_items").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
@@ -397,10 +383,7 @@ export const proposeIfcPackages = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => proposeInput.parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ proposals: IfcPackageProposal[]; rootCode: string }> => {
+    async ({ data, context }): Promise<{ proposals: IfcPackageProposal[]; rootCode: string }> => {
       requireSupabaseAuth(context);
 
       // released IFC packages for this project
@@ -438,9 +421,7 @@ export const proposeIfcPackages = createServerFn({ method: "GET" })
           .map((e) => e.ifc_package_ref)
           .filter((v): v is string => Boolean(v)),
       );
-      const usedCodes = new Set(
-        ((existing ?? []) as any[]).map((e) => e.code as string),
-      );
+      const usedCodes = new Set(((existing ?? []) as any[]).map((e) => e.code as string));
 
       // pick or suggest the "Engineering" root code
       const engineeringRoot = ((existing ?? []) as any[]).find(
@@ -462,103 +443,90 @@ export const proposeIfcPackages = createServerFn({ method: "GET" })
 export const importIfcPackages = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => wbsImportIfcSchema.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ imported: number; root_id: string }> => {
-      requireSupabaseAuth(context);
-      await assertWrite(context);
-      const project = await loadProject(context, data.projectId);
+  .handler(async ({ data, context }): Promise<{ imported: number; root_id: string }> => {
+    requireSupabaseAuth(context);
+    await assertWrite(context);
+    const project = await loadProject(context, data.projectId);
 
-      // Ensure "Engineering" root exists.
-      const { data: existingRoot } = await context.supabase
+    // Ensure "Engineering" root exists.
+    const { data: existingRoot } = await context.supabase
+      .from("wbs_items")
+      .select("id, code")
+      .eq("project_id", project.id)
+      .is("parent_id", null)
+      .ilike("name", "Engineering")
+      .maybeSingle();
+    let rootId = (existingRoot as any)?.id as string | undefined;
+    let rootCode = ((existingRoot as any)?.code as string | undefined) ?? "1";
+
+    if (!rootId) {
+      const { data: inserted, error: rootErr } = await context.supabase
         .from("wbs_items")
-        .select("id, code")
-        .eq("project_id", project.id)
-        .is("parent_id", null)
-        .ilike("name", "Engineering")
-        .maybeSingle();
-      let rootId = (existingRoot as any)?.id as string | undefined;
-      let rootCode = ((existingRoot as any)?.code as string | undefined) ?? "1";
-
-      if (!rootId) {
-        const { data: inserted, error: rootErr } = await context.supabase
-          .from("wbs_items")
-          .insert({
-            company_id: project.company_id,
-            project_id: project.id,
-            parent_id: null,
-            code: rootCode,
-            name: "Engineering",
-            item_type: "phase",
-            sort_order: 0,
-            created_by: (context as any).user.id,
-          } as any)
-          .select("id, code")
-          .single();
-        if (rootErr) {
-          if ((rootErr as any).code === "42501") httpError(403, "forbidden");
-          throw rootErr;
-        }
-        rootId = (inserted as any).id as string;
-        rootCode = (inserted as any).code as string;
-      }
-
-      // Insert selected packages. Skip codes already present (idempotent).
-      const { data: existingCodes } = await context.supabase
-        .from("wbs_items")
-        .select("code, ifc_package_ref")
-        .eq("project_id", project.id);
-      const usedCodes = new Set(
-        ((existingCodes ?? []) as any[]).map((e) => e.code as string),
-      );
-      const importedRefs = new Set(
-        ((existingCodes ?? []) as any[])
-          .map((e) => e.ifc_package_ref)
-          .filter((v): v is string => Boolean(v)),
-      );
-
-      const toInsert: any[] = [];
-      for (const p of data.packages) {
-        if (importedRefs.has(p.ifc_package_ref)) continue;
-        if (usedCodes.has(p.code)) continue;
-        usedCodes.add(p.code);
-        toInsert.push({
+        .insert({
           company_id: project.company_id,
           project_id: project.id,
-          parent_id: rootId,
-          code: p.code,
-          name: p.name,
-          item_type: "package",
-          discipline: p.discipline ?? null,
-          ifc_package_ref: p.ifc_package_ref,
+          parent_id: null,
+          code: rootCode,
+          name: "Engineering",
+          item_type: "phase",
           sort_order: 0,
           created_by: (context as any).user.id,
-        });
+        } as any)
+        .select("id, code")
+        .single();
+      if (rootErr) {
+        if ((rootErr as any).code === "42501") httpError(403, "forbidden");
+        throw rootErr;
       }
+      rootId = (inserted as any).id as string;
+      rootCode = (inserted as any).code as string;
+    }
 
-      if (toInsert.length > 0) {
-        const { error } = await context.supabase
-          .from("wbs_items")
-          .insert(toInsert as any);
-        if (error) {
-          if ((error as any).code === "23505")
-            httpError(
-              409,
-              "wbs_code_conflict",
-              "One or more codes already used",
-            );
-          if ((error as any).code === "42501") httpError(403, "forbidden");
-          throw error;
-        }
-        await audit(context, "wbs.import_ifc", null, {
-          project_id: project.id,
-          count: toInsert.length,
-          source: "ifc_release",
-        });
+    // Insert selected packages. Skip codes already present (idempotent).
+    const { data: existingCodes } = await context.supabase
+      .from("wbs_items")
+      .select("code, ifc_package_ref")
+      .eq("project_id", project.id);
+    const usedCodes = new Set(((existingCodes ?? []) as any[]).map((e) => e.code as string));
+    const importedRefs = new Set(
+      ((existingCodes ?? []) as any[])
+        .map((e) => e.ifc_package_ref)
+        .filter((v): v is string => Boolean(v)),
+    );
+
+    const toInsert: any[] = [];
+    for (const p of data.packages) {
+      if (importedRefs.has(p.ifc_package_ref)) continue;
+      if (usedCodes.has(p.code)) continue;
+      usedCodes.add(p.code);
+      toInsert.push({
+        company_id: project.company_id,
+        project_id: project.id,
+        parent_id: rootId,
+        code: p.code,
+        name: p.name,
+        item_type: "package",
+        discipline: p.discipline ?? null,
+        ifc_package_ref: p.ifc_package_ref,
+        sort_order: 0,
+        created_by: (context as any).user.id,
+      });
+    }
+
+    if (toInsert.length > 0) {
+      const { error } = await context.supabase.from("wbs_items").insert(toInsert as any);
+      if (error) {
+        if ((error as any).code === "23505")
+          httpError(409, "wbs_code_conflict", "One or more codes already used");
+        if ((error as any).code === "42501") httpError(403, "forbidden");
+        throw error;
       }
+      await audit(context, "wbs.import_ifc", null, {
+        project_id: project.id,
+        count: toInsert.length,
+        source: "ifc_release",
+      });
+    }
 
-      return { imported: toInsert.length, root_id: rootId! };
-    },
-  );
+    return { imported: toInsert.length, root_id: rootId! };
+  });

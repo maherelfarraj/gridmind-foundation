@@ -75,10 +75,7 @@ export function computeMilestoneBill(
   const requestedCents = Math.round((schedCents * pctToBill) / 100);
   const hitCap = requestedCents > remCentsBefore;
   const finalCents = hitCap ? remCentsBefore : requestedCents;
-  const cappedPct =
-    schedCents > 0
-      ? Math.round((finalCents / schedCents) * 10000) / 100
-      : 0;
+  const cappedPct = schedCents > 0 ? Math.round((finalCents / schedCents) * 10000) / 100 : 0;
   return {
     amount: fromCents(finalCents),
     cappedPct,

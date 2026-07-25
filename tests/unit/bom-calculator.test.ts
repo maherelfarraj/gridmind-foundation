@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  applyBuffer,
-  computeBom,
-  DEFAULT_BUFFERS,
-  sumBomCost,
-} from "@/lib/calculators/bom";
+import { applyBuffer, computeBom, DEFAULT_BUFFERS, sumBomCost } from "@/lib/calculators/bom";
 
 describe("applyBuffer", () => {
   it("ceils integer-unit categories to the next whole", () => {
@@ -66,7 +61,14 @@ describe("computeBom — Prairie Winds fixture", () => {
 
   it("emits every required category at least once", () => {
     const categories = new Set(lines.map((l) => l.category));
-    for (const c of ["modules", "inverters", "cables", "structures", "transformers", "bos"] as const) {
+    for (const c of [
+      "modules",
+      "inverters",
+      "cables",
+      "structures",
+      "transformers",
+      "bos",
+    ] as const) {
       expect(categories.has(c)).toBe(true);
     }
   });
@@ -97,5 +99,4 @@ describe("sumBomCost", () => {
     expect(sumBomCost([{ qty_buffered: 4, unit_cost: 1.25 }])).toBe(5);
     expect(sumBomCost([{ qty_buffered: 3, unit_cost: 1.005 }])).toBeCloseTo(3.02, 1);
   });
-
 });

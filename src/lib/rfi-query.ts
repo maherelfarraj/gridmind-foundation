@@ -107,8 +107,7 @@ export function useRaiseRfi(projectId: string) {
       qc.invalidateQueries({ queryKey: ["rfi-kpis", projectId] });
       toast.success(`Raised ${res.rfi_number}`);
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Raise failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Raise failed"),
   });
 }
 
@@ -116,16 +115,14 @@ export function useAnswerRfi(projectId: string, rfiId: string) {
   const fn = useServerFn(answerRfi);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { answer: string }) =>
-      fn({ data: { rfiId, ...input } }),
+    mutationFn: (input: { answer: string }) => fn({ data: { rfiId, ...input } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rfi", rfiId] });
       qc.invalidateQueries({ queryKey: ["rfis", projectId] });
       qc.invalidateQueries({ queryKey: ["rfi-kpis", projectId] });
       toast.success("Answer recorded");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Answer failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Answer failed"),
   });
 }
 
@@ -140,8 +137,7 @@ export function useCloseRfi(projectId: string, rfiId: string) {
       qc.invalidateQueries({ queryKey: ["rfi-kpis", projectId] });
       toast.success("RFI closed");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Close failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Close failed"),
   });
 }
 
@@ -149,15 +145,13 @@ export function useVoidRfi(projectId: string, rfiId: string) {
   const fn = useServerFn(voidRfi);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { reason: string }) =>
-      fn({ data: { rfiId, ...input } }),
+    mutationFn: (input: { reason: string }) => fn({ data: { rfiId, ...input } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rfi", rfiId] });
       qc.invalidateQueries({ queryKey: ["rfis", projectId] });
       qc.invalidateQueries({ queryKey: ["rfi-kpis", projectId] });
       toast.success("RFI voided");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Void failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Void failed"),
   });
 }

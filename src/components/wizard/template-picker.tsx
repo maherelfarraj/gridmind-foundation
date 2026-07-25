@@ -47,8 +47,8 @@ export function TemplatePicker({ templates, value, onChange }: Props) {
                       {t.name}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t.gates.length} gates · {t.budgetLines.length} budget
-                      lines · {t.departments.length} depts
+                      {t.gates.length} gates · {t.budgetLines.length} budget lines ·{" "}
+                      {t.departments.length} depts
                     </div>
                   </div>
                 </div>

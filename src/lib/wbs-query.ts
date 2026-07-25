@@ -23,9 +23,7 @@ export function wbsTreeQueryOptions(
   });
 }
 
-export function wbsAccessQueryOptions(
-  fn: ReturnType<typeof useServerFn<typeof getWbsAccess>>,
-) {
+export function wbsAccessQueryOptions(fn: ReturnType<typeof useServerFn<typeof getWbsAccess>>) {
   return queryOptions({
     queryKey: ["wbs", "access"],
     queryFn: () => fn({}),

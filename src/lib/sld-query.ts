@@ -62,8 +62,7 @@ export function useSaveSldConfig(projectId: string) {
       qc.invalidateQueries({ queryKey: ["sld-config", projectId] });
       toast.success("SLD configuration saved");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -78,7 +77,6 @@ export function useCreateSldDrawing(projectId: string) {
       qc.invalidateQueries({ queryKey: ["drawings", projectId] });
       toast.success("SLD drawing created");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Create failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Create failed"),
   });
 }

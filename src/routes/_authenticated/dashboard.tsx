@@ -11,14 +11,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { title: "Dashboard | GridMind EPC" },
       {
         name: "description",
-        content:
-          "Overview of active EPC projects across engineering, procurement, field, and O&M.",
+        content: "Overview of active EPC projects across engineering, procurement, field, and O&M.",
       },
       { property: "og:title", content: "Dashboard | GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Overview of active EPC projects across engineering, procurement, field, and O&M.",
+        content: "Overview of active EPC projects across engineering, procurement, field, and O&M.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -97,9 +95,7 @@ function DashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-                <p className="text-sm font-medium text-foreground">
-                  No recent activity
-                </p>
+                <p className="text-sm font-medium text-foreground">No recent activity</p>
                 <p className="text-xs text-muted-foreground">
                   New events will appear here as your team works across projects.
                 </p>

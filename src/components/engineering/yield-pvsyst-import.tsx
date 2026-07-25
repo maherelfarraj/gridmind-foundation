@@ -9,10 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 import { parsePvsystCsv, type PvsystParsed } from "@/lib/yield/pvsyst-parse";
-import {
-  registerSiteDataDocument,
-  uploadSiteData,
-} from "@/lib/site-data.functions";
+import { registerSiteDataDocument, uploadSiteData } from "@/lib/site-data.functions";
 import { useImportPvsystScenario } from "@/lib/yield-query";
 
 export function YieldPvsystImport({
@@ -137,14 +134,10 @@ export function YieldPvsystImport({
               disabled={!canWrite}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              CSV metrics are parsed automatically. PDF is stored as-is — enter
-              metrics manually.
+              CSV metrics are parsed automatically. PDF is stored as-is — enter metrics manually.
             </p>
           </div>
-          <Button
-            onClick={doUpload}
-            disabled={!file || uploading || !canWrite}
-          >
+          <Button onClick={doUpload} disabled={!file || uploading || !canWrite}>
             {uploading ? "Uploading…" : "Upload"}
           </Button>
           {documentId && (
@@ -173,9 +166,7 @@ export function YieldPvsystImport({
           <MetricInput
             label="Specific yield (kWh/kWp)"
             value={metrics.specific_yield_kwh_kwp}
-            onChange={(v) =>
-              setMetrics((m) => ({ ...m, specific_yield_kwh_kwp: v }))
-            }
+            onChange={(v) => setMetrics((m) => ({ ...m, specific_yield_kwh_kwp: v }))}
           />
           <MetricInput
             label="PR (%)"
@@ -183,13 +174,8 @@ export function YieldPvsystImport({
             onChange={(v) => setMetrics((m) => ({ ...m, pr_pct: v }))}
           />
           <div className="flex justify-end pt-2">
-            <Button
-              onClick={save}
-              disabled={!canSave || importScenario.isPending}
-            >
-              {importScenario.isPending
-                ? "Saving…"
-                : "Save as imported scenario"}
+            <Button onClick={save} disabled={!canSave || importScenario.isPending}>
+              {importScenario.isPending ? "Saving…" : "Save as imported scenario"}
             </Button>
           </div>
         </CardContent>
@@ -214,9 +200,7 @@ function MetricInput({
         type="number"
         step="0.01"
         value={value ?? ""}
-        onChange={(e) =>
-          onChange(e.target.value === "" ? undefined : Number(e.target.value))
-        }
+        onChange={(e) => onChange(e.target.value === "" ? undefined : Number(e.target.value))}
       />
     </div>
   );

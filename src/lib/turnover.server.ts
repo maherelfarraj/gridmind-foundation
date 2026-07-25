@@ -37,11 +37,7 @@ export interface TurnoverCompany {
 // -----------------------------------------------------------------------------
 
 // closeout is a private bucket: `{company_id}/turnover/{project_id}/...`
-export function turnoverStoragePrefix(
-  companyId: string,
-  projectId: string,
-  sub: string,
-): string {
+export function turnoverStoragePrefix(companyId: string, projectId: string, sub: string): string {
   return `${companyId}/turnover/${projectId}/${sub}`.replace(/\/+$/, "");
 }
 
@@ -59,12 +55,10 @@ export async function copyIntoCloseout(
     const dl = await client.storage.from(sourceBucket).download(sourcePath);
     if (dl.error || !dl.data) return null;
     const bytes = await dl.data.arrayBuffer();
-    const upload = await client.storage
-      .from("closeout")
-      .upload(targetPath, bytes, {
-        contentType: mimeType ?? dl.data.type ?? "application/octet-stream",
-        upsert: true,
-      });
+    const upload = await client.storage.from("closeout").upload(targetPath, bytes, {
+      contentType: mimeType ?? dl.data.type ?? "application/octet-stream",
+      upsert: true,
+    });
     if (upload.error) return null;
     return targetPath;
   } catch {
@@ -94,22 +88,17 @@ export async function collectAsBuiltItems(
     .map((d) => ({
       drawingNumber: d.drawing_number as string,
       title: d.title as string,
-      rev: d.current_revision as
-        | {
-            id: string;
-            revision_code: string | null;
-            status: string | null;
-            storage_path: string | null;
-            mime_type: string | null;
-            issued_at: string | null;
-          }
-        | null,
+      rev: d.current_revision as {
+        id: string;
+        revision_code: string | null;
+        status: string | null;
+        storage_path: string | null;
+        mime_type: string | null;
+        issued_at: string | null;
+      } | null,
     }))
     .filter(
-      (r) =>
-        r.rev &&
-        r.rev.storage_path &&
-        (r.rev.status === "as_built" || r.rev.status === "IFC"),
+      (r) => r.rev && r.rev.storage_path && (r.rev.status === "as_built" || r.rev.status === "IFC"),
     );
 
   const items: TurnoverSectionItem[] = [];
@@ -173,7 +162,7 @@ export async function collectTestReportItems(
     .eq("company_id", companyId)
     .eq("project_id", projectId)
     .not("witness_file_path", "is", null);
-  for (const r of ((ct ?? []) as any[])) {
+  for (const r of (ct ?? []) as any[]) {
     items.push({
       label: `${r.test_type ?? "Test"} — ${r.area ?? ""} ${r.equipment_ref ?? ""}`.trim(),
       file_path: r.witness_file_path as string,
@@ -189,7 +178,7 @@ export async function collectTestReportItems(
     .eq("company_id", companyId)
     .eq("project_id", projectId)
     .not("report_file_path", "is", null);
-  for (const r of ((pt ?? []) as any[])) {
+  for (const r of (pt ?? []) as any[]) {
     items.push({
       label: "Performance Ratio report",
       file_path: r.report_file_path as string,
@@ -210,9 +199,7 @@ export async function collectCertificateItems(
 ): Promise<TurnoverSectionItem[]> {
   const { data } = await client
     .from("commissioning_certificates")
-    .select(
-      "certificate_type, certificate_number, effective_date, signed_pdf_path, status",
-    )
+    .select("certificate_type, certificate_number, effective_date, signed_pdf_path, status")
     .eq("company_id", companyId)
     .eq("project_id", projectId)
     .eq("status", "signed")
@@ -240,9 +227,10 @@ export function mergeSections(
   existing: TurnoverSection[] | null,
   freshBySection: Partial<Record<TurnoverSectionKey, TurnoverSectionItem[]>>,
 ): TurnoverSection[] {
-  const base = existing && existing.length > 0
-    ? existing
-    : TURNOVER_SECTIONS.map((s) => ({ ...s, complete: false, items: [] }));
+  const base =
+    existing && existing.length > 0
+      ? existing
+      : TURNOVER_SECTIONS.map((s) => ({ ...s, complete: false, items: [] }));
   return base.map((s) => {
     const fresh = freshBySection[s.key];
     if (fresh === undefined) {
@@ -257,9 +245,7 @@ export function mergeSections(
       const seen = new Set(fresh.map((i) => i.file_path));
       const merged = [
         ...fresh,
-        ...(s.items ?? []).filter(
-          (i) => i.source === "manual" && !seen.has(i.file_path),
-        ),
+        ...(s.items ?? []).filter((i) => i.source === "manual" && !seen.has(i.file_path)),
       ];
       return { ...s, items: merged, complete: merged.length >= 1 };
     }

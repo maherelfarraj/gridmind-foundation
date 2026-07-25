@@ -92,13 +92,9 @@ async function hasAnyRole(
   roles: readonly string[],
 ): Promise<Record<string, boolean>> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
-  return Object.fromEntries(
-    roles.map((r, i) => [r, Boolean(results[i]?.data)]),
-  );
+  return Object.fromEntries(roles.map((r, i) => [r, Boolean(results[i]?.data)]));
 }
 
 function toRow(r: any): ExpeditingRow {
@@ -139,9 +135,9 @@ async function receivedQtyForLine(
     .select("lines")
     .eq("id", poId)
     .maybeSingle();
-  const poLine = ((po as any)?.lines ?? []).find(
-    (l: PoLine) => l.line_no === poLineNo,
-  ) as PoLine | undefined;
+  const poLine = ((po as any)?.lines ?? []).find((l: PoLine) => l.line_no === poLineNo) as
+    | PoLine
+    | undefined;
   const ordered = Number(poLine?.qty ?? 0);
 
   const { data: grns } = await context.supabase
@@ -150,8 +146,8 @@ async function receivedQtyForLine(
     .eq("po_id", poId)
     .in("status", ["confirmed", "has_defects", "closed"]);
   let received = 0;
-  for (const g of ((grns ?? []) as any[])) {
-    for (const l of ((g.lines ?? []) as GrnLine[])) {
+  for (const g of (grns ?? []) as any[]) {
+    for (const l of (g.lines ?? []) as GrnLine[]) {
       if (l.po_line_no === poLineNo) received += Number(l.qty_received || 0);
     }
   }
@@ -205,15 +201,11 @@ export const listExpediting = createServerFn({ method: "GET" })
 export const getLongLeadKpi = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ projectId: z.string().uuid().nullable().optional() })
-      .parse(input ?? {}),
+    z.object({ projectId: z.string().uuid().nullable().optional() }).parse(input ?? {}),
   )
   .handler(async ({ data, context }): Promise<LongLeadKpi> => {
     requireSupabaseAuth(context);
-    let q = context.supabase
-      .from("expediting_logs")
-      .select("is_long_lead, status, eta_confirmed");
+    let q = context.supabase.from("expediting_logs").select("is_long_lead, status, eta_confirmed");
     if (data.projectId) q = q.eq("project_id", data.projectId);
     const { data: rows, error } = await q;
     if (error) throw error;
@@ -272,91 +264,80 @@ export const listOpenPosForExpediting = createServerFn({ method: "GET" })
 export const importFromPo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => importFromPoSchema.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ imported: number; skipped: number }> => {
-      requireSupabaseAuth(context);
-      const flags = await hasAnyRole(context, [
-        "procurement_admin",
-        "procurement_officer",
-        "company_admin",
-      ]);
-      if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
-      const companyId = await currentCompanyId(context);
+  .handler(async ({ data, context }): Promise<{ imported: number; skipped: number }> => {
+    requireSupabaseAuth(context);
+    const flags = await hasAnyRole(context, [
+      "procurement_admin",
+      "procurement_officer",
+      "company_admin",
+    ]);
+    if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
+    const companyId = await currentCompanyId(context);
 
-      const { data: po, error: pErr } = await context.supabase
-        .from("purchase_orders")
-        .select(
-          "id, company_id, project_id, required_by_date, lines, po_number",
-        )
-        .eq("id", data.poId)
-        .maybeSingle();
-      if (pErr) throw pErr;
-      if (!po || (po as any).company_id !== companyId)
-        httpError(404, "po_not_found");
+    const { data: po, error: pErr } = await context.supabase
+      .from("purchase_orders")
+      .select("id, company_id, project_id, required_by_date, lines, po_number")
+      .eq("id", data.poId)
+      .maybeSingle();
+    if (pErr) throw pErr;
+    if (!po || (po as any).company_id !== companyId) httpError(404, "po_not_found");
 
-      const poLines = (((po as any).lines ?? []) as PoLine[]);
-      if (poLines.length === 0) httpError(400, "po_has_no_lines");
+    const poLines = ((po as any).lines ?? []) as PoLine[];
+    if (poLines.length === 0) httpError(400, "po_has_no_lines");
 
-      const { data: existing } = await context.supabase
+    const { data: existing } = await context.supabase
+      .from("expediting_logs")
+      .select("po_line_no")
+      .eq("po_id", data.poId);
+    const existingLineNos = new Set(
+      ((existing ?? []) as any[]).map((r) => r.po_line_no).filter((n) => n != null),
+    );
+
+    const longLeadSet = new Set(data.longLeadLineNos);
+    const defaultNeed = data.defaultSiteNeedDate ?? (po as any).required_by_date ?? null;
+
+    const rowsToInsert: any[] = [];
+    let skipped = 0;
+    for (const l of poLines) {
+      if (existingLineNos.has(l.line_no)) {
+        skipped++;
+        continue;
+      }
+      const need = l.site_need_date ?? defaultNeed;
+      if (!need) {
+        skipped++;
+        continue;
+      }
+      rowsToInsert.push({
+        company_id: companyId,
+        po_id: (po as any).id,
+        project_id: (po as any).project_id,
+        po_line_no: l.line_no,
+        item_description: l.description,
+        is_long_lead: longLeadSet.has(l.line_no),
+        promised_delivery_date: (po as any).required_by_date ?? null,
+        site_need_date: need,
+        status: "on_track",
+        created_by: (context as any).user.id,
+      });
+    }
+
+    if (rowsToInsert.length > 0) {
+      const { error: iErr } = await context.supabase
         .from("expediting_logs")
-        .select("po_line_no")
-        .eq("po_id", data.poId);
-      const existingLineNos = new Set(
-        ((existing ?? []) as any[])
-          .map((r) => r.po_line_no)
-          .filter((n) => n != null),
-      );
-
-      const longLeadSet = new Set(data.longLeadLineNos);
-      const defaultNeed =
-        data.defaultSiteNeedDate ?? (po as any).required_by_date ?? null;
-
-      const rowsToInsert: any[] = [];
-      let skipped = 0;
-      for (const l of poLines) {
-        if (existingLineNos.has(l.line_no)) {
-          skipped++;
-          continue;
-        }
-        const need = l.site_need_date ?? defaultNeed;
-        if (!need) {
-          skipped++;
-          continue;
-        }
-        rowsToInsert.push({
-          company_id: companyId,
-          po_id: (po as any).id,
-          project_id: (po as any).project_id,
-          po_line_no: l.line_no,
-          item_description: l.description,
-          is_long_lead: longLeadSet.has(l.line_no),
-          promised_delivery_date: (po as any).required_by_date ?? null,
-          site_need_date: need,
-          status: "on_track",
-          created_by: (context as any).user.id,
-        });
+        .insert(rowsToInsert as any);
+      if (iErr) {
+        if ((iErr as any).code === "42501") httpError(403, "forbidden");
+        throw iErr;
       }
-
-      if (rowsToInsert.length > 0) {
-        const { error: iErr } = await context.supabase
-          .from("expediting_logs")
-          .insert(rowsToInsert as any);
-        if (iErr) {
-          if ((iErr as any).code === "42501") httpError(403, "forbidden");
-          throw iErr;
-        }
-        await audit(context, "expediting.import", (po as any).id, {
-          po_number: (po as any).po_number,
-          imported: rowsToInsert.length,
-          skipped,
-        });
-      }
-      return { imported: rowsToInsert.length, skipped };
-    },
-  );
+      await audit(context, "expediting.import", (po as any).id, {
+        po_number: (po as any).po_number,
+        imported: rowsToInsert.length,
+        skipped,
+      });
+    }
+    return { imported: rowsToInsert.length, skipped };
+  });
 
 // ---------------------------------------------------------------------------
 // update
@@ -372,15 +353,8 @@ async function loadRow(context: AuthContext, id: string): Promise<any> {
   return data;
 }
 
-async function recomputeStatus(
-  context: AuthContext,
-  row: any,
-): Promise<ExpeditingStatus> {
-  const { received, ordered } = await receivedQtyForLine(
-    context,
-    row.po_id,
-    row.po_line_no,
-  );
+async function recomputeStatus(context: AuthContext, row: any): Promise<ExpeditingStatus> {
+  const { received, ordered } = await receivedQtyForLine(context, row.po_id, row.po_line_no);
   const fullyReceived = ordered > 0 && received >= ordered;
   return deriveStatus({
     current_eta: row.current_eta,
@@ -395,77 +369,66 @@ async function recomputeStatus(
 export const updateExpediting = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => updateExpeditingSchema.parse(input))
-  .handler(
-    async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
-      requireSupabaseAuth(context);
-      const current = await loadRow(context, data.id);
-      const merged = { ...current, ...data.patch };
-      const status = await recomputeStatus(context, merged);
-      const { data: upd, error } = await context.supabase
-        .from("expediting_logs")
-        .update({ ...data.patch, status } as any)
-        .eq("id", data.id)
-        .select("id, status")
-        .maybeSingle();
-      if (error) {
-        if ((error as any).code === "42501") httpError(403, "forbidden");
-        throw error;
-      }
-      await audit(context, "expediting.update", data.id, {
-        patch: data.patch,
-        status,
-      });
-      return {
-        id: (upd as any).id as string,
-        status: (upd as any).status as ExpeditingStatus,
-      };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
+    requireSupabaseAuth(context);
+    const current = await loadRow(context, data.id);
+    const merged = { ...current, ...data.patch };
+    const status = await recomputeStatus(context, merged);
+    const { data: upd, error } = await context.supabase
+      .from("expediting_logs")
+      .update({ ...data.patch, status } as any)
+      .eq("id", data.id)
+      .select("id, status")
+      .maybeSingle();
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+    await audit(context, "expediting.update", data.id, {
+      patch: data.patch,
+      status,
+    });
+    return {
+      id: (upd as any).id as string,
+      status: (upd as any).status as ExpeditingStatus,
+    };
+  });
 
 export const logVendorContact = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
-  .handler(
-    async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
-      requireSupabaseAuth(context);
-      const current = await loadRow(context, data.id);
-      const nowIso = new Date().toISOString();
-      const merged = { ...current, last_vendor_contact_at: nowIso };
-      const status = await recomputeStatus(context, merged);
-      const { data: upd, error } = await context.supabase
-        .from("expediting_logs")
-        .update({ last_vendor_contact_at: nowIso, status } as any)
-        .eq("id", data.id)
-        .select("id, status")
-        .maybeSingle();
-      if (error) {
-        if ((error as any).code === "42501") httpError(403, "forbidden");
-        throw error;
-      }
-      await audit(context, "expediting.update", data.id, {
-        vendor_contact: true,
-        status,
-      });
-      return {
-        id: (upd as any).id as string,
-        status: (upd as any).status as ExpeditingStatus,
-      };
-    },
-  );
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
+    requireSupabaseAuth(context);
+    const current = await loadRow(context, data.id);
+    const nowIso = new Date().toISOString();
+    const merged = { ...current, last_vendor_contact_at: nowIso };
+    const status = await recomputeStatus(context, merged);
+    const { data: upd, error } = await context.supabase
+      .from("expediting_logs")
+      .update({ last_vendor_contact_at: nowIso, status } as any)
+      .eq("id", data.id)
+      .select("id, status")
+      .maybeSingle();
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+    await audit(context, "expediting.update", data.id, {
+      vendor_contact: true,
+      status,
+    });
+    return {
+      id: (upd as any).id as string,
+      status: (upd as any).status as ExpeditingStatus,
+    };
+  });
 
 export const deleteExpediting = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    const { error } = await context.supabase
-      .from("expediting_logs")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("expediting_logs").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;

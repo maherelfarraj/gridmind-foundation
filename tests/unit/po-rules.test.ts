@@ -26,10 +26,7 @@ describe("PO number generator", () => {
 
 describe("computePoTotals", () => {
   it("sums line amounts and applies tax with 2dp rounding", () => {
-    const totals = computePoTotals(
-      [{ amount: 100.005 }, { amount: 250.99 }],
-      10,
-    );
+    const totals = computePoTotals([{ amount: 100.005 }, { amount: 250.99 }], 10);
     expect(totals.subtotal).toBe(351);
     expect(totals.tax_amount).toBe(35.1);
     expect(totals.total_amount).toBe(386.1);
@@ -43,7 +40,14 @@ describe("computePoTotals", () => {
 
 describe("buildPoLinesFromAwards", () => {
   const rfqLines: RfqLine[] = [
-    { line_no: 2, description: "Inverters", qty: 5, uom: "pcs", spec: "250kW", site_need_date: "2026-08-01" },
+    {
+      line_no: 2,
+      description: "Inverters",
+      qty: 5,
+      uom: "pcs",
+      spec: "250kW",
+      site_need_date: "2026-08-01",
+    },
     { line_no: 1, description: "Modules", qty: 100, uom: "pcs", spec: "580W" },
   ];
 

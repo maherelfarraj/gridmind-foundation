@@ -3,14 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import {
-  CheckCircle2,
-  Clock,
-  ListChecks,
-  Loader2,
-  ShieldCheck,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock, ListChecks, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,12 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import {
   decideGateTransition,
@@ -39,11 +27,7 @@ import {
 } from "@/lib/gates.functions";
 import { gateHistoryQueryOptions } from "@/lib/gates-query";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
-import type {
-  GateChecklistItem,
-  ProjectDetail,
-  ProjectDetailGate,
-} from "@/lib/projects.functions";
+import type { GateChecklistItem, ProjectDetail, ProjectDetailGate } from "@/lib/projects.functions";
 
 const GATE_STATUS_STYLES: Record<string, string> = {
   approved: "bg-primary text-primary-foreground",
@@ -94,9 +78,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/gates"
 });
 
 function canEditChecklist(project: ProjectDetail) {
-  return project.caller_roles.some(
-    (r) => r === "company_admin" || r === "project_admin",
-  );
+  return project.caller_roles.some((r) => r === "company_admin" || r === "project_admin");
 }
 
 function GatesTab() {
@@ -117,14 +99,7 @@ function GatesTab() {
             No gates configured.
           </Card>
         ) : (
-          gates.map((g) => (
-            <GateCard
-              key={g.id}
-              gate={g}
-              projectId={projectId}
-              canEdit={canEdit}
-            />
-          ))
+          gates.map((g) => <GateCard key={g.id} gate={g} projectId={projectId} canEdit={canEdit} />)
         )}
       </div>
 
@@ -147,9 +122,7 @@ function GatesTab() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">{label}</p>
                     {detail ? (
-                      <p className="truncate text-xs text-muted-foreground">
-                        {detail}
-                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{detail}</p>
                     ) : null}
                     <p className="text-xs text-muted-foreground">
                       {entry.actor_name ?? entry.actor_email ?? "system"} ·{" "}
@@ -214,10 +187,7 @@ function GateCard({
       }),
     onMutate: async (vars) => {
       await qc.cancelQueries({ queryKey: ["project-detail", projectId] });
-      const prev = qc.getQueryData<ProjectDetail | null>([
-        "project-detail",
-        projectId,
-      ]);
+      const prev = qc.getQueryData<ProjectDetail | null>(["project-detail", projectId]);
       if (prev) {
         qc.setQueryData<ProjectDetail>(["project-detail", projectId], {
           ...prev,
@@ -271,26 +241,20 @@ function GateCard({
     onError: (err) => toast.error((err as Error).message || "Decision failed"),
   });
 
-  const requiredDone = gate.checklist
-    .filter((i) => i.required)
-    .every((i) => i.done);
-  const canRequest =
-    canEdit && gate.status === "open" && requiredDone && gate.checklist.length > 0;
+  const requiredDone = gate.checklist.filter((i) => i.required).every((i) => i.done);
+  const canRequest = canEdit && gate.status === "open" && requiredDone && gate.checklist.length > 0;
   const canDecide =
     gate.status === "in_review" &&
     gate.approval?.my_approval_id &&
     gate.approval?.my_approval_status === "pending";
 
-  const itemsDisabled =
-    !canEdit || (gate.status !== "open" && gate.status !== "in_review");
+  const itemsDisabled = !canEdit || (gate.status !== "open" && gate.status !== "in_review");
 
   return (
     <Card className="border-border bg-card p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-base font-semibold text-foreground">
-            {gate.name}
-          </h3>
+          <h3 className="font-display text-base font-semibold text-foreground">{gate.name}</h3>
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
             {gate.phase}
           </span>
@@ -337,9 +301,7 @@ function GateCard({
             disabled={!canRequest || request.isPending}
             onClick={() => request.mutate()}
           >
-            {request.isPending ? (
-              <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-            ) : null}
+            {request.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
             Request transition
           </Button>
         ) : null}
@@ -368,9 +330,7 @@ function GateCard({
         ) : null}
 
         {gate.status === "in_review" && !canDecide ? (
-          <span className="text-xs text-muted-foreground">
-            Awaiting approver decision.
-          </span>
+          <span className="text-xs text-muted-foreground">Awaiting approver decision.</span>
         ) : null}
 
         {gate.status === "approved" ? (
@@ -403,13 +363,9 @@ function GateCard({
             </Button>
             <Button
               disabled={rejectComment.trim().length === 0 || decide.isPending}
-              onClick={() =>
-                decide.mutate({ decision: "reject", comment: rejectComment.trim() })
-              }
+              onClick={() => decide.mutate({ decision: "reject", comment: rejectComment.trim() })}
             >
-              {decide.isPending ? (
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-              ) : null}
+              {decide.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
               Reject
             </Button>
           </DialogFooter>
@@ -441,9 +397,7 @@ function ChecklistRow({
       <div className="min-w-0 flex-1">
         <p className="text-sm text-foreground">
           {item.label}
-          {item.required ? (
-            <span className="ml-1 text-xs text-muted-foreground">*</span>
-          ) : null}
+          {item.required ? <span className="ml-1 text-xs text-muted-foreground">*</span> : null}
         </p>
         {item.done && item.done_at ? (
           <p className="text-xs text-muted-foreground">

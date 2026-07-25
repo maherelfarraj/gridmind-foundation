@@ -10,7 +10,12 @@ import {
 import type { InvoiceDirection, InvoiceStatus } from "@/lib/invoices.rules";
 
 export function invoicesListQueryOptions(
-  filters: { project_id?: string; direction?: InvoiceDirection; status?: InvoiceStatus; q?: string } = {},
+  filters: {
+    project_id?: string;
+    direction?: InvoiceDirection;
+    status?: InvoiceStatus;
+    q?: string;
+  } = {},
 ) {
   return queryOptions({
     queryKey: [

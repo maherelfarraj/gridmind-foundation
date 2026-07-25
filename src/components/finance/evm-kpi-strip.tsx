@@ -62,19 +62,9 @@ export function EvmKpiStrip({ latest }: { latest: EvmSnapshotRow | null }) {
             ? undefined
             : `${eacVar >= 0 ? "+" : ""}${fmt(latest.currency_code, eacVar)} vs BAC`
         }
-        subClass={
-          eacVar == null
-            ? undefined
-            : eacVar > 0
-              ? "text-destructive"
-              : "text-emerald-500"
-        }
+        subClass={eacVar == null ? undefined : eacVar > 0 ? "text-destructive" : "text-emerald-500"}
       />
-      <Tile
-        label="Snapshot date"
-        value={latest.snapshot_date}
-        sub={`source: ${latest.source}`}
-      />
+      <Tile label="Snapshot date" value={latest.snapshot_date} sub={`source: ${latest.source}`} />
     </div>
   );
 }
@@ -89,13 +79,9 @@ function Tile(props: {
   return (
     <Card className="flex flex-col gap-1 p-3">
       <div className="text-xs uppercase text-muted-foreground">{props.label}</div>
-      <div className={cn("text-lg font-semibold", props.valueClass)}>
-        {props.value}
-      </div>
+      <div className={cn("text-lg font-semibold", props.valueClass)}>{props.value}</div>
       {props.sub ? (
-        <div className={cn("text-xs text-muted-foreground", props.subClass)}>
-          {props.sub}
-        </div>
+        <div className={cn("text-xs text-muted-foreground", props.subClass)}>{props.sub}</div>
       ) : null}
     </Card>
   );

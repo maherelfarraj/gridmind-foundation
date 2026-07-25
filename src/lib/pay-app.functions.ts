@@ -131,27 +131,21 @@ function toContract(r: any): ContractRow {
 // ---------------------------------------------------------------------------
 export const getPayAppAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<{ canCertify: boolean; canApprove: boolean }> => {
-      requireSupabaseAuth(context);
-      const [canCertify, canApprove] = await Promise.all([
-        hasAnyRole(context, CERTIFY_ROLES),
-        hasAnyRole(context, APPROVE_ROLES),
-      ]);
-      return { canCertify, canApprove };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canCertify: boolean; canApprove: boolean }> => {
+    requireSupabaseAuth(context);
+    const [canCertify, canApprove] = await Promise.all([
+      hasAnyRole(context, CERTIFY_ROLES),
+      hasAnyRole(context, APPROVE_ROLES),
+    ]);
+    return { canCertify, canApprove };
+  });
 
 // ---------------------------------------------------------------------------
 // List / Get
 // ---------------------------------------------------------------------------
 export const listPayApplications = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rows: PayAppRow[] }> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -165,33 +159,26 @@ export const listPayApplications = createServerFn({ method: "GET" })
 
 export const getPayApplication = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ payApp: PayAppRow; contract: ContractRow }> => {
-      requireSupabaseAuth(context);
-      const { data: r, error } = await context.supabase
-        .from("pay_applications")
-        .select("*")
-        .eq("id", data.id)
-        .maybeSingle();
-      if (error) throw error;
-      if (!r) httpError(404, "not_found");
-      const payApp = toRow(r);
-      const { data: c, error: cErr } = await context.supabase
-        .from("contracts")
-        .select("*")
-        .eq("id", payApp.contract_id)
-        .maybeSingle();
-      if (cErr) throw cErr;
-      if (!c) httpError(404, "contract_not_found");
-      return { payApp, contract: toContract(c) };
-    },
-  );
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ payApp: PayAppRow; contract: ContractRow }> => {
+    requireSupabaseAuth(context);
+    const { data: r, error } = await context.supabase
+      .from("pay_applications")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!r) httpError(404, "not_found");
+    const payApp = toRow(r);
+    const { data: c, error: cErr } = await context.supabase
+      .from("contracts")
+      .select("*")
+      .eq("id", payApp.contract_id)
+      .maybeSingle();
+    if (cErr) throw cErr;
+    if (!c) httpError(404, "contract_not_found");
+    return { payApp, contract: toContract(c) };
+  });
 
 // ---------------------------------------------------------------------------
 // Create — pre-fills lines from contract SOV with prev_certified carry-over
@@ -202,7 +189,11 @@ export const createPayApplication = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<PayAppRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, CERTIFY_ROLES))) {
-      httpError(403, "forbidden", "Only project/finance/company admins can create pay applications.");
+      httpError(
+        403,
+        "forbidden",
+        "Only project/finance/company admins can create pay applications.",
+      );
     }
     const companyId = await currentCompanyId(context);
 
@@ -215,7 +206,11 @@ export const createPayApplication = createServerFn({ method: "POST" })
     if (!cRaw) httpError(404, "contract_not_found");
     const contract = toContract(cRaw);
     if (!["signed", "active"].includes(contract.status)) {
-      httpError(400, "contract_not_signed", "Contract must be signed or active before pay applications.");
+      httpError(
+        400,
+        "contract_not_signed",
+        "Contract must be signed or active before pay applications.",
+      );
     }
     if (contract.schedule_of_values.length === 0) {
       httpError(400, "sov_empty", "Contract has no Schedule of Values to bill against.");
@@ -255,7 +250,9 @@ export const createPayApplication = createServerFn({ method: "POST" })
       .select("application_number")
       .eq("contract_id", data.contract_id);
     if (nErr) throw nErr;
-    const appNo = nextPayAppNumber(((nums ?? []) as any[]).map((r) => Number(r.application_number)));
+    const appNo = nextPayAppNumber(
+      ((nums ?? []) as any[]).map((r) => Number(r.application_number)),
+    );
 
     const insert = {
       company_id: companyId,
@@ -306,7 +303,8 @@ export const updatePayApplicationLines = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!cur) httpError(404, "not_found");
     const row = toRow(cur);
-    if (row.status !== "draft") httpError(400, "not_draft", "Only draft pay applications can be edited.");
+    if (row.status !== "draft")
+      httpError(400, "not_draft", "Only draft pay applications can be edited.");
 
     const nextLines: PayAppLine[] = row.lines.map((l) => ({
       ...l,
@@ -349,9 +347,7 @@ export const updatePayApplicationLines = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const certifyPayApplication = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PayAppRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, CERTIFY_ROLES))) httpError(403, "forbidden");
@@ -363,7 +359,8 @@ export const certifyPayApplication = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!cur) httpError(404, "not_found");
     const row = toRow(cur);
-    if (row.status !== "draft") httpError(400, "not_draft", "Only draft pay applications can be certified.");
+    if (row.status !== "draft")
+      httpError(400, "not_draft", "Only draft pay applications can be certified.");
     try {
       validateCertifyInput(row.lines);
     } catch (e) {
@@ -402,9 +399,7 @@ export const certifyPayApplication = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const approvePayApplication = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PayAppRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, APPROVE_ROLES))) {
@@ -445,7 +440,9 @@ export const approvePayApplication = createServerFn({ method: "POST" })
       await audit(context, "pay_app.approve_blocked", "pay_applications", row.id, {
         failures: rec.failures,
       });
-      httpError(422, "reconciliation_failed", "Reconciliation blocked approval.", { reconciliation: rec });
+      httpError(422, "reconciliation_failed", "Reconciliation blocked approval.", {
+        reconciliation: rec,
+      });
     }
 
     const { data: upd, error: uErr } = await context.supabase
@@ -474,9 +471,7 @@ export const approvePayApplication = createServerFn({ method: "POST" })
 export const rejectPayApplication = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ id: z.string().uuid(), note: z.string().min(1).max(2000) })
-      .parse(input),
+    z.object({ id: z.string().uuid(), note: z.string().min(1).max(2000) }).parse(input),
   )
   .handler(async ({ data, context }): Promise<PayAppRow> => {
     requireSupabaseAuth(context);
@@ -494,7 +489,8 @@ export const rejectPayApplication = createServerFn({ method: "POST" })
       .select("*")
       .maybeSingle();
     if (error) throw error;
-    if (!upd) httpError(400, "not_rejectable", "Pay application cannot be rejected in its current state.");
+    if (!upd)
+      httpError(400, "not_rejectable", "Pay application cannot be rejected in its current state.");
     const row = toRow(upd);
     await audit(context, "pay_app.reject", "pay_applications", row.id, { note: data.note });
     return row;
@@ -505,11 +501,12 @@ export const rejectPayApplication = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const generatePayAppInvoice = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(
-    async ({ data, context }): Promise<{ payApp: PayAppRow; invoice_id: string; invoice_number: string }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{ payApp: PayAppRow; invoice_id: string; invoice_number: string }> => {
       requireSupabaseAuth(context);
       if (!(await hasAnyRole(context, APPROVE_ROLES))) httpError(403, "forbidden");
       const companyId = await currentCompanyId(context);
@@ -591,14 +588,17 @@ export const generatePayAppInvoice = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const listContractsForPayApp = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
       context,
-    }): Promise<{ rows: Pick<ContractRow, "id" | "contract_number" | "title" | "value" | "currency_code" | "status">[] }> => {
+    }): Promise<{
+      rows: Pick<
+        ContractRow,
+        "id" | "contract_number" | "title" | "value" | "currency_code" | "status"
+      >[];
+    }> => {
       requireSupabaseAuth(context);
       const { data: rows, error } = await context.supabase
         .from("contracts")

@@ -59,9 +59,15 @@ export const Route = createFileRoute("/_authenticated/finance/debit-notes")({
   head: () => ({
     meta: [
       { title: "Debit notes — GridMind EPC" },
-      { name: "description", content: "Issue and settle debit notes against vendor invoices and contracts." },
+      {
+        name: "description",
+        content: "Issue and settle debit notes against vendor invoices and contracts.",
+      },
       { property: "og:title", content: "Debit notes — GridMind EPC" },
-      { property: "og:description", content: "Backcharges, defect rectifications and delay damages." },
+      {
+        property: "og:description",
+        content: "Backcharges, defect rectifications and delay damages.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -80,22 +86,20 @@ function fmt(n: number, currency: string) {
   }).format(n);
 }
 
-const STATUS_VARIANT: Record<DebitNoteStatus, "default" | "secondary" | "outline" | "destructive"> = {
-  draft: "outline",
-  issued: "secondary",
-  settled: "default",
-  cancelled: "destructive",
-};
+const STATUS_VARIANT: Record<DebitNoteStatus, "default" | "secondary" | "outline" | "destructive"> =
+  {
+    draft: "outline",
+    issued: "secondary",
+    settled: "default",
+    cancelled: "destructive",
+  };
 
 function DebitNotesPage() {
   const [status, setStatus] = useState<DebitNoteStatus | "all">("all");
   const [editing, setEditing] = useState<DebitNoteRow | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const filters = useMemo(
-    () => ({ status: status === "all" ? undefined : status }),
-    [status],
-  );
+  const filters = useMemo(() => ({ status: status === "all" ? undefined : status }), [status]);
   const listQ = useSuspenseQuery(debitNotesListQueryOptions(filters));
   const rows = listQ.data.rows;
 
@@ -285,10 +289,7 @@ function DebitNoteSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <form
-          className="mt-4 space-y-4"
-          onSubmit={form.handleSubmit((v) => save.mutate(v))}
-        >
+        <form className="mt-4 space-y-4" onSubmit={form.handleSubmit((v) => save.mutate(v))}>
           <div className="space-y-2">
             <Label>Reason</Label>
             <Select
@@ -339,9 +340,7 @@ function DebitNoteSheet({
               placeholder="uuid"
               disabled={!editable}
               value={form.watch("contract_id") ?? ""}
-              onChange={(e) =>
-                form.setValue("contract_id", e.target.value.trim() || null)
-              }
+              onChange={(e) => form.setValue("contract_id", e.target.value.trim() || null)}
             />
           </div>
           <div className="space-y-2">
@@ -351,13 +350,9 @@ function DebitNoteSheet({
               placeholder="uuid"
               disabled={!editable}
               value={form.watch("invoice_id") ?? ""}
-              onChange={(e) =>
-                form.setValue("invoice_id", e.target.value.trim() || null)
-              }
+              onChange={(e) => form.setValue("invoice_id", e.target.value.trim() || null)}
             />
-            <p className="text-xs text-muted-foreground">
-              Must link to a contract or an invoice.
-            </p>
+            <p className="text-xs text-muted-foreground">Must link to a contract or an invoice.</p>
           </div>
 
           <div className="space-y-2">

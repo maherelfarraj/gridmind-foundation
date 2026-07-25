@@ -40,9 +40,7 @@ describe("missingCertParties + allSigned", () => {
     expect(allSigned("cod", partial)).toBe(false);
   });
   it("COD: all three → complete", () => {
-    expect(
-      allSigned("cod", [sig("contractor"), sig("client"), sig("utility")]),
-    ).toBe(true);
+    expect(allSigned("cod", [sig("contractor"), sig("client"), sig("utility")])).toBe(true);
   });
 });
 
@@ -52,9 +50,9 @@ describe("suggestCertNumber", () => {
     expect(suggestCertNumber("cod", ["MC-0007"])).toBe("COD-0001");
   });
   it("increments past highest same-prefix number", () => {
-    expect(
-      suggestCertNumber("mechanical_completion", ["MC-0001", "MC-0007", "COD-0099"]),
-    ).toBe("MC-0008");
+    expect(suggestCertNumber("mechanical_completion", ["MC-0001", "MC-0007", "COD-0099"])).toBe(
+      "MC-0008",
+    );
   });
   it("ignores non-matching formats", () => {
     expect(suggestCertNumber("cod", ["cod-3", "COD_5", "Other"])).toBe("COD-0001");

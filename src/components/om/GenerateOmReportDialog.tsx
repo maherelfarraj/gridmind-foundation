@@ -26,14 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  buildOmReportPdfBytes,
-  omReportFilename,
-} from "@/lib/exports/om-report-pdf";
-import {
-  attachOmReportPdf,
-  generateOmReport,
-} from "@/lib/om-reports.functions";
+import { buildOmReportPdfBytes, omReportFilename } from "@/lib/exports/om-report-pdf";
+import { attachOmReportPdf, generateOmReport } from "@/lib/om-reports.functions";
 
 interface Props {
   projects: Array<{ id: string; name: string; code: string | null }>;
@@ -109,8 +103,8 @@ export function GenerateOmReportDialog({ projects }: Props) {
         <DialogHeader>
           <DialogTitle>Generate monthly O&amp;M report</DialogTitle>
           <DialogDescription>
-            Aggregates availability, PR, alarms, work orders and spend for the
-            selected project + month, then uploads a branded PDF.
+            Aggregates availability, PR, alarms, work orders and spend for the selected project +
+            month, then uploads a branded PDF.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-2">

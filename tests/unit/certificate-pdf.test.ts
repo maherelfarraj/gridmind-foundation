@@ -17,7 +17,11 @@ describe("certificate-pdf", () => {
       certificateNumber: "COD-0001",
       effectiveDate: "2026-06-15",
       scopeNotes: "All commissioning complete. O&M handover pending.",
-      punchSummary: { A: { open: 0, closed: 3 }, B: { open: 2, closed: 5 }, C: { open: 4, closed: 1 } },
+      punchSummary: {
+        A: { open: 0, closed: 3 },
+        B: { open: 2, closed: 5 },
+        C: { open: 4, closed: 1 },
+      },
       prAtCod: 80.12,
       signatures: [],
       generatedAt: new Date().toISOString(),

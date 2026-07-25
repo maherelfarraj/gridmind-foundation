@@ -6,9 +6,15 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "GridMind EPC — Energy Performance Certificate Management" },
-      { name: "description", content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC." },
+      {
+        name: "description",
+        content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC.",
+      },
       { property: "og:title", content: "GridMind EPC — Energy Performance Certificate Management" },
-      { property: "og:description", content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC." },
+      {
+        property: "og:description",
+        content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -27,8 +33,8 @@ function LandingPage() {
             Energy Performance Certificates, simplified
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            GridMind EPC helps assessors, landlords, and property managers create,
-            manage, and track EPC ratings from one secure workspace.
+            GridMind EPC helps assessors, landlords, and property managers create, manage, and track
+            EPC ratings from one secure workspace.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             {!isLoading && user ? (

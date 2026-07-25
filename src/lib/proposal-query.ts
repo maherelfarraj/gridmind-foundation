@@ -1,9 +1,5 @@
 // P-045 — React Query hooks for proposal builder.
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -38,8 +34,7 @@ export function proposalsListQueryOptions(
 ) {
   return queryOptions({
     queryKey: ["proposals", opportunityId ?? "all"],
-    queryFn: () =>
-      fn({ data: opportunityId ? { opportunityId } : {} }),
+    queryFn: () => fn({ data: opportunityId ? { opportunityId } : {} }),
     staleTime: 15_000,
   });
 }
@@ -61,8 +56,7 @@ export function useCreateProposal() {
       title?: string;
       currencyCode?: string;
     }) => fn({ data: vars }),
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Create failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Create failed"),
   });
 }
 
@@ -82,8 +76,7 @@ export function useSaveProposalHeader(id: string) {
       toast.success("Proposal saved");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -96,8 +89,7 @@ export function useSaveLineItems(id: string) {
       toast.success("Line items saved");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -105,14 +97,12 @@ export function useSaveArrayConfig(id: string) {
   const fn = useServerFn(saveArrayConfig);
   const invalidate = useInvalidateProposal(id);
   return useMutation({
-    mutationFn: (array_config: any) =>
-      fn({ data: { proposalId: id, array_config } }),
+    mutationFn: (array_config: any) => fn({ data: { proposalId: id, array_config } }),
     onSuccess: () => {
       toast.success("Array config saved");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -125,10 +115,7 @@ export function useRunYieldStub(id: string) {
       toast.success("Yield simulation complete");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Simulation failed",
-      ),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Simulation failed"),
   });
 }
 
@@ -141,8 +128,7 @@ export function useCreateProposalVersion(id: string) {
       toast.success("New version created");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Version failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Version failed"),
   });
 }
 
@@ -174,8 +160,7 @@ export function useSubmitPricingApproval(id: string) {
       toast.success("Submitted to CFO for approval");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Submit failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Submit failed"),
   });
 }
 
@@ -186,12 +171,9 @@ export function useDecidePricingApproval(id: string) {
     mutationFn: (vars: { decision: "approve" | "reject"; comment?: string }) =>
       fn({ data: { proposalId: id, ...vars } }),
     onSuccess: (_r, vars) => {
-      toast.success(
-        vars.decision === "approve" ? "Pricing approved" : "Pricing rejected",
-      );
+      toast.success(vars.decision === "approve" ? "Pricing approved" : "Pricing rejected");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Action failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Action failed"),
   });
 }

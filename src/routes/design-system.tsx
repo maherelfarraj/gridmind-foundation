@@ -14,8 +14,7 @@ export const Route = createFileRoute("/design-system")({
       { property: "og:title", content: "Design System · GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Explore GridMind EPC's semantic tokens, typography, and light/dark theme system.",
+        content: "Explore GridMind EPC's semantic tokens, typography, and light/dark theme system.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -47,7 +46,12 @@ const lines: Swatch[] = [
 ];
 
 const sidebar: Swatch[] = [
-  { name: "sidebar-background", bg: "bg-sidebar-background", fg: "text-sidebar-foreground", border: true },
+  {
+    name: "sidebar-background",
+    bg: "bg-sidebar-background",
+    fg: "text-sidebar-foreground",
+    border: true,
+  },
   { name: "sidebar-primary", bg: "bg-sidebar-primary", fg: "text-sidebar-primary-foreground" },
   { name: "sidebar-accent", bg: "bg-sidebar-accent", fg: "text-sidebar-accent-foreground" },
   { name: "sidebar-border", bg: "bg-sidebar-border" },
@@ -90,15 +94,11 @@ function DesignSystemPage() {
       <div className="mx-auto max-w-6xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-6">
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
-              GridMind EPC
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
-              Design System
-            </h1>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">GridMind EPC</p>
+            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Design System</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Semantic tokens, typography, and theming for an industrial EPC surface.
-              Use these tokens only — never raw hex or arbitrary color values.
+              Semantic tokens, typography, and theming for an industrial EPC surface. Use these
+              tokens only — never raw hex or arbitrary color values.
             </p>
           </div>
           <ThemeToggle />
@@ -119,34 +119,22 @@ function DesignSystemPage() {
               <p className="text-xs uppercase tracking-widest text-muted-foreground">
                 font-sans · Inter
               </p>
-              <p className="mt-3 font-sans text-2xl text-foreground">
-                Grid stability, quantified.
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Body & UI text.
-              </p>
+              <p className="mt-3 font-sans text-2xl text-foreground">Grid stability, quantified.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Body & UI text.</p>
             </div>
             <div className="rounded-md border border-border bg-card p-4">
               <p className="text-xs uppercase tracking-widest text-muted-foreground">
                 font-display · Space Grotesk
               </p>
-              <p className="mt-3 font-display text-2xl font-bold text-foreground">
-                GridMind EPC
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Brand & display headings.
-              </p>
+              <p className="mt-3 font-display text-2xl font-bold text-foreground">GridMind EPC</p>
+              <p className="mt-2 text-sm text-muted-foreground">Brand & display headings.</p>
             </div>
             <div className="rounded-md border border-border bg-card p-4">
               <p className="text-xs uppercase tracking-widest text-muted-foreground">
                 font-alt · DM Sans
               </p>
-              <p className="mt-3 font-alt text-2xl text-foreground">
-                Alternate long-form.
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Documents & reports.
-              </p>
+              <p className="mt-3 font-alt text-2xl text-foreground">Alternate long-form.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Documents & reports.</p>
             </div>
           </div>
         </section>

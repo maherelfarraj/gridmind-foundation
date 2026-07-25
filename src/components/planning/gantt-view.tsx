@@ -4,11 +4,7 @@ import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -19,10 +15,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-import {
-  TaskInlineEditor,
-  type TaskEditPatch,
-} from "@/components/planning/task-inline-editor";
+import { TaskInlineEditor, type TaskEditPatch } from "@/components/planning/task-inline-editor";
 import {
   SCHEDULE_STATUS_LABEL,
   barColorForStatus,
@@ -51,10 +44,7 @@ interface Range {
   unit: "week" | "month";
 }
 
-function computeRange(
-  tasks: ScheduleTaskRow[],
-  snapshot: BaselineSnapshotEntry[] | null,
-): Range {
+function computeRange(tasks: ScheduleTaskRow[], snapshot: BaselineSnapshotEntry[] | null): Range {
   const dates: Date[] = [];
   for (const t of tasks) {
     dates.push(parseISO(t.start_date), parseISO(t.end_date));
@@ -178,9 +168,7 @@ export function GanttView({
                     </Popover>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {t.discipline
-                      ? WBS_DISCIPLINE_LABEL[t.discipline as WbsDiscipline]
-                      : "—"}
+                    {t.discipline ? WBS_DISCIPLINE_LABEL[t.discipline as WbsDiscipline] : "—"}
                   </TableCell>
                   <TableCell className="text-xs">
                     {format(parseISO(t.start_date), "dd MMM")}
@@ -190,10 +178,7 @@ export function GanttView({
                   </TableCell>
                   <TableCell className="text-xs">{t.progress_pct}%</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={overdue ? "destructive" : "secondary"}
-                      className="text-xs"
-                    >
+                    <Badge variant={overdue ? "destructive" : "secondary"} className="text-xs">
                       {overdue ? "Overdue" : SCHEDULE_STATUS_LABEL[t.status]}
                     </Badge>
                   </TableCell>
@@ -238,10 +223,7 @@ export function GanttView({
             const widthPct = Math.max(0.5, rightPct - leftPct);
             const baseline = baselineMap.get(t.id);
             return (
-              <div
-                key={t.id}
-                className="relative h-10 border-b border-border/60"
-              >
+              <div key={t.id} className="relative h-10 border-b border-border/60">
                 {/* Ghost baseline bar */}
                 {compare && baseline && (
                   <div
@@ -298,12 +280,7 @@ function VarianceCell({ v }: { v: number | null }) {
   if (v === 0) return <span className="text-muted-foreground">0d</span>;
   const late = v > 0;
   return (
-    <span
-      className={cn(
-        "font-medium",
-        late ? "text-destructive" : "text-muted-foreground",
-      )}
-    >
+    <span className={cn("font-medium", late ? "text-destructive" : "text-muted-foreground")}>
       {late ? "+" : ""}
       {v}d
     </span>

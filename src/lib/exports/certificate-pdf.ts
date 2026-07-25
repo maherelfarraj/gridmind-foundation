@@ -48,10 +48,7 @@ export function sanitize(v: unknown): string {
     .replace(/&#39;/g, "'");
 }
 
-function hexToRgb(
-  hex: string | null | undefined,
-  fallback: string,
-): [number, number, number] {
+function hexToRgb(hex: string | null | undefined, fallback: string): [number, number, number] {
   const s = (hex ?? "").trim();
   const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
   const raw = m ? m[1] : fallback.slice(1);
@@ -103,12 +100,7 @@ export function buildCertificatePdfBytes(input: CertificatePdfInput): Uint8Array
   doc.setFontSize(10);
   doc.text(sanitize(input.company.legalName ?? ""), marginX + 52, 52);
   doc.setFontSize(9);
-  doc.text(
-    `Generated ${fmtDate(input.generatedAt)}`,
-    pageW - marginX,
-    52,
-    { align: "right" },
-  );
+  doc.text(`Generated ${fmtDate(input.generatedAt)}`, pageW - marginX, 52, { align: "right" });
 
   y = 108;
   doc.setTextColor(0, 0, 0);
@@ -127,7 +119,10 @@ export function buildCertificatePdfBytes(input: CertificatePdfInput): Uint8Array
   doc.setFontSize(10);
   const metaRows: [string, string][] = [
     ["Certificate No.", sanitize(input.certificateNumber)],
-    ["Project", sanitize(`${input.project.name}${input.project.code ? ` (${input.project.code})` : ""}`)],
+    [
+      "Project",
+      sanitize(`${input.project.name}${input.project.code ? ` (${input.project.code})` : ""}`),
+    ],
     ["Effective Date", fmtDate(input.effectiveDate)],
   ];
   for (const [k, v] of metaRows) {
@@ -226,11 +221,7 @@ export function buildCertificatePdfBytes(input: CertificatePdfInput): Uint8Array
   doc.line(marginX, footerY - 12, pageW - marginX, footerY - 12);
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
-  doc.text(
-    sanitize(`${input.company.name} • ${input.certificateNumber}`),
-    marginX,
-    footerY,
-  );
+  doc.text(sanitize(`${input.company.name} • ${input.certificateNumber}`), marginX, footerY);
 
   const out = doc.output("arraybuffer");
   return new Uint8Array(out as ArrayBuffer);

@@ -190,11 +190,7 @@ function CoDetailPage() {
 
         <div className="flex flex-wrap gap-2">
           {co.status === "draft" && canWrite ? (
-            <Button
-              size="sm"
-              onClick={() => submitMut.mutate()}
-              disabled={submitMut.isPending}
-            >
+            <Button size="sm" onClick={() => submitMut.mutate()} disabled={submitMut.isPending}>
               {submitMut.isPending ? "Submitting…" : "Submit for approval"}
             </Button>
           ) : null}
@@ -208,22 +204,14 @@ function CoDetailPage() {
               >
                 <XCircle className="mr-2 size-4" /> Reject
               </Button>
-              <Button
-                size="sm"
-                onClick={() => approveMut.mutate()}
-                disabled={approveMut.isPending}
-              >
+              <Button size="sm" onClick={() => approveMut.mutate()} disabled={approveMut.isPending}>
                 <CheckCircle2 className="mr-2 size-4" />
                 {approveMut.isPending ? "Approving…" : "Approve"}
               </Button>
             </>
           ) : null}
           {co.status === "approved" && canApprove ? (
-            <Button
-              size="sm"
-              onClick={() => setIncorpOpen(true)}
-              disabled={incorpMut.isPending}
-            >
+            <Button size="sm" onClick={() => setIncorpOpen(true)} disabled={incorpMut.isPending}>
               Incorporate
             </Button>
           ) : null}
@@ -233,8 +221,8 @@ function CoDetailPage() {
       {locked ? (
         <Card className="flex items-center gap-2 border-border bg-muted/40 p-3 text-sm">
           <AlertTriangle className="size-4 text-muted-foreground" />
-          This change order is <span className="font-medium">{co.status}</span> and locked
-          from further edits.
+          This change order is <span className="font-medium">{co.status}</span> and locked from
+          further edits.
         </Card>
       ) : null}
 
@@ -263,18 +251,14 @@ function CoDetailPage() {
         </Card>
         {contract ? (
           <Card className="px-4 py-2">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              Contract
-            </div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Contract</div>
             <div className="text-sm font-medium">{contract.contract_number}</div>
             <div className="text-xs text-muted-foreground">{contract.title}</div>
           </Card>
         ) : null}
         {wbs ? (
           <Card className="px-4 py-2">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              WBS item
-            </div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">WBS item</div>
             <div className="text-sm font-medium">{wbs.code}</div>
             <div className="text-xs text-muted-foreground">{wbs.name}</div>
           </Card>
@@ -284,9 +268,7 @@ function CoDetailPage() {
       {/* Overview */}
       {co.description ? (
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Description
-          </div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Description</div>
           <p className="mt-1 whitespace-pre-wrap text-sm">{co.description}</p>
         </Card>
       ) : null}
@@ -320,8 +302,7 @@ function CoDetailPage() {
               {co.budget_impact.map((line) => {
                 const cc = costCodes.find((c) => c.id === line.cost_code_id);
                 const b = budgets.find((x) => x.cost_code_id === line.cost_code_id);
-                const applied =
-                  co.status === "approved" || co.status === "incorporated";
+                const applied = co.status === "approved" || co.status === "incorporated";
                 const currentBefore = applied
                   ? (b?.current_amount ?? 0) - line.amount
                   : (b?.current_amount ?? 0);
@@ -364,8 +345,8 @@ function CoDetailPage() {
           <div className="border-b border-border p-4">
             <h2 className="font-semibold">Schedule shift preview</h2>
             <p className="text-xs text-muted-foreground">
-              Incorporating this CO will shift {shift.shifted.length} unstarted task(s) by{" "}
-              +{co.schedule_impact_days} days. Started or complete tasks are untouched.
+              Incorporating this CO will shift {shift.shifted.length} unstarted task(s) by +
+              {co.schedule_impact_days} days. Started or complete tasks are untouched.
             </p>
           </div>
           <Table>
@@ -388,9 +369,7 @@ function CoDetailPage() {
                   <TableCell className="tabular-nums text-muted-foreground">
                     {t.start_date}
                   </TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">
-                    {t.end_date}
-                  </TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{t.end_date}</TableCell>
                   <TableCell className="tabular-nums font-medium">
                     {t.new_start_date} → {t.new_end_date}
                   </TableCell>
@@ -399,9 +378,7 @@ function CoDetailPage() {
               {shift.skipped.map((t) => (
                 <TableRow key={t.id} className="text-muted-foreground">
                   <TableCell>{t.name}</TableCell>
-                  <TableCell className="capitalize">
-                    {t.status.replace(/_/g, " ")}
-                  </TableCell>
+                  <TableCell className="capitalize">{t.status.replace(/_/g, " ")}</TableCell>
                   <TableCell className="tabular-nums">{t.start_date}</TableCell>
                   <TableCell className="tabular-nums">{t.end_date}</TableCell>
                   <TableCell className="text-xs italic">
@@ -426,24 +403,14 @@ function CoDetailPage() {
         <h2 className="font-semibold">Approval trail</h2>
         <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
           <dt className="text-muted-foreground">Submitted</dt>
-          <dd>
-            {co.submitted_at
-              ? format(new Date(co.submitted_at), "PPpp")
-              : "—"}
-          </dd>
+          <dd>{co.submitted_at ? format(new Date(co.submitted_at), "PPpp") : "—"}</dd>
           <dt className="text-muted-foreground">Approved</dt>
-          <dd>
-            {co.approved_at
-              ? format(new Date(co.approved_at), "PPpp")
-              : "—"}
-          </dd>
+          <dd>{co.approved_at ? format(new Date(co.approved_at), "PPpp") : "—"}</dd>
           <dt className="text-muted-foreground">Approval instance</dt>
           <dd className="font-mono text-xs">{co.approval_instance_id ?? "inline"}</dd>
         </dl>
         <div className="mt-3 border-t border-border pt-3">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Audit events
-          </div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Audit events</div>
           <ul className="mt-1 space-y-1 text-sm">
             {audit.length === 0 ? (
               <li className="text-muted-foreground">No events recorded.</li>
@@ -457,9 +424,7 @@ function CoDetailPage() {
                     {format(new Date(a.created_at), "PP p")}
                   </span>
                   {a.metadata?.note ? (
-                    <span className="text-xs italic">
-                      "{String(a.metadata.note)}"
-                    </span>
+                    <span className="text-xs italic">"{String(a.metadata.note)}"</span>
                   ) : null}
                 </li>
               ))
@@ -493,13 +458,13 @@ function CoDetailPage() {
             <div className="space-y-2 text-sm">
               <p>
                 This will shift {shift.shifted.length} unstarted task(s) by{" "}
-                <strong>+{co.schedule_impact_days} days</strong> and lock the change order
-                from further edits.
+                <strong>+{co.schedule_impact_days} days</strong> and lock the change order from
+                further edits.
               </p>
               {shift.shifted.length === 0 && co.schedule_impact_days > 0 ? (
                 <p className="text-muted-foreground">
-                  No unstarted tasks under the linked WBS — nothing to shift, but the CO
-                  will still be marked incorporated.
+                  No unstarted tasks under the linked WBS — nothing to shift, but the CO will still
+                  be marked incorporated.
                 </p>
               ) : null}
             </div>
@@ -507,10 +472,7 @@ function CoDetailPage() {
               <Button variant="ghost" onClick={() => setIncorpOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={() => incorpMut.mutate()}
-                disabled={incorpMut.isPending}
-              >
+              <Button onClick={() => incorpMut.mutate()} disabled={incorpMut.isPending}>
                 {incorpMut.isPending ? "Incorporating…" : "Confirm incorporate"}
               </Button>
             </DialogFooter>

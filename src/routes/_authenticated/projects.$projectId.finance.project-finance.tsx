@@ -10,29 +10,28 @@ const SUB_TABS = [
   { to: "facilities" as const, label: "Facilities" },
 ];
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/project-finance",
-)({
-  head: () => ({
-    meta: [
-      { title: "Project finance — GridMind EPC" },
-      {
-        name: "description",
-        content:
-          "PPA terms, LCOE scenarios, lender due diligence, and bank facilities for the project.",
-      },
-      { property: "og:title", content: "Project finance — GridMind EPC" },
-      {
-        property: "og:description",
-        content:
-          "Project-finance workspace: PPA, LCOE, lender DD and bank facilities.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
-  component: ProjectFinanceLayout,
-});
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/project-finance")(
+  {
+    head: () => ({
+      meta: [
+        { title: "Project finance — GridMind EPC" },
+        {
+          name: "description",
+          content:
+            "PPA terms, LCOE scenarios, lender due diligence, and bank facilities for the project.",
+        },
+        { property: "og:title", content: "Project finance — GridMind EPC" },
+        {
+          property: "og:description",
+          content: "Project-finance workspace: PPA, LCOE, lender DD and bank facilities.",
+        },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+      ],
+    }),
+    component: ProjectFinanceLayout,
+  },
+);
 
 function ProjectFinanceLayout() {
   const { projectId } = Route.useParams();

@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Link,
-  createFileRoute,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useForm } from "react-hook-form";
@@ -80,14 +75,9 @@ function Shell({ children }: { children: React.ReactNode }) {
 function MessageCard({ title, body }: { title: string; body: string }) {
   return (
     <div className="flex flex-col gap-4 text-center">
-      <h1 className="text-xl font-semibold tracking-tight text-foreground">
-        {title}
-      </h1>
+      <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
       <p className="text-sm text-muted-foreground">{body}</p>
-      <Link
-        to="/"
-        className="text-sm font-medium text-primary hover:underline"
-      >
+      <Link to="/" className="text-sm font-medium text-primary hover:underline">
         Back to home
       </Link>
     </div>
@@ -104,12 +94,7 @@ function renderStateCard(result: AnonPeekResult) {
     );
   }
   if (result.status === "expired") {
-    return (
-      <MessageCard
-        title="Invitation expired"
-        body="Ask your admin to resend it."
-      />
-    );
+    return <MessageCard title="Invitation expired" body="Ask your admin to resend it." />;
   }
   if (result.status === "revoked") {
     return (
@@ -127,9 +112,7 @@ function AcceptInvitePage() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) =>
-      setHasSession(!!data.session),
-    );
+    supabase.auth.getSession().then(({ data }) => setHasSession(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setHasSession(!!session);
     });
@@ -146,11 +129,7 @@ function AcceptInvitePage() {
     );
   }
 
-  return hasSession ? (
-    <SignedInAccept token={token} />
-  ) : (
-    <AnonymousAccept token={token} />
-  );
+  return hasSession ? <SignedInAccept token={token} /> : <AnonymousAccept token={token} />;
 }
 
 function AnonymousAccept({ token }: { token: string }) {
@@ -177,9 +156,7 @@ function AnonymousAccept({ token }: { token: string }) {
         <MessageCard
           title="Something went wrong"
           body={
-            peek.error instanceof Error
-              ? peek.error.message
-              : "We couldn't load this invitation."
+            peek.error instanceof Error ? peek.error.message : "We couldn't load this invitation."
           }
         />
       </Shell>
@@ -262,18 +239,12 @@ function AnonymousEnroll({
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             You&apos;ve been invited as{" "}
-            <span className="font-medium text-foreground">
-              {invite.role.replace(/_/g, " ")}
-            </span>
-            .
+            <span className="font-medium text-foreground">{invite.role.replace(/_/g, " ")}</span>.
           </p>
         </div>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSetPassword)}
-            className="flex flex-col gap-3"
-          >
+          <form onSubmit={form.handleSubmit(onSetPassword)} className="flex flex-col gap-3">
             <FormField
               control={form.control}
               name="fullName"
@@ -322,12 +293,7 @@ function AnonymousEnroll({
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onGoogle}
-          disabled={googleLoading}
-        >
+        <Button type="button" variant="outline" onClick={onGoogle} disabled={googleLoading}>
           {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Continue with Google
         </Button>
@@ -399,9 +365,7 @@ function SignedInAccept({ token }: { token: string }) {
         <MessageCard
           title="Something went wrong"
           body={
-            peek.error instanceof Error
-              ? peek.error.message
-              : "We couldn't load this invitation."
+            peek.error instanceof Error ? peek.error.message : "We couldn't load this invitation."
           }
         />
       </Shell>
@@ -418,15 +382,11 @@ function SignedInAccept({ token }: { token: string }) {
     return (
       <Shell>
         <div className="flex flex-col gap-4 text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Wrong account
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">Wrong account</h1>
           <p className="text-sm text-muted-foreground">
             This invitation was sent to{" "}
-            <span className="font-medium text-foreground">
-              {result.invitedEmail}
-            </span>
-            . Sign out and sign in with that account to accept it.
+            <span className="font-medium text-foreground">{result.invitedEmail}</span>. Sign out and
+            sign in with that account to accept it.
           </p>
           <Button
             variant="outline"
@@ -449,14 +409,8 @@ function SignedInAccept({ token }: { token: string }) {
         </h1>
         <p className="text-sm text-muted-foreground">
           You&apos;ve been invited to{" "}
-          <span className="font-medium text-foreground">
-            {result.companyName}
-          </span>{" "}
-          as{" "}
-          <span className="font-medium text-foreground">
-            {result.role.replace(/_/g, " ")}
-          </span>
-          .
+          <span className="font-medium text-foreground">{result.companyName}</span> as{" "}
+          <span className="font-medium text-foreground">{result.role.replace(/_/g, " ")}</span>.
         </p>
         <Button onClick={() => redeem.mutate()} disabled={redeem.isPending}>
           {redeem.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

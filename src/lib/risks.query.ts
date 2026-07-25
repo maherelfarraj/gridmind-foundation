@@ -2,15 +2,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import {
-  getRisksAccess,
-  listProjectMembers,
-  listRisks,
-} from "@/lib/risks.functions";
+import { getRisksAccess, listProjectMembers, listRisks } from "@/lib/risks.functions";
 
-export function risksAccessQueryOptions(
-  fn: ReturnType<typeof useServerFn<typeof getRisksAccess>>,
-) {
+export function risksAccessQueryOptions(fn: ReturnType<typeof useServerFn<typeof getRisksAccess>>) {
   return queryOptions({
     queryKey: ["risks", "access"],
     queryFn: () => fn({}),

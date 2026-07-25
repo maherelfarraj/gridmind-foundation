@@ -235,10 +235,7 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          className="space-y-4"
-          onSubmit={form.handleSubmit((v) => saveMut.mutate(v))}
-        >
+        <form className="space-y-4" onSubmit={form.handleSubmit((v) => saveMut.mutate(v))}>
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -248,10 +245,14 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                   name="asset_kind"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {ASSET_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t.replace(/_/g, " ")}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {t.replace(/_/g, " ")}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -266,7 +267,9 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
-                        <SelectValue placeholder={projectsQuery.isLoading ? "Loading…" : "Select project"} />
+                        <SelectValue
+                          placeholder={projectsQuery.isLoading ? "Loading…" : "Select project"}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {(projectsQuery.data ?? []).map((p) => (
@@ -279,7 +282,9 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                   )}
                 />
                 {form.formState.errors.project_id && (
-                  <p className="text-sm text-destructive">{form.formState.errors.project_id.message}</p>
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.project_id.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -301,10 +306,14 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                   name="connector_type"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {CONNECTOR_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -312,7 +321,9 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                 />
               </div>
 
-              {(connectorType === "modbus_tcp" || connectorType === "iec61850" || connectorType === "sunspec") && (
+              {(connectorType === "modbus_tcp" ||
+                connectorType === "iec61850" ||
+                connectorType === "sunspec") && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label>Host</Label>
@@ -339,7 +350,10 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2 col-span-2">
                     <Label>Broker URL</Label>
-                    <Input placeholder="mqtts://broker.example.com:8883" {...form.register("config_broker_url")} />
+                    <Input
+                      placeholder="mqtts://broker.example.com:8883"
+                      {...form.register("config_broker_url")}
+                    />
                   </div>
                   <div className="space-y-2 col-span-2">
                     <Label>Topic</Label>
@@ -351,7 +365,10 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
               {connectorType === "vendor_api" && (
                 <div className="space-y-2">
                   <Label>Base URL</Label>
-                  <Input placeholder="https://api.vendor.com/v1" {...form.register("config_base_url")} />
+                  <Input
+                    placeholder="https://api.vendor.com/v1"
+                    {...form.register("config_base_url")}
+                  />
                 </div>
               )}
 
@@ -372,8 +389,8 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                   {...form.register("credentials_ref")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Secrets live in the Lovable Cloud secret store; enter the variable
-                  name only. Never paste a real token here.
+                  Secrets live in the Lovable Cloud secret store; enter the variable name only.
+                  Never paste a real token here.
                 </p>
                 {form.formState.errors.credentials_ref && (
                   <p className="text-sm text-destructive">
@@ -409,7 +426,10 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label className="text-xs">Asset key</Label>
-                        <Input placeholder="INV-01-01" {...form.register(`assets.${i}.asset_key` as const)} />
+                        <Input
+                          placeholder="INV-01-01"
+                          {...form.register(`assets.${i}.asset_key` as const)}
+                        />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Asset type</Label>
@@ -418,10 +438,14 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                           name={`assets.${i}.asset_type` as const}
                           render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
                               <SelectContent>
                                 {ASSET_TYPES.map((t) => (
-                                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                                  <SelectItem key={t} value={t}>
+                                    {t}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -430,11 +454,17 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                       </div>
                       <div className="space-y-1 col-span-2">
                         <Label className="text-xs">Display name</Label>
-                        <Input placeholder="Inverter 01-01" {...form.register(`assets.${i}.name` as const)} />
+                        <Input
+                          placeholder="Inverter 01-01"
+                          {...form.register(`assets.${i}.name` as const)}
+                        />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Equipment tag</Label>
-                        <Input placeholder="INV-01-01" {...form.register(`assets.${i}.equipment_tag` as const)} />
+                        <Input
+                          placeholder="INV-01-01"
+                          {...form.register(`assets.${i}.equipment_tag` as const)}
+                        />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Equipment type</Label>
@@ -443,10 +473,14 @@ export function ScadaConnectorWizard({ open, onOpenChange, companyId }: Props) {
                           name={`assets.${i}.equipment_type` as const}
                           render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
                               <SelectContent>
                                 {EQUIPMENT_TYPES.map((t) => (
-                                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                                  <SelectItem key={t} value={t}>
+                                    {t}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>

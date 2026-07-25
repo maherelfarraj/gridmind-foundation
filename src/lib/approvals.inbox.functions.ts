@@ -72,10 +72,7 @@ function deriveTitle(
   return `${entityType} ${entityId.slice(0, 8)}`;
 }
 
-async function nameMap(
-  context: AuthContext,
-  ids: string[],
-): Promise<Map<string, string | null>> {
+async function nameMap(context: AuthContext, ids: string[]): Promise<Map<string, string | null>> {
   const clean = Array.from(new Set(ids.filter(Boolean)));
   if (clean.length === 0) return new Map();
   const { data, error } = await context.supabase
@@ -118,9 +115,7 @@ async function stepCountMap(
 
 export const listMyApprovals = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ tab: TAB.default("pending") }).parse(raw ?? {}),
-  )
+  .inputValidator((raw: unknown) => z.object({ tab: TAB.default("pending") }).parse(raw ?? {}))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const uid = context.user!.id;
@@ -129,9 +124,7 @@ export const listMyApprovals = createServerFn({ method: "GET" })
 
     let q = context.supabase
       .from("approvals")
-      .select(
-        "id, instance_id, approver_id, status, comment, decided_at, step_order, due_at",
-      );
+      .select("id, instance_id, approver_id, status, comment, decided_at, step_order, due_at");
 
     if (data.tab === "pending") {
       q = q.eq("approver_id", uid).eq("status", "pending");
@@ -168,18 +161,20 @@ export const listMyApprovals = createServerFn({ method: "GET" })
     if (instErr) throw instErr;
 
     const instancesById = new Map(
-      ((insts ?? []) as Array<{
-        id: string;
-        entity_type: string;
-        entity_id: string;
-        rule_key: string | null;
-        amount: number | null;
-        metadata: Json;
-        requested_by: string | null;
-        status: string;
-        sla_due_at: string | null;
-        requested_at: string;
-      }>).map((i) => [i.id, i]),
+      (
+        (insts ?? []) as Array<{
+          id: string;
+          entity_type: string;
+          entity_id: string;
+          rule_key: string | null;
+          amount: number | null;
+          metadata: Json;
+          requested_by: string | null;
+          status: string;
+          sla_due_at: string | null;
+          requested_at: string;
+        }>
+      ).map((i) => [i.id, i]),
     );
 
     // Fetch chain step role labels (best-effort via approval_chain_steps by rule_key not
@@ -189,8 +184,7 @@ export const listMyApprovals = createServerFn({ method: "GET" })
 
     const namesNeeded = new Set<string>();
     for (const a of approvals) namesNeeded.add(a.approver_id);
-    for (const i of instancesById.values())
-      if (i.requested_by) namesNeeded.add(i.requested_by);
+    for (const i of instancesById.values()) if (i.requested_by) namesNeeded.add(i.requested_by);
     const names = await nameMap(context, Array.from(namesNeeded));
 
     const rows: InboxRow[] = approvals.map((a) => {
@@ -223,9 +217,7 @@ export const listMyApprovals = createServerFn({ method: "GET" })
         currency,
         metadata,
         requester_id: inst?.requested_by ?? null,
-        requester_name: inst?.requested_by
-          ? names.get(inst.requested_by) ?? null
-          : null,
+        requester_name: inst?.requested_by ? (names.get(inst.requested_by) ?? null) : null,
         instance_status: inst?.status ?? "unknown",
         sla_due_at: inst?.sla_due_at ?? null,
         requested_at: inst?.requested_at ?? a.decided_at ?? new Date().toISOString(),
@@ -305,9 +297,7 @@ export interface InstanceDetail {
 
 export const getApprovalInstance = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ instance_id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ instance_id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }): Promise<InstanceDetail> => {
     requireSupabaseAuth(context);
     const { data: inst, error } = await context.supabase
@@ -336,9 +326,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
 
     const { data: appr, error: apprErr } = await context.supabase
       .from("approvals")
-      .select(
-        "id, approver_id, status, comment, decided_at, due_at, step_order",
-      )
+      .select("id, approver_id, status, comment, decided_at, due_at, step_order")
       .eq("instance_id", data.instance_id)
       .order("step_order", { ascending: true })
       .order("decided_at", { ascending: true, nullsFirst: false });
@@ -395,9 +383,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       });
       stepMap.set(a.step_order, grp);
     }
-    const steps = Array.from(stepMap.values()).sort(
-      (a, b) => a.step_order - b.step_order,
-    );
+    const steps = Array.from(stepMap.values()).sort((a, b) => a.step_order - b.step_order);
 
     const metadata: Json = i.metadata ?? {};
     const escalated = pickString(metadata, "escalated_at");
@@ -414,23 +400,19 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       status: i.status,
       requested_at: i.requested_at,
       requester_id: i.requested_by,
-      requester_name: i.requested_by ? names.get(i.requested_by) ?? null : null,
+      requester_name: i.requested_by ? (names.get(i.requested_by) ?? null) : null,
       sla_due_at: i.sla_due_at,
       completed_at: i.completed_at,
       current_step: i.current_step,
       escalated_at: escalated,
-      title: deriveTitle(
-        metadata as Json,
-        i.entity_type,
-        i.entity_id,
-      ),
+      title: deriveTitle(metadata as Json, i.entity_type, i.entity_id),
       steps,
       audit: auditRows.map((a) => ({
         id: a.id,
         action: a.action,
         created_at: a.created_at,
         actor_id: a.actor_id,
-        actor_name: a.actor_id ? names.get(a.actor_id) ?? null : null,
+        actor_name: a.actor_id ? (names.get(a.actor_id) ?? null) : null,
         metadata: a.metadata ?? {},
       })),
     };

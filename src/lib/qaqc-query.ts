@@ -11,12 +11,7 @@ import {
   listPunchItems,
   listQaqcProjects,
 } from "@/lib/qaqc.functions";
-import type {
-  PunchCategory,
-  PunchStatus,
-  QaqcDiscipline,
-  QaqcResult,
-} from "@/lib/qaqc.rules";
+import type { PunchCategory, PunchStatus, QaqcDiscipline, QaqcResult } from "@/lib/qaqc.rules";
 
 export { errorMessage } from "@/lib/hse-query";
 
@@ -59,16 +54,11 @@ export const inspectionDetailQueryOptions = (id: string) =>
     staleTime: 5_000,
   });
 
-export const qaqcHeatmapQueryOptions = (
-  projectId: string | null,
-  from: string,
-  to: string,
-) =>
+export const qaqcHeatmapQueryOptions = (projectId: string | null, from: string, to: string) =>
   queryOptions({
     queryKey: ["qaqc", "heatmap", projectId, from, to],
     enabled: !!projectId,
-    queryFn: () =>
-      getQaqcHeatmap({ data: { projectId: projectId!, from, to } as any }),
+    queryFn: () => getQaqcHeatmap({ data: { projectId: projectId!, from, to } as any }),
     staleTime: 15_000,
   });
 
@@ -102,8 +92,6 @@ export const punchWalkContextQueryOptions = (projectId: string | null) =>
   queryOptions({
     queryKey: ["qaqc", "punch", "walk-ctx", projectId],
     enabled: !!projectId,
-    queryFn: () =>
-      getPunchWalkContext({ data: { projectId: projectId! } as any }),
+    queryFn: () => getPunchWalkContext({ data: { projectId: projectId! } as any }),
     staleTime: 30_000,
   });
-

@@ -15,8 +15,8 @@
  *   - "block" (default) → 401/403 response on failure
  *   - "warn"            → allow through, but audit as `public_hook.warn`
  */
-import { createServiceRoleClient } from '@/integrations/supabase/admin';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createServiceRoleClient } from "@/integrations/supabase/admin";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // --------------------------------------------------------------------------
 // Types
@@ -92,29 +92,29 @@ export function timingSafeEqual(a: string, b: string): boolean {
 export async function hmacSha256Hex(secret: string, message: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign'],
+    ["sign"],
   );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
   const bytes = new Uint8Array(sig);
-  let out = '';
-  for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0');
+  let out = "";
+  for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, "0");
   return out;
 }
 
 /** IPv4 dotted-quad → unsigned 32-bit integer. Returns null on invalid. */
 export function ipv4ToLong(ip: string): number | null {
-  const parts = ip.trim().split('.');
+  const parts = ip.trim().split(".");
   if (parts.length !== 4) return null;
   let n = 0;
   for (const p of parts) {
     if (!/^\d{1,3}$/.test(p)) return null;
     const v = Number(p);
     if (v < 0 || v > 255) return null;
-    n = (n * 256) + v;
+    n = n * 256 + v;
   }
   return n >>> 0;
 }
@@ -128,14 +128,14 @@ export function ipv4ToLong(ip: string): number | null {
  */
 export function ipMatchesAllowlist(ip: string | null, allowlist: string[] | null): boolean {
   if (!allowlist || allowlist.length === 0) return true;
-  if (allowlist.includes('*')) return true;
+  if (allowlist.includes("*")) return true;
   if (!ip) return false;
   const ipLong = ipv4ToLong(ip);
   if (ipLong === null) return false;
   for (const entry of allowlist) {
     const trimmed = entry.trim();
     if (!trimmed) continue;
-    const slash = trimmed.indexOf('/');
+    const slash = trimmed.indexOf("/");
     if (slash === -1) {
       const other = ipv4ToLong(trimmed);
       if (other !== null && other === ipLong) return true;
@@ -164,11 +164,11 @@ export async function auditGuardEvent(
   },
 ): Promise<void> {
   try {
-    await client.from('audit_logs').insert({
+    await client.from("audit_logs").insert({
       company_id: args.companyId,
       actor_id: null,
       action: args.action,
-      entity: 'public_hook',
+      entity: "public_hook",
       entity_id: null,
       metadata: {
         route: args.route,
@@ -188,25 +188,31 @@ export async function auditGuardEvent(
 
 const REPLAY_WINDOW_SECONDS = 300;
 
-function jsonError(status: number, code: string, message?: string, extraHeaders?: Record<string, string>): Response {
+function jsonError(
+  status: number,
+  code: string,
+  message?: string,
+  extraHeaders?: Record<string, string>,
+): Response {
   return new Response(JSON.stringify({ error: code, message: message ?? code }), {
     status,
-    headers: { 'content-type': 'application/json', ...(extraHeaders ?? {}) },
+    headers: { "content-type": "application/json", ...(extraHeaders ?? {}) },
   });
 }
 
-function enforceMode(): 'warn' | 'block' {
-  const raw = (typeof process !== 'undefined' ? process.env?.PUBLIC_HOOK_ENFORCE : undefined) ?? 'block';
-  return raw.toLowerCase() === 'warn' ? 'warn' : 'block';
+function enforceMode(): "warn" | "block" {
+  const raw =
+    (typeof process !== "undefined" ? process.env?.PUBLIC_HOOK_ENFORCE : undefined) ?? "block";
+  return raw.toLowerCase() === "warn" ? "warn" : "block";
 }
 
 function matchCronApikey(header: string | null): boolean {
   if (!header) return false;
   const provided = header.trim();
   if (!provided) return false;
-  const env = typeof process !== 'undefined' ? process.env : undefined;
+  const env = typeof process !== "undefined" ? process.env : undefined;
   const candidates = [env?.SUPABASE_PUBLISHABLE_KEY, env?.CRON_APIKEY].filter(
-    (v): v is string => typeof v === 'string' && v.length > 0,
+    (v): v is string => typeof v === "string" && v.length > 0,
   );
   for (const expected of candidates) {
     if (provided.length === expected.length && timingSafeEqual(provided, expected)) return true;
@@ -214,27 +220,24 @@ function matchCronApikey(header: string | null): boolean {
   return false;
 }
 
-export async function guardPublicHook(
-  request: Request,
-  opts: GuardOptions,
-): Promise<GuardResult> {
+export async function guardPublicHook(request: Request, opts: GuardOptions): Promise<GuardResult> {
   const admin = createServiceRoleClient();
   const mode = enforceMode();
-  const clientIp = request.headers.get('cf-connecting-ip');
+  const clientIp = request.headers.get("cf-connecting-ip");
 
   // ---- Stage 1: auth (always blocks) -------------------------------------
-  const authHeader = request.headers.get('authorization') ?? '';
+  const authHeader = request.headers.get("authorization") ?? "";
   const bearer = /^Bearer\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim();
 
   // ---- Cron caller branch (apikey header, no Bearer) ---------------------
-  if (!bearer && opts.allowCron && matchCronApikey(request.headers.get('apikey'))) {
+  if (!bearer && opts.allowCron && matchCronApikey(request.headers.get("apikey"))) {
     const rawBody = opts.rawBody ?? (await request.clone().text());
 
     // Rate limit (bucket keyed by route, shared across all cron hits).
     const capacity = opts.rateCapacity ?? 120;
     const refill = opts.rateRefillPerSec ?? 2;
     const rateKey = `public_hook:cron:${opts.route}`;
-    const { data: allowed, error: rateErr } = await admin.rpc('consume_rate_limit', {
+    const { data: allowed, error: rateErr } = await admin.rpc("consume_rate_limit", {
       p_key: rateKey,
       p_capacity: capacity,
       p_refill_per_sec: refill,
@@ -244,9 +247,9 @@ export async function guardPublicHook(
       // ops can spot systemic RPC failures without an outage from this hook.
       await auditGuardEvent(admin, {
         companyId: null,
-        action: 'public_hook.rate_limit_fail_open',
+        action: "public_hook.rate_limit_fail_open",
         route: opts.route,
-        reason: 'rate_limiter_unavailable',
+        reason: "rate_limiter_unavailable",
         metadata: { error: String((rateErr as { message?: string })?.message ?? rateErr) },
       });
       return {
@@ -256,20 +259,20 @@ export async function guardPublicHook(
         scopes: [],
         rawBody,
         clientIp,
-        caller: { kind: 'cron', companyId: null, keyId: null },
+        caller: { kind: "cron", companyId: null, keyId: null },
       };
     }
     if (allowed !== true) {
       await auditGuardEvent(admin, {
         companyId: null,
-        action: 'public_hook.block',
+        action: "public_hook.block",
         route: opts.route,
-        reason: 'rate_limited',
+        reason: "rate_limited",
       });
       return {
         ok: false,
-        response: jsonError(429, 'rate_limited', 'too many requests', {
-          'retry-after': String(Math.max(1, Math.ceil(1 / refill))),
+        response: jsonError(429, "rate_limited", "too many requests", {
+          "retry-after": String(Math.max(1, Math.ceil(1 / refill))),
         }),
       };
     }
@@ -281,35 +284,35 @@ export async function guardPublicHook(
       scopes: [],
       rawBody,
       clientIp,
-      caller: { kind: 'cron', companyId: null, keyId: null },
+      caller: { kind: "cron", companyId: null, keyId: null },
     };
   }
 
   if (!bearer) {
     await auditGuardEvent(admin, {
       companyId: null,
-      action: 'public_hook.block',
+      action: "public_hook.block",
       route: opts.route,
-      reason: 'missing_bearer',
+      reason: "missing_bearer",
     });
-    return { ok: false, response: jsonError(401, 'unauthorized', 'missing bearer token') };
+    return { ok: false, response: jsonError(401, "unauthorized", "missing bearer token") };
   }
 
-  const { data: verifyRows, error: verifyErr } = await admin.rpc('verify_api_key', {
+  const { data: verifyRows, error: verifyErr } = await admin.rpc("verify_api_key", {
     p_raw_key: bearer,
   });
   if (verifyErr) {
-    return { ok: false, response: jsonError(401, 'unauthorized', 'key verification failed') };
+    return { ok: false, response: jsonError(401, "unauthorized", "key verification failed") };
   }
   const keyRow = (Array.isArray(verifyRows) ? verifyRows[0] : verifyRows) as ApiKeyRow | undefined;
   if (!keyRow) {
     await auditGuardEvent(admin, {
       companyId: null,
-      action: 'public_hook.block',
+      action: "public_hook.block",
       route: opts.route,
-      reason: 'invalid_key',
+      reason: "invalid_key",
     });
-    return { ok: false, response: jsonError(401, 'unauthorized', 'invalid key') };
+    return { ok: false, response: jsonError(401, "unauthorized", "invalid key") };
   }
 
   const scopes = keyRow.scopes ?? [];
@@ -317,34 +320,34 @@ export async function guardPublicHook(
     await auditGuardEvent(admin, {
       companyId: keyRow.company_id,
       keyId: keyRow.key_id,
-      action: 'public_hook.block',
+      action: "public_hook.block",
       route: opts.route,
-      reason: 'scope_missing',
+      reason: "scope_missing",
       metadata: { required_scope: opts.scope },
     });
-    return { ok: false, response: jsonError(403, 'forbidden', 'missing required scope') };
+    return { ok: false, response: jsonError(403, "forbidden", "missing required scope") };
   }
 
   // ---- Stage 2: IP allowlist (warn/block) --------------------------------
   const ipOk = ipMatchesAllowlist(clientIp, keyRow.allowed_ips);
   if (!ipOk) {
-    if (mode === 'block') {
+    if (mode === "block") {
       await auditGuardEvent(admin, {
         companyId: keyRow.company_id,
         keyId: keyRow.key_id,
-        action: 'public_hook.block',
+        action: "public_hook.block",
         route: opts.route,
-        reason: 'ip_not_allowed',
+        reason: "ip_not_allowed",
         metadata: { client_ip: clientIp },
       });
-      return { ok: false, response: jsonError(403, 'forbidden', 'ip not allowed') };
+      return { ok: false, response: jsonError(403, "forbidden", "ip not allowed") };
     }
     await auditGuardEvent(admin, {
       companyId: keyRow.company_id,
       keyId: keyRow.key_id,
-      action: 'public_hook.warn',
+      action: "public_hook.warn",
       route: opts.route,
-      reason: 'ip_not_allowed',
+      reason: "ip_not_allowed",
       metadata: { client_ip: clientIp },
     });
   }
@@ -353,46 +356,46 @@ export async function guardPublicHook(
   const rawBody = opts.rawBody ?? (await request.clone().text());
   if (opts.requireSignature || keyRow.hmac_secret) {
     const secret = keyRow.hmac_secret;
-    const tsHeader = request.headers.get('x-timestamp');
-    const sigHeader = request.headers.get('x-signature');
+    const tsHeader = request.headers.get("x-timestamp");
+    const sigHeader = request.headers.get("x-signature");
     let sigOk = false;
-    let sigReason = 'signature_missing';
+    let sigReason = "signature_missing";
 
     if (!secret) {
-      sigReason = 'secret_not_configured';
+      sigReason = "secret_not_configured";
     } else if (!tsHeader || !sigHeader) {
-      sigReason = 'signature_missing';
+      sigReason = "signature_missing";
     } else {
       const ts = Number(tsHeader);
       const nowSec = Math.floor(Date.now() / 1000);
       if (!Number.isFinite(ts) || Math.abs(nowSec - ts) > REPLAY_WINDOW_SECONDS) {
-        sigReason = 'signature_expired';
+        sigReason = "signature_expired";
       } else {
         const expected = await hmacSha256Hex(secret, `${tsHeader}.${rawBody}`);
-        const provided = sigHeader.toLowerCase().replace(/^sha256=/, '');
+        const provided = sigHeader.toLowerCase().replace(/^sha256=/, "");
         if (expected.length === provided.length && timingSafeEqual(expected, provided)) {
           sigOk = true;
         } else {
-          sigReason = 'signature_mismatch';
+          sigReason = "signature_mismatch";
         }
       }
     }
 
     if (!sigOk) {
-      if (mode === 'block') {
+      if (mode === "block") {
         await auditGuardEvent(admin, {
           companyId: keyRow.company_id,
           keyId: keyRow.key_id,
-          action: 'public_hook.block',
+          action: "public_hook.block",
           route: opts.route,
           reason: sigReason,
         });
-        return { ok: false, response: jsonError(401, sigReason, 'invalid signature') };
+        return { ok: false, response: jsonError(401, sigReason, "invalid signature") };
       }
       await auditGuardEvent(admin, {
         companyId: keyRow.company_id,
         keyId: keyRow.key_id,
-        action: 'public_hook.warn',
+        action: "public_hook.warn",
         route: opts.route,
         reason: sigReason,
       });
@@ -403,7 +406,7 @@ export async function guardPublicHook(
   const capacity = opts.rateCapacity ?? 120;
   const refill = opts.rateRefillPerSec ?? 2;
   const rateKey = `public_hook:${keyRow.key_id}:${opts.route}`;
-  const { data: allowed, error: rateErr } = await admin.rpc('consume_rate_limit', {
+  const { data: allowed, error: rateErr } = await admin.rpc("consume_rate_limit", {
     p_key: rateKey,
     p_capacity: capacity,
     p_refill_per_sec: refill,
@@ -414,9 +417,9 @@ export async function guardPublicHook(
     await auditGuardEvent(admin, {
       companyId: keyRow.company_id,
       keyId: keyRow.key_id,
-      action: 'public_hook.rate_limit_fail_open',
+      action: "public_hook.rate_limit_fail_open",
       route: opts.route,
-      reason: 'rate_limiter_unavailable',
+      reason: "rate_limiter_unavailable",
       metadata: { error: String((rateErr as { message?: string })?.message ?? rateErr) },
     });
     return {
@@ -426,21 +429,21 @@ export async function guardPublicHook(
       scopes,
       rawBody,
       clientIp,
-      caller: { kind: 'api_key', companyId: keyRow.company_id, keyId: keyRow.key_id },
+      caller: { kind: "api_key", companyId: keyRow.company_id, keyId: keyRow.key_id },
     };
   }
   if (allowed !== true) {
     await auditGuardEvent(admin, {
       companyId: keyRow.company_id,
       keyId: keyRow.key_id,
-      action: 'public_hook.block',
+      action: "public_hook.block",
       route: opts.route,
-      reason: 'rate_limited',
+      reason: "rate_limited",
     });
     return {
       ok: false,
-      response: jsonError(429, 'rate_limited', 'too many requests', {
-        'retry-after': String(Math.max(1, Math.ceil(1 / refill))),
+      response: jsonError(429, "rate_limited", "too many requests", {
+        "retry-after": String(Math.max(1, Math.ceil(1 / refill))),
       }),
     };
   }
@@ -452,6 +455,6 @@ export async function guardPublicHook(
     scopes,
     rawBody,
     clientIp,
-    caller: { kind: 'api_key', companyId: keyRow.company_id, keyId: keyRow.key_id },
+    caller: { kind: "api_key", companyId: keyRow.company_id, keyId: keyRow.key_id },
   };
 }

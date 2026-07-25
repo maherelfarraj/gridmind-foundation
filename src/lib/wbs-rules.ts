@@ -1,12 +1,7 @@
 // P-072 — WBS pure rules, enums, zod schemas.
 import { z } from "zod";
 
-export const WBS_ITEM_TYPES = [
-  "phase",
-  "package",
-  "discipline",
-  "task_group",
-] as const;
+export const WBS_ITEM_TYPES = ["phase", "package", "discipline", "task_group"] as const;
 export type WbsItemType = (typeof WBS_ITEM_TYPES)[number];
 
 export const WBS_DISCIPLINES = [
@@ -56,9 +51,7 @@ export function isCodeUniqueAmongSiblings(
   const normalized = code.trim().toLowerCase();
   return !all.some(
     (n) =>
-      n.parent_id === parentId &&
-      n.id !== currentId &&
-      n.code.trim().toLowerCase() === normalized,
+      n.parent_id === parentId && n.id !== currentId && n.code.trim().toLowerCase() === normalized,
   );
 }
 
@@ -84,10 +77,7 @@ export function wouldCreateCycle(
 }
 
 /** Suggest the next `1.<n>` code beneath a root child. */
-export function suggestNextRootChildCode(
-  rootCode: string,
-  siblings: WbsNodeLite[],
-): string {
+export function suggestNextRootChildCode(rootCode: string, siblings: WbsNodeLite[]): string {
   const prefix = `${rootCode}.`;
   const used = new Set<number>();
   for (const s of siblings) {
@@ -116,12 +106,7 @@ export const wbsItemBaseSchema = z.object({
   discipline: z.enum(WBS_DISCIPLINES).nullable().optional(),
   description: z.string().trim().max(2000).nullable().optional(),
   sort_order: z.number().int().min(0).max(9999).default(0),
-  budgeted_amount: z
-    .number()
-    .min(0, "Budget must be ≥ 0")
-    .max(1e12)
-    .nullable()
-    .optional(),
+  budgeted_amount: z.number().min(0, "Budget must be ≥ 0").max(1e12).nullable().optional(),
   currency_code: z.string().trim().length(3).nullable().optional(),
   ifc_package_ref: z.string().trim().max(120).nullable().optional(),
   parent_id: z.string().uuid().nullable().optional(),
@@ -149,12 +134,7 @@ export const wbsImportIfcSchema = z.object({
   packages: z
     .array(
       z.object({
-        code: z
-          .string()
-          .trim()
-          .min(1)
-          .max(48)
-          .regex(WBS_CODE_REGEX, "Invalid code"),
+        code: z.string().trim().min(1).max(48).regex(WBS_CODE_REGEX, "Invalid code"),
         name: z.string().trim().min(1).max(160),
         discipline: z.enum(WBS_DISCIPLINES).nullable().optional(),
         ifc_package_ref: z.string().trim().max(120),

@@ -20,10 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  errorMessage,
-  hseProjectsQueryOptions,
-} from "@/lib/hse-query";
+import { errorMessage, hseProjectsQueryOptions } from "@/lib/hse-query";
 import { createIncident } from "@/lib/hse.functions";
 import {
   INCIDENT_SEVERITIES,
@@ -161,7 +158,9 @@ function NewIncidentPage() {
               <Label>Type</Label>
               <Select
                 value={form.watch("incidentType")}
-                onValueChange={(v) => form.setValue("incidentType", v as any, { shouldValidate: true })}
+                onValueChange={(v) =>
+                  form.setValue("incidentType", v as any, { shouldValidate: true })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -205,7 +204,11 @@ function NewIncidentPage() {
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" {...form.register("location")} placeholder="Substation A / Row 12" />
+              <Input
+                id="location"
+                {...form.register("location")}
+                placeholder="Substation A / Row 12"
+              />
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
               <Label htmlFor="description">Description</Label>
@@ -241,9 +244,7 @@ function NewIncidentPage() {
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
                 <div className="text-sm font-medium">OSHA recordable</div>
-                <div className="text-xs text-muted-foreground">
-                  Counts toward TRIR
-                </div>
+                <div className="text-xs text-muted-foreground">Counts toward TRIR</div>
               </div>
               <Switch
                 checked={form.watch("oshaRecordable")}
@@ -309,10 +310,7 @@ function NewIncidentPage() {
                   {...form.register(`correctiveActions.${i}.owner` as const)}
                   placeholder="Owner"
                 />
-                <Input
-                  type="date"
-                  {...form.register(`correctiveActions.${i}.due_date` as const)}
-                />
+                <Input type="date" {...form.register(`correctiveActions.${i}.due_date` as const)} />
                 <Button
                   type="button"
                   variant="ghost"

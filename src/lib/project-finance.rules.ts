@@ -274,19 +274,12 @@ export function computeLcoe(input: ComputeLcoeInput): number {
 // ---------------------------------------------------------------------------
 // Facility utilization
 // ---------------------------------------------------------------------------
-export function facilityUtilizationPct(
-  drawn: number,
-  commitment: number,
-): number {
+export function facilityUtilizationPct(drawn: number, commitment: number): number {
   if (commitment <= 0) return 0;
   return (drawn / commitment) * 100;
 }
 
-export function assertDrawdownAllowed(
-  drawn: number,
-  amount: number,
-  commitment: number,
-): void {
+export function assertDrawdownAllowed(drawn: number, amount: number, commitment: number): void {
   if (!(amount > 0)) throw new Error("drawdown_amount_must_be_positive");
   if (drawn + amount > commitment + 0.005) {
     throw new Error("drawdown_exceeds_commitment");
@@ -317,8 +310,7 @@ export function ddReadinessSummary(
     waived: 0,
   };
   for (const it of items) {
-    counts[it.status as DdItemStatus] =
-      (counts[it.status as DdItemStatus] ?? 0) + 1;
+    counts[it.status as DdItemStatus] = (counts[it.status as DdItemStatus] ?? 0) + 1;
   }
   const total = items.length;
   const done = counts.accepted + counts.waived;
@@ -347,9 +339,7 @@ export function isDdOverdue(
 ): boolean {
   if (!dueDate) return false;
   if (status === "accepted" || status === "waived") return false;
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const due = new Date(`${dueDate}T00:00:00Z`);
   return due.getTime() < today.getTime();
 }

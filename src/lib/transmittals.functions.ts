@@ -95,16 +95,13 @@ async function audit(
 function mapRow(r: any): TransmittalListItem {
   return {
     ...(r as TransmittalRow),
-    items: ((r.items ?? []) as TransmittalItem[]),
+    items: (r.items ?? []) as TransmittalItem[],
     project_name: r.projects?.name ?? null,
     project_code: r.projects?.code ?? null,
   };
 }
 
-async function allocateTransmittalNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function allocateTransmittalNumber(context: AuthContext, companyId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("transmittals")
     .select("transmittal_number")
@@ -112,9 +109,7 @@ async function allocateTransmittalNumber(
     .order("transmittal_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  const list = ((data ?? []) as { transmittal_number: string }[]).map(
-    (r) => r.transmittal_number,
-  );
+  const list = ((data ?? []) as { transmittal_number: string }[]).map((r) => r.transmittal_number);
   return nextTransmittalNumber(list);
 }
 
@@ -154,9 +149,7 @@ export const listTransmittals = createServerFn({ method: "GET" })
 
 export const getTransmittal = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<TransmittalDetail> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -190,8 +183,7 @@ export const createTransmittal = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -214,16 +206,10 @@ export const createTransmittal = createServerFn({ method: "POST" })
         .select("*")
         .maybeSingle();
       if (!error && inserted) {
-        await audit(
-          context,
-          "transmittal.create",
-          "transmittals",
-          (inserted as any).id,
-          {
-            transmittal_number: number,
-            direction: data.direction,
-          },
-        );
+        await audit(context, "transmittal.create", "transmittals", (inserted as any).id, {
+          transmittal_number: number,
+          direction: data.direction,
+        });
         return {
           ...(inserted as unknown as TransmittalRow),
           items: ((inserted as any).items ?? []) as TransmittalItem[],
@@ -299,9 +285,7 @@ export const listTransmittalProjects = createServerFn({ method: "GET" })
 
 export const listProjectDocuments = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ projectId: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);

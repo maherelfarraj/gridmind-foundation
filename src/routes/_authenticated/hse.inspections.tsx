@@ -27,11 +27,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ChecklistRunner } from "@/components/hse/checklist-runner";
-import {
-  errorMessage,
-  hseProjectsQueryOptions,
-  inspectionListQueryOptions,
-} from "@/lib/hse-query";
+import { errorMessage, hseProjectsQueryOptions, inspectionListQueryOptions } from "@/lib/hse-query";
 import { upsertInspection } from "@/lib/hse.functions";
 import {
   INSPECTION_STATUSES,
@@ -100,8 +96,7 @@ function InspectionsPage() {
   const rows = listQuery.data ?? [];
 
   const saveMut = useMutation({
-    mutationFn: (payload: InspectionInput) =>
-      upsertInspection({ data: payload as any }),
+    mutationFn: (payload: InspectionInput) => upsertInspection({ data: payload as any }),
     onSuccess: async () => {
       toast.success("Inspection saved");
       setOpen(false);
@@ -329,18 +324,14 @@ function InspectionsPage() {
                 <Input
                   type="date"
                   value={draft.inspectionDate}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, inspectionDate: e.target.value }))
-                  }
+                  onChange={(e) => setDraft((d) => ({ ...d, inspectionDate: e.target.value }))}
                 />
               </div>
               <div className="flex flex-col gap-1">
                 <Label>Type</Label>
                 <Input
                   value={draft.inspectionType}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, inspectionType: e.target.value }))
-                  }
+                  onChange={(e) => setDraft((d) => ({ ...d, inspectionType: e.target.value }))}
                   placeholder="routine / spot / audit"
                 />
               </div>
@@ -355,9 +346,7 @@ function InspectionsPage() {
                 <Label>Status</Label>
                 <Select
                   value={draft.status}
-                  onValueChange={(v) =>
-                    setDraft((d) => ({ ...d, status: v as InspectionStatus }))
-                  }
+                  onValueChange={(v) => setDraft((d) => ({ ...d, status: v as InspectionStatus }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

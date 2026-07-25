@@ -2,10 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   simulateYield,
   YIELD_ENGINE_ID,
@@ -21,11 +18,7 @@ import {
   PRICING_RULE_KEY,
 } from "@/lib/pricing-rules";
 import { assertExportAllowed } from "@/lib/export-guard";
-import {
-  getEsignProvider,
-  isEsignConfigured,
-  type EsignEvent,
-} from "@/lib/esign/provider";
+import { getEsignProvider, isEsignConfigured, type EsignEvent } from "@/lib/esign/provider";
 
 const inputSchema = z.object({ proposalId: z.string().uuid() });
 
@@ -85,17 +78,13 @@ export const createProposalVersion = createServerFn({ method: "POST" })
     if (!source) throw new Error("Proposal not found");
 
     if (source.status === "superseded" || source.status === "accepted") {
-      throw new Error(
-        `Cannot version a proposal in status "${source.status}"`,
-      );
+      throw new Error(`Cannot version a proposal in status "${source.status}"`);
     }
 
     // 2. Load line items to copy.
     const { data: lines, error: lineErr } = await supabase
       .from("proposal_line_items")
-      .select(
-        "sort_order, category, description, qty, unit, unit_price, line_total",
-      )
+      .select("sort_order, category, description, qty, unit, unit_price, line_total")
       .eq("proposal_id", source.id)
       .order("sort_order", { ascending: true });
     if (lineErr) throw new Error(lineErr.message);
@@ -141,22 +130,20 @@ export const createProposalVersion = createServerFn({ method: "POST" })
 
     // 4. Copy line items.
     if (lines && lines.length > 0) {
-      const { error: copyErr } = await supabase
-        .from("proposal_line_items")
-        .insert(
-          lines.map((l: (typeof lines)[number]) => ({
-            company_id: source.company_id,
-            proposal_id: created.id,
-            sort_order: l.sort_order,
-            category: l.category,
-            description: l.description,
-            qty: l.qty,
-            unit: l.unit,
-            unit_price: l.unit_price,
-            line_total: l.line_total,
-            created_by: userId,
-          })),
-        );
+      const { error: copyErr } = await supabase.from("proposal_line_items").insert(
+        lines.map((l: (typeof lines)[number]) => ({
+          company_id: source.company_id,
+          proposal_id: created.id,
+          sort_order: l.sort_order,
+          category: l.category,
+          description: l.description,
+          qty: l.qty,
+          unit: l.unit,
+          unit_price: l.unit_price,
+          line_total: l.line_total,
+          created_by: userId,
+        })),
+      );
       if (copyErr) {
         // best-effort rollback of the new proposal
         await supabase.from("proposals").delete().eq("id", created.id);
@@ -325,9 +312,7 @@ export interface ProposalListRow {
 export const listProposals = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ opportunityId: z.string().uuid().optional() })
-      .parse(input ?? {}),
+    z.object({ opportunityId: z.string().uuid().optional() }).parse(input ?? {}),
   )
   .handler(async ({ data, context }): Promise<ProposalListRow[]> => {
     requireSupabaseAuth(context);
@@ -418,11 +403,7 @@ export const createProposal = createServerFn({ method: "POST" })
   });
 
 // ---- saveProposalHeader ----------------------------------------------------
-function recomputeTotal(
-  subtotal: number,
-  contingencyPct: number,
-  marginPct: number,
-): number {
+function recomputeTotal(subtotal: number, contingencyPct: number, marginPct: number): number {
   const withCont = subtotal * (1 + Math.max(0, contingencyPct) / 100);
   const withMargin = withCont * (1 + Math.max(0, marginPct) / 100);
   return Math.round(withMargin * 100) / 100;
@@ -519,9 +500,7 @@ export const saveLineItems = createServerFn({ method: "POST" })
       .eq("proposal_id", data.proposalId);
     if (exErr) throw new Error(exErr.message);
 
-    const incomingIds = new Set(
-      data.items.filter((i) => i.id).map((i) => i.id!),
-    );
+    const incomingIds = new Set(data.items.filter((i) => i.id).map((i) => i.id!));
     const toDelete = (existing ?? [])
       .filter((r: any) => !incomingIds.has(r.id))
       .map((r: any) => r.id);
@@ -535,8 +514,7 @@ export const saveLineItems = createServerFn({ method: "POST" })
 
     let subtotal = 0;
     for (const item of data.items) {
-      const line_total =
-        Math.round(item.qty * item.unit_price * 100) / 100;
+      const line_total = Math.round(item.qty * item.unit_price * 100) / 100;
       subtotal += line_total;
       if (item.id) {
         const { error } = await context.supabase
@@ -553,20 +531,18 @@ export const saveLineItems = createServerFn({ method: "POST" })
           .eq("id", item.id);
         if (error) throw new Error(error.message);
       } else {
-        const { error } = await context.supabase
-          .from("proposal_line_items")
-          .insert({
-            company_id: companyId,
-            proposal_id: data.proposalId,
-            sort_order: item.sort_order,
-            category: item.category,
-            description: item.description,
-            qty: item.qty,
-            unit: item.unit,
-            unit_price: item.unit_price,
-            line_total,
-            created_by: context.user.id,
-          } as any);
+        const { error } = await context.supabase.from("proposal_line_items").insert({
+          company_id: companyId,
+          proposal_id: data.proposalId,
+          sort_order: item.sort_order,
+          category: item.category,
+          description: item.description,
+          qty: item.qty,
+          unit: item.unit,
+          unit_price: item.unit_price,
+          line_total,
+          created_by: context.user.id,
+        } as any);
         if (error) throw new Error(error.message);
       }
     }
@@ -696,42 +672,35 @@ export const runYieldStub = createServerFn({ method: "POST" })
           Number(config.losses.mismatch ?? 0) +
           Number(config.losses.wiring ?? 0) +
           Number(config.losses.inverter ?? 0);
-        const { error: pyErr } = await context.supabase
-          .from("project_yield_config")
-          .upsert(
-            {
-              company_id: (proposal as any).company_id,
-              project_id: projectId,
-              scenario_name: "Proposal",
+        const { error: pyErr } = await context.supabase.from("project_yield_config").upsert(
+          {
+            company_id: (proposal as any).company_id,
+            project_id: projectId,
+            scenario_name: "Proposal",
+            p50_mwh: yieldResult.p50_kwh / 1000,
+            p90_mwh: yieldResult.p90_kwh / 1000,
+            losses_pct: Math.round(losses * 1000) / 10,
+            degradation_pct: config.degradation_y1_pct,
+            availability_pct: Math.round((1 - availabilityLoss) * 1000) / 10,
+            params: {
+              source: "proposal_stub",
+              proposal_id: data.proposalId,
+            } as any,
+            results: {
               p50_mwh: yieldResult.p50_kwh / 1000,
               p90_mwh: yieldResult.p90_kwh / 1000,
+              specific_yield_kwh_kwp: yieldResult.specific_yield_kwh_kwp,
+              pr_pct: yieldResult.performance_ratio * 100,
               losses_pct: Math.round(losses * 1000) / 10,
-              degradation_pct: config.degradation_y1_pct,
-              availability_pct:
-                Math.round((1 - availabilityLoss) * 1000) / 10,
-              params: {
-                source: "proposal_stub",
-                proposal_id: data.proposalId,
-              } as any,
-              results: {
-                p50_mwh: yieldResult.p50_kwh / 1000,
-                p90_mwh: yieldResult.p90_kwh / 1000,
-                specific_yield_kwh_kwp:
-                  yieldResult.specific_yield_kwh_kwp,
-                pr_pct: yieldResult.performance_ratio * 100,
-                losses_pct: Math.round(losses * 1000) / 10,
-                engine: yieldResult.engine,
-                imported: false,
-              } as any,
-            },
-            { onConflict: "project_id,scenario_name" },
-          );
+              engine: yieldResult.engine,
+              imported: false,
+            } as any,
+          },
+          { onConflict: "project_id,scenario_name" },
+        );
 
         if (pyErr && !GRACEFUL_PG_CODES.has((pyErr as any).code)) {
-          console.warn(
-            "[runYieldStub] project_yield_config upsert failed:",
-            pyErr.message,
-          );
+          console.warn("[runYieldStub] project_yield_config upsert failed:", pyErr.message);
         }
       } catch (err) {
         console.warn("[runYieldStub] project_yield_config skipped:", err);
@@ -752,7 +721,6 @@ export const runYieldStub = createServerFn({ method: "POST" })
 
     return yieldResult;
   });
-
 
 // ---------------------------------------------------------------------------
 // P-046 — Pricing checklist + CFO approval gate
@@ -824,10 +792,7 @@ async function computeChecklistFor(
   const anyBad = lineRows.some(
     (l: any) => Number(l.qty ?? 0) <= 0 || Number(l.unit_price ?? 0) < 0,
   );
-  const lineSum = lineRows.reduce(
-    (s: number, l: any) => s + Number(l.line_total ?? 0),
-    0,
-  );
+  const lineSum = lineRows.reduce((s: number, l: any) => s + Number(l.line_total ?? 0), 0);
   const subtotalMatch = Math.abs(lineSum - Number(p.subtotal ?? 0)) < 0.01;
   items.push({
     key: "line_items_priced",
@@ -839,9 +804,9 @@ async function computeChecklistFor(
         : anyBad
           ? "qty or unit price invalid on one or more lines"
           : !subtotalMatch
-            ? `Σ line_total (${lineSum.toFixed(2)}) ≠ subtotal (${Number(
-                p.subtotal ?? 0,
-              ).toFixed(2)})`
+            ? `Σ line_total (${lineSum.toFixed(2)}) ≠ subtotal (${Number(p.subtotal ?? 0).toFixed(
+                2,
+              )})`
             : undefined,
   });
 
@@ -884,16 +849,12 @@ async function computeChecklistFor(
         detail: `no FX rate available for ${COMPANY_BASE_CURRENCY}→${currency}`,
       });
     } else {
-      const ageH =
-        (Date.now() - new Date((fx as any).as_of).getTime()) / 3_600_000;
+      const ageH = (Date.now() - new Date((fx as any).as_of).getTime()) / 3_600_000;
       items.push({
         key: "fx_snapshot",
         label: `FX snapshot ≤ ${FX_MAX_AGE_HOURS}h old`,
         pass: ageH <= FX_MAX_AGE_HOURS,
-        detail:
-          ageH <= FX_MAX_AGE_HOURS
-            ? undefined
-            : `latest rate is ${Math.round(ageH)}h old`,
+        detail: ageH <= FX_MAX_AGE_HOURS ? undefined : `latest rate is ${Math.round(ageH)}h old`,
       });
     }
   }
@@ -903,9 +864,7 @@ async function computeChecklistFor(
     key: "contingency_floor",
     label: `Contingency ≥ ${CONTINGENCY_FLOOR_PCT}%`,
     pass: contPass,
-    detail: contPass
-      ? undefined
-      : `current: ${Number(p.contingency_pct ?? 0)}%`,
+    detail: contPass ? undefined : `current: ${Number(p.contingency_pct ?? 0)}%`,
   });
 
   const vu = p.valid_until ? new Date(p.valid_until) : null;
@@ -917,9 +876,7 @@ async function computeChecklistFor(
     detail: !vu ? "not set" : vuPass ? undefined : "in the past",
   });
 
-  const compPass = !!(
-    opportunity?.competitor && String(opportunity.competitor).trim().length > 0
-  );
+  const compPass = !!(opportunity?.competitor && String(opportunity.competitor).trim().length > 0);
   items.push({
     key: "competitor_recorded",
     label: "Competitor recorded on opportunity",
@@ -978,10 +935,7 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertProposalWriter(context);
 
-    const { result, proposal } = await computeChecklistFor(
-      context,
-      data.proposalId,
-    );
+    const { result, proposal } = await computeChecklistFor(context, data.proposalId);
     if (!result.allPass) httpError(422, "checklist_failed");
 
     const companyId = proposal.company_id as string;
@@ -993,9 +947,7 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
       requested_at: now,
       margin_pct: Number(proposal.margin_pct ?? 0),
       fx_rate_snapshot:
-        proposal.fx_rate_snapshot != null
-          ? Number(proposal.fx_rate_snapshot)
-          : null,
+        proposal.fx_rate_snapshot != null ? Number(proposal.fx_rate_snapshot) : null,
       contingency_pct: Number(proposal.contingency_pct ?? 0),
     };
 
@@ -1078,10 +1030,9 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
-    const { data: isFinance } = await context.supabase.rpc(
-      "has_company_role",
-      { p_role: "finance_admin" },
-    );
+    const { data: isFinance } = await context.supabase.rpc("has_company_role", {
+      p_role: "finance_admin",
+    });
     if (!isFinance) httpError(403, "forbidden");
 
     const { data: proposal, error } = await context.supabase
@@ -1138,8 +1089,7 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
           approved_by: context.user.id,
           approved_at: now,
           margin_pct: Number(p.margin_pct ?? 0),
-          fx_rate_snapshot:
-            p.fx_rate_snapshot != null ? Number(p.fx_rate_snapshot) : null,
+          fx_rate_snapshot: p.fx_rate_snapshot != null ? Number(p.fx_rate_snapshot) : null,
           contingency_pct: Number(p.contingency_pct ?? 0),
         }
       : {
@@ -1159,9 +1109,7 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
     if (upErr) throw new Error(upErr.message);
 
     await context.supabase.rpc("write_audit_log", {
-      p_action: approved
-        ? "proposal.pricing_approved"
-        : "proposal.pricing_rejected",
+      p_action: approved ? "proposal.pricing_approved" : "proposal.pricing_rejected",
       p_entity: "proposal",
       p_entity_id: data.proposalId,
       p_metadata: {
@@ -1281,7 +1229,7 @@ export const getProposalExportData = createServerFn({ method: "GET" })
         .order("event_at", { ascending: true });
       if (evErr && (evErr as any).code !== "42P01") {
         // Non-missing-table errors: log and continue with empty list.
-        // eslint-disable-next-line no-console
+
         console.warn("tender_events fetch failed", evErr.message);
       } else if (evs) {
         tenderEvents = (evs as any[]).map((e) => ({
@@ -1338,8 +1286,7 @@ export const recordProposalExport = createServerFn({ method: "POST" })
     if (!proposal) httpError(404, "not_found");
     const p = proposal as any;
 
-    const action =
-      data.format === "pptx" ? "proposal.export_pptx" : "proposal.export_pdf";
+    const action = data.format === "pptx" ? "proposal.export_pptx" : "proposal.export_pdf";
 
     await supabase.rpc("write_audit_log", {
       p_action: action,
@@ -1358,7 +1305,6 @@ export const recordProposalExport = createServerFn({ method: "POST" })
 // P-049 — E-signature: send / refresh / void / simulate / signed-copy URL
 // ---------------------------------------------------------------------------
 
-
 const ESIGN_EVENT = z.enum(["sent", "viewed", "completed", "declined", "voided"]);
 
 function decodeBase64(b64: string): Uint8Array {
@@ -1372,19 +1318,11 @@ function decodeBase64(b64: string): Uint8Array {
   return out;
 }
 
-function envelopeStoragePath(
-  companyId: string,
-  proposalId: string,
-  version: number,
-): string {
+function envelopeStoragePath(companyId: string, proposalId: string, version: number): string {
   return `${companyId}/proposals/${proposalId}/envelope_v${version}.pdf`;
 }
 
-function signedCopyStoragePath(
-  companyId: string,
-  proposalId: string,
-  version: number,
-): string {
+function signedCopyStoragePath(companyId: string, proposalId: string, version: number): string {
   return `${companyId}/proposals/${proposalId}/signed_v${version}.pdf`;
 }
 
@@ -1450,9 +1388,7 @@ async function applyEsignEvent(
     if (!resolved) throw new Error("esign_not_configured");
     const envelopePath = envelopeStoragePath(p.company_id, p.id, p.version ?? 1);
     const signedPath = signedCopyStoragePath(p.company_id, p.id, p.version ?? 1);
-    const { createServiceRoleClient } = await import(
-      "@/integrations/supabase/server"
-    );
+    const { createServiceRoleClient } = await import("@/integrations/supabase/server");
     const admin = createServiceRoleClient();
     const { bytes, contentType } = await resolved.provider.fetchSignedPdf(
       {
@@ -1461,12 +1397,10 @@ async function applyEsignEvent(
       },
       admin,
     );
-    const { error: upErr } = await admin.storage
-      .from("documents")
-      .upload(signedPath, bytes, {
-        contentType: contentType || "application/pdf",
-        upsert: true,
-      });
+    const { error: upErr } = await admin.storage.from("documents").upload(signedPath, bytes, {
+      contentType: contentType || "application/pdf",
+      upsert: true,
+    });
     if (upErr) throw new Error(`signed_copy_upload_failed: ${upErr.message}`);
     patch.signed_copy_path = signedPath;
     patch.esign_completed_at = now;
@@ -1476,10 +1410,7 @@ async function applyEsignEvent(
     patch.esign_sent_at = now;
   }
 
-  const { error: upErr } = await supabaseUser
-    .from("proposals")
-    .update(patch)
-    .eq("id", proposalId);
+  const { error: upErr } = await supabaseUser.from("proposals").update(patch).eq("id", proposalId);
   if (upErr) throw new Error(upErr.message);
 
   const auditAction =
@@ -1527,9 +1458,7 @@ export const sendProposalForSignature = createServerFn({ method: "POST" })
 
     const { data: prop, error } = await context.supabase
       .from("proposals")
-      .select(
-        "id, company_id, opportunity_id, version, status, esign_status, project_id",
-      )
+      .select("id, company_id, opportunity_id, version, status, esign_status, project_id")
       .eq("id", data.proposalId)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -1543,27 +1472,19 @@ export const sendProposalForSignature = createServerFn({ method: "POST" })
     if (p.esign_status === "completed") httpError(409, "already_signed");
 
     try {
-      await assertExportAllowed(
-        context.supabase,
-        p.project_id ?? null,
-        "proposal_pdf",
-      );
+      await assertExportAllowed(context.supabase, p.project_id ?? null, "proposal_pdf");
     } catch (lockErr: any) {
       httpError(lockErr?.statusCode ?? 423, "export_locked");
     }
 
     const bytes = decodeBase64(data.pdfBase64);
     const envelopePath = envelopeStoragePath(p.company_id, p.id, p.version ?? 1);
-    const { createServiceRoleClient } = await import(
-      "@/integrations/supabase/server"
-    );
+    const { createServiceRoleClient } = await import("@/integrations/supabase/server");
     const admin = createServiceRoleClient();
-    const { error: upErr } = await admin.storage
-      .from("documents")
-      .upload(envelopePath, bytes, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
+    const { error: upErr } = await admin.storage.from("documents").upload(envelopePath, bytes, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
     if (upErr) throw new Error(`envelope_upload_failed: ${upErr.message}`);
 
     const sendResult = await resolved!.provider.send({
@@ -1685,12 +1606,7 @@ export const simulateEsignEvent = createServerFn({ method: "POST" })
     if (!resolved || !resolved.provider.isDevMode) {
       httpError(403, "simulation_disabled");
     }
-    await applyEsignEvent(
-      context.supabase,
-      data.proposalId,
-      data.event,
-      context.user.id,
-    );
+    await applyEsignEvent(context.supabase, data.proposalId, data.event, context.user.id);
     return { ok: true };
   });
 
@@ -1709,11 +1625,7 @@ export const getSignedCopyDownloadUrl = createServerFn({ method: "POST" })
     const p = prop as any;
     if (!p.signed_copy_path) httpError(404, "no_signed_copy");
     try {
-      await assertExportAllowed(
-        context.supabase,
-        p.project_id ?? null,
-        "proposal_pdf",
-      );
+      await assertExportAllowed(context.supabase, p.project_id ?? null, "proposal_pdf");
     } catch (lockErr: any) {
       httpError(lockErr?.statusCode ?? 423, "export_locked");
     }
@@ -1726,15 +1638,11 @@ export const getSignedCopyDownloadUrl = createServerFn({ method: "POST" })
     return { url: signed.signedUrl };
   });
 
-export const getEsignConfigStatus = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const resolved = getEsignProvider();
-    return {
-      configured: isEsignConfigured(),
-      provider: resolved?.providerName ?? null,
-      devMode: resolved?.provider.isDevMode ?? false,
-    };
-  },
-);
-
-
+export const getEsignConfigStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const resolved = getEsignProvider();
+  return {
+    configured: isEsignConfigured(),
+    provider: resolved?.providerName ?? null,
+    devMode: resolved?.provider.isDevMode ?? false,
+  };
+});

@@ -25,7 +25,6 @@ export const Route = createFileRoute("/(auth)")({
   component: AuthLayout,
 });
 
-
 function AuthLayout() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-10">
@@ -34,9 +33,7 @@ function AuthLayout() {
           <span className="font-display text-2xl font-bold tracking-tight text-foreground">
             GridMind EPC
           </span>
-          <p className="text-sm text-muted-foreground">
-            The operating system for renewable EPC
-          </p>
+          <p className="text-sm text-muted-foreground">The operating system for renewable EPC</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
           <Outlet />

@@ -10,10 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  errorMessage,
-  incidentDetailQueryOptions,
-} from "@/lib/hse-query";
+import { errorMessage, incidentDetailQueryOptions } from "@/lib/hse-query";
 import { closeIncident, updateIncident } from "@/lib/hse.functions";
 import type { CorrectiveAction } from "@/lib/hse.rules";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
@@ -84,10 +81,7 @@ function IncidentDetailPage() {
 
   const addAction = () => {
     if (!newAction.trim()) return;
-    setActionsMut.mutate([
-      ...actions,
-      { action: newAction.trim(), owner: null, due_date: null },
-    ]);
+    setActionsMut.mutate([...actions, { action: newAction.trim(), owner: null, due_date: null }]);
   };
   const removeAction = (i: number) => {
     setActionsMut.mutate(actions.filter((_, idx) => idx !== i));
@@ -126,10 +120,7 @@ function IncidentDetailPage() {
           {inc.osha_recordable ? (
             <Badge className="bg-destructive/10 text-destructive">OSHA</Badge>
           ) : null}
-          <IncidentTimingBadge
-            occurredAt={inc.occurred_at}
-            reportedAt={inc.reported_at}
-          />
+          <IncidentTimingBadge occurredAt={inc.occurred_at} reportedAt={inc.reported_at} />
         </div>
       </header>
 
@@ -143,30 +134,18 @@ function IncidentDetailPage() {
           <Field label="Reported" value={new Date(inc.reported_at).toLocaleString()} />
           <Field label="Location" value={inc.location ?? "—"} />
           <Field label="Days away" value={String(inc.days_away_from_work)} />
-          <Field
-            label="Restricted duty"
-            value={inc.restricted_duty ? "Yes" : "No"}
-          />
-          <Field
-            label="Medical treatment"
-            value={inc.medical_treatment ? "Yes" : "No"}
-          />
+          <Field label="Restricted duty" value={inc.restricted_duty ? "Yes" : "No"} />
+          <Field label="Medical treatment" value={inc.medical_treatment ? "Yes" : "No"} />
           <div className="md:col-span-2">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              Description
-            </div>
-            <p className="whitespace-pre-wrap text-sm text-foreground">
-              {inc.description}
-            </p>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Description</div>
+            <p className="whitespace-pre-wrap text-sm text-foreground">{inc.description}</p>
           </div>
           {inc.persons_involved ? (
             <div className="md:col-span-2">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
                 Persons involved
               </div>
-              <p className="whitespace-pre-wrap text-sm text-foreground">
-                {inc.persons_involved}
-              </p>
+              <p className="whitespace-pre-wrap text-sm text-foreground">{inc.persons_involved}</p>
             </div>
           ) : null}
         </CardContent>
@@ -193,10 +172,7 @@ function IncidentDetailPage() {
             </div>
           ) : (
             actions.map((a, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 rounded-md border border-border p-3"
-              >
+              <div key={i} className="flex items-center gap-3 rounded-md border border-border p-3">
                 <div className="flex-1">
                   <div className="text-sm text-foreground">{a.action}</div>
                   <div className="text-xs text-muted-foreground">
@@ -256,9 +232,7 @@ function IncidentDetailPage() {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="text-sm text-foreground">{value}</div>
     </div>
   );

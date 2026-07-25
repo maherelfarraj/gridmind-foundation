@@ -66,23 +66,14 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return cid as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
 
-async function audit(
-  context: AuthContext,
-  action: string,
-  metadata: Record<string, unknown>,
-) {
+async function audit(context: AuthContext, action: string, metadata: Record<string, unknown>) {
   try {
     await context.supabase.rpc("write_audit_log", {
       p_action: action,
@@ -114,7 +105,10 @@ function toRow(r: any): ScorecardRow {
   };
 }
 
-function priorPeriod(periodStart: string, periodEnd: string): {
+function priorPeriod(
+  periodStart: string,
+  periodEnd: string,
+): {
   start: string;
   end: string;
 } {
@@ -148,8 +142,7 @@ export const listScorecards = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<ScorecardListResult> => {
     requireSupabaseAuth(context);
     const prior = priorPeriod(data.periodStart, data.periodEnd);
-    const sel =
-      "*, vendors:vendor_id(name), projects:project_id(name)";
+    const sel = "*, vendors:vendor_id(name), projects:project_id(name)";
 
     const [cur, prev] = await Promise.all([
       context.supabase
@@ -201,7 +194,12 @@ export const getVendorHistory = createServerFn({ method: "GET" })
         status: string;
         on_time: boolean | null;
       }>;
-      pos: Array<{ id: string; po_number: string; required_by_date: string | null; status: string }>;
+      pos: Array<{
+        id: string;
+        po_number: string;
+        required_by_date: string | null;
+        status: string;
+      }>;
     }> => {
       requireSupabaseAuth(context);
       const { data: history, error: hErr } = await context.supabase
@@ -227,7 +225,9 @@ export const getVendorHistory = createServerFn({ method: "GET" })
       if (poIds.length > 0) {
         const { data: grns, error: gErr } = await context.supabase
           .from("goods_receipts")
-          .select("id, grn_number, po_id, received_at, defects_count, status, purchase_orders:po_id(po_number)")
+          .select(
+            "id, grn_number, po_id, received_at, defects_count, status, purchase_orders:po_id(po_number)",
+          )
           .in("po_id", poIds)
           .in("status", ["confirmed", "has_defects", "closed"])
           .not("received_at", "is", null)
@@ -270,137 +270,132 @@ export const getVendorHistory = createServerFn({ method: "GET" })
 export const recomputeScorecards = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => recomputeSchema.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ upsertedCount: number }> => {
-      requireSupabaseAuth(context);
-      if (!(await hasAnyRole(context, RECOMPUTE_ROLES))) httpError(403, "forbidden");
-      const companyId = await currentCompanyId(context);
+  .handler(async ({ data, context }): Promise<{ upsertedCount: number }> => {
+    requireSupabaseAuth(context);
+    if (!(await hasAnyRole(context, RECOMPUTE_ROLES))) httpError(403, "forbidden");
+    const companyId = await currentCompanyId(context);
 
-      const startTs = `${data.periodStart}T00:00:00Z`;
-      const endTs = `${data.periodEnd}T23:59:59Z`;
+    const startTs = `${data.periodStart}T00:00:00Z`;
+    const endTs = `${data.periodEnd}T23:59:59Z`;
 
-      // POs issued in period (optional project filter).
-      let poQ = context.supabase
-        .from("purchase_orders")
-        .select("id, vendor_id, project_id, required_by_date, issued_at")
-        .eq("company_id", companyId)
-        .gte("issued_at", startTs)
-        .lte("issued_at", endTs)
-        .not("vendor_id", "is", null);
-      if (data.projectId) poQ = poQ.eq("project_id", data.projectId);
-      const { data: pos, error: poErr } = await poQ;
-      if (poErr) throw poErr;
-      const poRows = (pos ?? []) as any[];
-      if (poRows.length === 0) {
-        await audit(context, "scorecard.recompute", {
-          period: { start: data.periodStart, end: data.periodEnd },
-          project_id: data.projectId ?? null,
-          vendor_count: 0,
-        });
-        return { upsertedCount: 0 };
-      }
-
-      const poIds = poRows.map((p) => p.id);
-      const poVendor: Record<string, string> = {};
-      const poDue: Record<string, string | null> = {};
-      for (const p of poRows) {
-        poVendor[p.id] = p.vendor_id;
-        poDue[p.id] = p.required_by_date;
-      }
-
-      // GRNs in period.
-      const { data: grns, error: gErr } = await context.supabase
-        .from("goods_receipts")
-        .select("id, po_id, status, defects_count, received_at")
-        .in("po_id", poIds)
-        .in("status", ["confirmed", "has_defects", "closed"])
-        .not("received_at", "is", null)
-        .gte("received_at", startTs)
-        .lte("received_at", endTs);
-      if (gErr) throw gErr;
-
-      // Expediting logs in period.
-      const { data: exp, error: eErr } = await context.supabase
-        .from("expediting_logs")
-        .select("po_id, status, last_vendor_contact_at")
-        .in("po_id", poIds);
-      if (eErr) throw eErr;
-
-      // Group by vendor.
-      const byVendor: Record<
-        string,
-        {
-          pos: Set<string>;
-          grns: GrnInput[];
-          exp: ExpeditingInput[];
-          defects: number;
-        }
-      > = {};
-      for (const p of poRows) {
-        const v = p.vendor_id as string;
-        (byVendor[v] ??= { pos: new Set(), grns: [], exp: [], defects: 0 }).pos.add(p.id);
-      }
-      for (const g of (grns ?? []) as any[]) {
-        const v = poVendor[g.po_id];
-        if (!v) continue;
-        const b = byVendor[v];
-        if (!b) continue;
-        b.grns.push({
-          po_id: g.po_id,
-          status: g.status,
-          defects_count: g.defects_count ?? 0,
-          received_at: g.received_at,
-        });
-        b.defects += g.defects_count ?? 0;
-      }
-      for (const l of (exp ?? []) as any[]) {
-        const v = poVendor[l.po_id];
-        if (!v) continue;
-        const b = byVendor[v];
-        if (!b) continue;
-        b.exp.push({
-          status: l.status,
-          last_vendor_contact_at: l.last_vendor_contact_at,
-        });
-      }
-
-      const nowIso = new Date().toISOString();
-      const upserts = Object.entries(byVendor).map(([vendorId, b]) => ({
-        company_id: companyId,
-        vendor_id: vendorId,
-        project_id: data.projectId ?? null,
-        period_start: data.periodStart,
-        period_end: data.periodEnd,
-        on_time_delivery_pct: computeOtdPct(b.grns, poDue),
-        quality_score: computeQuality(b.grns),
-        responsiveness_score: computeResponsiveness(b.exp),
-        total_pos: b.pos.size,
-        total_receipts: b.grns.length,
-        defects_count: b.defects,
-        computed_at: nowIso,
-      }));
-
-      if (upserts.length > 0) {
-        const { error: uErr } = await context.supabase
-          .from("vendor_scorecards")
-          .upsert(upserts as any, {
-            onConflict: "vendor_id,project_id,period_start,period_end",
-          });
-        if (uErr) {
-          if ((uErr as any).code === "42501") httpError(403, "forbidden");
-          throw uErr;
-        }
-      }
-
+    // POs issued in period (optional project filter).
+    let poQ = context.supabase
+      .from("purchase_orders")
+      .select("id, vendor_id, project_id, required_by_date, issued_at")
+      .eq("company_id", companyId)
+      .gte("issued_at", startTs)
+      .lte("issued_at", endTs)
+      .not("vendor_id", "is", null);
+    if (data.projectId) poQ = poQ.eq("project_id", data.projectId);
+    const { data: pos, error: poErr } = await poQ;
+    if (poErr) throw poErr;
+    const poRows = (pos ?? []) as any[];
+    if (poRows.length === 0) {
       await audit(context, "scorecard.recompute", {
         period: { start: data.periodStart, end: data.periodEnd },
         project_id: data.projectId ?? null,
-        vendor_count: upserts.length,
+        vendor_count: 0,
       });
+      return { upsertedCount: 0 };
+    }
 
-      return { upsertedCount: upserts.length };
-    },
-  );
+    const poIds = poRows.map((p) => p.id);
+    const poVendor: Record<string, string> = {};
+    const poDue: Record<string, string | null> = {};
+    for (const p of poRows) {
+      poVendor[p.id] = p.vendor_id;
+      poDue[p.id] = p.required_by_date;
+    }
+
+    // GRNs in period.
+    const { data: grns, error: gErr } = await context.supabase
+      .from("goods_receipts")
+      .select("id, po_id, status, defects_count, received_at")
+      .in("po_id", poIds)
+      .in("status", ["confirmed", "has_defects", "closed"])
+      .not("received_at", "is", null)
+      .gte("received_at", startTs)
+      .lte("received_at", endTs);
+    if (gErr) throw gErr;
+
+    // Expediting logs in period.
+    const { data: exp, error: eErr } = await context.supabase
+      .from("expediting_logs")
+      .select("po_id, status, last_vendor_contact_at")
+      .in("po_id", poIds);
+    if (eErr) throw eErr;
+
+    // Group by vendor.
+    const byVendor: Record<
+      string,
+      {
+        pos: Set<string>;
+        grns: GrnInput[];
+        exp: ExpeditingInput[];
+        defects: number;
+      }
+    > = {};
+    for (const p of poRows) {
+      const v = p.vendor_id as string;
+      (byVendor[v] ??= { pos: new Set(), grns: [], exp: [], defects: 0 }).pos.add(p.id);
+    }
+    for (const g of (grns ?? []) as any[]) {
+      const v = poVendor[g.po_id];
+      if (!v) continue;
+      const b = byVendor[v];
+      if (!b) continue;
+      b.grns.push({
+        po_id: g.po_id,
+        status: g.status,
+        defects_count: g.defects_count ?? 0,
+        received_at: g.received_at,
+      });
+      b.defects += g.defects_count ?? 0;
+    }
+    for (const l of (exp ?? []) as any[]) {
+      const v = poVendor[l.po_id];
+      if (!v) continue;
+      const b = byVendor[v];
+      if (!b) continue;
+      b.exp.push({
+        status: l.status,
+        last_vendor_contact_at: l.last_vendor_contact_at,
+      });
+    }
+
+    const nowIso = new Date().toISOString();
+    const upserts = Object.entries(byVendor).map(([vendorId, b]) => ({
+      company_id: companyId,
+      vendor_id: vendorId,
+      project_id: data.projectId ?? null,
+      period_start: data.periodStart,
+      period_end: data.periodEnd,
+      on_time_delivery_pct: computeOtdPct(b.grns, poDue),
+      quality_score: computeQuality(b.grns),
+      responsiveness_score: computeResponsiveness(b.exp),
+      total_pos: b.pos.size,
+      total_receipts: b.grns.length,
+      defects_count: b.defects,
+      computed_at: nowIso,
+    }));
+
+    if (upserts.length > 0) {
+      const { error: uErr } = await context.supabase
+        .from("vendor_scorecards")
+        .upsert(upserts as any, {
+          onConflict: "vendor_id,project_id,period_start,period_end",
+        });
+      if (uErr) {
+        if ((uErr as any).code === "42501") httpError(403, "forbidden");
+        throw uErr;
+      }
+    }
+
+    await audit(context, "scorecard.recompute", {
+      period: { start: data.periodStart, end: data.periodEnd },
+      project_id: data.projectId ?? null,
+      vendor_count: upserts.length,
+    });
+
+    return { upsertedCount: upserts.length };
+  });

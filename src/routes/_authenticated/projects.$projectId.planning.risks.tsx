@@ -1,11 +1,7 @@
 // P-074 — Risk register route.
 import { useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -30,20 +26,14 @@ import {
   risksAccessQueryOptions,
   risksListQueryOptions,
 } from "@/lib/risks.query";
-import {
-  registerAgeDays,
-  sumContingency,
-  riskWritableSchema,
-} from "@/lib/risks.rules";
+import { registerAgeDays, sumContingency, riskWritableSchema } from "@/lib/risks.rules";
 
 import { RiskDrawer } from "@/components/planning/risk-drawer";
 import { RiskKpiStrip } from "@/components/planning/risk-kpi-strip";
 import { RiskMatrix } from "@/components/planning/risk-matrix";
 import { RiskRegisterTable } from "@/components/planning/risk-register-table";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/planning/risks",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/risks")({
   head: () => ({
     meta: [
       { title: "Risk Register — GridMind EPC" },
@@ -79,9 +69,7 @@ function RisksPage() {
 
   const risksQuery = useSuspenseQuery(risksListQueryOptions(listFn, projectId));
   const accessQuery = useSuspenseQuery(risksAccessQueryOptions(accessFn));
-  const membersQuery = useSuspenseQuery(
-    projectMembersQueryOptions(membersFn, projectId),
-  );
+  const membersQuery = useSuspenseQuery(projectMembersQueryOptions(membersFn, projectId));
 
   const risks = risksQuery.data;
   const canWrite = accessQuery.data.canWrite;
@@ -96,14 +84,8 @@ function RisksPage() {
     [risks, selectedId],
   );
 
-  const openCount = useMemo(
-    () => risks.filter((r) => r.status === "open").length,
-    [risks],
-  );
-  const highCount = useMemo(
-    () => risks.filter((r) => r.score >= 15).length,
-    [risks],
-  );
+  const openCount = useMemo(() => risks.filter((r) => r.status === "open").length, [risks]);
+  const highCount = useMemo(() => risks.filter((r) => r.score >= 15).length, [risks]);
   const contingency = useMemo(() => sumContingency(risks), [risks]);
   const ageDays = useMemo(() => registerAgeDays(risks), [risks]);
 
@@ -117,8 +99,7 @@ function RisksPage() {
     });
 
   const createMut = useMutation({
-    mutationFn: (values: FormValues) =>
-      createFn({ data: { projectId, ...values } }),
+    mutationFn: (values: FormValues) => createFn({ data: { projectId, ...values } }),
     onSuccess: () => {
       toast.success("Risk logged");
       setDrawerOpen(false);
@@ -129,8 +110,7 @@ function RisksPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: (values: FormValues) =>
-      updateFn({ data: { id: selectedId!, patch: values } }),
+    mutationFn: (values: FormValues) => updateFn({ data: { id: selectedId!, patch: values } }),
     onSuccess: () => {
       toast.success("Risk updated");
       setDrawerOpen(false);
@@ -171,21 +151,15 @@ function RisksPage() {
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <ShieldAlert
-            size={18}
-            aria-hidden
-            className="text-muted-foreground"
-          />
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Risks
-          </h2>
+          <ShieldAlert size={18} aria-hidden className="text-muted-foreground" />
+          <h2 className="font-display text-lg font-semibold text-foreground">Risks</h2>
         </div>
       </header>
 
       {!canWrite && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
-          You have read-only access to the risk register. Contact a project,
-          HSE, finance, or company admin to log or edit risks.
+          You have read-only access to the risk register. Contact a project, HSE, finance, or
+          company admin to log or edit risks.
         </Card>
       )}
 
@@ -264,9 +238,7 @@ function RisksError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
     <Card className="border-destructive/40 bg-card p-4">
-      <p className="text-sm text-foreground">
-        Couldn't load risks: {error.message}
-      </p>
+      <p className="text-sm text-foreground">Couldn't load risks: {error.message}</p>
       <Button
         size="sm"
         className="mt-3"

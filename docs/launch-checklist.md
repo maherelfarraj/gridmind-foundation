@@ -132,11 +132,11 @@ By signing below, each owner attests: **"All boxes above checked; warn→block p
 
 Modules in scope include CRM, Engineering, Procurement, Finance, Field, QA/QC, **O&M**, **C&I**, and **Green H₂**.
 
-| Role | Name | Date (UTC) | Signature |
-| --- | --- | --- | --- |
-| Engineering Lead |   |   |   |
-| Security Owner |   |   |   |
-| Operations Owner |   |   |   |
+| Role             | Name | Date (UTC) | Signature |
+| ---------------- | ---- | ---------- | --------- |
+| Engineering Lead |      |            |           |
+| Security Owner   |      |            |           |
+| Operations Owner |      |            |           |
 
 ---
 

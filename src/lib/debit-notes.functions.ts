@@ -193,9 +193,14 @@ export const issueDebitNote = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!cur) httpError(404, "not_found");
     const row = toRow(cur);
-    if (row.status !== "draft") httpError(400, "not_draft", "Only draft debit notes can be issued.");
+    if (row.status !== "draft")
+      httpError(400, "not_draft", "Only draft debit notes can be issued.");
     if (!row.contract_id && !row.invoice_id) {
-      httpError(400, "missing_link", "Link the debit note to a contract or invoice before issuing.");
+      httpError(
+        400,
+        "missing_link",
+        "Link the debit note to a contract or invoice before issuing.",
+      );
     }
 
     const { data: nums, error: nErr } = await context.supabase

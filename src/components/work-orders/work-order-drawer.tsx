@@ -44,11 +44,7 @@ import {
   workOrderCloseSchema,
   WORK_ORDER_STATUSES,
 } from "@/lib/work-orders.rules";
-import type {
-  LaborLine,
-  PartLine,
-  WorkOrderStatus,
-} from "@/lib/work-orders.rules";
+import type { LaborLine, PartLine, WorkOrderStatus } from "@/lib/work-orders.rules";
 
 interface Props {
   workOrderId: string | null;
@@ -205,7 +201,9 @@ function AssignPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void })
       <div className="space-y-2">
         <label className="text-sm font-medium">Assignee</label>
         <Select value={assigneeId} onValueChange={setAssigneeId}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">— Unassigned —</SelectItem>
             {(assignees.data ?? []).map((a) => (
@@ -224,14 +222,15 @@ function AssignPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void })
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Status</label>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as WorkOrderStatus)}
-        >
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Select value={status} onValueChange={(v) => setStatus(v as WorkOrderStatus)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {WORK_ORDER_STATUSES.filter((s) => s !== "closed").map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -255,7 +254,10 @@ type PartsForm = { id: string; parts: PartLine[] };
 function PartsPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void }) {
   const captureFn = useServerFn(captureParts);
   const partsListFn = useServerFn(listSpareParts);
-  const partsList = useQuery({ queryKey: ["spare-parts-all"], queryFn: () => partsListFn({ data: {} }) });
+  const partsList = useQuery({
+    queryKey: ["spare-parts-all"],
+    queryFn: () => partsListFn({ data: {} }),
+  });
 
   const form = useForm<PartsForm>({
     resolver: zodResolver(capturePartsSchema) as never,
@@ -299,11 +301,14 @@ function PartsPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void }) 
                 if (found) {
                   form.setValue(`parts.${i}.spare_part_id`, found.id);
                   form.setValue(`parts.${i}.description`, `${found.part_number} · ${found.name}`);
-                  if (found.unit_cost != null) form.setValue(`parts.${i}.unit_cost`, found.unit_cost);
+                  if (found.unit_cost != null)
+                    form.setValue(`parts.${i}.unit_cost`, found.unit_cost);
                 }
               }}
             >
-              <SelectTrigger><SelectValue placeholder="Pick spare or type custom" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Pick spare or type custom" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="custom">— Custom description —</SelectItem>
                 {(partsList.data ?? []).map((p) => (
@@ -417,11 +422,12 @@ function LaborPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void }) 
               }
               const found = (assignees.data ?? []).find((a) => a.id === v);
               form.setValue(`labor.${i}.user_id`, v);
-              if (found)
-                form.setValue(`labor.${i}.name`, found.full_name ?? found.email ?? "");
+              if (found) form.setValue(`labor.${i}.name`, found.full_name ?? found.email ?? "");
             }}
           >
-            <SelectTrigger className="col-span-4"><SelectValue placeholder="Tech" /></SelectTrigger>
+            <SelectTrigger className="col-span-4">
+              <SelectValue placeholder="Tech" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">— External / other —</SelectItem>
               {(assignees.data ?? []).map((a) => (
@@ -431,11 +437,7 @@ function LaborPanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void }) 
               ))}
             </SelectContent>
           </Select>
-          <Input
-            className="col-span-3"
-            type="date"
-            {...form.register(`labor.${i}.date`)}
-          />
+          <Input className="col-span-3" type="date" {...form.register(`labor.${i}.date`)} />
           <Input
             className="col-span-2"
             type="number"
@@ -545,11 +547,7 @@ function ClosePanel({ wo, onSaved }: { wo: WorkOrderRow; onSaved: () => void }) 
       {wo.type === "corrective" ? (
         <div className="space-y-2">
           <label className="text-sm font-medium">Failure cause *</label>
-          <Textarea
-            rows={3}
-            disabled={disabled}
-            {...form.register("failure_cause")}
-          />
+          <Textarea rows={3} disabled={disabled} {...form.register("failure_cause")} />
           {form.formState.errors.failure_cause ? (
             <p className="text-xs text-destructive">
               {form.formState.errors.failure_cause.message as string}

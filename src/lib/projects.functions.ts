@@ -5,10 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   budgetLineSchema,
   gateSchema,
@@ -41,10 +38,9 @@ export const getProjectCreationAccess = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<ProjectCreationAccess> => {
     requireSupabaseAuth(context);
 
-    const { data: member, error: memberErr } = await context.supabase.rpc(
-      "is_company_member",
-      { p_company_id: data.companyId },
-    );
+    const { data: member, error: memberErr } = await context.supabase.rpc("is_company_member", {
+      p_company_id: data.companyId,
+    });
     if (memberErr) throw memberErr;
     if (member !== true) httpError(403, "forbidden");
 
@@ -56,10 +52,10 @@ export const getProjectCreationAccess = createServerFn({ method: "GET" })
     if (coErr) throw coErr;
     if (!company) httpError(404, "tenant_not_found");
 
-    const { data: hasAccess, error: modErr } = await context.supabase.rpc(
-      "has_module_access",
-      { p_company_id: data.companyId, p_module: "green_hydrogen" },
-    );
+    const { data: hasAccess, error: modErr } = await context.supabase.rpc("has_module_access", {
+      p_company_id: data.companyId,
+      p_module: "green_hydrogen",
+    });
     if (modErr) throw modErr;
 
     return {
@@ -108,10 +104,9 @@ export const listProjectTemplates = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<TemplateOption[]> => {
     requireSupabaseAuth(context);
 
-    const { data: member, error: memberErr } = await context.supabase.rpc(
-      "is_company_member",
-      { p_company_id: data.companyId },
-    );
+    const { data: member, error: memberErr } = await context.supabase.rpc("is_company_member", {
+      p_company_id: data.companyId,
+    });
     if (memberErr) throw memberErr;
     if (member !== true) httpError(403, "forbidden");
 
@@ -161,7 +156,6 @@ import {
   type DeptLeadKey,
 } from "@/lib/schemas/project-wizard";
 
-
 export type EligibleUser = {
   id: string;
   full_name: string | null;
@@ -203,9 +197,7 @@ export const listEligibleUsers = createServerFn({ method: "GET" })
       seen.add(p.id);
       out.push({ id: p.id, full_name: p.full_name, email: p.email });
     }
-    out.sort((a, b) =>
-      (a.full_name ?? a.email ?? "").localeCompare(b.full_name ?? b.email ?? ""),
-    );
+    out.sort((a, b) => (a.full_name ?? a.email ?? "").localeCompare(b.full_name ?? b.email ?? ""));
     return out;
   });
 
@@ -222,9 +214,7 @@ export const listActiveCompanyProfiles = createServerFn({ method: "GET" })
       .eq("company_id", data.companyId);
     if (error) throw error;
     const list = (rows ?? []) as EligibleUser[];
-    list.sort((a, b) =>
-      (a.full_name ?? a.email ?? "").localeCompare(b.full_name ?? b.email ?? ""),
-    );
+    list.sort((a, b) => (a.full_name ?? a.email ?? "").localeCompare(b.full_name ?? b.email ?? ""));
     return list;
   });
 
@@ -237,7 +227,10 @@ const createProjectInput = z.object({
   archetype: ARCHETYPE_ENUM,
   template_id: uuidNullable,
   name: z.string().trim().min(3).max(120),
-  code: z.string().trim().regex(/^[A-Z0-9-]{2,12}$/),
+  code: z
+    .string()
+    .trim()
+    .regex(/^[A-Z0-9-]{2,12}$/),
   capacity_mw: z.coerce.number().positive(),
   capacity_mwh: z.coerce.number().positive().optional(),
   site_name: z.string().trim().max(160).optional().or(z.literal("")),
@@ -281,24 +274,22 @@ export const createProject = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
 
     // --- Auth gate: company_admin OR project_admin ---
-    const { data: isCoAdmin, error: coErr } = await context.supabase.rpc(
-      "has_company_role",
-      { p_role: "company_admin" },
-    );
+    const { data: isCoAdmin, error: coErr } = await context.supabase.rpc("has_company_role", {
+      p_role: "company_admin",
+    });
     if (coErr) throw coErr;
-    const { data: isProjAdmin, error: paErr } = await context.supabase.rpc(
-      "has_company_role",
-      { p_role: "project_admin" },
-    );
+    const { data: isProjAdmin, error: paErr } = await context.supabase.rpc("has_company_role", {
+      p_role: "project_admin",
+    });
     if (paErr) throw paErr;
     if (!(isCoAdmin === true || isProjAdmin === true)) httpError(403, "forbidden");
 
     // --- Green H₂ module gate ---
     if (data.archetype === "green_hydrogen") {
-      const { data: gh, error: ghErr } = await context.supabase.rpc(
-        "has_module_access",
-        { p_company_id: data.companyId, p_module: "green_hydrogen" },
-      );
+      const { data: gh, error: ghErr } = await context.supabase.rpc("has_module_access", {
+        p_company_id: data.companyId,
+        p_module: "green_hydrogen",
+      });
       if (ghErr) throw ghErr;
       if (gh !== true) httpError(403, "green_hydrogen_disabled");
     }
@@ -349,9 +340,7 @@ export const createProject = createServerFn({ method: "POST" })
       .single();
     if (projErr) {
       // Friendly message for the unique(company_id, code) backstop.
-      const msg = /duplicate key.*projects_company_id_code_key/i.test(
-        projErr.message,
-      )
+      const msg = /duplicate key.*projects_company_id_code_key/i.test(projErr.message)
         ? `A project with code ${data.code} already exists.`
         : projErr.message;
       throw new Error(msg);
@@ -390,9 +379,7 @@ export const createProject = createServerFn({ method: "POST" })
       })),
     ];
 
-    const { error: memErr } = await context.supabase
-      .from("project_members")
-      .insert(memberRows);
+    const { error: memErr } = await context.supabase.from("project_members").insert(memberRows);
     if (memErr) throw new Error(memErr.message);
 
     // --- Departments ---
@@ -404,14 +391,10 @@ export const createProject = createServerFn({ method: "POST" })
       company_id: data.companyId,
       project_id: projectId,
       department: dept as (typeof PROJECT_DEPARTMENTS)[number],
-      lead_user_id:
-        (data.dept_leads as Partial<Record<string, string>>)[dept as string] ??
-        null,
+      lead_user_id: (data.dept_leads as Partial<Record<string, string>>)[dept as string] ?? null,
       status: "not_started",
     }));
-    const { error: deptErr } = await context.supabase
-      .from("project_departments")
-      .insert(deptRows);
+    const { error: deptErr } = await context.supabase.from("project_departments").insert(deptRows);
     if (deptErr) throw new Error(deptErr.message);
 
     // --- Phase gates: one per phase, checklist from template items ---
@@ -444,9 +427,7 @@ export const createProject = createServerFn({ method: "POST" })
           : []),
       ],
     }));
-    const { error: gateErr } = await context.supabase
-      .from("project_phase_gates")
-      .insert(gateRows);
+    const { error: gateErr } = await context.supabase.from("project_phase_gates").insert(gateRows);
     if (gateErr) throw new Error(gateErr.message);
 
     // --- Audit ---
@@ -501,7 +482,6 @@ export const getProjectSummary = createServerFn({ method: "GET" })
       status: row.status,
     };
   });
-
 
 // ---------------------------------------------------------------------------
 // P-037 — Project cockpit list + CSV export.
@@ -562,8 +542,6 @@ async function assertCompanyMember(
   if (ok !== true) httpError(403, "forbidden");
 }
 
-
-
 export const listProjects = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => listProjectsInput.parse(input))
@@ -579,9 +557,7 @@ export const listProjects = createServerFn({ method: "GET" })
         .select("project_id")
         .eq("department", data.department);
       if (deptErr) throw deptErr;
-      deptIdFilter = Array.from(
-        new Set((deptRows ?? []).map((r) => r.project_id as string)),
-      );
+      deptIdFilter = Array.from(new Set((deptRows ?? []).map((r) => r.project_id as string)));
       if (deptIdFilter.length === 0) {
         return { rows: [], total: 0, page: data.page, pageSize: PAGE_SIZE };
       }
@@ -610,7 +586,7 @@ export const listProjects = createServerFn({ method: "GET" })
     if (error) throw error;
 
     return {
-      rows: ((rows ?? []) as unknown as ProjectCardRow[]),
+      rows: (rows ?? []) as unknown as ProjectCardRow[],
       total: count ?? 0,
       page: data.page,
       pageSize: PAGE_SIZE,
@@ -629,55 +605,51 @@ function csvEscape(v: unknown): string {
 export const exportProjectsCsv = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => exportCsvInput.parse(input))
-  .handler(
-    async ({ data, context }): Promise<{ filename: string; csv: string }> => {
-      requireSupabaseAuth(context);
-      await assertCompanyMember(context.supabase, data.companyId);
+  .handler(async ({ data, context }): Promise<{ filename: string; csv: string }> => {
+    requireSupabaseAuth(context);
+    await assertCompanyMember(context.supabase, data.companyId);
 
-      let deptIdFilter: string[] | null = null;
-      if (data.department) {
-        const { data: deptRows, error: deptErr } = await context.supabase
-          .from("project_departments")
-          .select("project_id")
-          .eq("department", data.department);
-        if (deptErr) throw deptErr;
-        deptIdFilter = Array.from(
-          new Set((deptRows ?? []).map((r) => r.project_id as string)),
-        );
-        if (deptIdFilter.length === 0) {
-          return {
-            filename: `projects-${new Date().toISOString()}.csv`,
-            csv: buildCsv([]),
-          };
-        }
+    let deptIdFilter: string[] | null = null;
+    if (data.department) {
+      const { data: deptRows, error: deptErr } = await context.supabase
+        .from("project_departments")
+        .select("project_id")
+        .eq("department", data.department);
+      if (deptErr) throw deptErr;
+      deptIdFilter = Array.from(new Set((deptRows ?? []).map((r) => r.project_id as string)));
+      if (deptIdFilter.length === 0) {
+        return {
+          filename: `projects-${new Date().toISOString()}.csv`,
+          csv: buildCsv([]),
+        };
       }
+    }
 
-      let q = context.supabase
-        .from("projects")
-        .select(
-          "code, name, archetype, phase, status, capacity_mw, capacity_mwh, site_country, target_cod, project_admin:profiles!projects_project_admin_id_fkey(full_name, email)",
-        )
-        .eq("company_id", data.companyId)
-        .order("created_at", { ascending: false })
-        .limit(1000);
+    let q = context.supabase
+      .from("projects")
+      .select(
+        "code, name, archetype, phase, status, capacity_mw, capacity_mwh, site_country, target_cod, project_admin:profiles!projects_project_admin_id_fkey(full_name, email)",
+      )
+      .eq("company_id", data.companyId)
+      .order("created_at", { ascending: false })
+      .limit(1000);
 
-      if (data.phase) q = q.eq("phase", data.phase);
-      if (data.archetype) q = q.eq("archetype", data.archetype);
-      if (deptIdFilter) q = q.in("id", deptIdFilter);
-      if (data.search && data.search.length > 0) {
-        const s = escapeIlike(data.search);
-        q = q.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
-      }
+    if (data.phase) q = q.eq("phase", data.phase);
+    if (data.archetype) q = q.eq("archetype", data.archetype);
+    if (deptIdFilter) q = q.in("id", deptIdFilter);
+    if (data.search && data.search.length > 0) {
+      const s = escapeIlike(data.search);
+      q = q.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
+    }
 
-      const { data: rows, error } = await q;
-      if (error) throw error;
+    const { data: rows, error } = await q;
+    if (error) throw error;
 
-      return {
-        filename: `projects-${new Date().toISOString().slice(0, 19)}.csv`,
-        csv: buildCsv((rows ?? []) as any[]),
-      };
-    },
-  );
+    return {
+      filename: `projects-${new Date().toISOString().slice(0, 19)}.csv`,
+      csv: buildCsv((rows ?? []) as any[]),
+    };
+  });
 
 function buildCsv(rows: any[]): string {
   const header = [
@@ -694,9 +666,7 @@ function buildCsv(rows: any[]): string {
   ];
   const lines = [header.join(",")];
   for (const r of rows) {
-    const admin = r.project_admin
-      ? r.project_admin.full_name || r.project_admin.email || ""
-      : "";
+    const admin = r.project_admin ? r.project_admin.full_name || r.project_admin.email || "" : "";
     lines.push(
       [
         r.code,
@@ -716,7 +686,6 @@ function buildCsv(rows: any[]): string {
   }
   return lines.join("\r\n") + "\r\n";
 }
-
 
 // ---------------------------------------------------------------------------
 // P-038 — Full project detail (header + tabs + stepper).
@@ -768,7 +737,6 @@ export type ProjectDetailGate = {
     my_approval_status: string | null;
   } | null;
 };
-
 
 export type ProjectDetail = {
   id: string;
@@ -841,26 +809,22 @@ export const getProject = createServerFn({ method: "GET" })
     if (deptsRes.error) throw deptsRes.error;
     if (gatesRes.error) throw gatesRes.error;
 
-    const members: ProjectDetailMember[] = (membersRes.data ?? []).map(
-      (m: any) => ({
-        id: m.id,
-        user_id: m.user_id,
-        project_role: m.project_role,
-        full_name: m.profiles?.full_name ?? null,
-        email: m.profiles?.email ?? null,
-        avatar_url: m.profiles?.avatar_url ?? null,
-      }),
-    );
+    const members: ProjectDetailMember[] = (membersRes.data ?? []).map((m: any) => ({
+      id: m.id,
+      user_id: m.user_id,
+      project_role: m.project_role,
+      full_name: m.profiles?.full_name ?? null,
+      email: m.profiles?.email ?? null,
+      avatar_url: m.profiles?.avatar_url ?? null,
+    }));
 
-    const departments: ProjectDetailDepartment[] = (deptsRes.data ?? []).map(
-      (d: any) => ({
-        id: d.id,
-        department: d.department as ProjectDepartment,
-        status: d.status,
-        lead_user_id: d.lead_user_id,
-        lead_name: d.lead?.full_name ?? null,
-      }),
-    );
+    const departments: ProjectDetailDepartment[] = (deptsRes.data ?? []).map((d: any) => ({
+      id: d.id,
+      department: d.department as ProjectDepartment,
+      status: d.status,
+      lead_user_id: d.lead_user_id,
+      lead_name: d.lead?.full_name ?? null,
+    }));
 
     const gateRows = (gatesRes.data ?? []) as any[];
 
@@ -871,7 +835,7 @@ export const getProject = createServerFn({ method: "GET" })
       for (const it of items) if (it?.done_by) stampIds.add(it.done_by);
     }
 
-    let namesById: Record<string, string | null> = {};
+    const namesById: Record<string, string | null> = {};
     if (stampIds.size > 0) {
       const { data: ppl } = await context.supabase
         .from("profiles")
@@ -886,7 +850,7 @@ export const getProject = createServerFn({ method: "GET" })
     const inReviewInstanceIds = gateRows
       .filter((g) => g.status === "in_review" && g.approval_instance_id)
       .map((g) => g.approval_instance_id as string);
-    let myApprovals: Record<
+    const myApprovals: Record<
       string,
       { my_approval_id: string; my_approval_status: string; instance_status: string }
     > = {};
@@ -926,7 +890,7 @@ export const getProject = createServerFn({ method: "GET" })
         done: !!it?.done,
         done_by: it?.done_by ?? null,
         done_at: it?.done_at ?? null,
-        done_by_name: it?.done_by ? namesById[it.done_by] ?? null : null,
+        done_by_name: it?.done_by ? (namesById[it.done_by] ?? null) : null,
       }));
       const approvalInfo =
         g.approval_instance_id && myApprovals[g.approval_instance_id]
@@ -934,8 +898,7 @@ export const getProject = createServerFn({ method: "GET" })
               instance_id: g.approval_instance_id as string,
               instance_status: myApprovals[g.approval_instance_id].instance_status,
               my_approval_id: myApprovals[g.approval_instance_id].my_approval_id,
-              my_approval_status:
-                myApprovals[g.approval_instance_id].my_approval_status,
+              my_approval_status: myApprovals[g.approval_instance_id].my_approval_status,
             }
           : g.approval_instance_id
             ? {
@@ -958,7 +921,6 @@ export const getProject = createServerFn({ method: "GET" })
         approval: approvalInfo,
       };
     });
-
 
     return {
       id: proj.id,

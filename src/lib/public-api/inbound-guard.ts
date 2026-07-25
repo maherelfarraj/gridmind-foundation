@@ -6,15 +6,11 @@
  * Auth is provider signature — we NEVER read x-forwarded-for.
  */
 import { createServiceRoleClient } from "@/integrations/supabase/admin";
-import {
-  auditGuardEvent,
-  ipMatchesAllowlist,
-} from "@/lib/public-api/guard";
+import { auditGuardEvent, ipMatchesAllowlist } from "@/lib/public-api/guard";
 
 export function enforceMode(): "warn" | "block" {
   const raw =
-    (typeof process !== "undefined" ? process.env?.PUBLIC_HOOK_ENFORCE : undefined) ??
-    "block";
+    (typeof process !== "undefined" ? process.env?.PUBLIC_HOOK_ENFORCE : undefined) ?? "block";
   return raw.toLowerCase() === "warn" ? "warn" : "block";
 }
 

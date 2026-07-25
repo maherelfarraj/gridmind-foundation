@@ -4,20 +4,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 export type SignalStatus = "ok" | "warn" | "crit";
 
 export type Signal = {
-  key:
-    | "rate_limit_fail_open"
-    | "signature_failed"
-    | "ip_denied"
-    | "guard_401"
-    | "guard_429";
+  key: "rate_limit_fail_open" | "signature_failed" | "ip_denied" | "guard_401" | "guard_429";
   label: string;
   status: SignalStatus;
   value24h: number;
@@ -237,9 +229,7 @@ export const getOpsHealth = createServerFn({ method: "GET" })
     // 7-day daily series for signature_failed + guard_429.
     const dayBuckets = new Map<string, { sig: number; r429: number }>();
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       dayBuckets.set(d, { sig: 0, r429: 0 });
     }
     for (const r of audits) {

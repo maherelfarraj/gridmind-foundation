@@ -4,13 +4,7 @@ import { z } from "zod";
 // ---------------------------------------------------------------------------
 // enums
 // ---------------------------------------------------------------------------
-export const RFQ_STATUSES = [
-  "draft",
-  "issued",
-  "closed",
-  "awarded",
-  "cancelled",
-] as const;
+export const RFQ_STATUSES = ["draft", "issued", "closed", "awarded", "cancelled"] as const;
 export type RfqStatus = (typeof RFQ_STATUSES)[number];
 
 export const RFQ_BID_STATUSES = [
@@ -87,9 +81,7 @@ export function parseRfqNumber(s: string): number | null {
 }
 
 export function nextRfqNumber(existing: string[]): string {
-  const nums = existing
-    .map(parseRfqNumber)
-    .filter((n): n is number => n != null);
+  const nums = existing.map(parseRfqNumber).filter((n): n is number => n != null);
   const next = (nums.length === 0 ? 0 : Math.max(...nums)) + 1;
   return formatRfqNumber(next);
 }
@@ -161,11 +153,7 @@ export interface TcoMatrix {
   nonCompliantCount: number;
 }
 
-const NON_COMPLIANT_STATUSES: RfqBidStatus[] = [
-  "invited",
-  "rejected",
-  "withdrawn",
-];
+const NON_COMPLIANT_STATUSES: RfqBidStatus[] = ["invited", "rejected", "withdrawn"];
 
 export function computeTcoMatrix(params: {
   rfqLines: RfqLine[];
@@ -221,15 +209,12 @@ export function computeTcoMatrix(params: {
           ? Math.max(0, bidLine.lead_time_days - minLead)
           : 0;
       const logistics = extended * (config.logisticsPct / 100);
-      const delayPenalty =
-        extended * (config.delayCostPctPerDay / 100) * delayDays;
+      const delayPenalty = extended * (config.delayCostPctPerDay / 100) * delayDays;
       const defectRisk = extended * (config.defectRiskPct / 100);
       const tco = extended + logistics + delayPenalty + defectRisk;
       const priceVar =
         rfqLine.target_price != null && rfqLine.target_price > 0
-          ? ((bidLine.unit_price - rfqLine.target_price) /
-              rfqLine.target_price) *
-            100
+          ? ((bidLine.unit_price - rfqLine.target_price) / rfqLine.target_price) * 100
           : null;
       cells.set(rfqLine.line_no, {
         line_no: rfqLine.line_no,
@@ -247,10 +232,7 @@ export function computeTcoMatrix(params: {
       });
     }
 
-    const vendorTotal = Array.from(cells.values()).reduce(
-      (acc, c) => acc + c.tco,
-      0,
-    );
+    const vendorTotal = Array.from(cells.values()).reduce((acc, c) => acc + c.tco, 0);
 
     return {
       bidId: b.bidId,
@@ -301,9 +283,7 @@ export function computeTcoMatrix(params: {
     }
   }
   const averagePriceVariancePct =
-    variances.length === 0
-      ? null
-      : variances.reduce((a, b) => a + b, 0) / variances.length;
+    variances.length === 0 ? null : variances.reduce((a, b) => a + b, 0) / variances.length;
 
   const nonCompliantCount = rows.filter((r) => !r.compliant).length;
 

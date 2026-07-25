@@ -38,9 +38,7 @@ function DefaultNotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 text-center shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          404
-        </p>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">404</p>
         <h1 className="mt-2 font-display text-2xl font-semibold text-card-foreground">
           Page not found
         </h1>

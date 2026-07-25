@@ -47,14 +47,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -153,17 +148,14 @@ async function computeForDate(
   // Budgets (latest version per cost code) → BAC + AC + committed
   const { data: budgets, error: budgetsErr } = await context.supabase
     .from("budgets")
-    .select(
-      "cost_code_id, version, current_amount, actual_amount, committed_amount, currency_code",
-    )
+    .select("cost_code_id, version, current_amount, actual_amount, committed_amount, currency_code")
     .eq("project_id", projectId)
     .order("version", { ascending: false });
   if (budgetsErr) throw budgetsErr;
 
   const latestByCode = new Map<string, any>();
   for (const b of budgets ?? []) {
-    if (!latestByCode.has(b.cost_code_id))
-      latestByCode.set(b.cost_code_id, b);
+    if (!latestByCode.has(b.cost_code_id)) latestByCode.set(b.cost_code_id, b);
   }
   let bac = 0;
   let actual = 0;
@@ -179,9 +171,7 @@ async function computeForDate(
   // Schedule tasks with WBS budget
   const { data: tasks, error: tasksErr } = await context.supabase
     .from("schedule_tasks")
-    .select(
-      "id, start_date, end_date, progress_pct, wbs:wbs_item_id(budgeted_amount)",
-    )
+    .select("id, start_date, end_date, progress_pct, wbs:wbs_item_id(budgeted_amount)")
     .eq("project_id", projectId);
   if (tasksErr) throw tasksErr;
 
@@ -190,8 +180,7 @@ async function computeForDate(
     start_date: t.start_date,
     end_date: t.end_date,
     progress_pct: Number(t.progress_pct ?? 0),
-    budgeted_amount:
-      t.wbs?.budgeted_amount == null ? null : Number(t.wbs.budgeted_amount),
+    budgeted_amount: t.wbs?.budgeted_amount == null ? null : Number(t.wbs.budgeted_amount),
   }));
 
   // AC = actuals + optional uninvoiced accrual (committed - actual).
@@ -211,10 +200,7 @@ export const previewEvmSnapshot = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => captureEvmSnapshotSchema.parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ computation: EvmComputation; currency: string }> => {
+    async ({ data, context }): Promise<{ computation: EvmComputation; currency: string }> => {
       requireSupabaseAuth(context);
       await loadProject(context, data.projectId);
       return computeForDate(
@@ -234,8 +220,7 @@ export const captureEvmSnapshot = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => captureEvmSnapshotSchema.parse(input))
   .handler(async ({ data, context }): Promise<EvmSnapshotRow> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyRole(context, CAPTURE_ROLES)))
-      httpError(403, "forbidden");
+    if (!(await hasAnyRole(context, CAPTURE_ROLES))) httpError(403, "forbidden");
     const project = await loadProject(context, data.projectId);
 
     // Reject same-date re-capture up front (friendly message).

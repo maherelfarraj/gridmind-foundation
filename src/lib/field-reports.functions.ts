@@ -275,9 +275,7 @@ export const getWeeklyReportData = createServerFn({ method: "POST" })
       cur.count += 1;
       weatherAgg.set(key, cur);
     }
-    const weather: WeeklyReportWeatherDelayDTO[] = Array.from(
-      weatherAgg.entries(),
-    )
+    const weather: WeeklyReportWeatherDelayDTO[] = Array.from(weatherAgg.entries())
       .map(([delayType, v]) => ({ delayType, hours: v.hours, count: v.count }))
       .sort((a, b) => b.hours - a.hours);
 
@@ -292,15 +290,13 @@ export const getWeeklyReportData = createServerFn({ method: "POST" })
         const disc = String(q.discipline ?? "").trim() || "unassigned";
         const area = String(q.area ?? "").trim() || "—";
         const key = `${disc}|${area}`;
-        const rec =
-          perKey.get(key) ??
-          {
-            discipline: disc,
-            area,
-            wbsIds: new Set<string>(),
-            qty: 0,
-            days: new Set<string>(),
-          };
+        const rec = perKey.get(key) ?? {
+          discipline: disc,
+          area,
+          wbsIds: new Set<string>(),
+          qty: 0,
+          days: new Set<string>(),
+        };
         rec.qty += Number(q.quantity ?? 0);
         rec.days.add(r.report_date);
         if (q.wbs_item_id) {
@@ -326,9 +322,7 @@ export const getWeeklyReportData = createServerFn({ method: "POST" })
       );
     }
 
-    const disciplines: WeeklyReportDisciplineRowDTO[] = Array.from(
-      perKey.values(),
-    )
+    const disciplines: WeeklyReportDisciplineRowDTO[] = Array.from(perKey.values())
       .map((rec) => {
         let planned = 0;
         let uom: string | null = null;
@@ -349,10 +343,7 @@ export const getWeeklyReportData = createServerFn({ method: "POST" })
           dailyRate: rec.qty / days,
         };
       })
-      .sort(
-        (a, b) =>
-          a.discipline.localeCompare(b.discipline) || a.area.localeCompare(b.area),
-      );
+      .sort((a, b) => a.discipline.localeCompare(b.discipline) || a.area.localeCompare(b.area));
 
     // ---- EVM ---------------------------------------------------------------
     const { data: evm, error: evmErr } = await supabase
@@ -380,30 +371,22 @@ export const getWeeklyReportData = createServerFn({ method: "POST" })
       if ((r as any).osha_recordable) recordablesThisWeek += 1;
     }
 
-    const [{ data: recRows, error: recErr }, { data: mpRows, error: mpErr }] =
-      await Promise.all([
-        supabase
-          .from("hse_incidents")
-          .select("osha_recordable")
-          .eq("project_id", data.projectId)
-          .gte("occurred_at", `${twelveMoAgo}T00:00:00Z`),
-        supabase
-          .from("manpower_logs")
-          .select(
-            "hours, construction_daily_reports!inner(project_id, report_date)",
-          )
-          .eq("construction_daily_reports.project_id", data.projectId)
-          .gte("construction_daily_reports.report_date", twelveMoAgo),
-      ]);
+    const [{ data: recRows, error: recErr }, { data: mpRows, error: mpErr }] = await Promise.all([
+      supabase
+        .from("hse_incidents")
+        .select("osha_recordable")
+        .eq("project_id", data.projectId)
+        .gte("occurred_at", `${twelveMoAgo}T00:00:00Z`),
+      supabase
+        .from("manpower_logs")
+        .select("hours, construction_daily_reports!inner(project_id, report_date)")
+        .eq("construction_daily_reports.project_id", data.projectId)
+        .gte("construction_daily_reports.report_date", twelveMoAgo),
+    ]);
     if (recErr) throw recErr;
     if (mpErr) throw mpErr;
-    const recordables12m = (recRows ?? []).filter(
-      (r: any) => r.osha_recordable,
-    ).length;
-    const hours12m = (mpRows ?? []).reduce(
-      (s: number, r: any) => s + Number(r.hours ?? 0),
-      0,
-    );
+    const recordables12m = (recRows ?? []).filter((r: any) => r.osha_recordable).length;
+    const hours12m = (mpRows ?? []).reduce((s: number, r: any) => s + Number(r.hours ?? 0), 0);
 
     const hse: WeeklyReportHseDTO = {
       incidentsByType: Array.from(incidentAgg.entries())
@@ -576,11 +559,7 @@ export const logWeeklyReportExport = createServerFn({ method: "POST" })
     if (!roles.some((r) => EXPORT_ROLES.has(r))) {
       httpError(403, "forbidden");
     }
-    await assertExportAllowed(
-      context.supabase,
-      data.projectId,
-      "weekly_client_report",
-    );
+    await assertExportAllowed(context.supabase, data.projectId, "weekly_client_report");
     try {
       await context.supabase.rpc("write_audit_log", {
         p_action: "field.weekly_report_export",

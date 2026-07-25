@@ -25,10 +25,7 @@ import {
 } from "@/components/ui/select";
 
 import { listEligibleReviewers } from "@/lib/drawing-reviews.functions";
-import {
-  eligibleReviewersQueryOptions,
-  useStartReviewRound,
-} from "@/lib/drawing-reviews-query";
+import { eligibleReviewersQueryOptions, useStartReviewRound } from "@/lib/drawing-reviews-query";
 import type { ReviewerOrg } from "@/lib/drawing-reviews.functions";
 
 type PickedReviewer = { userId: string; org: ReviewerOrg };
@@ -51,11 +48,7 @@ export function StartReviewRoundDialog({
         </Button>
       </DialogTrigger>
       {open && (
-        <DialogInner
-          projectId={projectId}
-          revisionId={revisionId}
-          onDone={() => setOpen(false)}
-        />
+        <DialogInner projectId={projectId} revisionId={revisionId} onDone={() => setOpen(false)} />
       )}
     </Dialog>
   );
@@ -71,9 +64,7 @@ function DialogInner({
   onDone: () => void;
 }) {
   const fn = useServerFn(listEligibleReviewers);
-  const { data: reviewers } = useSuspenseQuery(
-    eligibleReviewersQueryOptions(fn, projectId),
-  );
+  const { data: reviewers } = useSuspenseQuery(eligibleReviewersQueryOptions(fn, projectId));
   const start = useStartReviewRound(projectId);
   const [picked, setPicked] = useState<Record<string, PickedReviewer>>({});
   const [dueDate, setDueDate] = useState("");
@@ -98,50 +89,38 @@ function DialogInner({
       <DialogHeader>
         <DialogTitle>Start review round</DialogTitle>
         <DialogDescription>
-          Pick reviewers for this IFD revision. Every reviewer must sign
-          (or be waived) before this drawing can be promoted to IFC.
+          Pick reviewers for this IFD revision. Every reviewer must sign (or be waived) before this
+          drawing can be promoted to IFC.
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-3">
         <div>
           <Label className="text-xs">Due date (optional)</Label>
-          <Input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
         </div>
 
         <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border border-border p-2">
           {reviewers.length === 0 && (
             <p className="p-2 text-sm text-muted-foreground">
-              No eligible reviewers found. Assign client_viewer / lender_viewer
-              or engineering roles to team members first.
+              No eligible reviewers found. Assign client_viewer / lender_viewer or engineering roles
+              to team members first.
             </p>
           )}
           {reviewers.map((r) => {
             const p = picked[r.user_id];
             return (
-              <div
-                key={r.user_id}
-                className="flex items-center gap-2 rounded p-1"
-              >
+              <div key={r.user_id} className="flex items-center gap-2 rounded p-1">
                 <Checkbox
                   checked={!!p}
                   onCheckedChange={() => toggle(r.user_id, r.suggested_org)}
                 />
                 <div className="flex-1">
                   <p className="text-sm font-medium">{r.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {r.roles.join(", ")}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{r.roles.join(", ")}</p>
                 </div>
                 {p && (
-                  <Select
-                    value={p.org}
-                    onValueChange={(v) => setOrg(r.user_id, v as ReviewerOrg)}
-                  >
+                  <Select value={p.org} onValueChange={(v) => setOrg(r.user_id, v as ReviewerOrg)}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>

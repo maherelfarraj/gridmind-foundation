@@ -1,10 +1,5 @@
 // P-038 — Project detail layout: header + tab bar + <Outlet />.
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouter } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, HardHat, RefreshCw } from "lucide-react";
 
@@ -17,10 +12,7 @@ import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/projects/phase-badge";
 import { PhaseGateStepper } from "@/components/projects/phase-gate-stepper";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
-import {
-  DEPARTMENT_LABELS,
-  type ProjectDepartment,
-} from "@/lib/schemas/project-wizard";
+import { DEPARTMENT_LABELS, type ProjectDepartment } from "@/lib/schemas/project-wizard";
 import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
 import type { ProjectArchetype } from "@/lib/wizard-draft";
 
@@ -66,8 +58,6 @@ const PROJECTS_LINK_SEARCH = {
   page: 1,
 } as const;
 
-
-
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   head: () => ({
     meta: [
@@ -86,9 +76,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
     ],
   }),
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
-      projectDetailQueryOptions(params.projectId),
-    ),
+    context.queryClient.ensureQueryData(projectDetailQueryOptions(params.projectId)),
   pendingComponent: DetailSkeleton,
   errorComponent: DetailError,
   notFoundComponent: DetailNotFound,
@@ -97,9 +85,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
 
 function ProjectDetailLayout() {
   const { projectId } = Route.useParams();
-  const { data: project } = useSuspenseQuery(
-    projectDetailQueryOptions(projectId),
-  );
+  const { data: project } = useSuspenseQuery(projectDetailQueryOptions(projectId));
 
   if (!project) {
     return <DetailNotFound />;
@@ -144,10 +130,7 @@ function ProjectDetailLayout() {
       </header>
 
       {/* Tab bar */}
-      <nav
-        aria-label="Project sections"
-        className="flex flex-wrap gap-1 border-b border-border"
-      >
+      <nav aria-label="Project sections" className="flex flex-wrap gap-1 border-b border-border">
         {STATIC_TABS.map((t) => (
           <TabLink key={t.key} to={t.key} label={t.label} projectId={projectId} />
         ))}
@@ -162,15 +145,7 @@ function ProjectDetailLayout() {
   );
 }
 
-function TabLink({
-  to,
-  label,
-  projectId,
-}: {
-  to: string;
-  label: string;
-  projectId: string;
-}) {
+function TabLink({ to, label, projectId }: { to: string; label: string; projectId: string }) {
   return (
     <Link
       to={`/projects/$projectId/${to}` as any}
@@ -184,7 +159,6 @@ function TabLink({
     >
       {label}
     </Link>
-
   );
 }
 
@@ -231,10 +205,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
             Retry
           </Button>
           <Button asChild variant="outline">
-            <Link
-              to="/projects"
-              search={PROJECTS_LINK_SEARCH}
-            >
+            <Link to="/projects" search={PROJECTS_LINK_SEARCH}>
               <ArrowLeft size={14} aria-hidden />
               Back to projects
             </Link>
@@ -256,10 +227,7 @@ function DetailNotFound() {
           This project doesn&rsquo;t exist or you don&rsquo;t have access.
         </p>
         <Button asChild variant="outline">
-          <Link
-            to="/projects"
-            search={PROJECTS_LINK_SEARCH}
-          >
+          <Link to="/projects" search={PROJECTS_LINK_SEARCH}>
             <ArrowLeft size={14} aria-hidden />
             Back to projects
           </Link>
@@ -274,9 +242,7 @@ function MobilizationHeaderChip({ projectId }: { projectId: string }) {
   if (!data) return null;
   if (data.status === "complete" || data.status === "none") return null;
   const label =
-    data.status === "in_progress"
-      ? "Mobilization: in progress"
-      : "Mobilization: not started";
+    data.status === "in_progress" ? "Mobilization: in progress" : "Mobilization: not started";
   return (
     <span
       className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"

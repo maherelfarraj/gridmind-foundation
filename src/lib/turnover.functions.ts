@@ -34,11 +34,7 @@ import {
   type TurnoverProject,
 } from "@/lib/turnover.server";
 
-function httpError(
-  status: number,
-  code: string,
-  metadata?: Record<string, unknown>,
-): never {
+function httpError(status: number, code: string, metadata?: Record<string, unknown>): never {
   throw Object.assign(new Error(code), {
     statusCode: status,
     body: JSON.stringify({ error: code, ...(metadata ?? {}) }),
@@ -159,8 +155,7 @@ export const getTurnoverPack = createServerFn({ method: "GET" })
           .maybeSingle(),
       ]);
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(404, "project_not_found");
+    if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
     const branding = br as TurnoverBranding | null;
     const logoPath = branding?.logo_url ?? null;
@@ -192,9 +187,7 @@ export const getTurnoverPack = createServerFn({ method: "GET" })
     }
 
     const canWrite = roles.some((r) => TURNOVER_WRITE_ROLES.has(r));
-    const canReadFull =
-      canWrite ||
-      roles.some((r) => r === "om_admin" || r === "engineer");
+    const canReadFull = canWrite || roles.some((r) => r === "om_admin" || r === "engineer");
 
     return {
       companyId,
@@ -237,25 +230,17 @@ export const compileTurnoverPackage = createServerFn({ method: "POST" })
       requireSupabaseAuth(context);
       const companyId = await currentCompanyId(context);
       const roles = await currentRoles(context);
-      if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r)))
-        httpError(403, "forbidden");
+      if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r))) httpError(403, "forbidden");
 
       const { data: proj } = await context.supabase
         .from("projects")
         .select("company_id, name, code")
         .eq("id", data.projectId)
         .maybeSingle();
-      if (!proj || (proj as any).company_id !== companyId)
-        httpError(404, "project_not_found");
+      if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
       const { assertExportAllowed } = await import("@/lib/export-guard");
-      await assertExportAllowed(
-        context.supabase,
-        data.projectId,
-        "turnover_pack",
-      );
-
-
+      await assertExportAllowed(context.supabase, data.projectId, "turnover_pack");
 
       // Existing row (may contain manual uploads to preserve).
       const { data: existing } = await context.supabase
@@ -266,8 +251,7 @@ export const compileTurnoverPackage = createServerFn({ method: "POST" })
         .maybeSingle();
 
       const existingSections =
-        Array.isArray((existing as any)?.sections) &&
-        (existing as any).sections.length > 0
+        Array.isArray((existing as any)?.sections) && (existing as any).sections.length > 0
           ? ((existing as any).sections as TurnoverSection[])
           : null;
 
@@ -334,9 +318,7 @@ export const compileTurnoverPackage = createServerFn({ method: "POST" })
 
       await audit(context, "turnover.compiled", "turnover_packages", savedPack.id, {
         status: savedPack.status,
-        sections_complete: merged
-          .filter((s) => s.complete)
-          .map((s) => s.key),
+        sections_complete: merged.filter((s) => s.complete).map((s) => s.key),
       });
 
       return {
@@ -367,8 +349,7 @@ export const attachTurnoverIndex = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     const roles = await currentRoles(context);
-    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r)))
-      httpError(403, "forbidden");
+    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r))) httpError(403, "forbidden");
 
     const { data: row } = await context.supabase
       .from("turnover_packages")
@@ -377,8 +358,7 @@ export const attachTurnoverIndex = createServerFn({ method: "POST" })
       .eq("project_id", data.projectId)
       .maybeSingle();
     if (!row) httpError(404, "pack_not_found");
-    if ((row as any).status === "compiling")
-      httpError(409, "pack_not_ready");
+    if ((row as any).status === "compiling") httpError(409, "pack_not_ready");
 
     const { error: uErr } = await context.supabase
       .from("turnover_packages")
@@ -416,8 +396,7 @@ export const addTurnoverItems = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     const roles = await currentRoles(context);
-    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r)))
-      httpError(403, "forbidden");
+    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r))) httpError(403, "forbidden");
 
     const { data: row } = await context.supabase
       .from("turnover_packages")
@@ -488,8 +467,7 @@ export const markTurnoverDelivered = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     const roles = await currentRoles(context);
-    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r)))
-      httpError(403, "forbidden");
+    if (!roles.some((r) => TURNOVER_WRITE_ROLES.has(r))) httpError(403, "forbidden");
 
     const { data: row } = await context.supabase
       .from("turnover_packages")
@@ -521,13 +499,10 @@ export const markTurnoverDelivered = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
 
-    await audit(
-      context,
-      "turnover.delivered",
-      "turnover_packages",
-      (saved as any).id,
-      { status: (saved as any).status, accepted_by: data.acceptedBy ?? null },
-    );
+    await audit(context, "turnover.delivered", "turnover_packages", (saved as any).id, {
+      status: (saved as any).status,
+      accepted_by: data.acceptedBy ?? null,
+    });
 
     return {
       ...(saved as any),

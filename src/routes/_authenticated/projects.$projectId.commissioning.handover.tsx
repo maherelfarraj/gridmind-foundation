@@ -20,27 +20,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  getHandoverBoard,
-  signCccTransfer,
-  type HandoverBoard,
-} from "@/lib/handover.functions";
+import { getHandoverBoard, signCccTransfer, type HandoverBoard } from "@/lib/handover.functions";
 import {
   HANDOVER_PREREQ_KEYS,
   HANDOVER_REASON_LABELS,
   type HandoverPrereqKey,
 } from "@/lib/handover.rules";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/commissioning/handover",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning/handover")({
   head: () => ({
     meta: [
       { title: "Handover — GridMind EPC" },
@@ -72,9 +61,7 @@ function HandoverError({ reset }: { reset: () => void }) {
   const router = useRouter();
   return (
     <Card className="p-6 text-center">
-      <p className="text-sm text-destructive">
-        Failed to load the handover workspace.
-      </p>
+      <p className="text-sm text-destructive">Failed to load the handover workspace.</p>
       <Button
         className="mt-3"
         variant="outline"
@@ -93,13 +80,7 @@ function HandoverError({ reset }: { reset: () => void }) {
 // ---------------------------------------------------------------------------
 // Prereq row
 // ---------------------------------------------------------------------------
-function PrereqRow({
-  ok,
-  label,
-}: {
-  ok: boolean;
-  label: string;
-}) {
+function PrereqRow({ ok, label }: { ok: boolean; label: string }) {
   return (
     <li className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm">
       <span className="flex items-center gap-2">
@@ -108,9 +89,7 @@ function PrereqRow({
         ) : (
           <XCircle size={16} aria-hidden className="text-destructive" />
         )}
-        <span className={cn(ok ? "text-foreground" : "text-muted-foreground")}>
-          {label}
-        </span>
+        <span className={cn(ok ? "text-foreground" : "text-muted-foreground")}>{label}</span>
       </span>
       <Badge
         variant="outline"
@@ -147,8 +126,7 @@ function actionTone(action: string): string {
     return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
   if (action === "gate.transition_rejected")
     return "border-destructive/30 bg-destructive/10 text-destructive";
-  if (action === "project.phase_change")
-    return "border-primary/30 bg-primary/10 text-primary";
+  if (action === "project.phase_change") return "border-primary/30 bg-primary/10 text-primary";
   return "border-border bg-muted text-foreground";
 }
 
@@ -204,10 +182,7 @@ function HandoverWorkspace() {
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
               Back to tests
             </Link>
@@ -218,11 +193,7 @@ function HandoverWorkspace() {
             onClick={() => query.refetch()}
             disabled={query.isFetching}
           >
-            <RefreshCw
-              size={14}
-              aria-hidden
-              className={cn(query.isFetching && "animate-spin")}
-            />
+            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
             Refresh
           </Button>
         </div>
@@ -263,8 +234,7 @@ function BoardBody({
 
   const gateApproved = handoverGate?.status === "approved";
   const gateInReview = handoverGate?.status === "in_review";
-  const canAdvance =
-    permissions.canExecute && allGreen && !gateApproved && !gateInReview;
+  const canAdvance = permissions.canExecute && allGreen && !gateApproved && !gateInReview;
 
   return (
     <>
@@ -273,9 +243,7 @@ function BoardBody({
           <div className="flex items-center gap-3">
             <CheckCircle2 size={20} className="text-emerald-500" aria-hidden />
             <div className="flex-1">
-              <p className="font-medium text-foreground">
-                Project transferred to Operations
-              </p>
+              <p className="font-medium text-foreground">Project transferred to Operations</p>
               <p className="text-sm text-muted-foreground">
                 Handover approved{" "}
                 {handoverGate?.approved_at
@@ -288,23 +256,16 @@ function BoardBody({
         </Card>
       ) : !codPassed ? (
         <Card className="border-border bg-card p-6 text-center">
-          <Handshake
-            size={28}
-            aria-hidden
-            className="mx-auto text-muted-foreground"
-          />
+          <Handshake size={28} aria-hidden className="mx-auto text-muted-foreground" />
           <p className="mt-2 font-medium text-foreground">
             Handover not started — complete COD first
           </p>
           <p className="text-sm text-muted-foreground">
-            The Commercial Operation Date certificate has to be signed before
-            the Care, Custody &amp; Control transfer becomes available.
+            The Commercial Operation Date certificate has to be signed before the Care, Custody
+            &amp; Control transfer becomes available.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-4">
-            <Link
-              to="/projects/$projectId/commissioning/certificates"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
               Go to certificates
             </Link>
           </Button>
@@ -316,25 +277,17 @@ function BoardBody({
         <Card className="flex flex-col gap-3 border-border bg-card p-5">
           <div className="flex items-center gap-2">
             <ShieldCheck size={16} aria-hidden className="text-primary" />
-            <h3 className="font-display text-base font-semibold text-foreground">
-              Prerequisites
-            </h3>
+            <h3 className="font-display text-base font-semibold text-foreground">Prerequisites</h3>
           </div>
           <ul className="flex flex-col gap-2">
             {HANDOVER_PREREQ_KEYS.map((k) => (
-              <PrereqRow
-                key={k}
-                ok={prereqs.passes[k]}
-                label={HANDOVER_REASON_LABELS[k]}
-              />
+              <PrereqRow key={k} ok={prereqs.passes[k]} label={HANDOVER_REASON_LABELS[k]} />
             ))}
           </ul>
 
           {/* CCC certificate status card */}
           <div className="mt-2 rounded-md border border-border bg-muted/40 p-3">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              CCC certificate
-            </p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">CCC certificate</p>
             {cccCertificate ? (
               <div className="mt-1 flex items-center justify-between">
                 <div>
@@ -342,8 +295,8 @@ function BoardBody({
                     {cccCertificate.certificate_number}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Effective {cccCertificate.effective_date ?? "—"} · {cccCertificate.signatures.length}{" "}
-                    signature
+                    Effective {cccCertificate.effective_date ?? "—"} ·{" "}
+                    {cccCertificate.signatures.length} signature
                     {cccCertificate.signatures.length === 1 ? "" : "s"}
                   </p>
                 </div>
@@ -355,16 +308,12 @@ function BoardBody({
                       : "bg-muted text-foreground",
                   )}
                 >
-                  {cccCertificate.status === "signed"
-                    ? "Signed"
-                    : "Pending signatures"}
+                  {cccCertificate.status === "signed" ? "Signed" : "Pending signatures"}
                 </Badge>
               </div>
             ) : (
               <div className="mt-1 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Not issued yet.
-                </p>
+                <p className="text-sm text-muted-foreground">Not issued yet.</p>
                 {codPassed ? (
                   <Button asChild size="sm" variant="outline">
                     <Link
@@ -418,23 +367,13 @@ function BoardBody({
                   >
                     <span className="flex items-center gap-2">
                       {item.done ? (
-                        <CheckCircle2
-                          size={12}
-                          className="text-emerald-500"
-                          aria-hidden
-                        />
+                        <CheckCircle2 size={12} className="text-emerald-500" aria-hidden />
                       ) : (
-                        <AlertTriangle
-                          size={12}
-                          className="text-muted-foreground"
-                          aria-hidden
-                        />
+                        <AlertTriangle size={12} className="text-muted-foreground" aria-hidden />
                       )}
                       <span className="text-foreground">{item.label}</span>
                     </span>
-                    <span className="text-muted-foreground">
-                      {item.done ? "Done" : "Pending"}
-                    </span>
+                    <span className="text-muted-foreground">{item.done ? "Done" : "Pending"}</span>
                   </li>
                 ))}
               </ul>
@@ -456,17 +395,9 @@ function BoardBody({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-block">
-                    <Button
-                      size="sm"
-                      disabled={!canAdvance || advancing}
-                      onClick={onAdvance}
-                    >
+                    <Button size="sm" disabled={!canAdvance || advancing} onClick={onAdvance}>
                       {advancing ? (
-                        <Loader2
-                          size={14}
-                          aria-hidden
-                          className="animate-spin"
-                        />
+                        <Loader2 size={14} aria-hidden className="animate-spin" />
                       ) : (
                         <ArrowRight size={14} aria-hidden />
                       )}
@@ -497,17 +428,13 @@ function BoardBody({
       <Card className="border-border bg-card p-5">
         <div className="flex items-center gap-2">
           <History size={16} aria-hidden className="text-primary" />
-          <h3 className="font-display text-base font-semibold text-foreground">
-            Gate history
-          </h3>
+          <h3 className="font-display text-base font-semibold text-foreground">Gate history</h3>
           <Badge variant="outline" className="bg-muted text-muted-foreground">
             Append-only
           </Badge>
         </div>
         {board.history.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            No handover events yet.
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">No handover events yet.</p>
         ) : (
           <ol className="mt-3 flex flex-col gap-2">
             {board.history.map((h) => (
@@ -517,10 +444,7 @@ function BoardBody({
               >
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", actionTone(h.action))}
-                    >
+                    <Badge variant="outline" className={cn("text-xs", actionTone(h.action))}>
                       {ACTION_LABELS[h.action] ?? h.action}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -540,11 +464,7 @@ function BoardBody({
                       : ""}
                   </p>
                 </div>
-                <FileText
-                  size={14}
-                  aria-hidden
-                  className="mt-1 text-muted-foreground"
-                />
+                <FileText size={14} aria-hidden className="mt-1 text-muted-foreground" />
               </li>
             ))}
           </ol>

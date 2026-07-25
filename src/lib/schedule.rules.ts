@@ -47,9 +47,7 @@ export interface BaselineSnapshotEntry {
 // ---------------------------------------------------------------------------
 // Zod schemas
 // ---------------------------------------------------------------------------
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use ISO date YYYY-MM-DD");
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use ISO date YYYY-MM-DD");
 
 export const scheduleTaskWritableSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200),
@@ -118,10 +116,7 @@ export function isOverdue(
 // ---------------------------------------------------------------------------
 // Bar color (semantic tokens only)
 // ---------------------------------------------------------------------------
-export function barColorForStatus(
-  status: ScheduleTaskStatus,
-  overdue: boolean,
-): string {
+export function barColorForStatus(status: ScheduleTaskStatus, overdue: boolean): string {
   if (overdue && status === "in_progress") return "bg-destructive";
   switch (status) {
     case "completed":
@@ -174,10 +169,9 @@ export function wouldCreateCycle(
 // ---------------------------------------------------------------------------
 export function buildSnapshotEntries(
   tasks: Array<
-    Pick<
-      ScheduleTaskLite,
-      "id" | "name" | "start_date" | "end_date" | "progress_pct"
-    > & { code?: string | null }
+    Pick<ScheduleTaskLite, "id" | "name" | "start_date" | "end_date" | "progress_pct"> & {
+      code?: string | null;
+    }
   >,
 ): BaselineSnapshotEntry[] {
   return tasks.map((t) => ({
@@ -199,8 +193,7 @@ export function computeVariance(
   current: Pick<ScheduleTaskLite, "start_date" | "end_date">,
   baseline: BaselineSnapshotEntry | undefined,
 ): Variance {
-  if (!baseline)
-    return { start_var_days: null, finish_var_days: null };
+  if (!baseline) return { start_var_days: null, finish_var_days: null };
   return {
     start_var_days: daysBetween(baseline.start_date, current.start_date),
     finish_var_days: daysBetween(baseline.end_date, current.end_date),
@@ -219,9 +212,7 @@ export function baselineByTaskId(
 // KPI math
 // ---------------------------------------------------------------------------
 export function weightedProgress(
-  tasks: Array<
-    Pick<ScheduleTaskLite, "start_date" | "end_date" | "progress_pct">
-  >,
+  tasks: Array<Pick<ScheduleTaskLite, "start_date" | "end_date" | "progress_pct">>,
 ): number {
   let num = 0;
   let den = 0;

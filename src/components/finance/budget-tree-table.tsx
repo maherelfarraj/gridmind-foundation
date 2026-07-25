@@ -34,11 +34,7 @@ interface Props {
   onEditCostCode: (id: string) => void;
   onEditBudget: (costCodeId: string) => void;
   savingBudgetForCode: string | null;
-  onQuickSaveBudget: (
-    costCodeId: string,
-    original: number,
-    currency: string,
-  ) => void;
+  onQuickSaveBudget: (costCodeId: string, original: number, currency: string) => void;
 }
 
 export function BudgetTreeTable({
@@ -85,15 +81,13 @@ export function BudgetTreeTable({
   }, [costCodes]);
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [drafts, setDrafts] = useState<
-    Record<string, { amount: string; currency: string }>
-  >({});
+  const [drafts, setDrafts] = useState<Record<string, { amount: string; currency: string }>>({});
 
   if (costCodes.length === 0) {
     return (
       <Card className="border-border bg-card p-8 text-center text-sm text-muted-foreground">
-        No cost codes yet — start with a standard EPC breakdown (e.g. 01-1000
-        Engineering, 02-2000 Equipment, 03-3000 Civil).
+        No cost codes yet — start with a standard EPC breakdown (e.g. 01-1000 Engineering, 02-2000
+        Equipment, 03-3000 Civil).
       </Card>
     );
   }
@@ -154,12 +148,7 @@ export function BudgetTreeTable({
               const isSaving = savingBudgetForCode === node.id;
               return (
                 <Fragment key={node.id}>
-                  <tr
-                    className={cn(
-                      "border-b border-border/60",
-                      !cc.is_active && "opacity-60",
-                    )}
-                  >
+                  <tr className={cn("border-b border-border/60", !cc.is_active && "opacity-60")}>
                     <td className="px-3 py-2">
                       <div
                         className="flex items-center gap-1"
@@ -172,18 +161,12 @@ export function BudgetTreeTable({
                             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                             aria-label={isCollapsed ? "Expand" : "Collapse"}
                           >
-                            {isCollapsed ? (
-                              <ChevronRight size={14} />
-                            ) : (
-                              <ChevronDown size={14} />
-                            )}
+                            {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                           </button>
                         ) : (
                           <span className="inline-block w-4" />
                         )}
-                        <span className="font-mono text-xs text-foreground">
-                          {cc.code}
-                        </span>
+                        <span className="font-mono text-xs text-foreground">{cc.code}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2 text-foreground">{cc.name}</td>
@@ -242,11 +225,7 @@ export function BudgetTreeTable({
                             className="h-7 px-2 text-xs"
                             disabled={isSaving}
                             onClick={() =>
-                              onQuickSaveBudget(
-                                node.id,
-                                Number(draft.amount) || 0,
-                                draft.currency,
-                              )
+                              onQuickSaveBudget(node.id, Number(draft.amount) || 0, draft.currency)
                             }
                           >
                             {isSaving ? "…" : "Save"}
@@ -268,12 +247,7 @@ export function BudgetTreeTable({
                     <td className="px-3 py-2 text-right text-foreground">
                       {formatMoney(actual, currency)}
                     </td>
-                    <td
-                      className={cn(
-                        "px-3 py-2 text-right font-semibold",
-                        varianceClass(band),
-                      )}
-                    >
+                    <td className={cn("px-3 py-2 text-right font-semibold", varianceClass(band))}>
                       {v >= 0 ? "" : "-"}
                       {formatMoney(Math.abs(v), currency)}
                     </td>

@@ -23,18 +23,18 @@ export const transmittalCreateInput = z.object({
   toParty: z.string().trim().min(1).max(200),
   subject: z.string().trim().min(2).max(300),
   items: z.array(transmittalItemSchema).min(1).max(200),
-  responseDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  responseDue: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 export type TransmittalCreateInput = z.infer<typeof transmittalCreateInput>;
 
 export const transmittalSendInput = z.object({ id: z.string().uuid() });
 export const transmittalAckInput = z.object({ id: z.string().uuid() });
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "engineering_admin",
-  "company_admin",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "engineering_admin", "company_admin"]);
 export function canWriteTransmittal(roles: readonly string[]): boolean {
   return roles.some((r) => WRITE_ROLES.has(r));
 }

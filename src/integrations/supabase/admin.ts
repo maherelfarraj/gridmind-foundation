@@ -5,7 +5,7 @@
  * from client bundles or use it before the caller is verified via
  * `guardPublicHook`. Bypasses RLS.
  */
-import { createServiceRoleClient } from './server';
+import { createServiceRoleClient } from "./server";
 
 export const admin = () => createServiceRoleClient();
 export { createServiceRoleClient };

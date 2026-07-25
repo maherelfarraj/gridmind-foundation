@@ -25,15 +25,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { TrainingExpiryBadge } from "@/components/hse/training-expiry-badge";
-import {
-  errorMessage,
-  hseProjectsQueryOptions,
-  trainingListQueryOptions,
-} from "@/lib/hse-query";
-import {
-  signTrainingCertificate,
-  upsertTrainingRecord,
-} from "@/lib/hse.functions";
+import { errorMessage, hseProjectsQueryOptions, trainingListQueryOptions } from "@/lib/hse-query";
+import { signTrainingCertificate, upsertTrainingRecord } from "@/lib/hse.functions";
 import type { TrainingInput } from "@/lib/hse.rules";
 import { supabase } from "@/integrations/supabase/client";
 import { objectsToCsv, downloadCsv } from "@/lib/csv";
@@ -95,8 +88,7 @@ function TrainingPage() {
   const rows = listQuery.data ?? [];
 
   const saveMut = useMutation({
-    mutationFn: (payload: TrainingInput) =>
-      upsertTrainingRecord({ data: payload as any }),
+    mutationFn: (payload: TrainingInput) => upsertTrainingRecord({ data: payload as any }),
     onSuccess: async () => {
       toast.success("Training record saved");
       setOpen(false);
@@ -252,9 +244,7 @@ function TrainingPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
             <GraduationCap size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">
-              No training records yet.
-            </div>
+            <div className="text-sm text-muted-foreground">No training records yet.</div>
           </CardContent>
         </Card>
       ) : (
@@ -313,9 +303,7 @@ function TrainingPage() {
               <Label>Person</Label>
               <Input
                 value={draft.personName}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, personName: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, personName: e.target.value }))}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -329,9 +317,7 @@ function TrainingPage() {
               <Label>Provider</Label>
               <Input
                 value={draft.provider}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, provider: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, provider: e.target.value }))}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -339,9 +325,7 @@ function TrainingPage() {
               <Input
                 type="date"
                 value={draft.completedOn}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, completedOn: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, completedOn: e.target.value }))}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -375,9 +359,7 @@ function TrainingPage() {
               <Label>Certificate</Label>
               <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground hover:bg-accent">
                 <Upload size={14} aria-hidden />
-                {draft.fileToUpload
-                  ? draft.fileToUpload.name
-                  : "Choose PDF or image"}
+                {draft.fileToUpload ? draft.fileToUpload.name : "Choose PDF or image"}
                 <input
                   type="file"
                   className="sr-only"
@@ -396,10 +378,7 @@ function TrainingPage() {
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={uploadAndSave}
-              disabled={saveMut.isPending || uploading}
-            >
+            <Button onClick={uploadAndSave} disabled={saveMut.isPending || uploading}>
               {uploading ? "Uploading…" : saveMut.isPending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>

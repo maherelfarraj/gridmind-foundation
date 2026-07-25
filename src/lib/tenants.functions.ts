@@ -54,9 +54,7 @@ export type TenantRow = {
 export const listTenants = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ search: z.string().trim().max(100).optional() })
-      .parse(input ?? {}),
+    z.object({ search: z.string().trim().max(100).optional() }).parse(input ?? {}),
   )
   .handler(async ({ data, context }): Promise<TenantRow[]> => {
     requireSupabaseAuth(context);
@@ -216,9 +214,7 @@ export const getTenantDetail = createServerFn({ method: "GET" })
 export const updateTenantPlan = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ companyId: uuidSchema, planTier: planTierSchema })
-      .parse(input),
+    z.object({ companyId: uuidSchema, planTier: planTierSchema }).parse(input),
   )
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
@@ -251,34 +247,28 @@ export const updateTenantPlan = createServerFn({ method: "POST" })
     // Auto-disable green_hydrogen when downgrading away from enterprise.
     // Mirrors has_module_access's hard rule and keeps the override row honest.
     if (from === "enterprise" && data.planTier !== "enterprise") {
-      const { error: ghErr } = await context.supabase
-        .from("module_access_rules")
-        .upsert(
-          {
-            company_id: data.companyId,
-            module: "green_hydrogen",
-            enabled: false,
-          },
-          { onConflict: "company_id,module" },
-        );
+      const { error: ghErr } = await context.supabase.from("module_access_rules").upsert(
+        {
+          company_id: data.companyId,
+          module: "green_hydrogen",
+          enabled: false,
+        },
+        { onConflict: "company_id,module" },
+      );
       if (ghErr) throw ghErr;
 
-      const { error: ghAuditErr } = await context.supabase.rpc(
-        "write_audit_log",
-        {
-          p_action: "module_access.auto_disabled",
-          p_entity: "module_access_rules",
-          p_entity_id: data.companyId,
-          p_metadata: {
-            module_key: "green_hydrogen",
-            from,
-            to: data.planTier,
-          },
+      const { error: ghAuditErr } = await context.supabase.rpc("write_audit_log", {
+        p_action: "module_access.auto_disabled",
+        p_entity: "module_access_rules",
+        p_entity_id: data.companyId,
+        p_metadata: {
+          module_key: "green_hydrogen",
+          from,
+          to: data.planTier,
         },
-      );
+      });
       if (ghAuditErr) throw ghAuditErr;
     }
 
     return { id: data.companyId, changed: true, from, to: data.planTier };
   });
-

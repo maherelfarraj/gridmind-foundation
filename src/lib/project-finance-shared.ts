@@ -9,14 +9,9 @@ export function httpError(status: number, code: string, message?: string): never
   });
 }
 
-export async function hasAnyRole(
-  ctx: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+export async function hasAnyRole(ctx: AuthContext, roles: readonly string[]): Promise<boolean> {
   const r = await Promise.all(
-    roles.map((role) =>
-      ctx.supabase.rpc("has_company_role", { p_role: role as any }),
-    ),
+    roles.map((role) => ctx.supabase.rpc("has_company_role", { p_role: role as any })),
   );
   return r.some((x) => Boolean(x?.data));
 }

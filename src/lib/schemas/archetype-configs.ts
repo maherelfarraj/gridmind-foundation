@@ -7,14 +7,12 @@ import type { ProjectArchetype } from "@/lib/wizard-draft";
 
 // Helpers ---------------------------------------------------------------
 
-const emptyToUndef = (v: unknown) =>
-  v === "" || v === null || v === undefined ? undefined : v;
+const emptyToUndef = (v: unknown) => (v === "" || v === null || v === undefined ? undefined : v);
 
 const optNum = (opts?: { min?: number; max?: number }) =>
   z.preprocess(
     emptyToUndef,
-    z
-      .coerce
+    z.coerce
       .number()
       .refine((n) => !Number.isNaN(n), "Must be a number")
       .refine((n) => opts?.min === undefined || n >= opts.min, {
@@ -29,8 +27,7 @@ const optNum = (opts?: { min?: number; max?: number }) =>
 const optInt = (opts?: { min?: number; max?: number }) =>
   z.preprocess(
     emptyToUndef,
-    z
-      .coerce
+    z.coerce
       .number()
       .int("Must be a whole number")
       .refine((n) => opts?.min === undefined || n >= opts.min, {
@@ -43,10 +40,9 @@ const optInt = (opts?: { min?: number; max?: number }) =>
   ) as z.ZodType<number | undefined>;
 
 const optStr = (max = 240) =>
-  z.preprocess(
-    emptyToUndef,
-    z.string().trim().max(max).optional(),
-  ) as z.ZodType<string | undefined>;
+  z.preprocess(emptyToUndef, z.string().trim().max(max).optional()) as z.ZodType<
+    string | undefined
+  >;
 
 const kvPair = z.object({
   key: z.string().trim().min(1).max(80),
@@ -190,27 +186,12 @@ export const CONFIG_TABLE_MAP: Record<ArchetypeConfigKey, string> = {
 
 export const ARCHETYPE_CONFIG_MAP: Record<ProjectArchetype, ArchetypeConfigKey[]> = {
   utility_pv: ["pv", "sld", "scada", "yield", "pvsyst", "financial", "cybersecurity"],
-  hybrid_pv_bess: [
-    "pv",
-    "bess",
-    "sld",
-    "scada",
-    "yield",
-    "pvsyst",
-    "financial",
-    "cybersecurity",
-  ],
+  hybrid_pv_bess: ["pv", "bess", "sld", "scada", "yield", "pvsyst", "financial", "cybersecurity"],
   standalone_bess: ["bess", "sld", "scada", "financial", "cybersecurity"],
   c_and_i_rooftop: ["pv", "yield", "financial", "cybersecurity"],
   onshore_wind: ["yield", "sld", "scada", "financial", "cybersecurity"],
   green_hydrogen: ["yield", "scada", "financial", "cybersecurity"],
-  transmission_substation: [
-    "substation",
-    "sld",
-    "scada",
-    "financial",
-    "cybersecurity",
-  ],
+  transmission_substation: ["substation", "sld", "scada", "financial", "cybersecurity"],
 };
 
 // Server-safe defaults (used when no row exists yet) --------------------
@@ -249,11 +230,6 @@ export const CONFIG_EDIT_ROLES: Record<ArchetypeConfigKey, readonly string[]> = 
   scada: ["company_admin", "project_admin", "engineering_admin"],
   yield: ["company_admin", "project_admin", "engineering_admin"],
   pvsyst: ["company_admin", "project_admin", "engineering_admin"],
-  financial: [
-    "company_admin",
-    "project_admin",
-    "engineering_admin",
-    "finance_admin",
-  ],
+  financial: ["company_admin", "project_admin", "engineering_admin", "finance_admin"],
   cybersecurity: ["company_admin", "project_admin", "engineering_admin"],
 };

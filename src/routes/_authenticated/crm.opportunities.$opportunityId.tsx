@@ -68,18 +68,12 @@ function OpportunityDetailPage() {
   const tendersFn = useServerFn(listTenderEvents);
   const activityFn = useServerFn(getOpportunityActivity);
 
-  const oppQuery = useSuspenseQuery(
-    opportunityDetailQueryOptions(getOppFn, opportunityId),
-  );
+  const oppQuery = useSuspenseQuery(opportunityDetailQueryOptions(getOppFn, opportunityId));
   const opp = oppQuery.data;
 
   const contactsQuery = useQuery(contactsQueryOptions(contactsFn, opportunityId));
-  const tendersQuery = useQuery(
-    tenderEventsQueryOptions(tendersFn, opportunityId),
-  );
-  const activityQuery = useQuery(
-    activityQueryOptions(activityFn, opportunityId),
-  );
+  const tendersQuery = useQuery(tenderEventsQueryOptions(tendersFn, opportunityId));
+  const activityQuery = useQuery(activityQueryOptions(activityFn, opportunityId));
 
   const rolesFn = useServerFn(getCurrentUserRoles);
   const rolesQuery = useQuery({
@@ -88,8 +82,7 @@ function OpportunityDetailPage() {
     staleTime: 60_000,
   });
   const roles = new Set((rolesQuery.data ?? []).map((r) => r.role));
-  const canWrite =
-    roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
+  const canWrite = roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
   const canDelete = roles.has("company_admin") || roles.has("super_admin");
   const readOnly = !canWrite;
 

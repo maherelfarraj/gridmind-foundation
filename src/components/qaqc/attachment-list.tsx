@@ -53,19 +53,10 @@ export function AttachmentList({
             onClick={() => open(a.file_path, i)}
             disabled={openingIdx === i}
           >
-            {openingIdx === i ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden />
-            ) : (
-              "Open"
-            )}
+            {openingIdx === i ? <Loader2 size={14} className="animate-spin" aria-hidden /> : "Open"}
           </Button>
           {onRemove ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRemove(i)}
-              aria-label="Remove"
-            >
+            <Button variant="ghost" size="sm" onClick={() => onRemove(i)} aria-label="Remove">
               Remove
             </Button>
           ) : null}

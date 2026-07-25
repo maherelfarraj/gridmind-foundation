@@ -1,20 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  decisionLabel,
-  hasPendingSignoff,
-  isOverdue,
-  roundIsComplete,
-} from "@/lib/review-rules";
+import { decisionLabel, hasPendingSignoff, isOverdue, roundIsComplete } from "@/lib/review-rules";
 
 describe("roundIsComplete", () => {
   it("false when empty", () => {
     expect(roundIsComplete([])).toBe(false);
   });
   it("false when any decision null", () => {
-    expect(
-      roundIsComplete([{ decision: "approved" }, { decision: null }]),
-    ).toBe(false);
+    expect(roundIsComplete([{ decision: "approved" }, { decision: null }])).toBe(false);
   });
   it("true when every signoff has a decision", () => {
     expect(
@@ -38,9 +31,7 @@ describe("decisionLabel", () => {
   it("humanises each decision", () => {
     expect(decisionLabel(null)).toBe("Pending");
     expect(decisionLabel("approved")).toBe("Approved");
-    expect(decisionLabel("approved_with_comments")).toBe(
-      "Approved w/ comments",
-    );
+    expect(decisionLabel("approved_with_comments")).toBe("Approved w/ comments");
     expect(decisionLabel("rejected")).toBe("Rejected");
     expect(decisionLabel("waived")).toBe("Waived");
   });

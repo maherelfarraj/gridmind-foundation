@@ -22,12 +22,7 @@ export const CONTRACT_STATUSES = [
 ] as const;
 export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
-export const OBLIGATION_STATUSES = [
-  "open",
-  "in_progress",
-  "fulfilled",
-  "breached",
-] as const;
+export const OBLIGATION_STATUSES = ["open", "in_progress", "fulfilled", "breached"] as const;
 export type ObligationStatus = (typeof OBLIGATION_STATUSES)[number];
 
 export const SIGNED_STATUSES: ReadonlyArray<ContractStatus> = [
@@ -53,8 +48,16 @@ export const ContractUpsertSchema = z.object({
   status: z.enum(CONTRACT_STATUSES).optional(),
   value: z.number().finite().nonnegative().nullable().optional(),
   currency_code: z.string().length(3).nullable().optional(),
-  effective_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  expiry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  effective_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  expiry_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 export type ContractUpsertInput = z.infer<typeof ContractUpsertSchema>;
 
@@ -64,7 +67,11 @@ export const ObligationUpsertSchema = z.object({
   title: z.string().min(1).max(300),
   description: z.string().max(4000).nullable().optional(),
   clause_ref: z.string().max(120).nullable().optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   status: z.enum(OBLIGATION_STATUSES).optional(),
   owner_id: z.string().uuid().nullable().optional(),
 });
@@ -83,7 +90,10 @@ export const ExtractedObligationSchema = z.object({
 export type ExtractedObligation = z.infer<typeof ExtractedObligationSchema>;
 
 export class SovMismatchError extends Error {
-  constructor(public value: number, public total: number) {
+  constructor(
+    public value: number,
+    public total: number,
+  ) {
     super(
       `Schedule of Values total ${total.toFixed(2)} does not match contract value ${value.toFixed(2)}`,
     );
@@ -93,10 +103,7 @@ export class SovMismatchError extends Error {
 
 /** Sum SOV lines with basic rounding to 2 decimals to dodge float drift. */
 export function sovTotal(lines: readonly SovLine[]): number {
-  const cents = lines.reduce(
-    (acc, l) => acc + Math.round(Number(l.scheduled_amount) * 100),
-    0,
-  );
+  const cents = lines.reduce((acc, l) => acc + Math.round(Number(l.scheduled_amount) * 100), 0);
   return cents / 100;
 }
 
@@ -131,11 +138,7 @@ export function isObligationOverdue(
   if (status === "fulfilled") return false;
   const dueMs = Date.parse(`${dueDate}T00:00:00Z`);
   if (Number.isNaN(dueMs)) return false;
-  const todayMs = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate(),
-  );
+  const todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
   return dueMs < todayMs;
 }
 

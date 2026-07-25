@@ -13,12 +13,7 @@
 // Never import service-role secrets here — provider adapters run inside
 // createServerFn handlers that already carry a scoped Supabase client.
 
-export type EsignEvent =
-  | "sent"
-  | "viewed"
-  | "completed"
-  | "declined"
-  | "voided";
+export type EsignEvent = "sent" | "viewed" | "completed" | "declined" | "voided";
 
 export interface EsignSendInput {
   proposalId: string;
@@ -113,8 +108,7 @@ export interface ResolvedEsignProvider {
 }
 
 export function getEsignProvider(): ResolvedEsignProvider | null {
-  const name =
-    (typeof process !== "undefined" && process.env?.ESIGN_PROVIDER) || "manual";
+  const name = (typeof process !== "undefined" && process.env?.ESIGN_PROVIDER) || "manual";
   if (name === "manual") {
     return { provider: manualProvider, providerName: "manual" };
   }
@@ -137,7 +131,16 @@ import { timingSafeEqual, hmacSha256Hex } from "@/lib/public-api/guard";
 
 export type WebhookVerifyResult =
   | { ok: true; providerName: string }
-  | { ok: false; reason: "not_configured" | "signature_missing" | "signature_expired" | "signature_mismatch" | "manual_token_mismatch"; providerName: string };
+  | {
+      ok: false;
+      reason:
+        | "not_configured"
+        | "signature_missing"
+        | "signature_expired"
+        | "signature_mismatch"
+        | "manual_token_mismatch";
+      providerName: string;
+    };
 
 const WEBHOOK_REPLAY_WINDOW_SECONDS = 300;
 
@@ -153,8 +156,7 @@ export async function verifyWebhook(
   rawBody: string,
 ): Promise<WebhookVerifyResult> {
   const secret = process.env.ESIGN_WEBHOOK_SECRET;
-  const providerName =
-    (typeof process !== "undefined" && process.env?.ESIGN_PROVIDER) || "manual";
+  const providerName = (typeof process !== "undefined" && process.env?.ESIGN_PROVIDER) || "manual";
   if (!secret) return { ok: false, reason: "not_configured", providerName };
 
   if (providerName === "manual") {

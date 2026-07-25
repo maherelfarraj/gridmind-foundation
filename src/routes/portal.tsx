@@ -93,12 +93,7 @@ function MfaBanner() {
         <span className="text-accent-foreground">
           For your security, enable two-factor authentication on your account.
         </span>
-        <Button
-          asChild
-          size="sm"
-          variant="secondary"
-          className="ml-auto h-7 px-3 text-xs"
-        >
+        <Button asChild size="sm" variant="secondary" className="ml-auto h-7 px-3 text-xs">
           <Link to="/portal">Enable 2FA</Link>
         </Button>
         <button

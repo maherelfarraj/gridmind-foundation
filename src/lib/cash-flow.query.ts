@@ -1,11 +1,7 @@
 // P-077 — TanStack Query hooks for cash flows.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getCashFlowAccess,
-  listCashFlows,
-  listCurrencies,
-} from "@/lib/cash-flow.functions";
+import { getCashFlowAccess, listCashFlows, listCurrencies } from "@/lib/cash-flow.functions";
 import type { CashFlowRow } from "@/lib/cash-flow.rules";
 
 export function cashFlowsQueryOptions(input: {

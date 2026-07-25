@@ -67,10 +67,7 @@ export function ArchetypeConfigForm({
   const queryClient = useQueryClient();
   const saveFn = useServerFn(saveArchetypeConfig);
 
-  const defaultValues = useMemo(
-    () => toFormValues(configKey, initial),
-    [configKey, initial],
-  );
+  const defaultValues = useMemo(() => toFormValues(configKey, initial), [configKey, initial]);
 
   const form = useForm({
     resolver: zodResolver(configSchemas[configKey] as any),
@@ -132,9 +129,7 @@ export function ArchetypeConfigForm({
         ) : (
           <div className="flex justify-end">
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && (
-                <Loader2 size={14} aria-hidden className="animate-spin" />
-              )}
+              {mutation.isPending && <Loader2 size={14} aria-hidden className="animate-spin" />}
               Save configuration
             </Button>
           </div>
@@ -150,13 +145,7 @@ export function ArchetypeConfigForm({
 
 type F = UseFormReturn<any>;
 
-function ConfigFields({
-  configKey,
-  form,
-}: {
-  configKey: ArchetypeConfigKey;
-  form: F;
-}) {
+function ConfigFields({ configKey, form }: { configKey: ArchetypeConfigKey; form: F }) {
   switch (configKey) {
     case "pv":
       return <PvFields form={form} />;
@@ -180,11 +169,7 @@ function ConfigFields({
 }
 
 function Grid({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {children}
-    </div>
-  );
+  return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
 }
 
 function SelectField({
@@ -270,9 +255,7 @@ function BoolField({
       </div>
       <Switch
         checked={value}
-        onCheckedChange={(v) =>
-          form.setValue(name, v, { shouldDirty: true })
-        }
+        onCheckedChange={(v) => form.setValue(name, v, { shouldDirty: true })}
       />
     </div>
   );
@@ -310,11 +293,22 @@ function PvFields({ form }: { form: F }) {
           { value: "dual_axis", label: "Dual-axis" },
         ]}
       />
-      <TextField form={form} name="module_type" label="Module type" placeholder="Bifacial mono PERC" />
+      <TextField
+        form={form}
+        name="module_type"
+        label="Module type"
+        placeholder="Bifacial mono PERC"
+      />
       <TextField form={form} name="tilt_deg" label="Tilt" suffix="°" type="number" />
       <TextField form={form} name="gcr" label="GCR" type="number" />
       <TextField form={form} name="dc_ac_ratio" label="DC/AC ratio" type="number" />
-      <TextField form={form} name="dc_capacity_mwp" label="DC capacity" suffix="MWp" type="number" />
+      <TextField
+        form={form}
+        name="dc_capacity_mwp"
+        label="DC capacity"
+        suffix="MWp"
+        type="number"
+      />
       <TextField form={form} name="inverter_count" label="Inverter count" type="number" />
     </Grid>
   );
@@ -342,11 +336,7 @@ function BessFields({ form }: { form: F }) {
         <TextField form={form} name="container_count" label="Container count" type="number" />
         <TextField form={form} name="cycles_per_day" label="Cycles / day" type="number" />
       </Grid>
-      <TextareaField
-        form={form}
-        name="augmentation_strategy"
-        label="Augmentation strategy"
-      />
+      <TextareaField form={form} name="augmentation_strategy" label="Augmentation strategy" />
     </div>
   );
 }
@@ -356,7 +346,13 @@ function SubstationFields({ form }: { form: F }) {
     <Grid>
       <TextField form={form} name="voltage_kv" label="Voltage" suffix="kV" type="number" />
       <TextField form={form} name="transformer_count" label="Transformer count" type="number" />
-      <TextField form={form} name="transformer_mva" label="Transformer" suffix="MVA" type="number" />
+      <TextField
+        form={form}
+        name="transformer_mva"
+        label="Transformer"
+        suffix="MVA"
+        type="number"
+      />
       <TextField form={form} name="bay_count" label="Bay count" type="number" />
       <TextField form={form} name="busbar_scheme" label="Busbar scheme" />
       <TextField form={form} name="grid_code" label="Grid code" />
@@ -400,9 +396,21 @@ function ScadaFields({ form }: { form: F }) {
           { value: "opc_ua", label: "OPC UA" },
         ]}
       />
-      <TextField form={form} name="polling_interval_sec" label="Polling interval" suffix="s" type="number" />
+      <TextField
+        form={form}
+        name="polling_interval_sec"
+        label="Polling interval"
+        suffix="s"
+        type="number"
+      />
       <TextField form={form} name="points_count" label="Points count" type="number" />
-      <TextField form={form} name="historian_retention_days" label="Historian retention" suffix="days" type="number" />
+      <TextField
+        form={form}
+        name="historian_retention_days"
+        label="Historian retention"
+        suffix="days"
+        type="number"
+      />
     </Grid>
   );
 }
@@ -415,7 +423,13 @@ function YieldFields({ form }: { form: F }) {
       <TextField form={form} name="ghi_kwh_m2" label="GHI" suffix="kWh/m²" type="number" />
       <TextField form={form} name="losses_pct" label="Losses" suffix="%" type="number" />
       <TextField form={form} name="degradation_pct" label="Degradation" suffix="%" type="number" />
-      <TextField form={form} name="availability_pct" label="Availability" suffix="%" type="number" />
+      <TextField
+        form={form}
+        name="availability_pct"
+        label="Availability"
+        suffix="%"
+        type="number"
+      />
     </Grid>
   );
 }
@@ -426,9 +440,20 @@ function PvsystFields({ form }: { form: F }) {
       <Grid>
         <TextField form={form} name="pvsyst_version" label="PVsyst version" placeholder="7.4" />
         <TextField form={form} name="meteo_source" label="Meteo source" placeholder="Meteonorm 8" />
-        <TextField form={form} name="near_shading_pct" label="Near shading" suffix="%" type="number" />
+        <TextField
+          form={form}
+          name="near_shading_pct"
+          label="Near shading"
+          suffix="%"
+          type="number"
+        />
         <TextField form={form} name="albedo" label="Albedo" type="number" />
-        <TextField form={form} name="sim_report_url" label="Sim report URL" placeholder="https://…" />
+        <TextField
+          form={form}
+          name="sim_report_url"
+          label="Sim report URL"
+          placeholder="https://…"
+        />
         <BoolField
           form={form}
           name="bifacial"
@@ -454,9 +479,21 @@ function FinancialFields({ form }: { form: F }) {
       <TextField form={form} name="capex_total" label="Total CAPEX" type="number" />
       <TextField form={form} name="contingency_pct" label="Contingency" suffix="%" type="number" />
       <TextField form={form} name="debt_ratio_pct" label="Debt ratio" suffix="%" type="number" />
-      <TextField form={form} name="discount_rate_pct" label="Discount rate" suffix="%" type="number" />
+      <TextField
+        form={form}
+        name="discount_rate_pct"
+        label="Discount rate"
+        suffix="%"
+        type="number"
+      />
       <TextField form={form} name="ppa_price" label="PPA price" type="number" />
-      <TextField form={form} name="contract_years" label="Contract length" suffix="yrs" type="number" />
+      <TextField
+        form={form}
+        name="contract_years"
+        label="Contract length"
+        suffix="yrs"
+        type="number"
+      />
     </Grid>
   );
 }
@@ -475,11 +512,7 @@ function CybersecurityFields({ form }: { form: F }) {
             { value: "iso27019", label: "ISO 27019" },
           ]}
         />
-        <BoolField
-          form={form}
-          name="soc_monitoring"
-          label="24/7 SOC monitoring"
-        />
+        <BoolField form={form} name="soc_monitoring" label="24/7 SOC monitoring" />
       </Grid>
       <div>
         <p className="mb-2 text-sm font-medium text-foreground">Zones &amp; conduits</p>
@@ -491,11 +524,7 @@ function CybersecurityFields({ form }: { form: F }) {
           disabled={form.formState.isSubmitting}
         />
       </div>
-      <TextareaField
-        form={form}
-        name="remote_access_policy"
-        label="Remote access policy"
-      />
+      <TextareaField form={form} name="remote_access_policy" label="Remote access policy" />
     </div>
   );
 }

@@ -29,10 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  buildProposalPdf,
-  type ProposalPdfData,
-} from "@/lib/exports/proposal-pdf";
+import { buildProposalPdf, type ProposalPdfData } from "@/lib/exports/proposal-pdf";
 import {
   getEsignConfigStatus,
   getProposalExportData,
@@ -113,17 +110,14 @@ async function blobToBase64(blob: Blob): Promise<string> {
   let binary = "";
   const CHUNK = 0x8000;
   for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(
-      ...(bytes.subarray(i, i + CHUNK) as unknown as number[]),
-    );
+    binary += String.fromCharCode(...(bytes.subarray(i, i + CHUNK) as unknown as number[]));
   }
   return btoa(binary);
 }
 
 export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps) {
   const qc = useQueryClient();
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["proposal", proposal.id] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["proposal", proposal.id] });
 
   const cfgFn = useServerFn(getEsignConfigStatus);
   const cfgQ = useQuery({
@@ -150,16 +144,10 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
   const isDevMode = !!cfg?.devMode;
 
   const cfoApproved = proposal.status === "approved";
-  const alreadyOut =
-    proposal.esign_status === "sent" || proposal.esign_status === "viewed";
+  const alreadyOut = proposal.esign_status === "sent" || proposal.esign_status === "viewed";
   const completed = proposal.esign_status === "completed";
   const sendDisabled =
-    !configured ||
-    !canWrite ||
-    !cfoApproved ||
-    alreadyOut ||
-    completed ||
-    sending;
+    !configured || !canWrite || !cfoApproved || alreadyOut || completed || sending;
 
   const sendTooltip = !configured
     ? "E-signature provider not configured"
@@ -206,8 +194,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
       toast.success("Status refreshed");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Refresh failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Refresh failed"),
   });
 
   const voidM = useMutation({
@@ -217,19 +204,16 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
       toast.success("Envelope voided");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Void failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Void failed"),
   });
 
   const simulateM = useMutation({
-    mutationFn: (event: EsignStatus) =>
-      simulateFn({ data: { proposalId: proposal.id, event } }),
+    mutationFn: (event: EsignStatus) => simulateFn({ data: { proposalId: proposal.id, event } }),
     onSuccess: (_r, ev) => {
       toast.success(`Simulated ${ev}`);
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Simulate failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Simulate failed"),
   });
 
   const downloadM = useMutation({
@@ -237,15 +221,12 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
     onSuccess: (r: any) => {
       if (r?.url) window.open(r.url, "_blank", "noopener,noreferrer");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Download failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Download failed"),
   });
 
   const history = useMemo<EsignHistoryEntry[]>(
     () =>
-      Array.isArray(proposal.esign_history)
-        ? (proposal.esign_history as EsignHistoryEntry[])
-        : [],
+      Array.isArray(proposal.esign_history) ? (proposal.esign_history as EsignHistoryEntry[]) : [],
     [proposal.esign_history],
   );
 
@@ -269,8 +250,8 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
           E-signature provider not configured. Set{" "}
-          <code className="rounded bg-muted px-1">ESIGN_PROVIDER</code> in the
-          backend secret store to enable this section.
+          <code className="rounded bg-muted px-1">ESIGN_PROVIDER</code> in the backend secret store
+          to enable this section.
         </p>
       </Card>
     );
@@ -283,9 +264,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
           <FileSignature className="h-4 w-4 text-primary" aria-hidden />
           <h3 className="text-sm font-semibold text-foreground">E-signature</h3>
           {proposal.esign_status && (
-            <Badge variant={statusVariant(proposal.esign_status)}>
-              {proposal.esign_status}
-            </Badge>
+            <Badge variant={statusVariant(proposal.esign_status)}>{proposal.esign_status}</Badge>
           )}
           {isDevMode && (
             <Badge variant="outline" className="border-warning/50 text-warning">
@@ -317,11 +296,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
             proposal.esign_status !== "voided" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={simulateM.isPending}
-                  >
+                  <Button size="sm" variant="outline" disabled={simulateM.isPending}>
                     {simulateM.isPending ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                     ) : (
@@ -388,11 +363,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
             <label htmlFor="signerName" className="text-xs text-muted-foreground">
               Signer name
             </label>
-            <Input
-              id="signerName"
-              disabled={sendDisabled}
-              {...form.register("signerName")}
-            />
+            <Input id="signerName" disabled={sendDisabled} {...form.register("signerName")} />
             {form.formState.errors.signerName && (
               <span className="text-xs text-destructive">
                 {form.formState.errors.signerName.message}
@@ -425,8 +396,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
           </Button>
           {!cfoApproved && (
             <p className="col-span-full text-xs text-muted-foreground">
-              Send is blocked until CFO approval is complete (Pricing & approval
-              section).
+              Send is blocked until CFO approval is complete (Pricing & approval section).
             </p>
           )}
         </form>
@@ -440,9 +410,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
                 {eventIcon(h.event)}
               </span>
               <div className="flex flex-wrap items-baseline gap-2 text-xs">
-                <span className="font-medium capitalize text-foreground">
-                  {h.event}
-                </span>
+                <span className="font-medium capitalize text-foreground">{h.event}</span>
                 <span className="text-muted-foreground">
                   {(() => {
                     try {
@@ -454,9 +422,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
                     }
                   })()}
                 </span>
-                {h.note && (
-                  <span className="text-muted-foreground">— {h.note}</span>
-                )}
+                {h.note && <span className="text-muted-foreground">— {h.note}</span>}
               </div>
             </li>
           ))}
@@ -465,10 +431,7 @@ export function EsignCard({ proposal, canWrite, isCompanyAdmin }: EsignCardProps
 
       {proposal.esign_envelope_id && (
         <p className="text-[11px] text-muted-foreground">
-          Envelope{" "}
-          <code className="rounded bg-muted px-1">
-            {proposal.esign_envelope_id}
-          </code>
+          Envelope <code className="rounded bg-muted px-1">{proposal.esign_envelope_id}</code>
           {proposal.esign_provider ? ` · ${proposal.esign_provider}` : ""}
         </p>
       )}

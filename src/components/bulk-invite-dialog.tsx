@@ -34,11 +34,7 @@ import {
 } from "@/components/ui/table";
 
 import { bulkCreateInvites, type BulkInviteResult } from "@/lib/invites.functions";
-import {
-  GRANTABLE_ROLES,
-  humanizeRole,
-  type GrantableRole,
-} from "@/lib/role-groups";
+import { GRANTABLE_ROLES, humanizeRole, type GrantableRole } from "@/lib/role-groups";
 import { Constants } from "@/integrations/supabase/types";
 
 type AppRole = (typeof Constants.public.Enums.app_role)[number];
@@ -75,10 +71,7 @@ function levenshtein(a: string, b: string): number {
     dp[0] = i;
     for (let j = 1; j <= n; j++) {
       const tmp = dp[j];
-      dp[j] =
-        a[i - 1] === b[j - 1]
-          ? prev
-          : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
       prev = tmp;
     }
   }
@@ -129,9 +122,7 @@ function computeStatus(
     return { status: "unknown_role", suggestion: suggestRole(row.role) };
   }
   // Duplicate: any earlier row with same email + role.
-  const earlier = all
-    .slice(0, index)
-    .some((r) => r.email === row.email && r.role === row.role);
+  const earlier = all.slice(0, index).some((r) => r.email === row.email && r.role === row.role);
   if (earlier) return { status: "duplicate_in_paste" };
   if (memberEmails.has(row.email)) return { status: "already_member" };
   if (pendingEmails.has(row.email)) return { status: "already_pending" };
@@ -180,13 +171,7 @@ export function BulkInviteDialog({
 
   const recomputeRows = (list: Array<{ email: string; role: string }>) => {
     return list.map<ParsedRow>((r, i) => {
-      const { status, suggestion } = computeStatus(
-        r,
-        i,
-        list,
-        memberEmails,
-        pendingEmails,
-      );
+      const { status, suggestion } = computeStatus(r, i, list, memberEmails, pendingEmails);
       return {
         id: `${i}-${r.email}-${r.role}`,
         email: r.email,
@@ -229,10 +214,7 @@ export function BulkInviteDialog({
     });
   };
 
-  const okRows = useMemo(
-    () => (rows ?? []).filter((r) => r.status === "ok"),
-    [rows],
-  );
+  const okRows = useMemo(() => (rows ?? []).filter((r) => r.status === "ok"), [rows]);
 
   const mut = useMutation({
     mutationFn: () =>
@@ -297,11 +279,7 @@ export function BulkInviteDialog({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        copy(
-                          result.created
-                            .map((c) => `${c.email}\t${c.acceptUrl}`)
-                            .join("\n"),
-                        )
+                        copy(result.created.map((c) => `${c.email}\t${c.acceptUrl}`).join("\n"))
                       }
                     >
                       <Copy className="mr-2 h-4 w-4" />
@@ -396,8 +374,8 @@ export function BulkInviteDialog({
               <DialogTitle>Bulk invite</DialogTitle>
               <DialogDescription>
                 Paste one row per line as{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">email,role</code>
-                . Max 100 rows.
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">email,role</code>. Max 100
+                rows.
               </DialogDescription>
             </DialogHeader>
             {rows === null ? (
@@ -407,11 +385,12 @@ export function BulkInviteDialog({
                   onChange={(e) => setCsv(e.target.value)}
                   rows={10}
                   className="font-mono text-xs"
-                  placeholder={"email,role\nengineer1@example.com,engineer\nlead@example.com,project_admin"}
+                  placeholder={
+                    "email,role\nengineer1@example.com,engineer\nlead@example.com,project_admin"
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
-                  Header row optional. Roles must match app roles (super_admin is
-                  not allowed).
+                  Header row optional. Roles must match app roles (super_admin is not allowed).
                 </p>
               </div>
             ) : (
@@ -429,9 +408,7 @@ export function BulkInviteDialog({
                     <TableBody>
                       {rows.map((r, i) => (
                         <TableRow key={r.id}>
-                          <TableCell className="text-muted-foreground">
-                            {i + 1}
-                          </TableCell>
+                          <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                           <TableCell>
                             <Input
                               value={r.email}
@@ -445,15 +422,11 @@ export function BulkInviteDialog({
                           </TableCell>
                           <TableCell>
                             <Select
-                              value={
-                                roleSet.has(r.role) ? r.role : undefined
-                              }
+                              value={roleSet.has(r.role) ? r.role : undefined}
                               onValueChange={(v) => updateRow(r.id, { role: v })}
                             >
                               <SelectTrigger className="h-8">
-                                <SelectValue
-                                  placeholder={r.role || "Pick a role"}
-                                />
+                                <SelectValue placeholder={r.role || "Pick a role"} />
                               </SelectTrigger>
                               <SelectContent>
                                 {GRANTABLE_ROLES.map((role) => (
@@ -499,11 +472,7 @@ export function BulkInviteDialog({
             <DialogFooter>
               {rows === null ? (
                 <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOpenChange(false)}
-                  >
+                  <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                     Cancel
                   </Button>
                   <Button type="button" onClick={onPreview} disabled={!csv.trim()}>
@@ -512,11 +481,7 @@ export function BulkInviteDialog({
                 </>
               ) : (
                 <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setRows(null)}
-                  >
+                  <Button type="button" variant="outline" onClick={() => setRows(null)}>
                     Back to paste
                   </Button>
                   <Button
@@ -524,9 +489,7 @@ export function BulkInviteDialog({
                     onClick={() => mut.mutate()}
                     disabled={okRows.length === 0 || mut.isPending}
                   >
-                    {mut.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
+                    {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Send {okRows.length} invite{okRows.length === 1 ? "" : "s"}
                   </Button>
                 </>

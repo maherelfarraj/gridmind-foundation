@@ -28,13 +28,7 @@ import {
 } from "@/lib/ifc-release-query";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,23 +45,21 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/ifc-release",
-)({
-  component: IfcReleasePage,
-});
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/ifc-release")(
+  {
+    component: IfcReleasePage,
+  },
+);
 
 function IfcReleasePage() {
   const { projectId } = Route.useParams();
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          IFC release ceremony
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">IFC release ceremony</h1>
         <p className="text-sm text-muted-foreground">
-          Package eligible IFD drawings, collect role sign-offs, and release
-          the Issued for Construction bundle.
+          Package eligible IFD drawings, collect role sign-offs, and release the Issued for
+          Construction bundle.
         </p>
       </header>
 
@@ -101,17 +93,12 @@ function KpiStrip({ projectId }: { projectId: string }) {
     { label: "Released packages", value: data.released_count },
     {
       label: "Design cycle",
-      value:
-        data.design_cycle_days == null
-          ? "—"
-          : `${data.design_cycle_days} d`,
+      value: data.design_cycle_days == null ? "—" : `${data.design_cycle_days} d`,
     },
     { label: "Changes after IFC", value: data.change_orders_after_ifc },
     {
       label: "Latest release",
-      value: data.latest_released_at
-        ? new Date(data.latest_released_at).toLocaleDateString()
-        : "—",
+      value: data.latest_released_at ? new Date(data.latest_released_at).toLocaleDateString() : "—",
     },
   ];
   return (
@@ -121,9 +108,7 @@ function KpiStrip({ projectId }: { projectId: string }) {
           <CardHeader className="pb-1">
             <CardDescription>{c.label}</CardDescription>
           </CardHeader>
-          <CardContent className="pt-0 text-2xl font-semibold">
-            {c.value}
-          </CardContent>
+          <CardContent className="pt-0 text-2xl font-semibold">{c.value}</CardContent>
         </Card>
       ))}
     </div>
@@ -136,9 +121,7 @@ function KpiStrip({ projectId }: { projectId: string }) {
 function PrepareCard({ projectId }: { projectId: string }) {
   const listFn = useServerFn(listReleasableDrawings);
   const roleFn = useServerFn(getMyIfcRole);
-  const { data: drawings } = useSuspenseQuery(
-    releasableDrawingsOptions(listFn, projectId),
-  );
+  const { data: drawings } = useSuspenseQuery(releasableDrawingsOptions(listFn, projectId));
   const { data: myRole } = useSuspenseQuery(myIfcRoleOptions(roleFn, projectId));
   const prepare = usePrepareIfcRelease(projectId);
 
@@ -179,21 +162,12 @@ function PrepareCard({ projectId }: { projectId: string }) {
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() =>
-                setSelected(
-                  Object.fromEntries(eligibleIds.map((id) => [id, true])),
-                )
-              }
+              onClick={() => setSelected(Object.fromEntries(eligibleIds.map((id) => [id, true])))}
               disabled={!myRole.isAdmin || eligibleIds.length === 0}
             >
               Select all eligible
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelected({})}
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSelected({})}>
               Clear
             </Button>
           </div>
@@ -219,10 +193,7 @@ function PrepareCard({ projectId }: { projectId: string }) {
               {drawings.map((d) => {
                 const isChecked = !!selected[d.drawing_id];
                 return (
-                  <li
-                    key={d.drawing_id}
-                    className="flex items-start gap-3 p-3 text-sm"
-                  >
+                  <li key={d.drawing_id} className="flex items-start gap-3 p-3 text-sm">
                     <Checkbox
                       className="mt-0.5"
                       disabled={!d.eligible || !myRole.isAdmin}
@@ -236,9 +207,7 @@ function PrepareCard({ projectId }: { projectId: string }) {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs">
-                          {d.drawing_number}
-                        </span>
+                        <span className="font-mono text-xs">{d.drawing_number}</span>
                         <span className="truncate font-medium">{d.title}</span>
                         <Badge variant="outline" className="text-[10px]">
                           {d.discipline}
@@ -300,8 +269,7 @@ function PrepareCard({ projectId }: { projectId: string }) {
         </div>
         {!myRole.isAdmin && (
           <p className="text-xs text-muted-foreground">
-            Read-only — engineering_admin or project_admin required to prepare
-            releases.
+            Read-only — engineering_admin or project_admin required to prepare releases.
           </p>
         )}
       </CardContent>
@@ -314,12 +282,8 @@ function PrepareCard({ projectId }: { projectId: string }) {
 // ---------------------------------------------------------------------------
 function ReleaseListCard({ projectId }: { projectId: string }) {
   const fn = useServerFn(listIfcReleases);
-  const { data: releases } = useSuspenseQuery(
-    ifcReleasesListOptions(fn, projectId),
-  );
-  const [activeId, setActiveId] = useState<string | null>(
-    releases[0]?.id ?? null,
-  );
+  const { data: releases } = useSuspenseQuery(ifcReleasesListOptions(fn, projectId));
+  const [activeId, setActiveId] = useState<string | null>(releases[0]?.id ?? null);
 
   return (
     <Card>
@@ -366,8 +330,7 @@ function ReleaseListCard({ projectId }: { projectId: string }) {
                     </Badge>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {r.revision_snapshot.length} drawing(s) ·{" "}
-                    {r.signoff_count} sign-off(s)
+                    {r.revision_snapshot.length} drawing(s) · {r.signoff_count} sign-off(s)
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(r.created_at).toLocaleString()}
@@ -378,9 +341,7 @@ function ReleaseListCard({ projectId }: { projectId: string }) {
           </ul>
         )}
       </CardContent>
-      {activeId && (
-        <input type="hidden" data-active-release-id={activeId} />
-      )}
+      {activeId && <input type="hidden" data-active-release-id={activeId} />}
     </Card>
   );
 }
@@ -390,12 +351,8 @@ function ReleaseListCard({ projectId }: { projectId: string }) {
 // ---------------------------------------------------------------------------
 function ActiveReleasePanel({ projectId }: { projectId: string }) {
   const listFn = useServerFn(listIfcReleases);
-  const { data: releases } = useSuspenseQuery(
-    ifcReleasesListOptions(listFn, projectId),
-  );
-  const [activeId, setActiveId] = useState<string | null>(
-    releases[0]?.id ?? null,
-  );
+  const { data: releases } = useSuspenseQuery(ifcReleasesListOptions(listFn, projectId));
+  const [activeId, setActiveId] = useState<string | null>(releases[0]?.id ?? null);
   // sync with hash
   useMemo(() => {
     if (typeof window === "undefined") return;
@@ -445,8 +402,9 @@ function ReleaseDetail({
   const [voidReason, setVoidReason] = useState("");
 
   const signedRoles = new Set(data.signoffs.map((s) => s.role_label));
-  const requiredMissing = (["Lead Engineer", "Engineering Manager"] as const)
-    .filter((r) => !signedRoles.has(r));
+  const requiredMissing = (["Lead Engineer", "Engineering Manager"] as const).filter(
+    (r) => !signedRoles.has(r),
+  );
 
   return (
     <Card>
@@ -474,9 +432,7 @@ function ReleaseDetail({
           </CardTitle>
           <CardDescription>
             Prepared {new Date(data.release.created_at).toLocaleString()}
-            {data.release.prepared_by_name
-              ? ` · by ${data.release.prepared_by_name}`
-              : ""}
+            {data.release.prepared_by_name ? ` · by ${data.release.prepared_by_name}` : ""}
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -496,9 +452,7 @@ function ReleaseDetail({
           )}
           <Button asChild variant="outline" size="sm">
             <Link
-              to={
-                "/projects/$projectId/engineering/ifc-release/$releaseId/certificate" as any
-              }
+              to={"/projects/$projectId/engineering/ifc-release/$releaseId/certificate" as any}
               params={{ projectId, releaseId } as any}
               target="_blank"
             >
@@ -525,16 +479,10 @@ function ReleaseDetail({
               <tbody>
                 {data.release.revision_snapshot.map((r) => (
                   <tr key={r.revision_id} className="border-t border-border">
-                    <td className="px-3 py-2 font-mono text-xs">
-                      {r.drawing_number}
-                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.drawing_number}</td>
                     <td className="px-3 py-2">{r.title}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">
-                      {r.discipline}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">
-                      {r.revision_code}
-                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{r.discipline}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.revision_code}</td>
                   </tr>
                 ))}
               </tbody>
@@ -562,26 +510,18 @@ function ReleaseDetail({
                       <div className="font-medium">
                         {label}{" "}
                         {required && (
-                          <span className="text-xs text-muted-foreground">
-                            (required)
-                          </span>
+                          <span className="text-xs text-muted-foreground">(required)</span>
                         )}
                       </div>
                       {s ? (
                         <div className="text-xs text-muted-foreground">
-                          {s.signature_text} ·{" "}
-                          {new Date(s.signed_at).toLocaleString()}
+                          {s.signature_text} · {new Date(s.signed_at).toLocaleString()}
                         </div>
                       ) : (
-                        <div className="text-xs text-muted-foreground">
-                          Not signed
-                        </div>
+                        <div className="text-xs text-muted-foreground">Not signed</div>
                       )}
                     </div>
-                    <Badge
-                      variant={s ? "default" : "secondary"}
-                      className="text-[10px]"
-                    >
+                    <Badge variant={s ? "default" : "secondary"} className="text-[10px]">
                       {s ? "Signed" : "Pending"}
                     </Badge>
                   </li>
@@ -592,10 +532,7 @@ function ReleaseDetail({
             {data.release.status === "prepared" && myRole.isAdmin && (
               <div className="flex flex-col gap-2 rounded-md border border-border p-3">
                 <Label className="text-xs">Sign as</Label>
-                <Select
-                  value={role}
-                  onValueChange={(v) => setRole(v as IfcSignoffRoleLabel)}
-                >
+                <Select value={role} onValueChange={(v) => setRole(v as IfcSignoffRoleLabel)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -635,11 +572,7 @@ function ReleaseDetail({
             {data.release.status === "prepared" && (
               <div className="flex flex-col gap-3">
                 <Button
-                  disabled={
-                    !myRole.isAdmin ||
-                    release.isPending ||
-                    requiredMissing.length > 0
-                  }
+                  disabled={!myRole.isAdmin || release.isPending || requiredMissing.length > 0}
                   onClick={() => release.mutate()}
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
@@ -652,18 +585,11 @@ function ReleaseDetail({
                 )}
                 <Separator />
                 <Label className="text-xs">Void reason</Label>
-                <Input
-                  value={voidReason}
-                  onChange={(e) => setVoidReason(e.target.value)}
-                />
+                <Input value={voidReason} onChange={(e) => setVoidReason(e.target.value)} />
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={
-                    !myRole.isAdmin ||
-                    voidM.isPending ||
-                    voidReason.trim().length < 3
-                  }
+                  disabled={!myRole.isAdmin || voidM.isPending || voidReason.trim().length < 3}
                   onClick={() => voidM.mutate(voidReason.trim())}
                 >
                   <Ban className="mr-2 h-4 w-4" />
@@ -700,10 +626,8 @@ function ReleaseDetail({
             {data.release.status === "void" && (
               <p className="text-sm text-muted-foreground">
                 Voided{" "}
-                {data.release.voided_at
-                  ? new Date(data.release.voided_at).toLocaleString()
-                  : ""}{" "}
-                — {data.release.void_reason}
+                {data.release.voided_at ? new Date(data.release.voided_at).toLocaleString() : ""} —{" "}
+                {data.release.void_reason}
               </p>
             )}
           </div>

@@ -17,11 +17,7 @@ import {
   type TestSummaryEntry,
 } from "@/lib/commissioning-kpis.rules";
 
-function httpError(
-  status: number,
-  code: string,
-  metadata?: Record<string, unknown>,
-): never {
+function httpError(status: number, code: string, metadata?: Record<string, unknown>): never {
   throw Object.assign(new Error(code), {
     statusCode: status,
     body: JSON.stringify({ error: code, ...(metadata ?? {}) }),
@@ -127,9 +123,7 @@ export const getCommissioningKpis = createServerFn({ method: "GET" })
     const mcCert = certList.find(
       (c) => c.certificate_type === "mechanical_completion" && c.status === "signed",
     );
-    const codCert = certList.find(
-      (c) => c.certificate_type === "cod" && c.status === "signed",
-    );
+    const codCert = certList.find((c) => c.certificate_type === "cod" && c.status === "signed");
 
     const mcCod = computeMcCod({
       mcDate: mcCert?.effective_date ?? null,
@@ -141,17 +135,20 @@ export const getCommissioningKpis = createServerFn({ method: "GET" })
     const prAtCod = pickPrAtCod({
       certificate: codCert ? { pr_at_cod: codCert.pr_at_cod } : null,
       latestPerfTest:
-        (perfTests?.[0] as { measured_value: number | null; contract_value: number | null }) ?? null,
+        (perfTests?.[0] as { measured_value: number | null; contract_value: number | null }) ??
+        null,
       contractPr,
     });
 
     const punchClosure = rollupPunchClosure(
-      ((punchRows ?? []) as { category: PunchCategory; status: string; punch_number: string | null }[]),
+      (punchRows ?? []) as {
+        category: PunchCategory;
+        status: string;
+        punch_number: string | null;
+      }[],
     );
 
-    const testSummary = summarizeTests(
-      (tests ?? []) as { test_type: string; status: string }[],
-    );
+    const testSummary = summarizeTests((tests ?? []) as { test_type: string; status: string }[]);
 
     const turnoverStatus = turnover
       ? {
@@ -181,27 +178,21 @@ export const getCommissioningKpis = createServerFn({ method: "GET" })
     };
   });
 
-function summarizeTests(
-  rows: { test_type: string; status: string }[],
-): TestSummaryEntry[] {
+function summarizeTests(rows: { test_type: string; status: string }[]): TestSummaryEntry[] {
   const by = new Map<string, TestSummaryEntry>();
   for (const r of rows) {
-    const e =
-      by.get(r.test_type) ??
-      {
-        test_type: r.test_type,
-        passed: 0,
-        failed: 0,
-        in_progress: 0,
-        not_started: 0,
-      };
+    const e = by.get(r.test_type) ?? {
+      test_type: r.test_type,
+      passed: 0,
+      failed: 0,
+      in_progress: 0,
+      not_started: 0,
+    };
     if (r.status === "passed") e.passed += 1;
     else if (r.status === "failed") e.failed += 1;
     else if (r.status === "in_progress" || r.status === "scheduled") e.in_progress += 1;
     else e.not_started += 1;
     by.set(r.test_type, e);
   }
-  return Array.from(by.values()).sort((a, b) =>
-    a.test_type.localeCompare(b.test_type),
-  );
+  return Array.from(by.values()).sort((a, b) => a.test_type.localeCompare(b.test_type));
 }

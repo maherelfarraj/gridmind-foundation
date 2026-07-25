@@ -23,11 +23,7 @@ export const EXPIRING_SOON_DAYS = 90;
 
 export function daysRemaining(endDateISO: string, today: Date = new Date()): number {
   const end = new Date(`${endDateISO}T00:00:00Z`).getTime();
-  const now = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate(),
-  );
+  const now = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
   return Math.round((end - now) / 86_400_000);
 }
 
@@ -118,9 +114,6 @@ const ALLOWED: Record<WarrantyClaimStatus, readonly WarrantyClaimStatus[]> = {
   settled: [],
 };
 
-export function canAdvanceClaim(
-  from: WarrantyClaimStatus,
-  to: WarrantyClaimStatus,
-): boolean {
+export function canAdvanceClaim(from: WarrantyClaimStatus, to: WarrantyClaimStatus): boolean {
   return ALLOWED[from].includes(to);
 }

@@ -10,12 +10,7 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  MODULE_KEYS,
-  MODULE_REGISTRY,
-  planAllowsModule,
-  type ModuleKey,
-} from "./modules";
+import { MODULE_KEYS, MODULE_REGISTRY, planAllowsModule, type ModuleKey } from "./modules";
 import type { PlanTier } from "./permissions";
 
 const uuidSchema = z.string().uuid();
@@ -74,9 +69,7 @@ export type ModuleAccessResult = {
 
 export const listModuleAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: uuidSchema }).parse(input))
   .handler(async ({ data, context }): Promise<ModuleAccessResult> => {
     requireSupabaseAuth(context);
 
@@ -178,16 +171,14 @@ export const setModuleAccess = createServerFn({ method: "POST" })
       );
     }
 
-    const { error: upErr } = await context.supabase
-      .from("module_access_rules")
-      .upsert(
-        {
-          company_id: data.companyId,
-          module: data.module,
-          enabled: data.enabled,
-        },
-        { onConflict: "company_id,module" },
-      );
+    const { error: upErr } = await context.supabase.from("module_access_rules").upsert(
+      {
+        company_id: data.companyId,
+        module: data.module,
+        enabled: data.enabled,
+      },
+      { onConflict: "company_id,module" },
+    );
     if (upErr) throw upErr;
 
     const { error: auditErr } = await context.supabase.rpc("write_audit_log", {

@@ -24,14 +24,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -47,10 +42,7 @@ async function loadProject(context: AuthContext, projectId: string) {
   return data as { id: string; company_id: string };
 }
 
-async function loadBaseCurrency(
-  context: AuthContext,
-  projectId: string,
-): Promise<string> {
+async function loadBaseCurrency(context: AuthContext, projectId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("project_financial_config")
     .select("currency_code")
@@ -164,27 +156,22 @@ export const getCashFlowAccess = createServerFn({ method: "GET" })
 export const listCashFlows = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => listCashFlowsSchema.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ rows: CashFlowRow[]; baseCurrency: string }> => {
-      requireSupabaseAuth(context);
-      await loadProject(context, data.projectId);
-      const baseCurrency = await loadBaseCurrency(context, data.projectId);
-      let q = context.supabase
-        .from("cash_flows")
-        .select("*")
-        .eq("project_id", data.projectId)
-        .order("period", { ascending: true });
-      if (data.from) q = q.gte("period", normalizePeriod(data.from));
-      if (data.to) q = q.lte("period", normalizePeriod(data.to));
-      if (!data.includeVoided) q = q.eq("voided", false);
-      const { data: rows, error } = await q;
-      if (error) throw error;
-      return { rows: ((rows ?? []) as any[]).map(toRow), baseCurrency };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ rows: CashFlowRow[]; baseCurrency: string }> => {
+    requireSupabaseAuth(context);
+    await loadProject(context, data.projectId);
+    const baseCurrency = await loadBaseCurrency(context, data.projectId);
+    let q = context.supabase
+      .from("cash_flows")
+      .select("*")
+      .eq("project_id", data.projectId)
+      .order("period", { ascending: true });
+    if (data.from) q = q.gte("period", normalizePeriod(data.from));
+    if (data.to) q = q.lte("period", normalizePeriod(data.to));
+    if (!data.includeVoided) q = q.eq("voided", false);
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    return { rows: ((rows ?? []) as any[]).map(toRow), baseCurrency };
+  });
 
 // ---------------------------------------------------------------------------
 // Create
@@ -199,12 +186,7 @@ export const createCashFlow = createServerFn({ method: "POST" })
     const baseCurrency = await loadBaseCurrency(context, project.id);
     const period = normalizePeriod(data.period);
 
-    const fxRate = await resolveFxRate(
-      context,
-      data.currencyCode,
-      baseCurrency,
-      period,
-    );
+    const fxRate = await resolveFxRate(context, data.currencyCode, baseCurrency, period);
     const amountBase = Number((data.amount * fxRate).toFixed(2));
 
     const insert = {
@@ -297,9 +279,7 @@ export const voidCashFlow = createServerFn({ method: "POST" })
 export const listCurrencies = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .handler(
-    async ({
-      context,
-    }): Promise<Array<{ code: string; name: string; symbol: string | null }>> => {
+    async ({ context }): Promise<Array<{ code: string; name: string; symbol: string | null }>> => {
       requireSupabaseAuth(context);
       const { data, error } = await context.supabase
         .from("currencies")

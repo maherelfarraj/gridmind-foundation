@@ -15,28 +15,52 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-  listAlarmRules, upsertAlarmRule, deleteAlarmRule, type AlarmRuleRow,
+  listAlarmRules,
+  upsertAlarmRule,
+  deleteAlarmRule,
+  type AlarmRuleRow,
 } from "@/lib/alarms.functions";
 import { listOperationsPlants } from "@/lib/scada-dashboard.functions";
 import {
-  ALARM_CONDITIONS, ALARM_SEVERITIES, NOTIFY_ROLES,
-  alarmRuleInputSchema, type AlarmRuleInput,
+  ALARM_CONDITIONS,
+  ALARM_SEVERITIES,
+  NOTIFY_ROLES,
+  alarmRuleInputSchema,
+  type AlarmRuleInput,
 } from "@/lib/alarms.rules";
 import { TELEMETRY_METRICS } from "@/lib/telemetry-ingest";
 
@@ -44,7 +68,11 @@ export const Route = createFileRoute("/_authenticated/om/scada/alarm-rules")({
   head: () => ({
     meta: [
       { title: "SCADA alarm rules · GridMind EPC" },
-      { name: "description", content: "Configure alarm thresholds, dead-bands, duration guards, and escalation routes for SCADA telemetry." },
+      {
+        name: "description",
+        content:
+          "Configure alarm thresholds, dead-bands, duration guards, and escalation routes for SCADA telemetry.",
+      },
       { property: "og:title", content: "SCADA alarm rules · GridMind EPC" },
       { property: "og:description", content: "Alarm rules configuration." },
       { property: "og:type", content: "website" },
@@ -105,8 +133,14 @@ function AlarmRulesPage() {
     onError: (e: Error) => toast.error(e.message ?? "Failed to delete"),
   });
 
-  const openCreate = () => { setEditing(null); setSheetOpen(true); };
-  const openEdit = (row: AlarmRuleRow) => { setEditing(row); setSheetOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setSheetOpen(true);
+  };
+  const openEdit = (row: AlarmRuleRow) => {
+    setEditing(row);
+    setSheetOpen(true);
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -114,25 +148,34 @@ function AlarmRulesPage() {
         <div>
           <h1 className="text-2xl font-semibold">Alarm rules</h1>
           <p className="text-sm text-muted-foreground">
-            Threshold, dead-band, duration, and escalation. Escalation delivery lands in a later batch.
+            Threshold, dead-band, duration, and escalation. Escalation delivery lands in a later
+            batch.
           </p>
         </div>
-        <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> New rule</Button>
+        <Button onClick={openCreate}>
+          <Plus className="mr-2 h-4 w-4" /> New rule
+        </Button>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Rules</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Rules</CardTitle>
+        </CardHeader>
         <CardContent>
           {query.isLoading ? (
             <div className="space-y-2">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
             </div>
           ) : query.isError ? (
             <div className="flex flex-col items-start gap-2 p-6">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" /> Failed to load.
               </div>
-              <Button variant="outline" onClick={() => query.refetch()}>Retry</Button>
+              <Button variant="outline" onClick={() => query.refetch()}>
+                Retry
+              </Button>
             </div>
           ) : (query.data ?? []).length === 0 ? (
             <div className="p-10 text-center text-muted-foreground">
@@ -157,13 +200,19 @@ function AlarmRulesPage() {
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.name}</TableCell>
                     <TableCell className="font-mono text-xs">{r.metric}</TableCell>
-                    <TableCell className="font-mono text-xs">{r.condition} {r.threshold}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {r.condition} {r.threshold}
+                    </TableCell>
                     <TableCell className="font-mono text-xs">±{r.dead_band}</TableCell>
                     <TableCell>{r.duration_seconds}s</TableCell>
-                    <TableCell><Badge variant="outline">{r.severity}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{r.severity}</Badge>
+                    </TableCell>
                     <TableCell>{r.enabled ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(r)}>Edit</Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(r)}>
+                        Edit
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => setDeleteId(r.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -206,7 +255,12 @@ function AlarmRulesPage() {
 }
 
 function RuleSheet({
-  open, onOpenChange, editing, projects, onSubmit, submitting,
+  open,
+  onOpenChange,
+  editing,
+  projects,
+  onSubmit,
+  submitting,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -237,116 +291,185 @@ function RuleSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
-        <SheetHeader><SheetTitle>{editing ? "Edit rule" : "New rule"}</SheetTitle></SheetHeader>
+        <SheetHeader>
+          <SheetTitle>{editing ? "Edit rule" : "New rule"}</SheetTitle>
+        </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
-            <FormField control={form.control} name="name" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <FormField control={form.control} name="project_id" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Project (leave blank for company-wide)</FormLabel>
-                <Select
-                  value={field.value ?? "all"}
-                  onValueChange={(v) => field.onChange(v === "all" ? null : v)}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All projects</SelectItem>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <FormField
+              control={form.control}
+              name="project_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project (leave blank for company-wide)</FormLabel>
+                  <Select
+                    value={field.value ?? "all"}
+                    onValueChange={(v) => field.onChange(v === "all" ? null : v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All projects</SelectItem>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField control={form.control} name="metric" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Metric</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {TELEMETRY_METRICS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="condition" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Condition</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {ALARM_CONDITIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="threshold" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Threshold</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number" step="any" {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="dead_band" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dead-band</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number" step="any" min={0} {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="duration_seconds" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duration (s)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number" min={0} {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="severity" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Severity</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {ALARM_SEVERITIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
+              <FormField
+                control={form.control}
+                name="metric"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Metric</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TELEMETRY_METRICS.map((m) => (
+                          <SelectItem key={m} value={m}>
+                            {m}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="condition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Condition</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ALARM_CONDITIONS.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="threshold"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Threshold</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="any"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dead_band"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dead-band</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="any"
+                        min={0}
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="duration_seconds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration (s)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="severity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Severity</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ALARM_SEVERITIES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <FormField control={form.control} name="enabled" render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-md border p-3">
-                <FormLabel className="m-0">Enabled</FormLabel>
-                <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-              </FormItem>
-            )} />
+            <FormField
+              control={form.control}
+              name="enabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-md border p-3">
+                  <FormLabel className="m-0">Enabled</FormLabel>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -358,7 +481,9 @@ function RuleSheet({
                   </span>
                 </FormLabel>
                 <Button
-                  type="button" variant="outline" size="sm"
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => routeArr.append({ after_minutes: 30, notify_role: "om_admin" })}
                 >
                   <Plus className="mr-1 h-3 w-3" /> Step
@@ -367,22 +492,40 @@ function RuleSheet({
               {routeArr.fields.map((f, i) => (
                 <div key={f.id} className="flex items-center gap-2">
                   <Input
-                    type="number" min={0} className="w-28"
-                    {...form.register(`escalation_route.${i}.after_minutes`, { valueAsNumber: true })}
+                    type="number"
+                    min={0}
+                    className="w-28"
+                    {...form.register(`escalation_route.${i}.after_minutes`, {
+                      valueAsNumber: true,
+                    })}
                   />
                   <span className="text-xs text-muted-foreground">min →</span>
                   <Select
                     value={form.watch(`escalation_route.${i}.notify_role`)}
                     onValueChange={(v) =>
-                      form.setValue(`escalation_route.${i}.notify_role`, v as (typeof NOTIFY_ROLES)[number])
+                      form.setValue(
+                        `escalation_route.${i}.notify_role`,
+                        v as (typeof NOTIFY_ROLES)[number],
+                      )
                     }
                   >
-                    <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {NOTIFY_ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                      {NOTIFY_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {r}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => routeArr.remove(i)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => routeArr.remove(i)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -390,7 +533,9 @@ function RuleSheet({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Saving…" : "Save"}
               </Button>

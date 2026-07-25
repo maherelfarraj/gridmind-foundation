@@ -10,11 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -93,8 +89,7 @@ export function RiskDrawer({
       contingency_amount: risk?.contingency_amount ?? null,
       currency_code: risk?.currency_code ?? "USD",
       target_close_date: risk?.target_close_date ?? null,
-      identified_at:
-        risk?.identified_at ?? format(new Date(), "yyyy-MM-dd"),
+      identified_at: risk?.identified_at ?? format(new Date(), "yyyy-MM-dd"),
     }),
     [risk],
   );
@@ -129,21 +124,12 @@ export function RiskDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              {...form.register("title")}
-              disabled={!canWrite}
-            />
+            <Input id="title" {...form.register("title")} disabled={!canWrite} />
             {form.formState.errors.title && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.title.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.title.message}</p>
             )}
           </div>
 
@@ -210,28 +196,19 @@ export function RiskDrawer({
             <SliderField
               label={`Probability: ${PROBABILITY_LABELS[probability]}`}
               value={probability}
-              onChange={(v) =>
-                form.setValue("probability", v, { shouldDirty: true })
-              }
+              onChange={(v) => form.setValue("probability", v, { shouldDirty: true })}
               disabled={!canWrite}
             />
             <SliderField
               label={`Impact: ${IMPACT_LABELS[impact]}`}
               value={impact}
-              onChange={(v) =>
-                form.setValue("impact", v, { shouldDirty: true })
-              }
+              onChange={(v) => form.setValue("impact", v, { shouldDirty: true })}
               disabled={!canWrite}
             />
             <div className="sm:col-span-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Score</span>
-                <span
-                  className={cn(
-                    "font-semibold",
-                    SCORE_BAND_TEXT[band],
-                  )}
-                >
+                <span className={cn("font-semibold", SCORE_BAND_TEXT[band])}>
                   {score} · {SCORE_BAND_LABEL[band]}
                 </span>
               </div>
@@ -282,8 +259,7 @@ export function RiskDrawer({
                 min={0}
                 step="0.01"
                 {...form.register("contingency_amount", {
-                  setValueAs: (v) =>
-                    v === "" || v == null ? null : Number(v),
+                  setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
                 })}
                 disabled={!canWrite}
               />
@@ -292,9 +268,7 @@ export function RiskDrawer({
               <Label>Currency</Label>
               <Select
                 value={form.watch("currency_code") ?? "USD"}
-                onValueChange={(v) =>
-                  form.setValue("currency_code", v, { shouldDirty: true })
-                }
+                onValueChange={(v) => form.setValue("currency_code", v, { shouldDirty: true })}
                 disabled={!canWrite}
               >
                 <SelectTrigger>
@@ -325,9 +299,7 @@ export function RiskDrawer({
             <DateField
               label="Target close"
               value={form.watch("target_close_date") ?? null}
-              onChange={(v) =>
-                form.setValue("target_close_date", v, { shouldDirty: true })
-              }
+              onChange={(v) => form.setValue("target_close_date", v, { shouldDirty: true })}
               disabled={!canWrite}
             />
           </div>
@@ -347,11 +319,7 @@ export function RiskDrawer({
               <span />
             )}
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={!canWrite || saving}>
@@ -412,10 +380,7 @@ function DateField({
             type="button"
             variant="outline"
             disabled={disabled}
-            className={cn(
-              "justify-start text-left font-normal",
-              !date && "text-muted-foreground",
-            )}
+            className={cn("justify-start text-left font-normal", !date && "text-muted-foreground")}
           >
             <CalendarIcon size={14} className="mr-2" />
             {date ? format(date, "PPP") : "Pick a date"}
@@ -425,9 +390,7 @@ function DateField({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(d) =>
-              onChange(d ? format(d, "yyyy-MM-dd") : null)
-            }
+            onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : null)}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />

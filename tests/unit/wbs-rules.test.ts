@@ -78,24 +78,17 @@ describe("wbsCreateSchema", () => {
     expect(wbsCreateSchema.safeParse(base).success).toBe(true);
   });
   it("rejects empty name", () => {
-    expect(wbsCreateSchema.safeParse({ ...base, name: "  " }).success).toBe(
-      false,
-    );
+    expect(wbsCreateSchema.safeParse({ ...base, name: "  " }).success).toBe(false);
   });
   it("rejects invalid discipline", () => {
-    expect(
-      wbsCreateSchema.safeParse({ ...base, discipline: "plumbing" as any })
-        .success,
-    ).toBe(false);
-  });
-  it("rejects negative budget", () => {
-    expect(
-      wbsCreateSchema.safeParse({ ...base, budgeted_amount: -1 }).success,
-    ).toBe(false);
-  });
-  it("rejects invalid code", () => {
-    expect(wbsCreateSchema.safeParse({ ...base, code: "1..2" }).success).toBe(
+    expect(wbsCreateSchema.safeParse({ ...base, discipline: "plumbing" as any }).success).toBe(
       false,
     );
+  });
+  it("rejects negative budget", () => {
+    expect(wbsCreateSchema.safeParse({ ...base, budgeted_amount: -1 }).success).toBe(false);
+  });
+  it("rejects invalid code", () => {
+    expect(wbsCreateSchema.safeParse({ ...base, code: "1..2" }).success).toBe(false);
   });
 });

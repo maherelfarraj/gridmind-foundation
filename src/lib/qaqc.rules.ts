@@ -66,7 +66,10 @@ export const inspectionUpdateInput = z
     area: z.string().trim().min(1).max(200).optional(),
     itpReference: z.string().trim().max(200).nullable().optional(),
     wbsItemId: z.string().uuid().nullable().optional(),
-    inspectionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    inspectionDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
     inspectorId: z.string().uuid().nullable().optional(),
     result: z.enum(QAQC_RESULTS).optional(),
     reworkRequired: z.boolean().optional(),
@@ -74,10 +77,7 @@ export const inspectionUpdateInput = z
     attachments: z.array(attachmentSchema).optional(),
   })
   .superRefine((val, ctx) => {
-    if (
-      val.reworkRequired === true &&
-      !(val.reworkNotes && val.reworkNotes.trim())
-    ) {
+    if (val.reworkRequired === true && !(val.reworkNotes && val.reworkNotes.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["reworkNotes"],
@@ -260,12 +260,7 @@ export const PUNCH_CATEGORY_DESCRIPTIONS: Record<PunchCategory, string> = {
   C: "Cosmetic; close by handover + 30 days.",
 };
 
-export const PUNCH_STATUSES = [
-  "open",
-  "ready_for_review",
-  "closed",
-  "void",
-] as const;
+export const PUNCH_STATUSES = ["open", "ready_for_review", "closed", "void"] as const;
 export type PunchStatus = (typeof PUNCH_STATUSES)[number];
 
 export const PUNCH_STATUS_LABELS: Record<PunchStatus, string> = {
@@ -282,7 +277,11 @@ export const punchInput = z.object({
   discipline: z.enum(QAQC_DISCIPLINES),
   category: z.enum(PUNCH_CATEGORIES).default("B"),
   description: z.string().trim().min(1).max(2000),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   assignedTo: z.string().uuid().nullable().optional(),
   photoIds: z.array(z.string().uuid()).default([]),
 });
@@ -294,7 +293,11 @@ export const punchUpdateInput = z.object({
   discipline: z.enum(QAQC_DISCIPLINES).optional(),
   category: z.enum(PUNCH_CATEGORIES).optional(),
   description: z.string().trim().min(1).max(2000).optional(),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   assignedTo: z.string().uuid().nullable().optional(),
   photoIds: z.array(z.string().uuid()).optional(),
 });
@@ -362,4 +365,3 @@ export function punchStatusTint(status: PunchStatus): string {
       return "bg-muted text-muted-foreground line-through";
   }
 }
-

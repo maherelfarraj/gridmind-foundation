@@ -75,9 +75,7 @@ describe("bucketPowerCurve", () => {
 
 describe("performanceRatio", () => {
   it("returns null with no nameplate", () => {
-    expect(
-      performanceRatio({ actualKwh: 100, irradianceSeries: [], nameplateKw: 0 }),
-    ).toBe(null);
+    expect(performanceRatio({ actualKwh: 100, irradianceSeries: [], nameplateKw: 0 })).toBe(null);
   });
   it("returns null with fewer than 2 irradiance samples", () => {
     expect(

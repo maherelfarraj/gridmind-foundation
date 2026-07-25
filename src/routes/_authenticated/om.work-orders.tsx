@@ -28,11 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objectsToCsv, downloadCsv } from "@/lib/csv";
 import {
   getWorkOrderKpis,
@@ -57,8 +53,7 @@ export const Route = createFileRoute("/_authenticated/om/work-orders")({
       { property: "og:title", content: "Work orders — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Maintenance work orders: kanban, parts and labor capture, PM vs CM KPIs.",
+        content: "Maintenance work orders: kanban, parts and labor capture, PM vs CM KPIs.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -123,8 +118,7 @@ function WorkOrdersPage() {
   const rows = rowsQ.data ?? [];
 
   const statusMut = useMutation({
-    mutationFn: (v: { id: string; status: WorkOrderStatus }) =>
-      statusFn({ data: v }),
+    mutationFn: (v: { id: string; status: WorkOrderStatus }) => statusFn({ data: v }),
     onMutate: async (v) => {
       await qc.cancelQueries({ queryKey: ["work-orders", { q }] });
       const prev = qc.getQueryData<WorkOrderRow[]>(["work-orders", { q }]);
@@ -238,8 +232,12 @@ function WorkOrdersPage() {
       <div className="flex items-center justify-between">
         <Tabs value={view} onValueChange={(v) => setView(v as "kanban" | "table")}>
           <TabsList>
-            <TabsTrigger value="kanban"><LayoutGrid className="mr-1 h-4 w-4" /> Kanban</TabsTrigger>
-            <TabsTrigger value="table"><Rows className="mr-1 h-4 w-4" /> Table</TabsTrigger>
+            <TabsTrigger value="kanban">
+              <LayoutGrid className="mr-1 h-4 w-4" /> Kanban
+            </TabsTrigger>
+            <TabsTrigger value="table">
+              <Rows className="mr-1 h-4 w-4" /> Table
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <span className="text-xs text-muted-foreground">
@@ -291,12 +289,8 @@ function KpiStrip(props: {
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-baseline justify-between">
-            <div className="font-mono text-3xl">
-              {pct == null ? "—" : `${pct}%`}
-            </div>
-            <Badge variant={targetMet ? "default" : "outline"}>
-              target ≥ 80%
-            </Badge>
+            <div className="font-mono text-3xl">{pct == null ? "—" : `${pct}%`}</div>
+            <Badge variant={targetMet ? "default" : "outline"}>target ≥ 80%</Badge>
           </div>
           <Progress value={pct ?? 0} />
           <p className="text-xs text-muted-foreground">
@@ -306,9 +300,7 @@ function KpiStrip(props: {
       </Card>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">
-            MTTR (corrective, closed)
-          </CardTitle>
+          <CardTitle className="text-sm text-muted-foreground">MTTR (corrective, closed)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="font-mono text-3xl">
@@ -325,9 +317,7 @@ function KpiStrip(props: {
         </CardHeader>
         <CardContent>
           <div className="font-mono text-3xl">{props.windowDays}d</div>
-          <p className="text-xs text-muted-foreground">
-            Trailing window for PM ratio &amp; MTTR
-          </p>
+          <p className="text-xs text-muted-foreground">Trailing window for PM ratio &amp; MTTR</p>
         </CardContent>
       </Card>
     </div>
@@ -416,13 +406,7 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
 }
 
 // ---------------------------------------------------------------------------
-function TableView({
-  rows,
-  onOpen,
-}: {
-  rows: WorkOrderRow[];
-  onOpen: (id: string) => void;
-}) {
+function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string) => void }) {
   return (
     <div className="rounded-lg border border-border bg-card">
       <Table>
@@ -456,7 +440,9 @@ function TableView({
                 >
                   <TableCell className="font-mono text-xs">{r.wo_number}</TableCell>
                   <TableCell>{r.title}</TableCell>
-                  <TableCell><Badge variant="outline">{r.type}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{r.type}</Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge className={priorityCls(r.priority)}>{r.priority}</Badge>
                   </TableCell>

@@ -118,8 +118,15 @@ async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
 }
 
 export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
-  const { opportunity: opp, intake, contacts, acceptedProposal, tenderEvents, company, branding } =
-    input;
+  const {
+    opportunity: opp,
+    intake,
+    contacts,
+    acceptedProposal,
+    tenderEvents,
+    company,
+    branding,
+  } = input;
   const primary = hexToRgb(branding.primaryColor);
   const logoDataUrl = await fetchLogoDataUrl(branding.logoSignedUrl);
   const currency =
@@ -185,12 +192,7 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     ["Opportunity", sanitize(opp.name)],
     ["Account", sanitize(opp.account_name ?? "—")],
     ["Archetype", sanitize(intake.archetype ?? opp.archetype ?? "—")],
-    [
-      "Capacity",
-      intake.capacity_mw != null
-        ? `${fmtNum(intake.capacity_mw, 2)} MW`
-        : "—",
-    ],
+    ["Capacity", intake.capacity_mw != null ? `${fmtNum(intake.capacity_mw, 2)} MW` : "—"],
     ["Offtaker", sanitize(intake.offtaker ?? "—")],
     ["Target COD", fmtDate(intake.target_cod)],
     [
@@ -223,34 +225,12 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
   const marginRows: Array<[string, string]> = [
     [
       "Accepted proposal",
-      acceptedProposal
-        ? `v${acceptedProposal.version} · ${acceptedProposal.status}`
-        : "—",
+      acceptedProposal ? `v${acceptedProposal.version} · ${acceptedProposal.status}` : "—",
     ],
-    [
-      "Total",
-      acceptedProposal
-        ? fmtMoney(acceptedProposal.total, currency)
-        : "—",
-    ],
-    [
-      "Subtotal",
-      acceptedProposal
-        ? fmtMoney(acceptedProposal.subtotal, currency)
-        : "—",
-    ],
-    [
-      "Contingency",
-      acceptedProposal
-        ? `${fmtNum(acceptedProposal.contingency_pct, 2)}%`
-        : "—",
-    ],
-    [
-      "Margin",
-      marginPct != null && acceptedProposal
-        ? `${fmtNum(marginPct, 2)}%`
-        : "—",
-    ],
+    ["Total", acceptedProposal ? fmtMoney(acceptedProposal.total, currency) : "—"],
+    ["Subtotal", acceptedProposal ? fmtMoney(acceptedProposal.subtotal, currency) : "—"],
+    ["Contingency", acceptedProposal ? `${fmtNum(acceptedProposal.contingency_pct, 2)}%` : "—"],
+    ["Margin", marginPct != null && acceptedProposal ? `${fmtNum(marginPct, 2)}%` : "—"],
   ];
   autoTable(doc, {
     startY: y + 6,
@@ -309,15 +289,11 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     ["Engine", "gridmind-stub-v1 (placeholder)"],
     [
       "P50 energy (yr)",
-      yieldResult?.p50_kwh != null
-        ? `${fmtNum(yieldResult.p50_kwh, 0)} kWh`
-        : "—",
+      yieldResult?.p50_kwh != null ? `${fmtNum(yieldResult.p50_kwh, 0)} kWh` : "—",
     ],
     [
       "P90 energy (yr)",
-      yieldResult?.p90_kwh != null
-        ? `${fmtNum(yieldResult.p90_kwh, 0)} kWh`
-        : "—",
+      yieldResult?.p90_kwh != null ? `${fmtNum(yieldResult.p90_kwh, 0)} kWh` : "—",
     ],
     [
       "Specific yield",
@@ -327,9 +303,7 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     ],
     [
       "Performance ratio",
-      yieldResult?.performance_ratio != null
-        ? fmtNum(yieldResult.performance_ratio, 3)
-        : "—",
+      yieldResult?.performance_ratio != null ? fmtNum(yieldResult.performance_ratio, 3) : "—",
     ],
   ];
   autoTable(doc, {
@@ -342,13 +316,21 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
   });
   y = (doc as any).lastAutoTable.finalY + 4;
 
-  const monthly: number[] = Array.isArray(yieldResult?.monthly)
-    ? yieldResult.monthly
-    : [];
+  const monthly: number[] = Array.isArray(yieldResult?.monthly) ? yieldResult.monthly : [];
   if (monthly.length === 12) {
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     autoTable(doc, {
       startY: y + 6,

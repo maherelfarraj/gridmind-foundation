@@ -21,23 +21,14 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  DEV_SESSION_CONTEXT,
-  getVisibleModules,
-} from "@/lib/permissions";
+import { DEV_SESSION_CONTEXT, getVisibleModules } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-
-
-
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const visibleModules = getVisibleModules(
-    DEV_SESSION_CONTEXT.role,
-    DEV_SESSION_CONTEXT.planTier,
-  );
+  const visibleModules = getVisibleModules(DEV_SESSION_CONTEXT.role, DEV_SESSION_CONTEXT.planTier);
 
   const rolesFn = useServerFn(getCurrentUserRoles);
   const rolesQuery = useQuery({
@@ -47,13 +38,8 @@ export function AppSidebar() {
   });
   const roles = (rolesQuery.data ?? []).map((r) => r.role as string);
   const isSuperAdmin = roles.includes("super_admin");
-  const EXTERNAL_VIEWERS = new Set([
-    "client_viewer",
-    "investor_viewer",
-    "lender_viewer",
-  ]);
-  const isOnlyExternalViewer =
-    roles.length > 0 && roles.every((r) => EXTERNAL_VIEWERS.has(r));
+  const EXTERNAL_VIEWERS = new Set(["client_viewer", "investor_viewer", "lender_viewer"]);
+  const isOnlyExternalViewer = roles.length > 0 && roles.every((r) => EXTERNAL_VIEWERS.has(r));
 
   const pendingFn = useServerFn(getMyPendingCount);
   const pendingQuery = useQuery({
@@ -77,24 +63,16 @@ export function AppSidebar() {
   // permissions map only while the query is loading or errored so nav isn't
   // blank on first paint.
   const enabledModuleKeys: Set<string> | null = modulesQuery.data
-    ? new Set(
-        modulesQuery.data.modules
-          .filter((m) => m.enabled)
-          .map((m) => m.key),
-      )
+    ? new Set(modulesQuery.data.modules.filter((m) => m.enabled).map((m) => m.key))
     : null;
 
-  const isActive = (url: string) =>
-    pathname === url || pathname.startsWith(`${url}/`);
+  const isActive = (url: string) => pathname === url || pathname.startsWith(`${url}/`);
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div
-          className={cn(
-            "flex h-12 items-center gap-2 px-2",
-            collapsed && "justify-center px-0",
-          )}
+          className={cn("flex h-12 items-center gap-2 px-2", collapsed && "justify-center px-0")}
         >
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
             <span className="font-display text-sm font-bold">G</span>
@@ -120,7 +98,6 @@ export function AppSidebar() {
           });
           if (items.length === 0) return null;
 
-
           return (
             <SidebarGroup key={section.label}>
               <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
@@ -129,15 +106,10 @@ export function AppSidebar() {
                   {items.map((item) => {
                     const active = isActive(item.url);
                     const Icon = item.icon;
-                    const showBadge =
-                      item.url === "/approvals" && pendingCount > 0;
+                    const showBadge = item.url === "/approvals" && pendingCount > 0;
                     return (
                       <SidebarMenuItem key={item.url}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={active}
-                          tooltip={item.label}
-                        >
+                        <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
                           {/* TODO: swap to <Link to="..."> once each leaf route lands (Batches 08+). */}
                           <a href={item.url} className="flex items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />

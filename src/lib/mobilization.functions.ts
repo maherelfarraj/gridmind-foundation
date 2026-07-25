@@ -70,10 +70,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function loadChecklistOrThrow(
-  context: AuthContext,
-  id: string,
-): Promise<MobilizationRow> {
+async function loadChecklistOrThrow(context: AuthContext, id: string): Promise<MobilizationRow> {
   const { data, error } = await context.supabase
     .from("mobilization_checklists")
     .select("*")
@@ -205,8 +202,7 @@ export const getMobilizationHeaderChip = createServerFn({ method: "GET" })
     const list = (rows ?? []) as { status: MobilizationStatus }[];
     if (list.length === 0) return { status: "none" };
     if (list.some((r) => r.status === "complete")) return { status: "complete" };
-    if (list.some((r) => r.status === "in_progress"))
-      return { status: "in_progress" };
+    if (list.some((r) => r.status === "in_progress")) return { status: "in_progress" };
     return { status: "not_started" };
   });
 
@@ -263,8 +259,7 @@ async function persistItemMutation(
   if (current.status === "complete") httpError(409, "checklist_complete");
   const nextItems = mutate([...current.items]);
   const nextStatus = deriveChecklistStatus(nextItems);
-  const started_at =
-    current.started_at ?? (nextStatus !== "not_started" ? nowIso() : null);
+  const started_at = current.started_at ?? (nextStatus !== "not_started" ? nowIso() : null);
   const { data: row, error } = await context.supabase
     .from("mobilization_checklists")
     .update({
@@ -320,17 +315,12 @@ export const updateInductionRoster = createServerFn({ method: "POST" })
       const roster: RosterEntry[] = data.roster;
       // roster length > 0 promotes item to in_progress; leaving completion to explicit toggle.
       const nextItemStatus =
-        cur.status === "complete"
-          ? "complete"
-          : roster.length > 0
-            ? "in_progress"
-            : "not_started";
+        cur.status === "complete" ? "complete" : roster.length > 0 ? "in_progress" : "not_started";
       items[idx] = {
         ...cur,
         roster,
         status: nextItemStatus,
-        completed_by:
-          nextItemStatus === "complete" ? (cur.completed_by ?? uid) : cur.completed_by,
+        completed_by: nextItemStatus === "complete" ? (cur.completed_by ?? uid) : cur.completed_by,
       };
       return items;
     });

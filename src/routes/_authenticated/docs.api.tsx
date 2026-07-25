@@ -32,16 +32,14 @@ export const Route = createFileRoute("/_authenticated/docs/api")({
       { property: "og:title", content: "GridMind EPC — Public API docs" },
       {
         property: "og:description",
-        content:
-          "Integrator reference for SCADA ingestion, event hooks, and outbound webhooks.",
+        content: "Integrator reference for SCADA ingestion, event hooks, and outbound webhooks.",
       },
     ],
   }),
 });
 
 const SCOPE_DESCRIPTIONS: Record<(typeof API_KEY_SCOPES)[number], string> = {
-  "scada:telemetry:write":
-    "Ingest telemetry readings into scada_assets for your company.",
+  "scada:telemetry:write": "Ingest telemetry readings into scada_assets for your company.",
   "hooks:events": "POST generic events to /api/public/hooks/events.",
   "hooks:scada": "Post SCADA control-plane events (reserved).",
   "read:reports": "Read scheduled report metadata (reserved).",
@@ -60,8 +58,7 @@ const ENDPOINTS: Array<{
     path: "/api/public/hooks/ping",
     scope: "(any)",
     signed: "Required",
-    summary:
-      "Smoke test — returns { pong: true, caller, companyId } when signature verifies.",
+    summary: "Smoke test — returns { pong: true, caller, companyId } when signature verifies.",
   },
   {
     method: "POST",
@@ -134,15 +131,11 @@ function ApiDocsPage() {
             <BookOpen className="h-4 w-4" />
             Integrator reference
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            GridMind EPC Public API
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">GridMind EPC Public API</h1>
           <p className="text-sm text-muted-foreground">
-            Signed, rate-limited HTTP endpoints for SCADA vendors, third-party
-            automation, and outbound webhook consumers. See{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              docs/public-api-signing.md
-            </code>{" "}
+            Signed, rate-limited HTTP endpoints for SCADA vendors, third-party automation, and
+            outbound webhook consumers. See{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">docs/public-api-signing.md</code>{" "}
             in the repo for runnable code samples.
           </p>
         </div>
@@ -170,9 +163,8 @@ function ApiDocsPage() {
             <code className="rounded bg-muted px-1 py-0.5 text-xs">
               Authorization: Bearer gm_&hellip;
             </code>{" "}
-            header. Keys are per-company and only grant access to your own
-            tenant data. Keys are shown once when created — store them in a
-            secret manager.
+            header. Keys are per-company and only grant access to your own tenant data. Keys are
+            shown once when created — store them in a secret manager.
           </p>
           <div className="overflow-hidden rounded-md border border-border">
             <Table>
@@ -196,12 +188,11 @@ function ApiDocsPage() {
           </div>
           <ul className="list-disc pl-5 text-muted-foreground">
             <li>
-              <strong>401 unauthorized</strong> — key is missing, malformed,
-              revoked, or expired.
+              <strong>401 unauthorized</strong> — key is missing, malformed, revoked, or expired.
             </li>
             <li>
-              <strong>403 insufficient_scope</strong> — key is valid but lacks
-              the scope the endpoint requires.
+              <strong>403 insufficient_scope</strong> — key is valid but lacks the scope the
+              endpoint requires.
             </li>
           </ul>
         </CardContent>
@@ -214,36 +205,27 @@ function ApiDocsPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p>
-            Signed endpoints require both a Unix-seconds timestamp and an HMAC
-            signature computed over the exact request bytes:
+            Signed endpoints require both a Unix-seconds timestamp and an HMAC signature computed
+            over the exact request bytes:
           </p>
           <pre className="overflow-x-auto rounded-md border border-border bg-muted/50 p-3 text-xs">
-{`x-timestamp: 1737849600
+            {`x-timestamp: 1737849600
 x-signature: sha256=<hex(hmac_sha256(secret, \`\${timestamp}.\${rawBody}\`))>`}
           </pre>
           <ul className="list-disc pl-5 text-muted-foreground">
             <li>
               The signing secret is your API key value — the same{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                gm_&hellip;
-              </code>{" "}
-              string shown once at creation.
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">gm_&hellip;</code> string shown
+              once at creation.
             </li>
             <li>
-              Replay window: <strong>300 seconds</strong>. Skew outside that
-              range returns{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                signature_expired
-              </code>
-              .
+              Replay window: <strong>300 seconds</strong>. Skew outside that range returns{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">signature_expired</code>.
             </li>
             <li>
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                signature_invalid
-              </code>{" "}
-              means the HMAC does not match. The most common cause is
-              re-serializing the body after signing — sign the exact bytes you
-              transmit.
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">signature_invalid</code> means
+              the HMAC does not match. The most common cause is re-serializing the body after
+              signing — sign the exact bytes you transmit.
             </li>
           </ul>
         </CardContent>
@@ -259,22 +241,18 @@ x-signature: sha256=<hex(hmac_sha256(secret, \`\${timestamp}.\${rawBody}\`))>`}
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p>
-            A token bucket is applied per <em>endpoint × key</em>. Exhausting
-            it returns HTTP <strong>429 rate_limited</strong> with a{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              Retry-After
-            </code>{" "}
-            header (seconds). Honor it, then apply exponential backoff with
-            jitter for repeated failures.
+            A token bucket is applied per <em>endpoint × key</em>. Exhausting it returns HTTP{" "}
+            <strong>429 rate_limited</strong> with a{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">Retry-After</code> header
+            (seconds). Honor it, then apply exponential backoff with jitter for repeated failures.
           </p>
           <ul className="list-disc pl-5 text-muted-foreground">
             <li>
-              scada-telemetry: 120 burst, ~2 req/s sustained — batch readings
-              in a single POST.
+              scada-telemetry: 120 burst, ~2 req/s sustained — batch readings in a single POST.
             </li>
             <li>
-              ping / events: modest bursts, generous sustained rate; used for
-              smoke tests and low-volume integrations.
+              ping / events: modest bursts, generous sustained rate; used for smoke tests and
+              low-volume integrations.
             </li>
           </ul>
         </CardContent>
@@ -303,18 +281,10 @@ x-signature: sha256=<hex(hmac_sha256(secret, \`\${timestamp}.\${rawBody}\`))>`}
                     <TableCell>
                       <Badge variant="secondary">{e.method}</Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {e.path}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {e.scope}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {e.signed}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {e.summary}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{e.path}</TableCell>
+                    <TableCell className="font-mono text-xs">{e.scope}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{e.signed}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{e.summary}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -322,22 +292,19 @@ x-signature: sha256=<hex(hmac_sha256(secret, \`\${timestamp}.\${rawBody}\`))>`}
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold">
-              Outbound webhook verification
-            </h3>
+            <h3 className="text-sm font-semibold">Outbound webhook verification</h3>
             <p className="text-sm text-muted-foreground">
-              When you receive a delivery from GridMind at your registered
-              endpoint, verify these headers over the raw request body:
+              When you receive a delivery from GridMind at your registered endpoint, verify these
+              headers over the raw request body:
             </p>
             <pre className="overflow-x-auto rounded-md border border-border bg-muted/50 p-3 text-xs">
-{`x-gridmind-timestamp: 1737849600
+              {`x-gridmind-timestamp: 1737849600
 x-gridmind-signature: sha256=<hex(hmac_sha256(endpoint_secret, \`\${timestamp}.\${rawBody}\`))>`}
             </pre>
             <p className="text-sm text-muted-foreground">
-              Signing symmetry with the inbound guard: verify the timestamp is
-              within 300 seconds and reject signature mismatches. The endpoint
-              secret is shown once when you register the endpoint in{" "}
-              <em>Settings &rarr; Webhooks</em>.
+              Signing symmetry with the inbound guard: verify the timestamp is within 300 seconds
+              and reject signature mismatches. The endpoint secret is shown once when you register
+              the endpoint in <em>Settings &rarr; Webhooks</em>.
             </p>
           </div>
         </CardContent>
@@ -365,17 +332,14 @@ x-gridmind-signature: sha256=<hex(hmac_sha256(endpoint_secret, \`\${timestamp}.\
                     <TableCell>
                       <Badge variant="outline">{e.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {e.when}
-                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{e.when}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Applies to both plant O&amp;M ingestion and C&amp;I integration
-            surfaces.
+            Applies to both plant O&amp;M ingestion and C&amp;I integration surfaces.
           </p>
         </CardContent>
       </Card>

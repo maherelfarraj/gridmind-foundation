@@ -84,9 +84,7 @@ function ContractsError({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-function statusVariant(
-  s: ContractStatus,
-): "default" | "secondary" | "outline" | "destructive" {
+function statusVariant(s: ContractStatus): "default" | "secondary" | "outline" | "destructive" {
   switch (s) {
     case "signed":
     case "active":
@@ -118,10 +116,7 @@ function ContractsIndex() {
   const rows = list.data.rows;
   const canWrite = access.data.canWrite;
 
-  const totalValue = useMemo(
-    () => rows.reduce((a, r) => a + (r.value ?? 0), 0),
-    [rows],
-  );
+  const totalValue = useMemo(() => rows.reduce((a, r) => a + (r.value ?? 0), 0), [rows]);
 
   function exportCsv() {
     const csv = toCsv(
@@ -269,9 +264,7 @@ function ContractRowView({ row }: { row: ContractRow }) {
       <TableCell>
         <Badge variant={statusVariant(row.status)}>{contractStatusLabel(row.status)}</Badge>
       </TableCell>
-      <TableCell className="tabular-nums text-muted-foreground">
-        {row.expiry_date ?? "—"}
-      </TableCell>
+      <TableCell className="tabular-nums text-muted-foreground">{row.expiry_date ?? "—"}</TableCell>
     </TableRow>
   );
 }
@@ -310,14 +303,11 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
       <DialogHeader>
         <DialogTitle>New contract</DialogTitle>
         <DialogDescription>
-          Contract number is generated automatically. You can add the schedule of values and
-          upload the signed copy on the detail page.
+          Contract number is generated automatically. You can add the schedule of values and upload
+          the signed copy on the detail page.
         </DialogDescription>
       </DialogHeader>
-      <form
-        onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-        className="space-y-3"
-      >
+      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-3">
         <div className="space-y-1">
           <Label>Title</Label>
           <Input {...form.register("title")} placeholder="Wind Farm Alpha — EPC" />
@@ -352,11 +342,7 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
         </div>
         <div className="space-y-1">
           <Label>Value</Label>
-          <Input
-            type="number"
-            step="0.01"
-            {...form.register("value", { valueAsNumber: true })}
-          />
+          <Input type="number" step="0.01" {...form.register("value", { valueAsNumber: true })} />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">

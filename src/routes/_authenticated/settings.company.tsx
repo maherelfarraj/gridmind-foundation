@@ -9,13 +9,7 @@ import { toast } from "sonner";
 import { Loader2, Upload, Trash2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -97,14 +91,11 @@ function SettingsCompanyPage() {
 
   const isAdmin = useMemo(
     () =>
-      (rolesQuery.data ?? []).some(
-        (r) => r.role === "company_admin" || r.role === "super_admin",
-      ),
+      (rolesQuery.data ?? []).some((r) => r.role === "company_admin" || r.role === "super_admin"),
     [rolesQuery.data],
   );
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["company-settings"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["company-settings"] });
 
   if (settingsQuery.isLoading) {
     return (
@@ -126,8 +117,7 @@ function SettingsCompanyPage() {
               Couldn't load company settings
             </CardTitle>
             <CardDescription>
-              {(settingsQuery.error as Error | undefined)?.message ??
-                "Something went wrong."}
+              {(settingsQuery.error as Error | undefined)?.message ?? "Something went wrong."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -153,11 +143,7 @@ function SettingsCompanyPage() {
         </p>
       </div>
 
-      <CompanyDetailsCard
-        company={company}
-        isAdmin={isAdmin}
-        onSaved={invalidate}
-      />
+      <CompanyDetailsCard company={company} isAdmin={isAdmin} onSaved={invalidate} />
 
       <BrandingCard
         branding={branding}
@@ -206,9 +192,7 @@ function CompanyDetailsCard({
         },
       }),
     onSuccess: (res) => {
-      toast.success(
-        res.changed === 0 ? "No changes to save" : "Company details saved",
-      );
+      toast.success(res.changed === 0 ? "No changes to save" : "Company details saved");
       form.reset(form.getValues());
       onSaved();
     },
@@ -219,16 +203,11 @@ function CompanyDetailsCard({
     <Card>
       <CardHeader>
         <CardTitle>Company details</CardTitle>
-        <CardDescription>
-          Legal identity and primary contact for this tenant.
-        </CardDescription>
+        <CardDescription>Legal identity and primary contact for this tenant.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            className="grid gap-4"
-            onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-          >
+          <form className="grid gap-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <FormField
               control={form.control}
               name="legal_name"
@@ -284,13 +263,9 @@ function CompanyDetailsCard({
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={
-                  !isAdmin || !form.formState.isDirty || mutation.isPending
-                }
+                disabled={!isAdmin || !form.formState.isDirty || mutation.isPending}
               >
-                {mutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save details
               </Button>
             </div>
@@ -369,13 +344,11 @@ function BrandingCard({
       const target = await getTargetFn();
       const localPreview = URL.createObjectURL(file);
       setLogoPreview(localPreview);
-      const { error } = await supabase.storage
-        .from(target.bucket)
-        .upload(target.path, file, {
-          upsert: true,
-          contentType: file.type,
-          cacheControl: "0",
-        });
+      const { error } = await supabase.storage.from(target.bucket).upload(target.path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: "0",
+      });
       if (error) throw error;
       const res = await setLogoFn({ data: { path: target.path } });
       if (res.signedUrl) setLogoPreview(res.signedUrl);
@@ -403,9 +376,7 @@ function BrandingCard({
     <Card>
       <CardHeader>
         <CardTitle>Branding</CardTitle>
-        <CardDescription>
-          Branding is applied to proposal PDF/PPTX exports.
-        </CardDescription>
+        <CardDescription>Branding is applied to proposal PDF/PPTX exports.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid gap-3">
@@ -459,18 +430,13 @@ function BrandingCard({
                   Remove
                 </Button>
               )}
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG or SVG. Max 2 MB.
-              </p>
+              <p className="text-xs text-muted-foreground">PNG, JPG or SVG. Max 2 MB.</p>
             </div>
           </div>
         </div>
 
         <Form {...form}>
-          <form
-            className="grid gap-4"
-            onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-          >
+          <form className="grid gap-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <div className="grid gap-4 sm:grid-cols-2">
               <ColorField
                 control={form.control}
@@ -499,9 +465,7 @@ function BrandingCard({
                       disabled={!isAdmin}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Shown on exported documents.
-                  </FormDescription>
+                  <FormDescription>Shown on exported documents.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -509,13 +473,9 @@ function BrandingCard({
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={
-                  !isAdmin || !form.formState.isDirty || mutation.isPending
-                }
+                disabled={!isAdmin || !form.formState.isDirty || mutation.isPending}
               >
-                {mutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save branding
               </Button>
             </div>
@@ -532,7 +492,6 @@ function ColorField({
   label,
   disabled,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: any;
   name: "primary_color" | "accent_color";
   label: string;

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  escalationRouteSchema,
-  evaluateCondition,
-  hasCleared,
-} from "@/lib/alarms.rules";
+import { escalationRouteSchema, evaluateCondition, hasCleared } from "@/lib/alarms.rules";
 
 describe("evaluateCondition", () => {
   it("covers all six operators", () => {
@@ -38,23 +34,17 @@ describe("hasCleared hysteresis", () => {
 describe("escalationRouteSchema", () => {
   it("accepts a valid route", () => {
     expect(
-      escalationRouteSchema.parse([
-        { after_minutes: 30, notify_role: "om_admin" },
-      ]),
+      escalationRouteSchema.parse([{ after_minutes: 30, notify_role: "om_admin" }]),
     ).toHaveLength(1);
   });
   it("rejects negative minutes", () => {
     expect(
-      escalationRouteSchema.safeParse([
-        { after_minutes: -1, notify_role: "om_admin" },
-      ]).success,
+      escalationRouteSchema.safeParse([{ after_minutes: -1, notify_role: "om_admin" }]).success,
     ).toBe(false);
   });
   it("rejects unknown role", () => {
     expect(
-      escalationRouteSchema.safeParse([
-        { after_minutes: 5, notify_role: "ceo" },
-      ]).success,
+      escalationRouteSchema.safeParse([{ after_minutes: 5, notify_role: "ceo" }]).success,
     ).toBe(false);
   });
 });

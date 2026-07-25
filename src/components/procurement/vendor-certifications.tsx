@@ -8,10 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import type { Certification } from "@/lib/vendors.functions";
-import {
-  useAttachVendorCertification,
-  useRemoveVendorCertification,
-} from "@/lib/vendors-query";
+import { useAttachVendorCertification, useRemoveVendorCertification } from "@/lib/vendors-query";
 
 interface Props {
   vendorId: string;
@@ -24,12 +21,7 @@ function safeName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-export function VendorCertifications({
-  vendorId,
-  companyId,
-  certifications,
-  canWrite,
-}: Props) {
+export function VendorCertifications({ vendorId, companyId, certifications, canWrite }: Props) {
   const [name, setName] = useState("");
   const [issuer, setIssuer] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -51,15 +43,11 @@ export function VendorCertifications({
     }
     setUploading(true);
     try {
-      const path = `${companyId}/vendor-certs/${vendorId}/${Date.now()}-${safeName(
-        file.name,
-      )}`;
-      const { error: upErr } = await supabase.storage
-        .from("documents")
-        .upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
+      const path = `${companyId}/vendor-certs/${vendorId}/${Date.now()}-${safeName(file.name)}`;
+      const { error: upErr } = await supabase.storage.from("documents").upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
       if (upErr) throw upErr;
       await attach.mutateAsync({
         name: name.trim(),
@@ -79,9 +67,7 @@ export function VendorCertifications({
   }
 
   async function openCert(path: string) {
-    const { data, error } = await supabase.storage
-      .from("documents")
-      .createSignedUrl(path, 60 * 15);
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(path, 60 * 15);
     if (error || !data?.signedUrl) {
       toast.error("Could not open file");
       return;

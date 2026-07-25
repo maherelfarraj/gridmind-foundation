@@ -25,11 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MatchStatusBadge } from "@/components/procurement/match-status-badge";
-import {
-  getMatchVarianceKpi,
-  listMatchablePos,
-  listMatches,
-} from "@/lib/match.functions";
+import { getMatchVarianceKpi, listMatchablePos, listMatches } from "@/lib/match.functions";
 import { MATCH_STATUSES, type MatchStatus } from "@/lib/match-rules";
 import {
   matchKpiQueryOptions,
@@ -58,9 +54,7 @@ export const Route = createFileRoute("/_authenticated/procurement/matches/")({
 function MatchesError({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">
-        Couldn’t load invoice matches
-      </h2>
+      <h2 className="font-display text-lg font-semibold">Couldn’t load invoice matches</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button onClick={() => reset()}>Try again</Button>
     </div>
@@ -74,10 +68,9 @@ function toCsv(rows: Array<Record<string, unknown>>): string {
     const s = v == null ? "" : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return [
-    headers.join(","),
-    ...rows.map((r) => headers.map((h) => escape(r[h])).join(",")),
-  ].join("\n");
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))].join(
+    "\n",
+  );
 }
 
 function formatCurrency(amount: number, code: string): string {
@@ -94,8 +87,7 @@ function formatCurrency(amount: number, code: string): string {
 
 function varianceBadge(pct: number) {
   const abs = Math.abs(pct);
-  const variant =
-    abs >= 5 ? "destructive" : abs >= 1 ? "secondary" : "default";
+  const variant = abs >= 5 ? "destructive" : abs >= 1 ? "secondary" : "default";
   const sign = pct > 0 ? "+" : "";
   return <Badge variant={variant}>{`${sign}${pct.toFixed(2)}%`}</Badge>;
 }
@@ -158,28 +150,17 @@ function MatchesIndex() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <Scale className="h-3.5 w-3.5" /> Procurement · Invoice matching
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Three-way match
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Three-way match</h1>
           <p className="text-sm text-muted-foreground">
-            Compare vendor invoices to PO totals and confirmed goods receipts —
-            variance beyond tolerance blocks payment release.
+            Compare vendor invoices to PO totals and confirmed goods receipts — variance beyond
+            tolerance blocks payment release.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportCsv}
-            disabled={rows.length === 0}
-          >
+          <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
             <Download className="mr-2 h-4 w-4" /> Export CSV
           </Button>
-          <Button
-            size="sm"
-            onClick={handleNew}
-            disabled={posQuery.data.length === 0}
-          >
+          <Button size="sm" onClick={handleNew} disabled={posQuery.data.length === 0}>
             <Plus className="mr-2 h-4 w-4" /> New match
           </Button>
         </div>
@@ -190,17 +171,13 @@ function MatchesIndex() {
           <div className="text-xs uppercase tracking-wide text-muted-foreground">
             Avg variance this quarter
           </div>
-          <div className="mt-1 font-display text-2xl font-bold">
-            {kpi.data.avgPct.toFixed(2)}%
-          </div>
+          <div className="mt-1 font-display text-2xl font-bold">{kpi.data.avgPct.toFixed(2)}%</div>
           <div className="text-xs text-muted-foreground">
             {kpi.data.count} match{kpi.data.count === 1 ? "" : "es"}
           </div>
         </div>
         <div className="rounded-md border border-border p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Blocked
-          </div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Blocked</div>
           <div className="mt-1 font-display text-2xl font-bold">
             {rows.filter((r) => r.payment_release_blocked).length}
           </div>
@@ -226,10 +203,7 @@ function MatchesIndex() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as MatchStatus | "all")}
-        >
+        <Select value={status} onValueChange={(v) => setStatus(v as MatchStatus | "all")}>
           <SelectTrigger className="w-56">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -264,10 +238,7 @@ function MatchesIndex() {
             </TableHeader>
             <TableBody>
               {rows.map((r) => {
-                const pct =
-                  r.po_total > 0
-                    ? ((r.amount_variance ?? 0) / r.po_total) * 100
-                    : 0;
+                const pct = r.po_total > 0 ? ((r.amount_variance ?? 0) / r.po_total) * 100 : 0;
                 return (
                   <TableRow key={r.id}>
                     <TableCell>
@@ -295,9 +266,7 @@ function MatchesIndex() {
                         {r.vendor_invoice_number}
                       </Link>
                       {r.payment_release_blocked && (
-                        <div className="text-xs text-destructive">
-                          Payment blocked
-                        </div>
+                        <div className="text-xs text-destructive">Payment blocked</div>
                       )}
                     </TableCell>
                     <TableCell className="text-right font-medium">

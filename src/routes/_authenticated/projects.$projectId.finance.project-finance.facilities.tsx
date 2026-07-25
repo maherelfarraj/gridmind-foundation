@@ -1,11 +1,7 @@
 // P-082 — Bank facilities tab.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, isValid } from "date-fns";
 import { Download, Plus, Trash2, Wallet } from "lucide-react";
@@ -30,13 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -48,10 +38,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-import {
-  recordFacilityDrawdown,
-  upsertBankFacility,
-} from "@/lib/bank-facilities.functions";
+import { recordFacilityDrawdown, upsertBankFacility } from "@/lib/bank-facilities.functions";
 import {
   bankFacilitiesQueryOptions,
   projectFinanceAccessQueryOptions,
@@ -75,8 +62,7 @@ export const Route = createFileRoute(
       { title: "Bank facilities — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Lender facilities, drawdowns, covenants and utilization for the project.",
+        content: "Lender facilities, drawdowns, covenants and utilization for the project.",
       },
       { property: "og:title", content: "Bank facilities — GridMind EPC" },
       {
@@ -89,17 +75,13 @@ export const Route = createFileRoute(
   }),
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
-        bankFacilitiesQueryOptions(params.projectId),
-      ),
+      context.queryClient.ensureQueryData(bankFacilitiesQueryOptions(params.projectId)),
       context.queryClient.ensureQueryData(projectFinanceAccessQueryOptions()),
     ]);
   },
   errorComponent: ({ error, reset }) => (
     <Card className="p-4">
-      <p className="text-sm text-destructive">
-        {projectFinanceErrorMessage(error)}
-      </p>
+      <p className="text-sm text-destructive">{projectFinanceErrorMessage(error)}</p>
       <Button size="sm" variant="outline" className="mt-3" onClick={reset}>
         Try again
       </Button>
@@ -201,9 +183,7 @@ function FacilitiesTab() {
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {rows.length === 0
-            ? "No facilities yet."
-            : `${rows.length} facility(ies)`}
+          {rows.length === 0 ? "No facilities yet." : `${rows.length} facility(ies)`}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportCsv}>
@@ -245,10 +225,7 @@ function FacilitiesTab() {
             </TableHeader>
             <TableBody>
               {rows.map((r) => {
-                const util = facilityUtilizationPct(
-                  r.drawn_amount,
-                  r.commitment_amount,
-                );
+                const util = facilityUtilizationPct(r.drawn_amount, r.commitment_amount);
                 return (
                   <TableRow key={r.id} className="hover:bg-muted/40">
                     <TableCell className="font-medium">
@@ -289,9 +266,7 @@ function FacilitiesTab() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {r.interest_rate_pct == null
-                        ? "—"
-                        : `${r.interest_rate_pct}%`}
+                      {r.interest_rate_pct == null ? "—" : `${r.interest_rate_pct}%`}
                       {r.margin_pct != null ? ` +${r.margin_pct}%` : ""}
                     </TableCell>
                     <TableCell className="text-xs tabular-nums text-muted-foreground">
@@ -306,11 +281,7 @@ function FacilitiesTab() {
                     </TableCell>
                     <TableCell>
                       {access.data.canWrite && r.status === "active" ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDrawDialog(r)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => setDrawDialog(r)}>
                           <Wallet className="mr-1 size-3" /> Draw
                         </Button>
                       ) : null}
@@ -324,11 +295,7 @@ function FacilitiesTab() {
       </Card>
 
       {open ? (
-        <FacilityDrawer
-          projectId={projectId}
-          initial={editing}
-          onClose={() => setOpen(false)}
-        />
+        <FacilityDrawer projectId={projectId} initial={editing} onClose={() => setOpen(false)} />
       ) : null}
       {drawDialog ? (
         <DrawdownDialog
@@ -352,12 +319,8 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
   const upsert = useServerFn(upsertBankFacility);
 
   const [lender, setLender] = useState(initial?.lender_name ?? "");
-  const [type, setType] = useState<FacilityType>(
-    initial?.facility_type ?? "term_loan",
-  );
-  const [commitment, setCommitment] = useState(
-    String(initial?.commitment_amount ?? 0),
-  );
+  const [type, setType] = useState<FacilityType>(initial?.facility_type ?? "term_loan");
+  const [commitment, setCommitment] = useState(String(initial?.commitment_amount ?? 0));
   const [drawn, setDrawn] = useState(String(initial?.drawn_amount ?? 0));
   const [currency, setCurrency] = useState(initial?.currency_code ?? "USD");
   const [rate, setRate] = useState(
@@ -370,9 +333,7 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
   const [status, setStatus] = useState<FacilityStatus>(
     (initial?.status as FacilityStatus) ?? "active",
   );
-  const [covenants, setCovenants] = useState<Covenant[]>(
-    initial?.covenants ?? [],
-  );
+  const [covenants, setCovenants] = useState<Covenant[]>(initial?.covenants ?? []);
 
   const mut = useMutation({
     mutationFn: () =>
@@ -412,9 +373,7 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
     <Sheet open onOpenChange={(o) => (!o ? onClose() : undefined)}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>
-            {initial ? "Edit facility" : "New facility"}
-          </SheetTitle>
+          <SheetTitle>{initial ? "Edit facility" : "New facility"}</SheetTitle>
         </SheetHeader>
         <div className="mt-4 grid gap-3">
           <div className="grid grid-cols-2 gap-3">
@@ -496,10 +455,7 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
           </div>
           <div className="grid gap-1.5">
             <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(v) => setStatus(v as FacilityStatus)}
-            >
+            <Select value={status} onValueChange={(v) => setStatus(v as FacilityStatus)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -577,9 +533,7 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      onClick={() =>
-                        setCovenants((cc) => cc.filter((_, ix) => ix !== i))
-                      }
+                      onClick={() => setCovenants((cc) => cc.filter((_, ix) => ix !== i))}
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -593,10 +547,7 @@ function FacilityDrawer({ projectId, initial, onClose }: FacilityDrawerProps) {
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            disabled={!canSave || mut.isPending}
-            onClick={() => mut.mutate()}
-          >
+          <Button disabled={!canSave || mut.isPending} onClick={() => mut.mutate()}>
             {mut.isPending ? "Saving…" : initial ? "Update" : "Create"}
           </Button>
         </SheetFooter>
@@ -663,9 +614,7 @@ function DrawdownDialog({ projectId, facility, onClose }: DrawdownDialogProps) {
               onChange={(e) => setAmount(e.target.value)}
             />
             {wouldExceed ? (
-              <p className="text-xs text-destructive">
-                Exceeds remaining commitment.
-              </p>
+              <p className="text-xs text-destructive">Exceeds remaining commitment.</p>
             ) : null}
           </div>
           <div className="grid gap-1.5">

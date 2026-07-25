@@ -9,13 +9,7 @@ import { toast } from "sonner";
 import { AlertCircle, Loader2, Trash2, Upload, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -141,8 +135,7 @@ function SettingsProfilePage() {
     queryFn: () => fetchSettings(),
   });
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["profile-settings"] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["profile-settings"] });
 
   if (settingsQuery.isLoading) {
     return (
@@ -165,8 +158,7 @@ function SettingsProfilePage() {
               Couldn't load your profile
             </CardTitle>
             <CardDescription>
-              {(settingsQuery.error as Error | undefined)?.message ??
-                "Something went wrong."}
+              {(settingsQuery.error as Error | undefined)?.message ?? "Something went wrong."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -190,11 +182,7 @@ function SettingsProfilePage() {
         </p>
       </div>
 
-      <ProfileCard
-        profile={profile}
-        avatarSignedUrl={avatarSignedUrl}
-        onSaved={invalidate}
-      />
+      <ProfileCard profile={profile} avatarSignedUrl={avatarSignedUrl} onSaved={invalidate} />
 
       <NotificationsCard prefs={notificationPrefs} onSaved={invalidate} />
     </div>
@@ -215,9 +203,7 @@ function ProfileCard({
   const setAvatarFn = useServerFn(setProfileAvatar);
   const removeAvatarFn = useServerFn(removeProfileAvatar);
 
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    avatarSignedUrl,
-  );
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarSignedUrl);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -236,9 +222,7 @@ function ProfileCard({
   const mutation = useMutation({
     mutationFn: (values: ProfileForm) => submitFn({ data: values }),
     onSuccess: (res) => {
-      toast.success(
-        res.changed === 0 ? "No changes to save" : "Profile saved",
-      );
+      toast.success(res.changed === 0 ? "No changes to save" : "Profile saved");
       form.reset(form.getValues());
       onSaved();
     },
@@ -258,13 +242,11 @@ function ProfileCard({
     try {
       const target = await getTargetFn();
       setAvatarPreview(URL.createObjectURL(file));
-      const { error } = await supabase.storage
-        .from(target.bucket)
-        .upload(target.path, file, {
-          upsert: true,
-          contentType: file.type,
-          cacheControl: "0",
-        });
+      const { error } = await supabase.storage.from(target.bucket).upload(target.path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: "0",
+      });
       if (error) throw error;
       const res = await setAvatarFn({ data: { path: target.path } });
       if (res.signedUrl) setAvatarPreview(res.signedUrl);
@@ -292,9 +274,7 @@ function ProfileCard({
     <Card>
       <CardHeader>
         <CardTitle>Profile</CardTitle>
-        <CardDescription>
-          Your name, avatar, and preferred language.
-        </CardDescription>
+        <CardDescription>Your name, avatar, and preferred language.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid gap-3">
@@ -302,11 +282,7 @@ function ProfileCard({
           <div className="flex items-center gap-4">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
               {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  alt="Your avatar"
-                  className="h-full w-full object-cover"
-                />
+                <img src={avatarPreview} alt="Your avatar" className="h-full w-full object-cover" />
               ) : (
                 <User className="h-8 w-8 text-muted-foreground" />
               )}
@@ -348,9 +324,7 @@ function ProfileCard({
                   Remove
                 </Button>
               )}
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG or SVG. Max 2 MB.
-              </p>
+              <p className="text-xs text-muted-foreground">PNG, JPG or SVG. Max 2 MB.</p>
             </div>
           </div>
         </div>
@@ -359,16 +333,12 @@ function ProfileCard({
           <Label>Email</Label>
           <Input value={profile.email ?? ""} readOnly disabled />
           <p className="text-xs text-muted-foreground">
-            Email is managed by your identity provider and can't be changed
-            here.
+            Email is managed by your identity provider and can't be changed here.
           </p>
         </div>
 
         <Form {...form}>
-          <form
-            className="grid gap-4"
-            onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-          >
+          <form className="grid gap-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <FormField
               control={form.control}
               name="full_name"
@@ -388,10 +358,7 @@ function ProfileCard({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Language</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={(v) => field.onChange(v as Locale)}
-                  >
+                  <Select value={field.value} onValueChange={(v) => field.onChange(v as Locale)}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
@@ -411,13 +378,8 @@ function ProfileCard({
             />
 
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={!form.formState.isDirty || mutation.isPending}
-              >
-                {mutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+              <Button type="submit" disabled={!form.formState.isDirty || mutation.isPending}>
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save profile
               </Button>
             </div>
@@ -460,16 +422,11 @@ function NotificationsCard({
     <Card>
       <CardHeader>
         <CardTitle>Notifications</CardTitle>
-        <CardDescription>
-          Choose how and when GridMind reaches out to you.
-        </CardDescription>
+        <CardDescription>Choose how and when GridMind reaches out to you.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            className="grid gap-6"
-            onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-          >
+          <form className="grid gap-6" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <div className="grid gap-4">
               <FormField
                 control={form.control}
@@ -477,19 +434,14 @@ function NotificationsCard({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start justify-between gap-4 rounded-md border border-border bg-card p-4">
                     <div className="grid gap-1">
-                      <FormLabel className="text-base">
-                        Email notifications
-                      </FormLabel>
+                      <FormLabel className="text-base">Email notifications</FormLabel>
                       <p className="text-sm text-muted-foreground">
-                        Marketing emails can also be stopped via the
-                        unsubscribe link in any email footer.
+                        Marketing emails can also be stopped via the unsubscribe link in any email
+                        footer.
                       </p>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -500,18 +452,13 @@ function NotificationsCard({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start justify-between gap-4 rounded-md border border-border bg-card p-4">
                     <div className="grid gap-1">
-                      <FormLabel className="text-base">
-                        In-app notifications
-                      </FormLabel>
+                      <FormLabel className="text-base">In-app notifications</FormLabel>
                       <p className="text-sm text-muted-foreground">
                         Show notifications in the bell menu.
                       </p>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -535,12 +482,8 @@ function NotificationsCard({
                           />
                         </FormControl>
                         <div className="grid gap-0.5">
-                          <FormLabel className="cursor-pointer">
-                            {item.label}
-                          </FormLabel>
-                          <p className="text-xs text-muted-foreground">
-                            {item.description}
-                          </p>
+                          <FormLabel className="cursor-pointer">{item.label}</FormLabel>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
                         </div>
                       </FormItem>
                     )}
@@ -550,13 +493,8 @@ function NotificationsCard({
             </div>
 
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={!form.formState.isDirty || mutation.isPending}
-              >
-                {mutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+              <Button type="submit" disabled={!form.formState.isDirty || mutation.isPending}>
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save preferences
               </Button>
             </div>

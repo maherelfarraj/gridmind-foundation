@@ -87,14 +87,11 @@ function ScorecardsPage() {
   const recomputeFn = useServerFn(recomputeScorecards);
 
   const access = useQuery(scorecardAccessQueryOptions(accessFn));
-  const list = useQuery(
-    scorecardListQueryOptions(listFn, { periodStart, periodEnd }),
-  );
+  const list = useQuery(scorecardListQueryOptions(listFn, { periodStart, periodEnd }));
   const qc = useQueryClient();
 
   const recompute = useMutation({
-    mutationFn: () =>
-      recomputeFn({ data: { periodStart, periodEnd, projectId: null } }),
+    mutationFn: () => recomputeFn({ data: { periodStart, periodEnd, projectId: null } }),
     onSuccess: (res) => {
       toast.success(`Recomputed ${res.upsertedCount} vendor${res.upsertedCount === 1 ? "" : "s"}`);
       qc.invalidateQueries({ queryKey: ["scorecards"] });
@@ -113,8 +110,7 @@ function ScorecardsPage() {
   const rows = useMemo(
     () =>
       [...(list.data?.current ?? [])].sort(
-        (a, b) =>
-          (a.on_time_delivery_pct ?? -1) - (b.on_time_delivery_pct ?? -1),
+        (a, b) => (a.on_time_delivery_pct ?? -1) - (b.on_time_delivery_pct ?? -1),
       ),
     [list.data],
   );
@@ -217,8 +213,14 @@ function ScorecardsPage() {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Avg on-time delivery" value={kpis.avgOtd == null ? "—" : `${kpis.avgOtd}%`} />
-        <KpiCard label="Avg quality score" value={kpis.avgQuality == null ? "—" : `${kpis.avgQuality}`} />
+        <KpiCard
+          label="Avg on-time delivery"
+          value={kpis.avgOtd == null ? "—" : `${kpis.avgOtd}%`}
+        />
+        <KpiCard
+          label="Avg quality score"
+          value={kpis.avgQuality == null ? "—" : `${kpis.avgQuality}`}
+        />
         <KpiCard
           label="Vendors below 80% OTD"
           value={`${kpis.belowThreshold} / ${kpis.totalVendors}`}
@@ -267,11 +269,7 @@ function ScorecardsPage() {
                 {rows.map((r) => {
                   const prior = priorMap.get(`${r.vendor_id}::${r.project_id ?? ""}`);
                   return (
-                    <TableRow
-                      key={r.id}
-                      className="cursor-pointer"
-                      onClick={() => setSelected(r)}
-                    >
+                    <TableRow key={r.id} className="cursor-pointer" onClick={() => setSelected(r)}>
                       <TableCell className="font-medium">{r.vendor_name ?? "—"}</TableCell>
                       <TableCell className="text-right">
                         {r.on_time_delivery_pct == null ? "—" : `${r.on_time_delivery_pct}%`}
@@ -333,12 +331,7 @@ function KpiCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p
-          className={cn(
-            "text-2xl font-semibold",
-            tone === "destructive" && "text-destructive",
-          )}
-        >
+        <p className={cn("text-2xl font-semibold", tone === "destructive" && "text-destructive")}>
           {value}
         </p>
       </CardContent>

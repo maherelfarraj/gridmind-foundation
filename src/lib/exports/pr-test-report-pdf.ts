@@ -41,10 +41,7 @@ function sanitize(v: unknown): string {
     .replace(/&#39;/g, "'");
 }
 
-function hexToRgb(
-  hex: string | null | undefined,
-  fallback: string,
-): [number, number, number] {
+function hexToRgb(hex: string | null | undefined, fallback: string): [number, number, number] {
   const s = (hex ?? "").trim();
   const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
   const raw = m ? m[1] : fallback.slice(1);
@@ -85,9 +82,7 @@ export function buildPrTestReportPdfBytes(input: PrReportInput): Uint8Array {
   doc.rect(0, 0, pageW, 96, "F");
   if (input.branding.logoDataUrl) {
     try {
-      const fmt = input.branding.logoDataUrl.startsWith("data:image/jpeg")
-        ? "JPEG"
-        : "PNG";
+      const fmt = input.branding.logoDataUrl.startsWith("data:image/jpeg") ? "JPEG" : "PNG";
       doc.addImage(input.branding.logoDataUrl, fmt, margin, 22, 52, 52);
     } catch {
       /* ignore malformed logo */
@@ -100,17 +95,9 @@ export function buildPrTestReportPdfBytes(input: PrReportInput): Uint8Array {
   doc.text(sanitize(input.company.legalName || input.company.name), xText, 44);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text(
-    sanitize(`Performance Ratio Test Report — ${input.project.name}`),
-    xText,
-    64,
-  );
+  doc.text(sanitize(`Performance Ratio Test Report — ${input.project.name}`), xText, 64);
   doc.setFontSize(9);
-  doc.text(
-    sanitize(`${fmtDate(input.periodStart)} – ${fmtDate(input.periodEnd)}`),
-    xText,
-    80,
-  );
+  doc.text(sanitize(`${fmtDate(input.periodStart)} – ${fmtDate(input.periodEnd)}`), xText, 80);
 
   if (input.project.code) {
     doc.setFontSize(9);
@@ -126,11 +113,7 @@ export function buildPrTestReportPdfBytes(input: PrReportInput): Uint8Array {
   const kpis: Array<[string, string, "accent" | "muted" | "delta"]> = [
     ["Measured PR", `${fmtNum(input.measuredPrPct, 2)}%`, "accent"],
     ["Contract PR", `${fmtNum(input.contractPrPct, 2)}%`, "muted"],
-    [
-      "Variance",
-      `${input.variancePct >= 0 ? "+" : ""}${fmtNum(input.variancePct, 2)}%`,
-      "delta",
-    ],
+    ["Variance", `${input.variancePct >= 0 ? "+" : ""}${fmtNum(input.variancePct, 2)}%`, "delta"],
   ];
   const boxW = (pageW - margin * 2 - 12) / 3;
   kpis.forEach(([label, value, tone], i) => {

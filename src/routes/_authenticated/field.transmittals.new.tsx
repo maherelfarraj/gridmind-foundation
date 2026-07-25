@@ -36,8 +36,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/field/transmittals/new")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "New transmittal — GridMind EPC" },
@@ -319,9 +318,7 @@ function NewTransmittalPage() {
           <Link to="/field/transmittals">Cancel</Link>
         </Button>
         <Button disabled={!canSubmit} onClick={() => createMut.mutate()}>
-          {createMut.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
+          {createMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Create transmittal
         </Button>
       </div>

@@ -5,10 +5,7 @@ import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  DrawingDetail,
-  DrawingDetailSkeleton,
-} from "@/components/engineering/drawing-detail";
+import { DrawingDetail, DrawingDetailSkeleton } from "@/components/engineering/drawing-detail";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/drawings/$drawingId",

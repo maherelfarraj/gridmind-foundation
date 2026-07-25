@@ -5,14 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  Lock,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Lock, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -54,10 +47,7 @@ import {
   type CertParty,
   type CertificateType,
 } from "@/lib/commissioning-certificates.rules";
-import {
-  buildCertificatePdfBytes,
-  type SignatureImage,
-} from "@/lib/exports/certificate-pdf";
+import { buildCertificatePdfBytes, type SignatureImage } from "@/lib/exports/certificate-pdf";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/commissioning/certificates",
@@ -85,14 +75,9 @@ export const Route = createFileRoute(
 
 const CARD_TYPES: CertificateType[] = ["mechanical_completion", "cod"];
 
-async function fetchImageDataUrl(
-  path: string,
-  bucket: string,
-): Promise<string | null> {
+async function fetchImageDataUrl(path: string, bucket: string): Promise<string | null> {
   try {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, 60 * 5);
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 5);
     if (error || !data?.signedUrl) return null;
     const res = await fetch(data.signedUrl);
     if (!res.ok) return null;
@@ -145,16 +130,12 @@ function CertificatesPage() {
             Certificates
           </h2>
           <p className="text-sm text-muted-foreground">
-            Mechanical Completion and Commercial Operation Date, with signed
-            evidence.
+            Mechanical Completion and Commercial Operation Date, with signed evidence.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
               Back to tests
             </Link>
@@ -165,11 +146,7 @@ function CertificatesPage() {
             onClick={() => query.refetch()}
             disabled={query.isFetching}
           >
-            <RefreshCw
-              size={14}
-              aria-hidden
-              className={cn(query.isFetching && "animate-spin")}
-            />
+            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
             Refresh
           </Button>
         </div>
@@ -184,12 +161,7 @@ function CertificatesPage() {
       ) : query.error ? (
         <Card className="p-6 text-center">
           <p className="text-sm text-destructive">Failed to load certificates.</p>
-          <Button
-            className="mt-3"
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-          >
+          <Button className="mt-3" variant="outline" size="sm" onClick={() => query.refetch()}>
             Retry
           </Button>
         </Card>
@@ -213,12 +185,8 @@ function CertificatesPage() {
             <Badge variant="outline" className="mx-auto">
               Coming in P-099
             </Badge>
-            <p className="text-sm font-medium text-foreground">
-              Care, Custody &amp; Control
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Handover transfer certificate.
-            </p>
+            <p className="text-sm font-medium text-foreground">Care, Custody &amp; Control</p>
+            <p className="text-xs text-muted-foreground">Handover transfer certificate.</p>
           </Card>
         </div>
       )}
@@ -305,14 +273,8 @@ function CertificateCard({
 
       {!row ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 py-6 text-center">
-          <FileText
-            size={28}
-            aria-hidden
-            className="text-muted-foreground"
-          />
-          <p className="text-sm text-muted-foreground">
-            No certificate issued yet.
-          </p>
+          <FileText size={28} aria-hidden className="text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">No certificate issued yet.</p>
           {canIssue ? (
             <Button size="sm" onClick={onIssue}>
               Issue {type === "cod" ? "COD" : "MC"}
@@ -323,19 +285,13 @@ function CertificateCard({
         <>
           <dl className="grid grid-cols-2 gap-y-2 text-xs">
             <dt className="text-muted-foreground">Number</dt>
-            <dd className="font-medium text-foreground">
-              {row.certificate_number}
-            </dd>
+            <dd className="font-medium text-foreground">{row.certificate_number}</dd>
             <dt className="text-muted-foreground">Effective date</dt>
-            <dd className="font-medium text-foreground">
-              {row.effective_date ?? "—"}
-            </dd>
+            <dd className="font-medium text-foreground">{row.effective_date ?? "—"}</dd>
             {type === "cod" && row.pr_at_cod != null ? (
               <>
                 <dt className="text-muted-foreground">PR at COD</dt>
-                <dd className="font-medium text-foreground">
-                  {Number(row.pr_at_cod).toFixed(2)}%
-                </dd>
+                <dd className="font-medium text-foreground">{Number(row.pr_at_cod).toFixed(2)}%</dd>
               </>
             ) : null}
           </dl>
@@ -364,18 +320,12 @@ function CertificateCard({
                       ) : (
                         <span className="inline-block h-3 w-3 rounded-full border border-border" />
                       )}
-                      <span className="font-medium text-foreground">
-                        {CERT_PARTY_LABELS[p]}
-                      </span>
+                      <span className="font-medium text-foreground">{CERT_PARTY_LABELS[p]}</span>
                     </span>
                     {s ? (
                       <span className="text-muted-foreground">{s.name}</span>
                     ) : canSign && row.status !== "signed" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onSign(p)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => onSign(p)}>
                         Sign
                       </Button>
                     ) : null}
@@ -403,9 +353,7 @@ function CertificateCard({
 function SignedPdfLink({ path }: { path: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const load = async () => {
-    const { data } = await supabase.storage
-      .from("closeout")
-      .createSignedUrl(path, 60 * 5);
+    const { data } = await supabase.storage.from("closeout").createSignedUrl(path, 60 * 5);
     if (data?.signedUrl) setUrl(data.signedUrl);
   };
   return (
@@ -456,8 +404,7 @@ function IssueDialog({
   onOpenChange: (open: boolean) => void;
   onDone: () => void;
 }) {
-  const suggested =
-    type && board ? board.suggestedNumbers[type] : "";
+  const suggested = type && board ? board.suggestedNumbers[type] : "";
   const form = useForm<z.infer<typeof issueSchema>>({
     resolver: zodResolver(issueSchema),
     values: {
@@ -494,9 +441,7 @@ function IssueDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Issue {type ? CERT_TYPE_LABELS[type] : "Certificate"}
-          </DialogTitle>
+          <DialogTitle>Issue {type ? CERT_TYPE_LABELS[type] : "Certificate"}</DialogTitle>
           <DialogDescription>
             Certificate becomes active once all required parties sign.
           </DialogDescription>
@@ -516,11 +461,7 @@ function IssueDialog({
           </div>
           <div>
             <Label htmlFor="cert-date">Effective date</Label>
-            <Input
-              id="cert-date"
-              type="date"
-              {...form.register("effectiveDate")}
-            />
+            <Input id="cert-date" type="date" {...form.register("effectiveDate")} />
           </div>
           <div>
             <Label htmlFor="cert-scope">Scope notes</Label>
@@ -532,11 +473,7 @@ function IssueDialog({
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
@@ -643,9 +580,7 @@ function SignDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            Sign as {state ? CERT_PARTY_LABELS[state.party] : "party"}
-          </DialogTitle>
+          <DialogTitle>Sign as {state ? CERT_PARTY_LABELS[state.party] : "party"}</DialogTitle>
           <DialogDescription>
             {state
               ? `${state.cert.certificate_number} — ${CERT_TYPE_LABELS[state.cert.certificate_type]}`
@@ -684,8 +619,8 @@ function SignDialog({
           <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
             <AlertCircle size={12} aria-hidden className="mt-0.5" />
             <span>
-              COD requires zero open category A punch items and at least one
-              passing performance ratio test before signing completes.
+              COD requires zero open category A punch items and at least one passing performance
+              ratio test before signing completes.
             </span>
           </div>
         ) : null}
@@ -697,10 +632,7 @@ function SignDialog({
           <Button
             onClick={submit}
             disabled={
-              busy ||
-              !hasSig ||
-              signerName.trim().length < 2 ||
-              signerTitle.trim().length < 1
+              busy || !hasSig || signerName.trim().length < 2 || signerTitle.trim().length < 1
             }
           >
             Record signature

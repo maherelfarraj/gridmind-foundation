@@ -25,16 +25,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
-import {
-  getRfqWriteAccess,
-  listRfqs,
-  type RfqRow,
-} from "@/lib/rfq.functions";
+import { getRfqWriteAccess, listRfqs, type RfqRow } from "@/lib/rfq.functions";
 import { RFQ_STATUSES, type RfqStatus } from "@/lib/rfq-rules";
-import {
-  rfqWriteAccessQueryOptions,
-  rfqsListQueryOptions,
-} from "@/lib/rfq-query";
+import { rfqWriteAccessQueryOptions, rfqsListQueryOptions } from "@/lib/rfq-query";
 
 export const Route = createFileRoute("/_authenticated/procurement/rfqs/")({
   head: () => ({
@@ -224,9 +217,7 @@ function RfqsIndex() {
                   <TableCell className="text-sm text-muted-foreground">
                     {r.due_date ? format(new Date(r.due_date), "PP") : "—"}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {r.currency_code}
-                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{r.currency_code}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

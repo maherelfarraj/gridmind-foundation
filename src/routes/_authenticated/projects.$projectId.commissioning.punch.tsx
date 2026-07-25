@@ -42,22 +42,18 @@ import {
   type SignoffParty,
 } from "@/lib/commissioning-punch.rules";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/commissioning/punch",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning/punch")({
   head: () => ({
     meta: [
       { title: "Punch closure — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Category A/B/C punch closure workflow with multi-party signoffs before COD.",
+        content: "Category A/B/C punch closure workflow with multi-party signoffs before COD.",
       },
       { property: "og:title", content: "Punch closure — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Category A/B/C punch closure workflow with multi-party signoffs before COD.",
+        content: "Category A/B/C punch closure workflow with multi-party signoffs before COD.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -83,9 +79,7 @@ function categoryTint(cat: Category): string {
 function PunchClosureBoard() {
   const { projectId } = Route.useParams();
   const qc = useQueryClient();
-  const [dialogItem, setDialogItem] = useState<CommissioningPunchRow | null>(
-    null,
-  );
+  const [dialogItem, setDialogItem] = useState<CommissioningPunchRow | null>(null);
 
   const query = useQuery({
     queryKey: ["commissioning-punch", projectId] as const,
@@ -97,10 +91,7 @@ function PunchClosureBoard() {
   const canClose = board?.permissions.canClose ?? false;
 
   const stats = useMemo(() => {
-    const s: Record<
-      Category,
-      { open: number; closed: number; total: number }
-    > = {
+    const s: Record<Category, { open: number; closed: number; total: number }> = {
       A: { open: 0, closed: 0, total: 0 },
       B: { open: 0, closed: 0, total: 0 },
       C: { open: 0, closed: 0, total: 0 },
@@ -136,10 +127,7 @@ function PunchClosureBoard() {
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
               Back to tests
             </Link>
@@ -150,11 +138,7 @@ function PunchClosureBoard() {
             onClick={() => query.refetch()}
             disabled={query.isFetching}
           >
-            <RefreshCw
-              size={14}
-              aria-hidden
-              className={cn(query.isFetching && "animate-spin")}
-            />
+            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
             Refresh
           </Button>
         </div>
@@ -176,9 +160,7 @@ function PunchClosureBoard() {
       {/* KPI header */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Closure %
-          </p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Closure %</p>
           <p className="mt-1 font-display text-2xl font-semibold text-foreground">
             {stats.closurePct}%
           </p>
@@ -189,9 +171,7 @@ function PunchClosureBoard() {
         {CATEGORIES.map((c) => (
           <Card key={c} className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Category {c}
-              </p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Category {c}</p>
               <Badge variant="outline" className={cn("text-xs", categoryTint(c))}>
                 {stats.per[c].open} open
               </Badge>
@@ -212,15 +192,10 @@ function PunchClosureBoard() {
         <div className="grid gap-2 text-sm md:grid-cols-3">
           {CATEGORIES.map((c) => (
             <div key={c} className="flex items-start gap-2">
-              <Badge
-                variant="outline"
-                className={cn("shrink-0", categoryTint(c))}
-              >
+              <Badge variant="outline" className={cn("shrink-0", categoryTint(c))}>
                 {PUNCH_CATEGORY_SEMANTICS[c].label}
               </Badge>
-              <span className="text-muted-foreground">
-                {PUNCH_CATEGORY_SEMANTICS[c].requires}
-              </span>
+              <span className="text-muted-foreground">{PUNCH_CATEGORY_SEMANTICS[c].requires}</span>
             </div>
           ))}
         </div>
@@ -234,25 +209,14 @@ function PunchClosureBoard() {
         </div>
       ) : query.error ? (
         <Card className="p-6 text-center">
-          <p className="text-sm text-destructive">
-            Failed to load punch items.
-          </p>
-          <Button
-            className="mt-3"
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-          >
+          <p className="text-sm text-destructive">Failed to load punch items.</p>
+          <Button className="mt-3" variant="outline" size="sm" onClick={() => query.refetch()}>
             Retry
           </Button>
         </Card>
       ) : items.length === 0 ? (
         <Card className="p-10 text-center">
-          <ShieldCheck
-            size={28}
-            aria-hidden
-            className="mx-auto text-muted-foreground"
-          />
+          <ShieldCheck size={28} aria-hidden className="mx-auto text-muted-foreground" />
           <p className="mt-3 text-sm font-medium text-foreground">
             No open punch items — ready for COD review
           </p>
@@ -310,18 +274,11 @@ function PunchLane({
         </span>
       </div>
       {items.length === 0 ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">
-          No items in this lane.
-        </p>
+        <p className="py-6 text-center text-xs text-muted-foreground">No items in this lane.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((it) => (
-            <PunchLaneCard
-              key={it.id}
-              item={it}
-              canClose={canClose}
-              onClose={onClose}
-            />
+            <PunchLaneCard key={it.id} item={it} canClose={canClose} onClose={onClose} />
           ))}
         </ul>
       )}
@@ -350,9 +307,7 @@ function PunchLaneCard({
           <p className="truncate text-sm font-medium text-foreground">
             {item.punch_number} — {item.area}
           </p>
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-            {item.description}
-          </p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
         </div>
         <Badge
           variant="outline"
@@ -390,7 +345,8 @@ function PunchLaneCard({
       {!isClosed && canClose ? (
         <div className="mt-3 flex items-center justify-between">
           <p className="text-[11px] text-muted-foreground">
-            Missing: {missing.length === 0 ? "—" : missing.map((p) => SIGNOFF_PARTY_LABELS[p]).join(", ")}
+            Missing:{" "}
+            {missing.length === 0 ? "—" : missing.map((p) => SIGNOFF_PARTY_LABELS[p]).join(", ")}
           </p>
           <Button size="sm" variant="outline" onClick={() => onClose(item)}>
             Close
@@ -459,11 +415,9 @@ function ClosePunchDialog({
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
       const path = `${companyId}/punch-evidence/${projectId}/${item.id}/${id}.${ext}`;
-      const { error } = await supabase.storage
-        .from("closeout")
-        .upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-        });
+      const { error } = await supabase.storage.from("closeout").upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+      });
       if (error) throw error;
       setEvidencePath(path);
       toast.success("Evidence attached");
@@ -495,10 +449,7 @@ function ClosePunchDialog({
         <div className="flex flex-col gap-3">
           <div>
             <Label htmlFor="party">Party</Label>
-            <Select
-              value={party}
-              onValueChange={(v) => setParty(v as SignoffParty)}
-            >
+            <Select value={party} onValueChange={(v) => setParty(v as SignoffParty)}>
               <SelectTrigger id="party">
                 <SelectValue />
               </SelectTrigger>
@@ -545,13 +496,9 @@ function ClosePunchDialog({
           </Button>
           <Button
             onClick={() => mutation.mutate()}
-            disabled={
-              mutation.isPending || uploading || signerName.trim().length < 2
-            }
+            disabled={mutation.isPending || uploading || signerName.trim().length < 2}
           >
-            {mutation.isPending ? (
-              <Loader2 size={14} aria-hidden className="animate-spin" />
-            ) : null}
+            {mutation.isPending ? <Loader2 size={14} aria-hidden className="animate-spin" /> : null}
             Record signoff
           </Button>
         </DialogFooter>

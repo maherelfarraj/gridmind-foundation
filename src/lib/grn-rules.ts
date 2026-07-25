@@ -5,12 +5,7 @@
 import { z } from "zod";
 import type { PoLine, PoStatus } from "@/lib/po-rules";
 
-export const GRN_STATUSES = [
-  "draft",
-  "confirmed",
-  "has_defects",
-  "closed",
-] as const;
+export const GRN_STATUSES = ["draft", "confirmed", "has_defects", "closed"] as const;
 export type GrnStatus = (typeof GRN_STATUSES)[number];
 
 export const GRN_CONDITIONS = ["ok", "damaged", "partial"] as const;
@@ -31,9 +26,7 @@ export function parseGrnNumber(s: string): number | null {
 }
 
 export function nextGrnNumber(existing: string[]): string {
-  const nums = existing
-    .map(parseGrnNumber)
-    .filter((n): n is number => n != null);
+  const nums = existing.map(parseGrnNumber).filter((n): n is number => n != null);
   const next = (nums.length === 0 ? 0 : Math.max(...nums)) + 1;
   return formatGrnNumber(next);
 }
@@ -70,10 +63,7 @@ export const grnLineSchema = z.object({
   uom: z.string().trim().max(32),
   qty_ordered: z.number().min(0),
   qty_received: z.number().min(0),
-  lot_ids: z
-    .array(z.string().trim().min(1).max(120))
-    .max(200)
-    .default([]),
+  lot_ids: z.array(z.string().trim().min(1).max(120)).max(200).default([]),
   condition: z.enum(GRN_CONDITIONS),
   defect_notes: z.string().trim().max(2000).nullable().optional(),
 });
@@ -90,13 +80,8 @@ export type GrnDraftPayload = z.infer<typeof grnDraftPayload>;
 // ---------------------------------------------------------------------------
 /** Validate that no line receives more than what is still due. Returns list of
  *  offending line numbers (empty when clean). */
-export function overReceivedLines(
-  proposed: GrnLine[],
-  receivable: ReceivableLine[],
-): number[] {
-  const remainingByNo = new Map(
-    receivable.map((r) => [r.po_line_no, r.qty_remaining]),
-  );
+export function overReceivedLines(proposed: GrnLine[], receivable: ReceivableLine[]): number[] {
+  const remainingByNo = new Map(receivable.map((r) => [r.po_line_no, r.qty_remaining]));
   const bad: number[] = [];
   for (const l of proposed) {
     const remaining = remainingByNo.get(l.po_line_no) ?? 0;
@@ -120,9 +105,7 @@ export function deriveGrnStatus(lines: GrnLine[]): GrnStatus {
 
 export function countDefects(lines: GrnLine[]): number {
   return lines.filter(
-    (l) =>
-      l.condition !== "ok" ||
-      (l.defect_notes && l.defect_notes.trim().length > 0),
+    (l) => l.condition !== "ok" || (l.defect_notes && l.defect_notes.trim().length > 0),
   ).length;
 }
 
@@ -142,10 +125,7 @@ export function computePoStatusAfterGrn(
       (receivedByLine.get(l.po_line_no) ?? 0) + Number(l.qty_received || 0),
     );
   }
-  const totalReceived = Array.from(receivedByLine.values()).reduce(
-    (a, b) => a + b,
-    0,
-  );
+  const totalReceived = Array.from(receivedByLine.values()).reduce((a, b) => a + b, 0);
   if (totalReceived <= 0) return null;
   const allFull = poLines.every((pl) => {
     const got = receivedByLine.get(pl.line_no) ?? 0;
@@ -155,11 +135,7 @@ export function computePoStatusAfterGrn(
 }
 
 /** Enforce that a storage path is scoped to `{company_id}/grn/{grn_id}/…`. */
-export function assertGrnPhotoPath(
-  path: string,
-  companyId: string,
-  grnId: string,
-): void {
+export function assertGrnPhotoPath(path: string, companyId: string, grnId: string): void {
   const prefix = `${companyId}/grn/${grnId}/`;
   if (!path.startsWith(prefix)) {
     throw new Error(`invalid_photo_path:${path}`);

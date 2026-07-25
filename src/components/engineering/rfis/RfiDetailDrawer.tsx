@@ -61,9 +61,7 @@ function Body({ projectId, rfiId }: { projectId: string; rfiId: string }) {
   const rfiFn = useServerFn(getRfi);
   const roleFn = useServerFn(getMyRfiRole);
   const { data: rfi } = useSuspenseQuery(rfiDetailQueryOptions(rfiFn, rfiId));
-  const { data: role } = useSuspenseQuery(
-    rfiRoleQueryOptions(roleFn, projectId),
-  );
+  const { data: role } = useSuspenseQuery(rfiRoleQueryOptions(roleFn, projectId));
   const [answer, setAnswer] = useState("");
   const answerMut = useAnswerRfi(projectId, rfiId);
   const closeMut = useCloseRfi(projectId, rfiId);
@@ -95,20 +93,11 @@ function Body({ projectId, rfiId }: { projectId: string; rfiId: string }) {
 
       <div className="grid grid-cols-2 gap-3 text-xs">
         <Meta label="Discipline" value={rfi.discipline.replace("_", " ")} />
-        <Meta
-          label="Due"
-          value={rfi.due_date ?? "—"}
-          danger={overdue}
-        />
+        <Meta label="Due" value={rfi.due_date ?? "—"} danger={overdue} />
         <Meta label="Raised by" value={rfi.raised_by_name ?? "—"} />
         <Meta label="Routed to" value={rfi.routed_to_name ?? "—"} />
-        {rfi.drawing_number && (
-          <Meta label="Drawing" value={rfi.drawing_number} />
-        )}
-        <Meta
-          label="Created"
-          value={format(new Date(rfi.created_at), "PP")}
-        />
+        {rfi.drawing_number && <Meta label="Drawing" value={rfi.drawing_number} />}
+        <Meta label="Created" value={format(new Date(rfi.created_at), "PP")} />
       </div>
 
       <Card className="p-3">
@@ -121,11 +110,8 @@ function Body({ projectId, rfiId }: { projectId: string; rfiId: string }) {
       {rfi.answer && (
         <Card className="p-3">
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Answer{" "}
-            {rfi.answered_by_name ? `— ${rfi.answered_by_name}` : ""}
-            {rfi.answered_at
-              ? `, ${format(new Date(rfi.answered_at), "PPp")}`
-              : ""}
+            Answer {rfi.answered_by_name ? `— ${rfi.answered_by_name}` : ""}
+            {rfi.answered_at ? `, ${format(new Date(rfi.answered_at), "PPp")}` : ""}
           </p>
           <p className="whitespace-pre-wrap text-sm">{rfi.answer}</p>
         </Card>
@@ -176,21 +162,11 @@ function Body({ projectId, rfiId }: { projectId: string; rfiId: string }) {
   );
 }
 
-function Meta({
-  label,
-  value,
-  danger,
-}: {
-  label: string;
-  value: string;
-  danger?: boolean;
-}) {
+function Meta({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
     <div>
       <p className="text-muted-foreground">{label}</p>
-      <p className={danger ? "text-destructive" : "text-foreground"}>
-        {value}
-      </p>
+      <p className={danger ? "text-destructive" : "text-foreground"}>{value}</p>
     </div>
   );
 }

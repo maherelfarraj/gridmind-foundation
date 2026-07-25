@@ -3,13 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import {
-  AlertTriangle,
-  Download,
-  FolderPlus,
-  Plus,
-  Search,
-} from "lucide-react";
+import { AlertTriangle, Download, FolderPlus, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -29,11 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  exportProjectsCsv,
-  listProjects,
-  type ProjectCardRow,
-} from "@/lib/projects.functions";
+import { exportProjectsCsv, listProjects, type ProjectCardRow } from "@/lib/projects.functions";
 import {
   DEPARTMENT_LABELS,
   PHASE_LABELS,
@@ -102,9 +92,7 @@ function ProjectsPage() {
   const archetype = ARCHETYPE_KEYS.includes(search.archetype as ProjectArchetype)
     ? (search.archetype as ProjectArchetype)
     : undefined;
-  const department = (PROJECT_DEPARTMENTS as readonly string[]).includes(
-    search.department,
-  )
+  const department = (PROJECT_DEPARTMENTS as readonly string[]).includes(search.department)
     ? (search.department as ProjectDepartment)
     : undefined;
 
@@ -120,12 +108,7 @@ function ProjectsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQ]);
 
-  const filtersActive = !!(
-    search.q ||
-    phase ||
-    archetype ||
-    department
-  );
+  const filtersActive = !!(search.q || phase || archetype || department);
 
   const listFn = useServerFn(listProjects);
   const exportFn = useServerFn(exportProjectsCsv);
@@ -275,11 +258,7 @@ function ProjectsPage() {
 
       {query.isError ? (
         <ErrorPanel
-          message={
-            query.error instanceof Error
-              ? query.error.message
-              : "Failed to load projects"
-          }
+          message={query.error instanceof Error ? query.error.message : "Failed to load projects"}
           onRetry={() => query.refetch()}
         />
       ) : query.isLoading ? (
@@ -367,16 +346,11 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
   const archetypeLabel = ARCHETYPE_LABEL[row.archetype] ?? row.archetype;
   const capacity =
     row.capacity_mw != null
-      ? `${row.capacity_mw} MW${
-          row.capacity_mwh != null ? ` · ${row.capacity_mwh} MWh` : ""
-        }`
+      ? `${row.capacity_mw} MW${row.capacity_mwh != null ? ` · ${row.capacity_mwh} MWh` : ""}`
       : "—";
-  const codDisplay = row.target_cod
-    ? format(parseISO(row.target_cod), "PP")
-    : "No COD set";
+  const codDisplay = row.target_cod ? format(parseISO(row.target_cod), "PP") : "No COD set";
   const admin = row.project_admin;
-  const adminName =
-    admin?.full_name?.trim() || admin?.email || "Unassigned";
+  const adminName = admin?.full_name?.trim() || admin?.email || "Unassigned";
   const initials = (admin?.full_name || admin?.email || "?")
     .split(/\s+/)
     .map((w) => w[0])
@@ -393,9 +367,7 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
       <Card className="flex h-full flex-col gap-4 border-border bg-card p-5 transition-colors hover:border-primary/50">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold text-foreground">
-              {row.name}
-            </h3>
+            <h3 className="truncate text-base font-semibold text-foreground">{row.name}</h3>
             <p className="text-xs text-muted-foreground">{row.code}</p>
           </div>
           <PhaseBadge phase={row.phase} />
@@ -411,14 +383,10 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
         <div className="mt-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <Avatar className="h-7 w-7">
-              {admin?.avatar_url ? (
-                <AvatarImage src={admin.avatar_url} alt={adminName} />
-              ) : null}
+              {admin?.avatar_url ? <AvatarImage src={admin.avatar_url} alt={adminName} /> : null}
               <AvatarFallback className="text-xs">{initials}</AvatarFallback>
             </Avatar>
-            <span className="truncate text-xs text-foreground">
-              {adminName}
-            </span>
+            <span className="truncate text-xs text-foreground">{adminName}</span>
           </div>
           <span className="text-xs text-muted-foreground">{codDisplay}</span>
         </div>
@@ -461,9 +429,7 @@ function EmptyState({ filtersActive }: { filtersActive: boolean }) {
       </div>
       {filtersActive ? (
         <>
-          <p className="text-sm font-medium text-foreground">
-            No projects match your filters
-          </p>
+          <p className="text-sm font-medium text-foreground">No projects match your filters</p>
           <p className="text-xs text-muted-foreground">
             Adjust or clear the filters above to see more results.
           </p>
@@ -485,13 +451,7 @@ function EmptyState({ filtersActive }: { filtersActive: boolean }) {
   );
 }
 
-function ErrorPanel({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
+function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <Card className="flex flex-col items-start gap-3 border-destructive/40 bg-destructive/10 p-6">
       <div className="flex items-center gap-2 text-destructive">

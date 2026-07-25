@@ -7,10 +7,7 @@ import {
   listPpaTerms,
 } from "@/lib/ppa.functions";
 import { listLcoeScenarios } from "@/lib/lcoe.functions";
-import {
-  listCompanyMembers,
-  listDdItems,
-} from "@/lib/lender-dd.functions";
+import { listCompanyMembers, listDdItems } from "@/lib/lender-dd.functions";
 import { listBankFacilities } from "@/lib/bank-facilities.functions";
 
 export { projectFinanceErrorMessage } from "@/lib/project-finance-shared";
@@ -26,8 +23,7 @@ export function ppaListQueryOptions(projectId: string) {
 export function ppaContractsQueryOptions(projectId: string) {
   return queryOptions({
     queryKey: ["pf", "ppa-contracts", projectId],
-    queryFn: () =>
-      listPpaContractCandidates({ data: { project_id: projectId } }),
+    queryFn: () => listPpaContractCandidates({ data: { project_id: projectId } }),
     staleTime: 30_000,
   });
 }
@@ -59,8 +55,7 @@ export function ddMembersQueryOptions() {
 export function bankFacilitiesQueryOptions(projectId: string) {
   return queryOptions({
     queryKey: ["pf", "facilities", projectId],
-    queryFn: () =>
-      listBankFacilities({ data: { project_id: projectId } }),
+    queryFn: () => listBankFacilities({ data: { project_id: projectId } }),
     staleTime: 15_000,
   });
 }

@@ -15,22 +15,11 @@ import {
   type ModuleKey,
 } from "@/lib/permissions";
 import { MODULE_REGISTRY, MODULE_KEYS } from "@/lib/modules";
-import {
-  GRANTABLE_ROLES,
-  ROLE_GROUPS,
-  humanizeRole,
-  type GrantableRole,
-} from "@/lib/role-groups";
+import { GRANTABLE_ROLES, ROLE_GROUPS, humanizeRole, type GrantableRole } from "@/lib/role-groups";
 import { NAV_SECTIONS } from "@/lib/nav-map";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -57,8 +46,7 @@ export const Route = createFileRoute("/_authenticated/settings/permissions-simul
       { title: "Permissions simulator · GridMind EPC" },
       {
         name: "description",
-        content:
-          "Preview which modules, routes, and actions a role can access on this tenant.",
+        content: "Preview which modules, routes, and actions a role can access on this tenant.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -174,9 +162,7 @@ function PermissionsSimulatorPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Compare with
-                </label>
+                <label className="text-xs font-medium text-muted-foreground">Compare with</label>
                 {compareOn ? (
                   <Button
                     variant="ghost"
@@ -244,9 +230,7 @@ function PermissionsSimulatorPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Couldn't load module access</CardTitle>
-                <CardDescription>
-                  {(modulesQuery.error as Error).message}
-                </CardDescription>
+                <CardDescription>{(modulesQuery.error as Error).message}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" size="sm" onClick={() => modulesQuery.refetch()}>
@@ -313,8 +297,8 @@ function VisibleModulesCard({
       <CardHeader>
         <CardTitle className="text-base">Visible modules</CardTitle>
         <CardDescription>
-          Intersection of the role's module map and this tenant's enabled modules. Modules
-          disabled by plan or override still appear, marked as{" "}
+          Intersection of the role's module map and this tenant's enabled modules. Modules disabled
+          by plan or override still appear, marked as{" "}
           <span className="text-muted-foreground">off by plan</span>.
         </CardDescription>
       </CardHeader>
@@ -358,13 +342,7 @@ function VisibleModulesCard({
   );
 }
 
-function ModuleCell({
-  roleHas,
-  tenantEnabled,
-}: {
-  roleHas: boolean;
-  tenantEnabled: boolean;
-}) {
+function ModuleCell({ roleHas, tenantEnabled }: { roleHas: boolean; tenantEnabled: boolean }) {
   if (!roleHas) {
     return (
       <span className="inline-flex items-center gap-1 text-muted-foreground">
@@ -417,9 +395,7 @@ function VisibleRoutesCard({
                 if (item.requiresSuperAdmin) return false;
                 if (item.moduleKey === "admin") {
                   return (
-                    role === "company_admin" ||
-                    role === "billing_admin" ||
-                    role === "project_admin"
+                    role === "company_admin" || role === "billing_admin" || role === "project_admin"
                   );
                 }
                 const key = item.moduleKey as ModuleKey;
@@ -429,9 +405,7 @@ function VisibleRoutesCard({
               if (items.length === 0) return null;
               return (
                 <div key={section.label}>
-                  <div className="text-xs font-medium text-muted-foreground">
-                    {section.label}
-                  </div>
+                  <div className="text-xs font-medium text-muted-foreground">{section.label}</div>
                   <ul className="mt-1 space-y-1">
                     {items.map((item) => (
                       <li key={item.url} className="flex items-center gap-2 text-sm">
@@ -467,8 +441,8 @@ function AllowedActionsCard({
       <CardHeader>
         <CardTitle className="text-base">Allowed actions</CardTitle>
         <CardDescription>
-          Per-module action matrix. Department admins get Approve/Export in their own
-          department only; external viewers are view-only.
+          Per-module action matrix. Department admins get Approve/Export in their own department
+          only; external viewers are view-only.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -512,9 +486,8 @@ function AllowedActionsCard({
                     </TableRow>
                   );
                 })}
-                {MODULE_KEYS.filter(
-                  (k) => ROLE_MODULE_MAP[role].includes(k) && enabledSet.has(k),
-                ).length === 0 && (
+                {MODULE_KEYS.filter((k) => ROLE_MODULE_MAP[role].includes(k) && enabledSet.has(k))
+                  .length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={ACTIONS.length + 1}

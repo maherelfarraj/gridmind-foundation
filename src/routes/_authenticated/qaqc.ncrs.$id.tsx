@@ -126,9 +126,7 @@ function NcrDetailPage() {
       <div className="mx-auto w-full max-w-3xl p-6">
         <Alert variant="destructive">
           <AlertTitle>Could not load NCR</AlertTitle>
-          <AlertDescription>
-            {errorMessage(detailQuery.error) || "Not found"}
-          </AlertDescription>
+          <AlertDescription>{errorMessage(detailQuery.error) || "Not found"}</AlertDescription>
         </Alert>
       </div>
     );
@@ -138,8 +136,7 @@ function NcrDetailPage() {
   const canWrite = permissions.canWrite && ncr.status !== "void" && ncr.status !== "closed";
 
   const useAsIsError =
-    disposition === "use_as_is" &&
-    (!rootCause.trim() || !correctiveAction.trim())
+    disposition === "use_as_is" && (!rootCause.trim() || !correctiveAction.trim())
       ? "Use-as-is requires both root cause and corrective action."
       : null;
 
@@ -277,17 +274,13 @@ function NcrDetailPage() {
               disabled={!canWrite}
             />
           </div>
-          {useAsIsError ? (
-            <p className="text-xs text-destructive">{useAsIsError}</p>
-          ) : null}
+          {useAsIsError ? <p className="text-xs text-destructive">{useAsIsError}</p> : null}
           <div className="flex flex-wrap justify-end gap-2">
             <Button
               disabled={!canWrite || !!useAsIsError || dispositionMut.isPending}
               onClick={() => dispositionMut.mutate()}
             >
-              {dispositionMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {dispositionMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save disposition
             </Button>
           </div>
@@ -307,13 +300,8 @@ function NcrDetailPage() {
             >
               Void
             </Button>
-            <Button
-              onClick={() => closeMut.mutate()}
-              disabled={closeMut.isPending}
-            >
-              {closeMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+            <Button onClick={() => closeMut.mutate()} disabled={closeMut.isPending}>
+              {closeMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Close NCR
             </Button>
           </CardContent>

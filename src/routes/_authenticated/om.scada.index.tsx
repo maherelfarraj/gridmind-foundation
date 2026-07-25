@@ -36,14 +36,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getScadaDashboard,
-  listOperationsPlants,
-} from "@/lib/scada-dashboard.functions";
-import {
-  plantAvailabilityBadge,
-  type DashboardPayload,
-} from "@/lib/scada-dashboard.rules";
+import { getScadaDashboard, listOperationsPlants } from "@/lib/scada-dashboard.functions";
+import { plantAvailabilityBadge, type DashboardPayload } from "@/lib/scada-dashboard.rules";
 import { cn } from "@/lib/utils";
 
 const REFRESH_MS = 30_000;
@@ -70,8 +64,7 @@ export const Route = createFileRoute("/_authenticated/om/scada/")({
     ],
   }),
   validateSearch: (raw): SearchParams => ({
-    projectId:
-      typeof raw.projectId === "string" && raw.projectId ? raw.projectId : undefined,
+    projectId: typeof raw.projectId === "string" && raw.projectId ? raw.projectId : undefined,
   }),
   component: ScadaDashboardPage,
 });
@@ -104,9 +97,7 @@ function ScadaDashboardPage() {
     <div className="space-y-6 p-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            SCADA dashboard
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">SCADA dashboard</h1>
           <p className="text-sm text-muted-foreground">
             Fleet-wide live telemetry — auto-refreshes every 30&nbsp;seconds.
           </p>
@@ -164,9 +155,7 @@ function ScadaDashboardPage() {
         </Card>
       )}
 
-      {!query.isLoading && !query.isError && query.data && (
-        <DashboardBody data={query.data} />
-      )}
+      {!query.isLoading && !query.isError && query.data && <DashboardBody data={query.data} />}
     </div>
   );
 }
@@ -221,11 +210,7 @@ function KpiTiles({ data }: { data: DashboardPayload }) {
         unit="kW"
         icon={<Zap className="h-4 w-4 text-primary" />}
       />
-      <Tile
-        label="Energy today"
-        value={formatNumber(tiles.energyTodayKwh)}
-        unit="kWh"
-      />
+      <Tile label="Energy today" value={formatNumber(tiles.energyTodayKwh)} unit="kWh" />
       <Tile
         label="Availability (30d)"
         value={tiles.availabilityPct != null ? `${tiles.availabilityPct}%` : "—"}
@@ -238,15 +223,9 @@ function KpiTiles({ data }: { data: DashboardPayload }) {
       <Tile
         label="Performance ratio"
         value={
-          tiles.performanceRatioPct != null
-            ? `${tiles.performanceRatioPct}%`
-            : "insufficient data"
+          tiles.performanceRatioPct != null ? `${tiles.performanceRatioPct}%` : "insufficient data"
         }
-        hint={
-          !data.weatherAvailable
-            ? "Add a weather station stream to compute PR"
-            : undefined
-        }
+        hint={!data.weatherAvailable ? "Add a weather station stream to compute PR" : undefined}
         muted={tiles.performanceRatioPct == null}
       />
       {tiles.activeAlarms && (
@@ -280,9 +259,7 @@ function Tile({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-normal text-muted-foreground">
-          {label}
-        </CardTitle>
+        <CardTitle className="text-sm font-normal text-muted-foreground">{label}</CardTitle>
         {icon}
       </CardHeader>
       <CardContent>
@@ -293,11 +270,7 @@ function Tile({
           )}
         >
           {value}
-          {unit && (
-            <span className="ml-1 text-sm font-normal text-muted-foreground">
-              {unit}
-            </span>
-          )}
+          {unit && <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>}
         </div>
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
@@ -452,9 +425,7 @@ function FleetTable({ data }: { data: DashboardPayload }) {
                   <TableCell>
                     <AvailabilityBadge tier={tier} pct={p.availabilityPct} />
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {p.activeAlarms}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{p.activeAlarms}</TableCell>
                   <TableCell
                     className={cn(
                       "text-muted-foreground",

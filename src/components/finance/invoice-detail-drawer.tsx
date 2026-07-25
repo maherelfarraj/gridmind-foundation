@@ -103,18 +103,11 @@ export function InvoiceDetailDrawer({
                 <div className="flex items-start gap-2">
                   <ShieldAlert className="mt-0.5 size-4 shrink-0" />
                   <div className="space-y-1">
-                    <p className="font-medium">
-                      Payment release blocked by 3-way match variance
-                    </p>
-                    <p className="text-xs">
-                      Resolve the linked match to release payment.
-                    </p>
+                    <p className="font-medium">Payment release blocked by 3-way match variance</p>
+                    <p className="text-xs">Resolve the linked match to release payment.</p>
                     {d.blocked_match_ids[0] && (
                       <Button asChild variant="link" size="sm" className="h-auto p-0 text-xs">
-                        <Link
-                          to="/procurement/matches"
-                          hash={d.blocked_match_ids[0]}
-                        >
+                        <Link to="/procurement/matches" hash={d.blocked_match_ids[0]}>
                           Open matching workbench
                           <ExternalLink className="ml-1 inline size-3" />
                         </Link>
@@ -187,9 +180,7 @@ export function InvoiceDetailDrawer({
                     </Link>
                   </li>
                 )}
-                {d.pay_app && (
-                  <li>Pay application #{d.pay_app.application_number}</li>
-                )}
+                {d.pay_app && <li>Pay application #{d.pay_app.application_number}</li>}
                 {!d.contract && !d.pay_app && (
                   <li className="text-muted-foreground">No linked records.</li>
                 )}

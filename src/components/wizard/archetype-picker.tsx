@@ -25,12 +25,7 @@ function isDisabled(
   return false;
 }
 
-export function ArchetypePicker({
-  planTier,
-  greenHydrogenEnabled,
-  value,
-  onChange,
-}: Props) {
+export function ArchetypePicker({ planTier, greenHydrogenEnabled, value, onChange }: Props) {
   return (
     <div
       role="radiogroup"
@@ -73,9 +68,7 @@ export function ArchetypePicker({
                     <div className="font-display text-base font-semibold text-foreground">
                       {entry.label}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {entry.capacityHint}
-                    </div>
+                    <div className="text-xs text-muted-foreground">{entry.capacityHint}</div>
                   </div>
                 </div>
                 {disabled ? (
@@ -90,9 +83,7 @@ export function ArchetypePicker({
                   </a>
                 ) : null}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {entry.description}
-              </p>
+              <p className="text-sm text-muted-foreground">{entry.description}</p>
             </Card>
           </button>
         );

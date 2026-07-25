@@ -8,10 +8,7 @@ export const PROJECT_CODE_REGEX = /^[A-Z0-9-]{2,12}$/;
 
 const baseObject = z.object({
   name: z.string().trim().min(3, "At least 3 characters").max(120),
-  code: z
-    .string()
-    .trim()
-    .regex(PROJECT_CODE_REGEX, "2–12 chars: A-Z, 0-9, hyphen"),
+  code: z.string().trim().regex(PROJECT_CODE_REGEX, "2–12 chars: A-Z, 0-9, hyphen"),
   capacity_mw: z.coerce.number().positive("Capacity must be > 0"),
   capacity_mwh: z.coerce.number().positive().optional(),
   site_name: z.string().trim().max(160).optional().or(z.literal("")),
@@ -27,8 +24,7 @@ const baseObject = z.object({
 
 export function makeProjectBasicsSchema(archetype: ProjectArchetype) {
   return baseObject.superRefine((v, ctx) => {
-    const needsMwh =
-      archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
+    const needsMwh = archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
     if (needsMwh && (v.capacity_mwh === undefined || v.capacity_mwh === null)) {
       ctx.addIssue({
         code: "custom",
@@ -46,10 +42,7 @@ export type ProjectBasics = z.infer<ReturnType<typeof makeProjectBasicsSchema>>;
  * words in `name`, appends `-<YYYY>`. Falls back to `PRJ-<YYYY>` when the
  * name yields nothing usable. Result always satisfies PROJECT_CODE_REGEX.
  */
-export function suggestProjectCode(
-  name: string,
-  year: number = new Date().getFullYear(),
-): string {
+export function suggestProjectCode(name: string, year: number = new Date().getFullYear()): string {
   const initials = name
     .split(/\s+/)
     .map((w) => w.replace(/[^A-Za-z0-9]/g, ""))
@@ -127,22 +120,17 @@ export const projectSelectionSchema = z.object({
     .array(budgetLineSchema)
     .min(1, "At least one budget line required")
     .refine(
-      (lines) =>
-        Math.abs(lines.reduce((s, l) => s + (l.share ?? 0), 0) - 1) < 0.005,
+      (lines) => Math.abs(lines.reduce((s, l) => s + (l.share ?? 0), 0) - 1) < 0.005,
       "Budget line shares must sum to 100%",
     ),
-  departments: z
-    .array(departmentEnum)
-    .min(1, "Pick at least one department"),
+  departments: z.array(departmentEnum).min(1, "Pick at least one department"),
 });
 export type ProjectSelection = z.infer<typeof projectSelectionSchema>;
 
 export const BLANK_SELECTION: ProjectSelection = {
   template_id: null,
   gates: [{ phase: "development", name: "Kickoff", sort_order: 1 }],
-  budget_lines: [
-    { category: "EPC", code: "TOT", label: "Total EPC", share: 1 },
-  ],
+  budget_lines: [{ category: "EPC", code: "TOT", label: "Total EPC", share: 1 }],
   departments: ["engineering"],
 };
 
@@ -180,12 +168,9 @@ export type ProjectTeam = z.infer<typeof projectTeamSchema>;
  * Full server-side payload for createProject.
  * Composes basics (archetype-aware MWh gate) + selection + team.
  */
-export function makeCreateProjectSchema(
-  archetype: import("@/lib/wizard-draft").ProjectArchetype,
-) {
+export function makeCreateProjectSchema(archetype: import("@/lib/wizard-draft").ProjectArchetype) {
   const basics = baseObject.superRefine((v, ctx) => {
-    const needsMwh =
-      archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
+    const needsMwh = archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
     if (needsMwh && (v.capacity_mwh === undefined || v.capacity_mwh === null)) {
       ctx.addIssue({
         code: "custom",
@@ -204,7 +189,4 @@ export function makeCreateProjectSchema(
     .and(projectTeamSchema);
 }
 
-export type CreateProjectInput = z.infer<
-  ReturnType<typeof makeCreateProjectSchema>
->;
-
+export type CreateProjectInput = z.infer<ReturnType<typeof makeCreateProjectSchema>>;

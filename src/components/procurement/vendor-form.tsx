@@ -24,10 +24,7 @@ import {
   INCOTERMS,
   type VendorRow,
 } from "@/lib/vendors.functions";
-import {
-  currencyCodesQueryOptions,
-  type VendorIdentityInput,
-} from "@/lib/vendors-query";
+import { currencyCodesQueryOptions, type VendorIdentityInput } from "@/lib/vendors-query";
 
 const paymentTerms = z.enum(PAYMENT_TERMS);
 const incoterms = z.enum(INCOTERMS);
@@ -145,9 +142,7 @@ export function VendorForm({
           <div className="space-y-1.5">
             <Label htmlFor="name">Vendor name *</Label>
             <Input id="name" disabled={disabled} {...form.register("name")} />
-            {err.name && (
-              <p className="text-xs text-destructive">{err.name.message}</p>
-            )}
+            {err.name && <p className="text-xs text-destructive">{err.name.message}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="legal_name">Legal name</Label>
@@ -159,17 +154,18 @@ export function VendorForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="website">Website</Label>
-            <Input id="website" placeholder="https://" disabled={disabled} {...form.register("website")} />
-            {err.website && (
-              <p className="text-xs text-destructive">{err.website.message}</p>
-            )}
+            <Input
+              id="website"
+              placeholder="https://"
+              disabled={disabled}
+              {...form.register("website")}
+            />
+            {err.website && <p className="text-xs text-destructive">{err.website.message}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" disabled={disabled} {...form.register("email")} />
-            {err.email && (
-              <p className="text-xs text-destructive">{err.email.message}</p>
-            )}
+            {err.email && <p className="text-xs text-destructive">{err.email.message}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone">Phone</Label>

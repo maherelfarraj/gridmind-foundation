@@ -45,8 +45,16 @@ import {
 
 const searchSchema = z.object({
   projectId: z.string().uuid().optional().catch(undefined),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .catch(undefined),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .catch(undefined),
 });
 
 function defaultRange() {
@@ -130,11 +138,7 @@ function DisciplineBoardPage() {
             ) : projectsQuery.isError ? (
               <div className="flex items-center gap-2 text-sm text-destructive">
                 Failed to load projects.
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => projectsQuery.refetch()}
-                >
+                <Button variant="ghost" size="sm" onClick={() => projectsQuery.refetch()}>
                   <RefreshCw size={14} aria-hidden /> Retry
                 </Button>
               </div>
@@ -143,10 +147,7 @@ function DisciplineBoardPage() {
                 No projects available for your company.
               </p>
             ) : (
-              <Select
-                value={projectId}
-                onValueChange={(v) => setSearch({ projectId: v })}
-              >
+              <Select value={projectId} onValueChange={(v) => setSearch({ projectId: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
@@ -200,15 +201,7 @@ function DisciplineBoardPage() {
   );
 }
 
-function BoardBody({
-  projectId,
-  from,
-  to,
-}: {
-  projectId: string;
-  from: string;
-  to: string;
-}) {
+function BoardBody({ projectId, from, to }: { projectId: string; from: string; to: string }) {
   const query = useQuery(disciplineBoardQueryOptions(projectId, from, to));
 
   if (query.isLoading) return <BoardSkeleton />;
@@ -216,9 +209,7 @@ function BoardBody({
     return (
       <Card className="border-destructive/40 bg-destructive/5">
         <CardContent className="flex flex-col items-start gap-3 py-6">
-          <p className="text-sm text-destructive">
-            Failed to load discipline board.
-          </p>
+          <p className="text-sm text-destructive">Failed to load discipline board.</p>
           <Button variant="outline" size="sm" onClick={() => query.refetch()}>
             <RefreshCw size={14} aria-hidden /> Retry
           </Button>
@@ -244,11 +235,7 @@ function BoardBody({
     <>
       <KpiRow kpis={data.kpis} />
       <div className="flex items-center justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => exportCsv(data.columns)}
-        >
+        <Button variant="outline" size="sm" onClick={() => exportCsv(data.columns)}>
           <Download size={14} aria-hidden /> Export CSV
         </Button>
       </div>
@@ -276,28 +263,19 @@ function KpiChip({
     tone === "success"
       ? "bg-success/10 text-success"
       : tone === "warning"
-      ? "bg-warning/10 text-warning"
-      : tone === "destructive"
-      ? "bg-destructive/10 text-destructive"
-      : "bg-muted text-muted-foreground";
+        ? "bg-warning/10 text-warning"
+        : tone === "destructive"
+          ? "bg-destructive/10 text-destructive"
+          : "bg-muted text-muted-foreground";
   return (
     <Card className="border-border bg-card">
       <CardContent className="flex items-center gap-3 py-4">
-        <span
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md",
-            toneClass,
-          )}
-        >
+        <span className={cn("flex h-9 w-9 items-center justify-center rounded-md", toneClass)}>
           <Icon size={16} aria-hidden />
         </span>
         <div className="flex flex-col">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">
-            {label}
-          </span>
-          <span className="font-display text-lg font-semibold text-foreground">
-            {value}
-          </span>
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+          <span className="font-display text-lg font-semibold text-foreground">{value}</span>
         </div>
       </CardContent>
     </Card>
@@ -356,15 +334,13 @@ function DisciplineColumn({
         <span className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary/40 text-foreground">
           <Icon size={16} aria-hidden />
         </span>
-        <CardTitle className="text-base">
-          {DISCIPLINE_LABELS[column.discipline]}
-        </CardTitle>
+        <CardTitle className="text-base">{DISCIPLINE_LABELS[column.discipline]}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {column.areas.length === 0 ? (
           <p className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground">
-            No {DISCIPLINE_LABELS[column.discipline].toLowerCase()} quantities
-            reported yet — submit a DPR.
+            No {DISCIPLINE_LABELS[column.discipline].toLowerCase()} quantities reported yet — submit
+            a DPR.
           </p>
         ) : (
           column.areas.map((a) => <AreaCard key={a.area} area={a} />)
@@ -376,14 +352,13 @@ function DisciplineColumn({
 
 function AreaCard({ area }: { area: AreaRollup }) {
   const trend = trendFor(area.rate7d, area.ratePrev7d);
-  const TrendIcon =
-    trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : ArrowRight;
+  const TrendIcon = trend === "up" ? ArrowUpRight : trend === "down" ? ArrowDownRight : ArrowRight;
   const trendClass =
     trend === "up"
       ? "text-success"
       : trend === "down"
-      ? "text-destructive"
-      : "text-muted-foreground";
+        ? "text-destructive"
+        : "text-muted-foreground";
   const uomLabel = area.uom ?? "units";
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-background/40 p-3">
@@ -482,9 +457,7 @@ function formatRate(n: number): string {
   return n.toFixed(2);
 }
 
-function exportCsv(
-  columns: { discipline: BoardDiscipline; areas: AreaRollup[] }[],
-) {
+function exportCsv(columns: { discipline: BoardDiscipline; areas: AreaRollup[] }[]) {
   const header = [
     "discipline",
     "area",

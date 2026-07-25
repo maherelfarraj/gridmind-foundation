@@ -8,10 +8,7 @@ function escape(v: unknown): string {
   return s;
 }
 
-export function buildBudgetCsv(
-  costCodes: CostCodeRow[],
-  budgets: BudgetRow[],
-): string {
+export function buildBudgetCsv(costCodes: CostCodeRow[], budgets: BudgetRow[]): string {
   const budgetByCode = new Map<string, BudgetRow>();
   for (const b of budgets) {
     const prev = budgetByCode.get(b.cost_code_id);
@@ -44,9 +41,7 @@ export function buildBudgetCsv(
       b?.current_amount ?? 0,
       b?.committed_amount ?? 0,
       b?.actual_amount ?? 0,
-      b
-        ? variance(b.current_amount, b.committed_amount, b.actual_amount)
-        : 0,
+      b ? variance(b.current_amount, b.committed_amount, b.actual_amount) : 0,
       b?.currency_code ?? "",
       c.is_active ? "yes" : "no",
     ];

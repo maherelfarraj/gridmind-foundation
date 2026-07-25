@@ -10,11 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -80,8 +76,7 @@ export function MarkupViewer({ revision, projectId }: Props) {
   const mime = (revision.mime_type ?? "").toLowerCase();
   const isPdf = mime.includes("pdf") || revision.file_name?.toLowerCase().endsWith(".pdf");
   const isImage =
-    mime.startsWith("image/") ||
-    /\.(png|jpe?g|tiff?)$/i.test(revision.file_name ?? "");
+    mime.startsWith("image/") || /\.(png|jpe?g|tiff?)$/i.test(revision.file_name ?? "");
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!roles.canWrite) return;
@@ -182,11 +177,7 @@ export function MarkupViewer({ revision, projectId }: Props) {
                         placeholder="Describe the issue…"
                       />
                       <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setPending(null)}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => setPending(null)}>
                           Cancel
                         </Button>
                         <Button
@@ -215,9 +206,7 @@ export function MarkupViewer({ revision, projectId }: Props) {
           Markups ({markups.length})
         </p>
         {markups.length === 0 ? (
-          <Card className="p-4 text-sm text-muted-foreground">
-            No markups yet.
-          </Card>
+          <Card className="p-4 text-sm text-muted-foreground">No markups yet.</Card>
         ) : (
           <ul className="flex flex-col gap-2">
             {markups.map((m, i) => (
@@ -309,9 +298,7 @@ function MarkupRow({
         <div>
           <Select
             value={markup.status}
-            onValueChange={(v) =>
-              update.mutate({ markupId: markup.id, status: v as MarkupStatus })
-            }
+            onValueChange={(v) => update.mutate({ markupId: markup.id, status: v as MarkupStatus })}
           >
             <SelectTrigger className="h-8 text-xs">
               <SelectValue />

@@ -151,10 +151,7 @@ export function PmPlanDialog({ plan, trigger }: Props) {
           <DialogTitle>{plan ? "Edit PM plan" : "Create PM plan"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            className="space-y-4"
-            onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-          >
+          <form className="space-y-4" onSubmit={form.handleSubmit((v) => mut.mutate(v))}>
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
@@ -390,12 +387,7 @@ export function PmPlanDialog({ plan, trigger }: Props) {
                       />
                       Required
                     </label>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => remove(idx)}
-                    >
+                    <Button type="button" size="icon" variant="ghost" onClick={() => remove(idx)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -2,8 +2,8 @@
 // Standard IEC nameplate kVA ratings.
 
 export const STANDARD_KVA = [
-  25, 50, 75, 100, 150, 200, 250, 315, 400, 500, 630, 800, 1000,
-  1250, 1600, 2000, 2500, 3150, 4000, 5000,
+  25, 50, 75, 100, 150, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000,
+  5000,
 ] as const;
 export type StandardKva = (typeof STANDARD_KVA)[number];
 
@@ -26,16 +26,13 @@ export interface TransformerSizingResult {
   meetsTarget: boolean;
 }
 
-export function selectTransformer(
-  input: TransformerSizingInput,
-): TransformerSizingResult {
+export function selectTransformer(input: TransformerSizingInput): TransformerSizingResult {
   const pf = input.powerFactor ?? 0.95;
   const target = (input.loadingPctTarget ?? 80) / 100;
   const loadKva = input.loadKw / pf;
   const requiredKva = loadKva / target;
   const nameplate =
-    STANDARD_KVA.find((k) => k >= requiredKva) ??
-    STANDARD_KVA[STANDARD_KVA.length - 1];
+    STANDARD_KVA.find((k) => k >= requiredKva) ?? STANDARD_KVA[STANDARD_KVA.length - 1];
   const utilization = (loadKva / nameplate) * 100;
   return {
     nameplateKva: nameplate,

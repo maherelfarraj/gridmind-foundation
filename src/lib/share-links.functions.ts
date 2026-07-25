@@ -119,10 +119,9 @@ function httpError(status: number, code: string, message?: string): never {
 }
 
 async function assertCompanyAdmin(context: AuthContext): Promise<string> {
-  const { data: isAdmin, error: roleErr } = await context.supabase.rpc(
-    "has_company_role",
-    { p_role: "company_admin" },
-  );
+  const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_company_role", {
+    p_role: "company_admin",
+  });
   if (roleErr) throw roleErr;
   if (!isAdmin) httpError(403, "forbidden");
   const { data: prof, error: profErr } = await context.supabase
@@ -136,10 +135,7 @@ async function assertCompanyAdmin(context: AuthContext): Promise<string> {
   return cid!;
 }
 
-function deriveStatus(row: {
-  expires_at: string;
-  revoked_at: string | null;
-}): ShareLinkStatus {
+function deriveStatus(row: { expires_at: string; revoked_at: string | null }): ShareLinkStatus {
   if (row.revoked_at) return "revoked";
   if (new Date(row.expires_at).getTime() <= Date.now()) return "expired";
   return "active";
@@ -239,7 +235,7 @@ export const listShareLinks = createServerFn({ method: "GET" })
         revoked_at: r.revoked_at,
         last_accessed_at: r.last_accessed_at,
         access_count: r.access_count,
-        created_by_email: r.created_by ? creatorEmails.get(r.created_by) ?? null : null,
+        created_by_email: r.created_by ? (creatorEmails.get(r.created_by) ?? null) : null,
         created_at: r.created_at,
         status: deriveStatus(r),
       };
@@ -384,13 +380,11 @@ export const resolveShareLink = createServerFn({ method: "POST" })
     const ipHeader = req.headers.get("cf-connecting-ip") ?? "";
     const ip = ipHeader.split(",")[0]?.trim() || "unknown";
 
-
     const { createClient } = await import("@supabase/supabase-js");
     const supabaseUrl = process.env.SUPABASE_URL!;
     const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY!;
     const isNewKey =
-      publishableKey.startsWith("sb_publishable_") ||
-      publishableKey.startsWith("sb_secret_");
+      publishableKey.startsWith("sb_publishable_") || publishableKey.startsWith("sb_secret_");
     const supabasePublic = createClient(supabaseUrl, publishableKey, {
       auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
       global: {

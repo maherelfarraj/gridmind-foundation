@@ -1,11 +1,7 @@
 // P-072 — WBS builder workspace.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FolderTree, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -30,19 +26,14 @@ import {
   wbsErrorMessage,
   wbsTreeQueryOptions,
 } from "@/lib/wbs-query";
-import type {
-  WbsCreateInput,
-  WbsUpdateInput,
-} from "@/lib/wbs-rules";
+import type { WbsCreateInput, WbsUpdateInput } from "@/lib/wbs-rules";
 
 import { WbsTree } from "@/components/planning/wbs-tree";
 import { WbsDetailForm } from "@/components/planning/wbs-detail-form";
 import { IfcImportDialog } from "@/components/planning/ifc-import-dialog";
 import { TaskAlignmentPanel } from "@/components/planning/task-alignment-panel";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/planning/wbs",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/wbs")({
   head: () => ({
     meta: [
       { title: "WBS Builder — GridMind EPC" },
@@ -74,9 +65,7 @@ function WbsPage() {
 
   const treeQuery = useSuspenseQuery(wbsTreeQueryOptions(listFn, projectId));
   const accessQuery = useSuspenseQuery(wbsAccessQueryOptions(accessFn));
-  const currenciesQuery = useSuspenseQuery(
-    wbsCurrenciesQueryOptions(currenciesFn),
-  );
+  const currenciesQuery = useSuspenseQuery(wbsCurrenciesQueryOptions(currenciesFn));
 
   const canWrite = accessQuery.data.canWrite;
   const items = treeQuery.data;
@@ -94,8 +83,7 @@ function WbsPage() {
   const reparentFn = useServerFn(reparentWbsItem);
   const deleteFn = useServerFn(deleteWbsItem);
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["wbs", "tree", projectId] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["wbs", "tree", projectId] });
 
   const createMut = useMutation({
     mutationFn: (input: WbsCreateInput) => createFn({ data: input }),
@@ -117,11 +105,8 @@ function WbsPage() {
   });
 
   const reparentMut = useMutation({
-    mutationFn: (input: {
-      id: string;
-      parent_id: string | null;
-      sort_order: number;
-    }) => reparentFn({ data: input }),
+    mutationFn: (input: { id: string; parent_id: string | null; sort_order: number }) =>
+      reparentFn({ data: input }),
     onSuccess: () => {
       toast.success("Moved");
       invalidate();
@@ -177,11 +162,7 @@ function WbsPage() {
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <FolderTree
-            size={18}
-            className="text-muted-foreground"
-            aria-hidden
-          />
+          <FolderTree size={18} className="text-muted-foreground" aria-hidden />
           <h2 className="font-display text-lg font-semibold text-foreground">
             Work Breakdown Structure
           </h2>
@@ -209,8 +190,7 @@ function WbsPage() {
 
       {!canWrite && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
-          You have read-only access to the WBS. Ask a project or company admin
-          for write access.
+          You have read-only access to the WBS. Ask a project or company admin for write access.
         </Card>
       )}
 
@@ -219,8 +199,7 @@ function WbsPage() {
           {items.length === 0 ? (
             <div className="flex flex-col items-start gap-2 p-4">
               <p className="text-sm text-muted-foreground">
-                No WBS items yet. Import IFC packages or add a root item to
-                get started.
+                No WBS items yet. Import IFC packages or add a root item to get started.
               </p>
             </div>
           ) : (
@@ -229,20 +208,13 @@ function WbsPage() {
               selectedId={selectedId}
               onSelect={setSelectedId}
               onAddChild={canWrite ? handleAddChild : undefined}
-              onDelete={
-                canWrite ? (id) => deleteMut.mutate(id) : undefined
-              }
+              onDelete={canWrite ? (id) => deleteMut.mutate(id) : undefined}
               onReparent={
                 canWrite
-                  ? (id, parent_id, sort_order) =>
-                      reparentMut.mutate({ id, parent_id, sort_order })
+                  ? (id, parent_id, sort_order) => reparentMut.mutate({ id, parent_id, sort_order })
                   : undefined
               }
-              busy={
-                createMut.isPending ||
-                deleteMut.isPending ||
-                reparentMut.isPending
-              }
+              busy={createMut.isPending || deleteMut.isPending || reparentMut.isPending}
             />
           )}
         </Card>
@@ -254,10 +226,7 @@ function WbsPage() {
             currencies={currenciesQuery.data}
             canWrite={canWrite}
             saving={updateMut.isPending}
-            onSave={(patch) =>
-              selected &&
-              updateMut.mutate({ id: selected.id, patch })
-            }
+            onSave={(patch) => selected && updateMut.mutate({ id: selected.id, patch })}
           />
         </Card>
       </div>
@@ -295,12 +264,7 @@ function WbsPageError({ error, reset }: { error: Error; reset: () => void }) {
       <p className="text-sm text-foreground">
         Couldn&rsquo;t load the WBS: {wbsErrorMessage(error)}
       </p>
-      <Button
-        variant="outline"
-        size="sm"
-        className="mt-3"
-        onClick={() => reset()}
-      >
+      <Button variant="outline" size="sm" className="mt-3" onClick={() => reset()}>
         Retry
       </Button>
     </Card>

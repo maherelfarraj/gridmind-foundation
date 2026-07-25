@@ -34,9 +34,7 @@ function PortalIndex() {
         <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
           Your projects
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Choose a project to open its portal.
-        </p>
+        <p className="text-sm text-muted-foreground">Choose a project to open its portal.</p>
       </header>
 
       {q.isLoading ? (
@@ -48,9 +46,7 @@ function PortalIndex() {
       ) : (q.data ?? []).length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-10 text-center">
           <Building2 className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">
-            Nothing shared yet
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">Nothing shared yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Your project team hasn't shared any projects with you.
           </p>
@@ -95,9 +91,7 @@ function PortalIndex() {
 function ExpiredCard() {
   return (
     <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-10 text-center">
-      <h2 className="text-base font-semibold text-destructive">
-        Access expired or revoked
-      </h2>
+      <h2 className="text-base font-semibold text-destructive">Access expired or revoked</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Contact your project sponsor to request access again.
       </p>

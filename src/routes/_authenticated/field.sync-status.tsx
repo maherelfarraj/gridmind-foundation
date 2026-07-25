@@ -1,13 +1,6 @@
 // P-087 — Sync status: view + retry/discard queued mutations.
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CloudUpload,
-  RefreshCw,
-  Trash2,
-  WifiOff,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, CloudUpload, RefreshCw, Trash2, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +17,7 @@ export const Route = createFileRoute("/_authenticated/field/sync-status")({
       { title: "Sync status — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Pending, retrying, and failed field mutations queued on this device.",
+        content: "Pending, retrying, and failed field mutations queued on this device.",
       },
       { property: "og:title", content: "Sync status — GridMind EPC" },
       {
@@ -54,20 +46,10 @@ function SyncStatusPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       <header className="flex flex-col gap-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Field
-        </div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">Field</div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold text-foreground">
-            Sync status
-          </h1>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={runSync}
-            disabled={!online}
-          >
+          <h1 className="font-display text-2xl font-semibold text-foreground">Sync status</h1>
+          <Button type="button" variant="outline" size="sm" onClick={runSync} disabled={!online}>
             <RefreshCw className="mr-1 h-4 w-4" aria-hidden />
             Sync now
           </Button>
@@ -99,13 +81,8 @@ function SyncStatusPage() {
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-muted/30 p-8 text-center">
-          <CheckCircle2
-            className="mx-auto mb-3 h-8 w-8 text-muted-foreground"
-            aria-hidden
-          />
-          <p className="text-sm text-muted-foreground">
-            All caught up — nothing to sync.
-          </p>
+          <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-muted-foreground" aria-hidden />
+          <p className="text-sm text-muted-foreground">All caught up — nothing to sync.</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -138,14 +115,8 @@ function StatChip({
   return (
     <Card>
       <CardContent className="flex items-center justify-between p-3">
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          {label}
-        </span>
-        <span
-          className={`rounded-full px-2 py-0.5 text-sm font-semibold ${classes}`}
-        >
-          {value}
-        </span>
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className={`rounded-full px-2 py-0.5 text-sm font-semibold ${classes}`}>{value}</span>
       </CardContent>
     </Card>
   );

@@ -17,12 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  BUS_CONFIGS,
-  VOLTAGE_TYPES,
-  type BusConfig,
-  type SldConfigRow,
-} from "@/lib/sld.functions";
+import { BUS_CONFIGS, VOLTAGE_TYPES, type BusConfig, type SldConfigRow } from "@/lib/sld.functions";
 import { useSaveSldConfig } from "@/lib/sld-query";
 import { SldHierarchyPreview } from "./sld-hierarchy-preview";
 
@@ -72,8 +67,7 @@ export function SldConfigForm({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       bus_config: initial.bus_config,
-      voltage_levels:
-        initial.voltage_levels.length > 0 ? initial.voltage_levels : [],
+      voltage_levels: initial.voltage_levels.length > 0 ? initial.voltage_levels : [],
       metering_points: initial.metering_points,
       protection_scheme: initial.protection_scheme ?? "",
       notes: initial.notes ?? "",
@@ -152,9 +146,7 @@ export function SldConfigForm({
           </CardHeader>
           <CardContent className="space-y-3">
             {voltages.fields.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No voltage levels defined.
-              </p>
+              <p className="text-sm text-muted-foreground">No voltage levels defined.</p>
             )}
             {voltages.fields.map((f, i) => (
               <div key={f.id} className="grid grid-cols-[1fr_1fr_auto] gap-2">
@@ -176,9 +168,7 @@ export function SldConfigForm({
                 </div>
                 <Select
                   value={form.watch(`voltage_levels.${i}.type`)}
-                  onValueChange={(v) =>
-                    form.setValue(`voltage_levels.${i}.type`, v as any)
-                  }
+                  onValueChange={(v) => form.setValue(`voltage_levels.${i}.type`, v as any)}
                   disabled={disabled}
                 >
                   <SelectTrigger>
@@ -228,9 +218,7 @@ export function SldConfigForm({
           </CardHeader>
           <CardContent className="space-y-3">
             {meters.fields.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No metering points defined.
-              </p>
+              <p className="text-sm text-muted-foreground">No metering points defined.</p>
             )}
             {meters.fields.map((f, i) => (
               <div key={f.id} className="grid grid-cols-[1fr_1fr_auto] gap-2">
@@ -275,12 +263,7 @@ export function SldConfigForm({
             </div>
             <div>
               <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                rows={3}
-                disabled={disabled}
-                {...form.register("notes")}
-              />
+              <Textarea id="notes" rows={3} disabled={disabled} {...form.register("notes")} />
             </div>
           </CardContent>
         </Card>

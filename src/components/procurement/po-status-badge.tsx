@@ -2,10 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { PoStatus } from "@/lib/po-rules";
 
-const PO_VARIANTS: Record<
-  PoStatus,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
+const PO_VARIANTS: Record<PoStatus, "default" | "secondary" | "outline" | "destructive"> = {
   draft: "outline",
   pending_approval: "secondary",
   approved: "default",

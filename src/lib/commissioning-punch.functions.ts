@@ -19,11 +19,7 @@ import {
   type SignoffParty,
 } from "@/lib/commissioning-punch.rules";
 
-function httpError(
-  status: number,
-  code: string,
-  metadata?: Record<string, unknown>,
-): never {
+function httpError(status: number, code: string, metadata?: Record<string, unknown>): never {
   throw Object.assign(new Error(code), {
     statusCode: status,
     body: JSON.stringify({ error: code, ...(metadata ?? {}) }),
@@ -152,12 +148,10 @@ export const listCommissioningPunch = createServerFn({ method: "POST" })
       byItem.set(s.punch_item_id, list);
     }
 
-    const rows: CommissioningPunchRow[] = ((items ?? []) as any[]).map(
-      (r) => ({
-        ...(r as CommissioningPunchRow),
-        signoffs: byItem.get(r.id) ?? [],
-      }),
-    );
+    const rows: CommissioningPunchRow[] = ((items ?? []) as any[]).map((r) => ({
+      ...(r as CommissioningPunchRow),
+      signoffs: byItem.get(r.id) ?? [],
+    }));
 
     return {
       companyId,
@@ -213,46 +207,35 @@ export const closePunchItem = createServerFn({ method: "POST" })
     if (row.status === "void") httpError(409, "punch_void");
 
     // Insert (idempotent) — unique(punch_item_id, signoff_party) handles dupes.
-    const { error: insErr } = await context.supabase
-      .from("punch_signoffs")
-      .upsert(
-        {
-          company_id: companyId,
-          project_id: row.project_id,
-          punch_item_id: row.id,
-          category: row.category,
-          signoff_party: data.party,
-          signed_by: context.user!.id,
-          signer_name: data.signerName,
-          evidence_file_path: data.evidencePath ?? null,
-          notes: data.notes ?? null,
-        } as any,
-        { onConflict: "punch_item_id,signoff_party", ignoreDuplicates: true },
-      );
+    const { error: insErr } = await context.supabase.from("punch_signoffs").upsert(
+      {
+        company_id: companyId,
+        project_id: row.project_id,
+        punch_item_id: row.id,
+        category: row.category,
+        signoff_party: data.party,
+        signed_by: context.user!.id,
+        signer_name: data.signerName,
+        evidence_file_path: data.evidencePath ?? null,
+        notes: data.notes ?? null,
+      } as any,
+      { onConflict: "punch_item_id,signoff_party", ignoreDuplicates: true },
+    );
     if (insErr) throw insErr;
 
     // Re-fetch all signoffs to compute closure state.
     const { data: sigsAfter, error: sErr } = await context.supabase
       .from("punch_signoffs")
-      .select(
-        "id, punch_item_id, signoff_party, signer_name, signed_at, evidence_file_path, notes",
-      )
+      .select("id, punch_item_id, signoff_party, signer_name, signed_at, evidence_file_path, notes")
       .eq("punch_item_id", row.id);
     if (sErr) throw sErr;
     const signoffs = (sigsAfter ?? []) as PunchSignoffRow[];
     const havePartiesSet = new Set(signoffs.map((s) => s.signoff_party));
     const havePartiesArr = Array.from(havePartiesSet) as SignoffParty[];
 
-    const required = requiredParties(
-      row.category,
-      row.utility_witness_required,
-    );
+    const required = requiredParties(row.category, row.utility_witness_required);
     const missing = missingParties(required, havePartiesArr);
-    const shouldClose = canCloseNow(
-      row.category,
-      row.utility_witness_required,
-      havePartiesArr,
-    );
+    const shouldClose = canCloseNow(row.category, row.utility_witness_required, havePartiesArr);
 
     let finalRow = row;
     let closed = false;
@@ -275,31 +258,19 @@ export const closePunchItem = createServerFn({ method: "POST" })
       if (updated) finalRow = updated as any;
       closed = true;
 
-      await audit(
-        context,
-        "punch.closed",
-        "qaqc_punch_items",
-        row.id,
-        {
-          category: row.category,
-          signoffs: signoffs.map((s) => ({
-            party: s.signoff_party,
-            signer_name: s.signer_name,
-          })),
-        },
-      );
+      await audit(context, "punch.closed", "qaqc_punch_items", row.id, {
+        category: row.category,
+        signoffs: signoffs.map((s) => ({
+          party: s.signoff_party,
+          signer_name: s.signer_name,
+        })),
+      });
     } else {
-      await audit(
-        context,
-        "punch.signoff_added",
-        "qaqc_punch_items",
-        row.id,
-        {
-          category: row.category,
-          party: data.party,
-          signer_name: data.signerName,
-        },
-      );
+      await audit(context, "punch.signoff_added", "qaqc_punch_items", row.id, {
+        category: row.category,
+        party: data.party,
+        signer_name: data.signerName,
+      });
     }
 
     return {

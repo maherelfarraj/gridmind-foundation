@@ -22,10 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AttachmentList } from "@/components/qaqc/attachment-list";
 import { QaqcResultBadge } from "@/components/qaqc/result-badge";
-import {
-  errorMessage,
-  inspectionDetailQueryOptions,
-} from "@/lib/qaqc-query";
+import { errorMessage, inspectionDetailQueryOptions } from "@/lib/qaqc-query";
 import { updateInspection } from "@/lib/qaqc.functions";
 import {
   QAQC_DISCIPLINES,
@@ -202,19 +199,11 @@ function InspectionDetailPage() {
           </div>
           <div className="flex flex-col gap-1">
             <Label>Area</Label>
-            <Input
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              disabled={!canEdit}
-            />
+            <Input value={area} onChange={(e) => setArea(e.target.value)} disabled={!canEdit} />
           </div>
           <div className="flex flex-col gap-1">
             <Label>ITP reference</Label>
-            <Input
-              value={itpRef}
-              onChange={(e) => setItpRef(e.target.value)}
-              disabled={!canEdit}
-            />
+            <Input value={itpRef} onChange={(e) => setItpRef(e.target.value)} disabled={!canEdit} />
           </div>
           <div className="flex flex-col gap-1">
             <Label>Inspection date</Label>
@@ -261,9 +250,7 @@ function InspectionDetailPage() {
               disabled={!canEdit}
             />
             {clientReworkError ? (
-              <span className="text-xs text-destructive">
-                {clientReworkError}
-              </span>
+              <span className="text-xs text-destructive">{clientReworkError}</span>
             ) : null}
           </div>
         </CardContent>
@@ -277,10 +264,7 @@ function InspectionDetailPage() {
           <AttachmentList
             attachments={attachments}
             onRemove={
-              canEdit
-                ? (idx) =>
-                    setAttachments((a) => a.filter((_, i2) => i2 !== idx))
-                : undefined
+              canEdit ? (idx) => setAttachments((a) => a.filter((_, i2) => i2 !== idx)) : undefined
             }
           />
         </CardContent>

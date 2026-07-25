@@ -56,29 +56,18 @@ export function GatesEditor({ value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-6">
       {PROJECT_PHASES.map((phase) => {
-        const rows = value
-          .map((g, idx) => ({ g, idx }))
-          .filter((x) => x.g.phase === phase);
+        const rows = value.map((g, idx) => ({ g, idx })).filter((x) => x.g.phase === phase);
         return (
           <div key={phase} className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">
-                {PHASE_LABELS[phase]}
-              </h3>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => addToPhase(phase)}
-              >
+              <h3 className="text-sm font-semibold text-foreground">{PHASE_LABELS[phase]}</h3>
+              <Button type="button" size="sm" variant="outline" onClick={() => addToPhase(phase)}>
                 <Plus size={14} aria-hidden />
                 Add gate
               </Button>
             </div>
             {rows.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                No gates in this phase.
-              </p>
+              <p className="text-xs text-muted-foreground">No gates in this phase.</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {rows.map(({ g, idx }, posInPhase) => (
@@ -118,9 +107,7 @@ export function GatesEditor({ value, onChange }: Props) {
                     />
                     <Select
                       value={g.phase}
-                      onValueChange={(v) =>
-                        updateAt(idx, { phase: v as ProjectPhase })
-                      }
+                      onValueChange={(v) => updateAt(idx, { phase: v as ProjectPhase })}
                     >
                       <SelectTrigger className="w-[140px]">
                         <SelectValue />
@@ -150,9 +137,7 @@ export function GatesEditor({ value, onChange }: Props) {
         );
       })}
       {value.length === 0 ? (
-        <p className="text-sm text-destructive">
-          At least one gate is required.
-        </p>
+        <p className="text-sm text-destructive">At least one gate is required.</p>
       ) : null}
     </div>
   );

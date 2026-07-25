@@ -18,14 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ackTransmittal, sendTransmittal } from "@/lib/transmittals.functions";
-import {
-  errorMessage,
-  transmittalDetailQueryOptions,
-} from "@/lib/transmittals-query";
-import {
-  TRANSMITTAL_DIRECTION_LABELS,
-  isTransmittalOverdue,
-} from "@/lib/transmittals.rules";
+import { errorMessage, transmittalDetailQueryOptions } from "@/lib/transmittals-query";
+import { TRANSMITTAL_DIRECTION_LABELS, isTransmittalOverdue } from "@/lib/transmittals.rules";
 
 export const Route = createFileRoute("/_authenticated/field/transmittals/$id")({
   head: ({ params }) => ({
@@ -105,9 +99,7 @@ function TransmittalDetailPage() {
           <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
             {transmittal.transmittal_number}
           </h1>
-          <Badge variant="outline">
-            {TRANSMITTAL_DIRECTION_LABELS[transmittal.direction]}
-          </Badge>
+          <Badge variant="outline">{TRANSMITTAL_DIRECTION_LABELS[transmittal.direction]}</Badge>
           {overdue ? (
             <Badge variant="destructive">
               <AlertTriangle className="mr-1 h-3 w-3" /> Overdue
@@ -140,11 +132,7 @@ function TransmittalDetailPage() {
           </div>
           <div>
             <span className="text-muted-foreground">Sent</span>
-            <div>
-              {transmittal.sent_at
-                ? new Date(transmittal.sent_at).toLocaleString()
-                : "—"}
-            </div>
+            <div>{transmittal.sent_at ? new Date(transmittal.sent_at).toLocaleString() : "—"}</div>
           </div>
           <div>
             <span className="text-muted-foreground">Acknowledged</span>
@@ -190,25 +178,14 @@ function TransmittalDetailPage() {
           </CardHeader>
           <CardContent className="flex flex-wrap justify-end gap-2">
             {!transmittal.sent_at ? (
-              <Button
-                onClick={() => sendMut.mutate()}
-                disabled={sendMut.isPending}
-              >
-                {sendMut.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
+              <Button onClick={() => sendMut.mutate()} disabled={sendMut.isPending}>
+                {sendMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Mark as sent
               </Button>
             ) : null}
             {!transmittal.acknowledged_at ? (
-              <Button
-                variant="outline"
-                onClick={() => ackMut.mutate()}
-                disabled={ackMut.isPending}
-              >
-                {ackMut.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
+              <Button variant="outline" onClick={() => ackMut.mutate()} disabled={ackMut.isPending}>
+                {ackMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Record acknowledgement
               </Button>
             ) : null}

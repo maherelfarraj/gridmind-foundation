@@ -26,12 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getRfiKpis,
-  listRfis,
-  listRoutableMembers,
-  type RfiRow,
-} from "@/lib/rfi.functions";
+import { getRfiKpis, listRfis, listRoutableMembers, type RfiRow } from "@/lib/rfi.functions";
 import {
   rfiKpiQueryOptions,
   rfiListQueryOptions,
@@ -39,10 +34,7 @@ import {
 } from "@/lib/rfi-query";
 import { isOverdue, RFI_STATUSES } from "@/lib/rfi-rules";
 import { RfiKpiCard } from "@/components/engineering/rfis/RfiKpiCard";
-import {
-  RfiPriorityBadge,
-  RfiStatusBadge,
-} from "@/components/engineering/rfis/rfi-badges";
+import { RfiPriorityBadge, RfiStatusBadge } from "@/components/engineering/rfis/rfi-badges";
 import { RaiseRfiDialog } from "@/components/engineering/rfis/RaiseRfiDialog";
 import { RfiDetailDrawer } from "@/components/engineering/rfis/RfiDetailDrawer";
 
@@ -63,9 +55,7 @@ const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
 });
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/rfis",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/rfis")({
   validateSearch: zodValidator(searchSchema),
   component: RfisPage,
 });
@@ -111,18 +101,12 @@ function RfisPage() {
             assignee: search.assignee,
             q: search.q,
           }}
-          onChange={(next) =>
-            navigate({ search: (prev) => ({ ...prev, ...next }) })
-          }
+          onChange={(next) => navigate({ search: (prev) => ({ ...prev, ...next }) })}
         />
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-        <RfiTableSection
-          projectId={projectId}
-          filters={filters}
-          onOpen={setDetailId}
-        />
+        <RfiTableSection projectId={projectId} filters={filters} onOpen={setDetailId} />
       </Suspense>
 
       <RfiDetailDrawer
@@ -151,9 +135,7 @@ function FiltersToolbar({
   onChange: (next: Partial<typeof value>) => void;
 }) {
   const membersFn = useServerFn(listRoutableMembers);
-  const { data: members } = useSuspenseQuery(
-    routableMembersQueryOptions(membersFn, projectId),
-  );
+  const { data: members } = useSuspenseQuery(routableMembersQueryOptions(membersFn, projectId));
   return (
     <Card className="flex flex-wrap items-center gap-2 p-2">
       <Select
@@ -230,9 +212,7 @@ function RfiTableSection({
   onOpen: (id: string) => void;
 }) {
   const listFn = useServerFn(listRfis);
-  const { data: rows } = useSuspenseQuery(
-    rfiListQueryOptions(listFn, projectId, filters),
-  );
+  const { data: rows } = useSuspenseQuery(rfiListQueryOptions(listFn, projectId, filters));
 
   const exportCsv = () => {
     const header = [
@@ -319,25 +299,14 @@ function RfiTableSection({
   );
 }
 
-function RfiTableRow({
-  row,
-  onOpen,
-}: {
-  row: RfiRow;
-  onOpen: (id: string) => void;
-}) {
+function RfiTableRow({ row, onOpen }: { row: RfiRow; onOpen: (id: string) => void }) {
   const overdue = isOverdue({ status: row.status, due_date: row.due_date });
   const ageDays = differenceInCalendarDays(new Date(), new Date(row.created_at));
   return (
-    <TableRow
-      className="cursor-pointer hover:bg-muted/40"
-      onClick={() => onOpen(row.id)}
-    >
+    <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => onOpen(row.id)}>
       <TableCell className="font-mono text-xs">{row.rfi_number}</TableCell>
       <TableCell className="max-w-[24ch] truncate">{row.subject}</TableCell>
-      <TableCell className="capitalize">
-        {row.discipline.replace("_", " ")}
-      </TableCell>
+      <TableCell className="capitalize">{row.discipline.replace("_", " ")}</TableCell>
       <TableCell>
         <RfiPriorityBadge priority={row.priority} />
       </TableCell>

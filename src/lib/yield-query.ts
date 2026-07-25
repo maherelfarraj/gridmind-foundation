@@ -1,9 +1,5 @@
 // P-056 — TanStack Query hooks for yield scenarios.
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -51,8 +47,7 @@ export function useSaveYieldScenario(projectId: string) {
       qc.invalidateQueries({ queryKey: ["yield-scenarios", projectId] });
       toast.success("Scenario saved");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -60,14 +55,12 @@ export function useEstimateYieldScenario(projectId: string) {
   const fn = useServerFn(estimateYieldScenario);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { id: string }) =>
-      fn({ data: { projectId, id: input.id } }),
+    mutationFn: (input: { id: string }) => fn({ data: { projectId, id: input.id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["yield-scenarios", projectId] });
       toast.success("Preliminary estimate updated");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Estimate failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Estimate failed"),
   });
 }
 
@@ -75,14 +68,12 @@ export function useDuplicateYieldScenario(projectId: string) {
   const fn = useServerFn(duplicateYieldScenario);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { id: string; newName: string }) =>
-      fn({ data: { projectId, ...input } }),
+    mutationFn: (input: { id: string; newName: string }) => fn({ data: { projectId, ...input } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["yield-scenarios", projectId] });
       toast.success("Scenario duplicated");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Duplicate failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Duplicate failed"),
   });
 }
 
@@ -90,14 +81,12 @@ export function useDeleteYieldScenario(projectId: string) {
   const fn = useServerFn(deleteYieldScenario);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { id: string }) =>
-      fn({ data: { projectId, id: input.id } }),
+    mutationFn: (input: { id: string }) => fn({ data: { projectId, id: input.id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["yield-scenarios", projectId] });
       toast.success("Scenario deleted");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Delete failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Delete failed"),
   });
 }
 
@@ -119,8 +108,7 @@ export function useImportPvsystScenario(projectId: string) {
       qc.invalidateQueries({ queryKey: ["yield-scenarios", projectId] });
       toast.success("PVsyst scenario imported");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Import failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Import failed"),
   });
 }
 

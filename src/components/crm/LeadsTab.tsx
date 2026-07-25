@@ -93,12 +93,8 @@ export function LeadsTab({ readOnly }: Props) {
               {(query.data ?? []).map((l) => (
                 <TableRow key={l.id}>
                   <TableCell className="font-medium">{l.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {l.account_name ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {l.email ?? "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{l.account_name ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{l.email ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-[10px] font-normal">
                       {l.source}
@@ -116,9 +112,7 @@ export function LeadsTab({ readOnly }: Props) {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={
-                        readOnly || l.status === "converted" || convert.isPending
-                      }
+                      disabled={readOnly || l.status === "converted" || convert.isPending}
                       onClick={() => convert.mutate({ leadId: l.id })}
                     >
                       Convert → opportunity
@@ -142,14 +136,9 @@ const leadSchema = z.object({
     .trim()
     .optional()
     .or(z.literal(""))
-    .refine(
-      (v) => !v || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v),
-      "Invalid email",
-    ),
+    .refine((v) => !v || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), "Invalid email"),
   phone: z.string().trim().max(50).optional().or(z.literal("")),
-  source: z
-    .enum(["referral", "inbound", "outbound", "event", "partner", "other"])
-    .optional(),
+  source: z.enum(["referral", "inbound", "outbound", "event", "partner", "other"]).optional(),
 });
 type LeadForm = z.infer<typeof leadSchema>;
 
@@ -186,9 +175,7 @@ function NewLeadDialog({ trigger }: { trigger: React.ReactNode }) {
           <div className="space-y-1.5">
             <Label htmlFor="lead-name">Name</Label>
             <Input id="lead-name" {...register("name")} autoFocus />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="lead-account">Account</Label>
@@ -198,9 +185,7 @@ function NewLeadDialog({ trigger }: { trigger: React.ReactNode }) {
             <div className="space-y-1.5">
               <Label htmlFor="lead-email">Email</Label>
               <Input id="lead-email" type="email" {...register("email")} />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="lead-phone">Phone</Label>

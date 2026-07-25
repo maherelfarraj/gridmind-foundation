@@ -3,10 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -15,12 +12,7 @@ export const SITE_DATA_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 export const SITE_DATA_BUCKET = "drawings";
 
 // UI categories → document_category enum + friendly labels.
-export const SITE_DATA_CATEGORIES = [
-  "survey_topo",
-  "geotech",
-  "meteorological",
-  "other",
-] as const;
+export const SITE_DATA_CATEGORIES = ["survey_topo", "geotech", "meteorological", "other"] as const;
 export type SiteDataCategory = (typeof SITE_DATA_CATEGORIES)[number];
 
 export const SITE_DATA_CATEGORY_LABEL: Record<SiteDataCategory, string> = {
@@ -30,10 +22,7 @@ export const SITE_DATA_CATEGORY_LABEL: Record<SiteDataCategory, string> = {
   other: "Other site data",
 };
 
-const CATEGORY_TO_DOC: Record<
-  SiteDataCategory,
-  "drawing" | "report" | "datasheet" | "other"
-> = {
+const CATEGORY_TO_DOC: Record<SiteDataCategory, "drawing" | "report" | "datasheet" | "other"> = {
   survey_topo: "drawing",
   geotech: "report",
   meteorological: "datasheet",
@@ -110,13 +99,7 @@ async function assertEngineeringWriter(context: any, companyId: string) {
     .from("user_roles")
     .select("role")
     .eq("company_id", companyId)
-    .in("role", [
-      "engineering_admin",
-      "engineer",
-      "project_admin",
-      "company_admin",
-      "super_admin",
-    ])
+    .in("role", ["engineering_admin", "engineer", "project_admin", "company_admin", "super_admin"])
     .limit(1);
   if (error) throw error;
   if (!data || data.length === 0) httpError(403, "forbidden");
@@ -129,11 +112,7 @@ const uploadInput = z.object({
   projectId: z.string().uuid(),
   category: z.enum(SITE_DATA_CATEGORIES),
   fileName: z.string().trim().min(1).max(255),
-  fileSize: z
-    .number()
-    .int()
-    .positive()
-    .max(SITE_DATA_MAX_BYTES, "File exceeds 50 MB limit"),
+  fileSize: z.number().int().positive().max(SITE_DATA_MAX_BYTES, "File exceeds 50 MB limit"),
   mimeType: z.string().trim().max(200).optional().nullable(),
 });
 
@@ -199,9 +178,7 @@ export const registerSiteDataDocument = createServerFn({ method: "POST" })
       httpError(400, "path_mismatch");
     }
 
-    const tags = Array.from(
-      new Set([`site_data:${data.category}`, ...(data.tags ?? [])]),
-    );
+    const tags = Array.from(new Set([`site_data:${data.category}`, ...(data.tags ?? [])]));
     const metadata = { ...data.metadata, site_data_category: data.category };
 
     const insertRow: Record<string, any> = {
@@ -247,9 +224,7 @@ export const registerSiteDataDocument = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const listSiteData = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<SiteDataRow[]> => {
     requireSupabaseAuth(context);
 
@@ -267,10 +242,7 @@ export const listSiteData = createServerFn({ method: "GET" })
     const uploaderIds = Array.from(
       new Set(list.map((r) => r.created_by).filter(Boolean)),
     ) as string[];
-    let uploaders: Record<
-      string,
-      { full_name: string | null; email: string | null }
-    > = {};
+    const uploaders: Record<string, { full_name: string | null; email: string | null }> = {};
     if (uploaderIds.length > 0) {
       const { data: profiles } = await context.supabase
         .from("profiles")
@@ -300,10 +272,8 @@ export const listSiteData = createServerFn({ method: "GET" })
         metadata: meta,
         created_at: r.created_at,
         created_by: r.created_by,
-        uploader: r.created_by ? uploaders[r.created_by] ?? null : null,
-        site_data_category: SITE_DATA_CATEGORIES.includes(category)
-          ? category
-          : "other",
+        uploader: r.created_by ? (uploaders[r.created_by] ?? null) : null,
+        site_data_category: SITE_DATA_CATEGORIES.includes(category) ? category : "other",
       };
     });
   });
@@ -313,9 +283,7 @@ export const listSiteData = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const getSiteDataDownloadUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ documentId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ documentId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
 

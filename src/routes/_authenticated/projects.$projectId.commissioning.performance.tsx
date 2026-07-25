@@ -51,10 +51,7 @@ import {
   type PrTestDefaults,
   type PrTestRow,
 } from "@/lib/performance-tests.functions";
-import {
-  computePerformanceRatio,
-  createPrTestInput,
-} from "@/lib/performance-tests.schema";
+import { computePerformanceRatio, createPrTestInput } from "@/lib/performance-tests.schema";
 import { buildPrTestReportPdfBytes } from "@/lib/exports/pr-test-report-pdf";
 
 export const Route = createFileRoute(
@@ -140,16 +137,8 @@ function PerformanceWorkspace() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 px-2 text-xs"
-            >
-              <Link
-                to="/projects/$projectId/commissioning"
-                params={{ projectId }}
-              >
+            <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
                 <ArrowLeft size={12} aria-hidden />
                 Back to commissioning
               </Link>
@@ -159,8 +148,7 @@ function PerformanceWorkspace() {
             Performance ratio tests
           </h2>
           <p className="text-sm text-muted-foreground">
-            Measured vs contract PR, per test period. Branded PDF reports for
-            the O&amp;M team.
+            Measured vs contract PR, per test period. Branded PDF reports for the O&amp;M team.
           </p>
         </div>
         {canWrite ? (
@@ -210,9 +198,7 @@ function PerformanceWorkspace() {
           <div className="text-xs uppercase tracking-wide text-muted-foreground">
             Tests recorded
           </div>
-          <div className="mt-2 text-3xl font-semibold text-foreground">
-            {rows.length}
-          </div>
+          <div className="mt-2 text-3xl font-semibold text-foreground">{rows.length}</div>
           <div className="mt-1 text-xs text-muted-foreground">
             Capacity {fmtNum(defaults?.capacityMwp ?? null, 3)} MWp
           </div>
@@ -233,24 +219,12 @@ function PerformanceWorkspace() {
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
                 <XAxis dataKey="label" fontSize={11} />
-                <YAxis
-                  fontSize={11}
-                  domain={[0, 100]}
-                  tickFormatter={(v) => `${v}%`}
-                />
+                <YAxis fontSize={11} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                 <Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
                 <Legend />
                 <ReferenceLine y={80} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                <Bar
-                  dataKey="contract"
-                  name="Contract PR"
-                  fill="hsl(var(--muted-foreground))"
-                />
-                <Bar
-                  dataKey="measured"
-                  name="Measured PR"
-                  fill="hsl(var(--primary))"
-                />
+                <Bar dataKey="contract" name="Contract PR" fill="hsl(var(--muted-foreground))" />
+                <Bar dataKey="measured" name="Measured PR" fill="hsl(var(--primary))" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -280,10 +254,7 @@ function PerformanceWorkspace() {
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-sm text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                   No PR tests yet.
                 </TableCell>
               </TableRow>
@@ -357,8 +328,7 @@ function TestRow({
           const buf = await res.arrayBuffer();
           const bytes = new Uint8Array(buf);
           let bin = "";
-          for (let i = 0; i < bytes.length; i++)
-            bin += String.fromCharCode(bytes[i]);
+          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
           const b64 = btoa(bin);
           const ct = res.headers.get("content-type") ?? "image/png";
           logoDataUrl = `data:${ct};base64,${b64}`;
@@ -430,10 +400,7 @@ function TestRow({
       // Use documents bucket for uploads.
       // We need companyId; the profile query returns it via defaults query
       // — piggyback: fetch it from supabase directly.
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("company_id")
-        .maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("company_id").maybeSingle();
       const companyId = (prof as any)?.company_id;
       if (!companyId) {
         toast.error("No company on profile");
@@ -469,15 +436,9 @@ function TestRow({
       <TableCell className="font-mono text-xs">
         {row.period_start} → {row.period_end}
       </TableCell>
-      <TableCell className="text-right tabular-nums">
-        {fmtNum(row.metered_energy_mwh)}
-      </TableCell>
-      <TableCell className="text-right tabular-nums">
-        {fmtNum(row.plane_of_array_kwh_m2)}
-      </TableCell>
-      <TableCell className="text-right tabular-nums">
-        {fmtPct(row.contract_value)}
-      </TableCell>
+      <TableCell className="text-right tabular-nums">{fmtNum(row.metered_energy_mwh)}</TableCell>
+      <TableCell className="text-right tabular-nums">{fmtNum(row.plane_of_array_kwh_m2)}</TableCell>
+      <TableCell className="text-right tabular-nums">{fmtPct(row.contract_value)}</TableCell>
       <TableCell className="text-right tabular-nums font-semibold">
         {fmtPct(row.measured_value)}
       </TableCell>
@@ -500,12 +461,7 @@ function TestRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={downloadPdf}
-            disabled={busy !== "none"}
-          >
+          <Button variant="outline" size="sm" onClick={downloadPdf} disabled={busy !== "none"}>
             {busy === "download" ? (
               <Loader2 size={12} className="animate-spin" aria-hidden />
             ) : (
@@ -568,10 +524,8 @@ function NewPrDialog({
   // Seed from project defaults once when opened
   if (open && defaults && !seededRef.current) {
     seededRef.current = true;
-    if (defaults.capacityMwp != null)
-      form.setValue("capacityMwp", defaults.capacityMwp);
-    if (defaults.contractPr != null)
-      form.setValue("contractPr", defaults.contractPr);
+    if (defaults.capacityMwp != null) form.setValue("capacityMwp", defaults.capacityMwp);
+    if (defaults.contractPr != null) form.setValue("contractPr", defaults.contractPr);
   }
   if (!open && seededRef.current) seededRef.current = false;
 
@@ -583,8 +537,7 @@ function NewPrDialog({
   );
   const previewVariance =
     previewPr != null && Number(values.contractPr) > 0
-      ? ((previewPr - Number(values.contractPr)) / Number(values.contractPr)) *
-        100
+      ? ((previewPr - Number(values.contractPr)) / Number(values.contractPr)) * 100
       : null;
 
   const mut = useMutation({ mutationFn: createPerformanceRatioTest });
@@ -618,25 +571,14 @@ function NewPrDialog({
             Enter measured period totals; measured PR is computed server-side.
           </DialogDescription>
         </DialogHeader>
-        <form
-          className="grid grid-cols-2 gap-3"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
+        <form className="grid grid-cols-2 gap-3" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="col-span-1">
             <Label htmlFor="periodStart">Period start</Label>
-            <Input
-              id="periodStart"
-              type="date"
-              {...form.register("periodStart")}
-            />
+            <Input id="periodStart" type="date" {...form.register("periodStart")} />
           </div>
           <div className="col-span-1">
             <Label htmlFor="periodEnd">Period end</Label>
-            <Input
-              id="periodEnd"
-              type="date"
-              {...form.register("periodEnd")}
-            />
+            <Input id="periodEnd" type="date" {...form.register("periodEnd")} />
           </div>
 
           <div className="col-span-1">
@@ -661,9 +603,7 @@ function NewPrDialog({
           <div className="col-span-1">
             <Label htmlFor="capacityMwp">
               Nominal DC (MWp){" "}
-              <span className="text-xs text-muted-foreground">
-                (from PV config)
-              </span>
+              <span className="text-xs text-muted-foreground">(from PV config)</span>
             </Label>
             <Input
               id="capacityMwp"
@@ -675,9 +615,7 @@ function NewPrDialog({
           <div className="col-span-1">
             <Label htmlFor="contractPr">
               Contract PR (%){" "}
-              <span className="text-xs text-muted-foreground">
-                (from yield config)
-              </span>
+              <span className="text-xs text-muted-foreground">(from yield config)</span>
             </Label>
             <Input
               id="contractPr"
@@ -737,9 +675,7 @@ function NewPrDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
-              {mut.isPending ? (
-                <Loader2 size={14} className="animate-spin" aria-hidden />
-              ) : null}
+              {mut.isPending ? <Loader2 size={14} className="animate-spin" aria-hidden /> : null}
               Save PR test
             </Button>
           </DialogFooter>

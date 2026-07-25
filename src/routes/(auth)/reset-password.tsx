@@ -38,7 +38,10 @@ export const Route = createFileRoute("/(auth)/reset-password")({
       { title: "Set new password | GridMind EPC" },
       { name: "description", content: "Choose a new password for your GridMind EPC account." },
       { property: "og:title", content: "Set new password | GridMind EPC" },
-      { property: "og:description", content: "Choose a new password for your GridMind EPC account." },
+      {
+        property: "og:description",
+        content: "Choose a new password for your GridMind EPC account.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

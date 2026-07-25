@@ -30,12 +30,8 @@ export function FieldShell({
           </span>
         )}
       </div>
-      {hint && !error && (
-        <span className="text-xs text-muted-foreground">{hint}</span>
-      )}
-      {error && (
-        <span className="text-xs text-destructive">{error.message}</span>
-      )}
+      {hint && !error && <span className="text-xs text-muted-foreground">{hint}</span>}
+      {error && <span className="text-xs text-destructive">{error.message}</span>}
     </label>
   );
 }

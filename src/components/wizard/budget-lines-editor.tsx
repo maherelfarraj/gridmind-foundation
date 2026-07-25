@@ -11,10 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import {
-  BUDGET_CATEGORIES,
-  type BudgetLine,
-} from "@/lib/schemas/project-wizard";
+import { BUDGET_CATEGORIES, type BudgetLine } from "@/lib/schemas/project-wizard";
 
 type Props = {
   value: BudgetLine[];
@@ -33,10 +30,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
     onChange(value.filter((_, idx) => idx !== i));
   };
   const add = () => {
-    onChange([
-      ...value,
-      { category: "EPC", code: "", label: "", share: 0 },
-    ]);
+    onChange([...value, { category: "EPC", code: "", label: "", share: 0 }]);
   };
   const normalize = () => {
     if (total <= 0) return;
@@ -51,10 +45,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
             key={i}
             className="grid grid-cols-[110px_120px_1fr_120px_auto] items-center gap-2 rounded-md border border-border bg-card p-2"
           >
-            <Select
-              value={l.category}
-              onValueChange={(v) => updateAt(i, { category: v })}
-            >
+            <Select value={l.category} onValueChange={(v) => updateAt(i, { category: v })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -69,9 +60,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
             <Input
               value={l.code}
               placeholder="Code"
-              onChange={(e) =>
-                updateAt(i, { code: e.target.value.toUpperCase().slice(0, 24) })
-              }
+              onChange={(e) => updateAt(i, { code: e.target.value.toUpperCase().slice(0, 24) })}
             />
             <Input
               value={l.label}
@@ -86,11 +75,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
                 min={0}
                 max={100}
                 className="pr-8"
-                value={
-                  Number.isFinite(l.share)
-                    ? Math.round(l.share * 1000) / 10
-                    : ""
-                }
+                value={Number.isFinite(l.share) ? Math.round(l.share * 1000) / 10 : ""}
                 onChange={(e) => {
                   const pct = Number(e.target.value);
                   updateAt(i, {
@@ -120,12 +105,7 @@ export function BudgetLinesEditor({ value, onChange }: Props) {
           Add line
         </Button>
         <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              "text-sm",
-              ok ? "text-muted-foreground" : "text-destructive",
-            )}
-          >
+          <span className={cn("text-sm", ok ? "text-muted-foreground" : "text-destructive")}>
             Total: {totalPct}% {ok ? "" : "— must sum to 100%"}
           </span>
           <Button

@@ -95,10 +95,7 @@ export function NotificationsBell() {
               >
                 <div className="flex items-center gap-2">
                   {!n.read && (
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                      aria-hidden
-                    />
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
                   )}
                   <p className="text-sm font-medium text-foreground">{n.title}</p>
                 </div>

@@ -13,22 +13,18 @@ import {
 import { listSiteData } from "@/lib/site-data.functions";
 import { siteDataListQueryOptions } from "@/lib/site-data-query";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/uploads",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/uploads")({
   head: () => ({
     meta: [
       { title: "Site data uploads — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Upload survey, geotech and meteorological site data for engineering review.",
+        content: "Upload survey, geotech and meteorological site data for engineering review.",
       },
       { property: "og:title", content: "Site data uploads — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Upload survey, geotech and meteorological site data for engineering review.",
+        content: "Upload survey, geotech and meteorological site data for engineering review.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -44,12 +40,10 @@ function UploadsPage() {
   return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Site data uploads
-        </h2>
+        <h2 className="font-display text-lg font-semibold text-foreground">Site data uploads</h2>
         <p className="text-sm text-muted-foreground">
-          Upload survey, geotech and meteorological data. Files land in the
-          drawings bucket with 15-minute signed downloads.
+          Upload survey, geotech and meteorological data. Files land in the drawings bucket with
+          15-minute signed downloads.
         </p>
       </header>
       <UploadsBoundary projectId={projectId} />

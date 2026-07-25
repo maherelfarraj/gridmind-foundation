@@ -21,11 +21,7 @@ import {
 // ---------------------------------------------------------------------------
 // helpers (mirrors commissioning-certificates.functions.ts)
 // ---------------------------------------------------------------------------
-function httpError(
-  status: number,
-  code: string,
-  metadata?: Record<string, unknown>,
-): never {
+function httpError(status: number, code: string, metadata?: Record<string, unknown>): never {
   throw Object.assign(new Error(code), {
     statusCode: status,
     body: JSON.stringify({ error: code, ...(metadata ?? {}) }),
@@ -55,11 +51,7 @@ async function currentRoles(context: AuthContext): Promise<string[]> {
   return ((data ?? []) as { role: string }[]).map((r) => r.role);
 }
 
-const EXECUTE_ROLES = new Set([
-  "construction_admin",
-  "project_admin",
-  "company_admin",
-]);
+const EXECUTE_ROLES = new Set(["construction_admin", "project_admin", "company_admin"]);
 const READ_ROLES = new Set([
   ...EXECUTE_ROLES,
   "om_admin",
@@ -133,43 +125,33 @@ export const getHandoverBoard = createServerFn({ method: "GET" })
     if (!canRead) httpError(403, "forbidden");
     const canExecute = roles.some((r) => EXECUTE_ROLES.has(r));
 
-    const [
-      { data: proj },
-      { data: co },
-      prereqs,
-      { data: ccc },
-      { data: gate },
-      history,
-    ] = await Promise.all([
-      context.supabase
-        .from("projects")
-        .select("id, name, code, phase, status, company_id")
-        .eq("id", data.projectId)
-        .maybeSingle(),
-      context.supabase
-        .from("companies")
-        .select("name")
-        .eq("id", companyId)
-        .maybeSingle(),
-      checkHandoverPrereqs(context.supabase, companyId, data.projectId),
-      context.supabase
-        .from("commissioning_certificates")
-        .select("id, certificate_number, status, effective_date, signatures")
-        .eq("company_id", companyId)
-        .eq("project_id", data.projectId)
-        .eq("certificate_type", "ccc_transfer")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      context.supabase
-        .from("project_phase_gates")
-        .select("id, status, checklist, approval_instance_id, approved_at")
-        .eq("company_id", companyId)
-        .eq("project_id", data.projectId)
-        .eq("phase", "handover")
-        .maybeSingle(),
-      assembleHandoverHistory(context.supabase, companyId, data.projectId),
-    ]);
+    const [{ data: proj }, { data: co }, prereqs, { data: ccc }, { data: gate }, history] =
+      await Promise.all([
+        context.supabase
+          .from("projects")
+          .select("id, name, code, phase, status, company_id")
+          .eq("id", data.projectId)
+          .maybeSingle(),
+        context.supabase.from("companies").select("name").eq("id", companyId).maybeSingle(),
+        checkHandoverPrereqs(context.supabase, companyId, data.projectId),
+        context.supabase
+          .from("commissioning_certificates")
+          .select("id, certificate_number, status, effective_date, signatures")
+          .eq("company_id", companyId)
+          .eq("project_id", data.projectId)
+          .eq("certificate_type", "ccc_transfer")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        context.supabase
+          .from("project_phase_gates")
+          .select("id, status, checklist, approval_instance_id, approved_at")
+          .eq("company_id", companyId)
+          .eq("project_id", data.projectId)
+          .eq("phase", "handover")
+          .maybeSingle(),
+        assembleHandoverHistory(context.supabase, companyId, data.projectId),
+      ]);
 
     if (!proj || (proj as any).company_id !== companyId) {
       httpError(404, "project_not_found");
@@ -204,18 +186,14 @@ export const getHandoverBoard = createServerFn({ method: "GET" })
             certificate_number: (ccc as any).certificate_number,
             status: (ccc as any).status,
             effective_date: (ccc as any).effective_date,
-            signatures: Array.isArray((ccc as any).signatures)
-              ? (ccc as any).signatures
-              : [],
+            signatures: Array.isArray((ccc as any).signatures) ? (ccc as any).signatures : [],
           }
         : null,
       handoverGate: gate
         ? {
             id: (gate as any).id,
             status: (gate as any).status,
-            checklist: Array.isArray((gate as any).checklist)
-              ? (gate as any).checklist
-              : [],
+            checklist: Array.isArray((gate as any).checklist) ? (gate as any).checklist : [],
             approval_instance_id: (gate as any).approval_instance_id ?? null,
             approved_at: (gate as any).approved_at ?? null,
           }
@@ -259,11 +237,7 @@ export const signCccTransfer = createServerFn({ method: "POST" })
     }
 
     // Full prereq gauntlet — 409 with reasons array if anything fails.
-    const prereqs = await checkHandoverPrereqs(
-      context.supabase,
-      companyId,
-      data.projectId,
-    );
+    const prereqs = await checkHandoverPrereqs(context.supabase, companyId, data.projectId);
     if (prereqs.reasons.length > 0) {
       httpError(409, "handover_prereqs_failed", {
         reasons: prereqs.reasons,
@@ -295,11 +269,7 @@ export const signCccTransfer = createServerFn({ method: "POST" })
     }
 
     const nowIso = new Date().toISOString();
-    const nextChecklist = autoCompleteHandoverChecklist(
-      gate.checklist,
-      context.user!.id,
-      nowIso,
-    );
+    const nextChecklist = autoCompleteHandoverChecklist(gate.checklist, context.user!.id, nowIso);
 
     // Flip locked → open first (so the transition step is coherent), then
     // continue in-place to in_review.
@@ -364,34 +334,20 @@ export const signCccTransfer = createServerFn({ method: "POST" })
         .select("effective_date, signatures")
         .eq("id", cccId)
         .maybeSingle();
-      const sigs = Array.isArray((cccRow as any)?.signatures)
-        ? (cccRow as any).signatures
-        : [];
-      await audit(
-        context,
-        "handover.ccc_signed",
-        "commissioning_certificates",
-        cccId,
-        {
-          project_id: data.projectId,
-          effective_date: (cccRow as any)?.effective_date ?? null,
-          parties: sigs.map((s: any) => s?.party).filter(Boolean),
-        },
-      );
+      const sigs = Array.isArray((cccRow as any)?.signatures) ? (cccRow as any).signatures : [];
+      await audit(context, "handover.ccc_signed", "commissioning_certificates", cccId, {
+        project_id: data.projectId,
+        effective_date: (cccRow as any)?.effective_date ?? null,
+        parties: sigs.map((s: any) => s?.party).filter(Boolean),
+      });
     }
 
-    await audit(
-      context,
-      "gate.transition_requested",
-      "project_phase_gates",
-      gate.id,
-      {
-        project_id: data.projectId,
-        phase: "handover",
-        approval_instance_id: (inst as any).id,
-        trigger: "ccc_transfer",
-      },
-    );
+    await audit(context, "gate.transition_requested", "project_phase_gates", gate.id, {
+      project_id: data.projectId,
+      phase: "handover",
+      approval_instance_id: (inst as any).id,
+      trigger: "ccc_transfer",
+    });
 
     return {
       ok: true,

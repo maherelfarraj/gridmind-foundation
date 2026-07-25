@@ -32,9 +32,7 @@ export function ChecklistRunner({ items, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Checklist
-        </div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">Checklist</div>
         <div className="text-xs text-muted-foreground">
           {summary.findingsCount} finding(s), {summary.openFindings} open
         </div>

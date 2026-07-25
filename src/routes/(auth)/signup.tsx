@@ -70,7 +70,6 @@ function SignupPage() {
     setSentTo(values.email);
   };
 
-
   if (sentTo) {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
@@ -78,12 +77,11 @@ function SignupPage() {
           <CheckCircle2 className="h-6 w-6" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Check your inbox
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">Check your inbox</h1>
           <p className="text-sm text-muted-foreground">
-            We sent a verification link to <span className="font-medium text-foreground">{sentTo}</span>.
-            Click it to activate your account.
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">{sentTo}</span>. Click it to activate your
+            account.
           </p>
         </div>
         <Link to="/login" className="text-sm font-medium text-primary hover:underline">
@@ -96,7 +94,9 @@ function SignupPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">Create your account</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          Create your account
+        </h1>
         <p className="text-sm text-muted-foreground">Get started with GridMind EPC.</p>
       </div>
 
@@ -122,7 +122,12 @@ function SignupPage() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" autoComplete="email" placeholder="you@company.com" {...field} />
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

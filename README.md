@@ -39,4 +39,3 @@ dev server. `bun run test:all` additionally runs `tests/api/**`,
 `tests/helpers/dev-server.ts` when the dev server at
 `http://localhost:8080` is unreachable, so the command stays green offline.
 Start `bun run dev` in another shell to actually exercise them.
-

@@ -46,9 +46,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
 
 async function assertWriter(context: AuthContext): Promise<void> {
   const results = await Promise.all(
-    WRITE_ROLES.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as never }),
-    ),
+    WRITE_ROLES.map((r) => context.supabase.rpc("has_company_role", { p_role: r as never })),
   );
   if (!results.some((r) => r.data === true)) httpError(403, "forbidden_role");
 }
@@ -110,9 +108,7 @@ export interface OmReportGeneratedDTO {
 export const listOmReports = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) =>
-    z
-      .object({ projectId: z.string().uuid().optional() })
-      .parse(raw ?? {}),
+    z.object({ projectId: z.string().uuid().optional() }).parse(raw ?? {}),
   )
   .handler(async ({ data, context }): Promise<OmReportRow[]> => {
     requireSupabaseAuth(context);
@@ -142,9 +138,7 @@ export const listOmReports = createServerFn({ method: "POST" })
 export const listOmReportProjects = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .handler(
-    async ({
-      context,
-    }): Promise<Array<{ id: string; name: string; code: string | null }>> => {
+    async ({ context }): Promise<Array<{ id: string; name: string; code: string | null }>> => {
       requireSupabaseAuth(context);
       const companyId = await currentCompanyId(context);
       const { data, error } = await context.supabase
@@ -166,9 +160,7 @@ export const listOmReportProjects = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const getOmReportDownloadUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ reportId: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ reportId: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<{ url: string }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -212,11 +204,8 @@ export const generateOmReport = createServerFn({ method: "POST" })
     if (!proj) httpError(404, "project_not_found");
     if ((proj as any).company_id !== companyId) httpError(403, "cross_company");
     const capacityKwp =
-      (proj as any).capacity_mw != null
-        ? Number((proj as any).capacity_mw) * 1000
-        : null;
-    const projectCurrency =
-      ((proj as any).currency_code as string | null) ?? "USD";
+      (proj as any).capacity_mw != null ? Number((proj as any).capacity_mw) * 1000 : null;
+    const projectCurrency = ((proj as any).currency_code as string | null) ?? "USD";
 
     // ---- period math -------------------------------------------------------
     const periodStartIso = `${data.periodStart}T00:00:00.000Z`;
@@ -224,15 +213,12 @@ export const generateOmReport = createServerFn({ method: "POST" })
     const periodEndIso = new Date(
       Date.parse(`${data.periodEnd}T00:00:00.000Z`) + 86_400_000,
     ).toISOString();
-    const periodHours =
-      (Date.parse(periodEndIso) - Date.parse(periodStartIso)) / 36e5;
+    const periodHours = (Date.parse(periodEndIso) - Date.parse(periodStartIso)) / 36e5;
 
     // ---- alarms ------------------------------------------------------------
     const { data: alarmRows, error: aErr } = await context.supabase
       .from("scada_alarms")
-      .select(
-        "id, severity, raised_at, acknowledged_at, cleared_at, rule_id, alarm_rules(name)",
-      )
+      .select("id, severity, raised_at, acknowledged_at, cleared_at, rule_id, alarm_rules(name)")
       .eq("project_id", data.projectId)
       .gte("raised_at", periodStartIso)
       .lt("raised_at", periodEndIso);
@@ -247,18 +233,12 @@ export const generateOmReport = createServerFn({ method: "POST" })
       ruleName: r.alarm_rules?.name ?? null,
     }));
     const alarmSummary = computeAlarmSummary(alarms);
-    const alarmDowntimeHours = computeAlarmDowntimeHours(
-      alarms,
-      periodStartIso,
-      periodEndIso,
-    );
+    const alarmDowntimeHours = computeAlarmDowntimeHours(alarms, periodStartIso, periodEndIso);
 
     // ---- work orders -------------------------------------------------------
     const { data: woRows, error: wErr } = await context.supabase
       .from("work_orders")
-      .select(
-        "id, type, status, created_at, closed_at, total_cost, currency_code, labor",
-      )
+      .select("id, type, status, created_at, closed_at, total_cost, currency_code, labor")
       .eq("project_id", data.projectId)
       .gte("created_at", periodStartIso)
       .lt("created_at", periodEndIso);
@@ -482,7 +462,6 @@ export const attachOmReportPdf = createServerFn({ method: "POST" })
       } as any);
     } catch (e: any) {
       if (e?.code !== "42P01") {
-        // eslint-disable-next-line no-console
         console.warn("export_packages insert failed", e);
       }
     }

@@ -9,10 +9,7 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  scheduleTaskAssignSchema,
-  type WbsDiscipline,
-} from "@/lib/wbs-rules";
+import { scheduleTaskAssignSchema, type WbsDiscipline } from "@/lib/wbs-rules";
 
 export interface ScheduleTaskAlignRow {
   id: string;
@@ -25,11 +22,7 @@ export interface ScheduleTaskAlignRow {
   is_milestone: boolean;
 }
 
-const ASSIGN_ROLES = [
-  "project_admin",
-  "construction_admin",
-  "company_admin",
-] as const;
+const ASSIGN_ROLES = ["project_admin", "construction_admin", "company_admin"] as const;
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
@@ -39,14 +32,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -85,9 +73,7 @@ export const listScheduleTasksForAlign = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
       .from("schedule_tasks")
-      .select(
-        "id, name, discipline, wbs_item_id, status, start_date, end_date, is_milestone",
-      )
+      .select("id, name, discipline, wbs_item_id, status, start_date, end_date, is_milestone")
       .eq("project_id", data.projectId)
       .order("start_date", { ascending: true })
       .order("name", { ascending: true });
@@ -125,9 +111,7 @@ export const assignScheduleTask = createServerFn({ method: "POST" })
         wbs_item_id: data.wbs_item_id,
       } as any)
       .eq("id", data.id)
-      .select(
-        "id, name, discipline, wbs_item_id, status, start_date, end_date, is_milestone",
-      )
+      .select("id, name, discipline, wbs_item_id, status, start_date, end_date, is_milestone")
       .single();
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");

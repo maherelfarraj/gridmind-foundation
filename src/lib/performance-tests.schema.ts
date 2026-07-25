@@ -52,6 +52,10 @@ export const attachPrReportInput = z.object({
   testId: z.string().uuid(),
   storagePath: z.string().trim().min(1).max(400),
   fileName: z.string().trim().min(1).max(240),
-  fileSizeBytes: z.number().int().nonnegative().max(50 * 1024 * 1024),
+  fileSizeBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(50 * 1024 * 1024),
 });
 export type AttachPrReportInput = z.infer<typeof attachPrReportInput>;

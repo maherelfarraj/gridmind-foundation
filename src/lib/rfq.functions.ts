@@ -154,30 +154,17 @@ function toBidRow(r: any): BidRow {
 // ---------------------------------------------------------------------------
 export const getRfqWriteAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({ context }): Promise<{ canAuthor: boolean; canAward: boolean }> => {
-      requireSupabaseAuth(context);
-      const rolesToCheck = [
-        "procurement_admin",
-        "procurement_officer",
-        "company_admin",
-      ] as const;
-      const results = await Promise.all(
-        rolesToCheck.map((r) =>
-          context.supabase.rpc("has_company_role", { p_role: r }),
-        ),
-      );
-      const flags = Object.fromEntries(
-        rolesToCheck.map((r, i) => [r, Boolean(results[i]?.data)]),
-      );
-      const canAuthor =
-        flags.procurement_admin ||
-        flags.procurement_officer ||
-        flags.company_admin;
-      const canAward = flags.procurement_admin || flags.company_admin;
-      return { canAuthor, canAward };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canAuthor: boolean; canAward: boolean }> => {
+    requireSupabaseAuth(context);
+    const rolesToCheck = ["procurement_admin", "procurement_officer", "company_admin"] as const;
+    const results = await Promise.all(
+      rolesToCheck.map((r) => context.supabase.rpc("has_company_role", { p_role: r })),
+    );
+    const flags = Object.fromEntries(rolesToCheck.map((r, i) => [r, Boolean(results[i]?.data)]));
+    const canAuthor = flags.procurement_admin || flags.procurement_officer || flags.company_admin;
+    const canAward = flags.procurement_admin || flags.company_admin;
+    return { canAuthor, canAward };
+  });
 
 // ---------------------------------------------------------------------------
 // list / get
@@ -210,9 +197,7 @@ export const listRfqs = createServerFn({ method: "GET" })
 
 export const getRfq = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfqId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<RfqDetail> => {
     requireSupabaseAuth(context);
     const { data: rfqRow, error: rfqErr } = await context.supabase
@@ -237,14 +222,13 @@ export const getRfq = createServerFn({ method: "GET" })
 export const listRfqEligibleVendors = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ search: z.string().nullable().optional() })
-      .parse(input ?? {}),
+    z.object({ search: z.string().nullable().optional() }).parse(input ?? {}),
   )
   .handler(
-    async (
-      { data, context },
-    ): Promise<Array<{ id: string; name: string; currency_code: string | null }>> => {
+    async ({
+      data,
+      context,
+    }): Promise<Array<{ id: string; name: string; currency_code: string | null }>> => {
       requireSupabaseAuth(context);
       let q = context.supabase
         .from("vendors")
@@ -405,10 +389,8 @@ export const inviteRfqVendors = createServerFn({ method: "POST" })
       .eq("id", data.rfqId)
       .maybeSingle();
     if (rfqErr) throw rfqErr;
-    if (!rfq || (rfq as any).company_id !== companyId)
-      httpError(404, "rfq_not_found");
-    if ((rfq as any).status === "cancelled")
-      httpError(409, "rfq_cancelled");
+    if (!rfq || (rfq as any).company_id !== companyId) httpError(404, "rfq_not_found");
+    if ((rfq as any).status === "cancelled") httpError(409, "rfq_cancelled");
 
     // Verify all vendors belong to same company and are active.
     const { data: vendors, error: vErr } = await context.supabase
@@ -416,8 +398,7 @@ export const inviteRfqVendors = createServerFn({ method: "POST" })
       .select("id, status")
       .in("id", data.vendorIds);
     if (vErr) throw vErr;
-    if ((vendors ?? []).length !== data.vendorIds.length)
-      httpError(400, "vendor_invalid");
+    if ((vendors ?? []).length !== data.vendorIds.length) httpError(400, "vendor_invalid");
     for (const v of vendors ?? []) {
       if ((v as any).status !== "active")
         httpError(400, "vendor_not_active", "Only active vendors can be invited.");
@@ -450,9 +431,7 @@ export const inviteRfqVendors = createServerFn({ method: "POST" })
 
 export const removeRfqInvite = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ bidId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ bidId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const { data: bid, error: bErr } = await context.supabase
@@ -464,10 +443,7 @@ export const removeRfqInvite = createServerFn({ method: "POST" })
     if (!bid) httpError(404, "bid_not_found");
     if ((bid as any).status !== "invited")
       httpError(409, "bid_locked", "Only 'invited' bids can be removed.");
-    const { error } = await context.supabase
-      .from("rfq_bids")
-      .delete()
-      .eq("id", data.bidId);
+    const { error } = await context.supabase.from("rfq_bids").delete().eq("id", data.bidId);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
@@ -483,9 +459,7 @@ export const removeRfqInvite = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const issueRfq = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfqId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rfq_number: string }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -496,21 +470,18 @@ export const issueRfq = createServerFn({ method: "POST" })
       .eq("id", data.rfqId)
       .maybeSingle();
     if (rfqErr) throw rfqErr;
-    if (!rfq || (rfq as any).company_id !== companyId)
-      httpError(404, "rfq_not_found");
+    if (!rfq || (rfq as any).company_id !== companyId) httpError(404, "rfq_not_found");
     if ((rfq as any).status !== "draft")
       httpError(409, "rfq_not_draft", "Only drafts can be issued.");
     const lines = ((rfq as any).lines ?? []) as RfqLine[];
-    if (lines.length === 0)
-      httpError(400, "no_lines", "RFQ needs at least one line.");
+    if (lines.length === 0) httpError(400, "no_lines", "RFQ needs at least one line.");
 
     const { count: inviteCount, error: cErr } = await context.supabase
       .from("rfq_bids")
       .select("id", { count: "exact", head: true })
       .eq("rfq_id", data.rfqId);
     if (cErr) throw cErr;
-    if ((inviteCount ?? 0) === 0)
-      httpError(400, "no_invites", "Invite at least one vendor first.");
+    if ((inviteCount ?? 0) === 0) httpError(400, "no_invites", "Invite at least one vendor first.");
 
     for (let attempt = 0; attempt < 2; attempt++) {
       const { data: existing, error: nErr } = await context.supabase
@@ -519,9 +490,7 @@ export const issueRfq = createServerFn({ method: "POST" })
         .eq("company_id", companyId)
         .like("rfq_number", "RFQ-%");
       if (nErr) throw nErr;
-      const number = nextRfqNumber(
-        ((existing ?? []) as any[]).map((r) => r.rfq_number as string),
-      );
+      const number = nextRfqNumber(((existing ?? []) as any[]).map((r) => r.rfq_number as string));
       const today = new Date().toISOString().slice(0, 10);
       const { error } = await context.supabase
         .from("rfqs")
@@ -583,16 +552,10 @@ export const submitBid = createServerFn({ method: "POST" })
     if (!rfq) httpError(404, "rfq_not_found");
     if ((rfq as any).status !== "issued")
       httpError(409, "rfq_not_issued", "RFQ is not accepting bids.");
-    const rfqLineNos = new Set(
-      (((rfq as any).lines ?? []) as RfqLine[]).map((l) => l.line_no),
-    );
+    const rfqLineNos = new Set((((rfq as any).lines ?? []) as RfqLine[]).map((l) => l.line_no));
     for (const l of data.lines) {
       if (!rfqLineNos.has(l.line_no)) {
-        httpError(
-          400,
-          "line_not_on_rfq",
-          `Line ${l.line_no} is not on the parent RFQ.`,
-        );
+        httpError(400, "line_not_on_rfq", `Line ${l.line_no} is not on the parent RFQ.`);
       }
     }
 

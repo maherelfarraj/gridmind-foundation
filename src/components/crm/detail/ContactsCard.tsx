@@ -17,13 +17,7 @@ interface Props {
   canDelete: boolean;
 }
 
-export function ContactsCard({
-  opportunityId,
-  contacts,
-  isLoading,
-  canWrite,
-  canDelete,
-}: Props) {
+export function ContactsCard({ opportunityId, contacts, isLoading, canWrite, canDelete }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ContactRow | null>(null);
   const del = useDeleteContact(opportunityId);
@@ -41,12 +35,8 @@ export function ContactsCard({
     <Card className="flex flex-col gap-3 border-border bg-card p-5">
       <header className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-sm font-semibold text-foreground">
-            Contacts
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Buyer decision-makers on this deal
-          </p>
+          <h2 className="font-display text-sm font-semibold text-foreground">Contacts</h2>
+          <p className="text-xs text-muted-foreground">Buyer decision-makers on this deal</p>
         </div>
         {canWrite && (
           <Button size="sm" variant="outline" onClick={openNew}>
@@ -68,17 +58,10 @@ export function ContactsCard({
       ) : (
         <ul className="divide-y divide-border">
           {contacts.map((c) => (
-            <li
-              key={c.id}
-              className="flex items-start gap-3 py-2 first:pt-0 last:pb-0"
-            >
+            <li key={c.id} className="flex items-start gap-3 py-2 first:pt-0 last:pb-0">
               <div className="mt-0.5">
                 {c.is_primary ? (
-                  <Star
-                    size={14}
-                    aria-label="Primary"
-                    className="fill-primary text-primary"
-                  />
+                  <Star size={14} aria-label="Primary" className="fill-primary text-primary" />
                 ) : (
                   <UserRound size={14} className="text-muted-foreground" />
                 )}
@@ -98,9 +81,7 @@ export function ContactsCard({
                       {c.title}
                     </Badge>
                   )}
-                  {c.is_primary && (
-                    <Badge className="text-[10px]">Primary</Badge>
-                  )}
+                  {c.is_primary && <Badge className="text-[10px]">Primary</Badge>}
                 </div>
                 <div className="mt-0.5 flex flex-wrap gap-3 text-xs text-muted-foreground">
                   {c.email && (

@@ -78,44 +78,60 @@ const baseCfg = z.object({
   credentials_ref: credentialsRefSchema.optional(),
 });
 
-const modbusCfg = baseCfg.extend({
-  host: z.string().min(1),
-  port: z.coerce.number().int().min(1).max(65535),
-  unit_ids: z.array(z.coerce.number().int().min(0).max(255)).min(1),
-  poll_interval_s: z.coerce.number().int().min(1).max(3600).default(5),
-}).strict();
+const modbusCfg = baseCfg
+  .extend({
+    host: z.string().min(1),
+    port: z.coerce.number().int().min(1).max(65535),
+    unit_ids: z.array(z.coerce.number().int().min(0).max(255)).min(1),
+    poll_interval_s: z.coerce.number().int().min(1).max(3600).default(5),
+  })
+  .strict();
 
-const iecCfg = baseCfg.extend({
-  host: z.string().min(1),
-  port: z.coerce.number().int().min(1).max(65535),
-  poll_interval_s: z.coerce.number().int().min(1).max(3600).default(5),
-}).strict();
+const iecCfg = baseCfg
+  .extend({
+    host: z.string().min(1),
+    port: z.coerce.number().int().min(1).max(65535),
+    poll_interval_s: z.coerce.number().int().min(1).max(3600).default(5),
+  })
+  .strict();
 
 const sunspecCfg = modbusCfg;
 
-const mqttCfg = baseCfg.extend({
-  broker_url: z.string().url(),
-  topic: z.string().min(1),
-  poll_interval_s: z.coerce.number().int().min(1).max(3600).optional(),
-}).strict();
+const mqttCfg = baseCfg
+  .extend({
+    broker_url: z.string().url(),
+    topic: z.string().min(1),
+    poll_interval_s: z.coerce.number().int().min(1).max(3600).optional(),
+  })
+  .strict();
 
-const vendorApiCfg = baseCfg.extend({
-  base_url: z.string().url(),
-  poll_interval_s: z.coerce.number().int().min(5).max(3600).default(60),
-}).strict();
+const vendorApiCfg = baseCfg
+  .extend({
+    base_url: z.string().url(),
+    poll_interval_s: z.coerce.number().int().min(5).max(3600).default(60),
+  })
+  .strict();
 
-const csvCfg = baseCfg.extend({
-  source_label: z.string().min(1),
-}).strict();
+const csvCfg = baseCfg
+  .extend({
+    source_label: z.string().min(1),
+  })
+  .strict();
 
 export function connectorConfigSchema(type: ConnectorType) {
   switch (type) {
-    case "modbus_tcp": return modbusCfg;
-    case "iec61850": return iecCfg;
-    case "sunspec": return sunspecCfg;
-    case "mqtt": return mqttCfg;
-    case "vendor_api": return vendorApiCfg;
-    case "csv_import": return csvCfg;
+    case "modbus_tcp":
+      return modbusCfg;
+    case "iec61850":
+      return iecCfg;
+    case "sunspec":
+      return sunspecCfg;
+    case "mqtt":
+      return mqttCfg;
+    case "vendor_api":
+      return vendorApiCfg;
+    case "csv_import":
+      return csvCfg;
   }
 }
 

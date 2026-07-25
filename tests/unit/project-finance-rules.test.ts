@@ -114,12 +114,8 @@ describe("DD readiness", () => {
   it("overdue only counts open statuses", () => {
     const yesterday = new Date(Date.UTC(2026, 0, 1));
     const now = new Date(Date.UTC(2026, 0, 10));
-    expect(
-      isDdOverdue(yesterday.toISOString().slice(0, 10), "submitted", now),
-    ).toBe(true);
-    expect(
-      isDdOverdue(yesterday.toISOString().slice(0, 10), "accepted", now),
-    ).toBe(false);
+    expect(isDdOverdue(yesterday.toISOString().slice(0, 10), "submitted", now)).toBe(true);
+    expect(isDdOverdue(yesterday.toISOString().slice(0, 10), "accepted", now)).toBe(false);
     expect(isDdOverdue(null, "submitted", now)).toBe(false);
   });
 });

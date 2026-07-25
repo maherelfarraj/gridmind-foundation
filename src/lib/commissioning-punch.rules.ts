@@ -27,8 +27,7 @@ export const PUNCH_CATEGORY_SEMANTICS: Record<
   },
   C: {
     label: "C — Minor",
-    requires:
-      "May carry into Operations with a dated action plan.",
+    requires: "May carry into Operations with a dated action plan.",
     tone: "muted",
   },
 };
@@ -52,12 +51,7 @@ export const assertNoOpenAInput = z.object({
 });
 export type AssertNoOpenAInput = z.infer<typeof assertNoOpenAInput>;
 
-const CLOSE_ROLES = new Set([
-  "construction_admin",
-  "foreman",
-  "project_admin",
-  "company_admin",
-]);
+const CLOSE_ROLES = new Set(["construction_admin", "foreman", "project_admin", "company_admin"]);
 export function canClosePunch(roles: readonly string[]): boolean {
   return roles.some((r) => CLOSE_ROLES.has(r));
 }
@@ -101,8 +95,5 @@ export function canCloseNow(
   utilityWitnessRequired: boolean,
   parties: readonly SignoffParty[],
 ): boolean {
-  return missingParties(
-    requiredParties(category, utilityWitnessRequired),
-    parties,
-  ).length === 0;
+  return missingParties(requiredParties(category, utilityWitnessRequired), parties).length === 0;
 }

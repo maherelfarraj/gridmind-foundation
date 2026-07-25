@@ -1,10 +1,6 @@
 // P-066 — New goods receipt form (mobile-friendly).
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  createFileRoute,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -33,18 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  createDraftGrn,
-  getReceivableForPo,
-  listReceivablePos,
-} from "@/lib/grn.functions";
+import { createDraftGrn, getReceivableForPo, listReceivablePos } from "@/lib/grn.functions";
 import {
   GRN_CONDITIONS,
   overReceivedLines,
@@ -91,11 +78,7 @@ function NewReceipt() {
   if (!po) {
     return (
       <div className="mx-auto max-w-lg space-y-4 p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/procurement/receipts" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <h1 className="font-display text-xl font-semibold">Pick a PO to receive</h1>
@@ -119,9 +102,7 @@ function NewReceipt() {
               >
                 <div>
                   <div className="font-mono text-sm">{p.po_number}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {p.vendor_name ?? "—"}
-                  </div>
+                  <div className="text-xs text-muted-foreground">{p.vendor_name ?? "—"}</div>
                 </div>
                 <Badge variant="outline" className="capitalize">
                   {p.status.replace("_", " ")}
@@ -145,9 +126,7 @@ interface DraftContext {
 function ReceivingForm({ poId }: { poId: string }) {
   const navigate = useNavigate();
   const receivableFn = useServerFn(getReceivableForPo);
-  const receivableQuery = useSuspenseQuery(
-    receivableForPoQueryOptions(receivableFn, poId),
-  );
+  const receivableQuery = useSuspenseQuery(receivableForPoQueryOptions(receivableFn, poId));
   const receivable = receivableQuery.data.receivable;
 
   const createDraft = useCreateDraftGrn();
@@ -232,22 +211,15 @@ function ReceivingEditor({
   const saveDraft = useSaveGrnDraft(grnId);
   const confirm = useConfirmGrn(grnId);
 
-  const badLines = useMemo(
-    () => overReceivedLines(lines, receivable),
-    [lines, receivable],
-  );
+  const badLines = useMemo(() => overReceivedLines(lines, receivable), [lines, receivable]);
   const anyDefectMissingNote = lines.some(
     (l) => l.condition !== "ok" && !(l.defect_notes ?? "").trim(),
   );
   const canConfirm =
-    badLines.length === 0 &&
-    !anyDefectMissingNote &&
-    lines.some((l) => l.qty_received > 0);
+    badLines.length === 0 && !anyDefectMissingNote && lines.some((l) => l.qty_received > 0);
 
   const updateLine = (no: number, patch: Partial<GrnLine>) => {
-    setLines((prev) =>
-      prev.map((l) => (l.po_line_no === no ? { ...l, ...patch } : l)),
-    );
+    setLines((prev) => prev.map((l) => (l.po_line_no === no ? { ...l, ...patch } : l)));
   };
 
   const uploadPhoto = async (file: File) => {
@@ -267,9 +239,7 @@ function ReceivingEditor({
         .from("photos")
         .upload(path, file, { contentType: file.type || "image/jpeg" });
       if (error) throw error;
-      const { data: signed } = await supabase.storage
-        .from("photos")
-        .createSignedUrl(path, 600);
+      const { data: signed } = await supabase.storage.from("photos").createSignedUrl(path, 600);
       setPhotos((p) => [...p, path]);
       if (signed?.signedUrl) {
         setPhotoUrls((m) => ({ ...m, [path]: signed.signedUrl }));
@@ -288,7 +258,10 @@ function ReceivingEditor({
       delete next[path];
       return next;
     });
-    supabase.storage.from("photos").remove([path]).catch(() => undefined);
+    supabase.storage
+      .from("photos")
+      .remove([path])
+      .catch(() => undefined);
   };
 
   const payload = {
@@ -312,10 +285,7 @@ function ReceivingEditor({
       {badLines.length > 0 && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 h-4 w-4" />
-          <span>
-            Line(s) {badLines.join(", ")} exceed the remaining quantity on the
-            PO.
-          </span>
+          <span>Line(s) {badLines.join(", ")} exceed the remaining quantity on the PO.</span>
         </div>
       )}
 
@@ -326,9 +296,7 @@ function ReceivingEditor({
           <Card key={l.po_line_no}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">
-                <span className="font-mono text-xs text-muted-foreground">
-                  #{l.po_line_no}
-                </span>{" "}
+                <span className="font-mono text-xs text-muted-foreground">#{l.po_line_no}</span>{" "}
                 {l.description}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
@@ -413,13 +381,12 @@ function ReceivingEditor({
           {photos.length > 0 && (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {photos.map((p) => (
-                <div key={p} className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted">
+                <div
+                  key={p}
+                  className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted"
+                >
                   {photoUrls[p] ? (
-                    <img
-                      src={photoUrls[p]}
-                      alt="Delivery"
-                      className="h-full w-full object-cover"
-                    />
+                    <img src={photoUrls[p]} alt="Delivery" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                       Uploaded
@@ -463,9 +430,7 @@ function ReceivingEditor({
           </Button>
           <Button
             className="flex-1"
-            disabled={
-              !canConfirm || confirm.isPending || badLines.length > 0
-            }
+            disabled={!canConfirm || confirm.isPending || badLines.length > 0}
             onClick={() =>
               confirm.mutate(payload, {
                 onSuccess: () => onDone(),
@@ -542,13 +507,7 @@ function LotIdInput({
   );
 }
 
-function PhotoPicker({
-  onFile,
-  disabled,
-}: {
-  onFile: (file: File) => void;
-  disabled: boolean;
-}) {
+function PhotoPicker({ onFile, disabled }: { onFile: (file: File) => void; disabled: boolean }) {
   const camRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   return (

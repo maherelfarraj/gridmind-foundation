@@ -41,9 +41,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
 async function assertWriter(context: AuthContext): Promise<void> {
   const roles = ["om_admin", "scada_admin"] as const;
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r })),
   );
   const allowed = results.some((r) => r.data === true);
   if (!allowed) httpError(403, "forbidden_role");
@@ -69,13 +67,7 @@ async function audit(
 }
 
 // ---- types -----------------------------------------------------------------
-type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [k: string]: Json }
-  | Json[];
+type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
 
 export interface ConnectorRow {
   id: string;
@@ -101,9 +93,7 @@ export interface ListConnectorsResult {
 // ---- list ------------------------------------------------------------------
 export const listScadaConnectors = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<ListConnectorsResult> => {
     requireSupabaseAuth(context);
 
@@ -131,10 +121,7 @@ export const listScadaConnectors = createServerFn({ method: "GET" })
         byProject.set(pid, (byProject.get(pid) ?? 0) + 1);
       }
       for (const r of rows ?? []) {
-        countsById.set(
-          r.id as string,
-          byProject.get(r.project_id as string) ?? 0,
-        );
+        countsById.set(r.id as string, byProject.get(r.project_id as string) ?? 0);
       }
     }
 
@@ -163,9 +150,7 @@ export const listScadaConnectors = createServerFn({ method: "GET" })
 // Lightweight project picker for the wizard.
 export const listScadaProjectOptions = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -299,10 +284,7 @@ export const upsertScadaAssets = createServerFn({ method: "POST" })
       .eq("id", data.connector_id)
       .maybeSingle();
     if (cErr) throw cErr;
-    if (
-      !connector ||
-      (connector as { company_id: string }).company_id !== companyId
-    ) {
+    if (!connector || (connector as { company_id: string }).company_id !== companyId) {
       httpError(403, "forbidden_connector");
     }
     const projectId = (connector as { project_id: string }).project_id;
@@ -359,18 +341,16 @@ export const upsertScadaAssets = createServerFn({ method: "POST" })
           .eq("id", (saExisting as { id: string }).id);
         if (uErr) throw uErr;
       } else {
-        const { error: iErr } = await context.supabase
-          .from("scada_assets")
-          .insert({
-            company_id: companyId,
-            project_id: projectId,
-            equipment_id: equipmentId,
-            asset_type: row.asset_type,
-            asset_key: row.asset_key,
-            name: row.name,
-            site_label: row.site_label ?? null,
-            created_by: context.user!.id,
-          });
+        const { error: iErr } = await context.supabase.from("scada_assets").insert({
+          company_id: companyId,
+          project_id: projectId,
+          equipment_id: equipmentId,
+          asset_type: row.asset_type,
+          asset_key: row.asset_key,
+          name: row.name,
+          site_label: row.site_label ?? null,
+          created_by: context.user!.id,
+        });
         if (iErr) throw iErr;
         assetsCreated += 1;
       }
@@ -389,9 +369,7 @@ export const upsertScadaAssets = createServerFn({ method: "POST" })
 // ---- test (stub) -----------------------------------------------------------
 export const testScadaConnector = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     await assertWriter(context);

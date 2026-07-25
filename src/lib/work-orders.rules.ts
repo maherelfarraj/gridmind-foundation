@@ -1,20 +1,10 @@
 // P-106 — Pure schemas + math for work orders.
 import { z } from "zod";
 
-export const WORK_ORDER_TYPES = [
-  "preventive",
-  "corrective",
-  "predictive",
-  "inspection",
-] as const;
+export const WORK_ORDER_TYPES = ["preventive", "corrective", "predictive", "inspection"] as const;
 export type WorkOrderType = (typeof WORK_ORDER_TYPES)[number];
 
-export const WORK_ORDER_PRIORITIES = [
-  "low",
-  "medium",
-  "high",
-  "emergency",
-] as const;
+export const WORK_ORDER_PRIORITIES = ["low", "medium", "high", "emergency"] as const;
 export type WorkOrderPriority = (typeof WORK_ORDER_PRIORITIES)[number];
 
 export const WORK_ORDER_STATUSES = [
@@ -52,10 +42,7 @@ export type LaborLine = z.infer<typeof laborLineSchema>;
 // ---- server-side money math (2dp round) -----------------------------------
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export function computeTotalCost(
-  parts: readonly PartLine[],
-  labor: readonly LaborLine[],
-): number {
+export function computeTotalCost(parts: readonly PartLine[], labor: readonly LaborLine[]): number {
   const partsSum = parts.reduce((acc, p) => acc + p.qty * p.unit_cost, 0);
   const laborSum = labor.reduce((acc, l) => acc + l.hours * l.rate, 0);
   return round2(partsSum + laborSum);
@@ -124,10 +111,7 @@ const ALLOWED: Record<WorkOrderStatus, readonly WorkOrderStatus[]> = {
   cancelled: [],
 };
 
-export function canTransition(
-  from: WorkOrderStatus,
-  to: WorkOrderStatus,
-): boolean {
+export function canTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
   if (from === to) return true;
   return ALLOWED[from].includes(to);
 }

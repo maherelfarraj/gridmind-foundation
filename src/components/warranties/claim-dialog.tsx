@@ -170,9 +170,7 @@ export function ClaimDialog({ warrantyId, endDate, isOmAdmin }: Props) {
                         min={0}
                         value={field.value ?? ""}
                         onChange={(e) =>
-                          field.onChange(
-                            e.target.value === "" ? null : Number(e.target.value),
-                          )
+                          field.onChange(e.target.value === "" ? null : Number(e.target.value))
                         }
                       />
                     </FormControl>
@@ -192,9 +190,7 @@ export function ClaimDialog({ warrantyId, endDate, isOmAdmin }: Props) {
                         value={field.value ?? ""}
                         onChange={(e) =>
                           field.onChange(
-                            e.target.value === ""
-                              ? null
-                              : e.target.value.toUpperCase(),
+                            e.target.value === "" ? null : e.target.value.toUpperCase(),
                           )
                         }
                         placeholder="USD"

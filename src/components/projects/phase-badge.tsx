@@ -9,13 +9,7 @@ const VARIANTS: Record<ProjectPhase, string> = {
   handover: "bg-muted text-muted-foreground",
 };
 
-export function PhaseBadge({
-  phase,
-  className,
-}: {
-  phase: ProjectPhase;
-  className?: string;
-}) {
+export function PhaseBadge({ phase, className }: { phase: ProjectPhase; className?: string }) {
   return (
     <span
       className={cn(

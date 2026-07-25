@@ -8,15 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import {
-  CalendarClock,
-  CheckCircle2,
-  Pencil,
-  Plus,
-  Send,
-  Trash2,
-  XCircle,
-} from "lucide-react";
+import { CalendarClock, CheckCircle2, Pencil, Plus, Send, Trash2, XCircle } from "lucide-react";
 
 import {
   FREQUENCIES,
@@ -89,22 +81,18 @@ const formSchema = z
     sections: z.record(z.string(), z.boolean()),
     is_active: z.boolean(),
   })
+  .refine((v) => v.frequency !== "weekly" || v.day_of_week != null, {
+    message: "Day of week required for weekly",
+    path: ["day_of_week"],
+  })
   .refine(
-    (v) => v.frequency !== "weekly" || v.day_of_week != null,
-    { message: "Day of week required for weekly", path: ["day_of_week"] },
-  )
-  .refine(
-    (v) =>
-      !(v.frequency === "monthly" || v.frequency === "quarterly") ||
-      v.day_of_month != null,
+    (v) => !(v.frequency === "monthly" || v.frequency === "quarterly") || v.day_of_month != null,
     { message: "Day of month required", path: ["day_of_month"] },
   );
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const Route = createFileRoute(
-  "/_authenticated/settings/scheduled-reports",
-)({
+export const Route = createFileRoute("/_authenticated/settings/scheduled-reports")({
   component: ScheduledReportsPage,
 });
 
@@ -164,9 +152,7 @@ function ScheduledReportsPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Scheduled reports
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Scheduled reports</h1>
           <p className="text-sm text-muted-foreground">
             Weekly, monthly, or quarterly PDF reports delivered by email.
           </p>
@@ -193,8 +179,7 @@ function ScheduledReportsPage() {
             </div>
           ) : (rowsQ.data ?? []).length === 0 ? (
             <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-              No schedules yet. Create one to start delivering recurring PDF
-              reports.
+              No schedules yet. Create one to start delivering recurring PDF reports.
             </div>
           ) : (
             <Table>
@@ -216,9 +201,7 @@ function ScheduledReportsPage() {
                     <TableCell className="font-medium">
                       {r.name}
                       {r.project_name && (
-                        <div className="text-xs text-muted-foreground">
-                          {r.project_name}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{r.project_name}</div>
                       )}
                       {!r.is_active && (
                         <Badge variant="outline" className="ml-2">
@@ -257,10 +240,7 @@ function ScheduledReportsPage() {
                         </Badge>
                       )}
                       {r.last_run_status === "error" && (
-                        <Badge
-                          variant="destructive"
-                          title={r.last_run_error ?? undefined}
-                        >
+                        <Badge variant="destructive" title={r.last_run_error ?? undefined}>
                           <XCircle className="mr-1 h-3 w-3" /> Error
                         </Badge>
                       )}
@@ -278,11 +258,7 @@ function ScheduledReportsPage() {
                       >
                         <Send className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => openEdit(r)}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(r)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -322,10 +298,8 @@ function ScheduledReportsPage() {
               report_type: values.report_type,
               frequency: values.frequency,
               project_id: values.project_id,
-              day_of_week:
-                values.frequency === "weekly" ? values.day_of_week : null,
-              day_of_month:
-                values.frequency !== "weekly" ? values.day_of_month : null,
+              day_of_week: values.frequency === "weekly" ? values.day_of_week : null,
+              day_of_month: values.frequency !== "weekly" ? values.day_of_month : null,
               hour_utc: values.hour_utc,
               recipients,
               template_sections: values.sections,
@@ -343,10 +317,8 @@ function ScheduledReportsPage() {
 
 function describeCadence(r: ScheduledReportRow): string {
   const time = `${String(r.hour_utc).padStart(2, "0")}:00 UTC`;
-  if (r.frequency === "weekly")
-    return `Weekly · ${DOW_LABELS[r.day_of_week ?? 1]} · ${time}`;
-  if (r.frequency === "monthly")
-    return `Monthly · day ${r.day_of_month} · ${time}`;
+  if (r.frequency === "weekly") return `Weekly · ${DOW_LABELS[r.day_of_week ?? 1]} · ${time}`;
+  if (r.frequency === "monthly") return `Monthly · day ${r.day_of_month} · ${time}`;
   return `Quarterly · day ${r.day_of_month} · ${time}`;
 }
 
@@ -375,9 +347,7 @@ function ScheduleDialog({
         day_of_month: editing.day_of_month,
         hour_utc: editing.hour_utc,
         recipients_raw: editing.recipients.join(", "),
-        sections: Object.fromEntries(
-          SECTION_KEYS.map((k) => [k, !!editing.template_sections[k]]),
-        ),
+        sections: Object.fromEntries(SECTION_KEYS.map((k) => [k, !!editing.template_sections[k]])),
         is_active: editing.is_active,
       };
     }
@@ -408,9 +378,7 @@ function ScheduleDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {editing ? "Edit schedule" : "New scheduled report"}
-          </DialogTitle>
+          <DialogTitle>{editing ? "Edit schedule" : "New scheduled report"}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit(async (v) => {
@@ -426,9 +394,7 @@ function ScheduleDialog({
             <Label>Name</Label>
             <Input {...form.register("name")} placeholder="Monthly O&M report" />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -437,9 +403,7 @@ function ScheduleDialog({
               <Label>Report type</Label>
               <Select
                 value={form.watch("report_type")}
-                onValueChange={(v) =>
-                  form.setValue("report_type", v as ReportType)
-                }
+                onValueChange={(v) => form.setValue("report_type", v as ReportType)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -457,17 +421,13 @@ function ScheduleDialog({
               <Label>Project (optional)</Label>
               <Select
                 value={form.watch("project_id") ?? "__all__"}
-                onValueChange={(v) =>
-                  form.setValue("project_id", v === "__all__" ? null : v)
-                }
+                onValueChange={(v) => form.setValue("project_id", v === "__all__" ? null : v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All projects" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__all__">
-                    All projects (company-wide)
-                  </SelectItem>
+                  <SelectItem value="__all__">All projects (company-wide)</SelectItem>
                   {projects.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
@@ -503,9 +463,7 @@ function ScheduleDialog({
                 <Label>Day of week</Label>
                 <Select
                   value={String(form.watch("day_of_week") ?? 1)}
-                  onValueChange={(v) =>
-                    form.setValue("day_of_week", parseInt(v, 10))
-                  }
+                  onValueChange={(v) => form.setValue("day_of_week", parseInt(v, 10))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -527,9 +485,7 @@ function ScheduleDialog({
                   min={1}
                   max={28}
                   value={form.watch("day_of_month") ?? 1}
-                  onChange={(e) =>
-                    form.setValue("day_of_month", parseInt(e.target.value, 10))
-                  }
+                  onChange={(e) => form.setValue("day_of_month", parseInt(e.target.value, 10))}
                 />
               </div>
             )}
@@ -541,9 +497,7 @@ function ScheduleDialog({
                 min={0}
                 max={23}
                 value={form.watch("hour_utc")}
-                onChange={(e) =>
-                  form.setValue("hour_utc", parseInt(e.target.value, 10))
-                }
+                onChange={(e) => form.setValue("hour_utc", parseInt(e.target.value, 10))}
               />
             </div>
           </div>
@@ -566,15 +520,10 @@ function ScheduleDialog({
             <Label>Template sections</Label>
             <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
               {SECTION_KEYS.map((k) => (
-                <label
-                  key={k}
-                  className="flex items-center gap-2 text-sm cursor-pointer"
-                >
+                <label key={k} className="flex items-center gap-2 text-sm cursor-pointer">
                   <Checkbox
                     checked={!!sections[k]}
-                    onCheckedChange={(v) =>
-                      form.setValue(`sections.${k}` as never, !!v as never)
-                    }
+                    onCheckedChange={(v) => form.setValue(`sections.${k}` as never, !!v as never)}
                   />
                   <span>{k}</span>
                 </label>
@@ -591,11 +540,7 @@ function ScheduleDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>

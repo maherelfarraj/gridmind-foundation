@@ -1,21 +1,10 @@
 // P-070 — Spare parts catalog.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
-import {
-  AlertTriangle,
-  Download,
-  Package,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Download, Package, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -73,9 +62,7 @@ import {
 } from "@/lib/procurement-extras-rules";
 import { downloadCsv, toCsv } from "@/lib/csv";
 
-export const Route = createFileRoute(
-  "/_authenticated/procurement/spare-parts",
-)({
+export const Route = createFileRoute("/_authenticated/procurement/spare-parts")({
   head: () => ({
     meta: [
       { title: "Spare parts — GridMind EPC" },
@@ -150,23 +137,17 @@ function SparePartsPage() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<MaterialCategory | "all">("all");
-  const [editingPart, setEditingPart] = useState<SparePartRow | "new" | null>(
-    null,
-  );
+  const [editingPart, setEditingPart] = useState<SparePartRow | "new" | null>(null);
   const [adjustingPart, setAdjustingPart] = useState<SparePartRow | null>(null);
 
-  const { data: access } = useSuspenseQuery(
-    sparePartsAccessQueryOptions(accessFn),
-  );
+  const { data: access } = useSuspenseQuery(sparePartsAccessQueryOptions(accessFn));
   const { data: rows } = useSuspenseQuery(
     sparePartsListQueryOptions(listFn, {
       search,
       category: category === "all" ? null : category,
     }),
   );
-  const { data: vendors } = useSuspenseQuery(
-    sparePartsVendorsQueryOptions(vendorsFn),
-  );
+  const { data: vendors } = useSuspenseQuery(sparePartsVendorsQueryOptions(vendorsFn));
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["spare-parts"] });
 
@@ -191,8 +172,7 @@ function SparePartsPage() {
   });
 
   const adjustMutation = useMutation({
-    mutationFn: (vars: { id: string; delta: number; reason: string }) =>
-      adjustFn({ data: vars }),
+    mutationFn: (vars: { id: string; delta: number; reason: string }) => adjustFn({ data: vars }),
     onSuccess: () => {
       invalidate();
       toast.success("Stock adjusted");
@@ -241,10 +221,7 @@ function SparePartsPage() {
       r.lead_time_days ?? "",
       r.location ?? "",
     ]);
-    downloadCsv(
-      `spare-parts-${format(new Date(), "yyyyMMdd")}.csv`,
-      toCsv(headers, data),
-    );
+    downloadCsv(`spare-parts-${format(new Date(), "yyyyMMdd")}.csv`, toCsv(headers, data));
   }
 
   return (
@@ -254,12 +231,9 @@ function SparePartsPage() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <Package className="h-3.5 w-3.5" /> Procurement · Spare parts
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Spare parts catalog
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Spare parts catalog</h1>
           <p className="text-sm text-muted-foreground">
-            Track on-hand quantities, reorder points, and preferred vendors for
-            O&amp;M consumables.
+            Track on-hand quantities, reorder points, and preferred vendors for O&amp;M consumables.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -298,10 +272,7 @@ function SparePartsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Select
-          value={category}
-          onValueChange={(v) => setCategory(v as MaterialCategory | "all")}
-        >
+        <Select value={category} onValueChange={(v) => setCategory(v as MaterialCategory | "all")}>
           <SelectTrigger className="w-52">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -343,9 +314,7 @@ function SparePartsPage() {
                 const low = isLowStock(r.qty_on_hand, r.reorder_point);
                 return (
                   <TableRow key={r.id} className={low ? "bg-destructive/5" : undefined}>
-                    <TableCell className="font-mono text-xs">
-                      {r.part_number}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{r.part_number}</TableCell>
                     <TableCell>
                       <div className="font-medium">{r.name}</div>
                       {r.compatible_equipment ? (
@@ -363,9 +332,7 @@ function SparePartsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{r.qty_on_hand}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {r.uom}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{r.uom}</span>
                         {low ? (
                           <Badge variant="destructive" className="text-[10px]">
                             Low
@@ -386,11 +353,7 @@ function SparePartsPage() {
                       <div className="flex justify-end gap-1">
                         {access.canWrite ? (
                           <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setAdjustingPart(r)}
-                            >
+                            <Button size="sm" variant="outline" onClick={() => setAdjustingPart(r)}>
                               Adjust
                             </Button>
                             <Button
@@ -424,10 +387,7 @@ function SparePartsPage() {
         </div>
       )}
 
-      <Dialog
-        open={editingPart != null}
-        onOpenChange={(o) => !o && setEditingPart(null)}
-      >
+      <Dialog open={editingPart != null} onOpenChange={(o) => !o && setEditingPart(null)}>
         {editingPart != null ? (
           <PartFormDialog
             initial={editingPart === "new" ? null : editingPart}
@@ -438,10 +398,7 @@ function SparePartsPage() {
         ) : null}
       </Dialog>
 
-      <Dialog
-        open={adjustingPart != null}
-        onOpenChange={(o) => !o && setAdjustingPart(null)}
-      >
+      <Dialog open={adjustingPart != null} onOpenChange={(o) => !o && setAdjustingPart(null)}>
         {adjustingPart ? (
           <AdjustStockDialog
             part={adjustingPart}
@@ -465,16 +422,11 @@ function Kpi({
   hint: string;
   tone?: "muted" | "destructive";
 }) {
-  const valueClass =
-    tone === "destructive" ? "text-destructive" : "text-foreground";
+  const valueClass = tone === "destructive" ? "text-destructive" : "text-foreground";
   return (
     <div className="rounded-md border border-border p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
-      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>
-        {value}
-      </div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>{value}</div>
       <div className="text-xs text-muted-foreground">{hint}</div>
     </div>
   );
@@ -518,8 +470,7 @@ function PartFormDialog({
     preferred_vendor_id: initial?.preferred_vendor_id ?? "",
     reorder_point: String(initial?.reorder_point ?? 0),
     safety_stock: String(initial?.safety_stock ?? 0),
-    lead_time_days:
-      initial?.lead_time_days == null ? "" : String(initial.lead_time_days),
+    lead_time_days: initial?.lead_time_days == null ? "" : String(initial.lead_time_days),
     qty_on_hand: String(initial?.qty_on_hand ?? 0),
     location: initial?.location ?? "",
   });
@@ -547,10 +498,7 @@ function PartFormDialog({
           </div>
           <div className="space-y-1">
             <Label>Name *</Label>
-            <Input
-              value={f.name}
-              onChange={(e) => update("name", e.target.value)}
-            />
+            <Input value={f.name} onChange={(e) => update("name", e.target.value)} />
           </div>
         </div>
         <div className="space-y-1">
@@ -582,10 +530,7 @@ function PartFormDialog({
           </div>
           <div className="space-y-1">
             <Label>UOM</Label>
-            <Input
-              value={f.uom}
-              onChange={(e) => update("uom", e.target.value)}
-            />
+            <Input value={f.uom} onChange={(e) => update("uom", e.target.value)} />
           </div>
           <div className="space-y-1">
             <Label>Compatible equipment</Label>
@@ -612,18 +557,14 @@ function PartFormDialog({
             <Input
               value={f.currency_code}
               maxLength={3}
-              onChange={(e) =>
-                update("currency_code", e.target.value.toUpperCase())
-              }
+              onChange={(e) => update("currency_code", e.target.value.toUpperCase())}
             />
           </div>
           <div className="space-y-1">
             <Label>Preferred vendor</Label>
             <Select
               value={f.preferred_vendor_id || "__none"}
-              onValueChange={(v) =>
-                update("preferred_vendor_id", v === "__none" ? "" : v)
-              }
+              onValueChange={(v) => update("preferred_vendor_id", v === "__none" ? "" : v)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select vendor" />
@@ -703,8 +644,7 @@ function PartFormDialog({
               preferred_vendor_id: f.preferred_vendor_id || null,
               reorder_point: Number(f.reorder_point || 0),
               safety_stock: Number(f.safety_stock || 0),
-              lead_time_days:
-                f.lead_time_days === "" ? null : Number(f.lead_time_days),
+              lead_time_days: f.lead_time_days === "" ? null : Number(f.lead_time_days),
               qty_on_hand: Number(f.qty_on_hand || 0),
               location: f.location || null,
             })
@@ -733,8 +673,7 @@ function AdjustStockDialog({
     Number.isFinite(parsedDelta) && parsedDelta !== 0
       ? Math.max(0, part.qty_on_hand + parsedDelta)
       : part.qty_on_hand;
-  const valid =
-    Number.isFinite(parsedDelta) && parsedDelta !== 0 && reason.trim().length >= 3;
+  const valid = Number.isFinite(parsedDelta) && parsedDelta !== 0 && reason.trim().length >= 3;
 
   return (
     <DialogContent>
@@ -748,11 +687,7 @@ function AdjustStockDialog({
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1 col-span-1">
             <Label>Delta (± {part.uom})</Label>
-            <Input
-              type="number"
-              value={delta}
-              onChange={(e) => setDelta(e.target.value)}
-            />
+            <Input type="number" value={delta} onChange={(e) => setDelta(e.target.value)} />
           </div>
           <div className="space-y-1 col-span-2">
             <Label>New qty on hand</Label>
@@ -774,9 +709,7 @@ function AdjustStockDialog({
       <DialogFooter>
         <Button
           disabled={submitting || !valid}
-          onClick={() =>
-            onSubmit({ id: part.id, delta: parsedDelta, reason: reason.trim() })
-          }
+          onClick={() => onSubmit({ id: part.id, delta: parsedDelta, reason: reason.trim() })}
         >
           {submitting ? "Saving…" : "Adjust stock"}
         </Button>

@@ -9,13 +9,7 @@ const STYLES: Record<QaqcResult, string> = {
   conditional: "bg-warning/20 text-warning-foreground",
 };
 
-export function QaqcResultBadge({
-  result,
-  className,
-}: {
-  result: QaqcResult;
-  className?: string;
-}) {
+export function QaqcResultBadge({ result, className }: { result: QaqcResult; className?: string }) {
   return (
     <Badge variant="secondary" className={cn(STYLES[result], className)}>
       {QAQC_RESULT_LABELS[result]}

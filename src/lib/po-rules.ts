@@ -25,9 +25,7 @@ export function parsePoNumber(s: string): number | null {
 }
 
 export function nextPoNumber(existing: string[]): string {
-  const nums = existing
-    .map(parsePoNumber)
-    .filter((n): n is number => n != null);
+  const nums = existing.map(parsePoNumber).filter((n): n is number => n != null);
   const next = (nums.length === 0 ? 0 : Math.max(...nums)) + 1;
   return formatPoNumber(next);
 }
@@ -55,10 +53,7 @@ function round2(n: number): number {
 }
 
 /** Merge awards with RFQ line specs; sorts by line_no. */
-export function buildPoLinesFromAwards(
-  rfqLines: RfqLine[],
-  awards: AwardForPo[],
-): PoLine[] {
+export function buildPoLinesFromAwards(rfqLines: RfqLine[], awards: AwardForPo[]): PoLine[] {
   const byNo = new Map(rfqLines.map((l) => [l.line_no, l]));
   return awards
     .map((a) => {
@@ -91,9 +86,7 @@ export function computePoTotals(
 
 /** Latest site_need_date across lines (nullable). */
 export function maxSiteNeedDate(lines: PoLine[]): string | null {
-  const dates = lines
-    .map((l) => l.site_need_date)
-    .filter((d): d is string => !!d);
+  const dates = lines.map((l) => l.site_need_date).filter((d): d is string => !!d);
   if (dates.length === 0) return null;
   return dates.sort().at(-1) ?? null;
 }

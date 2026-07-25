@@ -26,10 +26,7 @@ import {
 import { GrnStatusBadge } from "@/components/procurement/grn-status-badge";
 import { listGrns, listReceivablePos } from "@/lib/grn.functions";
 import { GRN_STATUSES, type GrnStatus } from "@/lib/grn-rules";
-import {
-  grnListQueryOptions,
-  receivablePosQueryOptions,
-} from "@/lib/grn-query";
+import { grnListQueryOptions, receivablePosQueryOptions } from "@/lib/grn-query";
 
 export const Route = createFileRoute("/_authenticated/procurement/receipts/")({
   head: () => ({
@@ -52,9 +49,7 @@ export const Route = createFileRoute("/_authenticated/procurement/receipts/")({
 function ReceiptsError({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">
-        Couldn’t load receipts
-      </h2>
+      <h2 className="font-display text-lg font-semibold">Couldn’t load receipts</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button onClick={() => reset()}>Try again</Button>
     </div>
@@ -68,10 +63,9 @@ function toCsv(rows: Array<Record<string, unknown>>): string {
     const s = v == null ? "" : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return [
-    headers.join(","),
-    ...rows.map((r) => headers.map((h) => escape(r[h])).join(",")),
-  ].join("\n");
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))].join(
+    "\n",
+  );
 }
 
 function ReceiptsIndex() {
@@ -130,9 +124,7 @@ function ReceiptsIndex() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <PackageOpen className="h-3.5 w-3.5" /> Procurement · Goods Receipts
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Goods Receipts
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Goods Receipts</h1>
           <p className="text-sm text-muted-foreground">
             Log deliveries against issued POs — lot IDs, condition, and photos.
           </p>
@@ -225,9 +217,7 @@ function ReceiptsIndex() {
                   <TableCell>
                     <GrnStatusBadge status={r.status} />
                   </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {r.defects_count}
-                  </TableCell>
+                  <TableCell className="text-right font-medium">{r.defects_count}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {r.received_at ? format(new Date(r.received_at), "PP") : "—"}
                   </TableCell>

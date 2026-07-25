@@ -31,10 +31,7 @@ import {
   type VendorRow,
   type VendorStatus,
 } from "@/lib/vendors.functions";
-import {
-  vendorWriteAccessQueryOptions,
-  vendorsListQueryOptions,
-} from "@/lib/vendors-query";
+import { vendorWriteAccessQueryOptions, vendorsListQueryOptions } from "@/lib/vendors-query";
 
 export const Route = createFileRoute("/_authenticated/procurement/vendors/")({
   head: () => ({
@@ -57,9 +54,7 @@ export const Route = createFileRoute("/_authenticated/procurement/vendors/")({
 function VendorsError({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">
-        Couldn’t load vendors
-      </h2>
+      <h2 className="font-display text-lg font-semibold">Couldn’t load vendors</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button
         onClick={() => {
@@ -159,19 +154,13 @@ function VendorsIndex() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <Truck className="h-3.5 w-3.5" /> Procurement
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Vendors
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Vendors</h1>
           <p className="text-sm text-muted-foreground">
             Supplier master — identity, commercial terms, and certifications.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => downloadCsv(rows)}
-            disabled={rows.length === 0}
-          >
+          <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
             <Download className="mr-2 h-4 w-4" /> Export CSV
           </Button>
           {canWrite && (
@@ -222,8 +211,8 @@ function VendorsIndex() {
             No vendors yet — onboard your first vendor
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add supplier identity, payment terms, incoterms and certifications
-            to start issuing RFQs.
+            Add supplier identity, payment terms, incoterms and certifications to start issuing
+            RFQs.
           </p>
           {canWrite && (
             <Button className="mt-4" asChild>
@@ -261,9 +250,7 @@ function VendorsIndex() {
                   <TableCell>
                     <div className="font-medium text-foreground">{r.name}</div>
                     {r.legal_name && (
-                      <div className="text-xs text-muted-foreground">
-                        {r.legal_name}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{r.legal_name}</div>
                     )}
                   </TableCell>
                   <TableCell>

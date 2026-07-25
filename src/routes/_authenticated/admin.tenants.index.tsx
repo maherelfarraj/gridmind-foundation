@@ -8,23 +8,12 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Plus, Search } from "lucide-react";
 
-import {
-  createTenant,
-  listTenants,
-  type PlanTier,
-  type TenantRow,
-} from "@/lib/tenants.functions";
+import { createTenant, listTenants, type PlanTier, type TenantRow } from "@/lib/tenants.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +53,10 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/")({
       { title: "Tenants | GridMind EPC Admin" },
       { name: "description", content: "Super admin console for managing GridMind EPC tenants." },
       { property: "og:title", content: "Tenants | GridMind EPC Admin" },
-      { property: "og:description", content: "Super admin console for managing GridMind EPC tenants." },
+      {
+        property: "og:description",
+        content: "Super admin console for managing GridMind EPC tenants.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -75,9 +67,7 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/")({
 });
 
 function TenantsNotFound() {
-  return (
-    <div className="p-8 text-sm text-muted-foreground">Not found.</div>
-  );
+  return <div className="p-8 text-sm text-muted-foreground">Not found.</div>;
 }
 
 function TenantsError({ error, reset }: { error: Error; reset: () => void }) {
@@ -110,12 +100,7 @@ const PLAN_LABELS: Record<PlanTier, string> = {
 };
 
 function PlanBadge({ tier }: { tier: PlanTier }) {
-  const variant =
-    tier === "enterprise"
-      ? "default"
-      : tier === "growth"
-        ? "secondary"
-        : "outline";
+  const variant = tier === "enterprise" ? "default" : tier === "growth" ? "secondary" : "outline";
   return <Badge variant={variant}>{PLAN_LABELS[tier]}</Badge>;
 }
 
@@ -138,7 +123,6 @@ function TenantsPage() {
   useMemo(() => {
     const t = setTimeout(() => setDebounced(search.trim()), 250);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const listFn = useServerFn(listTenants);
@@ -151,9 +135,7 @@ function TenantsPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-foreground">
-            Tenants
-          </h1>
+          <h1 className="font-display text-2xl font-semibold text-foreground">Tenants</h1>
           <p className="text-sm text-muted-foreground">
             Platform super admin console for managing every GridMind tenant.
           </p>
@@ -208,7 +190,10 @@ function TenantsPage() {
                 </TableRow>
               ) : (query.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
                     No tenants yet
                   </TableCell>
                 </TableRow>
@@ -226,7 +211,9 @@ function TenantsPage() {
                     </TableCell>
                     <TableCell className="font-mono text-xs">{t.name}</TableCell>
                     <TableCell className="text-sm">{t.contact_email ?? "—"}</TableCell>
-                    <TableCell><PlanBadge tier={t.plan_tier} /></TableCell>
+                    <TableCell>
+                      <PlanBadge tier={t.plan_tier} />
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">{t.member_count}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(t.created_at).toLocaleDateString()}
@@ -278,17 +265,16 @@ function CreateTenantDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
             <FormField
               control={form.control}
               name="legalName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Legal name</FormLabel>
-                  <FormControl><Input {...field} placeholder="Acme Solar Holdings, Inc." /></FormControl>
+                  <FormControl>
+                    <Input {...field} placeholder="Acme Solar Holdings, Inc." />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -299,7 +285,9 @@ function CreateTenantDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Short name</FormLabel>
-                  <FormControl><Input {...field} placeholder="acme-solar" /></FormControl>
+                  <FormControl>
+                    <Input {...field} placeholder="acme-solar" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -310,7 +298,9 @@ function CreateTenantDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Contact email</FormLabel>
-                  <FormControl><Input {...field} type="email" placeholder="ops@acme.com" /></FormControl>
+                  <FormControl>
+                    <Input {...field} type="email" placeholder="ops@acme.com" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -323,7 +313,9 @@ function CreateTenantDialog() {
                   <FormLabel>Plan tier</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="starter">Starter</SelectItem>

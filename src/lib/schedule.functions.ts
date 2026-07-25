@@ -58,11 +58,7 @@ export interface BaselineRow {
   updated_at: string;
 }
 
-const WRITE_ROLES = [
-  "project_admin",
-  "construction_admin",
-  "company_admin",
-] as const;
+const WRITE_ROLES = ["project_admin", "construction_admin", "company_admin"] as const;
 
 const LOCK_ROLES = ["project_admin", "company_admin"] as const;
 
@@ -77,14 +73,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -143,9 +134,7 @@ function toTaskRow(r: any): ScheduleTaskRow {
     end_date: r.end_date,
     progress_pct: Number(r.progress_pct ?? 0),
     status: r.status,
-    predecessor_ids: Array.isArray(r.predecessor_ids)
-      ? [...r.predecessor_ids]
-      : [],
+    predecessor_ids: Array.isArray(r.predecessor_ids) ? [...r.predecessor_ids] : [],
     is_milestone: !!r.is_milestone,
     sort_order: r.sort_order ?? 0,
     created_by: r.created_by,
@@ -155,9 +144,7 @@ function toTaskRow(r: any): ScheduleTaskRow {
 }
 
 function toBaselineRow(r: any): BaselineRow {
-  const snap = Array.isArray(r.snapshot)
-    ? (r.snapshot as BaselineSnapshotEntry[])
-    : [];
+  const snap = Array.isArray(r.snapshot) ? (r.snapshot as BaselineSnapshotEntry[]) : [];
   return {
     id: r.id,
     company_id: r.company_id,
@@ -179,18 +166,14 @@ function toBaselineRow(r: any): BaselineRow {
 // ---------------------------------------------------------------------------
 export const getScheduleAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<{ canWrite: boolean; canLockBaseline: boolean }> => {
-      requireSupabaseAuth(context);
-      const [canWrite, canLock] = await Promise.all([
-        hasAnyRole(context, WRITE_ROLES),
-        hasAnyRole(context, LOCK_ROLES),
-      ]);
-      return { canWrite, canLockBaseline: canLock };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canWrite: boolean; canLockBaseline: boolean }> => {
+    requireSupabaseAuth(context);
+    const [canWrite, canLock] = await Promise.all([
+      hasAnyRole(context, WRITE_ROLES),
+      hasAnyRole(context, LOCK_ROLES),
+    ]);
+    return { canWrite, canLockBaseline: canLock };
+  });
 
 // ---------------------------------------------------------------------------
 // List tasks
@@ -309,13 +292,9 @@ export const updateScheduleTask = createServerFn({ method: "POST" })
     }
 
     // Range check when either date is patched.
-    const nextStart =
-      (patch.start_date as string | undefined) ??
-      (current as any).start_date;
-    const nextEnd =
-      (patch.end_date as string | undefined) ?? (current as any).end_date;
-    if (nextEnd < nextStart)
-      httpError(400, "invalid_range", "End must be on or after start");
+    const nextStart = (patch.start_date as string | undefined) ?? (current as any).start_date;
+    const nextEnd = (patch.end_date as string | undefined) ?? (current as any).end_date;
+    if (nextEnd < nextStart) httpError(400, "invalid_range", "End must be on or after start");
 
     const { data: updated, error } = await context.supabase
       .from("schedule_tasks")
@@ -352,10 +331,7 @@ export const deleteScheduleTask = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!current) httpError(404, "task_not_found");
 
-    const { error } = await context.supabase
-      .from("schedule_tasks")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("schedule_tasks").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
@@ -405,9 +381,7 @@ export const createBaseline = createServerFn({ method: "POST" })
     // Snapshot the current tasks (with WBS code, if any).
     const { data: tasks, error: tErr } = await context.supabase
       .from("schedule_tasks")
-      .select(
-        "id, name, start_date, end_date, progress_pct, wbs_item:wbs_item_id(code)",
-      )
+      .select("id, name, start_date, end_date, progress_pct, wbs_item:wbs_item_id(code)")
       .eq("project_id", project.id);
     if (tErr) throw tErr;
 
@@ -504,17 +478,10 @@ export const deleteBaseline = createServerFn({ method: "POST" })
         "Locked baselines are immutable — you can’t delete or edit them.",
       );
 
-    const { error } = await context.supabase
-      .from("baseline_snapshots")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("baseline_snapshots").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501")
-        httpError(
-          403,
-          "baseline_locked",
-          "Locked baselines are immutable and cannot be deleted.",
-        );
+        httpError(403, "baseline_locked", "Locked baselines are immutable and cannot be deleted.");
       throw error;
     }
     await audit(context, "baseline.delete", "baseline_snapshots", data.id, {

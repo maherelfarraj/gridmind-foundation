@@ -71,12 +71,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const searchSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -160,9 +155,8 @@ function PortalMembersPage() {
           Portal members
         </h1>
         <p className="text-sm text-muted-foreground">
-          Invite external stakeholders (clients, investors, lenders) to a curated
-          project portal. Exposure toggles gate what each member sees at the RPC
-          layer — not just in the UI.
+          Invite external stakeholders (clients, investors, lenders) to a curated project portal.
+          Exposure toggles gate what each member sees at the RPC layer — not just in the UI.
         </p>
       </header>
 
@@ -185,11 +179,7 @@ function PortalMembersPage() {
             ))}
           </SelectContent>
         </Select>
-        <div className="ml-auto">
-          {projectId ? (
-            <InviteDialog projectId={projectId} />
-          ) : null}
-        </div>
+        <div className="ml-auto">{projectId ? <InviteDialog projectId={projectId} /> : null}</div>
       </div>
 
       {membersQuery.isLoading ? (
@@ -214,10 +204,7 @@ function PortalMembersPage() {
           body="Invite a client, investor, or lender to see this project's curated portal."
         />
       ) : (
-        <MembersTable
-          projectId={projectId}
-          rows={membersQuery.data ?? []}
-        />
+        <MembersTable projectId={projectId} rows={membersQuery.data ?? []} />
       )}
     </div>
   );
@@ -237,13 +224,7 @@ function EmptyState({ title, body }: { title: string; body: string }) {
 // Members table
 // -----------------------------------------------------------------------------
 
-function MembersTable({
-  projectId,
-  rows,
-}: {
-  projectId: string;
-  rows: PortalMemberAdminRow[];
-}) {
+function MembersTable({ projectId, rows }: { projectId: string; rows: PortalMemberAdminRow[] }) {
   const qc = useQueryClient();
   const suspendFn = useServerFn(suspendPortalMember);
   const revokeFn = useServerFn(revokePortalMember);
@@ -297,11 +278,7 @@ function MembersTable({
               <TableCell className="text-sm">{roleLabel(row.role)}</TableCell>
               <TableCell>{statusBadge(row.status)}</TableCell>
               <TableCell>
-                <ExposureChips
-                  projectId={projectId}
-                  memberId={row.id}
-                  exposure={row.exposure}
-                />
+                <ExposureChips projectId={projectId} memberId={row.id} exposure={row.exposure} />
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {row.last_seen_at
@@ -311,17 +288,12 @@ function MembersTable({
                   : "—"}
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">
-                {row.expires_at
-                  ? format(new Date(row.expires_at), "PP")
-                  : "—"}
+                {row.expires_at ? format(new Date(row.expires_at), "PP") : "—"}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
                   <Button asChild variant="ghost" size="sm">
-                    <Link
-                      to="/settings/portal-audit"
-                      search={{ membershipId: row.id, projectId }}
-                    >
+                    <Link to="/settings/portal-audit" search={{ membershipId: row.id, projectId }}>
                       <Activity className="mr-1 h-3.5 w-3.5" />
                       Activity
                     </Link>
@@ -382,8 +354,7 @@ function ExposureChips({
   const updateFn = useServerFn(updatePortalMemberExposure);
   const [local, setLocal] = useState(exposure);
   const mut = useMutation({
-    mutationFn: (next: PortalExposure) =>
-      updateFn({ data: { id: memberId, exposure: next } }),
+    mutationFn: (next: PortalExposure) => updateFn({ data: { id: memberId, exposure: next } }),
     onSuccess: () => {
       toast.success("Exposure updated");
       qc.invalidateQueries({ queryKey: ["portal-admin", "members", projectId] });
@@ -464,9 +435,7 @@ function ExposureChips({
                     {EXPOSURE_LABELS[k]}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {on ? "Visible" : "Hidden"} · click to toggle
-                </TooltipContent>
+                <TooltipContent>{on ? "Visible" : "Hidden"} · click to toggle</TooltipContent>
               </Tooltip>
             );
           })}
@@ -578,8 +547,7 @@ function InviteDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle>Invite portal member</DialogTitle>
           <DialogDescription>
-            External accounts receive a curated read-only portal. Invite expires
-            in 7 days.
+            External accounts receive a curated read-only portal. Invite expires in 7 days.
           </DialogDescription>
         </DialogHeader>
 
@@ -588,12 +556,9 @@ function InviteDialog({ projectId }: { projectId: string }) {
             <div className="rounded-md border border-border bg-muted/40 p-4 text-sm">
               <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
-                Invite expires{" "}
-                {format(new Date(result.expiresAt), "PPP p")}
+                Invite expires {format(new Date(result.expiresAt), "PPP p")}
               </div>
-              <div className="break-all font-mono text-xs">
-                {inviteLink}
-              </div>
+              <div className="break-all font-mono text-xs">{inviteLink}</div>
             </div>
             <Button
               type="button"
@@ -618,10 +583,7 @@ function InviteDialog({ projectId }: { projectId: string }) {
           </div>
         ) : (
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit((v) => mut.mutate(v))} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -673,13 +635,8 @@ function InviteDialog({ projectId }: { projectId: string }) {
                       name={k}
                       render={({ field }) => (
                         <div className="flex items-center justify-between gap-2">
-                          <FormLabel className="mb-0 text-sm">
-                            {EXPOSURE_LABELS[k]}
-                          </FormLabel>
-                          <Switch
-                            checked={Boolean(field.value)}
-                            onCheckedChange={field.onChange}
-                          />
+                          <FormLabel className="mb-0 text-sm">{EXPOSURE_LABELS[k]}</FormLabel>
+                          <Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} />
                         </div>
                       )}
                     />
@@ -688,17 +645,11 @@ function InviteDialog({ projectId }: { projectId: string }) {
               </div>
 
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={mut.isPending}>
-                  {mut.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
+                  {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Send invite
                 </Button>
               </DialogFooter>

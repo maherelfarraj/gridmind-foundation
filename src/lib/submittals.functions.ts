@@ -118,9 +118,7 @@ async function allocateSubmittalNumber(
     .order("submittal_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  const list = ((data ?? []) as { submittal_number: string }[]).map(
-    (r) => r.submittal_number,
-  );
+  const list = ((data ?? []) as { submittal_number: string }[]).map((r) => r.submittal_number);
   return nextSubmittalNumber(list);
 }
 
@@ -160,9 +158,7 @@ export const listSubmittals = createServerFn({ method: "GET" })
 
 export const getSubmittal = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<SubmittalDetail> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -218,16 +214,11 @@ export const createSubmittal = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const number = await allocateSubmittalNumber(
-        context,
-        companyId,
-        data.projectId,
-      );
+      const number = await allocateSubmittalNumber(context, companyId, data.projectId);
       const insertRow = {
         company_id: companyId,
         project_id: data.projectId,
@@ -246,16 +237,10 @@ export const createSubmittal = createServerFn({ method: "POST" })
         .select("*")
         .maybeSingle();
       if (!error && inserted) {
-        await audit(
-          context,
-          "submittal.create",
-          "submittals",
-          (inserted as any).id,
-          {
-            submittal_number: number,
-            project_id: data.projectId,
-          },
-        );
+        await audit(context, "submittal.create", "submittals", (inserted as any).id, {
+          submittal_number: number,
+          project_id: data.projectId,
+        });
         return inserted as unknown as SubmittalRow;
       }
       lastErr = error;
@@ -266,9 +251,7 @@ export const createSubmittal = createServerFn({ method: "POST" })
 
 export const submitSubmittal = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<SubmittalRow> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -369,17 +352,11 @@ export const reviseSubmittal = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw error;
     if (!inserted) throw new Error("revise_failed");
-    await audit(
-      context,
-      "submittal.revise",
-      "submittals",
-      (inserted as any).id,
-      {
-        submittal_number: (parent as any).submittal_number,
-        from: (parent as any).revision,
-        to: nextRev,
-      },
-    );
+    await audit(context, "submittal.revise", "submittals", (inserted as any).id, {
+      submittal_number: (parent as any).submittal_number,
+      from: (parent as any).revision,
+      to: nextRev,
+    });
     return inserted as unknown as SubmittalRow;
   });
 

@@ -3,10 +3,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/integrations/supabase/types";
-import {
-  canTransition,
-  type WorkOrderStatus,
-} from "@/lib/work-orders.rules";
+import { canTransition, type WorkOrderStatus } from "@/lib/work-orders.rules";
 
 /**
  * Mint the next WO number for a company: `WO-YYYY-NNNN`.
@@ -37,10 +34,7 @@ export async function generateWoNumber(
   return `${prefix}${String(next).padStart(4, "0")}`;
 }
 
-export function assertCanTransition(
-  from: WorkOrderStatus,
-  to: WorkOrderStatus,
-): void {
+export function assertCanTransition(from: WorkOrderStatus, to: WorkOrderStatus): void {
   if (!canTransition(from, to)) {
     throw Object.assign(new Error(`invalid_transition:${from}->${to}`), {
       statusCode: 400,

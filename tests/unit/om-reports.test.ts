@@ -216,12 +216,7 @@ describe("alarm downtime", () => {
 describe("labor hours", () => {
   it("sums labor entries", () => {
     expect(
-      sumLaborHours([
-        { hours: 2 },
-        { hours: "3.5" },
-        { hours: null },
-        { hours: -1 },
-      ]),
+      sumLaborHours([{ hours: 2 }, { hours: "3.5" }, { hours: null }, { hours: -1 }]),
     ).toBeCloseTo(5.5, 4);
     expect(sumLaborHours(null)).toBe(0);
     expect(sumLaborHours("bad")).toBe(0);
@@ -233,9 +228,7 @@ describe("filename + text sanitiser", () => {
     expect(omReportFilename("Sunfield Alpha", "2026-03-01")).toBe(
       "GridMind_OM_Report_Sunfield_Alpha_2026-03.pdf",
     );
-    expect(omReportFilename("", "2026-03-01")).toBe(
-      "GridMind_OM_Report_project_2026-03.pdf",
-    );
+    expect(omReportFilename("", "2026-03-01")).toBe("GridMind_OM_Report_project_2026-03.pdf");
   });
   it("renders O&M as a plain ampersand — no &; artifact", () => {
     const out = sanitizeText("Monthly O&M Report");

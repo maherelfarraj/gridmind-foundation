@@ -32,12 +32,7 @@ import {
   type CompanyMemberRow,
   type CompanyMembersResult,
 } from "@/lib/roles.functions";
-import {
-  GRANTABLE_ROLES,
-  ROLE_GROUPS,
-  humanizeRole,
-  type GrantableRole,
-} from "@/lib/role-groups";
+import { GRANTABLE_ROLES, ROLE_GROUPS, humanizeRole, type GrantableRole } from "@/lib/role-groups";
 import { Constants } from "@/integrations/supabase/types";
 import { useActiveCompany } from "@/components/company-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -94,14 +89,12 @@ export const Route = createFileRoute("/_authenticated/settings/users")({
       { title: "Users | GridMind EPC" },
       {
         name: "description",
-        content:
-          "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
+        content: "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
       },
       { property: "og:title", content: "Users | GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
+        content: "Manage members, roles, and pending invitations for your GridMind EPC workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -111,9 +104,7 @@ export const Route = createFileRoute("/_authenticated/settings/users")({
   component: UsersPage,
 });
 
-const INVITE_ROLE_OPTIONS = Constants.public.Enums.app_role.filter(
-  (r) => r !== "super_admin",
-);
+const INVITE_ROLE_OPTIONS = Constants.public.Enums.app_role.filter((r) => r !== "super_admin");
 
 const formSchema = z.object({
   email: z.string().trim().email("Enter a valid email"),
@@ -142,11 +133,7 @@ function toCsv(rows: CompanyMemberRow[]): string {
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const lines = [["Name", "Email", "Roles"].map(escape).join(",")];
   for (const r of rows) {
-    lines.push(
-      [r.fullName ?? "", r.email ?? "", r.roles.join("|")]
-        .map(escape)
-        .join(","),
-    );
+    lines.push([r.fullName ?? "", r.email ?? "", r.roles.join("|")].map(escape).join(","));
   }
   return lines.join("\n");
 }
@@ -181,9 +168,7 @@ function UsersPage() {
   const [manageUserId, setManageUserId] = useState<string | null>(null);
   const [pendingRole, setPendingRole] = useState<GrantableRole | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"members" | "invitations">(
-    "members",
-  );
+  const [activeTab, setActiveTab] = useState<"members" | "invitations">("members");
   const [inviteSearch, setInviteSearch] = useState("");
   const [inviteFilter, setInviteFilter] = useState<
     "all" | "pending" | "accepted" | "expired" | "revoked"
@@ -324,10 +309,8 @@ function UsersPage() {
     defaultValues: { email: "", role: "engineer" },
   });
 
-  const isAdmin =
-    membersQuery.data?.isAdmin ?? snapshotQuery.data?.isAdmin ?? false;
-  const adminCount =
-    membersQuery.data?.adminCount ?? snapshotQuery.data?.adminCount ?? 0;
+  const isAdmin = membersQuery.data?.isAdmin ?? snapshotQuery.data?.isAdmin ?? false;
+  const adminCount = membersQuery.data?.adminCount ?? snapshotQuery.data?.adminCount ?? 0;
   const members = membersQuery.data?.members ?? [];
   const invites = invitesQuery.data ?? [];
 
@@ -336,36 +319,23 @@ function UsersPage() {
     if (!q) return members;
     return members.filter(
       (m) =>
-        (m.fullName ?? "").toLowerCase().includes(q) ||
-        (m.email ?? "").toLowerCase().includes(q),
+        (m.fullName ?? "").toLowerCase().includes(q) || (m.email ?? "").toLowerCase().includes(q),
     );
   }, [members, search]);
 
   const memberEmails = useMemo(
-    () =>
-      new Set(
-        members
-          .map((m) => (m.email ?? "").toLowerCase())
-          .filter((e) => e.length > 0),
-      ),
+    () => new Set(members.map((m) => (m.email ?? "").toLowerCase()).filter((e) => e.length > 0)),
     [members],
   );
   const pendingEmails = useMemo(
-    () =>
-      new Set(
-        invites
-          .filter((i) => i.status === "pending")
-          .map((i) => i.email.toLowerCase()),
-      ),
+    () => new Set(invites.filter((i) => i.status === "pending").map((i) => i.email.toLowerCase())),
     [invites],
   );
 
   const derivedInvites = useMemo(
     () =>
       invites.map((i) => {
-        const isExpired =
-          i.status === "pending" &&
-          new Date(i.expires_at).getTime() < Date.now();
+        const isExpired = i.status === "pending" && new Date(i.expires_at).getTime() < Date.now();
         return {
           ...i,
           derivedStatus: isExpired
@@ -379,8 +349,7 @@ function UsersPage() {
   const filteredInvites = useMemo(() => {
     const q = inviteSearch.trim().toLowerCase();
     return derivedInvites.filter((i) => {
-      if (inviteFilter !== "all" && i.derivedStatus !== inviteFilter)
-        return false;
+      if (inviteFilter !== "all" && i.derivedStatus !== inviteFilter) return false;
       if (q && !i.email.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -430,19 +399,13 @@ function UsersPage() {
         </div>
         {isAdmin && (
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setBulkOpen(true)}
-            >
+            <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
               <UsersIcon className="mr-2 h-4 w-4" />
               Bulk invite
             </Button>
             <Dialog
               open={dialogOpen}
-              onOpenChange={(open) =>
-                open ? setDialogOpen(true) : closeDialog()
-              }
+              onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
             >
               <DialogTrigger asChild>
                 <Button>Invite member</Button>
@@ -453,8 +416,7 @@ function UsersPage() {
                     <DialogHeader>
                       <DialogTitle>Invitation link</DialogTitle>
                       <DialogDescription>
-                        Share this link with the recipient. It will only be
-                        shown once.
+                        Share this link with the recipient. It will only be shown once.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center gap-2">
@@ -485,10 +447,7 @@ function UsersPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4"
-                      >
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                           control={form.control}
                           name="email"
@@ -496,11 +455,7 @@ function UsersPage() {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input
-                                  type="email"
-                                  placeholder="teammate@company.com"
-                                  {...field}
-                                />
+                                <Input type="email" placeholder="teammate@company.com" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -512,10 +467,7 @@ function UsersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Role</FormLabel>
-                              <Select
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              >
+                              <Select value={field.value} onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a role" />
@@ -534,10 +486,7 @@ function UsersPage() {
                           )}
                         />
                         <DialogFooter>
-                          <Button
-                            type="submit"
-                            disabled={createMut.isPending}
-                          >
+                          <Button type="submit" disabled={createMut.isPending}>
                             {createMut.isPending && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
@@ -644,10 +593,7 @@ function UsersPage() {
                   ))}
                 {membersQuery.isError && (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-destructive"
-                    >
+                    <TableCell colSpan={5} className="text-center text-destructive">
                       {membersQuery.error instanceof Error
                         ? membersQuery.error.message
                         : "Failed to load members"}
@@ -656,13 +602,8 @@ function UsersPage() {
                 )}
                 {membersQuery.data && filteredMembers.length === 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="py-10 text-center text-muted-foreground"
-                    >
-                      {members.length === 0
-                        ? "No members yet."
-                        : "No members match your search."}
+                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                      {members.length === 0 ? "No members yet." : "No members match your search."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -670,24 +611,16 @@ function UsersPage() {
                   <TableRow key={m.userId}>
                     <TableCell>
                       <Avatar className="h-8 w-8">
-                        {m.avatarUrl ? (
-                          <AvatarImage src={m.avatarUrl} alt="" />
-                        ) : null}
+                        {m.avatarUrl ? <AvatarImage src={m.avatarUrl} alt="" /> : null}
                         <AvatarFallback>{initialsOf(m)}</AvatarFallback>
                       </Avatar>
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {m.fullName ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {m.email ?? "—"}
-                    </TableCell>
+                    <TableCell className="font-medium">{m.fullName ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{m.email ?? "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {m.roles.length === 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            No roles
-                          </span>
+                          <span className="text-xs text-muted-foreground">No roles</span>
                         )}
                         {m.roles.map((r) => (
                           <Badge key={r} variant="outline">
@@ -727,9 +660,7 @@ function UsersPage() {
             <Select
               value={inviteFilter}
               onValueChange={(v) =>
-                setInviteFilter(
-                  v as "all" | "pending" | "accepted" | "expired" | "revoked",
-                )
+                setInviteFilter(v as "all" | "pending" | "accepted" | "expired" | "revoked")
               }
             >
               <SelectTrigger className="h-9 w-40">
@@ -759,20 +690,14 @@ function UsersPage() {
               <TableBody>
                 {invitesQuery.isLoading && (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
                       Loading invites…
                     </TableCell>
                   </TableRow>
                 )}
                 {invitesQuery.isError && (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center text-destructive"
-                    >
+                    <TableCell colSpan={6} className="text-center text-destructive">
                       {invitesQuery.error instanceof Error
                         ? invitesQuery.error.message
                         : "Failed to load invites"}
@@ -781,10 +706,7 @@ function UsersPage() {
                 )}
                 {invitesQuery.data && filteredInvites.length === 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="py-10 text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                       {invites.length === 0
                         ? "No invites sent yet."
                         : "No invites match your filter."}
@@ -795,9 +717,7 @@ function UsersPage() {
                   const canAct = row.derivedStatus === "pending";
                   return (
                     <TableRow key={row.id}>
-                      <TableCell className="font-medium">
-                        {row.email}
-                      </TableCell>
+                      <TableCell className="font-medium">{row.email}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {humanizeRole(row.role)}
                       </TableCell>
@@ -822,8 +742,7 @@ function UsersPage() {
                             onClick={() => resendMut.mutate(row.id)}
                             aria-label="Resend"
                           >
-                            {resendMut.isPending &&
-                            resendMut.variables === row.id ? (
+                            {resendMut.isPending && resendMut.variables === row.id ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
                             ) : (
                               <RotateCcw className="h-4 w-4" />
@@ -867,8 +786,7 @@ function UsersPage() {
               )}
             </SheetTitle>
             <SheetDescription>
-              Toggle roles for this member. Changes are audit-logged and enforced
-              by the database.
+              Toggle roles for this member. Changes are audit-logged and enforced by the database.
             </SheetDescription>
           </SheetHeader>
           {managedMember && (
@@ -881,16 +799,13 @@ function UsersPage() {
                   <div className="flex flex-col gap-2">
                     {group.roles.map((role) => {
                       const on = managedMember.roles.includes(role);
-                      const busy =
-                        roleMut.isPending && pendingRole === role;
+                      const busy = roleMut.isPending && pendingRole === role;
                       return (
                         <label
                           key={role}
                           className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm"
                         >
-                          <span className="capitalize text-foreground">
-                            {humanizeRole(role)}
-                          </span>
+                          <span className="capitalize text-foreground">{humanizeRole(role)}</span>
                           <div className="flex items-center gap-2">
                             {busy && (
                               <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
@@ -915,8 +830,8 @@ function UsersPage() {
                 </div>
               ))}
               <p className="text-xs text-muted-foreground">
-                {GRANTABLE_ROLES.length} roles available. super_admin can only be
-                granted by another super_admin at the database level.
+                {GRANTABLE_ROLES.length} roles available. super_admin can only be granted by another
+                super_admin at the database level.
               </p>
             </div>
           )}

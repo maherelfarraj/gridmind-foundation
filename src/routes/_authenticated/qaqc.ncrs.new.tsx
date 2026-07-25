@@ -19,11 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  errorMessage,
-  ncrCurrenciesQueryOptions,
-  ncrProjectsQueryOptions,
-} from "@/lib/ncr-query";
+import { errorMessage, ncrCurrenciesQueryOptions, ncrProjectsQueryOptions } from "@/lib/ncr-query";
 import { createNcr } from "@/lib/ncr.functions";
 import { NCR_SOURCE_LABELS, NCR_SOURCES, type NcrSource } from "@/lib/ncr.rules";
 
@@ -36,8 +32,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/qaqc/ncrs/new")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Raise NCR — GridMind EPC" },
@@ -101,8 +96,7 @@ function NewNcrPage() {
     onError: (e) => toast.error(errorMessage(e)),
   });
 
-  const canSubmit =
-    !!projectId && description.trim().length >= 4 && !createMut.isPending;
+  const canSubmit = !!projectId && description.trim().length >= 4 && !createMut.isPending;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 pb-24 md:p-6">
@@ -224,9 +218,7 @@ function NewNcrPage() {
           <Link to="/qaqc/ncrs">Cancel</Link>
         </Button>
         <Button disabled={!canSubmit} onClick={() => createMut.mutate()}>
-          {createMut.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
+          {createMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Raise NCR
         </Button>
       </div>

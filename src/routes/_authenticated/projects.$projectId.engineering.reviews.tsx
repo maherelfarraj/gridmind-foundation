@@ -23,16 +23,11 @@ import {
   getReviewRound,
   listReviewRounds,
 } from "@/lib/drawing-reviews.functions";
-import {
-  reviewRolesQueryOptions,
-  reviewRoundsQueryOptions,
-} from "@/lib/drawing-reviews-query";
+import { reviewRolesQueryOptions, reviewRoundsQueryOptions } from "@/lib/drawing-reviews-query";
 import { decisionLabel, isOverdue } from "@/lib/review-rules";
 import { ReviewRoundDrawer } from "@/components/engineering/reviews/ReviewRoundDrawer";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/reviews",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/reviews")({
   component: ReviewsPage,
   pendingComponent: () => (
     <div className="space-y-3">
@@ -58,12 +53,8 @@ function ReviewsPage() {
   const listFn = useServerFn(listReviewRounds);
   const rolesFn = useServerFn(getMyReviewRoles);
 
-  const { data: rounds } = useSuspenseQuery(
-    reviewRoundsQueryOptions(listFn, projectId),
-  );
-  const { data: roles } = useSuspenseQuery(
-    reviewRolesQueryOptions(rolesFn, projectId),
-  );
+  const { data: rounds } = useSuspenseQuery(reviewRoundsQueryOptions(listFn, projectId));
+  const { data: roles } = useSuspenseQuery(reviewRolesQueryOptions(rolesFn, projectId));
 
   const [openRoundId, setOpenRoundId] = useState<string | null>(null);
 
@@ -116,9 +107,7 @@ function ReviewsPage() {
                     >
                       <TableCell className="font-medium">
                         {r.drawing_number}
-                        <div className="text-xs text-muted-foreground">
-                          {r.drawing_title}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{r.drawing_title}</div>
                       </TableCell>
                       <TableCell>{r.revision_code}</TableCell>
                       <TableCell>#{r.round_no}</TableCell>
@@ -127,17 +116,11 @@ function ReviewsPage() {
                           <Badge variant="outline">
                             {r.signoff_summary.signed}/{r.signoff_summary.total} signed
                           </Badge>
-                          {Object.entries(r.signoff_summary.by_decision).map(
-                            ([k, v]) => (
-                              <Badge
-                                key={k}
-                                variant={decisionVariant(k)}
-                                className="text-xs"
-                              >
-                                {decisionLabel(k === "pending" ? null : (k as any))}: {v}
-                              </Badge>
-                            ),
-                          )}
+                          {Object.entries(r.signoff_summary.by_decision).map(([k, v]) => (
+                            <Badge key={k} variant={decisionVariant(k)} className="text-xs">
+                              {decisionLabel(k === "pending" ? null : (k as any))}: {v}
+                            </Badge>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -157,9 +140,7 @@ function ReviewsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusVariant(r.status)}>
-                          {r.status}
-                        </Badge>
+                        <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(r.created_at), {
@@ -189,9 +170,7 @@ function ReviewsPage() {
   );
 }
 
-function decisionVariant(
-  d: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function decisionVariant(d: string): "default" | "secondary" | "destructive" | "outline" {
   if (d === "approved") return "default";
   if (d === "approved_with_comments") return "secondary";
   if (d === "rejected") return "destructive";
@@ -199,9 +178,7 @@ function decisionVariant(
   return "outline";
 }
 
-function statusVariant(
-  s: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function statusVariant(s: string): "default" | "secondary" | "destructive" | "outline" {
   if (s === "closed") return "secondary";
   if (s === "waived") return "outline";
   return "default";

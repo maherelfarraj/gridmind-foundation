@@ -43,13 +43,7 @@ interface WbsDetailFormProps {
 
 const NONE = "__none";
 
-export function WbsDetailForm({
-  item,
-  currencies,
-  canWrite,
-  saving,
-  onSave,
-}: WbsDetailFormProps) {
+export function WbsDetailForm({ item, currencies, canWrite, saving, onSave }: WbsDetailFormProps) {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [itemType, setItemType] = useState<WbsItemType>("phase");
@@ -67,9 +61,7 @@ export function WbsDetailForm({
     setItemType(item.item_type);
     setDiscipline((item.discipline ?? "") as WbsDiscipline | "");
     setDescription(item.description ?? "");
-    setBudget(
-      item.budgeted_amount == null ? "" : String(item.budgeted_amount),
-    );
+    setBudget(item.budgeted_amount == null ? "" : String(item.budgeted_amount));
     setCurrency(item.currency_code ?? "");
     setSortOrder(String(item.sort_order ?? 0));
     setError(null);
@@ -120,9 +112,7 @@ export function WbsDetailForm({
   return (
     <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
       <div>
-        <h3 className="font-display text-base font-semibold text-foreground">
-          Item details
-        </h3>
+        <h3 className="font-display text-base font-semibold text-foreground">Item details</h3>
         <p className="text-xs text-muted-foreground">
           Editing {item.code} — {item.name}
         </p>
@@ -187,9 +177,7 @@ export function WbsDetailForm({
           <Label>Discipline</Label>
           <Select
             value={discipline === "" ? NONE : discipline}
-            onValueChange={(v) =>
-              setDiscipline(v === NONE ? "" : (v as WbsDiscipline))
-            }
+            onValueChange={(v) => setDiscipline(v === NONE ? "" : (v as WbsDiscipline))}
             disabled={!canWrite}
           >
             <SelectTrigger>

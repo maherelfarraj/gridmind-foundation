@@ -105,8 +105,7 @@ function solarDeclination(dayOfYear: number): number {
 }
 
 function daylightHours(latitudeRad: number, declinationRad: number): number {
-  const cosH =
-    -Math.tan(latitudeRad) * Math.tan(declinationRad);
+  const cosH = -Math.tan(latitudeRad) * Math.tan(declinationRad);
   if (cosH >= 1) return 0; // polar night
   if (cosH <= -1) return 24; // polar day
   const H = Math.acos(cosH);
@@ -138,7 +137,11 @@ export function simulateYield(cfg: ArrayConfig): Omit<YieldResult, "engine" | "c
   for (let m = 0; m < 12; m++) {
     const base = 0.82 + rand() * 0.18;
     const seasonal =
-      1 + 0.06 * Math.sin(((m - 5) / 12) * 2 * Math.PI) * Math.sign(cfg.latitude || 1) * Math.min(Math.abs(latRad), 1);
+      1 +
+      0.06 *
+        Math.sin(((m - 5) / 12) * 2 * Math.PI) *
+        Math.sign(cfg.latitude || 1) *
+        Math.min(Math.abs(latRad), 1);
     monthlyDerate.push(Math.max(0.82, Math.min(1.0, base * seasonal)));
   }
 
@@ -189,13 +192,7 @@ export function simulateYield(cfg: ArrayConfig): Omit<YieldResult, "engine" | "c
       const irr = peakIrradiance * bell; // kW/m² proxy in [0, ~1]
 
       // DC power: nameplate × normalized irradiance × geometry × weather × loss × deg
-      let dcKw =
-        cfg.dc_capacity_kw *
-        irr *
-        geoBoost *
-        weather *
-        lossFactor *
-        degFactor;
+      let dcKw = cfg.dc_capacity_kw * irr * geoBoost * weather * lossFactor * degFactor;
       if (dcKw < 0) dcKw = 0;
       if (dcKw > cfg.dc_capacity_kw) dcKw = cfg.dc_capacity_kw;
 
@@ -210,14 +207,15 @@ export function simulateYield(cfg: ArrayConfig): Omit<YieldResult, "engine" | "c
   const sigma = Math.max(0, Math.min(0.2, cfg.p90_sigma));
   const p90 = Math.round(p50 * (1 - 1.2816 * sigma));
 
-  const specific =
-    cfg.dc_capacity_kw > 0 ? p50 / cfg.dc_capacity_kw : 0;
+  const specific = cfg.dc_capacity_kw > 0 ? p50 / cfg.dc_capacity_kw : 0;
   // Performance ratio = kWh_ac / (kWh_reference @ 1000 W/m² × dc_kw × sunHours)
   // Approx by the applied factor stack.
   const pr = Math.max(
     0,
-    Math.min(1, geoBoost * lossFactor * degFactor *
-      (monthlyDerate.reduce((s, v) => s + v, 0) / 12)),
+    Math.min(
+      1,
+      geoBoost * lossFactor * degFactor * (monthlyDerate.reduce((s, v) => s + v, 0) / 12),
+    ),
   );
 
   return {
