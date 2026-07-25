@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import { RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
 import { getRfqWriteAccess, listRfqs, type RfqRow } from "@/lib/rfq.functions";
 import { RFQ_STATUSES, type RfqStatus } from "@/lib/rfq-rules";
@@ -110,33 +112,28 @@ function RfqsIndex() {
   const canAuthor = accessQuery.data.canAuthor;
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <MailPlus className="h-3.5 w-3.5" /> Procurement
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">RFQs</h1>
-          <p className="text-sm text-muted-foreground">
-            Requests for quotation — invite vendors, collect bids, and level with TCO.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          {canAuthor && (
-            <Button asChild>
-              <Link to="/procurement/rfqs/new">
-                <Plus className="mr-2 h-4 w-4" /> New RFQ
-              </Link>
+    <div className="page-shell">
+      <PageHeader
+        title="RFQs"
+        description="Invite vendors, collect bids, and level with TCO."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export CSV
             </Button>
-          )}
-        </div>
-      </header>
+            {canAuthor && (
+              <Button asChild>
+                <Link to="/procurement/rfqs/new">
+                  <Plus className="mr-2 h-4 w-4" /> New RFQ
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative min-w-[240px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
@@ -167,62 +164,60 @@ function RfqsIndex() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-          <MailPlus className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold">No RFQs yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Draft your first RFQ, invite vendors, and level bids in one workspace.
-          </p>
-          {canAuthor && (
-            <Button className="mt-4" asChild>
-              <Link to="/procurement/rfqs/new">
-                <Plus className="mr-2 h-4 w-4" /> New RFQ
-              </Link>
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={MailPlus}
+          title="No RFQs yet"
+          description="Draft your first RFQ, invite vendors, and level bids in one workspace."
+          action={
+            canAuthor ? (
+              <Button asChild>
+                <Link to="/procurement/rfqs/new">
+                  <Plus className="mr-2 h-4 w-4" /> New RFQ
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
-        <div className="rounded-xl border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Number</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due</TableHead>
-                <TableHead>Currency</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Number</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Project</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Due</TableHead>
+              <TableHead>Currency</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow
+                key={r.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate({
+                    to: "/procurement/rfqs/$rfqId",
+                    params: { rfqId: r.id },
+                  })
+                }
+              >
+                <TableCell className="font-mono text-sm">{r.rfq_number}</TableCell>
+                <TableCell className="font-medium">{r.title}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {r.project_name ?? "—"}
+                </TableCell>
+                <TableCell>
+                  <RfqStatusBadge status={r.status} />
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {r.due_date ? format(new Date(r.due_date), "PP") : "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{r.currency_code}</TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className="cursor-pointer"
-                  onClick={() =>
-                    navigate({
-                      to: "/procurement/rfqs/$rfqId",
-                      params: { rfqId: r.id },
-                    })
-                  }
-                >
-                  <TableCell className="font-mono text-sm">{r.rfq_number}</TableCell>
-                  <TableCell className="font-medium">{r.title}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {r.project_name ?? "—"}
-                  </TableCell>
-                  <TableCell>
-                    <RfqStatusBadge status={r.status} />
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {r.due_date ? format(new Date(r.due_date), "PP") : "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{r.currency_code}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

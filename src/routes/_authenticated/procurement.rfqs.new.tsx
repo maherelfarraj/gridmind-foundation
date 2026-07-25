@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
 import { RfqLineEditor, type RfqDraftFormValues } from "@/components/procurement/rfq-line-editor";
 import { listProjectsForRfq } from "@/lib/rfq.functions";
 import { rfqProjectsQueryOptions, useSaveRfqDraft } from "@/lib/rfq-query";
@@ -91,15 +92,12 @@ function NewRfq() {
   const projects = projectsQuery.data;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
+    <div className="page-shell max-w-5xl">
+      <div className="space-y-1">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/rfqs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to RFQs
         </Button>
-        <h1 className="font-display text-2xl font-bold tracking-tight">New RFQ</h1>
-        <p className="text-sm text-muted-foreground">
-          Draft an RFQ, then invite vendors and issue it.
-        </p>
+        <PageHeader title="New RFQ" description="Draft an RFQ, then invite vendors and issue it." />
       </div>
 
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
@@ -183,9 +181,7 @@ function NewRfq() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Lines</h2>
-          </div>
+          <h2 className="text-lg font-semibold">Lines</h2>
           <RfqLineEditor control={form.control} />
         </div>
 

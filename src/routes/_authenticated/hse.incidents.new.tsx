@@ -4,12 +4,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Info, Plus, Shield, X } from "lucide-react";
+import { AlertTriangle, ClipboardList, Info, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -103,17 +105,10 @@ function NewIncidentPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Shield size={14} aria-hidden /> HSE
-        </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Log incident
-        </h1>
-      </header>
+    <div className="page-shell">
+      <PageHeader title="Log incident" description="Report an HSE incident within 24 hours of occurrence." />
 
-      <div className="flex items-start gap-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+      <div className="flex items-start gap-3 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
         <Info size={16} className="mt-0.5 text-primary" aria-hidden />
         <div>
           <div className="font-medium text-foreground">
@@ -293,9 +288,7 @@ function NewIncidentPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {actions.fields.length === 0 ? (
-              <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-                No corrective actions yet.
-              </div>
+              <EmptyState icon={ClipboardList} title="No corrective actions yet" compact />
             ) : null}
             {actions.fields.map((f, i) => (
               <div

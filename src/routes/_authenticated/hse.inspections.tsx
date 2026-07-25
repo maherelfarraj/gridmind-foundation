@@ -2,14 +2,16 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardCheck, Plus, Search, Shield } from "lucide-react";
+import { ClipboardCheck, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -158,25 +160,21 @@ function InspectionsPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Shield size={14} aria-hidden /> HSE
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Inspections
-          </h1>
-          <div className="flex gap-2">
+    <div className="page-shell">
+      <PageHeader
+        title="Inspections"
+        description="Scheduled and completed HSE inspections."
+        actions={
+          <>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
               Export CSV
             </Button>
             <Button size="sm" onClick={startNew}>
               <Plus size={14} aria-hidden /> New inspection
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
@@ -246,14 +244,11 @@ function InspectionsPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <ClipboardCheck size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">
-              No inspections yet — tap New inspection.
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={ClipboardCheck}
+          title="No inspections yet"
+          description="Tap New inspection to schedule one."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((r) => (
