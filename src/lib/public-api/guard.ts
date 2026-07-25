@@ -365,7 +365,9 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       reason: "ip_not_allowed",
       metadata: { client_ip: clientIp },
     });
+    warnings.push("ip_not_allowed");
   }
+
 
   // ---- Stage 3: HMAC signature (warn/block) ------------------------------
   const rawBody = opts.rawBody ?? (await request.clone().text());
