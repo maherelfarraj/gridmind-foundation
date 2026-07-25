@@ -964,6 +964,114 @@ export type Database = {
           },
         ]
       }
+      construction_daily_reports: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          constraints_notes: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          project_id: string
+          quantities: Json
+          report_date: string
+          shift: string
+          status: Database["public"]["Enums"]["dpr_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          temperature_high_c: number | null
+          temperature_low_c: number | null
+          total_hours: number
+          total_manpower: number
+          updated_at: string
+          weather_summary: string | null
+          work_summary: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          constraints_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id: string
+          quantities?: Json
+          report_date: string
+          shift?: string
+          status?: Database["public"]["Enums"]["dpr_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          temperature_high_c?: number | null
+          temperature_low_c?: number | null
+          total_hours?: number
+          total_manpower?: number
+          updated_at?: string
+          weather_summary?: string | null
+          work_summary?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          constraints_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id?: string
+          quantities?: Json
+          report_date?: string
+          shift?: string
+          status?: Database["public"]["Enums"]["dpr_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          temperature_high_c?: number | null
+          temperature_low_c?: number | null
+          total_hours?: number
+          total_manpower?: number
+          updated_at?: string
+          weather_summary?: string | null
+          work_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construction_daily_reports_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_daily_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_daily_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_daily_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_daily_reports_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           company_id: string
@@ -2022,6 +2130,99 @@ export type Database = {
           },
         ]
       }
+      field_observations: {
+        Row: {
+          action_required: string | null
+          area: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          description: string
+          discipline: string
+          dpr_id: string | null
+          due_date: string | null
+          id: string
+          project_id: string
+          raised_by: string | null
+          severity: Database["public"]["Enums"]["observation_severity"]
+          status: Database["public"]["Enums"]["observation_status"]
+          updated_at: string
+        }
+        Insert: {
+          action_required?: string | null
+          area?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string
+          description: string
+          discipline?: string
+          dpr_id?: string | null
+          due_date?: string | null
+          id?: string
+          project_id: string
+          raised_by?: string | null
+          severity?: Database["public"]["Enums"]["observation_severity"]
+          status?: Database["public"]["Enums"]["observation_status"]
+          updated_at?: string
+        }
+        Update: {
+          action_required?: string | null
+          area?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string
+          discipline?: string
+          dpr_id?: string | null
+          due_date?: string | null
+          id?: string
+          project_id?: string
+          raised_by?: string | null
+          severity?: Database["public"]["Enums"]["observation_severity"]
+          status?: Database["public"]["Enums"]["observation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_observations_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_observations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_observations_dpr_id_fkey"
+            columns: ["dpr_id"]
+            isOneToOne: false
+            referencedRelation: "construction_daily_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_observations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_observations_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fx_rates: {
         Row: {
           as_of: string
@@ -2694,6 +2895,60 @@ export type Database = {
           },
         ]
       }
+      manpower_logs: {
+        Row: {
+          company_id: string
+          contractor: string | null
+          created_at: string
+          dpr_id: string
+          headcount: number
+          hours: number
+          id: string
+          notes: string | null
+          trade: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contractor?: string | null
+          created_at?: string
+          dpr_id: string
+          headcount: number
+          hours?: number
+          id?: string
+          notes?: string | null
+          trade: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contractor?: string | null
+          created_at?: string
+          dpr_id?: string
+          headcount?: number
+          hours?: number
+          id?: string
+          notes?: string | null
+          trade?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manpower_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manpower_logs_dpr_id_fkey"
+            columns: ["dpr_id"]
+            isOneToOne: false
+            referencedRelation: "construction_daily_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_price_alerts: {
         Row: {
           alert_threshold_pct: number
@@ -2887,6 +3142,76 @@ export type Database = {
           },
           {
             foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offline_queue: {
+        Row: {
+          action: string
+          client_idempotency_key: string
+          company_id: string
+          created_at: string
+          entity: string
+          error: string | null
+          id: string
+          payload: Json
+          project_id: string | null
+          status: Database["public"]["Enums"]["offline_queue_status"]
+          synced_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          client_idempotency_key: string
+          company_id: string
+          created_at?: string
+          entity: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["offline_queue_status"]
+          synced_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          client_idempotency_key?: string
+          company_id?: string
+          created_at?: string
+          entity?: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["offline_queue_status"]
+          synced_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offline_queue_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offline_queue_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offline_queue_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -5188,6 +5513,96 @@ export type Database = {
           },
         ]
       }
+      site_photos: {
+        Row: {
+          area: string | null
+          caption: string | null
+          company_id: string
+          created_at: string
+          discipline: string | null
+          dpr_id: string | null
+          file_path: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          observation_id: string | null
+          project_id: string
+          taken_at: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          area?: string | null
+          caption?: string | null
+          company_id: string
+          created_at?: string
+          discipline?: string | null
+          dpr_id?: string | null
+          file_path: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          observation_id?: string | null
+          project_id: string
+          taken_at?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          area?: string | null
+          caption?: string | null
+          company_id?: string
+          created_at?: string
+          discipline?: string | null
+          dpr_id?: string | null
+          file_path?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          observation_id?: string | null
+          project_id?: string
+          taken_at?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_photos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_photos_dpr_id_fkey"
+            columns: ["dpr_id"]
+            isOneToOne: false
+            referencedRelation: "construction_daily_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_photos_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: false
+            referencedRelation: "field_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_photos_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spare_parts: {
         Row: {
           category: Database["public"]["Enums"]["material_category"]
@@ -5783,6 +6198,93 @@ export type Database = {
           },
         ]
       }
+      weather_delays: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          delay_date: string
+          delay_type: Database["public"]["Enums"]["weather_delay_type"]
+          dpr_id: string | null
+          end_time: string | null
+          id: string
+          impact_notes: string | null
+          lost_hours: number
+          project_id: string
+          start_time: string | null
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          delay_date: string
+          delay_type: Database["public"]["Enums"]["weather_delay_type"]
+          dpr_id?: string | null
+          end_time?: string | null
+          id?: string
+          impact_notes?: string | null
+          lost_hours?: number
+          project_id: string
+          start_time?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          delay_date?: string
+          delay_type?: Database["public"]["Enums"]["weather_delay_type"]
+          dpr_id?: string | null
+          end_time?: string | null
+          id?: string
+          impact_notes?: string | null
+          lost_hours?: number
+          project_id?: string
+          start_time?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weather_delays_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weather_delays_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weather_delays_dpr_id_fkey"
+            columns: ["dpr_id"]
+            isOneToOne: false
+            referencedRelation: "construction_daily_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weather_delays_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weather_delays_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_deliveries: {
         Row: {
           attempts: number
@@ -6034,6 +6536,7 @@ export type Database = {
         | "correspondence"
         | "contract_doc"
         | "other"
+      dpr_status: "draft" | "submitted" | "approved"
       drawing_discipline:
         | "civil"
         | "structural"
@@ -6086,6 +6589,9 @@ export type Database = {
         | "steel"
         | "concrete"
         | "other"
+      observation_severity: "low" | "medium" | "high" | "critical"
+      observation_status: "open" | "in_progress" | "closed"
+      offline_queue_status: "pending" | "synced" | "failed"
       opportunity_stage:
         | "prospecting"
         | "qualification"
@@ -6172,6 +6678,14 @@ export type Database = {
         | "other"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
       wbs_item_type: "phase" | "package" | "discipline" | "task_group"
+      weather_delay_type:
+        | "rain"
+        | "wind"
+        | "heat"
+        | "cold"
+        | "dust_storm"
+        | "lightning"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6366,6 +6880,7 @@ export const Constants = {
         "contract_doc",
         "other",
       ],
+      dpr_status: ["draft", "submitted", "approved"],
       drawing_discipline: [
         "civil",
         "structural",
@@ -6424,6 +6939,9 @@ export const Constants = {
         "concrete",
         "other",
       ],
+      observation_severity: ["low", "medium", "high", "critical"],
+      observation_status: ["open", "in_progress", "closed"],
+      offline_queue_status: ["pending", "synced", "failed"],
       opportunity_stage: [
         "prospecting",
         "qualification",
@@ -6520,6 +7038,15 @@ export const Constants = {
       ],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
       wbs_item_type: ["phase", "package", "discipline", "task_group"],
+      weather_delay_type: [
+        "rain",
+        "wind",
+        "heat",
+        "cold",
+        "dust_storm",
+        "lightning",
+        "other",
+      ],
     },
   },
 } as const
