@@ -12,14 +12,14 @@ External references (`GSI-JOR-EAM-HYB-001`, `GSI-JOR-EAM-RFQ-MOD-001`) are carri
 
 Create two vendors under GSI via the vendor form:
 
-| Field | LONGi | Trina Solar |
-|---|---|---|
-| Name | LONGi | Trina Solar |
+| Field      | LONGi                                   | Trina Solar           |
+| ---------- | --------------------------------------- | --------------------- |
+| Name       | LONGi                                   | Trina Solar           |
 | Legal name | LONGi Green Energy Technology Co., Ltd. | Trina Solar Co., Ltd. |
-| Country | China | China |
-| Currency | USD | USD |
-| Categories | modules | modules |
-| Status | onboarding | onboarding |
+| Country    | China                                   | China                 |
+| Currency   | USD                                     | USD                   |
+| Categories | modules                                 | modules               |
+| Status     | onboarding                              | onboarding            |
 
 Notes field records "Prequalification pending — PV module supply, East Amman (ext. ref GSI-JOR-EAM-HYB-001)".
 
@@ -56,18 +56,18 @@ config.alarms       immediate
 
 **Assets** — the `scada_asset_type` enum supports inverter / bess / meter / weather_station / plant_controller / combiner, so your 10 assets map like this:
 
-| Asset | asset_key | type |
-|---|---|---|
-| PV array / inverters | `PV-INV-01` | inverter |
-| BESS | `BESS-01` | bess |
-| PCS | `BESS-PCS-01` | inverter |
-| BMS | `BESS-BMS-01` | bess |
-| EMS / PPC | `EMS-PPC-01` | plant_controller |
-| POI meter | `POI-MTR-01` | meter |
-| MV switchgear | `MV-SWGR-01` | combiner |
-| Main transformer | `TRF-MAIN-01` | combiner |
-| Weather station | `WS-01` | weather_station |
-| Substation | `SUBSTN-01` | plant_controller |
+| Asset                | asset_key     | type             |
+| -------------------- | ------------- | ---------------- |
+| PV array / inverters | `PV-INV-01`   | inverter         |
+| BESS                 | `BESS-01`     | bess             |
+| PCS                  | `BESS-PCS-01` | inverter         |
+| BMS                  | `BESS-BMS-01` | bess             |
+| EMS / PPC            | `EMS-PPC-01`  | plant_controller |
+| POI meter            | `POI-MTR-01`  | meter            |
+| MV switchgear        | `MV-SWGR-01`  | combiner         |
+| Main transformer     | `TRF-MAIN-01` | combiner         |
+| Weather station      | `WS-01`       | weather_station  |
+| Substation           | `SUBSTN-01`   | plant_controller |
 
 If you'd rather have exact `pcs` / `bms` / `transformer` / `switchgear` / `substation` enum values, that's a migration plus wizard/label updates — say so and I'll add it instead of mapping.
 

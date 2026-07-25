@@ -210,7 +210,6 @@ export const generateOmReport = createServerFn({ method: "POST" })
     const projectCurrency =
       ((Array.isArray(cfg) ? cfg[0]?.currency_code : cfg?.currency_code) as string | null) ?? "USD";
 
-
     // ---- period math -------------------------------------------------------
     const periodStartIso = `${data.periodStart}T00:00:00.000Z`;
     // period_end is inclusive-of-day; add 24 h to compare timestamps.

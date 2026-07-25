@@ -146,218 +146,214 @@ const CRON_URL = `${DEV_SERVER_URL}/api/cron/approval-escalations`;
 const SERVER_MODE: "warn" | "block" =
   (process.env.PUBLIC_HOOK_ENFORCE ?? "block").toLowerCase() === "warn" ? "warn" : "block";
 
-describe.skipIf(!canRunHttp)(
-  `P-131 HTTP guard matrix (server enforce=${SERVER_MODE})`,
-  () => {
-    let fx: Fixture;
+describe.skipIf(!canRunHttp)(`P-131 HTTP guard matrix (server enforce=${SERVER_MODE})`, () => {
+  let fx: Fixture;
 
-    beforeAll(async () => {
-      fx = await createFixture();
-    });
+  beforeAll(async () => {
+    fx = await createFixture();
+  });
 
-    afterAll(async () => {
-      if (fx) await cleanupFixture(fx);
-    });
+  afterAll(async () => {
+    if (fx) await cleanupFixture(fx);
+  });
 
-    // --- helpers scoped to this describe -----------------------------------
-    async function auditWarnFor(keyId: string, reason: string): Promise<boolean> {
-      // Poll: audit write is best-effort/fire-and-forget.
-      for (let i = 0; i < 5; i++) {
-        const { data } = await fx.admin
-          .from("audit_logs")
-          .select("action, metadata")
-          .eq("company_id", fx.companyId)
-          .in("action", ["public_hook.warn", "public_hook.block"])
-          .order("created_at", { ascending: false })
-          .limit(25);
-        const hit = (data ?? []).find(
-          (r) =>
-            (r.metadata as { key_id?: string; reason?: string })?.key_id === keyId &&
-            (r.metadata as { reason?: string })?.reason === reason,
-        );
-        if (hit) return true;
-        await new Promise((r) => setTimeout(r, 200));
-      }
-      return false;
-    }
-
-    /** Assert 401/403 in block mode, or 200 + x-guard-warn header + audit row in warn mode. */
-    async function expectBlockedOrWarned(
-      res: Response,
-      blockedStatus: 401 | 403,
-      warnReason: string,
-      keyId: string,
-    ) {
-      if (SERVER_MODE === "block") {
-        expect(res.status).toBe(blockedStatus);
-        return;
-      }
-      expect(res.status).toBe(200);
-      const warnHeader = res.headers.get("x-guard-warn") ?? "";
-      expect(warnHeader.split(",")).toContain(warnReason);
-      expect(res.headers.get("x-guard-mode")).toBe("warn");
-      expect(await auditWarnFor(keyId, warnReason)).toBe(true);
-    }
-
-    // Row 1: No Authorization header → 401 (auth always blocks, both modes).
-    it("row 1: missing Authorization → 401 (invariant)", async () => {
-      const body = "{}";
-      const ts = String(nowSec());
-      const res = await post(
-        ECHO_URL,
-        {
-          "content-type": "application/json",
-          "x-timestamp": ts,
-          "x-signature": sign("anything", ts, body),
-        },
-        body,
-      );
-      expect(res.status).toBe(401);
-    });
-
-    // Row 2: Bearer with an unknown key → 401 (invariant).
-    it("row 2: wrong bearer → 401 (invariant)", async () => {
-      const body = "{}";
-      const headers = signedHeaders(fx.keyOpen, body, { bearer: "gm_wrong_key_zzz" });
-      const res = await post(ECHO_URL, headers, body);
-      expect(res.status).toBe(401);
-    });
-
-    // Row 3a: Valid Bearer + signature → 200 (invariant).
-    it("row 3a: valid key + signature → 200 (invariant)", async () => {
-      const body = '{"probe":"ok"}';
-      const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body), body);
-      expect(res.status).toBe(200);
-      const j = (await res.json()) as { echoed: boolean; companyId: string };
-      expect(j.echoed).toBe(true);
-      expect(j.companyId).toBe(fx.companyId);
-    });
-
-    // Row 4: Revoked key → 401 (invariant — auth always blocks).
-    it("row 4: revoked key → 401 (invariant)", async () => {
-      const throwaway = `gm_test_${randomBytes(16).toString("hex")}`;
-      const hmac = randomBytes(16).toString("hex");
+  // --- helpers scoped to this describe -----------------------------------
+  async function auditWarnFor(keyId: string, reason: string): Promise<boolean> {
+    // Poll: audit write is best-effort/fire-and-forget.
+    for (let i = 0; i < 5; i++) {
       const { data } = await fx.admin
-        .from("api_keys")
-        .insert({
-          company_id: fx.companyId,
-          name: "P-131 revocable",
-          key_prefix: throwaway.slice(0, 10),
-          key_hash: sha256Hex(throwaway),
-          scopes: ["hooks:events"],
-          allowed_ips: [],
-          hmac_secret: hmac,
-        })
-        .select("id")
-        .single();
-      const k: TestKey = { id: data!.id, raw: throwaway, hmac };
-      const body = "{}";
-      const ok = await post(ECHO_URL, signedHeaders(k, body), body);
-      expect(ok.status).toBe(200);
-      await fx.admin.from("api_keys").update({ revoked_at: new Date().toISOString() }).eq("id", k.id);
-      const after = await post(ECHO_URL, signedHeaders(k, body), body);
-      expect(after.status).toBe(401);
-    });
-
-    // Row 5: Cron path — apikey header, no Bearer → 200 (invariant).
-    it("row 5: cron endpoint accepts Supabase apikey header without Bearer (invariant)", async () => {
-      if (!SUPABASE_APIKEY) return;
-      const res = await post(
-        CRON_URL,
-        { apikey: SUPABASE_APIKEY, "content-type": "application/json" },
-        "{}",
+        .from("audit_logs")
+        .select("action, metadata")
+        .eq("company_id", fx.companyId)
+        .in("action", ["public_hook.warn", "public_hook.block"])
+        .order("created_at", { ascending: false })
+        .limit(25);
+      const hit = (data ?? []).find(
+        (r) =>
+          (r.metadata as { key_id?: string; reason?: string })?.key_id === keyId &&
+          (r.metadata as { reason?: string })?.reason === reason,
       );
-      expect([200, 202]).toContain(res.status);
-    });
+      if (hit) return true;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return false;
+  }
 
-    // Row 6a: cf-connecting-ip authoritative; spoofed XFF ignored (invariant).
-    it("row 6a: cf-connecting-ip allowed + spoofed XFF banned → 200 (invariant)", async () => {
-      const body = "{}";
-      const headers = signedHeaders(fx.keyPinned, body, {
-        cfIp: "198.51.100.7",
-        xff: "203.0.113.9",
-      });
-      const res = await post(ECHO_URL, headers, body);
-      expect(res.status).toBe(200);
-    });
+  /** Assert 401/403 in block mode, or 200 + x-guard-warn header + audit row in warn mode. */
+  async function expectBlockedOrWarned(
+    res: Response,
+    blockedStatus: 401 | 403,
+    warnReason: string,
+    keyId: string,
+  ) {
+    if (SERVER_MODE === "block") {
+      expect(res.status).toBe(blockedStatus);
+      return;
+    }
+    expect(res.status).toBe(200);
+    const warnHeader = res.headers.get("x-guard-warn") ?? "";
+    expect(warnHeader.split(",")).toContain(warnReason);
+    expect(res.headers.get("x-guard-mode")).toBe("warn");
+    expect(await auditWarnFor(keyId, warnReason)).toBe(true);
+  }
 
-    // Row 6b: XFF-only (spoof) must NEVER pass — 403 in block, 200+warn in warn.
-    // Either way: proof the guard doesn't consult x-forwarded-for.
-    it("row 6b: XFF-only (no cf-connecting-ip) spoofing allowlist → blocked or warned", async () => {
-      const body = "{}";
-      const headers = signedHeaders(fx.keyPinned, body, { xff: "198.51.100.7" });
-      const res = await post(ECHO_URL, headers, body);
-      await expectBlockedOrWarned(res, 403, "ip_not_allowed", fx.keyPinned.id);
-    });
+  // Row 1: No Authorization header → 401 (auth always blocks, both modes).
+  it("row 1: missing Authorization → 401 (invariant)", async () => {
+    const body = "{}";
+    const ts = String(nowSec());
+    const res = await post(
+      ECHO_URL,
+      {
+        "content-type": "application/json",
+        "x-timestamp": ts,
+        "x-signature": sign("anything", ts, body),
+      },
+      body,
+    );
+    expect(res.status).toBe(401);
+  });
 
-    // Row 7: Missing signature on requireSignature endpoint.
-    it("row 7: missing x-signature on requireSignature route → blocked or warned", async () => {
-      const body = "{}";
-      const headers = signedHeaders(fx.keyOpen, body, { withSig: false });
-      delete headers["x-timestamp"];
-      const res = await post(ECHO_URL, headers, body);
-      await expectBlockedOrWarned(res, 401, "signature_missing", fx.keyOpen.id);
-    });
+  // Row 2: Bearer with an unknown key → 401 (invariant).
+  it("row 2: wrong bearer → 401 (invariant)", async () => {
+    const body = "{}";
+    const headers = signedHeaders(fx.keyOpen, body, { bearer: "gm_wrong_key_zzz" });
+    const res = await post(ECHO_URL, headers, body);
+    expect(res.status).toBe(401);
+  });
 
-    // Row 8a: Replay window boundary — 300s exactly is ACCEPTED (invariant).
-    it("row 8a: ts = now − 300 (boundary) → 200 (invariant)", async () => {
-      const body = "{}";
-      const ts = nowSec() - 300;
-      const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
-      expect(res.status).toBe(200);
-    });
+  // Row 3a: Valid Bearer + signature → 200 (invariant).
+  it("row 3a: valid key + signature → 200 (invariant)", async () => {
+    const body = '{"probe":"ok"}';
+    const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body), body);
+    expect(res.status).toBe(200);
+    const j = (await res.json()) as { echoed: boolean; companyId: string };
+    expect(j.echoed).toBe(true);
+    expect(j.companyId).toBe(fx.companyId);
+  });
 
-    // Rows 8b/8c: past ±300s the guard MUST detect signature_expired.
-    // In block: 401 signature_expired. In warn: 200 + x-guard-warn=signature_expired.
-    it("row 8b: ts = now − 301 → signature_expired blocked-or-warned", async () => {
-      const body = "{}";
-      const ts = nowSec() - 301;
-      const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
-      await expectBlockedOrWarned(res, 401, "signature_expired", fx.keyOpen.id);
-      if (SERVER_MODE === "block") {
-        const j = (await res.json()) as { error: string };
-        expect(j.error).toBe("signature_expired");
-      }
-    });
+  // Row 4: Revoked key → 401 (invariant — auth always blocks).
+  it("row 4: revoked key → 401 (invariant)", async () => {
+    const throwaway = `gm_test_${randomBytes(16).toString("hex")}`;
+    const hmac = randomBytes(16).toString("hex");
+    const { data } = await fx.admin
+      .from("api_keys")
+      .insert({
+        company_id: fx.companyId,
+        name: "P-131 revocable",
+        key_prefix: throwaway.slice(0, 10),
+        key_hash: sha256Hex(throwaway),
+        scopes: ["hooks:events"],
+        allowed_ips: [],
+        hmac_secret: hmac,
+      })
+      .select("id")
+      .single();
+    const k: TestKey = { id: data!.id, raw: throwaway, hmac };
+    const body = "{}";
+    const ok = await post(ECHO_URL, signedHeaders(k, body), body);
+    expect(ok.status).toBe(200);
+    await fx.admin.from("api_keys").update({ revoked_at: new Date().toISOString() }).eq("id", k.id);
+    const after = await post(ECHO_URL, signedHeaders(k, body), body);
+    expect(after.status).toBe(401);
+  });
 
-    it("row 8c: ts = now + 301 → signature_expired blocked-or-warned", async () => {
-      const body = "{}";
-      const ts = nowSec() + 301;
-      const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
-      await expectBlockedOrWarned(res, 401, "signature_expired", fx.keyOpen.id);
-      if (SERVER_MODE === "block") {
-        const j = (await res.json()) as { error: string };
-        expect(j.error).toBe("signature_expired");
-      }
-    });
+  // Row 5: Cron path — apikey header, no Bearer → 200 (invariant).
+  it("row 5: cron endpoint accepts Supabase apikey header without Bearer (invariant)", async () => {
+    if (!SUPABASE_APIKEY) return;
+    const res = await post(
+      CRON_URL,
+      { apikey: SUPABASE_APIKEY, "content-type": "application/json" },
+      "{}",
+    );
+    expect([200, 202]).toContain(res.status);
+  });
 
-    // Row 9: Tampered body — signature over body A, actual bytes B.
-    it("row 9: tampered body (valid ts, wrong sig) → blocked or warned", async () => {
-      const body = '{"real":true}';
-      const headers = signedHeaders(fx.keyOpen, body);
-      const res = await post(ECHO_URL, headers, '{"real":false}');
-      await expectBlockedOrWarned(res, 401, "signature_mismatch", fx.keyOpen.id);
+  // Row 6a: cf-connecting-ip authoritative; spoofed XFF ignored (invariant).
+  it("row 6a: cf-connecting-ip allowed + spoofed XFF banned → 200 (invariant)", async () => {
+    const body = "{}";
+    const headers = signedHeaders(fx.keyPinned, body, {
+      cfIp: "198.51.100.7",
+      xff: "203.0.113.9",
     });
+    const res = await post(ECHO_URL, headers, body);
+    expect(res.status).toBe(200);
+  });
 
-    // Row 10: Rate limit burst → 429 with numeric Retry-After (invariant).
-    it("row 10: burst > capacity → 429 with numeric Retry-After (invariant)", async () => {
-      const body = "{}";
-      let last429: Response | null = null;
-      let successes = 0;
-      for (let i = 0; i < 10; i++) {
-        const res = await post(ECHO_BURST_URL, signedHeaders(fx.keyOpen, body), body);
-        if (res.status === 429) last429 = res;
-        else if (res.status === 200) successes += 1;
-      }
-      expect(successes).toBeGreaterThanOrEqual(1);
-      expect(last429, "expected at least one 429 in burst").not.toBeNull();
-      const retryAfter = last429!.headers.get("retry-after");
-      expect(retryAfter).toBeTruthy();
-      expect(Number(retryAfter)).toBeGreaterThan(0);
-    });
-  },
-);
+  // Row 6b: XFF-only (spoof) must NEVER pass — 403 in block, 200+warn in warn.
+  // Either way: proof the guard doesn't consult x-forwarded-for.
+  it("row 6b: XFF-only (no cf-connecting-ip) spoofing allowlist → blocked or warned", async () => {
+    const body = "{}";
+    const headers = signedHeaders(fx.keyPinned, body, { xff: "198.51.100.7" });
+    const res = await post(ECHO_URL, headers, body);
+    await expectBlockedOrWarned(res, 403, "ip_not_allowed", fx.keyPinned.id);
+  });
 
+  // Row 7: Missing signature on requireSignature endpoint.
+  it("row 7: missing x-signature on requireSignature route → blocked or warned", async () => {
+    const body = "{}";
+    const headers = signedHeaders(fx.keyOpen, body, { withSig: false });
+    delete headers["x-timestamp"];
+    const res = await post(ECHO_URL, headers, body);
+    await expectBlockedOrWarned(res, 401, "signature_missing", fx.keyOpen.id);
+  });
+
+  // Row 8a: Replay window boundary — 300s exactly is ACCEPTED (invariant).
+  it("row 8a: ts = now − 300 (boundary) → 200 (invariant)", async () => {
+    const body = "{}";
+    const ts = nowSec() - 300;
+    const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
+    expect(res.status).toBe(200);
+  });
+
+  // Rows 8b/8c: past ±300s the guard MUST detect signature_expired.
+  // In block: 401 signature_expired. In warn: 200 + x-guard-warn=signature_expired.
+  it("row 8b: ts = now − 301 → signature_expired blocked-or-warned", async () => {
+    const body = "{}";
+    const ts = nowSec() - 301;
+    const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
+    await expectBlockedOrWarned(res, 401, "signature_expired", fx.keyOpen.id);
+    if (SERVER_MODE === "block") {
+      const j = (await res.json()) as { error: string };
+      expect(j.error).toBe("signature_expired");
+    }
+  });
+
+  it("row 8c: ts = now + 301 → signature_expired blocked-or-warned", async () => {
+    const body = "{}";
+    const ts = nowSec() + 301;
+    const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
+    await expectBlockedOrWarned(res, 401, "signature_expired", fx.keyOpen.id);
+    if (SERVER_MODE === "block") {
+      const j = (await res.json()) as { error: string };
+      expect(j.error).toBe("signature_expired");
+    }
+  });
+
+  // Row 9: Tampered body — signature over body A, actual bytes B.
+  it("row 9: tampered body (valid ts, wrong sig) → blocked or warned", async () => {
+    const body = '{"real":true}';
+    const headers = signedHeaders(fx.keyOpen, body);
+    const res = await post(ECHO_URL, headers, '{"real":false}');
+    await expectBlockedOrWarned(res, 401, "signature_mismatch", fx.keyOpen.id);
+  });
+
+  // Row 10: Rate limit burst → 429 with numeric Retry-After (invariant).
+  it("row 10: burst > capacity → 429 with numeric Retry-After (invariant)", async () => {
+    const body = "{}";
+    let last429: Response | null = null;
+    let successes = 0;
+    for (let i = 0; i < 10; i++) {
+      const res = await post(ECHO_BURST_URL, signedHeaders(fx.keyOpen, body), body);
+      if (res.status === 429) last429 = res;
+      else if (res.status === 200) successes += 1;
+    }
+    expect(successes).toBeGreaterThanOrEqual(1);
+    expect(last429, "expected at least one 429 in burst").not.toBeNull();
+    const retryAfter = last429!.headers.get("retry-after");
+    expect(retryAfter).toBeTruthy();
+    expect(Number(retryAfter)).toBeGreaterThan(0);
+  });
+});
 
 // --------------------------------------------------------------------------
 // (B) In-process warn-mode assertions.
