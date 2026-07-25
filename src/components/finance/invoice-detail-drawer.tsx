@@ -188,7 +188,7 @@ export function InvoiceDetailDrawer({
             </div>
 
             {d.debit_notes_open_sum > 0 && (
-              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-xs text-warning">
                 <div className="flex items-start gap-2 text-warning">
                   <AlertTriangle className="mt-0.5 size-3.5" />
                   <span>

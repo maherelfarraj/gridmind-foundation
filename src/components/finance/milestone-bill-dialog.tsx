@@ -183,7 +183,7 @@ export function MilestoneBillDialog({
             )}
 
             {summary.data.status && !["signed", "active"].includes(summary.data.status) && (
-              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-warning">
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning">
                 Milestone billing is only available on signed or active contracts.
               </div>
             )}

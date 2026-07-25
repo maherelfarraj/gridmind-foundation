@@ -19,7 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -194,30 +196,28 @@ function WorkOrdersPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Work orders</h1>
-          <p className="text-sm text-muted-foreground">
-            Corrective, preventive, and inspection work across your fleet.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="w-64 pl-8"
-              placeholder="Search WO # or title"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" onClick={exportCsv} disabled={!rows.length}>
-            <Download className="mr-2 h-4 w-4" /> CSV
-          </Button>
-          <CreateWorkOrderDialog />
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Work orders"
+        description="Corrective, preventive, and inspection work across your fleet."
+        actions={
+          <>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                className="w-64 pl-8"
+                placeholder="Search WO # or title"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </div>
+            <Button variant="outline" onClick={exportCsv} disabled={!rows.length}>
+              <Download className="mr-2 h-4 w-4" /> CSV
+            </Button>
+            <CreateWorkOrderDialog />
+          </>
+        }
+      />
 
       <KpiStrip
         loading={kpisQ.isLoading}
@@ -280,47 +280,34 @@ function KpiStrip(props: {
   const pct = props.pmRatio == null ? null : Math.round(props.pmRatio * 100);
   const targetMet = pct != null && pct >= 80;
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">
-            PM : CM ratio ({props.windowDays}d)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-baseline justify-between">
-            <div className="font-mono text-3xl">{pct == null ? "—" : `${pct}%`}</div>
+    <KpiGrid columns={3}>
+      <KpiTile
+        label={`PM : CM ratio (${props.windowDays}d)`}
+        value={pct == null ? "—" : `${pct}%`}
+        status={targetMet ? "good" : "neutral"}
+        hint={
+          <span className="flex items-center gap-2">
             <Badge variant={targetMet ? "default" : "outline"}>target ≥ 80%</Badge>
-          </div>
-          <Progress value={pct ?? 0} />
-          <p className="text-xs text-muted-foreground">
-            {props.pmCount} preventive · {props.cmCount} corrective (closed)
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">MTTR (corrective, closed)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="font-mono text-3xl">
-            {props.mttrHours == null ? "—" : `${props.mttrHours} h`}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {props.correctiveClosed} completed corrective WOs
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">Window</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="font-mono text-3xl">{props.windowDays}d</div>
-          <p className="text-xs text-muted-foreground">Trailing window for PM ratio &amp; MTTR</p>
-        </CardContent>
-      </Card>
-    </div>
+            <span>
+              {props.pmCount} preventive · {props.cmCount} corrective (closed)
+            </span>
+          </span>
+        }
+        isLoading={props.loading}
+      />
+      <KpiTile
+        label="MTTR (corrective, closed)"
+        value={props.mttrHours == null ? "—" : `${props.mttrHours} h`}
+        hint={`${props.correctiveClosed} completed corrective WOs`}
+        isLoading={props.loading}
+      />
+      <KpiTile
+        label="Window"
+        value={`${props.windowDays}d`}
+        hint="Trailing window for PM ratio & MTTR"
+        isLoading={props.loading}
+      />
+    </KpiGrid>
   );
 }
 
@@ -348,7 +335,7 @@ function KanbanColumn({
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2">
         {rows.length === 0 ? (
-          <p className="px-1 py-3 text-xs text-muted-foreground">No cards.</p>
+          <p className="px-1 py-3 text-xs text-muted-foreground uppercase tracking-wide">No cards</p>
         ) : (
           rows.map((r) => <KanbanCard key={r.id} row={r} onOpen={onOpen} />)
         )}
@@ -408,7 +395,7 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
 // ---------------------------------------------------------------------------
 function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string) => void }) {
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -425,8 +412,8 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
-                No work orders yet.
+              <TableCell colSpan={8} className="border-0 bg-transparent p-0">
+                <EmptyState title="No work orders yet" compact className="border-0 bg-transparent" />
               </TableCell>
             </TableRow>
           ) : (
