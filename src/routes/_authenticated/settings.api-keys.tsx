@@ -14,8 +14,10 @@ import {
   Check,
   Copy,
   KeyRound,
+  Lock,
   Plus,
   RefreshCcw,
+  ShieldCheck,
   ShieldOff,
 } from "lucide-react";
 
@@ -24,10 +26,13 @@ import {
   listApiKeys,
   revokeApiKey,
   rotateApiKey,
+  updateApiKeySecurity,
   type ApiKeyRow,
+  type ApiKeySecurityResult,
   type CreatedKeyResult,
 } from "@/lib/api-keys.functions";
 import { API_KEY_SCOPES, type ApiKeyScope } from "@/lib/public-api/scopes";
+
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +59,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -110,6 +116,7 @@ function ApiKeysPage() {
   const create = useServerFn(createApiKey);
   const rotate = useServerFn(rotateApiKey);
   const revoke = useServerFn(revokeApiKey);
+  const updateSecurity = useServerFn(updateApiKeySecurity);
 
   const query = useQuery({ queryKey: ["api-keys"], queryFn: () => list() });
 
@@ -117,11 +124,38 @@ function ApiKeysPage() {
   const [showRaw, setShowRaw] = useState<{
     raw: string;
     name: string;
-    mode: "created" | "rotated";
+    mode: "created" | "rotated" | "hmac";
   } | null>(null);
   const [rotateConfirm, setRotateConfirm] = useState<ApiKeyRow | null>(null);
   const [revokeConfirm, setRevokeConfirm] = useState<ApiKeyRow | null>(null);
+  const [securityKey, setSecurityKey] = useState<ApiKeyRow | null>(null);
+  const [ipsDraft, setIpsDraft] = useState("");
   const [copied, setCopied] = useState(false);
+
+  const securityMut = useMutation({
+    mutationFn: async (input: {
+      keyId: string;
+      allowedIps?: string[];
+      regenerateHmac?: boolean;
+      clearHmac?: boolean;
+    }): Promise<ApiKeySecurityResult> => updateSecurity({ data: input }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ["api-keys"] });
+      setSecurityKey(null);
+      if (res.hmacSecret) {
+        setShowRaw({ raw: res.hmacSecret, name: res.key.name, mode: "hmac" });
+      } else {
+        toast.success("Key security updated");
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update key security"),
+  });
+
+  function openSecurity(k: ApiKeyRow) {
+    setSecurityKey(k);
+    setIpsDraft((k.allowed_ips ?? []).join("\n"));
+  }
+
 
   const form = useForm<CreateForm>({
     resolver: zodResolver(createFormSchema),
@@ -274,8 +308,10 @@ function ApiKeysPage() {
                   <TableHead>Scopes</TableHead>
                   <TableHead>Last used</TableHead>
                   <TableHead>Expires</TableHead>
+                  <TableHead>Security</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -304,12 +340,37 @@ function ApiKeysPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {k.expires_at ? format(new Date(k.expires_at), "yyyy-MM-dd") : "—"}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Badge variant={k.has_hmac ? "default" : "outline"} className="text-[10px]">
+                          {k.has_hmac ? "HMAC set" : "No HMAC"}
+                        </Badge>
+                        <Badge
+                          variant={(k.allowed_ips?.length ?? 0) > 0 ? "default" : "outline"}
+                          className="text-[10px]"
+                        >
+                          {(k.allowed_ips?.length ?? 0) > 0
+                            ? `${k.allowed_ips!.length} IP${k.allowed_ips!.length > 1 ? "s" : ""}`
+                            : "Any IP"}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell>{statusBadge(k.status)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={k.status === "revoked"}
+                          onClick={() => openSecurity(k)}
+                        >
+                          <Lock className="mr-1 h-3.5 w-3.5" />
+                          Security
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+
                           disabled={k.status === "revoked"}
                           onClick={() => setRotateConfirm(k)}
                         >
@@ -416,8 +477,14 @@ function ApiKeysPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {showRaw?.mode === "rotated" ? "Key rotated" : "Key created"} — {showRaw?.name}
+              {showRaw?.mode === "rotated"
+                ? "Key rotated"
+                : showRaw?.mode === "hmac"
+                  ? "HMAC signing secret"
+                  : "Key created"}{" "}
+              — {showRaw?.name}
             </DialogTitle>
+
             <DialogDescription className="text-destructive">
               Store this now — it will never be shown again.
             </DialogDescription>
@@ -442,6 +509,19 @@ function ApiKeysPage() {
                 The previous secret is invalid immediately. Update any integrations using this key.
               </p>
             )}
+            {showRaw?.mode === "hmac" && (
+              <p className="text-xs text-muted-foreground">
+                Sign each request with HMAC-SHA256 over{" "}
+                <code className="font-mono">{`{timestamp}.{raw body}`}</code> and send it as{" "}
+                <code className="font-mono">x-signature</code> with{" "}
+                <code className="font-mono">x-timestamp</code> (300s replay window). See{" "}
+                <a className="underline" href="/docs/api" target="_blank" rel="noreferrer">
+                  API docs
+                </a>
+                .
+              </p>
+            )}
+
           </div>
           <DialogFooter>
             <Button onClick={() => setShowRaw(null)}>I have saved it</Button>
@@ -489,6 +569,98 @@ function ApiKeysPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ---------------- Security dialog (IP allowlist + HMAC) ---------------- */}
+      <Dialog open={!!securityKey} onOpenChange={(o) => !o && setSecurityKey(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Security — {securityKey?.name}</DialogTitle>
+            <DialogDescription>
+              The public-API guard checks the IP allowlist and the HMAC signature on every request to
+              this key.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="allowedIps">Allowed IPs</Label>
+              <Textarea
+                id="allowedIps"
+                rows={4}
+                className="font-mono text-xs"
+                placeholder={"203.0.113.7\n203.0.113.0/24"}
+                value={ipsDraft}
+                onChange={(e) => setIpsDraft(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                One IPv4 address or CIDR block per line — prefer an exact gateway egress IP (/32).
+                Leave empty to allow any IP.
+              </p>
+              <Button
+                size="sm"
+                disabled={securityMut.isPending}
+                onClick={() =>
+                  securityKey &&
+                  securityMut.mutate({
+                    keyId: securityKey.id,
+                    allowedIps: ipsDraft
+                      .split(/[\n,]/)
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
+                }
+              >
+                {securityMut.isPending ? "Saving…" : "Save allowlist"}
+              </Button>
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <Label className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                HMAC signing secret
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {securityKey?.has_hmac
+                  ? "A secret is configured. Regenerating invalidates the current one immediately."
+                  : "No secret configured — signed requests cannot be verified yet."}{" "}
+                HMAC-SHA256, 32 random bytes, shown once.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={securityMut.isPending}
+                  onClick={() =>
+                    securityKey &&
+                    securityMut.mutate({ keyId: securityKey.id, regenerateHmac: true })
+                  }
+                >
+                  <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+                  {securityKey?.has_hmac ? "Regenerate secret" : "Generate secret"}
+                </Button>
+                {securityKey?.has_hmac && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={securityMut.isPending}
+                    onClick={() =>
+                      securityKey && securityMut.mutate({ keyId: securityKey.id, clearHmac: true })
+                    }
+                  >
+                    Remove secret
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSecurityKey(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
