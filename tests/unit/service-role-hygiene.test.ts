@@ -15,10 +15,10 @@
 //      (Compile-time grep against src/**; migrations are excluded.)
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { join, relative, sep, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROOT = new URL("../../src/", import.meta.url).pathname;
+const ROOT = resolve(__dirname, "..", "..", "src");
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
