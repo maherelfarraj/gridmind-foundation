@@ -324,7 +324,7 @@ export const createInspection = createServerFn({ method: "POST" })
           },
         );
         return {
-          ...(inserted as InspectionRow),
+          ...((inserted as unknown) as InspectionRow),
           attachments: ((inserted as any).attachments ?? []) as QaqcAttachment[],
         };
       }
