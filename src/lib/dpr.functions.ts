@@ -22,6 +22,7 @@ import {
   weatherDelayInput,
   type DprStatus,
 } from "@/lib/dpr.rules";
+import { withIdempotency } from "@/lib/offline-mirror";
 
 // ---------------------------------------------------------------------------
 // types
@@ -427,78 +428,89 @@ export const upsertDprHeader = createServerFn({ method: "POST" })
     const project = await projectCompany(context, data.projectId);
     const roles = await currentRoles(context);
 
-    const patch = {
-      weather_summary: data.weatherSummary ?? null,
-      temperature_high_c: data.temperatureHighC ?? null,
-      temperature_low_c: data.temperatureLowC ?? null,
-      work_summary: data.workSummary ?? null,
-      constraints_notes: data.constraintsNotes ?? null,
-    } as any;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "upsert",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const patch = {
+          weather_summary: data.weatherSummary ?? null,
+          temperature_high_c: data.temperatureHighC ?? null,
+          temperature_low_c: data.temperatureLowC ?? null,
+          work_summary: data.workSummary ?? null,
+          constraints_notes: data.constraintsNotes ?? null,
+        } as any;
 
-    if (data.id) {
-      // update path
-      const existing = await loadDprOrThrow(context, data.id);
-      assertEditable(existing, roles, userId);
-      const { data: updated, error } = await context.supabase
-        .from("construction_daily_reports")
-        .update({
-          ...patch,
+        if (data.id) {
+          const existing = await loadDprOrThrow(context, data.id);
+          assertEditable(existing, roles, userId);
+          const { data: updated, error } = await context.supabase
+            .from("construction_daily_reports")
+            .update({
+              ...patch,
+              report_date: data.reportDate,
+              shift: data.shift,
+            } as any)
+            .eq("id", data.id)
+            .select("*")
+            .maybeSingle();
+          if (error) {
+            if ((error as any).code === "23505") {
+              httpError(
+                409,
+                "duplicate_dpr",
+                `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
+              );
+            }
+            throw error;
+          }
+          const row = updated as unknown as DprRow;
+          await audit(context, "dpr.update", "construction_daily_reports", row.id, {
+            project_id: row.project_id,
+            report_date: row.report_date,
+          });
+          return row;
+        }
+
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
           report_date: data.reportDate,
           shift: data.shift,
-        } as any)
-        .eq("id", data.id)
-        .select("*")
-        .maybeSingle();
-      if (error) {
-        if ((error as any).code === "23505") {
-          httpError(
-            409,
-            "duplicate_dpr",
-            `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
-          );
+          status: "draft" as DprStatus,
+          created_by: userId,
+          ...patch,
+        };
+        const { data: created, error } = await context.supabase
+          .from("construction_daily_reports")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) {
+          if ((error as any).code === "23505") {
+            httpError(
+              409,
+              "duplicate_dpr",
+              `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
+            );
+          }
+          throw error;
         }
-        throw error;
-      }
-      const row = updated as unknown as DprRow;
-      await audit(context, "dpr.update", "construction_daily_reports", row.id, {
-        project_id: row.project_id,
-        report_date: row.report_date,
-      });
-      return row;
-    }
-
-    // create path
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      report_date: data.reportDate,
-      shift: data.shift,
-      status: "draft" as DprStatus,
-      created_by: userId,
-      ...patch,
-    };
-    const { data: created, error } = await context.supabase
-      .from("construction_daily_reports")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) {
-      if ((error as any).code === "23505") {
-        httpError(
-          409,
-          "duplicate_dpr",
-          `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
-        );
-      }
-      throw error;
-    }
-    const row = created as unknown as DprRow;
-    await audit(context, "dpr.create", "construction_daily_reports", row.id, {
-      project_id: row.project_id,
-      report_date: row.report_date,
-      shift: row.shift,
-    });
-    return row;
+        const row = created as unknown as DprRow;
+        await audit(context, "dpr.create", "construction_daily_reports", row.id, {
+          project_id: row.project_id,
+          report_date: row.report_date,
+          shift: row.shift,
+        });
+        return row;
+      },
+    );
   });
 
 // ---------------------------------------------------------------------------
