@@ -91,6 +91,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "om_scada", label: "O&M & SCADA", url: "/om", icon: Wrench },
       { moduleKey: "om_scada", label: "SCADA dashboard", url: "/om/scada", icon: Gauge },
       { moduleKey: "om_scada", label: "SCADA connectors", url: "/om/scada/connectors", icon: Radio },
+      { moduleKey: "om_scada", label: "Alarms", url: "/om/scada/alarms", icon: AlertTriangle },
+      { moduleKey: "om_scada", label: "Alarm rules", url: "/om/scada/alarm-rules", icon: SlidersHorizontal },
       { moduleKey: "portals", label: "Client & Investor Portals", url: "/partners", icon: Users },
       { moduleKey: "green_hydrogen", label: "Green H₂", url: "/green-h2", icon: Atom },
     ],
