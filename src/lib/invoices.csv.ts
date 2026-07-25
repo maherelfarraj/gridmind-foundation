@@ -1,12 +1,9 @@
 // P-080 — Invoices CSV export.
 import { toCsv } from "@/lib/csv";
-import { invoiceStatusLabel, type InvoiceRow } from "@/lib/invoices.rules";
-import type { InvoiceRow as _R } from "@/lib/invoices.functions";
+import type { InvoiceRow } from "@/lib/invoices.functions";
+import { invoiceStatusLabel } from "@/lib/invoices.rules";
 
-// Reuse the runtime InvoiceRow shape from either module (they match).
-type Row = _R;
-
-export function toInvoicesCsv(rows: readonly Row[]): string {
+export function toInvoicesCsv(rows: readonly InvoiceRow[]): string {
   return toCsv(
     [
       "invoice_number",
@@ -40,5 +37,3 @@ export function toInvoicesCsv(rows: readonly Row[]): string {
     ]),
   );
 }
-// Silence the unused import.
-export type { InvoiceRow } from "@/lib/invoices.rules";
