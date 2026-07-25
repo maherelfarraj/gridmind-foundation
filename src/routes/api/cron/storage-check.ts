@@ -94,7 +94,13 @@ export const Route = createFileRoute("/api/cron/storage-check")({
         // 2. Storage RLS policies on storage.objects. We assert that ALL four
         //    required policies exist; they gate every bucket via a common
         //    company-scoped predicate, so their presence covers each bucket.
-        const policies = await admin.rpc("list_storage_object_policies");
+        // Types regenerate after this migration lands; cast to bypass the
+        // stale RPC name until then.
+        const policies = await (
+          admin.rpc as unknown as (
+            name: string,
+          ) => Promise<{ data: unknown; error: { message: string } | null }>
+        )("list_storage_object_policies");
         let policyNames: string[] = [];
         if (policies.error) {
           // Fallback path: helper RPC may not exist in older environments.
