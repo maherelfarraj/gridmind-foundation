@@ -1,87 +1,64 @@
-## P-085 — Discipline board
+# P-086 — DPR Capture (Mobile-First)
 
-Read-only Field ▸ Discipline board at `/field/discipline-board` that rolls up DPR quantities into a Civil / Mechanical / Electrical view per area, with SPI / CPI / manpower / weather header KPIs.
+Ship the field-team's primary data-entry surface. All schema exists from P-083; storage policies for `photos` already cover the `{company}/…` prefix. **No migration needed.**
 
-### Schema note (small migration needed)
+## Scope
 
-The spec says planned qty and area come from `wbs_items`, but the current `wbs_items` table has no `planned_quantity`, `uom`, or `area` columns. I'll ship migration `0041_wbs_planned_quantity.sql`:
-- add nullable `planned_quantity numeric(14,3)`, `uom text`, `area text` to `public.wbs_items`
-- no policy or grant changes (existing `wbs_select` / `wbs_write` still apply)
-- no backfill; missing planned_quantity ⇒ "No baseline" in the UI
+Three routes under `_authenticated/`:
+- `/field/dpr` — filterable list (project, date range, status, search)
+- `/field/dpr/new` — auto-creates a `draft` DPR then redirects to detail
+- `/field/dpr/$dprId` — 4-step wizard, submit, approve
 
-If you'd rather source planned qty elsewhere, tell me and I'll rework this piece.
+## Files
 
-### Server (`src/lib/discipline-board.functions.ts`)
+**Rules / server**
+- `src/lib/dpr.rules.ts` — Zod schemas (dpr, manpower row, weather delay, quantity row, observation quick-add), `sumManpower(rows)`, `canEditDpr(status, roles, isCreator)`, `canApprove(roles)`, `deriveDisciplineFromWbs(item)`, `photoObjectPath(company, project, date, filename)`.
+- `src/lib/dpr.functions.ts` — `createServerFn` + `requireSupabaseAuth`:
+  - `listDprs({ projectId?, from?, to?, status?, search? })`
+  - `getDpr({ id })` → header + manpower + weather + photos + observations
+  - `upsertDprHeader({ id?, projectId, reportDate, shift, weather*, workSummary, constraints })` (idempotent on unique key → surfaces "duplicate date+shift" error via PG code 23505)
+  - `addManpowerRow`, `updateManpowerRow`, `deleteManpowerRow` (each recomputes totals on the DPR)
+  - `addWeatherDelay`, `deleteWeatherDelay`
+  - `addQuantityRow`, `deleteQuantityRow` (mutate `quantities` jsonb, derive discipline from WBS)
+  - `attachPhoto({ dprId?, observationId?, filePath, caption?, area? })`
+  - `createObservation({ dprId?, severity, description, area?, dueDate? })`
+  - `submitDpr({ id, acknowledgeNoPhotos? })` — blocks if a required section is empty; requires `acknowledgeNoPhotos=true` when zero photos
+  - `approveDpr({ id })` — role-gated
+  - Every mutation calls `write_audit_log` with the required action names (`dpr.create/update/submit/approve`, `observation.create`, `weather_delay.create`, `photo.attach`).
+- `src/lib/dpr-query.ts` — TanStack Query options (`dprListOptions`, `dprDetailOptions`, `wbsPickerOptions(projectId)`).
+- `src/lib/wbs-picker.functions.ts` — lightweight `listWbsForPicker({ projectId, q? })` returning `{ id, code, name, discipline, area, uom }` (reuses columns added in P-085).
 
-One `createServerFn` + `requireSupabaseAuth`, Zod-validated input `{ projectId, from, to }` (defaults to last 30 days). Returns a plain DTO — no class instances, no Response.
+**UI (mobile-first: 360px baseline, sticky bottom bar, 44px touch targets, semantic tokens)**
+- `src/routes/_authenticated/field.dpr.index.tsx` — list with filters, skeleton, empty ("No daily reports yet — tap New Report"), error+retry, "no photos" chip for submitted DPRs missing photos, floating "New Report" CTA.
+- `src/routes/_authenticated/field.dpr.new.tsx` — project + date + shift picker; on submit calls `upsertDprHeader` then navigates to `/field/dpr/$dprId`.
+- `src/routes/_authenticated/field.dpr.$dprId.tsx` — stepper shell (steps in URL search `?step=1..4`), sticky bottom action bar (`Prev / Save draft / Next` on 1–3; `Submit` on 4 with photo-guard modal).
+- `src/components/dpr/step-manpower.tsx` — repeatable rows (trade select, contractor, headcount stepper ±, hours); denormalized totals shown live.
+- `src/components/dpr/step-weather.tsx` — summary + high/low °C + delay list (add sheet: type, times, lost hours, WBS picker, notes).
+- `src/components/dpr/step-quantities.tsx` — add-row bottom sheet with searchable WBS picker; discipline & UoM auto-fill; area editable.
+- `src/components/dpr/step-photos.tsx` — capture (`<input type=file capture="environment" accept="image/*" multiple>`), gallery grid, per-photo "Link to observation" quick-add sheet, per-DPR observation list.
+- `src/components/dpr/photo-guard-dialog.tsx` — amber SHOULD banner + explicit "Submit without photos" checkbox.
 
-Pipeline inside the handler (all through `context.supabase`, RLS as caller):
-1. Load submitted/approved `construction_daily_reports` in range → collect `id`s, dates, `total_manpower`.
-2. Expand `quantities` jsonb into rows `{ report_date, wbs_item_id, discipline, area, qty, uom }` (JS side).
-3. Join `wbs_items` for `planned_quantity`, `uom`, `area`, `discipline` fallback, `name`.
-4. Load `weather_delays` in range for lost-hours totals + this-week sum.
-5. Load today's `manpower_logs` via DPRs where `report_date = today` → sum `headcount`.
-6. Load latest `evm_snapshots` row for project (order by `snapshot_date desc limit 1`) → `spi`, `cpi`.
+**Nav / tests**
+- Add "Daily reports" entry to `src/lib/nav-map.ts` (Field section, `ClipboardList` icon).
+- `tests/unit/dpr-rules.test.ts` — `sumManpower`, `canEditDpr`, `canApprove`, `photoObjectPath` (company UUID first), submit-guard branches.
 
-Return DTO:
-```ts
-{
-  hasDprs: boolean,
-  kpis: { spi: number|null, cpi: number|null, manpowerToday: number, weatherHoursThisWeek: number },
-  columns: {
-    discipline: 'civil'|'mechanical'|'electrical',
-    areas: {
-      area: string,
-      wbsName: string|null,
-      uom: string|null,
-      installedToDate: number,
-      plannedQty: number|null,      // null ⇒ "No baseline"
-      progressPct: number|null,     // null when no baseline
-      rate7d: number,               // avg qty/day last 7 reporting days
-      ratePrev7d: number,           // for trend arrow
-    }[]
-  }[]
-}
-```
-Rate math uses distinct reporting days in the window, not calendar days, to avoid divide-by-zero on quiet sites. Disciplines outside civil/mech/elec are dropped (surfaced only if user later asks).
+## Behavior details
 
-### UI
+- **Autosave draft**: each step mutation writes immediately (no local draft state); optimistic totals update via `queryClient.setQueryData`.
+- **Photo upload**: uses browser Supabase client → `photos` bucket at `{companyId}/{projectId}/field/{reportDate}/{uuid}-{filename}`, then calls `attachPhoto`. Company-first path is required by existing `storage_company_id` policy.
+- **Submit guard**: server checks manpower rows > 0; if `site_photos` count = 0, requires `acknowledgeNoPhotos=true` else throws `photos_required_ack`. UI shows the amber banner + checkbox before enabling Submit.
+- **Approve**: visible only when `has_company_role('construction_admin' | 'company_admin')` AND status = `submitted`.
+- **Read-only after submit**: `canEditDpr` returns false; UI disables inputs & hides mutation buttons; server double-guards.
+- **Duplicate date+shift**: catch PG `23505` from `upsertDprHeader`, throw friendly `"A DPR already exists for this project on {date} ({shift} shift)"`; form surfaces inline on the `reportDate` field.
 
-- Route: `src/routes/_authenticated/field.discipline-board.tsx` (public inside `_authenticated`, no per-route auth gate).
-- Loader primes `ensureQueryData` with `queryOptions` keyed on `{ projectId, from, to }`.
-- `errorComponent` + `notFoundComponent` on the route; skeleton via `useSuspenseQuery`.
-- Filters: project `Select` (required, from existing projects query) + shadcn date-range popover (default last 30 days), URL-persisted via `validateSearch` + `loaderDeps`.
-- Header KPI chips (all semantic tokens):
-  - SPI / CPI — green ≥1.0 (`bg-success/10 text-success`), amber 0.9–1.0 (`bg-warning/10 text-warning`), red <0.9 (`bg-destructive/10 text-destructive`); "—" when no snapshot.
-  - Manpower today (sum `manpower_logs.headcount` for today's DPRs).
-  - Weather hours lost this week.
-- Three columns (`grid grid-cols-1 md:grid-cols-3`) with lucide `HardHat` / `Wrench` / `Zap` headers.
-- Each area card: name, `Progress` bar with % + `installed / planned uom`, KPI row `{rate7d} {uom}/day` with `ArrowUp/Down/Right` vs `ratePrev7d`. "No baseline" pill instead of bar when `plannedQty == null`.
-- Empty states: per column ("No {discipline} quantities reported yet — submit a DPR."), and board-level ("No field data yet — capture your first daily report.") when `hasDprs === false`.
-- CSV export button → client-side blob of the flattened `columns[].areas[]` rollup with headers `discipline,area,wbs_name,uom,installed,planned,progress_pct,rate_7d,rate_prev_7d`.
-- Nav: add `Discipline board` entry under Field in `src/lib/nav-map.ts`.
+## Verify
 
-Read-only page; no mutations, no audit writes, no new roles/policies.
+- `bunx tsgo --noEmit`
+- `bunx vitest run tests/unit/dpr-rules.test.ts`
+- Manual smoke via preview at 360px width: create today's DPR → 3 manpower rows → weather delay → 2 quantity rows → 0-photo submit shows guard → check the new row appears on `/field/discipline-board` after adding photos & approving.
 
-### Files
+## Out of scope (later tickets)
 
-New:
-- `supabase/migrations/0041_wbs_planned_quantity.sql`
-- `src/lib/discipline-board.rules.ts` (rate/progress/trend helpers, disciplines enum)
-- `src/lib/discipline-board.functions.ts`
-- `src/lib/discipline-board-query.ts`
-- `src/routes/_authenticated/field.discipline-board.tsx`
-- `tests/unit/discipline-board.test.ts` (rate/trend/progress + "no baseline" cases)
-
-Edited:
-- `src/lib/nav-map.ts` (add Discipline board entry)
-
-### Acceptance checklist
-
-- Three columns render; installed ÷ planned per (area, discipline).
-- No baseline → text pill, no bar, no NaN/∞.
-- 7-day rolling rate uses reporting days; trend arrow vs prior 7 days.
-- SPI/CPI chips from latest `evm_snapshots`, threshold classes correct; today's manpower from `manpower_logs`; weather chip sums `weather_delays` this week.
-- Board-level empty state when no DPRs; per-column empties when a discipline has no rows.
-- CSV mirrors on-screen rollup exactly.
-- Typecheck clean; new unit tests pass.
+- Offline queue integration (P-087).
+- Server-side photo thumbnails / EXIF GPS extraction.
+- Bulk photo captioning.

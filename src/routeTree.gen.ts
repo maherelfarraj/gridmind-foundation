@@ -56,6 +56,7 @@ import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
+import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
 import { Route as AuthenticatedProjectsProjectIdPlanningRouteImport } from './routes/_authenticated/projects.$projectId.planning'
@@ -77,6 +78,8 @@ import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
 import { Route as AuthenticatedFieldMobilizationChecklistIdRouteImport } from './routes/_authenticated/field.mobilization.$checklistId'
+import { Route as AuthenticatedFieldDprNewRouteImport } from './routes/_authenticated/field.dpr.new'
+import { Route as AuthenticatedFieldDprDprIdRouteImport } from './routes/_authenticated/field.dpr.$dprId'
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
@@ -375,6 +378,12 @@ const AuthenticatedFieldMobilizationIndexRoute =
     path: '/field/mobilization/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFieldDprIndexRoute =
+  AuthenticatedFieldDprIndexRouteImport.update({
+    id: '/field/dpr/',
+    path: '/field/dpr/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminTenantsIndexRoute =
   AuthenticatedAdminTenantsIndexRouteImport.update({
     id: '/',
@@ -499,6 +508,18 @@ const AuthenticatedFieldMobilizationChecklistIdRoute =
   AuthenticatedFieldMobilizationChecklistIdRouteImport.update({
     id: '/field/mobilization/$checklistId',
     path: '/field/mobilization/$checklistId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldDprNewRoute =
+  AuthenticatedFieldDprNewRouteImport.update({
+    id: '/field/dpr/new',
+    path: '/field/dpr/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldDprDprIdRoute =
+  AuthenticatedFieldDprDprIdRouteImport.update({
+    id: '/field/dpr/$dprId',
+    path: '/field/dpr/$dprId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCrmOpportunitiesOpportunityIdRoute =
@@ -739,6 +760,8 @@ export interface FileRoutesByFullPath {
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
+  '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -760,6 +783,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/planning': typeof AuthenticatedProjectsProjectIdPlanningRouteWithChildren
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
@@ -830,6 +854,8 @@ export interface FileRoutesByTo {
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
+  '/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -850,6 +876,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/planning': typeof AuthenticatedProjectsProjectIdPlanningRouteWithChildren
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
+  '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
@@ -928,6 +955,8 @@ export interface FileRoutesById {
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/_authenticated/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
+  '/_authenticated/field/dpr/new': typeof AuthenticatedFieldDprNewRoute
   '/_authenticated/field/mobilization/$checklistId': typeof AuthenticatedFieldMobilizationChecklistIdRoute
   '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -949,6 +978,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/planning': typeof AuthenticatedProjectsProjectIdPlanningRouteWithChildren
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
+  '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
@@ -1028,6 +1058,8 @@ export interface FileRouteTypes {
     | '/proposals/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/field/dpr/$dprId'
+    | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
     | '/finance/contracts/$contractId'
     | '/procurement/matches/$matchId'
@@ -1049,6 +1081,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning'
     | '/projects/$projectId/procurement'
     | '/admin/tenants/'
+    | '/field/dpr/'
     | '/field/mobilization/'
     | '/procurement/matches/'
     | '/procurement/pos/'
@@ -1119,6 +1152,8 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/field/dpr/$dprId'
+    | '/field/dpr/new'
     | '/field/mobilization/$checklistId'
     | '/finance/contracts/$contractId'
     | '/procurement/matches/$matchId'
@@ -1139,6 +1174,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning'
     | '/projects/$projectId/procurement'
     | '/admin/tenants'
+    | '/field/dpr'
     | '/field/mobilization'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -1216,6 +1252,8 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
+    | '/_authenticated/field/dpr/$dprId'
+    | '/_authenticated/field/dpr/new'
     | '/_authenticated/field/mobilization/$checklistId'
     | '/_authenticated/finance/contracts/$contractId'
     | '/_authenticated/procurement/matches/$matchId'
@@ -1237,6 +1275,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/planning'
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/admin/tenants/'
+    | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
     | '/_authenticated/procurement/matches/'
     | '/_authenticated/procurement/pos/'
@@ -1615,6 +1654,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldMobilizationIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/field/dpr/': {
+      id: '/_authenticated/field/dpr/'
+      path: '/field/dpr'
+      fullPath: '/field/dpr/'
+      preLoaderRoute: typeof AuthenticatedFieldDprIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/tenants/': {
       id: '/_authenticated/admin/tenants/'
       path: '/'
@@ -1760,6 +1806,20 @@ declare module '@tanstack/react-router' {
       path: '/field/mobilization/$checklistId'
       fullPath: '/field/mobilization/$checklistId'
       preLoaderRoute: typeof AuthenticatedFieldMobilizationChecklistIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/dpr/new': {
+      id: '/_authenticated/field/dpr/new'
+      path: '/field/dpr/new'
+      fullPath: '/field/dpr/new'
+      preLoaderRoute: typeof AuthenticatedFieldDprNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/dpr/$dprId': {
+      id: '/_authenticated/field/dpr/$dprId'
+      path: '/field/dpr/$dprId'
+      fullPath: '/field/dpr/$dprId'
+      preLoaderRoute: typeof AuthenticatedFieldDprDprIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/crm/opportunities/$opportunityId': {
@@ -2389,7 +2449,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
   AuthenticatedCrmOpportunitiesOpportunityIdRoute: typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  AuthenticatedFieldDprDprIdRoute: typeof AuthenticatedFieldDprDprIdRoute
+  AuthenticatedFieldDprNewRoute: typeof AuthenticatedFieldDprNewRoute
   AuthenticatedFieldMobilizationChecklistIdRoute: typeof AuthenticatedFieldMobilizationChecklistIdRoute
+  AuthenticatedFieldDprIndexRoute: typeof AuthenticatedFieldDprIndexRoute
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
 }
 
@@ -2437,8 +2500,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
   AuthenticatedCrmOpportunitiesOpportunityIdRoute:
     AuthenticatedCrmOpportunitiesOpportunityIdRoute,
+  AuthenticatedFieldDprDprIdRoute: AuthenticatedFieldDprDprIdRoute,
+  AuthenticatedFieldDprNewRoute: AuthenticatedFieldDprNewRoute,
   AuthenticatedFieldMobilizationChecklistIdRoute:
     AuthenticatedFieldMobilizationChecklistIdRoute,
+  AuthenticatedFieldDprIndexRoute: AuthenticatedFieldDprIndexRoute,
   AuthenticatedFieldMobilizationIndexRoute:
     AuthenticatedFieldMobilizationIndexRoute,
 }

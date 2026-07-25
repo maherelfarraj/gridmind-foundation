@@ -55,6 +55,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -106,6 +108,10 @@
   --destructive: oklch(0.55 0.15 25);
   --destructive-foreground: oklch(0.98 0.005 250);
 
+  /* Warning — amber */
+  --warning: oklch(0.75 0.13 75);
+  --warning-foreground: oklch(0.25 0.05 75);
+
   /* Lines & focus */
   --border: oklch(0.90 0.012 250);
   --input: oklch(0.90 0.012 250);
@@ -151,6 +157,9 @@
 
   --destructive: oklch(0.60 0.15 25);
   --destructive-foreground: oklch(0.98 0.005 250);
+
+  --warning: oklch(0.78 0.14 75);
+  --warning-foreground: oklch(0.18 0.04 75);
 
   --border: oklch(0.32 0.025 255);
   --input: oklch(0.30 0.025 255);
