@@ -210,7 +210,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "tnum" 0;
   }
 
   /* Typography rhythm: page > section > card > body > secondary > caption. */
