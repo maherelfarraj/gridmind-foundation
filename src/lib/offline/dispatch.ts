@@ -11,6 +11,12 @@ import {
   submitDpr,
   upsertDprHeader,
 } from "@/lib/dpr.functions";
+import {
+  recordUtilityWitness,
+  reopenCommissioningTest,
+  saveCommissioningTestResult,
+} from "@/lib/commissioning.functions";
+
 
 export type Dispatcher = (
   payload: Record<string, unknown>,
@@ -65,4 +71,14 @@ export function registerDefaultDispatchers() {
   registerDispatcher("observation", "create", (p) =>
     createObservation({ data: p as any }),
   );
+  registerDispatcher("commissioning", "save_result", (p) =>
+    saveCommissioningTestResult({ data: p as any }),
+  );
+  registerDispatcher("commissioning", "record_witness", (p) =>
+    recordUtilityWitness({ data: p as any }),
+  );
+  registerDispatcher("commissioning", "reopen", (p) =>
+    reopenCommissioningTest({ data: p as any }),
+  );
 }
+

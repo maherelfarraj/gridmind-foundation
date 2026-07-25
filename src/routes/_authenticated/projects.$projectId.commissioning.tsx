@@ -257,7 +257,9 @@ function AreaSection({
   area: string;
   rows: CommissioningTestRow[];
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(true);
+
   const counts = useMemo(() => {
     const c: Record<CommissioningTestStatus, number> = {
       not_started: 0,
@@ -328,7 +330,17 @@ function AreaSection({
               </TableHeader>
               <TableBody>
                 {rows.map((r) => (
-                  <TableRow key={r.id}>
+                  <TableRow
+                    key={r.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() =>
+                      router.navigate({
+                        to: "/projects/$projectId/commissioning/tests/$testId/execute",
+                        params: { projectId: r.project_id, testId: r.id },
+                      })
+                    }
+                  >
+
                     <TableCell className="font-medium">
                       {COMMISSIONING_TEST_TYPE_LABELS[r.test_type]}
                     </TableCell>
