@@ -109,7 +109,7 @@ export interface ClaimRow {
   claimed_amount: number | null;
   settled_amount: number | null;
   currency_code: string | null;
-  attachments: unknown[];
+  attachments: Array<Record<string, string | number | boolean | null>>;
   created_at: string;
   updated_at: string;
 }

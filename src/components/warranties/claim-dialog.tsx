@@ -63,7 +63,7 @@ export function ClaimDialog({ warrantyId, endDate, isOmAdmin }: Props) {
 
   const mut = useMutation({
     mutationFn: (v: WarrantyClaimCreateInput) => createFn({ data: v }),
-    onSuccess: (row) => {
+    onSuccess: (row: { claim_number: string }) => {
       toast.success(`Created ${row.claim_number}`);
       qc.invalidateQueries({ queryKey: ["claims", warrantyId] });
       qc.invalidateQueries({ queryKey: ["warranty-kpis"] });

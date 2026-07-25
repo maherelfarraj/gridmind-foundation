@@ -181,7 +181,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
             <TabsTrigger value="claims">
               Claims{" "}
               <span className="ml-1 text-xs text-muted-foreground">
-                {claimsQ.data?.length ?? 0}
+                {(claimsQ.data as ClaimRow[] | undefined)?.length ?? 0}
               </span>
             </TabsTrigger>
           </TabsList>
