@@ -669,48 +669,60 @@ export const addQuantityRow = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "quantity",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const { data: wbs, error: wbsErr } = await context.supabase
+          .from("wbs_items")
+          .select("id, code, name, discipline, area, uom")
+          .eq("id", data.wbsItemId)
+          .maybeSingle();
+        if (wbsErr) throw wbsErr;
+        if (!wbs) httpError(404, "wbs_not_found");
 
-    const { data: wbs, error: wbsErr } = await context.supabase
-      .from("wbs_items")
-      .select("id, code, name, discipline, area, uom")
-      .eq("id", data.wbsItemId)
-      .maybeSingle();
-    if (wbsErr) throw wbsErr;
-    if (!wbs) httpError(404, "wbs_not_found");
-
-    const wbsRow = wbs as any;
-    const entry: QuantityEntry = {
-      id:
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      wbs_item_id: data.wbsItemId,
-      wbs_code: wbsRow.code ?? null,
-      wbs_name: wbsRow.name ?? null,
-      discipline: normalizeDiscipline(wbsRow.discipline),
-      area: data.area ?? wbsRow.area ?? null,
-      quantity: data.quantity,
-      uom: data.uom ?? wbsRow.uom ?? null,
-      notes: data.notes ?? null,
-      created_at: new Date().toISOString(),
-      created_by: userId,
-    };
-    const nextQty: QuantityEntry[] = Array.isArray(header.quantities)
-      ? [...(header.quantities as QuantityEntry[]), entry]
-      : [entry];
-    const { data: updated, error } = await context.supabase
-      .from("construction_daily_reports")
-      .update({ quantities: nextQty as any } as any)
-      .eq("id", data.dprId)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "dpr.update", "construction_daily_reports", data.dprId, {
-      op: "add_quantity",
-      wbs_item_id: data.wbsItemId,
-      quantity: data.quantity,
-    });
-    return updated as unknown as DprRow;
+        const wbsRow = wbs as any;
+        const entry: QuantityEntry = {
+          id:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          wbs_item_id: data.wbsItemId,
+          wbs_code: wbsRow.code ?? null,
+          wbs_name: wbsRow.name ?? null,
+          discipline: normalizeDiscipline(wbsRow.discipline),
+          area: data.area ?? wbsRow.area ?? null,
+          quantity: data.quantity,
+          uom: data.uom ?? wbsRow.uom ?? null,
+          notes: data.notes ?? null,
+          created_at: new Date().toISOString(),
+          created_by: userId,
+        };
+        const nextQty: QuantityEntry[] = Array.isArray(header.quantities)
+          ? [...(header.quantities as QuantityEntry[]), entry]
+          : [entry];
+        const { data: updated, error } = await context.supabase
+          .from("construction_daily_reports")
+          .update({ quantities: nextQty as any } as any)
+          .eq("id", data.dprId)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "dpr.update", "construction_daily_reports", data.dprId, {
+          op: "add_quantity",
+          wbs_item_id: data.wbsItemId,
+          quantity: data.quantity,
+        });
+        return updated as unknown as DprRow;
+      },
+    );
   });
 
 const qtyDeleteInput = z.object({
