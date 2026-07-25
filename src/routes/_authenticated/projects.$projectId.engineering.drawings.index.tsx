@@ -8,6 +8,7 @@ import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/page-header";
 import {
   DrawingRegisterTable,
   DrawingRegisterTableSkeleton,
@@ -57,14 +58,11 @@ function RegisterPage() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h2 className="font-display text-lg font-semibold text-foreground">Drawing register</h2>
-        <p className="text-sm text-muted-foreground">
-          Track drawings, revisions, and IFC governance. IFC promotion requires an approved
-          engineering sign-off.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Drawing register"
+        description="Track drawings, revisions, and IFC governance. IFC promotion requires an approved engineering sign-off."
+      />
       <Suspense fallback={<DrawingRegisterTableSkeleton />}>
         <DrawingRegisterTable
           projectId={projectId}
