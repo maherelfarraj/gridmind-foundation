@@ -14,6 +14,7 @@ import {
   ALARM_STATUSES,
   type AlarmSeverity,
   type AlarmStatus,
+  type NotifyRole,
 } from "@/lib/alarms.rules";
 
 // ---- helpers ---------------------------------------------------------------
@@ -76,7 +77,7 @@ export interface AlarmRuleRow {
   dead_band: number;
   duration_seconds: number;
   severity: AlarmSeverity;
-  escalation_route: Array<{ after_minutes: number; notify_role: string }>;
+  escalation_route: Array<{ after_minutes: number; notify_role: NotifyRole }>;
   enabled: boolean;
   created_at: string;
   updated_at: string;
