@@ -1,10 +1,24 @@
-// P-050 — Internal kick-off pack PDF builder (server-safe).
+// P-050 — Internal kick-off pack PDF builder (server-safe), on the shared export theme.
 // Runs in server functions and browsers; uses only jspdf + jspdf-autotable.
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { format, parseISO } from "date-fns";
 
-const DEFAULT_PRIMARY = "#1e40af";
+import {
+  createDoc,
+  createExportTheme,
+  drawHeaderBand,
+  drawFooters,
+  docH2,
+  ensureSpace,
+  docTable,
+  numericCol,
+  tableEndY,
+  sanitize,
+  fmtNum,
+  fmtMoney,
+  fmtDate,
+  PAGE,
+  mm,
+  NEUTRAL,
+} from "@/lib/exports/theme";
 
 export interface KickoffPdfInput {
   opportunity: any;
@@ -51,71 +65,7 @@ export interface KickoffPdfInput {
   };
 }
 
-function sanitize(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  return String(v).replace(/&;/g, "&");
-}
-
-function hexToRgb(hex: string | null | undefined): [number, number, number] {
-  const s = (hex ?? "").trim();
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
-  const raw = m ? m[1] : DEFAULT_PRIMARY.slice(1);
-  return [
-    parseInt(raw.slice(0, 2), 16),
-    parseInt(raw.slice(2, 4), 16),
-    parseInt(raw.slice(4, 6), 16),
-  ];
-}
-
-function fmtNum(n: unknown, digits = 0): string {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: digits,
-    minimumFractionDigits: digits,
-  }).format(v);
-}
-
-function fmtMoney(n: unknown, currency: string): string {
-  const v = Number(n ?? 0);
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
-  }
-}
-
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  try {
-    return format(parseISO(iso), "PP");
-  } catch {
-    return String(iso);
-  }
-}
-
-async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
-  if (!url) return null;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const buf = await res.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let bin = "";
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    // btoa exists in both browsers and workerd.
-    const base64 = typeof btoa === "function" ? btoa(bin) : "";
-    if (!base64) return null;
-    const ct = res.headers.get("content-type") ?? "image/png";
-    return `data:${ct};base64,${base64}`;
-  } catch {
-    return null;
-  }
-}
+const DOC_TITLE = "Kick-off Pack";
 
 export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
   const {
@@ -127,67 +77,29 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     company,
     branding,
   } = input;
-  const primary = hexToRgb(branding.primaryColor);
-  const logoDataUrl = await fetchLogoDataUrl(branding.logoSignedUrl);
+
+  const theme = await createExportTheme(
+    {
+      primaryColor: branding.primaryColor,
+      accentColor: branding.accentColor,
+      footerText: branding.footerText || "INTERNAL — do not distribute",
+      logoSignedUrl: branding.logoSignedUrl,
+    },
+    company,
+  );
+
   const currency =
     (acceptedProposal?.currency_code as string | null) ||
     (opp.currency_code as string | null) ||
     "USD";
 
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const margin = 40;
-
-  const footerLabel = sanitize(
-    branding.footerText || company.legal_name || company.name || "GridMind",
-  );
-
-  const drawFooter = () => {
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 40, 40);
-      doc.text("INTERNAL — do not distribute", margin, pageH - 32);
-      doc.setTextColor(120);
-      doc.text(footerLabel, margin, pageH - 20);
-      doc.text(`Page ${i} of ${pageCount}`, pageW - margin, pageH - 20, {
-        align: "right",
-      });
-    }
-    doc.setTextColor(0);
-  };
-
-  // --- Cover / header band ---
-  doc.setFillColor(primary[0], primary[1], primary[2]);
-  doc.rect(0, 0, pageW, 90, "F");
-
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, "PNG", margin, 20, 120, 50, undefined, "FAST");
-    } catch {
-      /* ignore */
-    }
-  }
-
-  doc.setTextColor(255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("Kick-off Pack", pageW - margin, 45, { align: "right" });
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(sanitize(intake.name), pageW - margin, 65, { align: "right" });
-  doc.setTextColor(0);
-
-  let y = 120;
+  const doc = createDoc();
+  const docSubtitle = sanitize(intake.name);
+  const pageHeader = { title: DOC_TITLE, subtitle: docSubtitle };
+  let y = drawHeaderBand(doc, theme, DOC_TITLE, docSubtitle);
 
   // --- Opportunity summary ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Opportunity summary", margin, y);
-  y += 6;
-
+  y = docH2(doc, theme, "Opportunity summary", y);
   const oppRows: Array<[string, string]> = [
     ["Opportunity", sanitize(opp.name)],
     ["Account", sanitize(opp.account_name ?? "—")],
@@ -204,23 +116,19 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     ["Stage", "won"],
     ["Won at", fmtDate(opp.won_at)],
   ];
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 4, textColor: NEUTRAL.body as never },
+      body: oppRows,
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: mm(53) } },
+    }) + mm(6);
 
-  autoTable(doc, {
-    startY: y + 6,
-    margin: { left: margin, right: margin },
-    theme: "plain",
-    styles: { fontSize: 10, cellPadding: 3 },
-    body: oppRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
-    columnStyles: { 0: { fontStyle: "bold", cellWidth: 150 } },
-  });
-  y = (doc as any).lastAutoTable.finalY + 16;
-
-  // --- Margin snapshot (internal — margin allowed) ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Margin snapshot (internal)", margin, y);
-  y += 6;
-
+  // --- Margin snapshot (internal — margin allowed on this internal-only doc) ---
+  y = ensureSpace(doc, theme, y, mm(45), DOC_TITLE);
+  y = docH2(doc, theme, "Margin snapshot (internal)", y);
   const marginPct = acceptedProposal?.margin_pct;
   const marginRows: Array<[string, string]> = [
     [
@@ -232,59 +140,39 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     ["Contingency", acceptedProposal ? `${fmtNum(acceptedProposal.contingency_pct, 2)}%` : "—"],
     ["Margin", marginPct != null && acceptedProposal ? `${fmtNum(marginPct, 2)}%` : "—"],
   ];
-  autoTable(doc, {
-    startY: y + 6,
-    margin: { left: margin, right: margin },
-    theme: "plain",
-    styles: { fontSize: 10, cellPadding: 3 },
-    body: marginRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
-    columnStyles: { 0: { fontStyle: "bold", cellWidth: 150 } },
-  });
-  y = (doc as any).lastAutoTable.finalY + 16;
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 4, textColor: NEUTRAL.body as never },
+      body: marginRows,
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: mm(53) } },
+    }) + mm(6);
 
   // --- Contacts ---
-  if (y > pageH - 220) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Contacts", margin, y);
-  autoTable(doc, {
-    startY: y + 8,
-    margin: { left: margin, right: margin },
-    head: [["Name", "Title", "Email", "Phone", "Primary"]],
-    body: (contacts.length ? contacts : []).map((c) => [
-      sanitize(c.full_name),
-      sanitize(c.title ?? ""),
-      sanitize(c.email ?? ""),
-      sanitize(c.phone ?? ""),
-      c.is_primary ? "Yes" : "",
-    ]),
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: primary, textColor: 255, fontStyle: "bold" },
-  });
-  if (!contacts.length) {
-    y = (doc as any).lastAutoTable.finalY + 4;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(120);
-    doc.text("No contacts recorded.", margin, y + 8);
-    doc.setTextColor(0);
-    y += 14;
-  } else {
-    y = (doc as any).lastAutoTable.finalY + 16;
-  }
+  y = ensureSpace(doc, theme, y, mm(60), DOC_TITLE);
+  y = docH2(doc, theme, "Contacts", y);
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      head: [["Name", "Title", "Email", "Phone", "Primary"]],
+      body: contacts.length
+        ? contacts.map((c) => [
+            sanitize(c.full_name),
+            sanitize(c.title ?? ""),
+            sanitize(c.email ?? ""),
+            sanitize(c.phone ?? ""),
+            c.is_primary ? "Yes" : "",
+          ])
+        : [["—", "—", "—", "—", "No contacts recorded"]],
+    }) + mm(6);
 
   // --- Yield P50/P90 + monthly ---
   const yieldResult = acceptedProposal?.yield_result ?? null;
-  if (y > pageH - 200) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Energy yield (P50 / P90)", margin, y);
+  y = ensureSpace(doc, theme, y, mm(60), DOC_TITLE);
+  y = docH2(doc, theme, "Energy yield (P50 / P90)", y);
   const yieldRows: Array<[string, string]> = [
     ["Engine", "gridmind-stub-v1 (placeholder)"],
     [
@@ -306,15 +194,15 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
       yieldResult?.performance_ratio != null ? fmtNum(yieldResult.performance_ratio, 3) : "—",
     ],
   ];
-  autoTable(doc, {
-    startY: y + 8,
-    margin: { left: margin, right: margin },
-    theme: "plain",
-    styles: { fontSize: 10, cellPadding: 4 },
-    body: yieldRows.map((r) => [sanitize(r[0]), sanitize(r[1])]),
-    columnStyles: { 0: { fontStyle: "bold", cellWidth: 160 } },
-  });
-  y = (doc as any).lastAutoTable.finalY + 4;
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 4, textColor: NEUTRAL.body as never },
+      body: yieldRows,
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: mm(56) } },
+    }) + mm(3);
 
   const monthly: number[] = Array.isArray(yieldResult?.monthly) ? yieldResult.monthly : [];
   if (monthly.length === 12) {
@@ -332,61 +220,38 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
       "Nov",
       "Dec",
     ];
-    autoTable(doc, {
-      startY: y + 6,
-      margin: { left: margin, right: margin },
-      head: [months],
-      body: [monthly.map((v) => fmtNum(v, 0))],
-      styles: { fontSize: 8, halign: "right", cellPadding: 3 },
-      headStyles: { fillColor: primary, textColor: 255, halign: "right" },
-    });
-    y = (doc as any).lastAutoTable.finalY + 16;
+    y = ensureSpace(doc, theme, y, mm(20), DOC_TITLE);
+    y =
+      docTable(doc, theme, {
+        startY: y,
+        pageHeader,
+        head: [months],
+        body: [monthly.map((v) => fmtNum(v, 0))],
+        styles: { fontSize: 8, halign: "right", cellPadding: 3 },
+      }) + mm(6);
   }
 
   // --- Tender events ---
-  if (y > pageH - 200) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Tender events", margin, y);
-  autoTable(doc, {
-    startY: y + 8,
-    margin: { left: margin, right: margin },
-    head: [["When", "Type", "Title", "Location"]],
-    body: (tenderEvents.length ? tenderEvents : []).map((t) => [
-      fmtDate(t.event_at),
-      sanitize(t.event_type.replaceAll("_", " ")),
-      sanitize(t.title ?? ""),
-      sanitize(t.location ?? ""),
-    ]),
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: primary, textColor: 255, fontStyle: "bold" },
-  });
-  if (!tenderEvents.length) {
-    y = (doc as any).lastAutoTable.finalY + 4;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(120);
-    doc.text("No tender events recorded.", margin, y + 8);
-    doc.setTextColor(0);
-    y += 14;
-  } else {
-    y = (doc as any).lastAutoTable.finalY + 16;
-  }
+  y = ensureSpace(doc, theme, y, mm(60), DOC_TITLE);
+  y = docH2(doc, theme, "Tender events", y);
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      head: [["When", "Type", "Title", "Location"]],
+      body: tenderEvents.length
+        ? tenderEvents.map((t) => [
+            fmtDate(t.event_at),
+            sanitize(t.event_type.replaceAll("_", " ")),
+            sanitize(t.title ?? ""),
+            sanitize(t.location ?? ""),
+          ])
+        : [["—", "—", "No tender events recorded", "—"]],
+    }) + mm(6);
 
   // --- Next steps checklist ---
-  if (y > pageH - 180) {
-    doc.addPage();
-    y = margin;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Next steps", margin, y);
-  y += 20;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  y = ensureSpace(doc, theme, y, mm(55), DOC_TITLE);
+  y = docH2(doc, theme, "Next steps", y);
   const checklist = [
     "Assign a project_admin owner in the People module",
     "Run the project wizard to create the delivery project (Batch 04)",
@@ -394,13 +259,16 @@ export async function buildKickoffPdf(input: KickoffPdfInput): Promise<Blob> {
     "Confirm signed contract copy is filed in documents/",
     "Import PVsyst / SLD scenarios once site data lands",
   ];
-  for (const item of checklist) {
-    doc.text(`[  ]  ${sanitize(item)}`, margin, y);
-    y += 16;
-  }
+  y =
+    docTable(doc, theme, {
+      startY: y,
+      pageHeader,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 3, textColor: NEUTRAL.body as never },
+      body: checklist.map((item) => [`[  ]  ${sanitize(item)}`]),
+    }) + mm(4);
 
-  drawFooter();
+  drawFooters(doc, theme);
 
-  const blob = doc.output("blob");
-  return blob;
+  return doc.output("blob");
 }

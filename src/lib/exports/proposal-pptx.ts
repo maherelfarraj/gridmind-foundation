@@ -1,9 +1,22 @@
-// P-048 — Client-side branded proposal PPTX builder (pptxgenjs).
+// P-048 / POL-4 — Client-side branded proposal PPTX builder (pptxgenjs).
+// Built on the shared export theme (src/lib/exports/theme.ts) so the deck
+// reads as the same family as the PDF exports: same brand colours, same
+// header/footer contract, same number formatting, same "O&M"/"C&I" handling.
 import PptxGenJS from "pptxgenjs";
 import { format, parseISO } from "date-fns";
+import {
+  PPTX,
+  pptxSeriesColors,
+  rgbToHex,
+  tint,
+  sanitize,
+  fmtMoney,
+  fmtDate as themeFmtDate,
+  slugify,
+  createExportThemeSync,
+  type ExportTheme,
+} from "./theme";
 
-const DEFAULT_PRIMARY = "#1e40af";
-const DEFAULT_ACCENT = "#0d9488";
 const DEFAULT_FONT = "Arial";
 
 export interface ProposalPptxData {
@@ -38,23 +51,10 @@ export interface ProposalPptxData {
   }>;
 }
 
-function clean(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  // pptxgenjs escapes for XML itself — strip any pre-encoded artefacts so
-  // "O&M" / "C&I" render with a plain ampersand.
-  return String(v)
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&;/g, "&");
-}
-
-function normalizeHex(hex: string | null | undefined, fallback: string): string {
-  const s = (hex ?? "").trim();
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
-  return (m ? m[1] : fallback.replace(/^#/, "")).toUpperCase();
+/** Trim + sanitize, guarding against slide overflow on long free-text fields. */
+function clip(v: unknown, max = 600): string {
+  const s = sanitize(v);
+  return s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;
 }
 
 async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
@@ -74,90 +74,91 @@ async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
   }
 }
 
-function slug(v: unknown, max = 60): string {
-  const s = String(v ?? "")
-    .replace(/[^A-Za-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, max);
-  return s || "proposal";
-}
-
 function fmtDate(v: string | null | undefined): string {
-  if (!v) return "—";
-  try {
-    return format(parseISO(v), "PP");
-  } catch {
-    return clean(v);
-  }
+  return themeFmtDate(v ?? null, "PP");
 }
 
-function fmtMoney(v: number | null | undefined, currency: string): string {
-  const n = Number(v ?? 0);
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: 0,
-    }).format(n);
-  } catch {
-    return `${currency} ${n.toFixed(0)}`;
-  }
+/** Grid-aligned column helper: PPTX.col() gives {x, w}; we always pass y/h. */
+function gridBox(span: number, offset: number, y: number, h: number) {
+  return { ...PPTX.col(span, offset), y, h };
 }
 
 export async function buildProposalPptx(
   data: ProposalPptxData,
 ): Promise<{ blob: Blob; filename: string }> {
   const pptx = new PptxGenJS();
-  pptx.layout = "LAYOUT_WIDE"; // 13.333 x 7.5 in
+  pptx.layout = "LAYOUT_WIDE"; // 13.333 x 7.5 in — matches PPTX.slideW/slideH
 
-  const primary = normalizeHex(data.branding.primaryColor, DEFAULT_PRIMARY);
-  const accent = normalizeHex(data.branding.accentColor, DEFAULT_ACCENT);
-  const font = clean(data.branding.fontFamily) || DEFAULT_FONT;
   const logoDataUrl = await fetchLogoDataUrl(data.branding.logoSignedUrl);
-  const legalName = clean(data.company.legal_name || data.company.name);
-  const footerText = clean(data.branding.footerText) || legalName;
+  const theme: ExportTheme = createExportThemeSync({ ...data.branding, logoDataUrl }, data.company);
+  const primary = rgbToHex(theme.primary);
+  const accent = rgbToHex(theme.accent);
+  const seriesColors = pptxSeriesColors(theme);
+  const font = sanitize(data.branding.fontFamily) || DEFAULT_FONT;
+  const legalName = theme.footerLeft;
+  const footerText = theme.footerCenter || legalName;
+  const contentX = PPTX.margin;
+  const contentW = PPTX.slideW - PPTX.margin * 2;
 
-  // --- Master slide -------------------------------------------------------
-  const masterObjects: any[] = [
-    // Top title bar
+  // --- Slide master --------------------------------------------------------
+  // Header band (primary) + accent rule + logo left + footer rule with legal
+  // name / footer text / slide number, exactly like the PDF family.
+  const masterObjects: PptxGenJS.SlideMasterProps["objects"] = [
     {
       rect: {
         x: 0,
         y: 0,
-        w: 13.333,
-        h: 0.6,
+        w: PPTX.slideW,
+        h: PPTX.headerH,
         fill: { color: primary },
         line: { color: primary, width: 0 },
       },
     },
-    // Footer left — legal name
+    {
+      rect: {
+        x: 0,
+        y: PPTX.headerH,
+        w: PPTX.slideW,
+        h: 0.03,
+        fill: { color: accent },
+        line: { color: accent, width: 0 },
+      },
+    },
+    {
+      line: {
+        x: contentX,
+        y: PPTX.footerY - 0.08,
+        w: contentW,
+        h: 0,
+        line: { color: "DEDEE2", width: 0.75 },
+      },
+    },
     {
       text: {
         text: footerText,
         options: {
-          x: 0.4,
-          y: 7.05,
-          w: 8,
-          h: 0.35,
-          fontSize: 9,
+          x: contentX,
+          y: PPTX.footerY,
+          w: contentW * 0.55,
+          h: 0.32,
+          fontSize: PPTX.size.caption,
           fontFace: font,
-          color: "8A8A8A",
+          color: "78808C",
         },
       },
     },
-    // Footer right — slide number
     {
       text: {
-        text: "Slide ",
+        text: footerText === legalName ? "" : legalName,
         options: {
-          x: 11.7,
-          y: 7.05,
-          w: 1.2,
-          h: 0.35,
-          fontSize: 9,
+          x: contentX + contentW * 0.3,
+          y: PPTX.footerY,
+          w: contentW * 0.4,
+          h: 0.32,
+          fontSize: PPTX.size.caption,
           fontFace: font,
-          color: "8A8A8A",
-          align: "right",
+          color: "78808C",
+          align: "center",
         },
       },
     },
@@ -165,12 +166,12 @@ export async function buildProposalPptx(
   if (logoDataUrl) {
     masterObjects.push({
       image: {
-        x: 12.2,
-        y: 0.1,
-        w: 0.9,
-        h: 0.4,
+        x: PPTX.slideW - PPTX.margin - 1.3,
+        y: 0.12,
+        w: 1.3,
+        h: PPTX.headerH - 0.24,
         data: logoDataUrl,
-        sizing: { type: "contain", w: 0.9, h: 0.4 },
+        sizing: { type: "contain", w: 1.3, h: PPTX.headerH - 0.24 },
       },
     });
   }
@@ -179,14 +180,14 @@ export async function buildProposalPptx(
     background: { color: "FFFFFF" },
     objects: masterObjects,
     slideNumber: {
-      x: 12.6,
-      y: 7.05,
-      w: 0.5,
-      h: 0.35,
-      fontSize: 9,
+      x: PPTX.slideW - PPTX.margin - 0.6,
+      y: PPTX.footerY,
+      w: 0.6,
+      h: 0.32,
+      fontSize: PPTX.size.caption,
       fontFace: font,
-      color: "8A8A8A",
-      align: "left",
+      color: "78808C",
+      align: "right",
     },
   });
 
@@ -194,15 +195,15 @@ export async function buildProposalPptx(
   const opp = data.opportunity ?? {};
   const cfg = (p.array_config ?? {}) as any;
   const yr = data.yieldResult ?? null;
-  const currency = clean(p.currency_code) || "USD";
+  const currency = sanitize(p.currency_code) || "USD";
 
   const titleBar = (slide: PptxGenJS.Slide, title: string) => {
-    slide.addText(clean(title), {
-      x: 0.4,
-      y: 0.05,
-      w: 11.5,
-      h: 0.5,
-      fontSize: 20,
+    slide.addText(clip(title, 90), {
+      x: contentX,
+      y: 0,
+      w: contentW - 1.5,
+      h: PPTX.headerH,
+      fontSize: PPTX.size.slideTitle,
       bold: true,
       color: "FFFFFF",
       fontFace: font,
@@ -210,72 +211,138 @@ export async function buildProposalPptx(
     });
   };
 
-  // --- Slide 1: Title -----------------------------------------------------
-  {
-    const s = pptx.addSlide({ masterName: "GM_MASTER" });
-    titleBar(s, legalName || "Proposal");
-    s.addText(clean(p.title || "Proposal"), {
-      x: 0.7,
-      y: 1.7,
-      w: 12,
-      h: 1.4,
-      fontSize: 44,
+  const contentTop = PPTX.headerH + 0.28;
+
+  // --- Table style shared with PDF family (primary head, alt-row body) -----
+  const tableHeadOptions = {
+    bold: true,
+    fontSize: 10,
+    color: "FFFFFF",
+    fill: { color: primary },
+  } as const;
+  const tableLabelOptions = {
+    fontSize: 12,
+    color: "374151",
+    fill: { color: "F3F4F6" },
+  } as const;
+  const tableValueOptions = {
+    fontSize: 12,
+    color: "1F2937",
+  } as const;
+  const numericOptions = { align: "right" as const };
+
+  /** Section divider slide between major parts of the deck. */
+  const addDivider = (title: string, subtitle?: string) => {
+    const s = pptx.addSlide();
+    s.background = { color: primary };
+    s.addShape(pptx.ShapeType.rect, {
+      x: 0,
+      y: PPTX.slideH / 2 - 0.02,
+      w: 1.6,
+      h: 0.05,
+      fill: { color: accent },
+      line: { color: accent, width: 0 },
+    });
+    s.addText(clip(title, 70), {
+      x: contentX,
+      y: PPTX.slideH / 2 - 0.9,
+      w: contentW,
+      h: 0.9,
+      fontSize: PPTX.size.section + 8,
       bold: true,
-      color: "1F2937",
+      color: "FFFFFF",
       fontFace: font,
     });
-    s.addText(`Prepared for ${clean(opp.account_name) || "—"}`, {
-      x: 0.7,
-      y: 3.1,
-      w: 12,
-      h: 0.6,
-      fontSize: 22,
-      color: "374151",
+    if (subtitle) {
+      s.addText(clip(subtitle, 120), {
+        x: contentX,
+        y: PPTX.slideH / 2 + 0.15,
+        w: contentW,
+        h: 0.5,
+        fontSize: PPTX.size.body,
+        color: rgbToHex(tint(theme.primary, 0.65)),
+        fontFace: font,
+      });
+    }
+  };
+
+  // --- Slide 1: Title (dark/primary background, centered logo) ------------
+  {
+    const s = pptx.addSlide();
+    s.background = { color: primary };
+    if (logoDataUrl) {
+      s.addImage({
+        data: logoDataUrl,
+        x: PPTX.slideW / 2 - 1.1,
+        y: 0.9,
+        w: 2.2,
+        h: 1.0,
+        sizing: { type: "contain", w: 2.2, h: 1.0 },
+      });
+    }
+    s.addText(clip(p.title || "Proposal", 100), {
+      x: contentX,
+      y: 2.5,
+      w: contentW,
+      h: 1.3,
+      fontSize: PPTX.size.title,
+      bold: true,
+      color: "FFFFFF",
       fontFace: font,
+      align: "center",
+      valign: "middle",
+    });
+    s.addText(`${clip(opp.account_name, 80) || "—"}   ·   ${format(new Date(), "PP")}`, {
+      x: contentX,
+      y: 3.85,
+      w: contentW,
+      h: 0.5,
+      fontSize: PPTX.size.body + 4,
+      color: rgbToHex(tint(theme.primary, 0.6)),
+      fontFace: font,
+      align: "center",
     });
     s.addText(
       [
-        { text: "Date: ", options: { bold: true } },
-        { text: format(new Date(), "PP"), options: {} },
-        { text: "     Valid until: ", options: { bold: true } },
+        { text: "Valid until: ", options: { bold: true } },
         { text: fmtDate(p.valid_until), options: {} },
         { text: "     Version: ", options: { bold: true } },
         { text: `v${p.version ?? 1}`, options: {} },
       ],
       {
-        x: 0.7,
-        y: 4.0,
-        w: 12,
-        h: 0.6,
-        fontSize: 16,
-        color: "4B5563",
+        x: contentX,
+        y: 4.45,
+        w: contentW,
+        h: 0.4,
+        fontSize: PPTX.size.caption + 2,
+        color: rgbToHex(tint(theme.primary, 0.75)),
         fontFace: font,
+        align: "center",
       },
     );
-    // Accent underline
     s.addShape(pptx.ShapeType.rect, {
-      x: 0.7,
-      y: 4.9,
+      x: PPTX.slideW / 2 - 1.0,
+      y: 5.05,
       w: 2.0,
-      h: 0.08,
+      h: 0.04,
       fill: { color: accent },
       line: { color: accent, width: 0 },
     });
   }
 
-  // --- Slide 2: About us --------------------------------------------------
+  // --- Divider: Company & solution ------------------------------------------
+  addDivider("Company & solution", legalName || undefined);
+
+  // --- Slide: About us -------------------------------------------------------
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "About us");
     const blurb =
-      clean(data.branding.footerText) ||
+      clip(data.branding.footerText, 500) ||
       `${legalName} — full-lifecycle EPC delivery across origination, engineering, procurement, construction and O&M.`;
     s.addText(blurb, {
-      x: 0.7,
-      y: 1.0,
-      w: 7.5,
-      h: 4.5,
-      fontSize: 16,
+      ...gridBox(7, 0, contentTop, 4.5),
+      fontSize: PPTX.size.body + 2,
       color: "1F2937",
       fontFace: font,
       valign: "top",
@@ -286,71 +353,61 @@ export async function buildProposalPptx(
     ];
     if (data.company.contact_email) {
       contact.push({
-        text: `${clean(data.company.contact_email)}\n`,
+        text: `${clip(data.company.contact_email, 120)}\n`,
         options: { fontSize: 14, color: "1F2937", breakLine: true },
       });
     }
     if (data.company.phone) {
       contact.push({
-        text: `${clean(data.company.phone)}\n`,
+        text: `${clip(data.company.phone, 60)}\n`,
         options: { fontSize: 14, color: "1F2937", breakLine: true },
       });
     }
     if (data.company.address) {
       contact.push({
-        text: clean(data.company.address),
+        text: clip(data.company.address, 200),
         options: { fontSize: 14, color: "1F2937" },
       });
     }
     s.addText(contact, {
-      x: 8.6,
-      y: 1.0,
-      w: 4.3,
-      h: 4.5,
+      ...gridBox(5, 7, contentTop, 4.5),
       fontFace: font,
       valign: "top",
     });
   }
 
-  // --- Slide 3: Solution --------------------------------------------------
+  // --- Slide: Solution --------------------------------------------------
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Solution");
     const rows: Array<[string, string]> = [
-      ["Archetype", clean(cfg.archetype ?? p.archetype ?? "—")],
+      ["Archetype", clip(cfg.archetype ?? p.archetype ?? "—", 60)],
       ["AC Capacity", cfg.ac_capacity_mw != null ? `${cfg.ac_capacity_mw} MW` : "—"],
       ["DC Capacity", cfg.dc_capacity_mw != null ? `${cfg.dc_capacity_mw} MW` : "—"],
       ["Storage", cfg.storage_capacity_mwh != null ? `${cfg.storage_capacity_mwh} MWh` : "—"],
-      ["Tracking", clean(cfg.tracking ?? "—")],
+      ["Tracking", clip(cfg.tracking ?? "—", 60)],
       ["Tilt", cfg.tilt_deg != null ? `${cfg.tilt_deg}°` : "—"],
       ["GCR", cfg.gcr != null ? String(cfg.gcr) : "—"],
-      ["Module", clean(cfg.module ?? "—")],
-      ["Inverter", clean(cfg.inverter ?? "—")],
+      ["Module", clip(cfg.module ?? "—", 80)],
+      ["Inverter", clip(cfg.inverter ?? "—", 80)],
     ];
     const tableRows: PptxGenJS.TableRow[] = rows.map(([k, v]) => [
-      {
-        text: k,
-        options: {
-          bold: true,
-          fontSize: 14,
-          color: "374151",
-          fill: { color: "F3F4F6" },
-        },
-      },
-      { text: v, options: { fontSize: 14, color: "1F2937" } },
+      { text: k, options: { ...tableLabelOptions, bold: true } },
+      { text: v, options: tableValueOptions },
     ]);
+    const { x, w } = gridBox(12, 0, contentTop, 0);
     s.addTable(tableRows, {
-      x: 0.7,
-      y: 1.0,
-      w: 11.9,
-      colW: [4.0, 7.9],
+      x,
+      y: contentTop,
+      w,
+      colW: [w * 0.34, w * 0.66],
       fontFace: font,
       border: { pt: 0.5, color: "E5E7EB" },
       rowH: 0.42,
     });
   }
 
-  // --- Slide 4: Energy yield ---------------------------------------------
+  // --- Slide: Energy yield (KPI tiles + branded chart) --------------------
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Energy yield");
@@ -359,36 +416,32 @@ export async function buildProposalPptx(
     const p90 = yr?.p90_gwh_yr ?? yr?.p90 ?? null;
     const specific = yr?.specific_yield_kwh_kwp ?? yr?.specific_yield ?? null;
     const tiles: Array<{ label: string; value: string }> = [
-      {
-        label: "P50 (GWh/yr)",
-        value: p50 != null ? Number(p50).toFixed(1) : "—",
-      },
-      {
-        label: "P90 (GWh/yr)",
-        value: p90 != null ? Number(p90).toFixed(1) : "—",
-      },
+      { label: "P50 (GWh/yr)", value: p50 != null ? Number(p50).toFixed(1) : "—" },
+      { label: "P90 (GWh/yr)", value: p90 != null ? Number(p90).toFixed(1) : "—" },
       {
         label: "Specific yield (kWh/kWp)",
         value: specific != null ? Number(specific).toFixed(0) : "—",
       },
     ];
+    const tileY = contentTop;
+    const tileH = 1.5;
     tiles.forEach((t, i) => {
-      const x = 0.7 + i * 4.05;
+      const { x, w } = PPTX.col(4, i * 4);
       s.addShape(pptx.ShapeType.roundRect, {
         x,
-        y: 1.0,
-        w: 3.8,
-        h: 1.5,
+        y: tileY,
+        w,
+        h: tileH,
         fill: { color: primary },
         line: { color: primary, width: 0 },
         rectRadius: 0.12,
       });
       s.addText(t.value, {
         x,
-        y: 1.05,
-        w: 3.8,
+        y: tileY + 0.05,
+        w,
         h: 0.9,
-        fontSize: 36,
+        fontSize: PPTX.size.kpi + 6,
         bold: true,
         color: "FFFFFF",
         fontFace: font,
@@ -397,16 +450,17 @@ export async function buildProposalPptx(
       });
       s.addText(t.label, {
         x,
-        y: 1.95,
-        w: 3.8,
+        y: tileY + 0.95,
+        w,
         h: 0.5,
-        fontSize: 12,
+        fontSize: PPTX.size.kpiLabel + 3,
         color: "E5E7EB",
         fontFace: font,
         align: "center",
       });
     });
 
+    const chartTop = tileY + tileH + 0.4;
     const monthly: number[] | null = Array.isArray(yr?.monthly)
       ? (yr!.monthly as any[]).map((m: any) =>
           typeof m === "number" ? m : Number(m?.p50 ?? m?.gwh ?? 0),
@@ -427,13 +481,14 @@ export async function buildProposalPptx(
         "Nov",
         "Dec",
       ];
+      const { x, w } = gridBox(12, 0, chartTop, 0);
       s.addChart(pptx.ChartType.bar, [{ name: "Monthly P50 (GWh)", labels, values: monthly }], {
-        x: 0.7,
-        y: 2.9,
-        w: 11.9,
-        h: 3.6,
+        x,
+        y: chartTop,
+        w,
+        h: PPTX.footerY - chartTop - 0.35,
         barDir: "col",
-        chartColors: [primary],
+        chartColors: seriesColors,
         showLegend: false,
         showTitle: false,
         catAxisLabelFontFace: font,
@@ -442,10 +497,11 @@ export async function buildProposalPptx(
         valAxisLabelFontSize: 10,
       });
     } else {
+      const { x, w } = gridBox(12, 0, chartTop + 0.6, 0);
       s.addText("Yield simulation pending", {
-        x: 0.7,
-        y: 3.5,
-        w: 11.9,
+        x,
+        y: chartTop + 0.6,
+        w,
         h: 1.5,
         fontSize: 20,
         italic: true,
@@ -456,9 +512,9 @@ export async function buildProposalPptx(
     }
 
     s.addText("gridmind-stub-v1 (placeholder)", {
-      x: 0.7,
-      y: 6.6,
-      w: 11.9,
+      x: contentX,
+      y: PPTX.footerY - 0.35,
+      w: contentW,
       h: 0.3,
       fontSize: 10,
       italic: true,
@@ -467,7 +523,10 @@ export async function buildProposalPptx(
     });
   }
 
-  // --- Slide 5: Commercial summary ---------------------------------------
+  // --- Divider: Commercial & timeline ---------------------------------------
+  addDivider("Commercial & timeline");
+
+  // --- Slide: Commercial summary (PDF-style table: header fill, alt rows) --
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Commercial summary");
@@ -476,108 +535,67 @@ export async function buildProposalPptx(
     const contingencyAmt = subtotal * (contingencyPct / 100);
     const rows: PptxGenJS.TableRow[] = [
       [
+        { text: "Line item", options: tableHeadOptions },
+        { text: "Amount", options: { ...tableHeadOptions, ...numericOptions } },
+      ],
+      [
+        { text: "Subtotal", options: tableLabelOptions },
         {
-          text: "Subtotal",
-          options: {
-            bold: true,
-            fontSize: 14,
-            color: "374151",
-            fill: { color: "F3F4F6" },
-          },
-        },
-        {
-          text: fmtMoney(subtotal, currency),
-          options: { fontSize: 14, color: "1F2937", align: "right" },
+          text: fmtMoney(subtotal, currency, 0),
+          options: { ...tableValueOptions, ...numericOptions },
         },
       ],
       [
+        { text: `Contingency (${contingencyPct.toFixed(1)}%)`, options: tableLabelOptions },
         {
-          text: `Contingency (${contingencyPct.toFixed(1)}%)`,
-          options: {
-            bold: true,
-            fontSize: 14,
-            color: "374151",
-            fill: { color: "F3F4F6" },
-          },
-        },
-        {
-          text: fmtMoney(contingencyAmt, currency),
-          options: { fontSize: 14, color: "1F2937", align: "right" },
+          text: fmtMoney(contingencyAmt, currency, 0),
+          options: { ...tableValueOptions, ...numericOptions },
         },
       ],
       [
         {
           text: "Total",
+          options: { bold: true, fontSize: 16, color: "FFFFFF", fill: { color: primary } },
+        },
+        {
+          text: fmtMoney(p.total, currency, 0),
           options: {
             bold: true,
             fontSize: 16,
             color: "FFFFFF",
             fill: { color: primary },
-          },
-        },
-        {
-          text: fmtMoney(p.total, currency),
-          options: {
-            bold: true,
-            fontSize: 16,
-            color: "FFFFFF",
-            fill: { color: primary },
-            align: "right",
+            ...numericOptions,
           },
         },
       ],
       [
-        {
-          text: "Currency",
-          options: {
-            bold: true,
-            fontSize: 14,
-            color: "374151",
-            fill: { color: "F3F4F6" },
-          },
-        },
-        {
-          text: currency,
-          options: { fontSize: 14, color: "1F2937", align: "right" },
-        },
+        { text: "Currency", options: { ...tableLabelOptions, fill: { color: "FFFFFF" } } },
+        { text: currency, options: { ...tableValueOptions, ...numericOptions } },
       ],
       [
-        {
-          text: "Validity",
-          options: {
-            bold: true,
-            fontSize: 14,
-            color: "374151",
-            fill: { color: "F3F4F6" },
-          },
-        },
-        {
-          text: fmtDate(p.valid_until),
-          options: { fontSize: 14, color: "1F2937", align: "right" },
-        },
+        { text: "Validity", options: { ...tableLabelOptions, fill: { color: "F3F4F6" } } },
+        { text: fmtDate(p.valid_until), options: { ...tableValueOptions, ...numericOptions } },
       ],
     ];
+    const { x, w } = gridBox(12, 0, contentTop, 0);
     s.addTable(rows, {
-      x: 0.7,
-      y: 1.2,
-      w: 11.9,
-      colW: [7.0, 4.9],
+      x,
+      y: contentTop,
+      w,
+      colW: [w * 0.6, w * 0.4],
       fontFace: font,
       border: { pt: 0.5, color: "E5E7EB" },
-      rowH: 0.55,
+      rowH: 0.5,
     });
   }
 
-  // --- Slide 6: Timeline & tender dates ----------------------------------
+  // --- Slide: Timeline & tender dates ----------------------------------
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Timeline & tender dates");
     if (data.tenderEvents.length === 0) {
       s.addText("No upcoming tender events", {
-        x: 0.7,
-        y: 2.0,
-        w: 11.9,
-        h: 1.0,
+        ...gridBox(12, 0, 2.0, 1.0),
         fontSize: 20,
         italic: true,
         color: "9CA3AF",
@@ -586,7 +604,7 @@ export async function buildProposalPptx(
       });
     } else {
       const bullets: PptxGenJS.TextProps[] = data.tenderEvents.slice(0, 10).flatMap((e) => {
-        const head = `${clean(e.event_type).replace(/_/g, " ").toUpperCase()} — ${fmtDate(e.event_at)}`;
+        const head = `${clip(e.event_type, 40).replace(/_/g, " ").toUpperCase()} — ${fmtDate(e.event_at)}`;
         const parts: PptxGenJS.TextProps[] = [
           {
             text: head,
@@ -599,7 +617,7 @@ export async function buildProposalPptx(
             },
           },
         ];
-        const detail = clean(e.title ?? e.notes ?? "");
+        const detail = clip(e.title ?? e.notes ?? "", 200);
         if (detail) {
           parts.push({
             text: `   ${detail}`,
@@ -610,37 +628,31 @@ export async function buildProposalPptx(
         return parts;
       });
       s.addText(bullets, {
-        x: 0.7,
-        y: 1.0,
-        w: 11.9,
-        h: 5.5,
+        ...gridBox(12, 0, contentTop, 5.5),
         fontFace: font,
         valign: "top",
       });
     }
   }
 
-  // --- Slide 7: Terms & contact ------------------------------------------
+  // --- Divider: Terms ---------------------------------------------------
+  addDivider("Terms & contact");
+
+  // --- Slide: Terms & contact ------------------------------------------
   {
     const s = pptx.addSlide({ masterName: "GM_MASTER" });
     titleBar(s, "Terms & contact");
     const notes =
-      clean(p.notes) || "Standard EPC terms apply. Pricing valid through the date shown below.";
+      clip(p.notes, 700) || "Standard EPC terms apply. Pricing valid through the date shown below.";
     s.addText(notes, {
-      x: 0.7,
-      y: 1.0,
-      w: 12,
-      h: 3.0,
+      ...gridBox(12, 0, contentTop, 3.0),
       fontSize: 14,
       color: "1F2937",
       fontFace: font,
       valign: "top",
     });
     s.addText(`Validity: ${fmtDate(p.valid_until)}`, {
-      x: 0.7,
-      y: 4.1,
-      w: 12,
-      h: 0.4,
+      ...gridBox(12, 0, contentTop + 3.1, 0.4),
       fontSize: 14,
       bold: true,
       color: "374151",
@@ -654,31 +666,28 @@ export async function buildProposalPptx(
         options: { bold: true, fontSize: 14, color: primary, breakLine: true },
       },
       {
-        text: clean(owner?.full_name) || "—",
+        text: clip(owner?.full_name, 100) || "—",
         options: { fontSize: 14, color: "1F2937", breakLine: true },
       },
     ];
     if (owner?.email) {
       contactParts.push({
-        text: clean(owner.email),
+        text: clip(owner.email, 100),
         options: { fontSize: 14, color: "1F2937" },
       });
     }
     s.addText(contactParts, {
-      x: 0.7,
-      y: 4.9,
-      w: 12,
-      h: 1.5,
+      ...gridBox(12, 0, contentTop + 3.9, 1.5),
       fontFace: font,
       valign: "top",
     });
   }
 
   // Filename ---------------------------------------------------------------
-  const filename = `GridMind_Proposal_${slug(opp.account_name)}_${slug(p.title)}_v${p.version ?? 1}.pptx`;
+  const filename = `GridMind_Proposal_${slugify(sanitize(opp.account_name), 40)}_${slugify(sanitize(p.title), 40)}_v${p.version ?? 1}.pptx`;
 
   const out = (await pptx.write({ outputType: "blob" })) as Blob;
   return { blob: out, filename };
 }
 
-export { downloadBlob } from "./proposal-pdf";
+export { downloadBlob } from "./theme";
