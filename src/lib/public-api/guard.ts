@@ -386,7 +386,7 @@ export async function guardPublicHook(
           route: opts.route,
           reason: sigReason,
         });
-        return { ok: false, response: jsonError(401, sigReason, 'invalid signature') };
+        return { ok: false, response: jsonError(401, sigReason, `invalid signature | dbg tsHeader=${tsHeader} rawBodyLen=${rawBody.length} secretLen=${(secret??'').length}`) };
       }
       await auditGuardEvent(admin, {
         companyId: keyRow.company_id,
