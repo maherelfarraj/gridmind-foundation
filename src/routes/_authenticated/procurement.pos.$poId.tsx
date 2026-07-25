@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
 import { PoStatusStepper } from "@/components/procurement/po-status-stepper";
+import { PageHeader } from "@/components/ui/page-header";
 import { getPo, getPoApprovalThreshold, getPoWriteAccess } from "@/lib/po.functions";
 import {
   poApprovalThresholdQueryOptions,
@@ -118,37 +119,32 @@ function PoDetail() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="page-shell">
       <div>
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/pos" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to POs
         </Button>
       </div>
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Receipt className="h-3.5 w-3.5" /> Procurement · Purchase Order
+      <PageHeader
+        title={po.po_number}
+        description={`${po.vendor_name} · ${po.project_name} · ${po.currency_code}`}
+        actions={
+          <div className="text-right">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
+            <div className="text-2xl font-semibold">
+              {fmtMoney(po.total_amount, po.currency_code)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Threshold {fmtMoney(threshold, po.currency_code)}
+              {requiresApproval ? " · above" : " · below"}
+            </div>
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{po.po_number}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <PoStatusBadge status={po.status} />
-            <span>{po.vendor_name}</span>
-            <span>{po.project_name}</span>
-            <span>{po.currency_code}</span>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
-          <div className="font-display text-2xl font-semibold">
-            {fmtMoney(po.total_amount, po.currency_code)}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Threshold {fmtMoney(threshold, po.currency_code)}
-            {requiresApproval ? " · above" : " · below"}
-          </div>
-        </div>
-      </header>
+        }
+      />
+      <div className="-mt-2">
+        <PoStatusBadge status={po.status} />
+      </div>
 
       <PoStatusStepper status={po.status} />
 
