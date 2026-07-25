@@ -273,38 +273,14 @@ function ProjectsPage() {
             ))}
           </div>
           {totalPages > 1 ? (
-            <footer className="flex items-center justify-between border-t border-border pt-4 text-sm">
-              <span className="text-muted-foreground">
-                Page {search.page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={search.page <= 1}
-                  onClick={() =>
-                    navigate({
-                      search: (prev) => ({ ...prev, page: prev.page - 1 }),
-                    })
-                  }
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={search.page >= totalPages}
-                  onClick={() =>
-                    navigate({
-                      search: (prev) => ({ ...prev, page: prev.page + 1 }),
-                    })
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            </footer>
+            <DataTablePagination
+              page={search.page}
+              pageSize={pageSize}
+              total={total}
+              onPageChange={(page) => navigate({ search: (prev) => ({ ...prev, page }) })}
+            />
           ) : null}
+
         </>
       )}
     </div>
