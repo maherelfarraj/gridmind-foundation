@@ -5036,6 +5036,77 @@ export type Database = {
           },
         ]
       }
+      project_export_locks: {
+        Row: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          export_type: string
+          id: string
+          locked_at: string
+          locked_by: string | null
+          project_id: string
+          reason: string
+          unlocked_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          company_id: string
+          created_at?: string
+          export_type: string
+          id?: string
+          locked_at?: string
+          locked_by?: string | null
+          project_id: string
+          reason?: string
+          unlocked_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          company_id?: string
+          created_at?: string
+          export_type?: string
+          id?: string
+          locked_at?: string
+          locked_by?: string | null
+          project_id?: string
+          reason?: string
+          unlocked_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_locks_project_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_export_locks_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_export_locks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_export_locks_locked_by_fkey"
+            columns: ["locked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_financial_config: {
         Row: {
           capex_total: number | null
@@ -8996,6 +9067,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      assert_export_unlocked: {
+        Args: { p_export_type: string; p_project_id: string }
+        Returns: undefined
+      }
       cancel_approval_instance: {
         Args: { p_instance_id: string }
         Returns: undefined
@@ -9062,6 +9137,10 @@ export type Database = {
       incorporate_change_order: { Args: { p_co_id: string }; Returns: Json }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
+      is_export_locked: {
+        Args: { p_export_type: string; p_project_id: string }
+        Returns: boolean
+      }
       is_external_viewer: { Args: never; Returns: boolean }
       redeem_invite: { Args: { p_token: string }; Returns: string }
       start_approval_instance: {
@@ -9075,6 +9154,7 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      sync_export_locks: { Args: { p_project_id: string }; Returns: number }
       verify_api_key: {
         Args: { p_raw_key: string }
         Returns: {
