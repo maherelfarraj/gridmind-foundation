@@ -29,6 +29,8 @@ import {
   dprProjectsQueryOptions,
   errorMessage,
 } from "@/lib/dpr-query";
+import { ExportWeeklyReportButton } from "@/components/field/ExportWeeklyReportButton";
+import { format, startOfISOWeek, subWeeks } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/field/dpr/")({
   head: () => ({
@@ -71,17 +73,28 @@ function DprListPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <ClipboardList size={14} aria-hidden /> Field
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <ClipboardList size={14} aria-hidden /> Field
+          </div>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+            Daily reports
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Capture manpower, weather, installed quantities and site photos —
+            fast, one-handed, in the field.
+          </p>
         </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Daily reports
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Capture manpower, weather, installed quantities and site photos —
-          fast, one-handed, in the field.
-        </p>
+        <ExportWeeklyReportButton
+          projectId={projectId || null}
+          weekStart={format(
+            startOfISOWeek(subWeeks(new Date(), 1)),
+            "yyyy-MM-dd",
+          )}
+          variant="outline"
+          size="sm"
+        />
       </header>
 
       <Card>
