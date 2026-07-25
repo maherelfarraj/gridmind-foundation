@@ -260,7 +260,7 @@ describe.skipIf(!canRun)('P-133 e2e smoke: golden path', () => {
         project_id: state.projectId!,
         vendor_id: state.vendorId!,
         po_number: `PO-E2E-${suffix.toUpperCase()}`,
-        status: 'submitted',
+        status: 'pending_approval',
         currency_code: 'USD',
         subtotal: 500_000,
         total_amount: 575_000,
