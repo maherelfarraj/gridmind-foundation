@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const SUB_TABS = [
   { to: "budget" as const, label: "Budget" },
   { to: "evm" as const, label: "EVM" },
+  { to: "cash-flow" as const, label: "Cash flow" },
 ];
 
 export const Route = createFileRoute(
