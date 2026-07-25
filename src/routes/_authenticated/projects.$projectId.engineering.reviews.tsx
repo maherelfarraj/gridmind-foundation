@@ -127,9 +127,7 @@ function ReviewsPage() {
                         {r.due_date ? (
                           <span
                             className={
-                              overdue
-                                ? "font-medium text-warning"
-                                : "text-muted-foreground"
+                              overdue ? "font-medium text-warning" : "text-muted-foreground"
                             }
                           >
                             {r.due_date}

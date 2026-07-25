@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -108,60 +111,32 @@ function ScadaConnectorsPage() {
   const rows = query.data?.rows ?? [];
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">SCADA connectors</h1>
-          <p className="text-sm text-muted-foreground">
-            Inverter, meter, weather station, plant controller, and BESS streams.
-          </p>
-        </div>
-        <Button onClick={() => setWizardOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" /> Add connector
-        </Button>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="SCADA connectors"
+        description="Inverter, meter, weather station, plant controller, and BESS streams."
+        actions={
+          <Button onClick={() => setWizardOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" /> Add connector
+          </Button>
+        }
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              Active connectors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="font-display text-3xl font-bold">
-              {kpis.activeCount}
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                / {kpis.totalCount}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              Assets mapped
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="font-display text-3xl font-bold">{kpis.assetsMapped}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              Last telemetry seen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="font-display text-lg font-semibold">
-              {kpis.lastTelemetryAt
-                ? formatDistanceToNow(new Date(kpis.lastTelemetryAt), { addSuffix: true })
-                : "—"}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <KpiGrid columns={3}>
+        <KpiTile
+          label="Active connectors"
+          value={`${kpis.activeCount} / ${kpis.totalCount}`}
+        />
+        <KpiTile label="Assets mapped" value={kpis.assetsMapped} />
+        <KpiTile
+          label="Last telemetry seen"
+          value={
+            kpis.lastTelemetryAt
+              ? formatDistanceToNow(new Date(kpis.lastTelemetryAt), { addSuffix: true })
+              : "—"
+          }
+        />
+      </KpiGrid>
 
       <Card>
         <CardContent className="p-0">
@@ -173,24 +148,27 @@ function ScadaConnectorsPage() {
             </div>
           )}
           {query.isError && (
-            <div className="flex flex-col items-center gap-3 p-8 text-center">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
-              <p className="text-sm">Couldn&apos;t load connectors.</p>
-              <Button size="sm" variant="outline" onClick={() => query.refetch()}>
-                Retry
-              </Button>
-            </div>
+            <EmptyState
+              icon={AlertTriangle}
+              title="Couldn't load connectors"
+              action={
+                <Button size="sm" variant="outline" onClick={() => query.refetch()}>
+                  Retry
+                </Button>
+              }
+            />
           )}
           {!query.isLoading && !query.isError && rows.length === 0 && (
-            <div className="flex flex-col items-center gap-3 p-10 text-center">
-              <RadioIcon className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                No SCADA connectors — add your first stream
-              </p>
-              <Button size="sm" onClick={() => setWizardOpen(true)}>
-                <Plus className="mr-1 h-4 w-4" /> Add connector
-              </Button>
-            </div>
+            <EmptyState
+              icon={RadioIcon}
+              title="No SCADA connectors"
+              description="Add your first stream to start ingesting telemetry."
+              action={
+                <Button size="sm" onClick={() => setWizardOpen(true)}>
+                  <Plus className="mr-1 h-4 w-4" /> Add connector
+                </Button>
+              }
+            />
           )}
           {!query.isLoading && !query.isError && rows.length > 0 && (
             <Table>

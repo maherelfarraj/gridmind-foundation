@@ -14,6 +14,8 @@ import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -182,35 +184,35 @@ function ProjectsPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            {query.isLoading
-              ? "Loading…"
-              : `${total} project${total === 1 ? "" : "s"}${
-                  filtersActive ? " matching filters" : ""
-                }`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={exporting || !companyId || rows.length === 0}
-          >
-            <Download size={16} aria-hidden />
-            Export CSV
-          </Button>
-          <Button asChild>
-            <Link to="/projects/new" search={{ step: 1 }}>
-              <Plus size={16} aria-hidden />
-              New project
-            </Link>
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Projects"
+        description={
+          query.isLoading
+            ? "Loading…"
+            : `${total} project${total === 1 ? "" : "s"}${
+                filtersActive ? " matching filters" : ""
+              }`
+        }
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              disabled={exporting || !companyId || rows.length === 0}
+            >
+              <Download size={16} aria-hidden />
+              Export CSV
+            </Button>
+            <Button asChild>
+              <Link to="/projects/new" search={{ step: 1 }}>
+                <Plus size={16} aria-hidden />
+                New project
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <Card className="flex flex-wrap items-end gap-3 p-4">
         <div className="relative min-w-[220px] flex-1">

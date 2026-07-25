@@ -708,9 +708,11 @@ function ObligationsTab({
 
       <div className="rounded-md border border-border">
         {obligations.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No obligations yet — add manually or extract with AI.
-          </div>
+          <EmptyState
+            icon={FilePlus}
+            title="No obligations yet"
+            description="Add manually or extract with AI."
+          />
         ) : (
           <Table>
             <TableHeader>

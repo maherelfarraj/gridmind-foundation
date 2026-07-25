@@ -29,11 +29,7 @@ export function ScheduleKpiStrip({
   return (
     <KpiGrid label="Schedule KPIs">
       <KpiTile icon={ClipboardList} label="Tasks" value={total} />
-      <KpiTile
-        icon={Gauge}
-        label="% complete (weighted)"
-        value={`${weightedPct.toFixed(1)}%`}
-      />
+      <KpiTile icon={Gauge} label="% complete (weighted)" value={`${weightedPct.toFixed(1)}%`} />
       <KpiTile
         icon={AlertOctagon}
         label="Overdue"
