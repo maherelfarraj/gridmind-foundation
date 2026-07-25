@@ -1,5 +1,5 @@
 // P-114 — Portal admin: /settings/portal-members.
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -9,6 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import {
+  Activity,
   Ban,
   Clock,
   Copy,
@@ -316,6 +317,15 @@ function MembersTable({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link
+                      to="/settings/portal-audit"
+                      search={{ membershipId: row.id, projectId }}
+                    >
+                      <Activity className="mr-1 h-3.5 w-3.5" />
+                      Activity
+                    </Link>
+                  </Button>
                   {row.status === "active" || row.status === "invited" ? (
                     <Button
                       variant="ghost"
@@ -383,38 +393,97 @@ function ExposureChips({
       setLocal(exposure);
     },
   });
+  const presets: Array<{ label: string; exposure: PortalExposure }> = [
+    {
+      label: "Milestones only",
+      exposure: {
+        ...DEFAULT_EXPOSURE,
+        milestones: true,
+        kpis: false,
+        photos: false,
+        documents: false,
+        financials: false,
+        tickets: false,
+        approvals: false,
+      },
+    },
+    {
+      label: "Milestones + KPIs",
+      exposure: {
+        ...DEFAULT_EXPOSURE,
+        milestones: true,
+        kpis: true,
+        photos: false,
+        documents: false,
+        financials: false,
+        tickets: false,
+        approvals: false,
+      },
+    },
+    {
+      label: "Full read-only",
+      exposure: {
+        milestones: true,
+        kpis: true,
+        photos: true,
+        documents: true,
+        financials: true,
+        tickets: true,
+        approvals: true,
+      },
+    },
+  ];
+  function applyPreset(next: PortalExposure) {
+    setLocal(next);
+    mut.mutate(next);
+  }
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-wrap gap-1">
-        {EXPOSURE_KEYS.map((k) => {
-          const on = local[k];
-          return (
-            <Tooltip key={k}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  disabled={mut.isPending}
-                  onClick={() => {
-                    const next = { ...local, [k]: !on };
-                    setLocal(next);
-                    mut.mutate(next);
-                  }}
-                  className={
-                    "rounded border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide transition " +
-                    (on
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-border bg-muted text-muted-foreground opacity-60 hover:opacity-100")
-                  }
-                >
-                  {EXPOSURE_LABELS[k]}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {on ? "Visible" : "Hidden"} · click to toggle
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap gap-1">
+          {EXPOSURE_KEYS.map((k) => {
+            const on = local[k];
+            return (
+              <Tooltip key={k}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={mut.isPending}
+                    onClick={() => {
+                      const next = { ...local, [k]: !on };
+                      setLocal(next);
+                      mut.mutate(next);
+                    }}
+                    className={
+                      "rounded border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide transition " +
+                      (on
+                        ? "border-primary/40 bg-primary/10 text-primary"
+                        : "border-border bg-muted text-muted-foreground opacity-60 hover:opacity-100")
+                    }
+                  >
+                    {EXPOSURE_LABELS[k]}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {on ? "Visible" : "Hidden"} · click to toggle
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {presets.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              disabled={mut.isPending}
+              onClick={() => applyPreset(p.exposure)}
+              className="rounded border border-dashed border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary/40 hover:text-primary"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
     </TooltipProvider>
   );
