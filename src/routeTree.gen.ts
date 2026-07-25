@@ -67,6 +67,7 @@ import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './route
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
+import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
 import { Route as AuthenticatedQaqcInspectionsNewRouteImport } from './routes/_authenticated/qaqc.inspections.new'
 import { Route as AuthenticatedQaqcInspectionsIdRouteImport } from './routes/_authenticated/qaqc.inspections.$id'
 import { Route as AuthenticatedProjectsProjectIdProcurementRouteImport } from './routes/_authenticated/projects.$projectId.procurement'
@@ -454,6 +455,12 @@ const AuthenticatedQaqcPunchWalkRoute =
   AuthenticatedQaqcPunchWalkRouteImport.update({
     id: '/qaqc/punch/walk',
     path: '/qaqc/punch/walk',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQaqcPunchIdRoute =
+  AuthenticatedQaqcPunchIdRouteImport.update({
+    id: '/qaqc/punch/$id',
+    path: '/qaqc/punch/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQaqcInspectionsNewRoute =
@@ -881,6 +888,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
@@ -987,6 +995,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
@@ -1102,6 +1111,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/procurement': typeof AuthenticatedProjectsProjectIdProcurementRoute
   '/_authenticated/qaqc/inspections/$id': typeof AuthenticatedQaqcInspectionsIdRoute
   '/_authenticated/qaqc/inspections/new': typeof AuthenticatedQaqcInspectionsNewRoute
+  '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
@@ -1218,6 +1228,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/qaqc/inspections/$id'
     | '/qaqc/inspections/new'
+    | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/admin/tenants/'
     | '/field/dpr/'
@@ -1324,6 +1335,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/procurement'
     | '/qaqc/inspections/$id'
     | '/qaqc/inspections/new'
+    | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/admin/tenants'
     | '/field/dpr'
@@ -1438,6 +1450,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/procurement'
     | '/_authenticated/qaqc/inspections/$id'
     | '/_authenticated/qaqc/inspections/new'
+    | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
@@ -1897,6 +1910,13 @@ declare module '@tanstack/react-router' {
       path: '/qaqc/punch/walk'
       fullPath: '/qaqc/punch/walk'
       preLoaderRoute: typeof AuthenticatedQaqcPunchWalkRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qaqc/punch/$id': {
+      id: '/_authenticated/qaqc/punch/$id'
+      path: '/qaqc/punch/$id'
+      fullPath: '/qaqc/punch/$id'
+      preLoaderRoute: typeof AuthenticatedQaqcPunchIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/inspections/new': {
@@ -2720,6 +2740,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
   AuthenticatedQaqcInspectionsIdRoute: typeof AuthenticatedQaqcInspectionsIdRoute
   AuthenticatedQaqcInspectionsNewRoute: typeof AuthenticatedQaqcInspectionsNewRoute
+  AuthenticatedQaqcPunchIdRoute: typeof AuthenticatedQaqcPunchIdRoute
   AuthenticatedQaqcPunchWalkRoute: typeof AuthenticatedQaqcPunchWalkRoute
   AuthenticatedFieldDprIndexRoute: typeof AuthenticatedFieldDprIndexRoute
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2785,6 +2806,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
   AuthenticatedQaqcInspectionsIdRoute: AuthenticatedQaqcInspectionsIdRoute,
   AuthenticatedQaqcInspectionsNewRoute: AuthenticatedQaqcInspectionsNewRoute,
+  AuthenticatedQaqcPunchIdRoute: AuthenticatedQaqcPunchIdRoute,
   AuthenticatedQaqcPunchWalkRoute: AuthenticatedQaqcPunchWalkRoute,
   AuthenticatedFieldDprIndexRoute: AuthenticatedFieldDprIndexRoute,
   AuthenticatedFieldMobilizationIndexRoute:
