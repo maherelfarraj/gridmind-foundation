@@ -1,97 +1,103 @@
-# P-113 — Project export locks (real gate)
+## P-114 — Portal memberships + client portal shell
 
-## Current state (verified)
+Ship the client/investor/lender portal on top of `portal_memberships` with SECURITY DEFINER RPCs as the ONLY data path. Admins manage members from `/settings/portal-members`; external viewers land at `/portal`.
 
-- `approval_rules.blocks_export` already exists and is editable from the rules admin UI.
-- `approval_instances.metadata` is a free-form jsonb (`start_approval_instance` accepts `p_metadata`); callers do not yet stamp `project_id` in there consistently.
-- `src/lib/export-guard.ts` already exists as a **forward-compatible stub**: it queries a `project_export_locks(active, reason)` shape that does NOT match the P-113 schema, ignores 42P01, and takes `{ companyId, projectId }` (no `exportType`). All call sites use this shape.
-- `assertExportAllowed` is already wired in: proposal PDF/PPTX server fns + buttons, weekly report, O&M report, turnover pack (crm/opportunity list exports and proposal buttons). We only need to add the `exportType` argument and re-check each site.
-- No turnover-pack export **button** yet — server fn only. Same for weekly/O&M PDFs, which are triggered from their own dialogs.
-- Roles `company_admin`, `project_admin`, `finance_admin` all exist in the `app_role` enum.
+### 1. Migration `supabase/migrations/0054_portal_memberships.sql`
 
-## Migration
+Apply the SQL verbatim from the spec:
 
-Create `supabase/migrations/0053_project_export_locks.sql` with the exact SQL from the spec:
+- Tables: `portal_memberships` (unique on `company_id, project_id, email`; conditional FK to `projects` via `to_regclass` guard) and `portal_tickets`.
+- RLS enabled on both. Policies exactly as specified — external viewers can only see their own membership/tickets; admins manage; ticket insert requires active membership when caller is an external viewer.
+- Triggers wire `set_updated_at`; indexes on `(user_id,status)`, `(company_id,project_id)`, `(company_id,project_id,status)`.
+- GRANTs to `authenticated` per spec.
+- Add `portal_audit_events` table (id, company_id, project_id, membership_id, actor_id, event, metadata jsonb, created_at) with RLS: admins select; writes only via SECURITY DEFINER RPCs. Grant select to authenticated members / self; insert to service_role only.
 
-- `project_export_locks` table with `export_type` check, `approval_instance_id` FK, `locked_by`, `locked_at`, `unlocked_at`, standard timestamps.
-- Deferred FK on `project_id → projects(id)` via `do $$ ... $$` guard.
-- Partial unique index on `(project_id, export_type) WHERE unlocked_at IS NULL` (one active lock per type per project).
-- RLS: SELECT for members and non-external-viewers; INSERT/UPDATE gated to `company_admin | project_admin | finance_admin`.
-- GRANT SELECT, INSERT, UPDATE to `authenticated`; `set_updated_at` trigger.
-- SECURITY DEFINER functions: `is_export_locked(project_id, export_type)`, `assert_export_unlocked(...)`, `sync_export_locks(project_id)`. `is_export_locked` combines active manual locks + any pending/in_progress approval instance whose rule has `blocks_export = true` and whose `metadata->>'project_id'` matches. Fails closed when caller has no company.
-- Grants on all three functions to `authenticated`.
+### 2. SECURITY DEFINER RPCs (same migration)
 
-## Rewrite the guard — `src/lib/export-guard.ts`
+All `security definer`, `set search_path = public`, `grant execute … to authenticated`.
 
-Replace the stub with a typed helper:
+- **`portal_assert_access(p_project_id uuid) returns public.portal_memberships`** — selects active, unexpired row for `auth.uid()` + project; raises `portal_access_denied` (SQLSTATE 42501) otherwise; updates `last_seen_at = now()`.
+- **`portal_get_feed(p_project_id uuid) returns jsonb`** — calls `portal_assert_access`; builds jsonb `{ project, exposure, milestones, kpis, photos, documents, financials, tickets }` — each section only when the corresponding exposure flag is true, and each source table wrapped in `to_regclass('public.<table>') is not null` so it degrades gracefully before later batches. Milestones from `project_phase_gates` (curated fields: phase, status, planned/actual dates). Photos from `site_photos` (path, caption, taken_at — signed via UI). KPIs from `evm_snapshots` most-recent row (spi, cpi, pv, ev, ac). Documents/financials only rendered as empty scaffolding for now (exposure defaults false). If `portal_audit_events` exists, insert `portal.feed_viewed`.
+- **`portal_raise_ticket(p_project_id, p_subject, p_body, p_category, p_priority)`** — asserts access; requires `exposure->>'tickets' = 'true'` else raises `portal_exposure_denied`; inserts ticket with `raised_by = auth.uid()`, `membership_id` from assertion; audits `portal.ticket_raised`; returns ticket id.
+- **`portal_decide_approval(p_approval_id uuid, p_decision text, p_comment text)`** — loads approval → instance; requires `approvals.approver_id = auth.uid()` AND active membership on the instance's project; calls existing `public.decide_approval`; audits `portal.approval_decided` with `metadata = jsonb_build_object('via','portal','decision',p_decision)`.
 
-```ts
-export type ExportType =
-  | "proposal_pdf" | "proposal_pptx" | "weekly_client_report"
-  | "om_report"   | "turnover_pack"  | "audit_pack" | "csv";
+### 3. Server functions & hooks (`src/lib/portal.functions.ts`, `portal.hooks.ts`)
 
-export async function assertExportAllowed(
-  supabase: SupabaseClient,
-  projectId: string | null,
-  exportType: ExportType,
-): Promise<void>
-```
+Thin `createServerFn` wrappers (all with `attachSupabaseAuth`) — never query source tables directly.
 
-- If `projectId == null` (e.g. CRM CSV, opportunity export) → no-op (no project scope to lock).
-- Otherwise: `await supabase.rpc('sync_export_locks', { p_project_id: projectId })` (best-effort; ignore error), then `await supabase.rpc('assert_export_unlocked', { p_project_id: projectId, p_export_type: exportType })`.
-- Map any `export_locked:*` error (Postgres `raise exception`) to a typed throw: `{ statusCode: 423, message: 'Export blocked: approval pending', exportType }`. Preserve 42P01 no-op for local dev.
+- `getPortalMemberships()` — caller's own active memberships, projected `{ project_id, project_name, company_name, role, exposure, expires_at, last_seen_at }`.
+- `getPortalFeed({ projectId })` → `rpc('portal_get_feed')`.
+- `getPortalPhotoSignedUrl({ projectId, path })` — asserts access via `portal_assert_access`, then issues a short-lived signed URL from the `photos` bucket.
+- `getPortalApprovals({ projectId })` — filters `approvals` to `approver_id = uid` on instances belonging to `projectId`; joined by instance metadata. Uses RLS-safe query (approvals already have per-user RLS).
+- `raisePortalTicket(...)` / `listPortalTickets({ projectId })` (own tickets only).
+- `decidePortalApproval({ approvalId, decision, comment })` — comment required when `decision='rejected'`.
 
-Also export a small client hook `useIsExportLocked(projectId, exportType)` (thin `useQuery` wrapper around `rpc('is_export_locked')`) and an `ExportLockBadge` component (`bg-accent`, lock icon, "Exports locked: <types>").
+Admin:
+- `listPortalMembers({ projectId })` — admin-only via `has_company_role`.
+- `invitePortalMember({ projectId, email, role, exposure, expiresInDays=7 })` — calls existing `create_invite` RPC for the role, then upserts a `portal_memberships` row `status='invited'`, `invite_id`, `expires_at = now() + 7d`. Writes audit `portal.member_invited`.
+- `suspendPortalMember({ id }) / revokePortalMember({ id })` — flip status; audit `portal.member_suspended` / `portal.member_revoked`.
+- `updatePortalMemberExposure({ id, exposure })`.
 
-## Update every call site to pass `exportType`
+Extend `redeem_invite` flow (client side in existing `accept-invite.tsx`): after redemption, if a matching pending `portal_memberships` row exists for that email, stamp `user_id`, `accepted_at`, `status='active'`.
 
-Existing calls (all must be edited — signature change is breaking):
+### 4. Admin UI — `/settings/portal-members`
 
-| File | exportType |
-| --- | --- |
-| `src/lib/proposal.functions.ts` (PDF export fn ~L1546) | `proposal_pdf` |
-| `src/lib/proposal.functions.ts` (PPTX export fn ~L1711) | `proposal_pptx` |
-| `src/components/proposals/ExportPdfButton.tsx` | `proposal_pdf` |
-| `src/components/proposals/ExportPptxButton.tsx` | `proposal_pptx` |
-| `src/lib/field-reports.functions.ts` (weekly ~L579) | `weekly_client_report` |
-| `src/lib/om-reports.functions.ts` (~L203) | `om_report` |
-| `src/lib/opportunity.functions.ts` (~L820) | `csv` (project-less → no-op) |
-| `src/lib/crm.functions.ts` (~L325) | `csv` (project-less → no-op) |
-| Turnover pack fn (in commissioning/turnover functions) | `turnover_pack` — locate + wire |
+`src/routes/_authenticated/settings.portal-members.tsx`. Gated to `company_admin` / `project_admin`.
 
-Each call becomes `await assertExportAllowed(context.supabase, projectId ?? null, "<type>")`. Buttons pass `supabase` (browser client) with the same shape.
+- Project selector (persisted in search param).
+- Table: email · role · status badge · exposure chip row (toggle-able inline; saves via `updatePortalMemberExposure`) · last_seen (relative) · expires_at.
+- Row actions: Suspend / Revoke / Reinvite (regenerates token, 7 days).
+- "Invite portal member" dialog: email, role (client/investor/lender viewer), exposure checkboxes with sane defaults, expiry preview ("Invite expires {date}").
+- Empty state, skeletons, toast on success.
 
-## Manual lock server fns
+### 5. Portal shell
 
-Add to a new `src/lib/export-locks.functions.ts`:
+Top-level (not under `_authenticated` app shell). Own layout with **only** a top bar (company brand from `company_branding` + user menu) — no internal sidebar.
 
-- `listExportLocks({ project_id })` — SELECT active locks for badge/UI.
-- `lockExport({ project_id, export_type, reason })` — role check via `has_company_role('company_admin'|'project_admin'|'finance_admin')`, INSERT row, `writeAuditLog('export.locked', 'project_export_locks', id, { project_id, export_type, reason })`.
-- `unlockExport({ lock_id })` — same role gate, UPDATE `unlocked_at = now()`, audit `export.unlocked`.
+- `src/routes/portal.tsx` — layout route. Verifies session; if none → `/auth?redirect=/portal`. Renders `<PortalTopBar />` + MFA banner + `<Outlet />`.
+- `src/routes/portal.index.tsx` — project picker from `getPortalMemberships()`. Empty state "No shared projects yet".
+- `src/routes/portal.projects.$projectId.tsx` — layout with tab nav (Overview / Milestones / Photos / Approvals / Tickets); calls `getPortalFeed` once and passes via route context. Catches `portal_access_denied` → branded "Access expired or revoked" page.
+- Tab leaves as child routes under `portal.projects.$projectId.<tab>.tsx`:
+  - **Overview**: project card + KPI tiles (SPI/CPI/PV/EV/AC) when `exposure.kpis`.
+  - **Milestones**: read-only timeline from feed.
+  - **Photos**: responsive grid, lazy-load images via `getPortalPhotoSignedUrl`; only rendered when `exposure.photos`.
+  - **Approvals**: caller-assigned pending approvals list; decide dialog reuses the same comment-required-on-reject pattern as `/approvals`, calls `decidePortalApproval`.
+  - **Tickets**: raise form (subject/body/category/priority) + own ticket list with status badges (only when `exposure.tickets`).
 
-Zod schemas alongside. Idempotency: attempting to lock a type that is already active returns the existing lock (surface via unique index conflict).
+States everywhere: skeletons, curated empty states ("Nothing shared yet"), error boundary with retry.
 
-## UI wiring
+MFA banner: dismissible amber banner on `/portal` when `user.factors` does not include a verified TOTP. Copy: "For your security, enable two-factor authentication on your account." Link → `/portal/security` (thin stub calling `supabase.auth.mfa.enroll`).
 
-- **Every existing export button** (`ExportPdfButton`, `ExportPptxButton`, weekly-report dialog trigger, O&M report generator button, turnover compile button): use `useIsExportLocked(projectId, exportType)` to render disabled state with `<Lock>` icon + tooltip "Export blocked while approvals are pending". Keep server-side guard as the source of truth.
-- **`ExportLockBadge`** — mount on project header (find the shared project header/detail layout used by `/projects/$projectId`) via `listExportLocks`. Renders `bg-accent`, lock icon, comma-joined export types. Hides itself when array empty. Skip if no shared header exists — add to project overview page instead.
-- **Manual lock/unlock UI** — a small admin card on the project overview: "Export governance" listing active locks with an Unlock button (role-gated), and a "Lock exports" dialog (type + reason). Kept minimal; full admin surface can come later.
+### 6. Auth attacher / route guards
 
-## Stamp `project_id` in approval metadata
+- Portal routes reuse the existing Supabase session; no new middleware.
+- All portal server fns use `attachSupabaseAuth`; RPCs enforce membership.
+- UI code MUST NOT query `site_photos`, `project_phase_gates`, `projects`, `evm_snapshots` directly — everything through portal server fns. Add a lint-doc comment in `portal.functions.ts` and a matching README note under `docs/portal.md`.
 
-For the auto-release path (approval → export unlock) to work, `metadata.project_id` must be set on any `blocks_export` instance. Update callers that start such approvals (proposal pricing, project phase gate, contract, change_order in current code) to include `project_id` in the metadata payload. This is a small edit at each `startApprovalInstance({ ... metadata: { project_id, ... } })` call — locate and update.
+### 7. Tests
 
-## Verification (matches spec)
+- `tests/rls/portal_memberships.test.ts` — unauthenticated & non-member cannot read; member can only read their own row.
+- `tests/api/portal_rpcs.test.ts` — matrix:
+  - unauthenticated → `portal_access_denied`
+  - member with `exposure.photos=false` → feed has no `photos` key
+  - suspended member → assertion fails
+  - ticket raise blocked when `exposure.tickets=false`
+  - approval decide only succeeds for assigned approver with active membership
+- `tests/unit/portal.exposure.test.ts` — helper that projects the exposure jsonb.
 
-1. Run migration → re-run → clean.
-2. Start a `blocks_export` proposal pricing approval with `metadata.project_id` set → PDF export throws 423 + button disabled + badge on header.
-3. Approve the instance → `sync_export_locks` fires on next export attempt → export succeeds.
-4. `lockExport` with reason → audit row `export.locked`; `unlockExport` → `export.unlocked`.
-5. Sign in as a `client_viewer` and query `project_export_locks` → 0 rows (RLS + `is_external_viewer` guard).
-6. `bunx tsgo --noEmit` clean.
+### 8. Acceptance checklist (from the spec)
 
-## Out of scope
+- [ ] Invite → accept → membership flips `active`, `user_id` / `accepted_at` stamped.
+- [ ] `exposure.photos=false` → photos absent from RPC output (not just hidden client-side).
+- [ ] Non-member → `portal_access_denied`; direct table selects return zero rows under RLS.
+- [ ] Suspend → immediate lockout, "Access expired or revoked" page renders.
+- [ ] Portal approval decision writes `portal.approval_decided` with `via:'portal'`.
+- [ ] Ticket raise only when `exposure.tickets=true`; audited.
+- [ ] Portal shell has NO internal sidebar; MFA banner visible until enrolled.
 
-- No changes to the approval engine RPCs themselves.
-- No CSV export button badge wiring (project-less exports; guard is a no-op).
-- Full "audit_pack" export type is reserved; nothing consumes it yet.
+### Notes / open assumptions
+
+- Milestones source = `project_phase_gates` (existing schema). If a dedicated `milestones` table lands later, swap inside `portal_get_feed` without touching UI.
+- KPI source = latest `evm_snapshots` row per project; empty state when none.
+- `portal_audit_events` is new; guarded by `to_regclass` so RPCs keep working if a future migration renames it.
+- No email delivery for invites here (existing `create_invite` returns a token; admin UI shows a copy-link the same way current invite flow does).
