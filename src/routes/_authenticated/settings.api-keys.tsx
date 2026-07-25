@@ -476,8 +476,14 @@ function ApiKeysPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {showRaw?.mode === "rotated" ? "Key rotated" : "Key created"} — {showRaw?.name}
+              {showRaw?.mode === "rotated"
+                ? "Key rotated"
+                : showRaw?.mode === "hmac"
+                  ? "HMAC signing secret"
+                  : "Key created"}{" "}
+              — {showRaw?.name}
             </DialogTitle>
+
             <DialogDescription className="text-destructive">
               Store this now — it will never be shown again.
             </DialogDescription>
