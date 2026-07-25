@@ -75,6 +75,7 @@ import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
 import { Route as AuthenticatedProjectsProjectIdPlanningWbsRouteImport } from './routes/_authenticated/projects.$projectId.planning.wbs'
 import { Route as AuthenticatedProjectsProjectIdPlanningScheduleRouteImport } from './routes/_authenticated/projects.$projectId.planning.schedule'
+import { Route as AuthenticatedProjectsProjectIdPlanningRisksRouteImport } from './routes/_authenticated/projects.$projectId.planning.risks'
 import { Route as AuthenticatedProjectsProjectIdEngineeringYieldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.yield'
 import { Route as AuthenticatedProjectsProjectIdEngineeringUploadsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.uploads'
 import { Route as AuthenticatedProjectsProjectIdEngineeringSldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld'
@@ -468,6 +469,12 @@ const AuthenticatedProjectsProjectIdPlanningScheduleRoute =
     path: '/schedule',
     getParentRoute: () => AuthenticatedProjectsProjectIdPlanningRoute,
   } as any)
+const AuthenticatedProjectsProjectIdPlanningRisksRoute =
+  AuthenticatedProjectsProjectIdPlanningRisksRouteImport.update({
+    id: '/risks',
+    path: '/risks',
+    getParentRoute: () => AuthenticatedProjectsProjectIdPlanningRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringYieldRoute =
   AuthenticatedProjectsProjectIdEngineeringYieldRouteImport.update({
     id: '/yield',
@@ -610,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
+  '/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
@@ -678,6 +686,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
+  '/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
@@ -758,6 +767,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
   '/_authenticated/projects/$projectId/engineering/uploads': typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   '/_authenticated/projects/$projectId/engineering/yield': typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
+  '/_authenticated/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/_authenticated/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/_authenticated/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
@@ -837,6 +847,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
     | '/projects/$projectId/engineering/yield'
+    | '/projects/$projectId/planning/risks'
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/engineering/'
@@ -905,6 +916,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/sld'
     | '/projects/$projectId/engineering/uploads'
     | '/projects/$projectId/engineering/yield'
+    | '/projects/$projectId/planning/risks'
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/engineering'
@@ -984,6 +996,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/sld'
     | '/_authenticated/projects/$projectId/engineering/uploads'
     | '/_authenticated/projects/$projectId/engineering/yield'
+    | '/_authenticated/projects/$projectId/planning/risks'
     | '/_authenticated/projects/$projectId/planning/schedule'
     | '/_authenticated/projects/$projectId/planning/wbs'
     | '/_authenticated/projects/$projectId/engineering/'
@@ -1466,6 +1479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdPlanningScheduleRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdPlanningRoute
     }
+    '/_authenticated/projects/$projectId/planning/risks': {
+      id: '/_authenticated/projects/$projectId/planning/risks'
+      path: '/risks'
+      fullPath: '/projects/$projectId/planning/risks'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdPlanningRisksRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdPlanningRoute
+    }
     '/_authenticated/projects/$projectId/engineering/yield': {
       id: '/_authenticated/projects/$projectId/engineering/yield'
       path: '/yield'
@@ -1766,12 +1786,15 @@ const AuthenticatedProjectsProjectIdEngineeringRouteWithChildren =
   )
 
 interface AuthenticatedProjectsProjectIdPlanningRouteChildren {
+  AuthenticatedProjectsProjectIdPlanningRisksRoute: typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   AuthenticatedProjectsProjectIdPlanningScheduleRoute: typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   AuthenticatedProjectsProjectIdPlanningWbsRoute: typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
 }
 
 const AuthenticatedProjectsProjectIdPlanningRouteChildren: AuthenticatedProjectsProjectIdPlanningRouteChildren =
   {
+    AuthenticatedProjectsProjectIdPlanningRisksRoute:
+      AuthenticatedProjectsProjectIdPlanningRisksRoute,
     AuthenticatedProjectsProjectIdPlanningScheduleRoute:
       AuthenticatedProjectsProjectIdPlanningScheduleRoute,
     AuthenticatedProjectsProjectIdPlanningWbsRoute:
@@ -1908,13 +1931,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

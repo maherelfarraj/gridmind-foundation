@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const SUB_TABS = [
   { to: "wbs" as const, label: "WBS" },
   { to: "schedule" as const, label: "Schedule" },
+  { to: "risks" as const, label: "Risks" },
 ];
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning")({
