@@ -1,26 +1,20 @@
-## Current state (verified)
+## Where the sequence stands (verified)
 
-- `src/routes/index.tsx` already contains the new minimal hero exactly as specified: GridMind EPC wordmark, headline "The operating system for renewable EPC", the O&M subline, a single "Sign in" button linking to `/login`, and the three chips. All assessor/landlord/rating/SAP/certificate copy is gone from this file, and its `head()` meta is renewable-EPC wording. This was shipped and published in the previous turn.
-- Two leftovers still carry the wrong domain or break the "nothing else" requirement:
-  1. `src/routes/__root.tsx` lines 110 and 116 — sitewide `description` and `og:description` still read "Energy Performance Certificate management powered by GridMind." This is what link previews and search results show for the homepage's fallback metadata.
-  2. `src/routes/__root.tsx` renders the public `Header` on every non-authenticated path, including `/`. That header shows a second "Sign in" button plus a theme toggle above the hero, so the homepage is not the single-element page requested.
+**① Homepage fix + republish — done.** `src/routes/index.tsx` renders only the dark hero: GridMind EPC wordmark, "The operating system for renewable EPC", the O&M subline, one "Sign in" → `/login`, three chips. The public header is suppressed on `/`, and the sitewide description in `__root.tsx` no longer says "Energy Performance Certificate". A live render check confirmed zero `<header>` elements and exactly one "Sign in" on the page; 585 unit tests passed; the deploy to https://gridmind-sparkle.lovable.app was scheduled.
 
-## Changes
+**② Invite move to Sandbox — done.** A database check just now shows exactly: 18 invites in GSI, all `revoked`; 18 invites in Sandbox, all `pending`. GSI holds no pending demo invites. All Sandbox invites were created through the `create_invite` RPC, not raw SQL.
 
-**1. Fix sitewide metadata (`src/routes/__root.tsx`)**
+**③ Screenshot — the only remaining step.**
 
-Replace both "Energy Performance Certificate management powered by GridMind." strings with renewable-EPC wording, e.g. "Multi-tenant delivery platform for renewable EPC — solar PV, BESS, and substations." Leave title, theme-color, og:type, and twitter:card untouched.
+## Plan for ③
 
-**2. Make `/` header-free**
+1. Capture the new homepage at `/` from the running app at desktop width (1280px viewport), in dark mode as it ships.
+2. Run it through the product-shot generator to frame it in a macOS-style window with rounded corners, drop shadow, and a mesh-gradient background. Use the `midnight` preset so the backdrop matches the dark industrial-EPC palette rather than fighting it.
+3. Save the result to `/mnt/documents/gridmind-homepage.png` and inspect the rendered output before delivering, checking for clipped text, wrong colors, or a blank/misframed capture.
+4. Deliver it in chat as a viewable, downloadable image.
 
-Extend the header-suppression logic so the public `Header` does not render on the exact path `/`. The homepage then shows only the hero. All other public routes (`/login`, `/docs/api`, etc.) keep the header unchanged, and authenticated paths keep their existing `AppShell` behaviour.
+No code, database, or configuration changes in this step.
 
-## Not in scope
+## Note on the warn window
 
-No other route, component, doc, or database change. No new marketing sections.
-
-## Verify and ship
-
-- Load `/` in the preview and confirm: no top header, exactly one "Sign in" button, dark hero, three chips, no wrong-domain wording anywhere on the page.
-- Grep the `src/` tree for "assessor", "landlord", "SAP-style", "Energy Performance Certificate", "rating trend", "certificate management" and confirm zero matches.
-- Run lint and the unit suite to confirm nothing regressed, then republish.
+Day 0 of the 14-day warn window is tracked in `docs/launch-checklist.md` with the flip to block around Aug 8. Nothing in this step changes that; say the word if you want the checklist stamped with the actual Day 0 date as a separate task.
