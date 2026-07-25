@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarIcon, Download, Loader2, RefreshCw } from "lucide-react";
+import { CalendarIcon, Download, Loader2, RefreshCw, Users } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { toast } from "sonner";
 
@@ -27,6 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ScorecardStatusBadge } from "@/components/procurement/scorecard-status-badge";
 import { TrendChip } from "@/components/procurement/trend-chip";
 import { VendorScorecardDrawer } from "@/components/procurement/vendor-scorecard-drawer";
@@ -168,69 +171,67 @@ function ScorecardsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Vendor scorecards</h1>
-          <p className="text-sm text-muted-foreground">
-            OTD, quality, and responsiveness computed from POs, receipts, and expediting.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            onValueChange={(v) => {
-              const preset = PRESETS.find((p) => String(p.days) === v);
-              if (preset) handlePreset(preset.days);
-            }}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Presets" />
-            </SelectTrigger>
-            <SelectContent>
-              {PRESETS.map((p) => (
-                <SelectItem key={p.days} value={String(p.days)}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DateField label="Start" value={periodStart} onChange={setPeriodStart} />
-          <DateField label="End" value={periodEnd} onChange={setPeriodEnd} />
-          <Button variant="outline" onClick={handleExport} disabled={!rows.length}>
-            <Download className="mr-2 h-4 w-4" /> CSV
-          </Button>
-          {canRecompute && (
-            <Button onClick={() => recompute.mutate()} disabled={recompute.isPending}>
-              {recompute.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Recompute
+    <div className="page-shell">
+      <PageHeader
+        title="Vendor scorecards"
+        description="OTD, quality, and responsiveness computed from POs, receipts, and expediting."
+        actions={
+          <>
+            <Select
+              onValueChange={(v) => {
+                const preset = PRESETS.find((p) => String(p.days) === v);
+                if (preset) handlePreset(preset.days);
+              }}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Presets" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESETS.map((p) => (
+                  <SelectItem key={p.days} value={String(p.days)}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DateField label="Start" value={periodStart} onChange={setPeriodStart} />
+            <DateField label="End" value={periodEnd} onChange={setPeriodEnd} />
+            <Button variant="outline" onClick={handleExport} disabled={!rows.length}>
+              <Download className="mr-2 h-4 w-4" /> CSV
             </Button>
-          )}
-        </div>
-      </header>
+            {canRecompute && (
+              <Button onClick={() => recompute.mutate()} disabled={recompute.isPending}>
+                {recompute.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Recompute
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <KpiCard
+      <KpiGrid columns={3}>
+        <KpiTile
           label="Avg on-time delivery"
           value={kpis.avgOtd == null ? "—" : `${kpis.avgOtd}%`}
         />
-        <KpiCard
+        <KpiTile
           label="Avg quality score"
           value={kpis.avgQuality == null ? "—" : `${kpis.avgQuality}`}
         />
-        <KpiCard
+        <KpiTile
           label="Vendors below 80% OTD"
           value={`${kpis.belowThreshold} / ${kpis.totalVendors}`}
-          tone={kpis.belowThreshold > 0 ? "destructive" : "default"}
+          status={kpis.belowThreshold > 0 ? "bad" : "neutral"}
         />
-      </section>
+      </KpiGrid>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Vendors</CardTitle>
+          <CardTitle className="text-sm font-medium">Vendors</CardTitle>
         </CardHeader>
         <CardContent>
           {list.isLoading ? (
@@ -247,10 +248,16 @@ function ScorecardsPage() {
               </Button>
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              No scorecard data — receipts will populate scores automatically.
-              {canRecompute ? " Click Recompute to build the current period." : ""}
-            </p>
+            <EmptyState
+              icon={Users}
+              title="No scorecard data"
+              description={
+                canRecompute
+                  ? "Receipts will populate scores automatically, or click Recompute to build the current period."
+                  : "Receipts will populate scores automatically."
+              }
+              compact
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -314,31 +321,6 @@ function ScorecardsPage() {
   );
 }
 
-function KpiCard({
-  label,
-  value,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  tone?: "default" | "destructive";
-}) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className={cn("text-2xl font-semibold", tone === "destructive" && "text-destructive")}>
-          {value}
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function DateField({
   label,
   value,
@@ -354,7 +336,7 @@ function DateField({
       <PopoverTrigger asChild>
         <Button variant="outline" className="justify-start text-left font-normal">
           <CalendarIcon className="mr-2 h-4 w-4" />
-          <span className="text-xs text-muted-foreground mr-2">{label}</span>
+          <span className="mr-2 text-xs text-muted-foreground">{label}</span>
           {date ? format(date, "PP") : "Pick date"}
         </Button>
       </PopoverTrigger>
@@ -364,7 +346,7 @@ function DateField({
           selected={date}
           onSelect={(d) => d && onChange(isoDay(d))}
           initialFocus
-          className={cn("p-3 pointer-events-auto")}
+          className={cn("pointer-events-auto p-3")}
         />
       </PopoverContent>
     </Popover>

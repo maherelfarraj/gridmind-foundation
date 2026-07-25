@@ -5,6 +5,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SldGallery } from "@/components/engineering/sld-gallery";
 import { SldConfigForm } from "@/components/engineering/sld-config-form";
@@ -41,22 +42,28 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
 function SldPage() {
   const { projectId } = Route.useParams();
   return (
-    <Tabs defaultValue="gallery" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="gallery">Gallery</TabsTrigger>
-        <TabsTrigger value="configuration">Configuration</TabsTrigger>
-      </TabsList>
-      <TabsContent value="gallery">
-        <Suspense fallback={<GallerySkeleton />}>
-          <GalleryTab projectId={projectId} />
-        </Suspense>
-      </TabsContent>
-      <TabsContent value="configuration">
-        <Suspense fallback={<ConfigSkeleton />}>
-          <ConfigTab projectId={projectId} />
-        </Suspense>
-      </TabsContent>
-    </Tabs>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Single-line diagrams"
+        description="Gallery of SLDs and electrical configuration for the project."
+      />
+      <Tabs defaultValue="gallery" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsTrigger value="configuration">Configuration</TabsTrigger>
+        </TabsList>
+        <TabsContent value="gallery">
+          <Suspense fallback={<GallerySkeleton />}>
+            <GalleryTab projectId={projectId} />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="configuration">
+          <Suspense fallback={<ConfigSkeleton />}>
+            <ConfigTab projectId={projectId} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 

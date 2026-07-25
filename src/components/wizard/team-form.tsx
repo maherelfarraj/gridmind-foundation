@@ -94,7 +94,7 @@ export function TeamForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* Project admin */}
-      <Card className="flex flex-col gap-3 border-border bg-card p-6">
+      <Card className="flex flex-col gap-3 p-6">
         <div>
           <Label className="text-sm font-medium text-foreground">
             Project admin <span className="text-destructive">*</span>
@@ -125,7 +125,7 @@ export function TeamForm({
       </Card>
 
       {/* Members */}
-      <Card className="flex flex-col gap-3 border-border bg-card p-6">
+      <Card className="flex flex-col gap-3 p-6">
         <div>
           <Label className="text-sm font-medium text-foreground">Members</Label>
           <p className="text-xs text-muted-foreground">The project admin is added automatically.</p>
@@ -182,7 +182,7 @@ export function TeamForm({
       </Card>
 
       {/* Department leads */}
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         <div>
           <Label className="text-sm font-medium text-foreground">Department leads</Label>
           <p className="text-xs text-muted-foreground">Optional. Leave blank to assign later.</p>

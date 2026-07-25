@@ -39,6 +39,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ExpeditingStatusBadge } from "@/components/procurement/expediting-status-badge";
 import {
   deleteExpediting,
@@ -235,69 +238,70 @@ function ExpeditingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Truck className="h-3.5 w-3.5" /> Procurement · Expediting
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Expediting log</h1>
-          <p className="text-sm text-muted-foreground">
-            Chase deliveries against site-need dates. Long-lead items drive the Stage-3 procurement
-            exit gate.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-          {access.canWrite ? (
-            <Dialog open={importOpen} onOpenChange={setImportOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add from PO
-                </Button>
-              </DialogTrigger>
-              <ImportFromPoDialog
-                openPosFn={openPosFn}
-                onImport={(poId, longLeadLineNos) =>
-                  importMutation.mutate({ poId, longLeadLineNos })
-                }
-                submitting={importMutation.isPending}
-              />
-            </Dialog>
-          ) : null}
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Expediting log"
+        description="Chase deliveries against site-need dates and the Stage-3 exit gate."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+            {access.canWrite ? (
+              <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add from PO
+                  </Button>
+                </DialogTrigger>
+                <ImportFromPoDialog
+                  openPosFn={openPosFn}
+                  onImport={(poId, longLeadLineNos) =>
+                    importMutation.mutate({ poId, longLeadLineNos })
+                  }
+                  submitting={importMutation.isPending}
+                />
+              </Dialog>
+            ) : null}
+          </>
+        }
+      />
 
       <TooltipProvider>
-        <div className="grid gap-4 md:grid-cols-3">
-          <KpiCard label="Open items" value={String(openCount)} hint="Not yet delivered" />
-          <KpiCard
+        <KpiGrid columns={3}>
+          <KpiTile label="Open items" value={String(openCount)} hint="Not yet delivered" />
+          <KpiTile
             label="Delayed"
             value={String(delayedCount)}
             hint="ETA past site-need date"
-            tone={delayedCount > 0 ? "destructive" : "muted"}
+            status={delayedCount > 0 ? "bad" : "neutral"}
           />
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
-                <KpiCard
+                <KpiTile
                   label="Long-lead ready"
                   value={
                     kpi.total === 0 ? "—" : `${kpi.ready}/${kpi.total} · ${kpi.pct.toFixed(0)}%`
                   }
                   hint="Delivered or ETA confirmed"
-                  tone={kpi.total === 0 ? "muted" : kpi.band}
-                  progress={kpi.total === 0 ? null : kpi.pct}
+                  status={
+                    kpi.total === 0
+                      ? "neutral"
+                      : kpi.band === "green"
+                        ? "good"
+                        : kpi.band === "amber"
+                          ? "warning"
+                          : "bad"
+                  }
                 />
               </div>
             </TooltipTrigger>
             <TooltipContent>Procure → Plan exit gate (≥95%)</TooltipContent>
           </Tooltip>
-        </div>
+        </KpiGrid>
       </TooltipProvider>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -324,9 +328,11 @@ function ExpeditingPage() {
       </div>
 
       {grouped.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No items being expedited — import lines from an approved PO to begin.
-        </div>
+        <EmptyState
+          icon={Truck}
+          title="No items being expedited"
+          description="Import lines from an approved PO to begin."
+        />
       ) : (
         <div className="space-y-6">
           {grouped.map(([projectId, group]) => (

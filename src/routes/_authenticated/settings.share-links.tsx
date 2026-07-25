@@ -26,7 +26,9 @@ import { listAdminProjects } from "@/lib/portal.functions";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -115,20 +117,12 @@ function ShareLinksPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Share links
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Tokenized, expiring, revocable read-only views for investors and lenders. The URL is shown
-          once at creation — save it before closing the dialog.
-        </p>
-      </header>
-
-      <div className="flex items-center justify-end">
-        <CreateLinkDialog />
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Share links"
+        description="Tokenized, expiring, revocable read-only views for investors and lenders."
+        actions={<CreateLinkDialog />}
+      />
 
       {listQuery.isLoading ? (
         <div className="space-y-2">
@@ -137,26 +131,21 @@ function ShareLinksPage() {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : listQuery.error ? (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-6 text-sm text-destructive">
-          <ShieldAlert className="mb-2 h-5 w-5" />
-          Could not load share links.{" "}
-          <Button
-            variant="link"
-            size="sm"
-            className="h-auto p-0 text-destructive underline"
-            onClick={() => listQuery.refetch()}
-          >
-            Retry
-          </Button>
-        </div>
+        <EmptyState
+          icon={ShieldAlert}
+          title="Could not load share links"
+          action={
+            <Button variant="outline" size="sm" onClick={() => listQuery.refetch()}>
+              Retry
+            </Button>
+          }
+        />
       ) : (listQuery.data ?? []).length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-10 text-center">
-          <LinkIcon className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">No share links yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create your first investor or lender view above.
-          </p>
-        </div>
+        <EmptyState
+          icon={LinkIcon}
+          title="No share links yet"
+          description="Create your first investor or lender view above."
+        />
       ) : (
         <LinksTable rows={listQuery.data ?? []} />
       )}
@@ -363,7 +352,7 @@ function CreateLinkDialog() {
         <LinkIcon className="mr-2 h-4 w-4" />
         Create link
       </Button>
-      <DialogContent className="max-w-lg">
+      <DialogContent>
         {createdUrl ? (
           <>
             <DialogHeader>

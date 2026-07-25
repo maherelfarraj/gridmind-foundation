@@ -3,11 +3,13 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Search } from "lucide-react";
+import { Download, Inbox, Search, ShieldAlert } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,13 +54,17 @@ export const Route = createFileRoute("/_authenticated/om/service-tickets")({
   }),
   component: ServiceTicketsPage,
   errorComponent: ({ error, reset }) => (
-    <div className="p-6">
-      <div className="text-sm text-destructive">
-        Failed to load service tickets: {error.message}
-      </div>
-      <Button className="mt-2" size="sm" onClick={reset}>
-        Retry
-      </Button>
+    <div className="page-shell">
+      <EmptyState
+        icon={ShieldAlert}
+        title="Failed to load service tickets"
+        description={error.message}
+        action={
+          <Button size="sm" onClick={reset}>
+            Retry
+          </Button>
+        }
+      />
     </div>
   ),
 });
@@ -190,16 +196,12 @@ function ServiceTicketsPage() {
   const breaches = (breachesQ.data ?? []) as BreachLogRow[];
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">Service tickets</h1>
-          <p className="text-sm text-muted-foreground">
-            SLA timers, breach log, and O&amp;M credit tracking.
-          </p>
-        </div>
-        <ServiceTicketDialog />
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Service tickets"
+        description="SLA timers, breach log, and O&amp;M credit tracking."
+        actions={<ServiceTicketDialog />}
+      />
 
       <Tabs defaultValue="tickets">
         <TabsList>
@@ -288,12 +290,11 @@ function ServiceTicketsPage() {
                   ))}
                 </div>
               ) : rows.length === 0 ? (
-                <div className="rounded-md border border-dashed border-border p-8 text-center">
-                  <div className="text-sm font-medium">No service tickets</div>
-                  <div className="text-xs text-muted-foreground">
-                    Open a ticket to start the SLA clock.
-                  </div>
-                </div>
+                <EmptyState
+                  icon={Inbox}
+                  title="No service tickets"
+                  description="Open a ticket to start the SLA clock."
+                />
               ) : (
                 <Table>
                   <TableHeader>
@@ -369,12 +370,11 @@ function ServiceTicketsPage() {
                   ))}
                 </div>
               ) : breaches.length === 0 ? (
-                <div className="rounded-md border border-dashed border-border p-8 text-center">
-                  <div className="text-sm font-medium">No SLA breaches</div>
-                  <div className="text-xs text-muted-foreground">
-                    Timers are green across the fleet.
-                  </div>
-                </div>
+                <EmptyState
+                  icon={Inbox}
+                  title="No SLA breaches"
+                  description="Timers are green across the fleet."
+                />
               ) : (
                 <Table>
                   <TableHeader>

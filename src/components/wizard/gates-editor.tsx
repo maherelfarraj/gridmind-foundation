@@ -71,10 +71,7 @@ export function GatesEditor({ value, onChange }: Props) {
             ) : (
               <div className="flex flex-col gap-2">
                 {rows.map(({ g, idx }, posInPhase) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 rounded-md border border-border bg-card p-2"
-                  >
+                  <div key={idx} className="flex items-center gap-2 rounded-md border p-2">
                     <div className="flex flex-col">
                       <Button
                         type="button"

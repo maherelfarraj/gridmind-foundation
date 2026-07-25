@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, ShieldCheck } from "lucide-react";
+import { Download, FileClock, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -67,8 +68,13 @@ export function RevisionTimeline({ drawingId, projectId, revisions, currentRevis
 
   if (revisions.length === 0) {
     return (
-      <Card className="p-6 text-sm text-muted-foreground">
-        No revisions yet. Upload one to begin the review workflow.
+      <Card className="p-6">
+        <EmptyState
+          icon={FileClock}
+          title="No revisions yet"
+          description="Upload one to begin the review workflow."
+          compact
+        />
       </Card>
     );
   }
@@ -105,7 +111,7 @@ function RevisionRow({
   const download = useDownloadRevision();
   const who = rev.issued_by_profile ?? rev.created_by_profile;
   return (
-    <Card className="flex flex-col gap-3 border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm font-semibold text-foreground">

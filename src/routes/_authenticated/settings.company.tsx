@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Form,
   FormControl,
@@ -99,7 +100,7 @@ function SettingsCompanyPage() {
 
   if (settingsQuery.isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <div className="page-shell max-w-3xl">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-80 w-full" />
@@ -109,7 +110,7 @@ function SettingsCompanyPage() {
 
   if (settingsQuery.isError || !settingsQuery.data) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="page-shell max-w-3xl">
         <Card className="border-destructive/40">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -131,17 +132,15 @@ function SettingsCompanyPage() {
   const { company, branding, logoSignedUrl } = settingsQuery.data;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Company settings
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {isAdmin
+    <div className="page-shell max-w-3xl">
+      <PageHeader
+        title="Company settings"
+        description={
+          isAdmin
             ? "Edit your company profile and branding. All members can view; only company admins can save changes."
-            : "View-only. Only company admins can edit these settings."}
-        </p>
-      </div>
+            : "View-only. Only company admins can edit these settings."
+        }
+      />
 
       <CompanyDetailsCard company={company} isAdmin={isAdmin} onSaved={invalidate} />
 

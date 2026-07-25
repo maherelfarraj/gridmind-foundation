@@ -5,10 +5,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { differenceInCalendarDays, format } from "date-fns";
+import { Inbox } from "lucide-react";
 import { z } from "zod";
 
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -77,16 +80,13 @@ function RfisPage() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">RFIs</h1>
-          <p className="text-sm text-muted-foreground">
-            Requests for Information — track questions, answers, and turnaround.
-          </p>
-        </div>
-        <RaiseRfiDialog projectId={projectId} />
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="RFIs"
+        description="Requests for Information — track questions, answers, and turnaround."
+        actions={<RaiseRfiDialog projectId={projectId} />}
+      />
 
       <Suspense fallback={<Skeleton className="h-56 w-full" />}>
         <KpiSection projectId={projectId} />
@@ -260,10 +260,12 @@ function RfiTableSection({
 
   if (rows.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          No RFIs raised yet. Use “Raise RFI” to create one.
-        </p>
+      <Card className="p-8">
+        <EmptyState
+          icon={Inbox}
+          title="No RFIs raised yet"
+          description="Use “Raise RFI” to create one."
+        />
       </Card>
     );
   }

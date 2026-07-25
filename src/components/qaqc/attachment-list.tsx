@@ -3,6 +3,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { signInspectionAttachment } from "@/lib/qaqc.functions";
 import { errorMessage } from "@/lib/qaqc-query";
 import type { QaqcAttachment } from "@/lib/qaqc.rules";
@@ -30,11 +31,7 @@ export function AttachmentList({
     }
   };
   if (attachments.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-        No attachments.
-      </div>
-    );
+    return <EmptyState icon={FileText} title="No attachments" compact />;
   }
   return (
     <ul className="flex flex-col gap-2">

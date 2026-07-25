@@ -11,57 +11,32 @@ import {
 } from "recharts";
 
 import { Card } from "@/components/ui/card";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import type { RfiKpiResult } from "@/lib/rfi.functions";
-
-function Tile({
-  label,
-  value,
-  hint,
-  tone,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  tone?: "default" | "danger" | "success";
-}) {
-  const toneClass =
-    tone === "danger"
-      ? "text-destructive"
-      : tone === "success"
-        ? "text-primary"
-        : "text-foreground";
-  return (
-    <div className="rounded border border-border bg-card p-3">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={`mt-1 text-2xl font-semibold ${toneClass}`}>{value}</p>
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-    </div>
-  );
-}
 
 export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
   const avg = kpis.turnaround_days_avg == null ? "—" : `${kpis.turnaround_days_avg} d`;
   const pct = kpis.pct_on_time == null ? "—" : `${kpis.pct_on_time}%`;
   return (
-    <Card className="p-4">
+    <Card className="p-6">
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-sm font-medium">RFI performance</h2>
         <span className="text-xs text-muted-foreground">Last 90 days</span>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile label="Turnaround" value={avg} hint={`${kpis.answered_count} answered`} />
-        <Tile label="Open" value={String(kpis.open_count)} hint={`${kpis.total_count} total`} />
-        <Tile
+      <KpiGrid label="RFI KPIs">
+        <KpiTile label="Turnaround" value={avg} hint={`${kpis.answered_count} answered`} />
+        <KpiTile label="Open" value={kpis.open_count} hint={`${kpis.total_count} total`} />
+        <KpiTile
           label="Overdue"
-          value={String(kpis.overdue_count)}
-          tone={kpis.overdue_count > 0 ? "danger" : "default"}
+          value={kpis.overdue_count}
+          status={kpis.overdue_count > 0 ? "bad" : "neutral"}
         />
-        <Tile
+        <KpiTile
           label="On-time"
           value={pct}
-          tone={kpis.pct_on_time != null && kpis.pct_on_time >= 80 ? "success" : "default"}
+          status={kpis.pct_on_time != null && kpis.pct_on_time >= 80 ? "good" : "neutral"}
         />
-      </div>
+      </KpiGrid>
       <div className="mt-4 h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={kpis.by_month}>

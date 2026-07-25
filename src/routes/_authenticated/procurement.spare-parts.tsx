@@ -37,6 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   adjustStock,
@@ -225,45 +228,40 @@ function SparePartsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Package className="h-3.5 w-3.5" /> Procurement · Spare parts
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Spare parts catalog</h1>
-          <p className="text-sm text-muted-foreground">
-            Track on-hand quantities, reorder points, and preferred vendors for O&amp;M consumables.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-          {access.canWrite ? (
-            <Button size="sm" onClick={() => setEditingPart("new")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add part
+    <div className="page-shell">
+      <PageHeader
+        title="Spare parts catalog"
+        description="Track on-hand quantities, reorder points, and preferred vendors for O&M consumables."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
             </Button>
-          ) : null}
-        </div>
-      </header>
+            {access.canWrite ? (
+              <Button size="sm" onClick={() => setEditingPart("new")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add part
+              </Button>
+            ) : null}
+          </>
+        }
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Kpi label="Parts tracked" value={String(rows.length)} hint="In catalog" />
-        <Kpi
+      <KpiGrid columns={3}>
+        <KpiTile label="Parts tracked" value={String(rows.length)} hint="In catalog" />
+        <KpiTile
           label="Below reorder point"
           value={`${lowStockCount} part${lowStockCount === 1 ? "" : "s"}`}
           hint="Time to restock"
-          tone={lowStockCount > 0 ? "destructive" : "muted"}
+          status={lowStockCount > 0 ? "bad" : "neutral"}
         />
-        <Kpi
+        <KpiTile
           label="On-hand value"
           value={totalValue === 0 ? "—" : fmtMoney(totalValue, rows[0]?.currency_code ?? "USD")}
           hint="Qty × unit cost"
         />
-      </div>
+      </KpiGrid>
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -288,103 +286,98 @@ function SparePartsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No spare parts found — add your first part to seed the catalog.
-        </div>
+        <EmptyState
+          icon={Package}
+          title="No spare parts found"
+          description="Add your first part to seed the catalog."
+        />
       ) : (
-        <div className="rounded-md border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Part #</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>On hand</TableHead>
-                <TableHead>Reorder</TableHead>
-                <TableHead>Safety</TableHead>
-                <TableHead>Lead time</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Unit cost</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => {
-                const low = isLowStock(r.qty_on_hand, r.reorder_point);
-                return (
-                  <TableRow key={r.id} className={low ? "bg-destructive/5" : undefined}>
-                    <TableCell className="font-mono text-xs">{r.part_number}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{r.name}</div>
-                      {r.compatible_equipment ? (
-                        <div className="text-xs text-muted-foreground">
-                          {r.compatible_equipment}
-                        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Part #</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Vendor</TableHead>
+              <TableHead>On hand</TableHead>
+              <TableHead>Reorder</TableHead>
+              <TableHead>Safety</TableHead>
+              <TableHead>Lead time</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Unit cost</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => {
+              const low = isLowStock(r.qty_on_hand, r.reorder_point);
+              return (
+                <TableRow key={r.id} className={low ? "bg-destructive/5" : undefined}>
+                  <TableCell className="font-mono text-xs">{r.part_number}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{r.name}</div>
+                    {r.compatible_equipment ? (
+                      <div className="text-xs text-muted-foreground">{r.compatible_equipment}</div>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="text-xs">{MATERIAL_CATEGORY_LABELS[r.category]}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.preferred_vendor_name ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{r.qty_on_hand}</span>
+                      <span className="text-xs text-muted-foreground">{r.uom}</span>
+                      {low ? (
+                        <Badge variant="destructive" className="text-[10px]">
+                          Low
+                        </Badge>
                       ) : null}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {MATERIAL_CATEGORY_LABELS[r.category]}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.preferred_vendor_name ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{r.qty_on_hand}</span>
-                        <span className="text-xs text-muted-foreground">{r.uom}</span>
-                        {low ? (
-                          <Badge variant="destructive" className="text-[10px]">
-                            Low
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>{r.reorder_point}</TableCell>
-                    <TableCell>{r.safety_stock}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.lead_time_days == null ? "—" : `${r.lead_time_days}d`}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {r.location ?? "—"}
-                    </TableCell>
-                    <TableCell>{fmtMoney(r.unit_cost, r.currency_code)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {access.canWrite ? (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => setAdjustingPart(r)}>
-                              Adjust
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label="Edit"
-                              onClick={() => setEditingPart(r)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label="Delete"
-                              onClick={() => {
-                                if (confirm(`Remove ${r.part_number}?`))
-                                  deleteMutation.mutate(r.id);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{r.reorder_point}</TableCell>
+                  <TableCell>{r.safety_stock}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.lead_time_days == null ? "—" : `${r.lead_time_days}d`}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {r.location ?? "—"}
+                  </TableCell>
+                  <TableCell>{fmtMoney(r.unit_cost, r.currency_code)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      {access.canWrite ? (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => setAdjustingPart(r)}>
+                            Adjust
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Edit"
+                            onClick={() => setEditingPart(r)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Delete"
+                            onClick={() => {
+                              if (confirm(`Remove ${r.part_number}?`)) deleteMutation.mutate(r.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
 
       <Dialog open={editingPart != null} onOpenChange={(o) => !o && setEditingPart(null)}>
@@ -407,27 +400,6 @@ function SparePartsPage() {
           />
         ) : null}
       </Dialog>
-    </div>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  hint,
-  tone = "muted",
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  tone?: "muted" | "destructive";
-}) {
-  const valueClass = tone === "destructive" ? "text-destructive" : "text-foreground";
-  return (
-    <div className="rounded-md border border-border p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>{value}</div>
-      <div className="text-xs text-muted-foreground">{hint}</div>
     </div>
   );
 }

@@ -95,15 +95,13 @@ function GatesTab() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="flex flex-col gap-4">
         {gates.length === 0 ? (
-          <Card className="border-border bg-card p-6 text-sm text-muted-foreground">
-            No gates configured.
-          </Card>
+          <Card className="p-6 text-sm text-muted-foreground">No gates configured.</Card>
         ) : (
           gates.map((g) => <GateCard key={g.id} gate={g} projectId={projectId} canEdit={canEdit} />)
         )}
       </div>
 
-      <Card className="border-border bg-card p-5 lg:sticky lg:top-4 lg:h-fit">
+      <Card className="p-5 lg:sticky lg:top-4 lg:h-fit">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Gate history
         </h2>
@@ -251,7 +249,7 @@ function GateCard({
   const itemsDisabled = !canEdit || (gate.status !== "open" && gate.status !== "in_review");
 
   return (
-    <Card className="border-border bg-card p-5">
+    <Card className="p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-base font-semibold text-foreground">{gate.name}</h3>

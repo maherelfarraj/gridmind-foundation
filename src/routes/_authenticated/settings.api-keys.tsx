@@ -57,6 +57,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -220,28 +222,25 @@ function ApiKeysPage() {
     query.error instanceof Error && /forbidden|401|unauth/i.test(query.error.message);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">API keys</h1>
-          <p className="text-sm text-muted-foreground">
-            Create and manage keys for SCADA ingestion and external integrations. Keys are shown
-            once — store them in a secret manager.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href="/docs/api" target="_blank" rel="noreferrer">
-              <BookOpen className="mr-1.5 h-4 w-4" />
-              API docs
-            </a>
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New key
-          </Button>
-        </div>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="API keys"
+        description="Create and manage keys for SCADA ingestion and external integrations."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <a href="/docs/api" target="_blank" rel="noreferrer">
+                <BookOpen className="mr-1.5 h-4 w-4" />
+                API docs
+              </a>
+            </Button>
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              New key
+            </Button>
+          </>
+        }
+      />
 
       {isForbidden ? (
         <Card>
@@ -281,18 +280,18 @@ function ApiKeysPage() {
         </Card>
       ) : query.data && query.data.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
-            <KeyRound className="h-10 w-10 text-muted-foreground" />
-            <div>
-              <p className="font-medium">No API keys yet</p>
-              <p className="text-sm text-muted-foreground">
-                Create one to integrate SCADA or external systems.
-              </p>
-            </div>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              New key
-            </Button>
+          <CardContent>
+            <EmptyState
+              icon={KeyRound}
+              title="No API keys yet"
+              description="Create one to integrate SCADA or external systems."
+              action={
+                <Button onClick={() => setCreateOpen(true)}>
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  New key
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       ) : (

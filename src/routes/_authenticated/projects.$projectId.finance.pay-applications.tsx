@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Plus } from "lucide-react";
+import { Download, Inbox, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -101,45 +103,45 @@ function PayAppsPage() {
 
   const rows = list.data.rows;
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Pay applications</h1>
-          <p className="text-sm text-muted-foreground">
-            Certified progress against signed contracts. All actions write to the audit log.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const csv = toPayAppCsv(rows);
-              const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `pay-applications-${projectId}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            disabled={rows.length === 0}
-          >
-            <Download className="mr-2 size-4" /> Export CSV
-          </Button>
-          {access.data.canCertify ? (
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 size-4" /> New pay app
+    <div className="space-y-6">
+      <PageHeader
+        title="Pay applications"
+        description="Certified progress against signed contracts."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const csv = toPayAppCsv(rows);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `pay-applications-${projectId}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              disabled={rows.length === 0}
+            >
+              <Download className="mr-2 size-4" /> Export CSV
             </Button>
-          ) : null}
-        </div>
-      </div>
+            {access.data.canCertify ? (
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <Plus className="mr-2 size-4" /> New pay app
+              </Button>
+            ) : null}
+          </div>
+        }
+      />
 
       <Card className="overflow-hidden">
         {rows.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No pay applications yet. Create one against a signed contract to get started.
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="No pay applications yet"
+            description="Create one against a signed contract to get started."
+          />
         ) : (
           <Table>
             <TableHeader>

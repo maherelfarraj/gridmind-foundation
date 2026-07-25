@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import { dprListQueryOptions, dprProjectsQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { ExportWeeklyReportButton } from "@/components/field/ExportWeeklyReportButton";
 import { format, startOfISOWeek, subWeeks } from "date-fns";
@@ -61,31 +63,23 @@ function DprListPage() {
   const rows = listQuery.data ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <ClipboardList size={14} aria-hidden /> Field
-          </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Daily reports
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Capture manpower, weather, installed quantities and site photos — fast, one-handed, in
-            the field.
-          </p>
-        </div>
-        <ExportWeeklyReportButton
-          projectId={projectId || null}
-          weekStart={format(startOfISOWeek(subWeeks(new Date(), 1)), "yyyy-MM-dd")}
-          variant="outline"
-          size="sm"
-        />
-      </header>
+    <div className="page-shell pb-24">
+      <PageHeader
+        title="Daily reports"
+        description="Capture manpower, weather, quantities and photos — fast, one-handed, in the field."
+        actions={
+          <ExportWeeklyReportButton
+            projectId={projectId || null}
+            weekStart={format(startOfISOWeek(subWeeks(new Date(), 1)), "yyyy-MM-dd")}
+            variant="outline"
+            size="sm"
+          />
+        }
+      />
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Filters</CardTitle>
+          <CardTitle className="text-sm font-medium">Filters</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1.5">
@@ -155,12 +149,11 @@ function DprListPage() {
           </Button>
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border bg-muted/30 p-8 text-center">
-          <ClipboardList className="mx-auto mb-3 h-8 w-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">
-            No daily reports yet — tap <b>New Report</b>.
-          </p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title="No daily reports yet"
+          description={'Tap "New Report" to capture your first daily progress report.'}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((r) => (
@@ -174,8 +167,10 @@ function DprListPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CalendarClock className="h-3.5 w-3.5" aria-hidden />
-                      {r.report_date} · {r.shift}
+                      <CalendarClock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="truncate">
+                        {r.report_date} · {r.shift}
+                      </span>
                     </div>
                     <div className="mt-0.5 truncate text-sm font-medium text-foreground">
                       {r.project_name ?? r.project_id}

@@ -38,7 +38,7 @@ export function CompetitorIntelCard({ opportunity: opp, readOnly }: Props) {
   };
 
   return (
-    <Card className="flex flex-col gap-3 border-border bg-card p-5">
+    <Card className="flex flex-col gap-3 p-5">
       <header>
         <h2 className="font-display text-sm font-semibold text-foreground">Competitor & intel</h2>
         <p className="text-xs text-muted-foreground">Track who else is bidding and what you know</p>

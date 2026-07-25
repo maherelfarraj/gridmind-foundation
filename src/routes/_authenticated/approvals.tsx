@@ -34,6 +34,8 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/_authenticated/approvals")({
   head: () => ({
@@ -169,16 +171,16 @@ function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void 
   const rows = query.data ?? [];
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/20 p-12 text-center">
-        <InboxIcon className="h-8 w-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {tab === "pending"
-            ? "You're all caught up 🎉"
+      <EmptyState
+        icon={InboxIcon}
+        title={
+          tab === "pending"
+            ? "You're all caught up"
             : tab === "decided"
-              ? "You haven't decided any approvals yet."
-              : "No approvals in the queue."}
-        </p>
-      </div>
+              ? "You haven't decided any approvals yet"
+              : "No approvals in the queue"
+        }
+      />
     );
   }
   return (
@@ -485,13 +487,11 @@ function ApprovalsPage() {
   const [openInstance, setOpenInstance] = useState<string | null>(null);
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-6 p-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Approvals</h1>
-        <p className="text-sm text-muted-foreground">
-          Your queue of pending decisions, SLA-timed and fully audited.
-        </p>
-      </header>
+    <div className="page-shell max-w-5xl">
+      <PageHeader
+        title="Approvals"
+        description="Your queue of pending decisions, SLA-timed and fully audited."
+      />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
         <TabsList>

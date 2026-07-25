@@ -20,6 +20,9 @@ import { AlertTriangle, RefreshCw, Radio, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -94,52 +97,50 @@ function ScadaDashboardPage() {
   );
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">SCADA dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Fleet-wide live telemetry — auto-refreshes every 30&nbsp;seconds.
-          </p>
-        </div>
-        <div className="flex items-end gap-3">
-          <div className="w-64">
-            <label className="mb-1 block text-xs text-muted-foreground">Plant</label>
-            <Select
-              value={projectId ?? "all"}
-              onValueChange={(v) =>
-                navigate({
-                  search: { projectId: v === "all" ? undefined : v },
-                  replace: true,
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All operating plants" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All operating plants</SelectItem>
-                {(plantsQuery.data?.projects ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="page-shell">
+      <PageHeader
+        title="SCADA dashboard"
+        description="Fleet-wide live telemetry — auto-refreshes every 30 seconds."
+        actions={
+          <div className="flex items-end gap-3">
+            <div className="w-64">
+              <label className="mb-1 block text-xs text-muted-foreground">Plant</label>
+              <Select
+                value={projectId ?? "all"}
+                onValueChange={(v) =>
+                  navigate({
+                    search: { projectId: v === "all" ? undefined : v },
+                    replace: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All operating plants" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All operating plants</SelectItem>
+                  {(plantsQuery.data?.projects ?? []).map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="pb-1 text-right text-xs text-muted-foreground">
+              <div>Last updated {lastUpdatedLabel}</div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="mt-1 h-7 px-2"
+                onClick={() => query.refetch()}
+              >
+                <RefreshCw className="mr-1 h-3 w-3" /> Refresh
+              </Button>
+            </div>
           </div>
-          <div className="pb-1 text-right text-xs text-muted-foreground">
-            <div>Last updated {lastUpdatedLabel}</div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-1 h-7 px-2"
-              onClick={() => query.refetch()}
-            >
-              <RefreshCw className="mr-1 h-3 w-3" /> Refresh
-            </Button>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       {query.isLoading && <DashboardSkeleton />}
 
@@ -178,17 +179,16 @@ function DashboardBody({ data }: { data: DashboardPayload }) {
   const noAssets = data.plants.length === 0;
   if (noAssets) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-          <Radio className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            No telemetry yet — configure a connector in SCADA settings.
-          </p>
+      <EmptyState
+        icon={Radio}
+        title="No telemetry yet"
+        description="Configure a connector in SCADA settings to start seeing live data."
+        action={
           <Button asChild size="sm">
             <Link to="/om/scada/connectors">Go to SCADA connectors</Link>
           </Button>
-        </CardContent>
-      </Card>
+        }
+      />
     );
   }
   return (
@@ -203,78 +203,42 @@ function DashboardBody({ data }: { data: DashboardPayload }) {
 function KpiTiles({ data }: { data: DashboardPayload }) {
   const { tiles } = data;
   return (
-    <div className="grid gap-4 md:grid-cols-4">
-      <Tile
-        label="Fleet power now"
-        value={formatNumber(tiles.fleetPowerKw)}
-        unit="kW"
-        icon={<Zap className="h-4 w-4 text-primary" />}
-      />
-      <Tile label="Energy today" value={formatNumber(tiles.energyTodayKwh)} unit="kWh" />
-      <Tile
-        label="Availability (30d)"
-        value={tiles.availabilityPct != null ? `${tiles.availabilityPct}%` : "—"}
-        hint={
-          tiles.availabilityPct == null
-            ? "Populates after alarm rules (P-105) & work orders (P-106)"
-            : undefined
-        }
-      />
-      <Tile
-        label="Performance ratio"
-        value={
-          tiles.performanceRatioPct != null ? `${tiles.performanceRatioPct}%` : "insufficient data"
-        }
-        hint={!data.weatherAvailable ? "Add a weather station stream to compute PR" : undefined}
-        muted={tiles.performanceRatioPct == null}
-      />
+    <>
+      <KpiGrid>
+        <KpiTile
+          label="Fleet power now"
+          value={`${formatNumber(tiles.fleetPowerKw)} kW`}
+          icon={Zap}
+        />
+        <KpiTile label="Energy today" value={`${formatNumber(tiles.energyTodayKwh)} kWh`} />
+        <KpiTile
+          label="Availability (30d)"
+          value={tiles.availabilityPct != null ? `${tiles.availabilityPct}%` : "—"}
+          hint={
+            tiles.availabilityPct == null
+              ? "Populates after alarm rules (P-105) & work orders (P-106)"
+              : undefined
+          }
+        />
+        <KpiTile
+          label="Performance ratio"
+          value={
+            tiles.performanceRatioPct != null
+              ? `${tiles.performanceRatioPct}%`
+              : "insufficient data"
+          }
+          hint={!data.weatherAvailable ? "Add a weather station stream to compute PR" : undefined}
+          status={tiles.performanceRatioPct == null ? "neutral" : "good"}
+        />
+      </KpiGrid>
       {tiles.activeAlarms && (
-        <div className="md:col-span-4">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Active alarms:</span>
-            <Badge variant="destructive">{tiles.activeAlarms.critical} critical</Badge>
-            <Badge variant="secondary">{tiles.activeAlarms.major} major</Badge>
-          </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Active alarms:</span>
+          <Badge variant="destructive">{tiles.activeAlarms.critical} critical</Badge>
+          <Badge variant="secondary">{tiles.activeAlarms.major} major</Badge>
         </div>
       )}
-    </div>
-  );
-}
-
-function Tile({
-  label,
-  value,
-  unit,
-  hint,
-  muted,
-  icon,
-}: {
-  label: string;
-  value: string;
-  unit?: string;
-  hint?: string;
-  muted?: boolean;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-normal text-muted-foreground">{label}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div
-          className={cn(
-            "font-display text-3xl font-bold tabular-nums",
-            muted && "text-muted-foreground text-xl font-medium",
-          )}
-        >
-          {value}
-          {unit && <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>}
-        </div>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
+    </>
   );
 }
 
@@ -296,9 +260,7 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="py-10 text-center text-sm text-muted-foreground">
-            No telemetry in the last 24 hours yet.
-          </div>
+          <EmptyState title="No telemetry in the last 24 hours yet." compact />
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">

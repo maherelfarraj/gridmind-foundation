@@ -106,14 +106,14 @@ function PunchDetailPage() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Skeleton className="h-64" />
       </div>
     );
   }
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <div className="mx-auto w-full max-w-3xl p-6">
+      <div className="page-shell">
         <Alert variant="destructive">
           <AlertTitle>Could not load punch item</AlertTitle>
           <AlertDescription>{errorMessage(detailQuery.error) || "Not found"}</AlertDescription>
@@ -132,7 +132,7 @@ function PunchDetailPage() {
     signoffName.trim().toLowerCase() === signoffName.trim().replace(/\s+/g, " ").toLowerCase();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 md:p-8">
+    <div className="page-shell">
       <header className="flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/qaqc/punch">
@@ -239,7 +239,7 @@ function PunchDetailPage() {
       {item.signoff_at ? (
         <Card>
           <CardContent className="flex flex-col gap-1 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <div className="flex items-center gap-2 text-sm font-medium text-success">
               <Check className="h-4 w-4" /> Closed
             </div>
             <div className="text-sm text-foreground">

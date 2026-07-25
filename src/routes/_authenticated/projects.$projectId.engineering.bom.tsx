@@ -3,9 +3,11 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { PackageSearch } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   getBomSnapshot,
   getMyBomRoles,
@@ -100,7 +102,7 @@ function BomWorkspace({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <BomHeader
         snapshots={snapshots}
         selectedId={selectedId}
@@ -116,11 +118,23 @@ function BomWorkspace({ projectId }: { projectId: string }) {
       />
 
       {snapshots.length === 0 ? (
-        <EmptyState
-          canWrite={roles.canWrite}
-          generating={generate.isPending}
-          onGenerate={() => generate.mutate()}
-        />
+        <Card>
+          <CardContent className="py-12">
+            <EmptyState
+              icon={PackageSearch}
+              title="No BOM yet"
+              description="Generate a preliminary BOM from the archetype configuration."
+              action={
+                <Button
+                  onClick={() => generate.mutate()}
+                  disabled={!roles.canWrite || generate.isPending}
+                >
+                  {generate.isPending ? "Generating…" : "Generate BOM"}
+                </Button>
+              }
+            />
+          </CardContent>
+        </Card>
       ) : detail ? (
         <BomTable
           snapshotId={detail.snapshot.id}
@@ -132,29 +146,6 @@ function BomWorkspace({ projectId }: { projectId: string }) {
         <Skeleton />
       )}
     </div>
-  );
-}
-
-function EmptyState({
-  canWrite,
-  generating,
-  onGenerate,
-}: {
-  canWrite: boolean;
-  generating: boolean;
-  onGenerate: () => void;
-}) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-        <p className="text-sm text-muted-foreground">
-          No BOM yet — generate from archetype config.
-        </p>
-        <Button onClick={onGenerate} disabled={!canWrite || generating}>
-          {generating ? "Generating…" : "Generate BOM"}
-        </Button>
-      </CardContent>
-    </Card>
   );
 }
 

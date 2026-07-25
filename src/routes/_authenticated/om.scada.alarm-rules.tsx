@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -143,23 +145,20 @@ function AlarmRulesPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Alarm rules</h1>
-          <p className="text-sm text-muted-foreground">
-            Threshold, dead-band, duration, and escalation. Escalation delivery lands in a later
-            batch.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" /> New rule
-        </Button>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Alarm rules"
+        description="Threshold, dead-band, duration, and escalation for SCADA telemetry."
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> New rule
+          </Button>
+        }
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Rules</CardTitle>
+          <CardTitle className="text-sm font-medium">Rules</CardTitle>
         </CardHeader>
         <CardContent>
           {query.isLoading ? (
@@ -169,18 +168,20 @@ function AlarmRulesPage() {
               ))}
             </div>
           ) : query.isError ? (
-            <div className="flex flex-col items-start gap-2 p-6">
-              <div className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" /> Failed to load.
-              </div>
-              <Button variant="outline" onClick={() => query.refetch()}>
-                Retry
-              </Button>
-            </div>
+            <EmptyState
+              icon={AlertTriangle}
+              title="Failed to load rules"
+              action={
+                <Button variant="outline" onClick={() => query.refetch()}>
+                  Retry
+                </Button>
+              }
+            />
           ) : (query.data ?? []).length === 0 ? (
-            <div className="p-10 text-center text-muted-foreground">
-              No rules yet. Click "New rule" to create your first alarm rule.
-            </div>
+            <EmptyState
+              title="No rules yet"
+              description='Click "New rule" to create your first alarm rule.'
+            />
           ) : (
             <Table>
               <TableHeader>

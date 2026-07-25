@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Activity, Gauge, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/design-system")({
@@ -113,34 +116,87 @@ function DesignSystemPage() {
         </div>
 
         <section className="space-y-4">
-          <h2 className="font-display text-xl font-semibold">Typography</h2>
+          <h2 className="section-title">Typography rhythm</h2>
+          <div className="space-y-4 rounded-lg border border-border bg-card p-6">
+            <p className="page-title">Page title · text-2xl font-semibold tracking-tight</p>
+            <p className="section-title">Section header · text-lg font-semibold</p>
+            <p className="text-sm font-medium text-foreground">Card title · text-sm font-medium</p>
+            <p className="text-sm text-foreground">Body · text-sm</p>
+            <p className="text-sm text-muted-foreground">
+              Secondary · text-sm text-muted-foreground
+            </p>
+            <p className="caption-label">Caption · text-xs uppercase tracking-wide</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="section-title">KPI tiles</h2>
+          <KpiGrid label="Design system KPI samples">
+            <KpiTile
+              label="Active projects"
+              value="12"
+              hint="All lifecycle stages"
+              icon={Activity}
+            />
+            <KpiTile
+              label="Schedule perf."
+              value="1.04"
+              delta="+4%"
+              status="good"
+              hint="SPI, weighted"
+              icon={Gauge}
+            />
+            <KpiTile
+              label="Overdue tasks"
+              value="7"
+              delta="+3"
+              status="warning"
+              hint="Past planned finish"
+              icon={Gauge}
+            />
+            <KpiTile
+              label="Cost variance"
+              value="-1.2M"
+              status="bad"
+              hint="Actual vs budget"
+              icon={Activity}
+            />
+          </KpiGrid>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="section-title">Empty state</h2>
+          <EmptyState
+            icon={Inbox}
+            title="No records yet"
+            description="Shared empty state: muted circled icon, title, one-line description, optional CTA."
+            action={<Button size="sm">Create record</Button>}
+          />
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="section-title">Typography</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-md border border-border bg-card p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                font-sans · Inter
-              </p>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <p className="caption-label">font-sans · Inter</p>
               <p className="mt-3 font-sans text-2xl text-foreground">Grid stability, quantified.</p>
-              <p className="mt-2 text-sm text-muted-foreground">Body & UI text.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Body &amp; UI text.</p>
             </div>
-            <div className="rounded-md border border-border bg-card p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                font-display · Space Grotesk
-              </p>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <p className="caption-label">font-display · Space Grotesk</p>
               <p className="mt-3 font-display text-2xl font-bold text-foreground">GridMind EPC</p>
-              <p className="mt-2 text-sm text-muted-foreground">Brand & display headings.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Brand &amp; display headings.</p>
             </div>
-            <div className="rounded-md border border-border bg-card p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                font-alt · DM Sans
-              </p>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <p className="caption-label">font-alt · DM Sans</p>
               <p className="mt-3 font-alt text-2xl text-foreground">Alternate long-form.</p>
-              <p className="mt-2 text-sm text-muted-foreground">Documents & reports.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Documents &amp; reports.</p>
             </div>
           </div>
         </section>
 
         <section className="space-y-4">
-          <h2 className="font-display text-xl font-semibold">Buttons</h2>
+          <h2 className="section-title">Buttons</h2>
           <div className="flex flex-wrap gap-3">
             <Button>Primary</Button>
             <Button variant="secondary">Secondary</Button>

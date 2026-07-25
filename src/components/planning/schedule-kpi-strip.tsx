@@ -1,8 +1,7 @@
 // P-073 — Schedule KPI strip: total, weighted %, overdue, schedule variance.
 import { AlertOctagon, CheckCircle2, ClipboardList, Gauge } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { KpiGrid, KpiTile, type KpiStatus } from "@/components/ui/kpi-tile";
 import { bandForFinishVariance, type VarianceBand } from "@/lib/schedule.rules";
 
 interface Props {
@@ -13,10 +12,10 @@ interface Props {
   baselineName: string | null;
 }
 
-const BAND_TEXT: Record<VarianceBand, string> = {
-  ok: "text-foreground",
-  warning: "text-warning",
-  destructive: "text-destructive",
+const BAND_STATUS: Record<VarianceBand, KpiStatus> = {
+  ok: "neutral",
+  warning: "warning",
+  destructive: "bad",
 };
 
 export function ScheduleKpiStrip({
@@ -28,56 +27,26 @@ export function ScheduleKpiStrip({
 }: Props) {
   const band = bandForFinishVariance(finishVariance);
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <Kpi icon={<ClipboardList size={16} aria-hidden />} label="Tasks">
-        <span className="text-2xl font-semibold text-foreground">{total}</span>
-      </Kpi>
-      <Kpi icon={<Gauge size={16} aria-hidden />} label="% complete (weighted)">
-        <span className="text-2xl font-semibold text-foreground">{weightedPct.toFixed(1)}%</span>
-      </Kpi>
-      <Kpi icon={<AlertOctagon size={16} aria-hidden />} label="Overdue">
-        <span
-          className={cn(
-            "text-2xl font-semibold",
-            overdue > 0 ? "text-destructive" : "text-foreground",
-          )}
-        >
-          {overdue}
-        </span>
-      </Kpi>
-      <Kpi
-        icon={<CheckCircle2 size={16} aria-hidden />}
+    <KpiGrid label="Schedule KPIs">
+      <KpiTile icon={ClipboardList} label="Tasks" value={total} />
+      <KpiTile icon={Gauge} label="% complete (weighted)" value={`${weightedPct.toFixed(1)}%`} />
+      <KpiTile
+        icon={AlertOctagon}
+        label="Overdue"
+        value={overdue}
+        status={overdue > 0 ? "bad" : "neutral"}
+      />
+      <KpiTile
+        icon={CheckCircle2}
         label={baselineName ? `Finish variance vs ${baselineName}` : "Finish variance"}
-      >
-        {finishVariance == null ? (
-          <span className="text-sm text-muted-foreground">No baseline selected</span>
-        ) : (
-          <span className={cn("text-2xl font-semibold", BAND_TEXT[band])}>
-            {finishVariance > 0 ? "+" : ""}
-            {finishVariance.toFixed(1)}d
-          </span>
-        )}
-      </Kpi>
-    </div>
-  );
-}
-
-function Kpi({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card className="flex flex-col gap-1 border-border bg-card p-3">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {icon}
-        <span>{label}</span>
-      </div>
-      {children}
-    </Card>
+        value={
+          finishVariance == null
+            ? "—"
+            : `${finishVariance > 0 ? "+" : ""}${finishVariance.toFixed(1)}d`
+        }
+        hint={finishVariance == null ? "No baseline selected" : undefined}
+        status={finishVariance == null ? "neutral" : BAND_STATUS[band]}
+      />
+    </KpiGrid>
   );
 }

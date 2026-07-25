@@ -396,7 +396,7 @@ function TurnoverRoute() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base">
                       {s.complete ? (
-                        <CheckCircle2 size={16} aria-hidden className="text-emerald-500" />
+                        <CheckCircle2 size={16} aria-hidden className="text-success" />
                       ) : (
                         <Circle size={16} aria-hidden className="text-muted-foreground" />
                       )}

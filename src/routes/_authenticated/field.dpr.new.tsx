@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CalendarPlus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
 import { dprProjectsQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { upsertDprHeader } from "@/lib/dpr.functions";
 import { SHIFTS, type Shift } from "@/lib/dpr.rules";
@@ -76,22 +77,20 @@ function NewDprPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-24">
+    <div className="page-shell pb-24">
       <Button asChild variant="ghost" size="sm" className="w-fit">
         <Link to="/field/dpr">
           <ArrowLeft className="mr-2 h-4 w-4" aria-hidden /> Back
         </Link>
       </Button>
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <CalendarPlus size={14} aria-hidden /> Field
-        </div>
-        <h1 className="font-display text-2xl font-semibold text-foreground">New daily report</h1>
-      </header>
+      <PageHeader
+        title="New daily report"
+        description="Start a draft for a project, date and shift."
+      />
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Report details</CardTitle>
+          <CardTitle className="text-sm font-medium">Report details</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">

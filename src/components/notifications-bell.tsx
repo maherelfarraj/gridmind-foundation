@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,9 +84,7 @@ export function NotificationsBell() {
         </div>
         <DropdownMenuSeparator className="my-0" />
         {notifications.length === 0 ? (
-          <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-            You're all caught up
-          </div>
+          <EmptyState title="You're all caught up" compact className="border-0 bg-transparent" />
         ) : (
           <ul className="max-h-80 overflow-y-auto py-1">
             {notifications.map((n) => (

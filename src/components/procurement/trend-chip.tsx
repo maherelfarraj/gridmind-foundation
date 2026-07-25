@@ -15,12 +15,7 @@ export function TrendChip({
   if (!t) return <span className="text-xs text-muted-foreground">—</span>;
   const isPositive = t.direction === "up";
   const good = t.direction === "flat" ? null : positiveIsGood ? isPositive : !isPositive;
-  const color =
-    good == null
-      ? "text-muted-foreground"
-      : good
-        ? "text-[color:var(--color-success,theme(colors.emerald.600))]"
-        : "text-destructive";
+  const color = good == null ? "text-muted-foreground" : good ? "text-success" : "text-destructive";
   const Icon =
     t.direction === "up" ? ArrowUpRight : t.direction === "down" ? ArrowDownRight : Minus;
   return (

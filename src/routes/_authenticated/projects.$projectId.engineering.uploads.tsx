@@ -6,6 +6,7 @@ import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/page-header";
 import {
   SiteDataUploads,
   SiteDataUploadsSkeleton,
@@ -38,14 +39,11 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
 function UploadsPage() {
   const { projectId } = Route.useParams();
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h2 className="font-display text-lg font-semibold text-foreground">Site data uploads</h2>
-        <p className="text-sm text-muted-foreground">
-          Upload survey, geotech and meteorological data. Files land in the drawings bucket with
-          15-minute signed downloads.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Site data uploads"
+        description="Upload survey, geotech and meteorological data. Files land in the drawings bucket with 15-minute signed downloads."
+      />
       <UploadsBoundary projectId={projectId} />
     </div>
   );
@@ -72,7 +70,7 @@ function UploadsContent({ projectId }: { projectId: string }) {
 function UploadsError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
-    <Card className="flex flex-col items-start gap-3 border-destructive/40 bg-card p-6">
+    <Card className="flex flex-col items-start gap-3 border-destructive/40 p-6">
       <h2 className="font-display text-lg font-semibold text-foreground">
         Couldn&rsquo;t load site data
       </h2>

@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   getVendorWriteAccess,
   listVendors,
@@ -148,33 +150,32 @@ function VendorsIndex() {
   const canWrite = accessQuery.data.canWrite;
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Truck className="h-3.5 w-3.5" /> Procurement
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Vendors</h1>
-          <p className="text-sm text-muted-foreground">
-            Supplier master — identity, commercial terms, and certifications.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => downloadCsv(rows)} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          {canWrite && (
-            <Button asChild>
-              <Link to="/procurement/vendors/new">
-                <Plus className="mr-2 h-4 w-4" /> New vendor
-              </Link>
+    <div className="page-shell">
+      <PageHeader
+        title="Vendors"
+        description="Supplier master — identity, commercial terms, and certifications."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => downloadCsv(rows)}
+              disabled={rows.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" /> Export CSV
             </Button>
-          )}
-        </div>
-      </header>
+            {canWrite && (
+              <Button asChild>
+                <Link to="/procurement/vendors/new">
+                  <Plus className="mr-2 h-4 w-4" /> New vendor
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative min-w-[240px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
@@ -205,86 +206,80 @@ function VendorsIndex() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-          <Truck className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold">
-            No vendors yet — onboard your first vendor
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add supplier identity, payment terms, incoterms and certifications to start issuing
-            RFQs.
-          </p>
-          {canWrite && (
-            <Button className="mt-4" asChild>
-              <Link to="/procurement/vendors/new">
-                <Plus className="mr-2 h-4 w-4" /> Onboard vendor
-              </Link>
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Truck}
+          title="No vendors yet"
+          description="Add supplier identity, payment terms, incoterms and certifications to start issuing RFQs."
+          action={
+            canWrite ? (
+              <Button asChild>
+                <Link to="/procurement/vendors/new">
+                  <Plus className="mr-2 h-4 w-4" /> Onboard vendor
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
-        <div className="rounded-xl border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Categories</TableHead>
-                <TableHead>Terms</TableHead>
-                <TableHead>Currency</TableHead>
-                <TableHead>Location</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className="cursor-pointer"
-                  onClick={() =>
-                    navigate({
-                      to: "/procurement/vendors/$vendorId",
-                      params: { vendorId: r.id },
-                    })
-                  }
-                >
-                  <TableCell>
-                    <div className="font-medium text-foreground">{r.name}</div>
-                    {r.legal_name && (
-                      <div className="text-xs text-muted-foreground">{r.legal_name}</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Categories</TableHead>
+              <TableHead>Terms</TableHead>
+              <TableHead>Currency</TableHead>
+              <TableHead>Location</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow
+                key={r.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate({
+                    to: "/procurement/vendors/$vendorId",
+                    params: { vendorId: r.id },
+                  })
+                }
+              >
+                <TableCell>
+                  <div className="font-medium text-foreground">{r.name}</div>
+                  {r.legal_name && (
+                    <div className="text-xs text-muted-foreground">{r.legal_name}</div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={r.status} />
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {r.categories.slice(0, 3).map((c) => (
+                      <Badge key={c} variant="secondary" className="text-[10px]">
+                        {c}
+                      </Badge>
+                    ))}
+                    {r.categories.length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{r.categories.length - 3}
+                      </span>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={r.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {r.categories.slice(0, 3).map((c) => (
-                        <Badge key={c} variant="secondary" className="text-[10px]">
-                          {c}
-                        </Badge>
-                      ))}
-                      {r.categories.length > 3 && (
-                        <span className="text-xs text-muted-foreground">
-                          +{r.categories.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {(r.payment_terms ?? "—").toUpperCase().replace("_", " ")} ·{" "}
-                    {r.incoterms ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {r.currency_code ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {[r.city, r.country].filter(Boolean).join(", ") || "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {(r.payment_terms ?? "—").toUpperCase().replace("_", " ")} · {r.incoterms ?? "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {r.currency_code ?? "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {[r.city, r.country].filter(Boolean).join(", ") || "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

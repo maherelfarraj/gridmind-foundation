@@ -89,7 +89,7 @@ export function SiteDataCategoryDialog({
 
   return (
     <Dialog open onOpenChange={(open) => (!open ? onCancel() : undefined)}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Categorize site data</DialogTitle>
           <DialogDescription className="truncate">{fileName}</DialogDescription>

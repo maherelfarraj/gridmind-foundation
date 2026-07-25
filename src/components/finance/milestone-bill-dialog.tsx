@@ -174,7 +174,7 @@ export function MilestoneBillDialog({
                   <span className="font-mono tabular-nums">{fmt(preview.amount, currency)}</span>
                 </div>
                 {preview.hitCap && (
-                  <div className="mt-2 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
+                  <div className="mt-2 flex items-start gap-2 text-xs text-warning">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
                     <span>Capped to remaining unbilled ({preview.cappedPct}% of scheduled).</span>
                   </div>
@@ -183,7 +183,7 @@ export function MilestoneBillDialog({
             )}
 
             {summary.data.status && !["signed", "active"].includes(summary.data.status) && (
-              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-300">
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning">
                 Milestone billing is only available on signed or active contracts.
               </div>
             )}

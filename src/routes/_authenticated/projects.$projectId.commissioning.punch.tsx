@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,7 +73,7 @@ function categoryTint(cat: Category): string {
     case "A":
       return "bg-destructive/15 text-destructive border-destructive/30";
     case "B":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+      return "bg-warning/15 text-warning border-warning/30";
     case "C":
       return "bg-muted text-muted-foreground border-border";
   }
@@ -115,34 +118,31 @@ function PunchClosureBoard() {
   }, [items]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Punch closure
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Multi-party signoffs by category — category A must close before COD.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Back to tests
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="Punch closure"
+        description="Multi-party signoffs by category — category A must close before COD."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Back to tests
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {stats.aOpen > 0 ? (
         <div
@@ -158,31 +158,23 @@ function PunchClosureBoard() {
       ) : null}
 
       {/* KPI header */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card className="p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Closure %</p>
-          <p className="mt-1 font-display text-2xl font-semibold text-foreground">
-            {stats.closurePct}%
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {stats.closed} of {stats.total} closed
-          </p>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiTile
+          label="Closure %"
+          value={`${stats.closurePct}%`}
+          hint={`${stats.closed} of ${stats.total} closed`}
+        />
         {CATEGORIES.map((c) => (
-          <Card key={c} className="p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Category {c}</p>
-              <Badge variant="outline" className={cn("text-xs", categoryTint(c))}>
-                {stats.per[c].open} open
-              </Badge>
-            </div>
-            <p className="mt-1 font-display text-2xl font-semibold text-foreground">
-              {stats.per[c].closed}/{stats.per[c].total}
-            </p>
-            <p className="text-xs text-muted-foreground">closed</p>
-          </Card>
+          <KpiTile
+            key={c}
+            label={`Category ${c}`}
+            value={`${stats.per[c].closed}/${stats.per[c].total}`}
+            hint="closed"
+            delta={`${stats.per[c].open} open`}
+            status={stats.per[c].open > 0 ? (c === "A" ? "bad" : "warning") : "good"}
+          />
         ))}
-      </div>
+      </KpiGrid>
 
       {/* Legend */}
       <Card className="p-4">
@@ -208,18 +200,19 @@ function PunchClosureBoard() {
           ))}
         </div>
       ) : query.error ? (
-        <Card className="p-6 text-center">
-          <p className="text-sm text-destructive">Failed to load punch items.</p>
-          <Button className="mt-3" variant="outline" size="sm" onClick={() => query.refetch()}>
-            Retry
-          </Button>
+        <Card className="p-6">
+          <EmptyState
+            title="Failed to load punch items."
+            action={
+              <Button variant="outline" size="sm" onClick={() => query.refetch()}>
+                Retry
+              </Button>
+            }
+          />
         </Card>
       ) : items.length === 0 ? (
-        <Card className="p-10 text-center">
-          <ShieldCheck size={28} aria-hidden className="mx-auto text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium text-foreground">
-            No open punch items — ready for COD review
-          </p>
+        <Card className="p-6">
+          <EmptyState icon={ShieldCheck} title="No open punch items — ready for COD review" />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
@@ -301,7 +294,7 @@ function PunchLaneCard({
   const isClosed = item.status === "closed";
 
   return (
-    <li className="rounded-md border border-border bg-card p-3">
+    <li className="rounded-md border bg-card p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-foreground">
@@ -313,9 +306,7 @@ function PunchLaneCard({
           variant="outline"
           className={cn(
             "shrink-0 text-xs",
-            isClosed
-              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-              : "bg-muted text-foreground",
+            isClosed ? "bg-success/15 text-success border-success/30" : "bg-muted text-foreground",
           )}
         >
           {isClosed ? "Closed" : "Open"}
@@ -333,7 +324,7 @@ function PunchLaneCard({
               className={cn(
                 "text-[10px]",
                 has
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                  ? "bg-success/15 text-success border-success/30"
                   : "bg-muted text-muted-foreground",
               )}
             >
@@ -434,7 +425,7 @@ function ClosePunchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Record signoff</DialogTitle>
           <DialogDescription>

@@ -2,13 +2,15 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Shield, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardList, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorMessage, incidentDetailQueryOptions } from "@/lib/hse-query";
 import { closeIncident, updateIncident } from "@/lib/hse.functions";
@@ -58,14 +60,14 @@ function IncidentDetailPage() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="mx-auto w-full max-w-4xl p-4">
+      <div className="page-shell">
         <Skeleton className="h-40" />
       </div>
     );
   }
   if (detailQuery.isError || !data) {
     return (
-      <div className="mx-auto w-full max-w-4xl p-4">
+      <div className="page-shell">
         <Card>
           <CardContent className="p-4 text-sm text-destructive">
             {errorMessage(detailQuery.error) || "Not found"}
@@ -93,36 +95,36 @@ function IncidentDetailPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
+    <div className="page-shell">
+      <div>
         <Link
           to="/hse/incidents"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={12} /> Back to incidents
         </Link>
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Shield size={14} aria-hidden /> HSE
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {inc.incident_number}
-          </h1>
-          <Badge variant="secondary" className="capitalize">
-            {inc.incident_type.replace("_", " ")}
-          </Badge>
-          <Badge variant="outline" className="capitalize">
-            {inc.severity}
-          </Badge>
-          <Badge variant="outline" className="capitalize">
-            {inc.status}
-          </Badge>
-          {inc.osha_recordable ? (
-            <Badge className="bg-destructive/10 text-destructive">OSHA</Badge>
-          ) : null}
-          <IncidentTimingBadge occurredAt={inc.occurred_at} reportedAt={inc.reported_at} />
-        </div>
-      </header>
+        <PageHeader
+          title={inc.incident_number}
+          description="HSE incident detail and corrective actions."
+          actions={
+            <>
+              <Badge variant="secondary" className="capitalize">
+                {inc.incident_type.replace("_", " ")}
+              </Badge>
+              <Badge variant="outline" className="capitalize">
+                {inc.severity}
+              </Badge>
+              <Badge variant="outline" className="capitalize">
+                {inc.status}
+              </Badge>
+              {inc.osha_recordable ? (
+                <Badge className="bg-destructive/10 text-destructive">OSHA</Badge>
+              ) : null}
+              <IncidentTimingBadge occurredAt={inc.occurred_at} reportedAt={inc.reported_at} />
+            </>
+          }
+        />
+      </div>
 
       <Card>
         <CardHeader>
@@ -167,9 +169,7 @@ function IncidentDetailPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {actions.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No corrective actions logged yet.
-            </div>
+            <EmptyState icon={ClipboardList} title="No corrective actions logged yet" compact />
           ) : (
             actions.map((a, i) => (
               <div key={i} className="flex items-center gap-3 rounded-md border border-border p-3">

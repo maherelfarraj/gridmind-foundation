@@ -1,5 +1,5 @@
 // P-084 — Mobilization checklist list page (project picker + list).
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,6 +18,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   errorMessage,
   mobilizationListQueryOptions,
@@ -53,23 +55,15 @@ function MobilizationIndexPage() {
   const listQuery = useQuery(mobilizationListQueryOptions(projectId));
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <HardHat size={14} aria-hidden /> Field
-        </div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Site mobilization
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Prove cabins, fencing, HSE induction, utilities, access and permits are ready before crews
-          mobilize.
-        </p>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Site mobilization"
+        description="Prove cabins, fencing, HSE induction, utilities, access and permits are ready before crews mobilize."
+      />
 
-      <Card className="border-border bg-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base">Project</CardTitle>
+          <CardTitle className="text-sm font-medium">Project</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {projectsQuery.isLoading ? (
@@ -124,8 +118,6 @@ function CreateChecklistButton({ projectId }: { projectId: string }) {
   );
 }
 
-type ListQuery = ReturnType<typeof useQuery<any, any>>;
-
 function ChecklistList({
   projectId,
   query,
@@ -135,7 +127,7 @@ function ChecklistList({
 }) {
   if (query.isLoading) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-32 w-full" />
       </div>
@@ -143,30 +135,32 @@ function ChecklistList({
   }
   if (query.isError) {
     return (
-      <div className="rounded-md border border-destructive/40 bg-destructive/5 p-6">
-        <div className="flex items-center gap-2 text-destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="font-medium">Failed to load checklists</span>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">{errorMessage(query.error)}</p>
-        <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
-          Retry
-        </Button>
-      </div>
+      <Card className="border-destructive/40 bg-destructive/5">
+        <CardContent className="flex flex-col items-start gap-3 py-6">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="font-medium">Failed to load checklists</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{errorMessage(query.error)}</p>
+          <Button variant="outline" size="sm" onClick={() => query.refetch()}>
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
   const rows = (query.data ?? []) as any[];
   if (rows.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-8 text-center text-sm text-muted-foreground">
-          No mobilization checklist yet — create one to begin site setup.
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={HardHat}
+        title="No mobilization checklist yet"
+        description="Create one to begin site setup."
+      />
     );
   }
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2">
       {rows.map((row) => {
         const p = computeProgress(row.items ?? []);
         const pct =
@@ -176,10 +170,12 @@ function ChecklistList({
             key={row.id}
             to="/field/mobilization/$checklistId"
             params={{ checklistId: row.id }}
-            className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="rounded-lg border bg-card p-4 transition-colors hover:border-primary/40"
           >
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-display text-base font-medium text-foreground">{row.name}</h3>
+            <div className="mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+              <h3 className="min-w-0 truncate font-display text-sm font-medium text-foreground">
+                {row.name}
+              </h3>
               <StatusBadge status={row.status} />
             </div>
             <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">

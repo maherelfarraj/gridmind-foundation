@@ -353,7 +353,7 @@ function QueueList({
   onRemove: (id: string) => void;
 }) {
   return (
-    <Card className="border-border bg-card p-4">
+    <Card className="p-4">
       <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Upload queue
       </h3>
@@ -464,7 +464,7 @@ function SiteDataList({
   }
 
   return (
-    <Card className="border-border bg-card">
+    <Card>
       <div className="border-b border-border p-4">
         <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Uploaded site data

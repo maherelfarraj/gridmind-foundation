@@ -5,6 +5,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getMyYieldRoles, listYieldScenarios } from "@/lib/yield.functions";
 import { yieldRolesQueryOptions, yieldScenariosQueryOptions } from "@/lib/yield-query";
@@ -42,28 +43,34 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
 function YieldPage() {
   const { projectId } = Route.useParams();
   return (
-    <Tabs defaultValue="scenarios" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-        <TabsTrigger value="comparison">Comparison</TabsTrigger>
-        <TabsTrigger value="pvsyst">PVsyst import</TabsTrigger>
-      </TabsList>
-      <TabsContent value="scenarios">
-        <Suspense fallback={<TableSkeleton />}>
-          <ScenariosTab projectId={projectId} />
-        </Suspense>
-      </TabsContent>
-      <TabsContent value="comparison">
-        <Suspense fallback={<TableSkeleton />}>
-          <ComparisonTab projectId={projectId} />
-        </Suspense>
-      </TabsContent>
-      <TabsContent value="pvsyst">
-        <Suspense fallback={<TableSkeleton />}>
-          <ImportTab projectId={projectId} />
-        </Suspense>
-      </TabsContent>
-    </Tabs>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Yield scenarios"
+        description="PVsyst and preliminary yield scenarios with side-by-side comparison."
+      />
+      <Tabs defaultValue="scenarios" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
+          <TabsTrigger value="comparison">Comparison</TabsTrigger>
+          <TabsTrigger value="pvsyst">PVsyst import</TabsTrigger>
+        </TabsList>
+        <TabsContent value="scenarios">
+          <Suspense fallback={<TableSkeleton />}>
+            <ScenariosTab projectId={projectId} />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="comparison">
+          <Suspense fallback={<TableSkeleton />}>
+            <ComparisonTab projectId={projectId} />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="pvsyst">
+          <Suspense fallback={<TableSkeleton />}>
+            <ImportTab projectId={projectId} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 

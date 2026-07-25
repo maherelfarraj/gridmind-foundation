@@ -214,14 +214,16 @@ function PayAppDetail() {
   const c = detail.data.contract;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Button asChild size="sm" variant="ghost">
           <Link to="/projects/$projectId/finance/pay-applications" params={{ projectId }}>
             <ArrowLeft className="mr-2 size-4" /> Back
           </Link>
         </Button>
-        <h1 className="text-xl font-semibold">Pay app #{p.application_number}</h1>
+        <h1 className="truncate text-lg font-semibold text-foreground">
+          Pay app #{p.application_number}
+        </h1>
         <Badge variant={STATUS_VARIANTS[p.status]}>{payAppStatusLabel(p.status)}</Badge>
       </div>
 

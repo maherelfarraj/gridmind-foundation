@@ -17,7 +17,10 @@ import { ArrowLeft, Download, RefreshCw, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCommissioningKpis } from "@/lib/commissioning-kpis.functions";
 import { serializeKpisCsv, type CommissioningKpisPayload } from "@/lib/commissioning-kpis.rules";
@@ -60,8 +63,8 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/commis
   },
   errorComponent: ({ error, reset }) => <KpiError message={error.message} reset={reset} />,
   notFoundComponent: () => (
-    <Card className="border-border bg-card p-8 text-center">
-      <p className="text-sm text-muted-foreground">Project not found in your workspace.</p>
+    <Card className="p-8">
+      <EmptyState icon={Inbox} title="Project not found in your workspace." />
     </Card>
   ),
   component: KpisPage,
@@ -80,34 +83,30 @@ function KpisPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Link
-              to="/projects/$projectId/commissioning"
-              params={{ projectId }}
-              className="inline-flex items-center gap-1 hover:text-foreground"
-            >
-              <ArrowLeft size={12} aria-hidden />
-              Commissioning
-            </Link>
-            <span aria-hidden>/</span>
-            <span>KPIs</span>
-          </div>
-          <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Commissioning KPIs
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {data.project.name}
-            {data.project.code ? ` · ${data.project.code}` : ""} — read-only snapshot.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={onExportCsv}>
-          <Download size={14} aria-hidden />
-          CSV snapshot
-        </Button>
-      </header>
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Link
+          to="/projects/$projectId/commissioning"
+          params={{ projectId }}
+          className="inline-flex items-center gap-1 hover:text-foreground"
+        >
+          <ArrowLeft size={12} aria-hidden />
+          Commissioning
+        </Link>
+        <span aria-hidden>/</span>
+        <span>KPIs</span>
+      </div>
+      <PageHeader
+        as="h2"
+        title="Commissioning KPIs"
+        description={`${data.project.name}${data.project.code ? ` · ${data.project.code}` : ""} — read-only snapshot.`}
+        actions={
+          <Button variant="outline" size="sm" onClick={onExportCsv}>
+            <Download size={14} aria-hidden />
+            CSV snapshot
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <McCodTile data={data} />
@@ -135,7 +134,7 @@ function TileShell({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="flex flex-col gap-3 border-border bg-card p-4">
+    <Card className="flex flex-col gap-3 p-4">
       <div>
         <p className="text-xs uppercase tracking-wide text-muted-foreground">{title}</p>
         {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
@@ -210,7 +209,7 @@ function PrAtCodTile({ data }: { data: CommissioningKpisPayload }) {
           className={cn(
             "border",
             k.passing
-              ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+              ? "border-success/30 bg-success/10 text-success"
               : "border-destructive/30 bg-destructive/15 text-destructive",
           )}
         >
@@ -321,22 +320,22 @@ function AvailabilityTile({ data }: { data: CommissioningKpisPayload }) {
 function SecondaryStrip({ data }: { data: CommissioningKpisPayload }) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <Card className="lg:col-span-2 border-border bg-card p-4">
+      <Card className="lg:col-span-2 p-4">
         <p className="text-xs uppercase tracking-wide text-muted-foreground">Commissioning tests</p>
         {data.testSummary.length === 0 ? (
-          <div className="mt-3 text-sm text-muted-foreground">No tests assigned yet.</div>
+          <EmptyState title="No tests assigned yet." compact className="mt-3" />
         ) : (
           <div className="mt-3 flex flex-wrap gap-2">
             {data.testSummary.map((t) => (
               <div
                 key={t.test_type}
-                className="min-w-[160px] rounded-md border border-border bg-background/60 p-3"
+                className="min-w-[160px] rounded-md border bg-background/60 p-3"
               >
                 <p className="text-xs font-medium text-foreground">{formatTestType(t.test_type)}</p>
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                  <span className="text-emerald-600 dark:text-emerald-300">✓ {t.passed}</span>
+                  <span className="text-success">✓ {t.passed}</span>
                   <span className="text-destructive">✕ {t.failed}</span>
-                  <span className="text-amber-600 dark:text-amber-300">↻ {t.in_progress}</span>
+                  <span className="text-warning">↻ {t.in_progress}</span>
                   <span className="text-muted-foreground">· {t.not_started}</span>
                 </div>
               </div>
@@ -344,7 +343,7 @@ function SecondaryStrip({ data }: { data: CommissioningKpisPayload }) {
           </div>
         )}
       </Card>
-      <Card className="border-border bg-card p-4">
+      <Card className="p-4">
         <p className="text-xs uppercase tracking-wide text-muted-foreground">Turnover pack</p>
         {data.turnoverStatus ? (
           <div className="mt-3 space-y-1">
@@ -359,7 +358,7 @@ function SecondaryStrip({ data }: { data: CommissioningKpisPayload }) {
             </p>
           </div>
         ) : (
-          <p className="mt-3 text-sm text-muted-foreground">No turnover package yet.</p>
+          <EmptyState title="No turnover package yet." compact className="mt-3" />
         )}
       </Card>
     </div>
@@ -401,7 +400,7 @@ export function KpisSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className="flex flex-col gap-3 border-border bg-card p-4">
+        <Card key={i} className="flex flex-col gap-3 p-4">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-3 w-40" />

@@ -4,10 +4,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { ClipboardCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SectionHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -61,28 +64,23 @@ function ReviewsPage() {
   const rows = useMemo(() => rounds ?? [], [rounds]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Drawing reviews</h2>
-          <p className="text-sm text-muted-foreground">
-            Reviewer sign-offs on IFD revisions gate promotion to IFC.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Drawing reviews"
+        description="Reviewer sign-offs on IFD revisions gate promotion to IFC."
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Review rounds</CardTitle>
+          <CardTitle className="text-sm font-medium">Review rounds</CardTitle>
         </CardHeader>
         <CardContent>
           {rows.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border p-8 text-center">
-              <p className="text-sm font-medium">No review rounds yet</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Open a round from any IFD revision in the Drawings tab.
-              </p>
-            </div>
+            <EmptyState
+              icon={ClipboardCheck}
+              title="No review rounds yet"
+              description="Open a round from any IFD revision in the Drawings tab."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -127,9 +125,7 @@ function ReviewsPage() {
                         {r.due_date ? (
                           <span
                             className={
-                              overdue
-                                ? "font-medium text-amber-600 dark:text-amber-400"
-                                : "text-muted-foreground"
+                              overdue ? "font-medium text-warning" : "text-muted-foreground"
                             }
                           >
                             {r.due_date}

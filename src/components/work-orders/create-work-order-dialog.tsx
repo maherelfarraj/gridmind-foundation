@@ -99,7 +99,7 @@ export function CreateWorkOrderDialog() {
           <Plus className="mr-2 h-4 w-4" /> New work order
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create work order</DialogTitle>
         </DialogHeader>

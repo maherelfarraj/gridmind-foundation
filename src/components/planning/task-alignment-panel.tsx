@@ -91,7 +91,7 @@ export function TaskAlignmentPanel({ projectId, items }: TaskAlignmentPanelProps
   const unaligned = tasks.filter((t) => !t.wbs_item_id || !t.discipline).length;
 
   return (
-    <Card className="border-border bg-card p-4">
+    <Card className="p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Link2 size={16} className="text-muted-foreground" aria-hidden />

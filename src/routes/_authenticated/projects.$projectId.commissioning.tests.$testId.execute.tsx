@@ -891,10 +891,8 @@ function WitnessBlock({
       </div>
 
       {existing ? (
-        <div className="mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
-          <p className="font-medium text-emerald-800 dark:text-emerald-200">
-            Recorded — {test.utility_witness_name}
-          </p>
+        <div className="mt-3 rounded-md border border-success/30 bg-success/10 p-3 text-sm">
+          <p className="font-medium text-success">Recorded — {test.utility_witness_name}</p>
           <p className="text-xs text-muted-foreground">
             Witnessed at {formatDate(test.utility_witnessed_at)}
           </p>
@@ -1045,11 +1043,11 @@ function TextField({
 function StatusChip({ status }: { status: CommissioningTestDetail["status"] }) {
   const tint =
     status === "passed"
-      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+      ? "bg-success/15 text-success border-success/30"
       : status === "failed"
         ? "bg-destructive/15 text-destructive border-destructive/30"
         : status === "in_progress"
-          ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+          ? "bg-warning/15 text-warning border-warning/30"
           : status === "scheduled"
             ? "bg-primary/15 text-primary border-primary/30"
             : "bg-secondary text-secondary-foreground border-border";

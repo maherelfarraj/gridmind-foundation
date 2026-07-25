@@ -98,7 +98,7 @@ export function ProjectSelectionForm({ templates, defaultValues, onSubmit, onBac
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         <SectionHeader
           title="Template"
           hint="Pick a starting point. You can adjust everything below."
@@ -116,7 +116,7 @@ export function ProjectSelectionForm({ templates, defaultValues, onSubmit, onBac
         />
       </Card>
 
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         <SectionHeader
           title="Phase gates"
           hint="The approval checkpoints that gate progress between phases."
@@ -139,7 +139,7 @@ export function ProjectSelectionForm({ templates, defaultValues, onSubmit, onBac
         ) : null}
       </Card>
 
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         <SectionHeader
           title="Budget lines"
           hint="Cost categories as shares of the total budget. Must sum to 100%."
@@ -160,7 +160,7 @@ export function ProjectSelectionForm({ templates, defaultValues, onSubmit, onBac
         {budgetError ? <p className="text-sm text-destructive">{budgetError}</p> : null}
       </Card>
 
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         <SectionHeader title="Departments" hint="Which teams take part in this project." />
         <Controller
           control={form.control}

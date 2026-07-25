@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -27,6 +26,9 @@ import {
   risksListQueryOptions,
 } from "@/lib/risks.query";
 import { registerAgeDays, sumContingency, riskWritableSchema } from "@/lib/risks.rules";
+import { SectionHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ShieldAlert } from "lucide-react";
 
 import { RiskDrawer } from "@/components/planning/risk-drawer";
 import { RiskKpiStrip } from "@/components/planning/risk-kpi-strip";
@@ -148,16 +150,14 @@ function RisksPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <ShieldAlert size={18} aria-hidden className="text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold text-foreground">Risks</h2>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Risks"
+        description="Probability × impact register with mitigation tracking."
+      />
 
       {!canWrite && (
-        <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
+        <Card className="p-4 text-sm text-muted-foreground">
           You have read-only access to the risk register. Contact a project, HSE, finance, or
           company admin to log or edit risks.
         </Card>
@@ -177,18 +177,22 @@ function RisksPage() {
         </TabsList>
         <TabsContent value="matrix" className="mt-4">
           {risks.length === 0 ? (
-            <Card className="border-border bg-card p-8 text-center text-sm text-muted-foreground">
-              No risks logged — a stale register fails lender due diligence.
-              {canWrite && (
-                <div className="mt-3">
-                  <Button size="sm" onClick={handleNew}>
-                    Log the first risk
-                  </Button>
-                </div>
-              )}
+            <Card className="p-8">
+              <EmptyState
+                icon={ShieldAlert}
+                title="No risks logged yet"
+                description="A stale register fails lender due diligence."
+                action={
+                  canWrite ? (
+                    <Button size="sm" onClick={handleNew}>
+                      Log the first risk
+                    </Button>
+                  ) : undefined
+                }
+              />
             </Card>
           ) : (
-            <Card className="border-border bg-card p-4">
+            <Card className="p-4">
               <RiskMatrix risks={risks} onSelect={handleSelect} />
             </Card>
           )}

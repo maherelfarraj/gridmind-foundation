@@ -71,9 +71,9 @@ export function CaptureEvmDialog(props: {
   const cpiHealth = indexHealth(c?.cpi ?? null);
   const healthColor = (h: string) =>
     h === "good"
-      ? "text-emerald-500"
+      ? "text-success"
       : h === "warn"
-        ? "text-amber-500"
+        ? "text-warning"
         : h === "bad"
           ? "text-destructive"
           : "text-muted-foreground";

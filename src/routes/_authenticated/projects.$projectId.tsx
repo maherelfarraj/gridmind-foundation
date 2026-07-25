@@ -7,6 +7,7 @@ import { mobilizationHeaderChipQueryOptions } from "@/lib/mobilization-query";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/projects/phase-badge";
@@ -95,9 +96,9 @@ function ProjectDetailLayout() {
   const deptSet = new Set(project.departments.map((d) => d.department));
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="page-shell max-w-6xl">
       {/* Header */}
-      <header className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link
             to="/projects"
@@ -110,24 +111,26 @@ function ProjectDetailLayout() {
           <span aria-hidden>/</span>
           <span className="font-mono">{project.code}</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {project.name}
-          </h1>
-          <span className="inline-flex items-center rounded-md border border-border bg-secondary/40 px-2 py-0.5 text-xs font-medium text-foreground">
-            {archetypeLabel}
-          </span>
-          <PhaseBadge phase={project.phase} />
-          <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
-            {project.status}
-          </span>
-          <MobilizationHeaderChip projectId={projectId} />
-        </div>
+        <PageHeader
+          title={project.name}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center rounded-md border border-border bg-secondary/40 px-2 py-0.5 text-xs font-medium text-foreground">
+                {archetypeLabel}
+              </span>
+              <PhaseBadge phase={project.phase} />
+              <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
+                {project.status}
+              </span>
+              <MobilizationHeaderChip projectId={projectId} />
+            </div>
+          }
+        />
 
-        <Card className="border-border bg-card p-5">
+        <Card className="p-5">
           <PhaseGateStepper gates={project.gates} />
         </Card>
-      </header>
+      </div>
 
       {/* Tab bar */}
       <nav aria-label="Project sections" className="flex flex-wrap gap-1 border-b border-border">
@@ -168,7 +171,7 @@ function DetailSkeleton() {
       <header className="flex flex-col gap-4">
         <Skeleton className="h-4 w-40" />
         <Skeleton className="h-8 w-96" />
-        <Card className="border-border bg-card p-5">
+        <Card className="p-5">
           <Skeleton className="h-16 w-full" />
         </Card>
       </header>
@@ -219,7 +222,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
 function DetailNotFound() {
   return (
     <div className="mx-auto flex w-full max-w-3xl">
-      <Card className="flex w-full flex-col items-start gap-3 border-border bg-card p-6">
+      <Card className="flex w-full flex-col items-start gap-3 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
           Project not available
         </h2>
@@ -245,7 +248,7 @@ function MobilizationHeaderChip({ projectId }: { projectId: string }) {
     data.status === "in_progress" ? "Mobilization: in progress" : "Mobilization: not started";
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+      className="inline-flex items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning"
       aria-label={label}
     >
       <HardHat size={12} aria-hidden />

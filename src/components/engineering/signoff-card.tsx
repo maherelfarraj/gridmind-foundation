@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
+import { History } from "lucide-react";
 import { getMyDrawingRoles, listDrawingSignoffs } from "@/lib/drawings.functions";
 import {
   drawingRolesQueryOptions,
@@ -121,7 +123,7 @@ export function SignoffCard({ drawingId, projectId }: Props) {
           History
         </p>
         {signoffs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No sign-offs recorded yet.</p>
+          <EmptyState icon={History} title="No sign-offs recorded yet" compact />
         ) : (
           <ul className="flex flex-col gap-1.5">
             {signoffs.map((s) => (

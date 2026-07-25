@@ -1,6 +1,7 @@
 // P-082 — Project Finance layout with 4 sub-tabs.
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 
+import { SectionHeader } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 
 const SUB_TABS = [
@@ -36,13 +37,11 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/financ
 function ProjectFinanceLayout() {
   const { projectId } = Route.useParams();
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-xl font-semibold">Project finance</h1>
-        <p className="text-sm text-muted-foreground">
-          PPA, LCOE, lender due diligence, and bank facilities.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Project finance"
+        description="PPA, LCOE, lender due diligence, and bank facilities."
+      />
       <nav
         aria-label="Project finance sections"
         className="flex flex-wrap gap-1 border-b border-border"

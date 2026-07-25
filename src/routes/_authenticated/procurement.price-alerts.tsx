@@ -45,6 +45,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   acknowledgePriceAlert,
@@ -237,39 +240,33 @@ function PriceAlertsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <TrendingUp className="h-3.5 w-3.5" /> Procurement · Price alerts
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Material price alerts</h1>
-          <p className="text-sm text-muted-foreground">
-            Watch commodity indices per category and region. Log observations and get flagged when
-            moves exceed your threshold.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-          {access.canWrite ? (
-            <Dialog open={subscribeOpen} onOpenChange={setSubscribeOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Subscribe
-                </Button>
-              </DialogTrigger>
-              <SubscribeDialog
-                submitting={subscribeMutation.isPending}
-                onSubmit={(vars) => subscribeMutation.mutate(vars)}
-              />
-            </Dialog>
-          ) : null}
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Material price alerts"
+        description="Watch commodity indices per category and region against your threshold."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+            {access.canWrite ? (
+              <Dialog open={subscribeOpen} onOpenChange={setSubscribeOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Subscribe
+                  </Button>
+                </DialogTrigger>
+                <SubscribeDialog
+                  submitting={subscribeMutation.isPending}
+                  onSubmit={(vars) => subscribeMutation.mutate(vars)}
+                />
+              </Dialog>
+            ) : null}
+          </>
+        }
+      />
 
       {triggeredCount > 0 ? (
         <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm">
@@ -286,25 +283,27 @@ function PriceAlertsPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Kpi label="Subscriptions" value={String(rows.length)} hint="Active watchers" />
-        <Kpi
+      <KpiGrid columns={3}>
+        <KpiTile label="Subscriptions" value={String(rows.length)} hint="Active watchers" />
+        <KpiTile
           label="Triggered"
           value={String(triggeredCount)}
           hint="Moves ≥ threshold"
-          tone={triggeredCount > 0 ? "destructive" : "muted"}
+          status={triggeredCount > 0 ? "bad" : "neutral"}
         />
-        <Kpi
+        <KpiTile
           label="Avg change"
           value={avgChange == null ? "—" : `${avgChange.toFixed(2)}%`}
           hint="Across watched indices"
         />
-      </div>
+      </KpiGrid>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No price alerts yet — subscribe to a material category to start tracking prices.
-        </div>
+        <EmptyState
+          icon={BellRing}
+          title="No price alerts yet"
+          description="Subscribe to a material category to start tracking prices."
+        />
       ) : (
         <div className="rounded-md border border-border">
           <Table>

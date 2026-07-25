@@ -2,15 +2,18 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ClipboardCheck, Download, Plus, Search } from "lucide-react";
+import { ClipboardCheck, Download, Plus, Search } from "lucide-react";
 import { z } from "zod";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -148,33 +151,29 @@ function NcrIndexPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 md:p-6">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <AlertTriangle size={14} aria-hidden /> QA/QC
-          </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Non-conformance reports
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={onExport} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> CSV
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/qaqc/ncrs/new" search={{ projectId: sp.projectId }}>
-              <Plus className="mr-2 h-4 w-4" /> New NCR
-            </Link>
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Non-conformance reports"
+        description="Track NCRs across projects with disposition and cost impact."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={onExport} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> CSV
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/qaqc/ncrs/new" search={{ projectId: sp.projectId }}>
+                <Plus className="mr-2 h-4 w-4" /> New NCR
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+      <KpiGrid columns={3}>
         <KpiTile label="Open NCRs" value={String(openCount)} />
         <KpiTile label="Avg days open" value={rows.length === 0 ? "—" : String(avgOpen)} />
         <KpiTile label="Total cost impact" value={costLabel} />
-      </div>
+      </KpiGrid>
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-5">
@@ -297,19 +296,18 @@ function NcrIndexPage() {
           </AlertDescription>
         </Alert>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <ClipboardCheck className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              No NCRs yet. Raise one from a failed inspection or a punch item.
-            </p>
+        <EmptyState
+          icon={ClipboardCheck}
+          title="No NCRs yet"
+          description="Raise one from a failed inspection or a punch item."
+          action={
             <Button asChild>
               <Link to="/qaqc/ncrs/new" search={{ projectId: sp.projectId }}>
                 <Plus className="mr-2 h-4 w-4" /> New NCR
               </Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -369,16 +367,5 @@ function NcrIndexPage() {
         </Card>
       )}
     </div>
-  );
-}
-
-function KpiTile({ label, value }: { label: string; value: string }) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-        <span className="font-display text-xl font-semibold text-foreground">{value}</span>
-      </CardContent>
-    </Card>
   );
 }

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { Pencil, Play, Trash2 } from "lucide-react";
+import { CalendarClock, Pencil, Play, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { PmPlanDialog } from "@/components/pm-plans/pm-plan-dialog";
 import {
   deletePmPlan,
@@ -99,23 +101,24 @@ function MaintenancePlansPage() {
   const plans = (plansQ.data ?? []) as PmPlanRow[];
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">Preventive maintenance plans</h1>
-          <p className="text-sm text-muted-foreground">
-            Schedule recurring work. Auto-generation creates a preventive work order the day a plan
-            is due.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => gen.mutate(undefined)} disabled={gen.isPending}>
-            <Play className="mr-2 h-4 w-4" />
-            Generate all now
-          </Button>
-          <PmPlanDialog />
-        </div>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Preventive maintenance plans"
+        description="Schedule recurring work that auto-generates preventive work orders when due."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => gen.mutate(undefined)}
+              disabled={gen.isPending}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Generate all now
+            </Button>
+            <PmPlanDialog />
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -132,15 +135,12 @@ function MaintenancePlansPage() {
               ))}
             </div>
           ) : plans.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border p-8 text-center">
-              <div className="text-sm font-medium">No preventive plans</div>
-              <div className="text-xs text-muted-foreground">
-                Schedule your first plan to start generating preventive work orders.
-              </div>
-              <div className="mt-3 flex justify-center">
-                <PmPlanDialog />
-              </div>
-            </div>
+            <EmptyState
+              icon={CalendarClock}
+              title="No preventive plans"
+              description="Schedule your first plan to start generating preventive work orders."
+              action={<PmPlanDialog />}
+            />
           ) : (
             <Table>
               <TableHeader>

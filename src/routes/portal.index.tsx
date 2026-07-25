@@ -3,9 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
-import { Building2, ChevronRight, Loader2 } from "lucide-react";
+import { Building2, ChevronRight, Loader2, ShieldAlert } from "lucide-react";
 
 import { listMyPortalMemberships } from "@/lib/portal.functions";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/portal/")({
   head: () => ({
@@ -29,13 +31,8 @@ function PortalIndex() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Your projects
-        </h1>
-        <p className="text-sm text-muted-foreground">Choose a project to open its portal.</p>
-      </header>
+    <div className="page-shell max-w-4xl">
+      <PageHeader title="Your projects" description="Choose a project to open its portal." />
 
       {q.isLoading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -44,13 +41,11 @@ function PortalIndex() {
       ) : q.error ? (
         <ExpiredCard />
       ) : (q.data ?? []).length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-10 text-center">
-          <Building2 className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">Nothing shared yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your project team hasn't shared any projects with you.
-          </p>
-        </div>
+        <EmptyState
+          icon={Building2}
+          title="Nothing shared yet"
+          description="Your project team hasn't shared any projects with you."
+        />
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {(q.data ?? []).map((m) => (
@@ -90,11 +85,10 @@ function PortalIndex() {
 
 function ExpiredCard() {
   return (
-    <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-10 text-center">
-      <h2 className="text-base font-semibold text-destructive">Access expired or revoked</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Contact your project sponsor to request access again.
-      </p>
-    </div>
+    <EmptyState
+      icon={ShieldAlert}
+      title="Access expired or revoked"
+      description="Contact your project sponsor to request access again."
+    />
   );
 }

@@ -26,6 +26,8 @@ import { listAdminProjects } from "@/lib/portal.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Dialog,
   DialogContent,
@@ -149,18 +151,16 @@ function ScheduledReportsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Scheduled reports</h1>
-          <p className="text-sm text-muted-foreground">
-            Weekly, monthly, or quarterly PDF reports delivered by email.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" /> New schedule
-        </Button>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Scheduled reports"
+        description="Weekly, monthly, or quarterly PDF reports delivered by email."
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> New schedule
+          </Button>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -178,9 +178,12 @@ function ScheduledReportsPage() {
               Failed to load: {(rowsQ.error as Error).message}
             </div>
           ) : (rowsQ.data ?? []).length === 0 ? (
-            <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-              No schedules yet. Create one to start delivering recurring PDF reports.
-            </div>
+            <EmptyState
+              icon={CalendarClock}
+              title="No schedules yet"
+              description="Create one to start delivering recurring PDF reports."
+              compact
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -235,7 +238,7 @@ function ScheduledReportsPage() {
                     </TableCell>
                     <TableCell>
                       {r.last_run_status === "success" && (
-                        <Badge className="bg-emerald-500/15 text-emerald-600">
+                        <Badge className="bg-success/15 text-success">
                           <CheckCircle2 className="mr-1 h-3 w-3" /> Success
                         </Badge>
                       )}
@@ -376,7 +379,7 @@ function ScheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "Edit schedule" : "New scheduled report"}</DialogTitle>
         </DialogHeader>

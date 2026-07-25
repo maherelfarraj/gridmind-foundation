@@ -2,13 +2,23 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, Plus, Search, Shield, Upload } from "lucide-react";
+import { GraduationCap, Plus, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -163,16 +173,12 @@ function TrainingPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Shield size={14} aria-hidden /> HSE
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Training
-          </h1>
-          <div className="flex gap-2">
+    <div className="page-shell">
+      <PageHeader
+        title="Training"
+        description="Site training records and certificate expiries."
+        actions={
+          <>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
               Export CSV
             </Button>
@@ -185,9 +191,9 @@ function TrainingPage() {
             >
               <Plus size={14} aria-hidden /> Add record
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
@@ -241,56 +247,45 @@ function TrainingPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <GraduationCap size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">No training records yet.</div>
-          </CardContent>
-        </Card>
+        <EmptyState icon={GraduationCap} title="No training records yet" />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
-                <th className="px-3 py-2 text-left">Person</th>
-                <th className="px-3 py-2 text-left">Course</th>
-                <th className="px-3 py-2 text-left">Provider</th>
-                <th className="px-3 py-2 text-left">Completed</th>
-                <th className="px-3 py-2 text-left">Expires</th>
-                <th className="px-3 py-2 text-left">Certificate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2 font-medium text-foreground">{r.person_name}</td>
-                  <td className="px-3 py-2">{r.course}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.provider ?? "—"}</td>
-                  <td className="px-3 py-2 tabular-nums">{r.completed_on}</td>
-                  <td className="px-3 py-2 tabular-nums">
-                    <div className="flex items-center gap-2">
-                      <span>{r.expires_on ?? "—"}</span>
-                      <TrainingExpiryBadge expiresOn={r.expires_on} />
-                    </div>
-                  </td>
-                  <td className="px-3 py-2">
-                    {r.certificate_path ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openCert(r.certificate_path!)}
-                      >
-                        View
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">None</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Person</TableHead>
+              <TableHead>Course</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Completed</TableHead>
+              <TableHead>Expires</TableHead>
+              <TableHead>Certificate</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium text-foreground">{r.person_name}</TableCell>
+                <TableCell>{r.course}</TableCell>
+                <TableCell className="text-muted-foreground">{r.provider ?? "—"}</TableCell>
+                <TableCell className="tabular-nums">{r.completed_on}</TableCell>
+                <TableCell className="tabular-nums">
+                  <div className="flex items-center gap-2">
+                    <span>{r.expires_on ?? "—"}</span>
+                    <TrainingExpiryBadge expiresOn={r.expires_on} />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {r.certificate_path ? (
+                    <Button variant="ghost" size="sm" onClick={() => openCert(r.certificate_path!)}>
+                      View
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">None</span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>

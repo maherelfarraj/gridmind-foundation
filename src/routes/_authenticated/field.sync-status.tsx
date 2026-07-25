@@ -44,7 +44,7 @@ function SyncStatusPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    <div className="page-shell">
       <header className="flex flex-col gap-2">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Field</div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">

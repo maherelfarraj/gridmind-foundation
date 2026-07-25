@@ -3,6 +3,9 @@ import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, FileText, Loader2, Plus, Search, Upload } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -129,34 +132,30 @@ function SubmittalsIndexPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 md:p-6">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <FileText size={14} aria-hidden /> Field / Document control
-          </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Submittals
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={onExport} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> CSV
-          </Button>
-          <Button size="sm" onClick={() => setDlgOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New submittal
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Submittals"
+        description="Track spec submittals, revisions, and review turnaround."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={onExport} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> CSV
+            </Button>
+            <Button size="sm" onClick={() => setDlgOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> New submittal
+            </Button>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-        <Kpi label="Open" value={String(open)} />
-        <Kpi
+      <KpiGrid columns={3}>
+        <KpiTile label="Open" value={String(open)} />
+        <KpiTile
           label="Avg turnaround"
           value={turnaround === null ? "—" : `${turnaround.toFixed(1)} d`}
         />
-        <Kpi label="Total" value={String(rows.length)} />
-      </div>
+        <KpiTile label="Total" value={String(rows.length)} />
+      </KpiGrid>
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
@@ -237,11 +236,7 @@ function SubmittalsIndexPage() {
           </AlertDescription>
         </Alert>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            No submittals yet. Create the first one.
-          </CardContent>
-        </Card>
+        <EmptyState icon={FileText} title="No submittals yet" description="Create the first one." />
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -293,17 +288,6 @@ function SubmittalsIndexPage() {
         defaultProjectId={sp.projectId}
       />
     </div>
-  );
-}
-
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-        <span className="font-display text-xl font-semibold text-foreground">{value}</span>
-      </CardContent>
-    </Card>
   );
 }
 

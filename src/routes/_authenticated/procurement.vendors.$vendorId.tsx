@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
 import { VendorForm } from "@/components/procurement/vendor-form";
 import { VendorCertifications } from "@/components/procurement/vendor-certifications";
 import {
@@ -68,58 +70,61 @@ function VendorDetail() {
   const changeStatus = useChangeVendorStatus(vendorId);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate({ to: "/procurement/vendors" })}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to vendors
-          </Button>
-          <div className="mt-2 flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold tracking-tight">{vendor.name}</h1>
+    <div className="page-shell max-w-4xl">
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/vendors" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to vendors
+        </Button>
+      </div>
+
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            {vendor.name}
             <Badge variant="outline" className="capitalize">
               {vendor.status.replace("_", " ")}
             </Badge>
-          </div>
-          {vendor.legal_name && (
-            <p className="text-sm text-muted-foreground">{vendor.legal_name}</p>
-          )}
-        </div>
-        {canWrite && (
-          <div className="w-52 space-y-1.5">
-            <label className="text-xs uppercase tracking-wide text-muted-foreground">Status</label>
-            <Select
-              value={vendor.status}
-              onValueChange={(v) => changeStatus.mutate(v as VendorStatus)}
-              disabled={changeStatus.isPending}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {VENDOR_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replace("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </div>
+          </span>
+        }
+        description={vendor.legal_name ?? undefined}
+        actions={
+          canWrite ? (
+            <div className="w-52 space-y-1.5">
+              <label className="text-xs uppercase tracking-wide text-muted-foreground">
+                Status
+              </label>
+              <Select
+                value={vendor.status}
+                onValueChange={(v) => changeStatus.mutate(v as VendorStatus)}
+                disabled={changeStatus.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {VENDOR_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s} className="capitalize">
+                      {s.replace("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : undefined
+        }
+      />
 
-      <div className="rounded-xl border border-border bg-card p-6">
-        <VendorForm
-          initial={vendor}
-          submitting={update.isPending}
-          submitLabel="Save changes"
-          disabled={!canWrite}
-          onSubmit={(input) => update.mutate(input)}
-        />
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <VendorForm
+            initial={vendor}
+            submitting={update.isPending}
+            submitLabel="Save changes"
+            disabled={!canWrite}
+            onSubmit={(input) => update.mutate(input)}
+          />
+        </CardContent>
+      </Card>
 
       <VendorCertifications
         vendorId={vendor.id}

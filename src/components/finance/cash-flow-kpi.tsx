@@ -1,5 +1,7 @@
 // P-077 — Cash-flow KPI tile: peak funding requirement.
-import { Card } from "@/components/ui/card";
+import { AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
+
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { formatPeriod } from "@/lib/cash-flow.rules";
 
 function fmt(v: number, base: string): string {
@@ -19,34 +21,29 @@ export function CashFlowKpi(props: {
   netActual: number;
 }) {
   return (
-    <div className="grid gap-3 md:grid-cols-3">
-      <Card className="p-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Peak funding requirement
-        </div>
-        <div className="mt-1 text-2xl font-semibold text-foreground">
-          {fmt(props.peak, props.baseCurrency)}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {props.peakPeriod
+    <KpiGrid columns={3} label="Cash flow key performance indicators">
+      <KpiTile
+        icon={AlertTriangle}
+        label="Peak funding requirement"
+        value={fmt(props.peak, props.baseCurrency)}
+        hint={
+          props.peakPeriod
             ? `Deepest cumulative dip · ${formatPeriod(props.peakPeriod)}`
-            : "No funding gap projected"}
-        </div>
-      </Card>
-      <Card className="p-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Net forecast</div>
-        <div className="mt-1 text-2xl font-semibold text-foreground">
-          {fmt(props.netForecast, props.baseCurrency)}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">Sum of forecast inflows − outflows</div>
-      </Card>
-      <Card className="p-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Net actual</div>
-        <div className="mt-1 text-2xl font-semibold text-foreground">
-          {fmt(props.netActual, props.baseCurrency)}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">Sum of realised inflows − outflows</div>
-      </Card>
-    </div>
+            : "No funding gap projected"
+        }
+      />
+      <KpiTile
+        icon={TrendingUp}
+        label="Net forecast"
+        value={fmt(props.netForecast, props.baseCurrency)}
+        hint="Sum of forecast inflows − outflows"
+      />
+      <KpiTile
+        icon={TrendingDown}
+        label="Net actual"
+        value={fmt(props.netActual, props.baseCurrency)}
+        hint="Sum of realised inflows − outflows"
+      />
+    </KpiGrid>
   );
 }

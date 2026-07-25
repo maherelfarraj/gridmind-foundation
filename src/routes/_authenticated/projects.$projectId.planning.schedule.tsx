@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,9 @@ import {
 } from "@/lib/schedule.query";
 import { avgFinishVariance, isOverdue, weightedProgress } from "@/lib/schedule.rules";
 import { buildVarianceCsv, downloadCsv } from "@/lib/schedule.csv";
+import { SectionHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { CalendarClock } from "lucide-react";
 
 import { GanttView } from "@/components/planning/gantt-view";
 import { ScheduleKpiStrip } from "@/components/planning/schedule-kpi-strip";
@@ -188,16 +190,14 @@ function SchedulePage() {
   const showCompare = compare && !!snapshot;
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <CalendarClock size={18} aria-hidden className="text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold text-foreground">Schedule</h2>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Schedule"
+        description="Gantt view with baseline lock and variance tracking."
+      />
 
       {!canWrite && (
-        <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
+        <Card className="p-4 text-sm text-muted-foreground">
           You have read-only access to the schedule. Ask a project or company admin for write
           access.
         </Card>
@@ -211,7 +211,7 @@ function SchedulePage() {
         baselineName={showCompare ? (selectedBaseline?.name ?? null) : null}
       />
 
-      <Card className="border-border bg-card p-3">
+      <Card className="p-4">
         <ScheduleToolbar
           baselines={baselines}
           selectedBaselineId={effectiveBaselineId}
@@ -234,8 +234,12 @@ function SchedulePage() {
       </Card>
 
       {tasks.length === 0 ? (
-        <Card className="border-border bg-card p-8 text-center text-sm text-muted-foreground">
-          No tasks yet — build the WBS first, then add tasks here.
+        <Card className="p-8">
+          <EmptyState
+            icon={CalendarClock}
+            title="No tasks yet"
+            description="Build the WBS first, then add tasks here."
+          />
         </Card>
       ) : (
         <GanttView

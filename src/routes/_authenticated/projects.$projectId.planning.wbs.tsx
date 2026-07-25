@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FolderTree, Plus, Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,9 @@ import { WbsTree } from "@/components/planning/wbs-tree";
 import { WbsDetailForm } from "@/components/planning/wbs-detail-form";
 import { IfcImportDialog } from "@/components/planning/ifc-import-dialog";
 import { TaskAlignmentPanel } from "@/components/planning/task-alignment-panel";
+import { SectionHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FolderTree } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/wbs")({
   head: () => ({
@@ -159,49 +162,47 @@ function WbsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <FolderTree size={18} className="text-muted-foreground" aria-hidden />
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Work Breakdown Structure
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setImportOpen(true)}
-            disabled={!canWrite}
-          >
-            <Upload size={14} aria-hidden />
-            Import IFC packages
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleQuickAddRoot}
-            disabled={!canWrite || createMut.isPending}
-          >
-            <Plus size={14} aria-hidden />
-            Add root item
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <SectionHeader
+        title="Work Breakdown Structure"
+        description="Build the project WBS and align schedule tasks to disciplines."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              disabled={!canWrite}
+            >
+              <Upload size={14} aria-hidden />
+              Import IFC packages
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleQuickAddRoot}
+              disabled={!canWrite || createMut.isPending}
+            >
+              <Plus size={14} aria-hidden />
+              Add root item
+            </Button>
+          </div>
+        }
+      />
 
       {!canWrite && (
-        <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
+        <Card className="p-4 text-sm text-muted-foreground">
           You have read-only access to the WBS. Ask a project or company admin for write access.
         </Card>
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="border-border bg-card p-3">
+        <Card className="p-3">
           {items.length === 0 ? (
-            <div className="flex flex-col items-start gap-2 p-4">
-              <p className="text-sm text-muted-foreground">
-                No WBS items yet. Import IFC packages or add a root item to get started.
-              </p>
-            </div>
+            <EmptyState
+              icon={FolderTree}
+              title="No WBS items yet"
+              description="Import IFC packages or add a root item to get started."
+            />
           ) : (
             <WbsTree
               items={items}
@@ -219,7 +220,7 @@ function WbsPage() {
           )}
         </Card>
 
-        <Card className="border-border bg-card p-4">
+        <Card className="p-4">
           <WbsDetailForm
             key={selected?.id ?? "empty"}
             item={selected}

@@ -10,6 +10,7 @@ import { FileText, Lock, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,12 +47,13 @@ export function SldGallery({ projectId, canWrite }: { projectId: string; canWrit
 
       {rows.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
-            <FileText className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              No single-line diagrams yet — upload your first SLD.
-            </p>
-            {canWrite && <NewSldDialog projectId={projectId} />}
+          <CardContent className="py-12">
+            <EmptyState
+              icon={FileText}
+              title="No single-line diagrams yet"
+              description="Upload your first SLD to get started."
+              action={canWrite ? <NewSldDialog projectId={projectId} /> : undefined}
+            />
           </CardContent>
         </Card>
       ) : (

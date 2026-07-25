@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -147,7 +149,7 @@ function ApprovalRulesPage() {
 
   if (perm.isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <div className="page-shell">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -156,7 +158,7 @@ function ApprovalRulesPage() {
 
   if (perm.data?.allowed !== true) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <div className="page-shell max-w-3xl">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -170,21 +172,16 @@ function ApprovalRulesPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Approval rules
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Threshold triggers and sequential approver chains applied across POs, proposals, gates,
-            contracts and change orders.
-          </p>
-        </div>
-        <Button onClick={() => setCreating(true)}>
-          <Plus className="mr-2 h-4 w-4" /> New rule
-        </Button>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Approval rules"
+        description="Threshold triggers and sequential approver chains for POs, proposals, gates, contracts, and change orders."
+        actions={
+          <Button onClick={() => setCreating(true)}>
+            <Plus className="mr-2 h-4 w-4" /> New rule
+          </Button>
+        }
+      />
 
       <Card>
         <CardContent className="p-0">
@@ -193,21 +190,26 @@ function ApprovalRulesPage() {
               <Skeleton className="h-40 w-full" />
             </div>
           ) : rules.isError ? (
-            <div className="flex flex-col items-center gap-3 p-10 text-center">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-              <p className="text-sm text-muted-foreground">{(rules.error as Error).message}</p>
-              <Button variant="outline" onClick={() => rules.refetch()}>
-                Retry
-              </Button>
-            </div>
+            <EmptyState
+              icon={AlertCircle}
+              title="Could not load approval rules"
+              description={(rules.error as Error).message}
+              action={
+                <Button variant="outline" onClick={() => rules.refetch()}>
+                  Retry
+                </Button>
+              }
+            />
           ) : (rules.data ?? []).length === 0 ? (
-            <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <ShieldCheck className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No approval rules yet.</p>
-              <Button variant="outline" onClick={() => setCreating(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Create your first rule
-              </Button>
-            </div>
+            <EmptyState
+              icon={ShieldCheck}
+              title="No approval rules yet"
+              action={
+                <Button variant="outline" onClick={() => setCreating(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Create your first rule
+                </Button>
+              }
+            />
           ) : (
             <Table>
               <TableHeader>

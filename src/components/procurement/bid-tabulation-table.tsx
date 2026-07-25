@@ -150,100 +150,98 @@ export function BidTabulationTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[200px]">Vendor</TableHead>
-              {rfqLines.map((l) => (
-                <TableHead key={l.line_no} className="min-w-[180px]">
-                  <div className="font-medium">
-                    #{l.line_no} · {l.description}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[200px]">Vendor</TableHead>
+            {rfqLines.map((l) => (
+              <TableHead key={l.line_no} className="min-w-[180px]">
+                <div className="font-medium">
+                  #{l.line_no} · {l.description}
+                </div>
+                <div className="text-xs font-normal text-muted-foreground">
+                  Target {fmtMoney(l.target_price ?? null, currency)} · qty {l.qty} {l.uom}
+                </div>
+              </TableHead>
+            ))}
+            <TableHead className="min-w-[140px] text-right">Vendor total TCO</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {matrix.rows.map((row) => {
+            const isVendorWinner = row.bidId === matrix.overallWinnerBidId;
+            return (
+              <TableRow key={row.bidId}>
+                <TableCell className="align-top">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{row.vendorName}</span>
+                    {isVendorWinner && <Trophy className="h-4 w-4 text-primary" />}
                   </div>
-                  <div className="text-xs font-normal text-muted-foreground">
-                    Target {fmtMoney(l.target_price ?? null, currency)} · qty {l.qty} {l.uom}
+                  {!row.compliant && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="destructive" className="mt-1 gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Non-compliant
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs text-xs">
+                          <ul className="space-y-1">
+                            {row.issues.map((i, idx) => (
+                              <li key={idx}>
+                                {i.kind === "missing_line" && `Missing line #${i.line_no}`}
+                                {i.kind === "expired_validity" &&
+                                  `Validity expired ${i.validityDate}`}
+                                {i.kind === "invalid_status" && `Bid status: ${i.status}`}
+                              </li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <div className="mt-1 text-xs text-muted-foreground capitalize">
+                    {row.status.replace("_", " ")}
                   </div>
-                </TableHead>
-              ))}
-              <TableHead className="min-w-[140px] text-right">Vendor total TCO</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {matrix.rows.map((row) => {
-              const isVendorWinner = row.bidId === matrix.overallWinnerBidId;
-              return (
-                <TableRow key={row.bidId}>
-                  <TableCell className="align-top">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{row.vendorName}</span>
-                      {isVendorWinner && <Trophy className="h-4 w-4 text-primary" />}
-                    </div>
-                    {!row.compliant && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="destructive" className="mt-1 gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              Non-compliant
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs text-xs">
-                            <ul className="space-y-1">
-                              {row.issues.map((i, idx) => (
-                                <li key={idx}>
-                                  {i.kind === "missing_line" && `Missing line #${i.line_no}`}
-                                  {i.kind === "expired_validity" &&
-                                    `Validity expired ${i.validityDate}`}
-                                  {i.kind === "invalid_status" && `Bid status: ${i.status}`}
-                                </li>
-                              ))}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    <div className="mt-1 text-xs text-muted-foreground capitalize">
-                      {row.status.replace("_", " ")}
-                    </div>
-                  </TableCell>
-                  {rfqLines.map((l) => {
-                    const cell = row.cells.get(l.line_no);
-                    const isWinner = matrix.winnersByLine.get(l.line_no) === row.bidId;
-                    return (
-                      <TableCell
-                        key={l.line_no}
-                        className={`align-top ${isWinner ? "bg-primary/10" : ""}`}
-                      >
-                        {cell ? (
-                          <div className="space-y-0.5">
-                            <div className="font-medium">
-                              {fmtMoney(cell.tco, currency)}
-                              {isWinner && <span className="ml-1 text-xs text-primary">★</span>}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {fmtMoney(cell.unit_price, currency)} / {cell.qty} · ext{" "}
-                              {fmtMoney(cell.extended, currency)}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Δ target {fmtPct(cell.price_variance_pct)} · lead{" "}
-                              {cell.lead_time_days ?? "—"}d (+{cell.delay_days})
-                            </div>
+                </TableCell>
+                {rfqLines.map((l) => {
+                  const cell = row.cells.get(l.line_no);
+                  const isWinner = matrix.winnersByLine.get(l.line_no) === row.bidId;
+                  return (
+                    <TableCell
+                      key={l.line_no}
+                      className={`align-top ${isWinner ? "bg-primary/10" : ""}`}
+                    >
+                      {cell ? (
+                        <div className="space-y-0.5">
+                          <div className="font-medium">
+                            {fmtMoney(cell.tco, currency)}
+                            {isWinner && <span className="ml-1 text-xs text-primary">★</span>}
                           </div>
-                        ) : (
-                          <span className="text-xs text-destructive">not quoted</span>
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                  <TableCell className="text-right align-top font-semibold">
-                    {fmtMoney(row.vendorTotalTco, currency)}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+                          <div className="text-xs text-muted-foreground">
+                            {fmtMoney(cell.unit_price, currency)} / {cell.qty} · ext{" "}
+                            {fmtMoney(cell.extended, currency)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Δ target {fmtPct(cell.price_variance_pct)} · lead{" "}
+                            {cell.lead_time_days ?? "—"}d (+{cell.delay_days})
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-destructive">not quoted</span>
+                      )}
+                    </TableCell>
+                  );
+                })}
+                <TableCell className="text-right align-top font-semibold">
+                  {fmtMoney(row.vendorTotalTco, currency)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 }

@@ -68,7 +68,7 @@ export function RiskRegisterTable({ risks, canWrite, onNew, onSelect }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Card className="flex flex-wrap items-center gap-2 border-border bg-card p-3">
+      <Card className="flex flex-wrap items-center gap-2 p-4">
         <div className="relative flex-1 min-w-[220px]">
           <Search
             aria-hidden
@@ -122,13 +122,13 @@ export function RiskRegisterTable({ risks, canWrite, onNew, onSelect }: Props) {
       </Card>
 
       {filtered.length === 0 ? (
-        <Card className="border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        <Card className="p-8">
           {risks.length === 0
             ? "No risks logged — a stale register fails lender due diligence."
             : "No risks match the current filters."}
         </Card>
       ) : (
-        <Card className="border-border bg-card">
+        <Card>
           <Table>
             <TableHeader>
               <TableRow>

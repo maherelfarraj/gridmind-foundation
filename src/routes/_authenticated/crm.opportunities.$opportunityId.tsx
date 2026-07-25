@@ -91,7 +91,7 @@ function OpportunityDetailPage() {
   if (!opp) return <OpportunityNotFound />;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 sm:p-6">
+    <div className="page-shell max-w-6xl">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link
           to="/crm/pipeline"
@@ -148,7 +148,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
     <div className="mx-auto flex w-full max-w-3xl p-6">
-      <Card className="flex w-full flex-col items-start gap-3 border-destructive/40 bg-card p-6">
+      <Card className="flex w-full flex-col items-start gap-3 border-destructive/40 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
           Couldn&rsquo;t load this opportunity
         </h2>
@@ -180,7 +180,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
 function OpportunityNotFound() {
   return (
     <div className="mx-auto flex w-full max-w-3xl p-6">
-      <Card className="flex w-full flex-col items-start gap-3 border-border bg-card p-6">
+      <Card className="flex w-full flex-col items-start gap-3 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
           Opportunity not available
         </h2>

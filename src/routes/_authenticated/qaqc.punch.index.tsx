@@ -8,6 +8,8 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -106,24 +108,18 @@ function PunchIndexPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
-      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
-            Punch list
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Category A items block COD. B items block handover. C is cosmetic.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="page-shell">
+      <PageHeader
+        title="Punch list"
+        description="Category A items block COD. B items block handover. C is cosmetic."
+        actions={
           <Button asChild variant="outline">
             <Link to="/qaqc/punch/walk">
               <Plus className="mr-2 h-4 w-4" /> Punch walk
             </Link>
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <KpiTile
@@ -278,18 +274,17 @@ function PunchIndexPage() {
           </CardContent>
         </Card>
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              No punch items match the current filters.
-            </p>
+        <EmptyState
+          icon={AlertTriangle}
+          title="No punch items match the current filters"
+          action={
             <Button asChild>
               <Link to="/qaqc/punch/walk">
                 <Plus className="mr-2 h-4 w-4" /> Start a punch walk
               </Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : view === "board" ? (
         <BoardView items={items} />
       ) : (
@@ -314,7 +309,7 @@ function KpiTile({
     tone === "destructive"
       ? "border-destructive/40 bg-destructive/10 text-destructive"
       : tone === "warning"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+        ? "border-warning/30 bg-warning/10 text-warning"
         : "border-border bg-card text-foreground";
   return (
     <Card className={`border ${toneClass}`}>

@@ -43,6 +43,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/ifc-release")(
@@ -54,14 +56,11 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
 function IfcReleasePage() {
   const { projectId } = Route.useParams();
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">IFC release ceremony</h1>
-        <p className="text-sm text-muted-foreground">
-          Package eligible IFD drawings, collect role sign-offs, and release the Issued for
-          Construction bundle.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="IFC release ceremony"
+        description="Package eligible IFD drawings, collect role sign-offs, and release the IFC bundle."
+      />
 
       <Suspense fallback={<Skeleton className="h-24 w-full" />}>
         <KpiStrip projectId={projectId} />
@@ -102,16 +101,11 @@ function KpiStrip({ projectId }: { projectId: string }) {
     },
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <KpiGrid>
       {cards.map((c) => (
-        <Card key={c.label}>
-          <CardHeader className="pb-1">
-            <CardDescription>{c.label}</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0 text-2xl font-semibold">{c.value}</CardContent>
-        </Card>
+        <KpiTile key={c.label} label={c.label} value={c.value} />
       ))}
-    </div>
+    </KpiGrid>
   );
 }
 

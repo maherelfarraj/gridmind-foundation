@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/admin/health")({
   head: () => ({
@@ -54,7 +55,7 @@ function statusBadge(status: SignalStatus) {
   }
   if (status === "warn") {
     return (
-      <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 uppercase tracking-wide hover:bg-amber-500/15">
+      <Badge className="bg-warning/15 text-warning border border-warning/30 uppercase tracking-wide hover:bg-warning/15">
         Warn
       </Badge>
     );
@@ -68,7 +69,7 @@ function statusBadge(status: SignalStatus) {
 
 function statusIcon(status: SignalStatus) {
   if (status === "crit") return <ShieldAlert className="h-4 w-4 text-destructive" />;
-  if (status === "warn") return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+  if (status === "warn") return <AlertTriangle className="h-4 w-4 text-warning" />;
   return <CheckCircle2 className="h-4 w-4 text-primary" />;
 }
 
@@ -82,30 +83,25 @@ function HealthPage() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Ops Health
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Audit-driven signals from the public API guard, webhook framework, and cron schedulers.
-            Refreshes automatically every minute.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {query.data ? statusBadge(query.data.overall) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell max-w-6xl">
+      <PageHeader
+        title="Ops Health"
+        description="Audit-driven signals from the public API guard, webhook framework, and cron schedulers."
+        actions={
+          <div className="flex items-center gap-3">
+            {query.data ? statusBadge(query.data.overall) : null}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        }
+      />
 
       {query.isPending ? <HealthSkeleton /> : null}
 

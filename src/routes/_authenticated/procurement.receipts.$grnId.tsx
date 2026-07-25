@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { GrnStatusBadge } from "@/components/procurement/grn-status-badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { getGrn } from "@/lib/grn.functions";
 import { grnDetailQueryOptions } from "@/lib/grn-query";
 
@@ -42,51 +43,31 @@ function GrnDetail() {
   const grn = query.data;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-4">
+    <div className="page-shell max-w-4xl">
       <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to receipts
       </Button>
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <PackageOpen className="h-3.5 w-3.5" /> Procurement · GRN
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{grn.grn_number}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <PageHeader
+        title={grn.grn_number}
+        description={[
+          grn.po_number ? `PO ${grn.po_number}` : null,
+          grn.vendor_name,
+          grn.received_at ? `Received ${format(new Date(grn.received_at), "PPp")}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        actions={
+          <>
             <GrnStatusBadge status={grn.status} />
-            {grn.po_number && (
-              <>
-                <span>·</span>
-                <Link
-                  to="/procurement/pos/$poId"
-                  params={{ poId: grn.po_id }}
-                  className="underline-offset-4 hover:underline"
-                >
-                  PO {grn.po_number}
-                </Link>
-              </>
-            )}
-            {grn.vendor_name && (
-              <>
-                <span>·</span>
-                <span>{grn.vendor_name}</span>
-              </>
-            )}
-            {grn.received_at && (
-              <>
-                <span>·</span>
-                <span>Received {format(new Date(grn.received_at), "PPp")}</span>
-              </>
-            )}
-          </div>
-        </div>
-        <Badge variant="outline">
-          Defects: <span className="ml-1 font-mono">{grn.defects_count}</span>
-        </Badge>
-      </header>
+            <Badge variant="outline">
+              Defects: <span className="ml-1 font-mono">{grn.defects_count}</span>
+            </Badge>
+          </>
+        }
+      />
 
-      <section className="rounded-md border border-border">
+      <section>
         <Table>
           <TableHeader>
             <TableRow>

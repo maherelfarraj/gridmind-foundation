@@ -2,13 +2,15 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Plus, Search, Shield } from "lucide-react";
+import { AlertTriangle, Plus, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -77,16 +79,12 @@ function IncidentListPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Shield size={14} aria-hidden /> HSE
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Incidents
-          </h1>
-          <div className="flex gap-2">
+    <div className="page-shell">
+      <PageHeader
+        title="Incidents"
+        description="All logged HSE incidents with 24-hour rule enforcement."
+        actions={
+          <>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
               Export CSV
             </Button>
@@ -95,9 +93,9 @@ function IncidentListPage() {
                 <Plus size={14} aria-hidden /> Log incident
               </Link>
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-4">
@@ -165,14 +163,11 @@ function IncidentListPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <AlertTriangle size={32} className="text-muted-foreground" aria-hidden />
-            <div className="text-sm text-muted-foreground">
-              No incidents yet — tap Log incident.
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={AlertTriangle}
+          title="No incidents yet"
+          description="Tap Log incident to report an HSE incident."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((r) => (

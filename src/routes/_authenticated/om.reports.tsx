@@ -4,13 +4,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, parseISO } from "date-fns";
-import { AlertTriangle, Download, FileText, Info } from "lucide-react";
+import { AlertTriangle, Download, Inbox } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { GenerateOmReportDialog } from "@/components/om/GenerateOmReportDialog";
 import {
   getOmReportDownloadUrl,
@@ -63,27 +73,16 @@ function OmReportsPage() {
   const projects = useQuery(omReportProjectsQueryOptions());
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 pb-16">
-      <header className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <FileText size={14} aria-hidden /> O&amp;M
-        </div>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              Monthly O&amp;M reports
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Availability, PR, alarms, work orders and spend — one branded PDF per project + month.
-            </p>
-          </div>
-          <GenerateOmReportDialog projects={projects.data ?? []} />
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Monthly O&M reports"
+        description="Availability, PR, alarms, work orders and spend — one branded PDF per project."
+        actions={<GenerateOmReportDialog projects={projects.data ?? []} />}
+      />
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Reports</CardTitle>
+          <CardTitle className="text-sm font-medium">Reports</CardTitle>
         </CardHeader>
         <CardContent>
           {list.isLoading ? (
@@ -106,35 +105,29 @@ function OmReportsPage() {
               </Button>
             </div>
           ) : (list.data ?? []).length === 0 ? (
-            <div className="rounded-md border border-dashed border-border bg-muted/30 p-10 text-center">
-              <div className="mx-auto mb-3 flex justify-center">
-                <Info className="h-8 w-8 text-muted-foreground" aria-hidden />
-              </div>
-              <p className="text-sm font-medium text-foreground">No reports yet</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Click <strong>Generate monthly report</strong> to build the first one.
-              </p>
-            </div>
+            <EmptyState
+              icon={Inbox}
+              title="No reports yet"
+              description="Click Generate monthly report to build the first one."
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="py-2 text-left">Project</th>
-                    <th className="py-2 text-left">Period</th>
-                    <th className="py-2 text-left">Type</th>
-                    <th className="py-2 text-left">Status</th>
-                    <th className="py-2 text-left">Generated</th>
-                    <th className="py-2 text-right">Download</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(list.data ?? []).map((r) => (
-                    <ReportRow key={r.id} row={r} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Generated</TableHead>
+                  <TableHead className="text-right">Download</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(list.data ?? []).map((r) => (
+                  <ReportRow key={r.id} row={r} />
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -162,20 +155,20 @@ function ReportRow({ row }: { row: OmReportRow }) {
   }
 
   return (
-    <tr className="border-t border-border/60">
-      <td className="py-2 font-medium">{row.project_name ?? "—"}</td>
-      <td className="py-2">{period}</td>
-      <td className="py-2 capitalize">{row.report_type}</td>
-      <td className="py-2">
+    <TableRow>
+      <TableCell className="font-medium">{row.project_name ?? "—"}</TableCell>
+      <TableCell>{period}</TableCell>
+      <TableCell className="capitalize">{row.report_type}</TableCell>
+      <TableCell>
         <Badge variant={row.status === "generated" ? "default" : "outline"}>{row.status}</Badge>
-      </td>
-      <td className="py-2 text-muted-foreground">{generated}</td>
-      <td className="py-2 text-right">
+      </TableCell>
+      <TableCell className="text-muted-foreground">{generated}</TableCell>
+      <TableCell className="text-right">
         <Button size="sm" variant="outline" disabled={!row.pdf_path || busy} onClick={download}>
           <Download className="mr-2 h-3.5 w-3.5" aria-hidden />
           PDF
         </Button>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

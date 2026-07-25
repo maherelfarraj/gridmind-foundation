@@ -105,7 +105,7 @@ function Inner({ projectId, onDone }: { projectId: string; onDone: () => void })
   const dueDate = form.watch("dueDate");
 
   return (
-    <DialogContent className="max-w-lg">
+    <DialogContent>
       <DialogHeader>
         <DialogTitle>Raise RFI</DialogTitle>
         <DialogDescription>

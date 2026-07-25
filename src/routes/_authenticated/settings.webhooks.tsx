@@ -41,6 +41,8 @@ import { EXPORT_ALLOWLIST_CATALOG } from "@/lib/public-api/export-allowlist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Accordion,
@@ -254,27 +256,24 @@ function WebhooksPage() {
     endpoints.error instanceof Error && /forbidden|401|unauth/i.test(endpoints.error.message);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Webhooks</h1>
-          <p className="text-sm text-muted-foreground">
-            Register HTTPS endpoints, pick the tables you want exported, and we'll POST signed
-            events with automatic retries.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href="/docs/api#webhooks" target="_blank" rel="noreferrer">
-              Webhook docs
-            </a>
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New endpoint
-          </Button>
-        </div>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Webhooks"
+        description="Register HTTPS endpoints and receive signed events with automatic retries."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <a href="/docs/api#webhooks" target="_blank" rel="noreferrer">
+                Webhook docs
+              </a>
+            </Button>
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              New endpoint
+            </Button>
+          </>
+        }
+      />
 
       <Tabs defaultValue="endpoints">
         <TabsList>
@@ -326,18 +325,18 @@ function WebhooksPage() {
             </Card>
           ) : endpoints.data && endpoints.data.length === 0 ? (
             <Card>
-              <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
-                <Radio className="h-10 w-10 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">No webhook endpoints yet</p>
-                  <p className="text-sm text-muted-foreground">
-                    Add one to receive signed events for your integrations.
-                  </p>
-                </div>
-                <Button onClick={() => setCreateOpen(true)}>
-                  <Plus className="mr-1.5 h-4 w-4" />
-                  New endpoint
-                </Button>
+              <CardContent>
+                <EmptyState
+                  icon={Radio}
+                  title="No webhook endpoints yet"
+                  description="Add one to receive signed events for your integrations."
+                  action={
+                    <Button onClick={() => setCreateOpen(true)}>
+                      <Plus className="mr-1.5 h-4 w-4" />
+                      New endpoint
+                    </Button>
+                  }
+                />
               </CardContent>
             </Card>
           ) : (
@@ -632,9 +631,12 @@ function DeliveriesTable({ endpointId }: { endpointId: string }) {
   const rows = (q.data ?? []) as WebhookDeliveryRow[];
   if (rows.length === 0) {
     return (
-      <div className="p-6 text-center text-sm text-muted-foreground">
-        No deliveries yet. Send a test event to try it out.
-      </div>
+      <EmptyState
+        icon={Send}
+        title="No deliveries yet"
+        description="Send a test event to try it out."
+        compact
+      />
     );
   }
 

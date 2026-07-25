@@ -7,13 +7,16 @@ import {
   CalendarClock,
   ClipboardCheck,
   GraduationCap,
+  Inbox,
   Plus,
-  Shield,
   ShieldAlert,
   TrendingUp,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -63,16 +66,12 @@ function HseDashboardPage() {
 
   return (
     <TooltipProvider>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pb-24">
-        <header className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Shield size={14} aria-hidden /> HSE
-          </div>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              HSE dashboard
-            </h1>
-            <div className="flex gap-2">
+      <div className="page-shell">
+        <PageHeader
+          title="HSE dashboard"
+          description="Safety culture, codified — TRIR, 24-hour rule, inspections."
+          actions={
+            <>
               <Button asChild variant="outline" size="sm">
                 <Link to="/hse/incidents">All incidents</Link>
               </Button>
@@ -81,24 +80,24 @@ function HseDashboardPage() {
                   <Plus size={14} aria-hidden /> Log incident
                 </Link>
               </Button>
-            </div>
-          </div>
-          <div className="max-w-xs">
-            <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger>
-                <SelectValue placeholder="All projects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All projects</SelectItem>
-                {(projectsQuery.data ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </header>
+            </>
+          }
+        />
+        <div className="max-w-xs">
+          <Select value={projectId} onValueChange={setProjectId}>
+            <SelectTrigger>
+              <SelectValue placeholder="All projects" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All projects</SelectItem>
+              {(projectsQuery.data ?? []).map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {dashQuery.isError ? (
           <Card>
@@ -122,8 +121,8 @@ function HseDashboardPage() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <KpiCard
+        <KpiGrid columns={4}>
+          <KpiTile
             icon={TrendingUp}
             label="TRIR (12m)"
             value={trirLabel}
@@ -134,34 +133,34 @@ function HseDashboardPage() {
                   ? `${data.recordables12m} recordable · ${data.hours12m.toFixed(0)}h`
                   : undefined
             }
-            loading={dashQuery.isLoading}
+            isLoading={dashQuery.isLoading}
           />
-          <KpiCard
+          <KpiTile
             icon={ShieldAlert}
             label="Open incidents"
             value={data ? data.openIncidents.toString() : "—"}
-            loading={dashQuery.isLoading}
+            isLoading={dashQuery.isLoading}
           />
-          <KpiCard
+          <KpiTile
             icon={CalendarClock}
             label="Logged late"
             value={data ? data.overdueLogs.toString() : "—"}
             hint="Reported more than 24h after occurrence"
-            loading={dashQuery.isLoading}
+            isLoading={dashQuery.isLoading}
           />
-          <KpiCard
+          <KpiTile
             icon={ClipboardCheck}
             label="Inspections MTD"
             value={data ? data.inspectionsThisMonth.toString() : "—"}
-            loading={dashQuery.isLoading}
+            isLoading={dashQuery.isLoading}
           />
-          <KpiCard
+          <KpiTile
             icon={GraduationCap}
             label="Certs ≤ 30d"
             value={data ? data.trainingExpiring.toString() : "—"}
-            loading={dashQuery.isLoading}
+            isLoading={dashQuery.isLoading}
           />
-        </div>
+        </KpiGrid>
 
         <Card>
           <CardHeader>
@@ -175,9 +174,12 @@ function HseDashboardPage() {
                 <Skeleton className="h-12" />
               </>
             ) : (data?.recentIncidents ?? []).length === 0 ? (
-              <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground">
-                No incidents logged in the last 12 months.
-              </div>
+              <EmptyState
+                icon={Inbox}
+                title="No incidents logged"
+                description="No incidents were logged in the last 12 months."
+                compact
+              />
             ) : (
               (data?.recentIncidents ?? []).map((r) => (
                 <Link
@@ -209,38 +211,5 @@ function HseDashboardPage() {
         </Card>
       </div>
     </TooltipProvider>
-  );
-}
-
-interface KpiProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value: string;
-  hint?: string;
-  loading?: boolean;
-}
-function KpiCard({ icon: Icon, label, value, hint, loading }: KpiProps) {
-  const body = (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-4">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Icon size={12} /> {label}
-        </div>
-        {loading ? (
-          <Skeleton className="h-8 w-16" />
-        ) : (
-          <div className="font-display text-2xl font-semibold tabular-nums text-foreground">
-            {value}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-  if (!hint) return body;
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{body}</TooltipTrigger>
-      <TooltipContent>{hint}</TooltipContent>
-    </Tooltip>
   );
 }

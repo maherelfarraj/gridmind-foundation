@@ -25,6 +25,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MatchStatusBadge } from "@/components/procurement/match-status-badge";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getMatchVarianceKpi, listMatchablePos, listMatches } from "@/lib/match.functions";
 import { MATCH_STATUSES, type MatchStatus } from "@/lib/match-rules";
 import {
@@ -144,53 +147,37 @@ function MatchesIndex() {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Scale className="h-3.5 w-3.5" /> Procurement · Invoice matching
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Three-way match</h1>
-          <p className="text-sm text-muted-foreground">
-            Compare vendor invoices to PO totals and confirmed goods receipts — variance beyond
-            tolerance blocks payment release.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          <Button size="sm" onClick={handleNew} disabled={posQuery.data.length === 0}>
-            <Plus className="mr-2 h-4 w-4" /> New match
-          </Button>
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Three-way match"
+        description="Compare vendor invoices to POs and receipts — variance blocks payment release."
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export CSV
+            </Button>
+            <Button size="sm" onClick={handleNew} disabled={posQuery.data.length === 0}>
+              <Plus className="mr-2 h-4 w-4" /> New match
+            </Button>
+          </>
+        }
+      />
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-md border border-border p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Avg variance this quarter
-          </div>
-          <div className="mt-1 font-display text-2xl font-bold">{kpi.data.avgPct.toFixed(2)}%</div>
-          <div className="text-xs text-muted-foreground">
-            {kpi.data.count} match{kpi.data.count === 1 ? "" : "es"}
-          </div>
-        </div>
-        <div className="rounded-md border border-border p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Blocked</div>
-          <div className="mt-1 font-display text-2xl font-bold">
-            {rows.filter((r) => r.payment_release_blocked).length}
-          </div>
-        </div>
-        <div className="rounded-md border border-border p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Approved w/ variance
-          </div>
-          <div className="mt-1 font-display text-2xl font-bold">
-            {rows.filter((r) => r.status === "approved_with_variance").length}
-          </div>
-        </div>
-      </section>
+      <KpiGrid columns={3}>
+        <KpiTile
+          label="Avg variance this quarter"
+          value={`${kpi.data.avgPct.toFixed(2)}%`}
+          hint={`${kpi.data.count} match${kpi.data.count === 1 ? "" : "es"}`}
+        />
+        <KpiTile
+          label="Blocked"
+          value={String(rows.filter((r) => r.payment_release_blocked).length)}
+        />
+        <KpiTile
+          label="Approved w/ variance"
+          value={String(rows.filter((r) => r.status === "approved_with_variance").length)}
+        />
+      </KpiGrid>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[220px] flex-1">
@@ -219,11 +206,13 @@ function MatchesIndex() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No invoices matched yet — start one against an issued PO.
-        </div>
+        <EmptyState
+          icon={Scale}
+          title="No invoices matched yet"
+          description="Start one against an issued PO."
+        />
       ) : (
-        <div className="rounded-md border border-border">
+        <div>
           <Table>
             <TableHeader>
               <TableRow>

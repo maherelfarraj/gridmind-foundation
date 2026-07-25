@@ -16,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
 import { RfqBidStatusBadge, RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
 import { InviteVendorDialog } from "@/components/procurement/invite-vendor-dialog";
 import { SubmitBidDialog } from "@/components/procurement/submit-bid-dialog";
@@ -69,37 +71,36 @@ function RfqDetail() {
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="page-shell">
       <div>
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/rfqs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
       </div>
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <MailPlus className="h-3.5 w-3.5" /> Procurement · RFQ
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{rfq.title}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+      <PageHeader
+        title={rfq.title}
+        description={
+          <span className="flex flex-wrap items-center gap-3">
             <span className="font-mono">{rfq.rfq_number}</span>
             <RfqStatusBadge status={rfq.status} />
             <span>{rfq.project_name ?? "—"}</span>
             <span>{rfq.currency_code}</span>
             {rfq.due_date && <span>Due {format(new Date(rfq.due_date), "PP")}</span>}
-          </div>
-        </div>
-        {canAuthor && rfq.status === "draft" && (
-          <Button
-            onClick={() => issue.mutate()}
-            disabled={issue.isPending || rfq.lines.length === 0 || inviteCount === 0}
-          >
-            <Send className="mr-2 h-4 w-4" />
-            {issue.isPending ? "Issuing…" : "Issue RFQ"}
-          </Button>
-        )}
-      </header>
+          </span>
+        }
+        actions={
+          canAuthor && rfq.status === "draft" ? (
+            <Button
+              onClick={() => issue.mutate()}
+              disabled={issue.isPending || rfq.lines.length === 0 || inviteCount === 0}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              {issue.isPending ? "Issuing…" : "Issue RFQ"}
+            </Button>
+          ) : undefined
+        }
+      />
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
@@ -110,52 +111,45 @@ function RfqDetail() {
         </TabsList>
 
         <TabsContent value="lines" className="pt-4">
-          <div className="rounded-md border border-border">
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">#</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Spec</TableHead>
+                <TableHead className="w-24">Qty</TableHead>
+                <TableHead className="w-20">UoM</TableHead>
+                <TableHead className="w-32">Target</TableHead>
+                <TableHead className="w-36">Site need</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rfq.lines.length === 0 ? (
                 <TableRow>
-                  <TableHead className="w-16">#</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Spec</TableHead>
-                  <TableHead className="w-24">Qty</TableHead>
-                  <TableHead className="w-20">UoM</TableHead>
-                  <TableHead className="w-32">Target</TableHead>
-                  <TableHead className="w-36">Site need</TableHead>
+                  <TableCell colSpan={7} className="border-0 bg-transparent">
+                    <EmptyState title="No lines on this RFQ" compact />
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rfq.lines.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      No lines on this RFQ.
+              ) : (
+                rfq.lines.map((l) => (
+                  <TableRow key={l.line_no}>
+                    <TableCell>{l.line_no}</TableCell>
+                    <TableCell className="font-medium">{l.description}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{l.spec ?? "—"}</TableCell>
+                    <TableCell>{l.qty}</TableCell>
+                    <TableCell>{l.uom}</TableCell>
+                    <TableCell>{l.target_price != null ? l.target_price : "—"}</TableCell>
+                    <TableCell>
+                      {l.site_need_date ? format(new Date(l.site_need_date), "PP") : "—"}
                     </TableCell>
                   </TableRow>
-                ) : (
-                  rfq.lines.map((l) => (
-                    <TableRow key={l.line_no}>
-                      <TableCell>{l.line_no}</TableCell>
-                      <TableCell className="font-medium">{l.description}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {l.spec ?? "—"}
-                      </TableCell>
-                      <TableCell>{l.qty}</TableCell>
-                      <TableCell>{l.uom}</TableCell>
-                      <TableCell>{l.target_price != null ? l.target_price : "—"}</TableCell>
-                      <TableCell>
-                        {l.site_need_date ? format(new Date(l.site_need_date), "PP") : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </TabsContent>
 
-        <TabsContent value="vendors" className="pt-4 space-y-3">
+        <TabsContent value="vendors" className="space-y-3 pt-4">
           {canAuthor && rfq.status !== "cancelled" && (
             <div className="flex justify-end">
               <InviteVendorDialog
@@ -169,118 +163,109 @@ function RfqDetail() {
               />
             </div>
           )}
-          <div className="rounded-md border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Vendor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-32">Invited</TableHead>
+                <TableHead className="w-16" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bids.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="border-0 bg-transparent">
+                    <EmptyState title="No vendors invited yet" compact />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                bids.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="font-medium">{b.vendor_name}</TableCell>
+                    <TableCell>
+                      <RfqBidStatusBadge status={b.status} />
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {format(new Date(b.created_at), "PP")}
+                    </TableCell>
+                    <TableCell>
+                      {canAuthor && b.status === "invited" && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Remove ${b.vendor_name}`}
+                          onClick={() => removeInvite.mutate(b.id)}
+                          disabled={removeInvite.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
+
+        <TabsContent value="bids" className="pt-4">
+          {bids.length === 0 ? (
+            <EmptyState title="No bids submitted yet" />
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Vendor</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-32">Invited</TableHead>
-                  <TableHead className="w-16" />
+                  <TableHead>Total</TableHead>
+                  <TableHead>Lead</TableHead>
+                  <TableHead>Validity</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead className="w-40" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      No vendors invited yet.
+                {bids.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="font-medium">{b.vendor_name}</TableCell>
+                    <TableCell>
+                      <RfqBidStatusBadge status={b.status} />
+                    </TableCell>
+                    <TableCell>
+                      {b.total_price != null
+                        ? `${b.currency_code ?? rfq.currency_code} ${b.total_price.toFixed(2)}`
+                        : "—"}
+                    </TableCell>
+                    <TableCell>{b.lead_time_days ?? "—"}</TableCell>
+                    <TableCell>
+                      {b.validity_date ? format(new Date(b.validity_date), "PP") : "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {b.submitted_at ? format(new Date(b.submitted_at), "PP") : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {canAuthor &&
+                        rfq.status === "issued" &&
+                        b.status !== "awarded" &&
+                        b.status !== "withdrawn" && (
+                          <SubmitBidDialog
+                            bid={b}
+                            rfqLines={rfq.lines}
+                            currencyCode={rfq.currency_code}
+                            onSubmit={(input) => submitBid.mutateAsync(input)}
+                            trigger={
+                              <Button size="sm" variant="outline">
+                                Record bid
+                              </Button>
+                            }
+                          />
+                        )}
                     </TableCell>
                   </TableRow>
-                ) : (
-                  bids.map((b) => (
-                    <TableRow key={b.id}>
-                      <TableCell className="font-medium">{b.vendor_name}</TableCell>
-                      <TableCell>
-                        <RfqBidStatusBadge status={b.status} />
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(b.created_at), "PP")}
-                      </TableCell>
-                      <TableCell>
-                        {canAuthor && b.status === "invited" && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Remove ${b.vendor_name}`}
-                            onClick={() => removeInvite.mutate(b.id)}
-                            disabled={removeInvite.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="bids" className="pt-4">
-          {bids.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              No bids submitted yet.
-            </div>
-          ) : (
-            <div className="rounded-md border border-border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vendor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Lead</TableHead>
-                    <TableHead>Validity</TableHead>
-                    <TableHead>Submitted</TableHead>
-                    <TableHead className="w-40" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bids.map((b) => (
-                    <TableRow key={b.id}>
-                      <TableCell className="font-medium">{b.vendor_name}</TableCell>
-                      <TableCell>
-                        <RfqBidStatusBadge status={b.status} />
-                      </TableCell>
-                      <TableCell>
-                        {b.total_price != null
-                          ? `${b.currency_code ?? rfq.currency_code} ${b.total_price.toFixed(2)}`
-                          : "—"}
-                      </TableCell>
-                      <TableCell>{b.lead_time_days ?? "—"}</TableCell>
-                      <TableCell>
-                        {b.validity_date ? format(new Date(b.validity_date), "PP") : "—"}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {b.submitted_at ? format(new Date(b.submitted_at), "PP") : "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {canAuthor &&
-                          rfq.status === "issued" &&
-                          b.status !== "awarded" &&
-                          b.status !== "withdrawn" && (
-                            <SubmitBidDialog
-                              bid={b}
-                              rfqLines={rfq.lines}
-                              currencyCode={rfq.currency_code}
-                              onSubmit={(input) => submitBid.mutateAsync(input)}
-                              trigger={
-                                <Button size="sm" variant="outline">
-                                  Record bid
-                                </Button>
-                              }
-                            />
-                          )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
           )}
         </TabsContent>
 

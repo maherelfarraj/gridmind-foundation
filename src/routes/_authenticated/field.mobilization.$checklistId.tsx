@@ -97,7 +97,7 @@ function MobilizationDetailPage() {
   const showAmberBanner = !isComplete && !progress.allRequiredDone;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="page-shell">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link
           to="/field/mobilization"
@@ -133,7 +133,7 @@ function MobilizationDetailPage() {
       </header>
 
       {showAmberBanner ? (
-        <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 text-sm text-amber-700 dark:text-amber-300">
+        <div className="rounded-md border border-warning/40 bg-warning/5 p-4 text-sm text-warning">
           <div className="flex items-center gap-2 font-medium">
             <AlertTriangle className="h-4 w-4" /> Site not yet ready for field work
           </div>
@@ -532,7 +532,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function DetailSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <div className="page-shell">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-8 w-80" />
       <Skeleton className="h-3 w-full" />

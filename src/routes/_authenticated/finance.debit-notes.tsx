@@ -54,6 +54,8 @@ import {
   type DebitNoteStatus,
 } from "@/lib/debit-notes.rules";
 import { invoiceErrorMessage } from "@/lib/invoices.query";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/finance/debit-notes")({
   head: () => ({
@@ -104,18 +106,16 @@ function DebitNotesPage() {
   const rows = listQ.data.rows;
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Debit notes</h1>
-          <p className="text-sm text-muted-foreground">
-            Backcharges, defect rectifications and delay damages.
-          </p>
-        </div>
-        <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus className="mr-2 size-4" /> New debit note
-        </Button>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title="Debit notes"
+        description="Backcharges, defect rectifications and delay damages."
+        actions={
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus className="mr-2 size-4" /> New debit note
+          </Button>
+        }
+      />
 
       <div className="flex items-center gap-2">
         <Select value={status} onValueChange={(v) => setStatus(v as any)}>
@@ -141,11 +141,11 @@ function DebitNotesPage() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            <FileText className="mx-auto mb-2 size-6 text-muted-foreground" />
-            <p className="font-medium text-foreground">No debit notes yet</p>
-            <p className="mt-1">Create one to charge back a vendor or record delay damages.</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No debit notes yet"
+            description="Create one to charge back a vendor or record delay damages."
+          />
         ) : (
           <Table>
             <TableHeader>

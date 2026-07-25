@@ -81,7 +81,7 @@ export function ProjectBasicsForm({ archetype, defaultValues, onSubmit, onBack }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        <Card className="flex flex-col gap-8 border-border bg-card p-6">
+        <Card className="flex flex-col gap-8 p-6">
           {/* Identity */}
           <section className="flex flex-col gap-4">
             <SectionHeader>Identity</SectionHeader>

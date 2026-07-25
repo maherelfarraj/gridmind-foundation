@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,65 +116,62 @@ function CashFlowPage() {
   const canVoid = access.data.canVoid;
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">Cash flow</h1>
-          <p className="text-sm text-muted-foreground">
-            Forecast vs actual by month, in {list.data.baseCurrency}. FX rates are captured at entry
-            time — historical rows never restate.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div>
-            <Label htmlFor="cf-from" className="text-xs">
-              From
-            </Label>
-            <Input
-              id="cf-from"
-              type="month"
-              value={from.slice(0, 7)}
-              onChange={(e) => setFrom(normalizePeriod(`${e.target.value}-01`))}
-              className="w-36"
-            />
+    <div className="space-y-6">
+      <PageHeader
+        title="Cash flow"
+        description={`Forecast vs actual by month, in ${list.data.baseCurrency}.`}
+        actions={
+          <div className="flex flex-wrap items-end gap-2">
+            <div>
+              <Label htmlFor="cf-from" className="text-xs">
+                From
+              </Label>
+              <Input
+                id="cf-from"
+                type="month"
+                value={from.slice(0, 7)}
+                onChange={(e) => setFrom(normalizePeriod(`${e.target.value}-01`))}
+                className="w-36"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cf-to" className="text-xs">
+                To
+              </Label>
+              <Input
+                id="cf-to"
+                type="month"
+                value={to.slice(0, 7)}
+                onChange={(e) => setTo(normalizePeriod(`${e.target.value}-01`))}
+                className="w-36"
+              />
+            </div>
+            <div className="flex items-center gap-2 pb-2">
+              <Switch id="cf-orig" checked={showOriginal} onCheckedChange={setShowOriginal} />
+              <Label htmlFor="cf-orig" className="text-xs">
+                Show original currency
+              </Label>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadCashFlowCsv(`cash-flow-${projectId}.csv`, buildCashFlowCsv(list.data.rows))
+              }
+            >
+              <Download className="mr-1.5 h-4 w-4" /> CSV
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setEntryOpen(true)}
+              disabled={!canWrite}
+              title={canWrite ? undefined : "Requires finance_admin or company_admin"}
+            >
+              <Plus className="mr-1.5 h-4 w-4" /> Add entry
+            </Button>
           </div>
-          <div>
-            <Label htmlFor="cf-to" className="text-xs">
-              To
-            </Label>
-            <Input
-              id="cf-to"
-              type="month"
-              value={to.slice(0, 7)}
-              onChange={(e) => setTo(normalizePeriod(`${e.target.value}-01`))}
-              className="w-36"
-            />
-          </div>
-          <div className="flex items-center gap-2 pb-2">
-            <Switch id="cf-orig" checked={showOriginal} onCheckedChange={setShowOriginal} />
-            <Label htmlFor="cf-orig" className="text-xs">
-              Show original currency
-            </Label>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadCashFlowCsv(`cash-flow-${projectId}.csv`, buildCashFlowCsv(list.data.rows))
-            }
-          >
-            <Download className="mr-1.5 h-4 w-4" /> CSV
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setEntryOpen(true)}
-            disabled={!canWrite}
-            title={canWrite ? undefined : "Requires finance_admin or company_admin"}
-          >
-            <Plus className="mr-1.5 h-4 w-4" /> Add entry
-          </Button>
-        </div>
-      </header>
+        }
+      />
 
       <CashFlowKpi
         peak={pivot.peakFundingRequirement}
@@ -219,7 +217,7 @@ function CashFlowPage() {
 
 function CashFlowPending() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-6">
       <Skeleton className="h-10 w-full" />
       <Skeleton className="h-24 w-full" />
       <Skeleton className="h-64 w-full" />

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Download, FileUp, Pencil, Trash2 } from "lucide-react";
+import { Download, FileText, FileUp, Inbox, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/empty-state";
 import { WarrantyDialog } from "@/components/warranties/warranty-dialog";
 import { ClaimDialog } from "@/components/warranties/claim-dialog";
 import {
@@ -149,7 +150,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-2xl overflow-y-auto sm:max-w-2xl">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <span>{warranty.equipment_tag ?? warranty.project_name ?? "Warranty"}</span>
@@ -246,9 +247,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
                 </Button>
               </div>
             ) : (
-              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No document uploaded.
-              </div>
+              <EmptyState icon={FileText} title="No document uploaded" compact />
             )}
             <div>
               <input
@@ -283,9 +282,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
             {claimsQ.isLoading ? (
               <div className="text-sm text-muted-foreground">Loading…</div>
             ) : ((claimsQ.data as ClaimRow[] | undefined) ?? []).length === 0 ? (
-              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No claims yet.
-              </div>
+              <EmptyState icon={Inbox} title="No claims yet" compact />
             ) : (
               <Table>
                 <TableHeader>

@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -51,8 +53,8 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/commis
   component: HandoverWorkspace,
   errorComponent: HandoverError,
   notFoundComponent: () => (
-    <Card className="p-6 text-center">
-      <p className="text-sm text-muted-foreground">Project not found.</p>
+    <Card className="p-6">
+      <EmptyState title="Project not found." compact />
     </Card>
   ),
 });
@@ -60,19 +62,23 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/commis
 function HandoverError({ reset }: { reset: () => void }) {
   const router = useRouter();
   return (
-    <Card className="p-6 text-center">
-      <p className="text-sm text-destructive">Failed to load the handover workspace.</p>
-      <Button
-        className="mt-3"
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          reset();
-          router.invalidate();
-        }}
-      >
-        Retry
-      </Button>
+    <Card className="p-6">
+      <EmptyState
+        title="Failed to load the handover workspace."
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              reset();
+              router.invalidate();
+            }}
+          >
+            Retry
+          </Button>
+        }
+        compact
+      />
     </Card>
   );
 }
@@ -85,7 +91,7 @@ function PrereqRow({ ok, label }: { ok: boolean; label: string }) {
     <li className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm">
       <span className="flex items-center gap-2">
         {ok ? (
-          <CheckCircle2 size={16} aria-hidden className="text-emerald-500" />
+          <CheckCircle2 size={16} aria-hidden className="text-success" />
         ) : (
           <XCircle size={16} aria-hidden className="text-destructive" />
         )}
@@ -95,7 +101,7 @@ function PrereqRow({ ok, label }: { ok: boolean; label: string }) {
         variant="outline"
         className={cn(
           ok
-            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            ? "border-success/30 bg-success/10 text-success"
             : "border-destructive/30 bg-destructive/10 text-destructive",
         )}
       >
@@ -123,7 +129,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 function actionTone(action: string): string {
   if (action === "gate.transition_approved" || action === "handover.ccc_signed")
-    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+    return "border-success/30 bg-success/10 text-success";
   if (action === "gate.transition_rejected")
     return "border-destructive/30 bg-destructive/10 text-destructive";
   if (action === "project.phase_change") return "border-primary/30 bg-primary/10 text-primary";
@@ -170,34 +176,31 @@ function HandoverWorkspace() {
   const board = query.data;
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Handover
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Care, Custody &amp; Control transfer — advance into Operations.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Back to tests
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="Handover"
+        description="Care, Custody & Control transfer — advance into Operations."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Back to tests
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {query.isLoading || !board ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -239,9 +242,9 @@ function BoardBody({
   return (
     <>
       {gateApproved ? (
-        <Card className="border-emerald-500/30 bg-emerald-500/10 p-4">
+        <Card className="border-success/30 bg-success/10 p-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 size={20} className="text-emerald-500" aria-hidden />
+            <CheckCircle2 size={20} className="text-success" aria-hidden />
             <div className="flex-1">
               <p className="font-medium text-foreground">Project transferred to Operations</p>
               <p className="text-sm text-muted-foreground">
@@ -255,26 +258,25 @@ function BoardBody({
           </div>
         </Card>
       ) : !codPassed ? (
-        <Card className="border-border bg-card p-6 text-center">
-          <Handshake size={28} aria-hidden className="mx-auto text-muted-foreground" />
-          <p className="mt-2 font-medium text-foreground">
-            Handover not started — complete COD first
-          </p>
-          <p className="text-sm text-muted-foreground">
-            The Commercial Operation Date certificate has to be signed before the Care, Custody
-            &amp; Control transfer becomes available.
-          </p>
-          <Button asChild variant="outline" size="sm" className="mt-4">
-            <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
-              Go to certificates
-            </Link>
-          </Button>
+        <Card className="p-6">
+          <EmptyState
+            icon={Handshake}
+            title="Handover not started — complete COD first"
+            description="The Commercial Operation Date certificate has to be signed before the Care, Custody & Control transfer becomes available."
+            action={
+              <Button asChild variant="outline" size="sm">
+                <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
+                  Go to certificates
+                </Link>
+              </Button>
+            }
+          />
         </Card>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Prereq gauntlet */}
-        <Card className="flex flex-col gap-3 border-border bg-card p-5">
+        <Card className="flex flex-col gap-3 p-5">
           <div className="flex items-center gap-2">
             <ShieldCheck size={16} aria-hidden className="text-primary" />
             <h3 className="font-display text-base font-semibold text-foreground">Prerequisites</h3>
@@ -304,7 +306,7 @@ function BoardBody({
                   variant="outline"
                   className={cn(
                     cccCertificate.status === "signed"
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      ? "border-success/30 bg-success/10 text-success"
                       : "bg-muted text-foreground",
                   )}
                 >
@@ -331,7 +333,7 @@ function BoardBody({
         </Card>
 
         {/* Handover gate + advance */}
-        <Card className="flex flex-col gap-3 border-border bg-card p-5">
+        <Card className="flex flex-col gap-3 p-5">
           <div className="flex items-center gap-2">
             <Handshake size={16} aria-hidden className="text-primary" />
             <h3 className="font-display text-base font-semibold text-foreground">
@@ -347,9 +349,9 @@ function BoardBody({
                   variant="outline"
                   className={cn(
                     handoverGate.status === "approved"
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      ? "border-success/30 bg-success/10 text-success"
                       : handoverGate.status === "in_review"
-                        ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        ? "border-warning/30 bg-warning/10 text-warning"
                         : handoverGate.status === "rejected"
                           ? "border-destructive/30 bg-destructive/10 text-destructive"
                           : "bg-muted text-foreground",
@@ -363,11 +365,11 @@ function BoardBody({
                 {handoverGate.checklist.map((item: any) => (
                   <li
                     key={item.key}
-                    className="flex items-center justify-between rounded-md border border-border bg-card px-2 py-1 text-xs"
+                    className="flex items-center justify-between rounded-md border bg-card px-2 py-1 text-xs"
                   >
                     <span className="flex items-center gap-2">
                       {item.done ? (
-                        <CheckCircle2 size={12} className="text-emerald-500" aria-hidden />
+                        <CheckCircle2 size={12} className="text-success" aria-hidden />
                       ) : (
                         <AlertTriangle size={12} className="text-muted-foreground" aria-hidden />
                       )}
@@ -385,9 +387,7 @@ function BoardBody({
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              No handover gate is configured for this project.
-            </p>
+            <EmptyState title="No handover gate is configured for this project." compact />
           )}
 
           <div className="mt-2">
@@ -425,7 +425,7 @@ function BoardBody({
       </div>
 
       {/* Immutable audit timeline */}
-      <Card className="border-border bg-card p-5">
+      <Card className="p-5">
         <div className="flex items-center gap-2">
           <History size={16} aria-hidden className="text-primary" />
           <h3 className="font-display text-base font-semibold text-foreground">Gate history</h3>
@@ -434,14 +434,11 @@ function BoardBody({
           </Badge>
         </div>
         {board.history.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No handover events yet.</p>
+          <EmptyState title="No handover events yet." compact className="mt-3" />
         ) : (
           <ol className="mt-3 flex flex-col gap-2">
             {board.history.map((h) => (
-              <li
-                key={h.id}
-                className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-2"
-              >
+              <li key={h.id} className="flex items-start gap-3 rounded-md border bg-card px-3 py-2">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className={cn("text-xs", actionTone(h.action))}>

@@ -3,13 +3,16 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Search } from "lucide-react";
+import { Download, Inbox, Search, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -53,11 +56,17 @@ export const Route = createFileRoute("/_authenticated/om/warranties")({
   }),
   component: WarrantiesPage,
   errorComponent: ({ error, reset }) => (
-    <div className="p-6">
-      <div className="text-sm text-destructive">Failed to load warranties: {error.message}</div>
-      <Button className="mt-2" size="sm" onClick={reset}>
-        Retry
-      </Button>
+    <div className="page-shell">
+      <EmptyState
+        icon={ShieldAlert}
+        title="Failed to load warranties"
+        description={error.message}
+        action={
+          <Button size="sm" onClick={reset}>
+            Retry
+          </Button>
+        }
+      />
     </div>
   ),
 });
@@ -151,59 +160,51 @@ function WarrantiesPage() {
   };
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">Warranties</h1>
-          <p className="text-sm text-muted-foreground">
-            Manufacturer, EPC, extended, and performance warranties across your O&amp;M fleet.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          <WarrantyDialog />
-        </div>
-      </div>
+    <div className="page-shell">
+      <PageHeader
+        title="Warranties"
+        description="Manufacturer, EPC, extended, and performance warranties across your O&amp;M fleet."
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export CSV
+            </Button>
+            <WarrantyDialog />
+          </div>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Active coverage</CardDescription>
-            <CardTitle className="text-3xl">
-              {kpisQ.data?.activeCoveragePct == null ? "—" : `${kpisQ.data.activeCoveragePct}%`}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 text-xs text-muted-foreground">
-            {kpisQ.data
+      <KpiGrid>
+        <KpiTile
+          label="Active coverage"
+          value={kpisQ.data?.activeCoveragePct == null ? "—" : `${kpisQ.data.activeCoveragePct}%`}
+          hint={
+            kpisQ.data
               ? `${kpisQ.data.coveredEquipment}/${kpisQ.data.activeEquipment} active equipment covered`
-              : "…"}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Contracts</CardDescription>
-            <CardTitle className="text-3xl">{kpisQ.data?.contracts ?? "—"}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Expiring &lt;90d</CardDescription>
-            <CardTitle className="text-3xl">{kpisQ.data?.expiringSoon ?? "—"}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Open claims</CardDescription>
-            <CardTitle className="text-3xl">{kpisQ.data?.openClaims ?? "—"}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+              : undefined
+          }
+          isLoading={kpisQ.isLoading}
+        />
+        <KpiTile
+          label="Contracts"
+          value={kpisQ.data?.contracts ?? "—"}
+          isLoading={kpisQ.isLoading}
+        />
+        <KpiTile
+          label="Expiring <90d"
+          value={kpisQ.data?.expiringSoon ?? "—"}
+          isLoading={kpisQ.isLoading}
+        />
+        <KpiTile
+          label="Open claims"
+          value={kpisQ.data?.openClaims ?? "—"}
+          isLoading={kpisQ.isLoading}
+        />
+      </KpiGrid>
 
       <Card>
         <CardHeader>
-          <CardTitle>Registry</CardTitle>
+          <CardTitle className="text-lg">Registry</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -258,15 +259,12 @@ function WarrantiesPage() {
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border p-8 text-center">
-              <div className="text-sm font-medium">No warranties</div>
-              <div className="text-xs text-muted-foreground">
-                Register your first warranty to start tracking coverage.
-              </div>
-              <div className="mt-3 flex justify-center">
-                <WarrantyDialog />
-              </div>
-            </div>
+            <EmptyState
+              icon={Inbox}
+              title="No warranties"
+              description="Register your first warranty to start tracking coverage."
+              action={<WarrantyDialog />}
+            />
           ) : (
             <Table>
               <TableHeader>

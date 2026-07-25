@@ -77,7 +77,7 @@ export function TenderEventsCard({
   const now = Date.now();
 
   return (
-    <Card className="flex flex-col gap-3 border-border bg-card p-5">
+    <Card className="flex flex-col gap-3 p-5">
       <header className="flex items-center justify-between gap-2">
         <div>
           <h2 className="font-display text-sm font-semibold text-foreground">Tender events</h2>

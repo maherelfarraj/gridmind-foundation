@@ -79,7 +79,7 @@ export function OpportunityHeaderCard({ opportunity: opp, readOnly, onAddTenderE
 
   return (
     <>
-      <Card className="flex flex-col gap-4 border-border bg-card p-6">
+      <Card className="flex flex-col gap-4 p-6">
         {isWon && intakeId ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/5 px-4 py-2 text-sm">
             <span className="text-foreground">

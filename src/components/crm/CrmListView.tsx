@@ -1,11 +1,12 @@
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Search } from "lucide-react";
+import { Download, Inbox, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -99,7 +100,7 @@ export function CrmListView({ opportunities }: Props) {
 
   return (
     <div className="space-y-3">
-      <Card className="flex flex-wrap items-end gap-3 border-border bg-card p-3">
+      <Card className="flex flex-wrap items-end gap-3 p-3">
         <div className="relative min-w-[220px] flex-1">
           <Search
             size={16}
@@ -137,7 +138,7 @@ export function CrmListView({ opportunities }: Props) {
         </Button>
       </Card>
 
-      <Card className="border-border bg-card">
+      <Card>
         <Table>
           <TableHeader>
             <TableRow>
@@ -152,8 +153,8 @@ export function CrmListView({ opportunities }: Props) {
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  No opportunities match your filters.
+                <TableCell colSpan={6} className="border-0 bg-transparent p-0">
+                  <EmptyState icon={Inbox} title="No opportunities match your filters" compact />
                 </TableCell>
               </TableRow>
             ) : (

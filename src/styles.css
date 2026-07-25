@@ -57,6 +57,11 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -112,8 +117,16 @@
   --warning: oklch(0.75 0.13 75);
   --warning-foreground: oklch(0.25 0.05 75);
 
+  /* Success — deep renewables green (status only) */
+  --success: oklch(0.52 0.1 155);
+  --success-foreground: oklch(0.98 0.005 250);
+
+  /* Info — steel teal */
+  --info: oklch(0.55 0.08 218);
+  --info-foreground: oklch(0.98 0.005 250);
+
   /* Lines & focus */
-  --border: oklch(0.9 0.012 250);
+  --border: oklch(0.915 0.01 250);
   --input: oklch(0.9 0.012 250);
   --ring: oklch(0.55 0.06 252);
 
@@ -161,7 +174,13 @@
   --warning: oklch(0.78 0.14 75);
   --warning-foreground: oklch(0.18 0.04 75);
 
-  --border: oklch(0.32 0.025 255);
+  --success: oklch(0.66 0.11 155);
+  --success-foreground: oklch(0.16 0.02 255);
+
+  --info: oklch(0.68 0.08 218);
+  --info-foreground: oklch(0.16 0.02 255);
+
+  --border: oklch(0.315 0.025 255);
   --input: oklch(0.3 0.025 255);
   --ring: oklch(0.6 0.08 252);
 
@@ -191,4 +210,54 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
+
+  /* Typography rhythm: page > section > card > body > secondary > caption. */
+  h1 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+}
+
+/* POL-1 — layout & typography rhythm utilities (4px grid). */
+@utility page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 4);
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+
+  @media (width >= 40rem) {
+    gap: calc(var(--spacing) * 6);
+  }
+}
+
+@utility page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: var(--tw-leading, var(--text-2xl--line-height));
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-foreground);
+}
+
+@utility section-title {
+  font-size: var(--text-lg);
+  line-height: var(--tw-leading, var(--text-lg--line-height));
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-foreground);
+}
+
+@utility caption-label {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, var(--text-xs--line-height));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted-foreground);
+}
+
+/* Numeric tables/KPIs align on tabular figures. */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
 }

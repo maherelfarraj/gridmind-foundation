@@ -16,6 +16,7 @@ import { TemplatePickerSkeleton } from "@/components/wizard/template-picker";
 import { WizardErrorPanel } from "@/components/wizard/error-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   createProject,
@@ -231,16 +232,8 @@ function NewProjectPage() {
           : "Assign the project admin, members, and department leads.";
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Step {currentStep} of 4
-        </p>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          New project
-        </h1>
-        <p className="text-sm text-muted-foreground">{stepSubtitle}</p>
-      </header>
+    <div className="page-shell max-w-5xl">
+      <PageHeader title="New project" description={`Step ${currentStep} of 4 — ${stepSubtitle}`} />
 
       {currentStep === 1 ? (
         <>

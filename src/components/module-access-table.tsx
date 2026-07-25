@@ -12,6 +12,7 @@ import {
 import type { PlanTier } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -90,15 +91,16 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
 
   if (query.isError || !query.data) {
     return (
-      <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
-        <p className="mb-2 flex items-center gap-2 text-destructive">
-          <AlertTriangle className="h-4 w-4" />
-          Failed to load module access.
-        </p>
-        <Button variant="outline" size="sm" onClick={() => query.refetch()}>
-          Retry
-        </Button>
-      </div>
+      <EmptyState
+        icon={AlertTriangle}
+        title="Failed to load module access"
+        action={
+          <Button variant="outline" size="sm" onClick={() => query.refetch()}>
+            Retry
+          </Button>
+        }
+        compact
+      />
     );
   }
 
@@ -108,7 +110,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="rounded-lg border border-border bg-card">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>

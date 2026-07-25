@@ -409,7 +409,7 @@ function PunchWalkPage() {
             <ul className="flex flex-col gap-1 text-sm">
               {added.map((a) => (
                 <li key={a.number} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-600" />
+                  <Check className="h-4 w-4 text-success" />
                   <span className="font-mono text-xs text-muted-foreground">{a.number}</span>
                   <span className="truncate">{a.description}</span>
                 </li>

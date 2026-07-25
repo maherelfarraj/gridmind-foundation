@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -123,34 +124,31 @@ function CertificatesPage() {
   }, [board?.rows]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-            Certificates
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Mechanical Completion and Commercial Operation Date, with signed evidence.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
-              <ShieldCheck size={14} aria-hidden />
-              Back to tests
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => query.refetch()}
-            disabled={query.isFetching}
-          >
-            <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        as="h2"
+        title="Certificates"
+        description="Mechanical Completion and Commercial Operation Date, with signed evidence."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/projects/$projectId/commissioning" params={{ projectId }}>
+                <ShieldCheck size={14} aria-hidden />
+                Back to tests
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+            >
+              <RefreshCw size={14} aria-hidden className={cn(query.isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {query.isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
@@ -258,7 +256,7 @@ function CertificateCard({
             variant="outline"
             className={cn(
               row.status === "signed"
-                ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                ? "border-success/30 bg-success/10 text-success"
                 : "bg-muted text-foreground",
             )}
           >
@@ -308,15 +306,11 @@ function CertificateCard({
                 return (
                   <li
                     key={p}
-                    className="flex items-center justify-between rounded-md border border-border bg-card px-2 py-1 text-xs"
+                    className="flex items-center justify-between rounded-md border bg-card px-2 py-1 text-xs"
                   >
                     <span className="flex items-center gap-2">
                       {s ? (
-                        <CheckCircle2
-                          size={12}
-                          aria-hidden
-                          className="text-emerald-600 dark:text-emerald-400"
-                        />
+                        <CheckCircle2 size={12} aria-hidden className="text-success" />
                       ) : (
                         <span className="inline-block h-3 w-3 rounded-full border border-border" />
                       )}
@@ -357,7 +351,7 @@ function SignedPdfLink({ path }: { path: string }) {
     if (data?.signedUrl) setUrl(data.signedUrl);
   };
   return (
-    <div className="flex items-center justify-between rounded-md border border-border bg-card p-2 text-xs">
+    <div className="flex items-center justify-between rounded-md border bg-card p-2 text-xs">
       <span className="flex items-center gap-1.5 text-muted-foreground">
         <FileText size={12} aria-hidden />
         Signed certificate
@@ -616,7 +610,7 @@ function SignDialog({
         </div>
 
         {state?.cert.certificate_type === "cod" ? (
-          <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+          <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-foreground">
             <AlertCircle size={12} aria-hidden className="mt-0.5" />
             <span>
               COD requires zero open category A punch items and at least one passing performance
