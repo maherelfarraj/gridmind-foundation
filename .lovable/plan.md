@@ -1,45 +1,29 @@
-## P-100 — Commissioning KPI dashboard
+## P-101 — O&M assets + SCADA foundation migration
 
-Read-only consumer of Batch 10 data. No schema changes (no `scada_telemetry` or `project_export_locks` tables exist yet — build forward-compatible stubs).
+Create `supabase/migrations/0047_om_assets_scada.sql` with the exact SQL from the prompt, plus:
 
-### New files
+- Guarded `do $$ ... $$` blocks around the 5 `create type` statements (idempotent re-runs).
+- `set_updated_at()` triggers on all 3 tables.
+- Explicit `grant ... to service_role` alongside authenticated grants (per project convention).
+- Indexes and unique constraints as specified.
 
-**`src/lib/commissioning-kpis.functions.ts`** — single `getCommissioningKpis` server fn (`requireSupabaseAuth`, zod `{ project_id }`, RLS-scoped reads via `context.supabase`). Returns:
+### Tables
+- `equipment_registry` — physical asset master, unique `(project_id, tag)`.
+- `scada_assets` — mapping layer to external SCADA `asset_key`, unique `(project_id, asset_key)`, FK to `equipment_registry` (on delete set null).
+- `scada_connectors` — one connector config per project, unique `(project_id, name)`, `enabled` separate from `status`, credentials referenced by env-var name only in `config` jsonb.
 
-- `mcCod`: `{ mc_date, cod_date, days | null, elapsed_since_mc | null, projected_cod | null (projects.target_cod), state: 'empty' | 'mc_only' | 'complete' }`
-- `prAtCod`: `{ source: 'certificate' | 'performance_test' | null, measured, contract, delta, passing }` — prefer `commissioning_certificates.payload.pr_at_cod` on signed COD row; fallback to newest `performance_tests` where `test_type='performance_ratio'` and `status='complete'`; reuse `isPassingPr` from `commissioning-certificates.rules.ts`
-- `punchClosure`: `[{ category: 'A'|'B'|'C', total, closed, open_refs: string[] }]` from `qaqc_punch_items` (closure = `status='closed'` per P-096)
-- `availability`: `{ state: 'awaiting_scada', cod_date }` — designed empty state, never fabricated
-- `testSummary`: `{ [test_type]: { passed, failed, in_progress, not_started } }` from `commissioning_tests`
-- `turnoverStatus`: `{ status, compiled_at, delivered_at } | null` from `turnover_packages`
+### RLS
+- SELECT: `is_company_member(company_id)`.
+- Writes (ALL): member + (`om_admin` OR `scada_admin` OR `company_admin`).
 
-Cross-tenant lookups return `notFound()`. Concurrent queries via `Promise.all`.
+### After migration
+- Auto-regenerated types will pick up the new tables/enums.
+- No UI in this batch.
 
-**`src/lib/commissioning-kpis.rules.ts`** — role gates (`canViewKpis` — all listed roles), CSV serializer for the four tiles + summary.
+### Verification queries (post-apply)
+- `pg_class.relrowsecurity = true` for all 3.
+- Duplicate `(project_id, tag)` rejected.
+- Cross-tenant SELECT returns 0.
+- Trigger fires on update.
 
-**`src/routes/_authenticated/projects.$projectId.commissioning.kpis.tsx`** — route with:
-- `loader` → `ensureQueryData` (5-min `staleTime`)
-- `useSuspenseQuery` in component; `errorComponent` + `notFoundComponent`
-- 4 KPI tiles (grid) each with skeleton/empty/error-retry: MC→COD days, PR at COD (pass/fail badge), Punch closure % (Recharts stacked bar, category A emphasized via semantic `--destructive` token, tooltip lists open refs), Availability empty state
-- Secondary strip: test summary counts by `test_type` + turnover status chip
-- "CSV snapshot" button — client-side blob download; forward-compat comment referencing future `project_export_locks` guard
-
-**Header link** — add "KPIs" to `projects.$projectId.commissioning.tsx` nav.
-
-### Tests
-
-**`tests/unit/commissioning-kpis.test.ts`** — pure helpers only:
-- MC-only vs both-signed date math (`mcCod` state machine)
-- PR source-preference selection (certificate wins over perf test)
-- Punch closure % rollup by category
-- CSV serialization shape
-
-### Explicit non-goals
-
-- No new tables/migrations. Availability tile is a designed placeholder until Batch 11 ships `scada_telemetry`.
-- No snapshot-to-audit action in v1 (spec says "if you add"); skip unless requested — keeps the route strictly read-only.
-- No changes to existing commissioning modules.
-
-### Verification
-
-`bun run test:unit` (new tests pass), typecheck, manual: MC-only project → shows elapsed + projected chip; signed COD → days computed; cross-tenant project id → not-found; CSV downloads with current values.
+No frontend or server-function changes in this prompt.
