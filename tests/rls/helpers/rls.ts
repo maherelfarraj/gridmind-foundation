@@ -668,7 +668,7 @@ export const MATRIX: TableSpec[] = [
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: "power_kw",
+      metric: "ac_power_kw",
       value: 100,
     }),
     insertAsA: (f) => ({
@@ -676,7 +676,7 @@ export const MATRIX: TableSpec[] = [
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: "power_kw",
+      metric: "ac_power_kw",
       value: 999,
     }),
   },
