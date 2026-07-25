@@ -647,9 +647,24 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
           </TableBody>
         </Table>
         <div className="flex items-center justify-between gap-2">
-          <Button variant="outline" size="sm" disabled={!canWrite} onClick={addLine}>
-            <FilePlus className="mr-2 size-4" /> Add line
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={!canWrite} onClick={addLine}>
+              <FilePlus className="mr-2 size-4" /> Add line
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!canBill}
+              onClick={() => setBillOpen(true)}
+              title={
+                canBill
+                  ? "Create a draft receivable invoice against a SOV line"
+                  : "Contract must be signed and the SOV saved to bill milestones"
+              }
+            >
+              <Receipt className="mr-2 size-4" /> Bill milestone
+            </Button>
+          </div>
           <div className="text-right">
             <div className="text-xs text-muted-foreground">Total vs contract value</div>
             <div
