@@ -60,8 +60,9 @@ describe("claim state graph", () => {
     expect(canAdvanceClaim("submitted", "under_review")).toBe(true);
     expect(canAdvanceClaim("under_review", "approved")).toBe(true);
     expect(canAdvanceClaim("under_review", "rejected")).toBe(true);
-    expect(canAdvanceClaim("approved", "settled" as never)).toBe(false); // settled goes via settleClaim, not advance
-    expect(canAdvanceClaim("rejected", "approved" as never)).toBe(false);
+    expect(canAdvanceClaim("approved", "settled")).toBe(true);
+    expect(canAdvanceClaim("rejected", "approved")).toBe(false);
+    expect(canAdvanceClaim("settled", "approved")).toBe(false);
   });
 });
 
