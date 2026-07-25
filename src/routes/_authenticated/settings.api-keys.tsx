@@ -14,8 +14,10 @@ import {
   Check,
   Copy,
   KeyRound,
+  Lock,
   Plus,
   RefreshCcw,
+  ShieldCheck,
   ShieldOff,
 } from "lucide-react";
 
@@ -24,10 +26,13 @@ import {
   listApiKeys,
   revokeApiKey,
   rotateApiKey,
+  updateApiKeySecurity,
   type ApiKeyRow,
+  type ApiKeySecurityResult,
   type CreatedKeyResult,
 } from "@/lib/api-keys.functions";
 import { API_KEY_SCOPES, type ApiKeyScope } from "@/lib/public-api/scopes";
+
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
