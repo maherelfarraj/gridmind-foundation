@@ -19,7 +19,7 @@ export const Route = createFileRoute("/(auth)")({
     if (location.pathname === "/reset-password") return;
     const { data } = await supabase.auth.getUser();
     if (data.user) {
-      throw redirect({ to: search.redirect ?? "/" });
+      throw redirect({ to: search.redirect ?? "/dashboard" });
     }
   },
   component: AuthLayout,

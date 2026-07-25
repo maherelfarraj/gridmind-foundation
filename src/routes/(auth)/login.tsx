@@ -53,7 +53,7 @@ function GoogleGlyph() {
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const redirectTo = search.redirect ?? "/";
+  const redirectTo = search.redirect ?? "/dashboard";
   const [pending, setPending] = useState(false);
   const [oauthPending, setOauthPending] = useState(false);
   const form = useForm<Values>({
