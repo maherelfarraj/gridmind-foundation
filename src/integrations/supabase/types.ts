@@ -669,6 +669,135 @@ export type Database = {
           },
         ]
       }
+      change_orders: {
+        Row: {
+          amount: number
+          approval_instance_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          budget_impact: Json
+          co_number: string
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          id: string
+          project_id: string
+          schedule_impact_days: number
+          status: Database["public"]["Enums"]["change_order_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          title: string
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          amount?: number
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          budget_impact?: Json
+          co_number: string
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          project_id: string
+          schedule_impact_days?: number
+          status?: Database["public"]["Enums"]["change_order_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          title: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          budget_impact?: Json
+          co_number?: string
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          project_id?: string
+          schedule_impact_days?: number
+          status?: Database["public"]["Enums"]["change_order_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          title?: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "change_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -2038,6 +2167,118 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["invoice_direction"]
+          due_date: string | null
+          file_path: string | null
+          id: string
+          invoice_number: string
+          issue_date: string | null
+          milestone_label: string | null
+          paid_at: string | null
+          project_id: string | null
+          retention_pct: number
+          status: Database["public"]["Enums"]["invoice_status"]
+          tax_amount: number
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          amount?: number
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["invoice_direction"]
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string | null
+          milestone_label?: string | null
+          paid_at?: string | null
+          project_id?: string | null
+          retention_pct?: number
+          status?: Database["public"]["Enums"]["invoice_status"]
+          tax_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          direction?: Database["public"]["Enums"]["invoice_direction"]
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string | null
+          milestone_label?: string | null
+          paid_at?: string | null
+          project_id?: string | null
+          retention_pct?: number
+          status?: Database["public"]["Enums"]["invoice_status"]
+          tax_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           account_name: string | null
@@ -2401,6 +2642,137 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pay_applications: {
+        Row: {
+          application_number: number
+          approved_at: string | null
+          approved_by: string | null
+          certified_at: string | null
+          certified_by: string | null
+          company_id: string
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string | null
+          lines: Json
+          net_amount: number
+          period_end: string
+          period_start: string
+          project_id: string
+          reconciliation: Json
+          reject_note: string | null
+          retention_amount: number
+          retention_pct: number
+          status: Database["public"]["Enums"]["pay_app_status"]
+          total_certified: number
+          total_scheduled: number
+          updated_at: string
+        }
+        Insert: {
+          application_number: number
+          approved_at?: string | null
+          approved_by?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          company_id: string
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          lines?: Json
+          net_amount?: number
+          period_end: string
+          period_start: string
+          project_id: string
+          reconciliation?: Json
+          reject_note?: string | null
+          retention_amount?: number
+          retention_pct?: number
+          status?: Database["public"]["Enums"]["pay_app_status"]
+          total_certified?: number
+          total_scheduled?: number
+          updated_at?: string
+        }
+        Update: {
+          application_number?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          company_id?: string
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          lines?: Json
+          net_amount?: number
+          period_end?: string
+          period_start?: string
+          project_id?: string
+          reconciliation?: Json
+          reject_note?: string | null
+          retention_amount?: number
+          retention_pct?: number
+          status?: Database["public"]["Enums"]["pay_app_status"]
+          total_certified?: number
+          total_scheduled?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_applications_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_certified_by_fkey"
+            columns: ["certified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -4630,6 +5002,13 @@ export type Database = {
             referencedColumns: ["code"]
           },
           {
+            foreignKeyName: "three_way_matches_invoice_fk"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "three_way_matches_matched_by_fkey"
             columns: ["matched_by"]
             isOneToOne: false
@@ -5161,6 +5540,13 @@ export type Database = {
         | "lender_viewer"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
+      change_order_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "incorporated"
       contract_status:
         | "draft"
         | "negotiation"
@@ -5197,6 +5583,15 @@ export type Database = {
       expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
       grn_status: "draft" | "confirmed" | "has_defects" | "closed"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
+      invoice_direction: "receivable" | "payable"
+      invoice_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "paid"
+        | "disputed"
+        | "cancelled"
       lead_source:
         | "referral"
         | "inbound"
@@ -5228,6 +5623,13 @@ export type Database = {
         | "negotiation"
         | "won"
         | "lost"
+      pay_app_status:
+        | "draft"
+        | "submitted"
+        | "certified"
+        | "approved"
+        | "rejected"
+        | "invoiced"
       po_status:
         | "draft"
         | "pending_approval"
@@ -5451,6 +5853,14 @@ export const Constants = {
       ],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
+      change_order_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "incorporated",
+      ],
       contract_status: [
         "draft",
         "negotiation",
@@ -5491,6 +5901,16 @@ export const Constants = {
       expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
       grn_status: ["draft", "confirmed", "has_defects", "closed"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
+      invoice_direction: ["receivable", "payable"],
+      invoice_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "paid",
+        "disputed",
+        "cancelled",
+      ],
       lead_source: [
         "referral",
         "inbound",
@@ -5525,6 +5945,14 @@ export const Constants = {
         "negotiation",
         "won",
         "lost",
+      ],
+      pay_app_status: [
+        "draft",
+        "submitted",
+        "certified",
+        "approved",
+        "rejected",
+        "invoiced",
       ],
       po_status: [
         "draft",
