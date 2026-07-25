@@ -2304,6 +2304,67 @@ export type Database = {
           },
         ]
       }
+      export_packages: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          file_path: string | null
+          id: string
+          metadata: Json
+          package_type: string
+          project_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          metadata?: Json
+          package_type: string
+          project_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          metadata?: Json
+          package_type?: string
+          project_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_packages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "export_packages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "export_packages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_observations: {
         Row: {
           action_required: string | null
@@ -7059,6 +7120,86 @@ export type Database = {
             foreignKeyName: "transmittals_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turnover_packages: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          company_id: string
+          compiled_at: string | null
+          compiled_by: string | null
+          created_at: string
+          created_by: string | null
+          delivered_at: string | null
+          id: string
+          index_pdf_path: string | null
+          project_id: string
+          sections: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id: string
+          compiled_at?: string | null
+          compiled_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          id?: string
+          index_pdf_path?: string | null
+          project_id: string
+          sections?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id?: string
+          compiled_at?: string | null
+          compiled_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          id?: string
+          index_pdf_path?: string | null
+          project_id?: string
+          sections?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turnover_packages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_packages_compiled_by_fkey"
+            columns: ["compiled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_packages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_packages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
