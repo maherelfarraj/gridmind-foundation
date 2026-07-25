@@ -343,8 +343,10 @@ export interface CommissioningTestDetail extends CommissioningTestRow {
   utility_witness_name: string | null;
   utility_witnessed_at: string | null;
   witness_file_path: string | null;
-  result: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  result: Record<string, any>;
 }
+
 
 export interface CommissioningIvPoint {
   voltageV: number;
