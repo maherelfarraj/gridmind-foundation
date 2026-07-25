@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { listModuleAccess } from "@/lib/modules.functions";
+import { getMyPendingCount } from "@/lib/approvals.inbox.functions";
 import { useActiveCompany } from "@/components/company-switcher";
 import { NAV_SECTIONS } from "@/lib/nav-map";
+import { Badge } from "@/components/ui/badge";
 
 import {
   Sidebar,
