@@ -53,7 +53,7 @@ function SignupPage() {
 
   const onSubmit = async (values: Values) => {
     setPending(true);
-    const redirectPath = search.redirect ?? "/";
+    const redirectPath = search.redirect ?? "/dashboard";
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
