@@ -1,6 +1,7 @@
 // P-112 — Approval inbox server functions.
 // listMyApprovals / getApprovalInstance / getMyPendingCount + decideApproval re-export.
 import { createServerFn } from "@tanstack/react-start";
+import type { Json } from "@/integrations/supabase/types";
 import { z } from "zod";
 
 import {
@@ -39,7 +40,7 @@ export interface InboxRow {
   rule_key: string | null;
   amount: number | null;
   currency: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   requester_id: string | null;
   requester_name: string | null;
   instance_status: string;
@@ -50,11 +51,11 @@ export interface InboxRow {
 }
 
 function deriveTitle(
-  metadata: Record<string, unknown>,
+  metadata: Json,
   entityType: string,
   entityId: string,
 ): string {
-  const m = metadata as Record<string, unknown>;
+  const m = metadata as Json;
   for (const k of ["title", "name", "reference", "po_number", "contract_number"]) {
     const v = m[k];
     if (typeof v === "string" && v.trim().length > 0) return v;
@@ -164,7 +165,7 @@ export const listMyApprovals = createServerFn({ method: "GET" })
         entity_id: string;
         rule_key: string | null;
         amount: number | null;
-        metadata: Record<string, unknown>;
+        metadata: Json;
         requested_by: string | null;
         status: string;
         sla_due_at: string | null;
@@ -185,7 +186,7 @@ export const listMyApprovals = createServerFn({ method: "GET" })
 
     const rows: InboxRow[] = approvals.map((a) => {
       const inst = instancesById.get(a.instance_id);
-      const metadata = (inst?.metadata ?? {}) as Record<string, unknown>;
+      const metadata = (inst?.metadata ?? {}) as Json;
       const escalated =
         typeof metadata.escalated_at === "string" ? metadata.escalated_at : null;
       const stepRole =
@@ -275,7 +276,7 @@ export interface InstanceDetail {
   rule_key: string | null;
   amount: number | null;
   currency: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   status: string;
   requested_at: string;
   requester_id: string | null;
@@ -292,7 +293,7 @@ export interface InstanceDetail {
     created_at: string;
     actor_id: string | null;
     actor_name: string | null;
-    metadata: Record<string, unknown>;
+    metadata: Json;
   }>;
 }
 
@@ -318,7 +319,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       entity_id: string;
       rule_key: string | null;
       amount: number | null;
-      metadata: Record<string, unknown>;
+      metadata: Json;
       requested_by: string | null;
       status: string;
       sla_due_at: string | null;
@@ -362,7 +363,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
         action: string;
         created_at: string;
         actor_id: string | null;
-        metadata: Record<string, unknown>;
+        metadata: Json;
       }>) ?? [];
 
     const namesNeeded = new Set<string>();
@@ -394,12 +395,12 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
 
     const metadata = i.metadata ?? {};
     const escalated =
-      typeof (metadata as Record<string, unknown>).escalated_at === "string"
-        ? ((metadata as Record<string, unknown>).escalated_at as string)
+      typeof (metadata as Json).escalated_at === "string"
+        ? ((metadata as Json).escalated_at as string)
         : null;
     const currency =
-      typeof (metadata as Record<string, unknown>).currency === "string"
-        ? ((metadata as Record<string, unknown>).currency as string)
+      typeof (metadata as Json).currency === "string"
+        ? ((metadata as Json).currency as string)
         : null;
 
     return {
@@ -409,7 +410,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       rule_key: i.rule_key,
       amount: i.amount,
       currency,
-      metadata: metadata as Record<string, unknown>,
+      metadata: metadata as Json,
       status: i.status,
       requested_at: i.requested_at,
       requester_id: i.requested_by,
@@ -419,7 +420,7 @@ export const getApprovalInstance = createServerFn({ method: "GET" })
       current_step: i.current_step,
       escalated_at: escalated,
       title: deriveTitle(
-        metadata as Record<string, unknown>,
+        metadata as Json,
         i.entity_type,
         i.entity_id,
       ),
