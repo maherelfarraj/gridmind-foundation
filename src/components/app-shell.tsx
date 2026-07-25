@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppBreadcrumbs, type BreadcrumbItemSpec } from "@/components/breadcrumbs";
 import { ActiveCompanyProvider, CompanySwitcher } from "@/components/company-switcher";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { OfflineBadge } from "@/components/offline/offline-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -27,6 +28,7 @@ export function AppShell({ children, breadcrumbs = [{ label: "Dashboard" }] }: A
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <OfflineBadge />
               <CompanySwitcher />
               <NotificationsBell />
               <ThemeToggle />
