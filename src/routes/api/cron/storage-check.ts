@@ -34,7 +34,7 @@ const REQUIRED_POLICIES = [
   "company_files_delete",
 ] as const;
 
-type BucketRow = { id: string; name: string; public: boolean };
+type BucketRow = { id: string; name: string; is_public: boolean };
 type PolicyRow = { policyname: string };
 type Failure = {
   bucket?: string;
@@ -45,6 +45,11 @@ type Failure = {
     | "query_failed";
   details?: unknown;
 };
+
+type LooseRpc = (
+  name: string,
+  args?: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
 
 export const Route = createFileRoute("/api/cron/storage-check")({
   server: {
