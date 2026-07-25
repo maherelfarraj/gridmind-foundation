@@ -1,19 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "./__root";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GridMind EPC — Energy Performance Certificate Management" },
+      { title: "GridMind EPC — The operating system for renewable EPC" },
       {
         name: "description",
-        content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC.",
+        content:
+          "One multi-tenant platform for solar PV, BESS, and substation delivery — from first lead to lifetime O&M.",
       },
-      { property: "og:title", content: "GridMind EPC — Energy Performance Certificate Management" },
+      { property: "og:title", content: "GridMind EPC — The operating system for renewable EPC" },
       {
         property: "og:description",
-        content: "Streamline EPC assessments, certificates, and reporting with GridMind EPC.",
+        content:
+          "One multi-tenant platform for solar PV, BESS, and substation delivery — from first lead to lifetime O&M.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -22,66 +23,40 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
+const CHIPS = ["Phase-gated delivery", "Finance-grade controls", "Field-first, offline-ready"];
+
 function LandingPage() {
-  const { user, isLoading } = useAuth();
-
   return (
-    <div className="flex flex-col">
-      <section className="relative overflow-hidden bg-background px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Energy Performance Certificates, simplified
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            GridMind EPC helps assessors, landlords, and property managers create, manage, and track
-            EPC ratings from one secure workspace.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            {!isLoading && user ? (
-              <Link to="/dashboard">
-                <Button size="lg">Go to dashboard</Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button size="lg">Get started</Button>
-                </Link>
-                <Link to="/login">
-                  <Button size="lg" variant="outline">
-                    Sign in
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
+    <main className="dark flex min-h-screen items-center justify-center bg-background px-6 py-24">
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
+        <span className="font-display text-sm font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          GridMind EPC
+        </span>
 
-      <section className="border-t bg-muted/40 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard
-            title="Assessment workflow"
-            description="Capture property data, run SAP-style calculations, and generate recommendations in one place."
-          />
-          <FeatureCard
-            title="Certificate management"
-            description="Store, version, and export EPC certificates with full audit history."
-          />
-          <FeatureCard
-            title="Analytics & reporting"
-            description="Track rating trends, portfolio performance, and compliance deadlines."
-          />
-        </div>
-      </section>
-    </div>
-  );
-}
+        <h1 className="mt-8 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+          The operating system for renewable EPC
+        </h1>
 
-function FeatureCard({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-lg border bg-background p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-    </div>
+        <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
+          From first lead to lifetime O&amp;M — one multi-tenant platform for solar, BESS, and
+          substation delivery.
+        </p>
+
+        <Button asChild size="lg" className="mt-10">
+          <Link to="/login">Sign in</Link>
+        </Button>
+
+        <ul className="mt-12 flex flex-wrap items-center justify-center gap-2">
+          {CHIPS.map((chip) => (
+            <li
+              key={chip}
+              className="rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground"
+            >
+              {chip}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </main>
   );
 }
