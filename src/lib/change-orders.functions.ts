@@ -104,7 +104,7 @@ export const upsertChangeOrder = createServerFn({ method: "POST" })
       if (data.status) patch.status = data.status;
       const { data: upd, error } = await context.supabase
         .from("change_orders")
-        .update(patch)
+        .update(patch as any)
         .eq("id", data.id)
         .select("*")
         .maybeSingle();
