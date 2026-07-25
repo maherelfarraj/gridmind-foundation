@@ -4061,6 +4061,86 @@ export type Database = {
           },
         ]
       }
+      om_reports: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          data: Json
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          pdf_path: string | null
+          period_end: string
+          period_start: string
+          project_id: string
+          report_type: Database["public"]["Enums"]["om_report_type"]
+          status: Database["public"]["Enums"]["om_report_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          pdf_path?: string | null
+          period_end: string
+          period_start: string
+          project_id: string
+          report_type?: Database["public"]["Enums"]["om_report_type"]
+          status?: Database["public"]["Enums"]["om_report_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          pdf_path?: string | null
+          period_end?: string
+          period_start?: string
+          project_id?: string
+          report_type?: Database["public"]["Enums"]["om_report_type"]
+          status?: Database["public"]["Enums"]["om_report_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "om_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "om_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "om_reports_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "om_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           account_name: string | null
@@ -9008,6 +9088,8 @@ export type Database = {
       observation_severity: "low" | "medium" | "high" | "critical"
       observation_status: "open" | "in_progress" | "closed"
       offline_queue_status: "pending" | "synced" | "failed"
+      om_report_status: "draft" | "generated" | "sent"
+      om_report_type: "monthly" | "quarterly" | "annual"
       opportunity_stage:
         | "prospecting"
         | "qualification"
@@ -9489,6 +9571,8 @@ export const Constants = {
       observation_severity: ["low", "medium", "high", "critical"],
       observation_status: ["open", "in_progress", "closed"],
       offline_queue_status: ["pending", "synced", "failed"],
+      om_report_status: ["draft", "generated", "sent"],
+      om_report_type: ["monthly", "quarterly", "annual"],
       opportunity_stage: [
         "prospecting",
         "qualification",
