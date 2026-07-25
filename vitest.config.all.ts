@@ -8,7 +8,7 @@ export default defineConfig({
   },
   test: {
     name: 'all',
-    environment: 'jsdom',
+    environment: 'node',
     globals: true,
     include: [
       'tests/unit/**/*.test.ts',
