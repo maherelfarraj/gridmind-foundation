@@ -53,7 +53,7 @@ export interface PpaRow {
   capacity_mw: number | null;
   annual_energy_mwh: number | null;
   availability_target_pct: number | null;
-  liquidated_damages: Record<string, unknown>;
+  liquidated_damages: Record<string, any>;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -72,7 +72,7 @@ export interface LcoeRow {
   project_life_years: number;
   currency_code: string;
   lcoe: number | null;
-  assumptions: Record<string, unknown>;
+  assumptions: Record<string, any>;
   created_at: string;
   updated_at: string;
 }
