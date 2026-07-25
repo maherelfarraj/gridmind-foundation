@@ -1,61 +1,70 @@
-# P-075 — Budgets, cost codes, PO commitment import
+# P-078 — Contracts & AI Clause Extractor
 
-Adds the finance backbone: hierarchical cost codes mapped to WBS, versioned budgets with a generated `current_amount`, and a PO commitment import that snapshots issued POs into `budgets.po_commitments`. Follows the same rules-and-server-fn pattern used for schedule/risks.
+## 1. Migration `supabase/migrations/0035_contracts.sql`
 
-## Migration — `supabase/migrations/0033_budgets_cost_codes.sql`
+Guarded enums + tables + RLS + grants + indexes exactly as in the prompt. Both enums wrapped in `do $$ begin ... exception when duplicate_object then null; end $$;`. `updated_at` triggers via existing `set_updated_at()`. Explicit note: `legal_admin` already exists in `app_role`. No DELETE grant (retention enforced by absence of delete permission + `retention_until`).
 
-Filename bumped to `0033_` because `0032_planning_baseline.sql` already exists (P-071 renumbered). SQL body is exactly the spec block, plus:
-- `create trigger set_updated_at_cost_codes before update on public.cost_codes for each row execute function public.set_updated_at();`
-- Same trigger on `public.budgets`.
-- `service_role` gets `all` on both tables (matches project convention; the spec grant block covers `authenticated` and deliberately omits DELETE on budgets for the 7-year retention rule).
+## 2. Server rules — `src/lib/contracts.rules.ts`
 
-Financial immutability rule: no DELETE grant on `budgets` — new versions supersede. `cost_codes` keeps DELETE (they're metadata, not financial ledger rows).
+- `sovTotal(lines)` → decimal-safe sum.
+- `assertSovMatchesValue(value, lines, tolerance=0.01)` → throws `SovMismatchError` if `|Σ − value| > tol`.
+- `computeRetentionUntil(signedAt)` → `signedAt + 7y` (date-fns).
+- Zod schemas: `SovLineSchema`, `ContractUpsertSchema`, `ObligationSchema`, `ExtractedObligationSchema` (`title`, `description?`, `clause_ref?`, `due_date?` ISO).
+- `isObligationOverdue(due_date, status)`.
 
-## Server layer
+Unit tests: `tests/unit/contracts-rules.test.ts` (SOV sum tolerance, retention math, overdue flag, zod parsing).
 
-- `src/lib/budget.rules.ts` — pure logic + zod:
-  - `costCodeCreateSchema`, `costCodeUpdateSchema` (code regex `^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$`, name, description, parent_id, wbs_item_id).
-  - `budgetUpsertSchema` (project_id, cost_code_id, original_amount ≥ 0, approved_changes, currency_code, notes, wbs_item_id).
-  - `poAssignmentSchema` — array of `{ po_id, cost_code_id }`.
-  - `variance(current, committed, actual)` and `varianceBand(v)` → `ok | warning | destructive` for color tokens.
-  - `sumSnapshot(entries)` and `buildPoSnapshotEntry(po)`.
-  - `groupCostCodesByParent(rows)` — tree builder for the UI.
-- `src/lib/budget.functions.ts` (`createServerFn` + `requireSupabaseAuth`):
-  - `getBudgetAccess` → `{ canWriteCostCodes, canWriteBudgets }` via `has_company_role` (`finance_admin`/`project_admin`/`company_admin` for cost codes; `finance_admin`/`company_admin` for budgets).
-  - `listCostCodes({ projectId })`, `createCostCode`, `updateCostCode`, `deleteCostCode` (soft-guard: refuse when a budget row references it).
-  - `listBudgets({ projectId })` returning cost code join + wbs code/name.
-  - `upsertBudget` — writes version 1 on first save; when `original_amount`/`currency_code` change on an existing row, insert new `version = max+1` (supersede) rather than mutating; simple `notes`/`wbs_item_id` edits update in place.
-  - `listProjectPurchaseOrders({ projectId })` — POs in `issued`/`approved`/`acknowledged` states, projected to `{ id, po_number, vendor_name, total_amount, currency_code }`.
-  - `importPoCommitments({ projectId, assignments })` — groups assignments per cost code, replaces `po_commitments` snapshot, recomputes `committed_amount = sum(amount)` on each affected budget row, `write_audit_log('budget.import_commitments', 'budgets', budget.id, { po_ids, total })` per row.
-  - Every mutation audit-logs: `cost_code.create|update|delete`, `budget.create|update|supersede`, `budget.import_commitments`.
-- `src/lib/budget.query.ts` — `queryOptions` wrappers + `budgetErrorMessage`.
-- `src/lib/budget.csv.ts` — CSV export: cost code, name, WBS, current, committed, actual, variance, currency.
+## 3. Server functions — `src/lib/contracts.functions.ts`
 
-## UI
+All `createServerFn` + `requireSupabaseAuth`, RLS-scoped supabase client:
+- `listContracts({ project_id?, status?, q?, type? })`
+- `getContract({ id })` — returns contract + obligations + SOV.
+- `upsertContract(payload)` — zod-validated; on insert auto-generates `contract_number` (`CT-YYYY-####`).
+- `updateScheduleOfValues({ id, lines })` — validates Σ SOV = value, else throws (surfaced as inline error).
+- `markContractSigned({ id, signed_at, file_path })` — sets `status='signed'`, `signed_at`, `retention_until = signed_at + 7y`; writes `contract.sign` audit.
+- `uploadSignedCopy` helper path convention: `{company_id}/contracts/{contract_id}/{filename}` in `documents` bucket (company UUID first for storage RLS).
+- `addObligation`, `updateObligation`, `bulkInsertObligations({ contract_id, items, extracted_by_ai })`.
+- `extractContractClauses({ contract_id, pdf_text })`:
+  - Role check: `finance_admin | legal_admin | company_admin`.
+  - Rate-limit via existing `consume_rate_limit` (`ai:extract:{company}`, 10/hour).
+  - Calls Lovable AI Gateway `POST https://ai.gateway.lovable.dev/v1/chat/completions` with `Authorization: Bearer ${process.env.LOVABLE_API_KEY}`, model `google/gemini-2.5-flash`, system prompt for EPC/PPA clause taxonomy (payments, LDs, warranties, notice periods, insurance, deliverables), `response_format: { type: "json_object" }`.
+  - Truncates `pdf_text` to ~120k chars defensively.
+  - Parses response with `z.array(ExtractedObligationSchema)`; returns array **without** inserting.
+  - Handles 429 → typed "rate_limited", 402 → "credits_exhausted", other → generic "gateway_error".
+  - Audits `contract.ai_extract` with `{contract_id, extracted: n, accepted: 0}` on extract; `bulkInsertObligations` (when caller is AI flow) writes second audit with `accepted: n`.
 
-- `src/routes/_authenticated/projects.$projectId.finance.tsx` — new pathless finance layout with sub-tabs (Budget for now; future EVM/change orders slot in). Follows the planning sub-tab pattern.
-- `src/routes/_authenticated/projects.$projectId.finance.budget.tsx` — orchestrator route with `head()`, `pendingComponent` skeleton, `errorComponent` (retry via `router.invalidate()`).
-- `src/components/finance/budget-kpi-strip.tsx` — 4 cards: total budget (current), total committed, total actual, total variance (colored via `varianceBand`). Intl currency formatter locked to project's dominant currency (falls back to first budget row).
-- `src/components/finance/budget-tree-table.tsx` — tree-table grouped by `parent_id`. Columns: code, name, WBS select (inline `wbs_item_id` update via `updateCostCode`), original, approved changes, current (generated, read-only, muted), committed, actual, variance (signed with band color). Expand/collapse parents. Empty state ("No cost codes yet — start with a standard EPC breakdown"). Role-gated inline edits.
-- `src/components/finance/cost-code-dialog.tsx` — create/edit cost code (react-hook-form + zod).
-- `src/components/finance/import-commitments-dialog.tsx` — the money moment: lists POs from `listProjectPurchaseOrders`, each row has a cost-code `Select`; running-sum preview per cost code; "Import" calls `importPoCommitments` and toasts committed totals. Skeleton while POs load, empty state when no eligible POs.
-- Toolbar: "New cost code", "Import PO commitments", "Export CSV".
+Query helpers: `src/lib/contracts.query.ts` (queryOptions).
 
-## Verification
+## 4. PDF text extraction
 
-1. Migration runs twice cleanly; `supabase--linter` clean for new tables.
-2. `supabase--read_query` checks: RLS enabled; DELETE not granted to authenticated on `budgets`; generated column `current_amount = original_amount + approved_changes`.
-3. `tests/unit/budget-rules.test.ts` — variance/band, snapshot sum, tree grouping, schema rejects (negative amount, bad code).
-4. `bunx tsgo --noEmit` clean.
-5. Preview smoke: create the three cost codes, map WBS, import Batch 07 POs → committed matches PO totals, variance updates live, audit log entries present, CSV export works, non-finance user is blocked from writes.
+Client-side extraction using `pdfjs-dist` (already in tree via jspdf ecosystem? — will install if missing: `pdfjs-dist` legacy build, dynamic-imported in the AI dialog so it never enters SSR).
 
-## Non-goals
+## 5. Routes & UI (semantic tokens only, existing shadcn primitives)
 
-- No change-order approval UI (P-081 owns `approved_changes` mutation).
-- No actual-invoice ingestion (P-080).
-- No EVM math or S-curve (P-076).
-- Multi-currency conversion out of scope — budgets stored in their own `currency_code`; KPIs sum per currency; mixed-currency projects show per-currency subtotals rather than an FX-converted grand total.
+- `src/routes/_authenticated/finance/contracts.tsx` — server-filtered table (number, title, counterparty, type, value+currency, status Badge, expiry), search + type/status filters, CSV export via existing `csv.ts`, skeleton/empty/error states.
+- `src/routes/_authenticated/finance/contracts.$contractId.tsx` — Tabs:
+  - **Overview**: react-hook-form + zod edit form; "Mark signed" button (opens upload dialog → uploads to `documents` bucket → calls `markContractSigned`). Read-only after `signed`+ status except allowed metadata.
+  - **Schedule of Values**: editable grid (line_no, description, scheduled_amount) with live running total vs contract value; save disabled + inline error if mismatch.
+  - **Obligations**: table with add/edit dialog; overdue rows use `bg-destructive/10 text-destructive` (semantic tokens); status workflow open→in_progress→fulfilled/breached; "Extract clauses with AI" button (role-gated) → `ExtractClausesDialog`:
+    - Requires uploaded contract file; extracts text via `pdfjs-dist`.
+    - Shows spinner during gateway call; error banner + Retry on failure.
+    - Review dialog with per-row checkboxes (all pre-checked), editable due date, then "Import selected" → `bulkInsertObligations` with `extracted_by_ai: true`.
+- Nav: add "Contracts" under Finance in `src/lib/nav-map.ts`.
 
-## Follow-ups
+## 6. Verification checklist
 
-P-076 — EVM snapshots (PV/EV/AC, SPI/CPI) reading from these budget rows.
+- Migration runs twice cleanly (guarded enums + `if not exists`).
+- RLS: non-finance/legal user gets 42501 on write (verified via read_query with role probe).
+- Create EPC contract, value $20M; SOV lines summing to $20M accepted; mismatched rejected with clear error.
+- Sign → `retention_until = signed_at + 7y`, file at `{company}/contracts/{id}/…`.
+- AI extract on a real PDF returns obligations w/ clause refs; accept 3 → inserted with `extracted_by_ai=true`.
+- Audit rows: `contract.sign`, `contract.ai_extract` present with metadata.
+- `LOVABLE_API_KEY` used only inside server fn handler; never in client bundle (grep verify).
+
+## Technical notes
+
+- Enums may already exist across environments — guarded `do $$` blocks handle re-runs.
+- Bucket `documents` is private; downloads via short-lived signed URLs.
+- AI call is server-only (`createServerFn`) — key stays in Worker env.
+- No auto-insert of AI results — review-before-insert is enforced in UI + server (extract and bulkInsert are separate RPCs).
+- After migration approval, regenerated `Database` types will be picked up automatically.
