@@ -240,7 +240,24 @@ export async function guardPublicHook(
       p_refill_per_sec: refill,
     });
     if (rateErr) {
-      return { ok: false, response: jsonError(500, 'rate_limit_error', 'rate limiter unavailable') };
+      // Fail OPEN on rate limiter unavailability. Emit structured audit so
+      // ops can spot systemic RPC failures without an outage from this hook.
+      await auditGuardEvent(admin, {
+        companyId: null,
+        action: 'public_hook.rate_limit_fail_open',
+        route: opts.route,
+        reason: 'rate_limiter_unavailable',
+        metadata: { error: String((rateErr as { message?: string })?.message ?? rateErr) },
+      });
+      return {
+        ok: true,
+        keyId: null,
+        companyId: null,
+        scopes: [],
+        rawBody,
+        clientIp,
+        caller: { kind: 'cron', companyId: null, keyId: null },
+      };
     }
     if (allowed !== true) {
       await auditGuardEvent(admin, {
@@ -391,7 +408,25 @@ export async function guardPublicHook(
     p_refill_per_sec: refill,
   });
   if (rateErr) {
-    return { ok: false, response: jsonError(500, 'rate_limit_error', 'rate limiter unavailable') };
+    // Fail OPEN on rate limiter unavailability. Emit structured audit so ops
+    // can spot systemic RPC failures without an outage from this hook.
+    await auditGuardEvent(admin, {
+      companyId: keyRow.company_id,
+      keyId: keyRow.key_id,
+      action: 'public_hook.rate_limit_fail_open',
+      route: opts.route,
+      reason: 'rate_limiter_unavailable',
+      metadata: { error: String((rateErr as { message?: string })?.message ?? rateErr) },
+    });
+    return {
+      ok: true,
+      keyId: keyRow.key_id,
+      companyId: keyRow.company_id,
+      scopes,
+      rawBody,
+      clientIp,
+      caller: { kind: 'api_key', companyId: keyRow.company_id, keyId: keyRow.key_id },
+    };
   }
   if (allowed !== true) {
     await auditGuardEvent(admin, {

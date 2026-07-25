@@ -241,10 +241,19 @@ const EXTERNAL_MODULES: Record<string, ModuleKey[]> = {
   lender_viewer: ["portals", "planning_budget"],
 };
 
-function buildRoleModuleMap(): Record<GrantableRole, ModuleKey[]> {
-  const map = {} as Record<GrantableRole, ModuleKey[]>;
-  for (const role of GRANTABLE_ROLES) {
-    if (role === "company_admin" || role === "billing_admin" || role === "project_admin") {
+import type { AppRole } from "./role-groups";
+
+const ALL_APP_ROLES: readonly AppRole[] = ["super_admin", ...GRANTABLE_ROLES];
+
+function buildRoleModuleMap(): Record<AppRole, ModuleKey[]> {
+  const map = {} as Record<AppRole, ModuleKey[]>;
+  for (const role of ALL_APP_ROLES) {
+    if (
+      role === "super_admin" ||
+      role === "company_admin" ||
+      role === "billing_admin" ||
+      role === "project_admin"
+    ) {
       map[role] = [...ALL_ADMIN_VISIBLE];
     } else if (role in DEPT_ADMIN_HOME) {
       // Department admins see every core module (they coordinate cross-team)
@@ -261,7 +270,7 @@ function buildRoleModuleMap(): Record<GrantableRole, ModuleKey[]> {
   return map;
 }
 
-export const ROLE_MODULE_MAP: Record<GrantableRole, ModuleKey[]> = buildRoleModuleMap();
+export const ROLE_MODULE_MAP: Record<AppRole, ModuleKey[]> = buildRoleModuleMap();
 
 const FULL_ACTIONS: readonly Action[] = ["view", "create", "edit", "approve", "export"];
 const WRITE_ACTIONS: readonly Action[] = ["view", "create", "edit", "export"];
