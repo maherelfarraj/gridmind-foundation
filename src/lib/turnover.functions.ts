@@ -346,15 +346,14 @@ export const compileTurnoverPackage = createServerFn({ method: "POST" })
 // -----------------------------------------------------------------------------
 export const attachTurnoverIndex = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) => {
-    const parsed = turnoverProjectInput
-      .extend({ indexPdfPath: (turnoverProjectInput.shape.projectId as any) })
-      .parse(raw) as any;
-    if (!parsed.indexPdfPath || typeof parsed.indexPdfPath !== "string") {
-      throw new Error("indexPdfPath_required");
-    }
-    return parsed as { projectId: string; indexPdfPath: string };
-  })
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        projectId: z.string().uuid(),
+        indexPdfPath: z.string().min(1).max(500),
+      })
+      .parse(raw),
+  )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
