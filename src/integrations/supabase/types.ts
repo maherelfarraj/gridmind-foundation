@@ -9630,6 +9630,14 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      list_storage_buckets_status: {
+        Args: { _ids: string[] }
+        Returns: {
+          id: string
+          is_public: boolean
+          name: string
+        }[]
+      }
       list_storage_object_policies: {
         Args: never
         Returns: {
