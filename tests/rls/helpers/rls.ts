@@ -155,16 +155,18 @@ async function seedTenant(
     .select("id")
     .single();
 
-  const { data: asset } = await svc
+  const { data: asset, error: assetErr } = await svc
     .from("scada_assets")
     .insert({
       company_id: co.id,
       project_id: proj.id,
-      tag: `AST-${label}`,
+      asset_key: `AST-${label}-${crypto.randomUUID().slice(0, 6)}`,
+      name: `Asset ${label}`,
       asset_type: "inverter",
     })
     .select("id")
     .single();
+  if (assetErr || !asset) throw assetErr ?? new Error("scada_asset insert failed");
 
   const { data: equip } = await svc
     .from("equipment_registry")
