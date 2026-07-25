@@ -491,7 +491,7 @@ export const listProjectPurchaseOrders = createServerFn({ method: "GET" })
         "id, po_number, vendor_id, total_amount, currency_code, status, issued_at, required_by_date, vendor:vendor_id(name)",
       )
       .eq("project_id", data.projectId)
-      .in("status", COMMITTED_PO_STATUSES as unknown as string[])
+      .in("status", COMMITTED_PO_STATUSES)
       .order("po_number", { ascending: true });
     if (error) throw error;
     return ((rows ?? []) as any[]).map((r) => ({
@@ -527,7 +527,7 @@ export const importPoCommitments = createServerFn({ method: "POST" })
           "id, po_number, total_amount, currency_code, status, vendor:vendor_id(name)",
         )
         .eq("project_id", project.id)
-        .in("status", COMMITTED_PO_STATUSES as unknown as string[]);
+        .in("status", COMMITTED_PO_STATUSES);
       if (poErr) throw poErr;
       const poById = new Map<string, any>(
         ((poRows ?? []) as any[]).map((p) => [p.id, p]),
