@@ -1,66 +1,86 @@
-## Real-operations quickstart — GSI
+## Goal
 
-Verified current state: GSI (enterprise plan) has **0 projects, 0 project templates, 0 vendors, 0 API keys, 0 SCADA connectors**, and exactly one real user profile (`maher@next.jo`). So everything below is a genuine first-run.
+Complete the two remaining quickstart steps for the live GSI project **East Amman Hybrid PV + BESS** (`GSI-EAM-001`, id `d887fd69…`), all through the app UI/RPCs — no SQL-level writes:
 
-### One conflict to resolve first
+1. Vendors LONGi + Trina Solar onboarded (status `onboarding`).
+2. RFQ **RFQ-0001** — "65 MWp PV Module Supply — East Amman Hybrid Project", USD, both vendors invited, bid due 21 Aug 2026 17:00 Asia/Amman.
+3. SCADA connector "East Amman SCADA Gateway" (REST push, gateway → GridMind) + production API key scoped `scada:telemetry:write`, with the 10 assets registered.
 
-Project code is validated as **2–12 characters, A-Z / 0-9 / hyphen only** (both in the wizard schema and at creation time). Your proposed code `GSI-JOR-EAM-HYB-001` is 19 characters and will be rejected.
+External references (`GSI-JOR-EAM-HYB-001`, `GSI-JOR-EAM-RFQ-MOD-001`) are carried as text in the RFQ title/terms and connector config — app codes stay `GSI-EAM-001` / `RFQ-0001` as you decided.
 
-Proposal: use **`GSI-EAM-001`** (11 chars) as the system code, and keep the full `GSI-JOR-EAM-HYB-001` string as the project description/reference so nothing is lost. If you'd rather keep the long code as-is, say so and I'll widen the code rule instead (schema + DB) — that's a deliberate change, not a workaround.
+## Step 1 — Vendors (Procurement → Vendors → Onboard)
 
-### Step 1 — Create the project
+Create two vendors under GSI via the vendor form:
 
-Run the 4-step wizard for GSI:
+| Field | LONGi | Trina Solar |
+|---|---|---|
+| Name | LONGi | Trina Solar |
+| Legal name | LONGi Green Energy Technology Co., Ltd. | Trina Solar Co., Ltd. |
+| Country | China | China |
+| Currency | USD | USD |
+| Categories | modules | modules |
+| Status | onboarding | onboarding |
 
-- **Archetype:** Hybrid PV + BESS (`hybrid_pv_bess`)
-- **Name:** East Amman 50 MW PV + 10 MW / 20 MWh BESS
-- **Code:** `GSI-EAM-001`
-- **Capacity:** `capacity_mw` = 50 (MWac point of interconnection), `capacity_mwh` = 20
-- **Site:** Jordan — East Amman, Amman Governorate
-- **Offtaker:** left blank (TBD)
-- **Target COD:** 2028-12-31
-- **Template:** none (no templates exist yet) → the wizard's blank selection: default gates, a single 100% budget line, departments preselected
-- **Departments:** engineering, procurement, construction, HSE, finance
-- **Team:** you as project admin; department leads left unset (no other GSI users hold `*_admin` roles yet — those dropdowns will be empty until invites are accepted, then leads get assigned in project settings)
+Notes field records "Prequalification pending — PV module supply, East Amman (ext. ref GSI-JOR-EAM-HYB-001)".
 
-The 65 MWp DC figure and the 10 MW BESS power rating live in the archetype config (PV + BESS config tabs), not the header capacity fields — I'll fill those on the project's configuration page right after creation.
+Open item: you didn't give contact emails / payment terms / incoterms. I'll leave those blank and flag them — an RFQ invite without a vendor email means the bid link has to be delivered manually. Give me the two bid-desk emails and I'll fill them in the same pass.
 
-Then tune the gates and budget so the project is actually usable: phase gates for Development → NTP → COD → Handover, and a first budget split (EPC / BOS / DEV / OWN) instead of the single placeholder line.
+## Step 2 — RFQ (Procurement → RFQs → New)
 
-### Step 2 — Save it as GSI's reusable template
+- Title: `65 MWp PV Module Supply — East Amman Hybrid Project`
+- Project: East Amman Hybrid PV + BESS (`GSI-EAM-001`)
+- Currency: USD
+- Due date: `2026-08-21T17:00:00+03:00` (stored UTC `2026-08-21T14:00:00Z`)
+- Terms/description: external RFQ ref `GSI-JOR-EAM-RFQ-MOD-001`, external project ref `GSI-JOR-EAM-HYB-001`, Incoterms + payment terms placeholder until you confirm.
+- Line items: one module supply line at 65,000 kWp (I'll use a single lump line unless you want a per-tranche breakdown).
+- Invite both vendors, then **Issue** → assigns `RFQ-0001` and moves status draft → issued.
 
-Because GSI has no templates, I'll capture this project's gates + budget structure as a `hybrid_pv_bess` project template for GSI, so the next project starts from it instead of blank.
+## Step 3 — SCADA connector + API key
 
-### Step 3 — Real invites (waiting on your list)
+**API key** (Settings → API keys): name `East Amman SCADA Gateway (prod)`, scope `scada:telemetry:write` only — read/admin scopes off. Key is shown once; I'll hand it to you in chat at that moment and it is never retrievable again.
 
-Nothing issued until you send names + emails + intended roles. When you do, each invite goes through the guarded `create_invite` RPC under GSI (never SQL), and I hand back the accept links. Reminder of the standing rules: GSI is real people only, demo/test people stay in Sandbox, and if a guard blocks a grant I report it rather than routing around it. Note `super_admin` cannot be invited — only granted after signup.
+**Connector** (O&M → SCADA → Add connector): the connector-type enum has no `rest_push` value, so the closest supported type is used with the REST-push contract recorded in config:
 
-### Step 4 — First vendor + RFQ (needs input)
+```text
+name            East Amman SCADA Gateway
+project         GSI-EAM-001
+type            vendor_api  (REST push)
+config.direction    inbound_push  (site edge gateway → GridMind)
+config.endpoint     POST https://gridmind-sparkle.lovable.app/api/public/hooks/scada-telemetry
+config.headers      Authorization: Bearer <key>, X-GM-Timestamp, X-GM-Signature,
+                    X-Project-Code: GSI-JOR-EAM-HYB-001
+config.interval_sec 60
+config.auth         api_key + HMAC-SHA256 (300 s replay window)
+config.alarms       immediate
+```
 
-I can onboard the vendor and open an RFQ against the new project as soon as you give me:
+**Assets** — the `scada_asset_type` enum supports inverter / bess / meter / weather_station / plant_controller / combiner, so your 10 assets map like this:
 
-- Vendor: legal name, country, category (modules / BESS / EPC subcontract / transformers …), primary contact name + email, and any prequalification/certification notes
-- RFQ: package title, scope lines (item, quantity, unit), bid due date, currency
+| Asset | asset_key | type |
+|---|---|---|
+| PV array / inverters | `PV-INV-01` | inverter |
+| BESS | `BESS-01` | bess |
+| PCS | `BESS-PCS-01` | inverter |
+| BMS | `BESS-BMS-01` | bess |
+| EMS / PPC | `EMS-PPC-01` | plant_controller |
+| POI meter | `POI-MTR-01` | meter |
+| MV switchgear | `MV-SWGR-01` | combiner |
+| Main transformer | `TRF-MAIN-01` | combiner |
+| Weather station | `WS-01` | weather_station |
+| Substation | `SUBSTN-01` | plant_controller |
 
-Without a real vendor I would only be able to create a fixture, which is exactly what we agreed to keep out of GSI.
+If you'd rather have exact `pcs` / `bms` / `transformer` / `switchgear` / `substation` enum values, that's a migration plus wizard/label updates — say so and I'll add it instead of mapping.
 
-### Step 5 — SCADA connector (needs input)
+**Security prerequisite:** the public-hook guard checks a `cf-connecting-ip` allowlist and an HMAC secret. I need the site gateway's **public egress IP** to allowlist it; until then the guard runs in warn mode (window closes ≈ 8 Aug), after which unlisted IPs are rejected. The HMAC signing secret is generated with the key and shown once alongside it.
 
-Sequence when you're ready for telemetry:
+## Verification
 
-1. Mint an API key in Settings → API keys with the `scada:ingest` scope (shown once — I'll hand it to you and it is never stored in plaintext), noting the HMAC signing secret and IP allowlist that the public-API guard enforces.
-2. Create the SCADA connector row for the project with protocol and endpoint details.
-3. Point the plant/gateway at `POST /api/public/hooks/scada-telemetry` using the signed-request scheme in `/docs/api`.
+- `psql` reads confirming: 2 GSI vendors `onboarding`; `rfqs` row status `issued`, `rfq_number = RFQ-0001`, due `2026-08-21T14:00:00Z`, 2 `rfq_bids` invites; 1 `scada_connectors` row + 10 `scada_assets` for the project.
+- A signed sample POST to `/api/public/hooks/scada-telemetry` with one reading per asset, proving 200 + `accepted` count and that an unsigned/foreign-key request is rejected.
+- Screenshots of the RFQ detail page and the SCADA connector page.
 
-Needed from you: protocol (Modbus TCP / OPC-UA / REST poll / push), the source system (which inverter/BESS SCADA vendor), the static egress IP(s) to allowlist, and the asset/point list to map.
+## Open items I need from you
 
-Also worth flagging: the API guard is still in **warn** mode (Day 0 of the warn window, flip ≈ Aug 8). A connector onboarded before the flip will start failing after it if its signing or IP config is wrong, so I'll verify the first signed request end-to-end rather than assuming warn-mode success.
-
-### What I'll do in this pass
-
-Steps 1 and 2 in full (project created, configured, gates and budget set, template saved), then verified in the running app with a screenshot of the project dashboard. Steps 3–5 are blocked on the inputs above; I'll write a short operator runbook for each into `docs/` so the sequence is captured even before the data arrives.
-
-### Technical notes
-
-- Project creation goes through the existing `createProject` server function (RLS-scoped, audit-logged), driven through the real wizard UI rather than direct inserts, so guards, phase-gate seeding, and audit rows all behave as they will for your team.
-- Templates, vendors, and RFQs are data operations on existing tables — no schema changes expected. The only scenario needing a migration is widening the project-code rule, if you choose that over the shorter code.
+1. LONGi / Trina bid-desk emails (and payment terms + incoterms if fixed).
+2. Gateway public egress IP for the allowlist.
+3. RFQ line breakdown — single 65 MWp line, or split by tranche/module type?
