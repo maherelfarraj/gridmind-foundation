@@ -78,6 +78,7 @@ import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authent
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
+import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
@@ -560,6 +561,12 @@ const AuthenticatedCrmPipelineRoute =
     id: '/crm/pipeline',
     path: '/crm/pipeline',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminHealthRoute =
+  AuthenticatedAdminHealthRouteImport.update({
+    id: '/health',
+    path: '/health',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminTenantsRouteRoute =
   AuthenticatedAdminTenantsRouteRouteImport.update({
@@ -1168,6 +1175,7 @@ export interface FileRoutesByFullPath {
   '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1331,6 +1339,7 @@ export interface FileRoutesByTo {
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1490,6 +1499,7 @@ export interface FileRoutesById {
   '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1657,6 +1667,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal/'
     | '/admin/tenants'
+    | '/admin/health'
     | '/crm/pipeline'
     | '/docs/api'
     | '/field/discipline-board'
@@ -1820,6 +1831,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/share/$token'
     | '/portal'
+    | '/admin/health'
     | '/crm/pipeline'
     | '/docs/api'
     | '/field/discipline-board'
@@ -1978,6 +1990,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal/'
     | '/_authenticated/admin/tenants'
+    | '/_authenticated/admin/health'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/field/discipline-board'
@@ -2634,6 +2647,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/crm/pipeline'
       preLoaderRoute: typeof AuthenticatedCrmPipelineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/health': {
+      id: '/_authenticated/admin/health'
+      path: '/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/tenants': {
       id: '/_authenticated/admin/tenants'
@@ -3347,11 +3367,13 @@ const AuthenticatedAdminTenantsRouteRouteWithChildren =
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminTenantsRouteRoute: typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminTenantsRouteRoute:
     AuthenticatedAdminTenantsRouteRouteWithChildren,
+  AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

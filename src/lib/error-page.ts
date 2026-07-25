@@ -14,11 +14,15 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ESCAPE_MAP[c] ?? c);
 }
 
-export function renderErrorPage(opts: { errorRef?: string } = {}): string {
+export function renderErrorPage(opts: { errorRef?: string; requestId?: string } = {}): string {
   const ref = opts.errorRef ? escapeHtml(opts.errorRef) : "";
-  const refBlock = ref
-    ? `<p class="ref">Reference: <code>${ref}</code></p>`
-    : "";
+  const reqId = opts.requestId ? escapeHtml(opts.requestId) : "";
+  const refBlock =
+    ref || reqId
+      ? `<p class="ref">${ref ? `Reference: <code>${ref}</code>` : ""}${
+          ref && reqId ? " · " : ""
+        }${reqId ? `Request: <code>${reqId}</code>` : ""}</p>`
+      : "";
 
   return `<!doctype html>
 <html lang="en">

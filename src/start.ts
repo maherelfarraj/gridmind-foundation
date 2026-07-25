@@ -12,7 +12,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { captureError } from "./lib/error-capture";
+import { captureError, mintRequestId } from "./lib/error-capture";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 function shouldBypass(pathname: string | undefined): boolean {
@@ -29,6 +29,8 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   if (shouldBypass(pathname)) {
     return next();
   }
+
+  const requestId = request?.headers.get("x-request-id") ?? mintRequestId();
 
   try {
     return await next();
@@ -52,10 +54,13 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
       }
       throw error;
     }
-    const { errorRef } = captureError(error, { path: pathname });
-    return new Response(renderErrorPage({ errorRef }), {
+    const { errorRef } = captureError(error, { route: pathname, requestId });
+    return new Response(renderErrorPage({ errorRef, requestId }), {
       status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "x-request-id": requestId,
+      },
     });
   }
 });

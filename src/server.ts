@@ -1,6 +1,6 @@
 import "./lib/error-capture";
 
-import { captureError, consumeLastCapturedError } from "./lib/error-capture";
+import { captureError, consumeLastCapturedError, mintRequestId } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
 export interface Env {
@@ -41,10 +41,17 @@ function safePath(request: Request): string | undefined {
   }
 }
 
-function brandedErrorResponse(errorRef: string): Response {
-  return new Response(renderErrorPage({ errorRef }), {
+function requestIdFor(request: Request): string {
+  return request.headers.get("x-request-id") ?? mintRequestId();
+}
+
+function brandedErrorResponse(errorRef: string, requestId: string): Response {
+  return new Response(renderErrorPage({ errorRef, requestId }), {
     status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "x-request-id": requestId,
+    },
   });
 }
 
@@ -58,6 +65,7 @@ function shouldBypassBranding(pathname: string | undefined): boolean {
 async function normalizeCatastrophicSsrResponse(
   response: Response,
   request: Request,
+  requestId: string,
 ): Promise<Response> {
   if (response.status < 500) return response;
   const path = safePath(request);
@@ -69,8 +77,8 @@ async function normalizeCatastrophicSsrResponse(
   if (!isH3SwallowedErrorBody(body)) return response;
 
   const original = consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`);
-  const { errorRef } = captureError(original, { path });
-  return brandedErrorResponse(errorRef);
+  const { errorRef } = captureError(original, { route: path, requestId });
+  return brandedErrorResponse(errorRef, requestId);
 }
 
 function isH3SwallowedErrorBody(body: string): boolean {
@@ -85,14 +93,16 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const path = safePath(request);
+    const requestId = requestIdFor(request);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response, request);
+      return await normalizeCatastrophicSsrResponse(response, request, requestId);
     } catch (error) {
       if (shouldBypassBranding(path)) throw error;
-      const { errorRef } = captureError(error, { path });
-      return brandedErrorResponse(errorRef);
+      const { errorRef } = captureError(error, { route: path, requestId });
+      return brandedErrorResponse(errorRef, requestId);
     }
   },
 };
+

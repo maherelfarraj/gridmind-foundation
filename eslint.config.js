@@ -36,5 +36,22 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  // P-134 — Console hygiene. Allow warn/error/info in src; block console.log
+  // (and every non-listed method) so stray debug logs cannot reach production.
+  // src/lib/error-capture.ts is the sanctioned console.error sink; all other
+  // files should either throw + let captureError log, or use warn/info.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-console": ["error", { allow: ["warn", "error", "info"] }],
+    },
+  },
+  // tests/** — only console.info is permitted (smoke-step logging).
+  {
+    files: ["tests/**/*.{ts,tsx}"],
+    rules: {
+      "no-console": ["error", { allow: ["info"] }],
+    },
+  },
   eslintPluginPrettier,
 );
