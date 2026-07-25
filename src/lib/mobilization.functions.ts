@@ -175,7 +175,7 @@ export const listMobilizationChecklists = createServerFn({ method: "GET" })
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (rows ?? []) as unknown as unknown as MobilizationRow[];
+    return (rows ?? []) as unknown as MobilizationRow[];
   });
 
 export const getMobilizationChecklist = createServerFn({ method: "GET" })
