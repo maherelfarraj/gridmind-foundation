@@ -416,7 +416,7 @@ export const decidePortalApproval = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("portal_decide_approval", {
       p_approval_id: data.approvalId,
       p_decision: data.decision,
-      p_comment: data.comment ?? null,
+      p_comment: data.comment ?? "",
     });
     if (error) throw error;
     return { ok: true };
