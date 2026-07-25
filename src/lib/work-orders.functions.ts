@@ -477,11 +477,16 @@ export const listEquipmentForProject = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
       .from("equipment_registry")
-      .select("id, tag, name")
+      .select("id, tag, manufacturer, model")
       .eq("project_id", data.project_id)
       .order("tag", { ascending: true });
     if (error) throw error;
-    return (rows ?? []) as Array<{ id: string; tag: string; name: string | null }>;
+    return (rows ?? []) as Array<{
+      id: string;
+      tag: string;
+      manufacturer: string | null;
+      model: string | null;
+    }>;
   });
 
 // ---- KPIs ---------------------------------------------------------------
