@@ -241,3 +241,125 @@ export function heatmapCellTint(failRate: number, count: number): string {
   if (failRate < 0.7) return "bg-destructive/55";
   return "bg-destructive/70";
 }
+
+// ---------------------------------------------------------------------------
+// P-090 — punch items
+// ---------------------------------------------------------------------------
+export const PUNCH_CATEGORIES = ["A", "B", "C"] as const;
+export type PunchCategory = (typeof PUNCH_CATEGORIES)[number];
+
+export const PUNCH_CATEGORY_LABELS: Record<PunchCategory, string> = {
+  A: "A — Blocker",
+  B: "B — Handover",
+  C: "C — Cosmetic",
+};
+
+export const PUNCH_CATEGORY_DESCRIPTIONS: Record<PunchCategory, string> = {
+  A: "Must be closed before COD / energization.",
+  B: "Must be closed before project handover.",
+  C: "Cosmetic; close by handover + 30 days.",
+};
+
+export const PUNCH_STATUSES = [
+  "open",
+  "ready_for_review",
+  "closed",
+  "void",
+] as const;
+export type PunchStatus = (typeof PUNCH_STATUSES)[number];
+
+export const PUNCH_STATUS_LABELS: Record<PunchStatus, string> = {
+  open: "Open",
+  ready_for_review: "Ready for review",
+  closed: "Closed",
+  void: "Void",
+};
+
+export const punchInput = z.object({
+  projectId: z.string().uuid(),
+  walkDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  area: z.string().trim().min(1).max(200),
+  discipline: z.enum(QAQC_DISCIPLINES),
+  category: z.enum(PUNCH_CATEGORIES).default("B"),
+  description: z.string().trim().min(1).max(2000),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  assignedTo: z.string().uuid().nullable().optional(),
+  photoIds: z.array(z.string().uuid()).default([]),
+});
+export type PunchInput = z.infer<typeof punchInput>;
+
+export const punchUpdateInput = z.object({
+  id: z.string().uuid(),
+  area: z.string().trim().min(1).max(200).optional(),
+  discipline: z.enum(QAQC_DISCIPLINES).optional(),
+  category: z.enum(PUNCH_CATEGORIES).optional(),
+  description: z.string().trim().min(1).max(2000).optional(),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  assignedTo: z.string().uuid().nullable().optional(),
+  photoIds: z.array(z.string().uuid()).optional(),
+});
+export type PunchUpdateInput = z.infer<typeof punchUpdateInput>;
+
+export const punchSignoffInput = z.object({
+  id: z.string().uuid(),
+  signoffName: z.string().trim().min(2).max(200),
+});
+export type PunchSignoffInput = z.infer<typeof punchSignoffInput>;
+
+export const punchVoidInput = z.object({
+  id: z.string().uuid(),
+  reason: z.string().trim().min(2).max(500),
+});
+export type PunchVoidInput = z.infer<typeof punchVoidInput>;
+
+export function nextPunchNumber(existing: string[]): string {
+  let max = 0;
+  for (const n of existing) {
+    const m = /^PN-(\d+)$/i.exec(n ?? "");
+    if (!m) continue;
+    const v = parseInt(m[1], 10);
+    if (Number.isFinite(v) && v > max) max = v;
+  }
+  return `PN-${(max + 1).toString().padStart(4, "0")}`;
+}
+
+const SIGNOFF_ROLES = new Set(["construction_admin", "company_admin"]);
+export function canSignoff(roles: readonly string[]): boolean {
+  return roles.some((r) => SIGNOFF_ROLES.has(r));
+}
+
+const PUNCH_WRITE_ROLES = new Set([
+  "construction_admin",
+  "foreman",
+  "field_technician",
+  "company_admin",
+]);
+export function canPunchWrite(roles: readonly string[]): boolean {
+  return roles.some((r) => PUNCH_WRITE_ROLES.has(r));
+}
+
+/** Semantic tint for a category chip. */
+export function punchCategoryTint(category: PunchCategory): string {
+  switch (category) {
+    case "A":
+      return "bg-destructive/15 text-destructive border-destructive/30";
+    case "B":
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+    case "C":
+      return "bg-muted text-muted-foreground border-border";
+  }
+}
+
+export function punchStatusTint(status: PunchStatus): string {
+  switch (status) {
+    case "open":
+      return "bg-muted text-foreground";
+    case "ready_for_review":
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300";
+    case "closed":
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300";
+    case "void":
+      return "bg-muted text-muted-foreground line-through";
+  }
+}
+
