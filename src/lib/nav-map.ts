@@ -13,6 +13,7 @@ import {
   Package,
   PencilRuler,
   Receipt,
+  FileSignature,
   Gauge,
   Scale,
   Settings2,
@@ -59,6 +60,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "procurement", label: "Spare parts", url: "/procurement/spare-parts", icon: Package },
 
       { moduleKey: "planning_budget", label: "Planning & Budget", url: "/planning", icon: CalendarRange },
+      { moduleKey: "planning_budget", label: "Contracts", url: "/finance/contracts", icon: FileSignature },
       { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
       {
         moduleKey: "commissioning",
