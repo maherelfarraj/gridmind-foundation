@@ -386,7 +386,7 @@ export async function guardPublicHook(
           route: opts.route,
           reason: sigReason,
         });
-        return { ok: false, response: jsonError(401, sigReason, `invalid signature | dbg tsHeader=${tsHeader} rawBodyLen=${rawBody.length} secretLen=${(secret??'').length}`) };
+        return { ok: false, response: jsonError(401, sigReason, `invalid signature | dbg ts=${tsHeader} bodyLen=${rawBody.length} body=${JSON.stringify(rawBody).slice(0,60)} secretLen=${(secret??'').length} hdr=${sigHeader} exp=${await hmacSha256Hex(secret ?? '', `${tsHeader}.${rawBody}`)}`) };
       }
       await auditGuardEvent(admin, {
         companyId: keyRow.company_id,
