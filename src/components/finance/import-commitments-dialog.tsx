@@ -32,9 +32,7 @@ interface Props {
   pos: EligiblePoRow[];
   costCodes: CostCodeRow[];
   saving: boolean;
-  onSubmit: (
-    assignments: Array<{ po_id: string; cost_code_id: string | null }>,
-  ) => void;
+  onSubmit: (assignments: Array<{ po_id: string; cost_code_id: string | null }>) => void;
 }
 
 export function ImportCommitmentsDialog({
@@ -82,8 +80,8 @@ export function ImportCommitmentsDialog({
           </div>
         ) : pos.length === 0 ? (
           <div className="rounded-md border border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            No eligible purchase orders — POs must be approved or issued before
-            they count as commitments.
+            No eligible purchase orders — POs must be approved or issued before they count as
+            commitments.
           </div>
         ) : activeCostCodes.length === 0 ? (
           <div className="rounded-md border border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
@@ -104,12 +102,8 @@ export function ImportCommitmentsDialog({
                 <tbody>
                   {pos.map((po) => (
                     <tr key={po.id} className="border-t border-border/60">
-                      <td className="px-2 py-1 font-mono text-xs">
-                        {po.po_number}
-                      </td>
-                      <td className="px-2 py-1 text-muted-foreground">
-                        {po.vendor_name ?? "—"}
-                      </td>
+                      <td className="px-2 py-1 font-mono text-xs">{po.po_number}</td>
+                      <td className="px-2 py-1 text-muted-foreground">{po.vendor_name ?? "—"}</td>
                       <td className="px-2 py-1 text-right">
                         {formatMoney(po.total_amount, po.currency_code)}
                       </td>
@@ -164,11 +158,7 @@ export function ImportCommitmentsDialog({
         )}
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>
           <Button

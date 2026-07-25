@@ -54,11 +54,7 @@ function reducer(state: EditState, action: Action): EditState {
       const cur = state[action.id];
       if (!cur) return state;
       const nextField = { ...cur, [action.field]: action.value };
-      nextField.qty_buffered = applyBuffer(
-        nextField.qty,
-        nextField.buffer_pct,
-        action.category,
-      );
+      nextField.qty_buffered = applyBuffer(nextField.qty, nextField.buffer_pct, action.category);
       return { ...state, [action.id]: nextField };
     }
     case "cost": {
@@ -142,9 +138,7 @@ export function BomTable({
                     return (
                       <TableRow key={l.id}>
                         <TableCell className="font-medium">{l.item}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {l.spec ?? "—"}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{l.spec ?? "—"}</TableCell>
                         <TableCell>{l.unit}</TableCell>
                         <TableCell className="text-right">
                           <Input
@@ -163,10 +157,7 @@ export function BomTable({
                                 category: cat,
                               })
                             }
-                            onBlur={() =>
-                              e.qty !== Number(l.qty) &&
-                              commit(l, { qty: e.qty })
-                            }
+                            onBlur={() => e.qty !== Number(l.qty) && commit(l, { qty: e.qty })}
                           />
                         </TableCell>
                         <TableCell className="text-right">
@@ -208,15 +199,11 @@ export function BomTable({
                               dispatch({
                                 type: "cost",
                                 id: l.id,
-                                value:
-                                  ev.target.value === ""
-                                    ? null
-                                    : Number(ev.target.value),
+                                value: ev.target.value === "" ? null : Number(ev.target.value),
                               })
                             }
                             onBlur={() => {
-                              const prev =
-                                l.unit_cost != null ? Number(l.unit_cost) : null;
+                              const prev = l.unit_cost != null ? Number(l.unit_cost) : null;
                               if (e.unit_cost !== prev) {
                                 commit(l, { unit_cost: e.unit_cost });
                               }

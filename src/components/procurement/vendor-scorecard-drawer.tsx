@@ -25,10 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScorecardStatusBadge } from "@/components/procurement/scorecard-status-badge";
 import { getVendorHistory } from "@/lib/scorecard.functions";
-import {
-  scorecardErrorMessage,
-  vendorHistoryQueryOptions,
-} from "@/lib/scorecard-query";
+import { scorecardErrorMessage, vendorHistoryQueryOptions } from "@/lib/scorecard-query";
 import type { ScorecardRow } from "@/lib/scorecard.functions";
 
 interface Props {
@@ -76,17 +73,13 @@ export function VendorScorecardDrawer({ row, periodStart, periodEnd, onOpenChang
             <Skeleton className="h-40 w-full" />
           </div>
         ) : query.isError ? (
-          <p className="mt-6 text-sm text-destructive">
-            {scorecardErrorMessage(query.error)}
-          </p>
+          <p className="mt-6 text-sm text-destructive">{scorecardErrorMessage(query.error)}</p>
         ) : query.data ? (
           <div className="mt-6 space-y-6">
             <section>
               <h3 className="mb-2 text-sm font-medium">Historical trend</h3>
               {chartData.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No prior periods stored yet.
-                </p>
+                <p className="text-sm text-muted-foreground">No prior periods stored yet.</p>
               ) : (
                 <div className="h-64 w-full">
                   <ResponsiveContainer>
@@ -103,8 +96,18 @@ export function VendorScorecardDrawer({ row, periodStart, periodEnd, onOpenChang
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: "0.75rem" }} />
-                      <Line type="monotone" dataKey="OTD" stroke="hsl(var(--primary))" strokeWidth={2} />
-                      <Line type="monotone" dataKey="Quality" stroke="hsl(var(--chart-2, var(--accent)))" strokeWidth={2} />
+                      <Line
+                        type="monotone"
+                        dataKey="OTD"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="Quality"
+                        stroke="hsl(var(--chart-2, var(--accent)))"
+                        strokeWidth={2}
+                      />
                       <Line
                         type="monotone"
                         dataKey="Responsiveness"

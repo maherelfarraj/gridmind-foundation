@@ -1,9 +1,5 @@
 // P-057 — TanStack Query hooks for BOM.
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -35,9 +31,7 @@ export function bomSnapshotDetailQueryOptions(
   return queryOptions({
     queryKey: ["bom-snapshot", snapshotId ?? "none"],
     queryFn: () =>
-      snapshotId
-        ? fn({ data: { snapshotId } })
-        : Promise.resolve<BomSnapshotDetail | null>(null),
+      snapshotId ? fn({ data: { snapshotId } }) : Promise.resolve<BomSnapshotDetail | null>(null),
     enabled: !!snapshotId,
     staleTime: 10_000,
   });
@@ -63,8 +57,7 @@ export function useGenerateBom(projectId: string) {
       qc.invalidateQueries({ queryKey: ["bom-snapshots", projectId] });
       toast.success("BOM generated");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Generate failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Generate failed"),
   });
 }
 
@@ -83,8 +76,7 @@ export function useUpdateBomLine(snapshotId: string, projectId: string) {
       qc.invalidateQueries({ queryKey: ["bom-snapshot", snapshotId] });
       qc.invalidateQueries({ queryKey: ["bom-snapshots", projectId] });
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Update failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Update failed"),
   });
 }
 
@@ -98,7 +90,6 @@ export function useReleaseBom(snapshotId: string, projectId: string) {
       qc.invalidateQueries({ queryKey: ["bom-snapshots", projectId] });
       toast.success("BOM released");
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Release failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Release failed"),
   });
 }

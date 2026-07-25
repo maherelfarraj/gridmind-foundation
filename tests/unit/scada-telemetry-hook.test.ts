@@ -56,9 +56,7 @@ describe("ingestBodySchema", () => {
   });
 
   it("rejects batches over the max size", () => {
-    const readings = Array.from({ length: MAX_READINGS_PER_REQUEST + 1 }, () =>
-      validReading(),
-    );
+    const readings = Array.from({ length: MAX_READINGS_PER_REQUEST + 1 }, () => validReading());
     expect(ingestBodySchema.safeParse({ readings }).success).toBe(false);
   });
 
@@ -90,10 +88,7 @@ describe("filterReadingsByAsset", () => {
 
   it("rejects unknown / cross-company asset keys with a stable reason", () => {
     const { accepted, rejected } = filterReadingsByAsset(
-      [
-        validReading({ asset_key: "OTHER-COMPANY-INV" }),
-        validReading(),
-      ],
+      [validReading({ asset_key: "OTHER-COMPANY-INV" }), validReading()],
       assetMap,
     );
     expect(accepted).toHaveLength(1);

@@ -26,7 +26,12 @@ describe("computeOtdPct", () => {
   });
   it("ignores GRNs whose PO has no due date", () => {
     const grns: GrnInput[] = [
-      { po_id: "orphan", status: "confirmed", defects_count: 0, received_at: "2026-01-09T10:00:00Z" },
+      {
+        po_id: "orphan",
+        status: "confirmed",
+        defects_count: 0,
+        received_at: "2026-01-09T10:00:00Z",
+      },
     ];
     expect(computeOtdPct(grns, due)).toBeNull();
   });

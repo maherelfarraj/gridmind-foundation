@@ -69,9 +69,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
 
 async function hasAnyWriteRole(context: AuthContext): Promise<boolean> {
   const results = await Promise.all(
-    WRITE_ROLES.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    WRITE_ROLES.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -148,9 +146,7 @@ export const listSpareParts = createServerFn({ method: "GET" })
     if (data.category) q = q.eq("category", data.category);
     if (data.search && data.search.length > 0) {
       const s = data.search.replace(/[%_]/g, "\\$&");
-      q = q.or(
-        `part_number.ilike.%${s}%,name.ilike.%${s}%,compatible_equipment.ilike.%${s}%`,
-      );
+      q = q.or(`part_number.ilike.%${s}%,name.ilike.%${s}%,compatible_equipment.ilike.%${s}%`);
     }
     const { data: rows, error } = await q;
     if (error) throw error;
@@ -162,19 +158,15 @@ export const listSpareParts = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const listVendorsForParts = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<Array<{ id: string; name: string }>> => {
-      requireSupabaseAuth(context);
-      const { data, error } = await context.supabase
-        .from("vendors")
-        .select("id, name")
-        .order("name", { ascending: true });
-      if (error) throw error;
-      return ((data ?? []) as any[]).map((r) => ({ id: r.id, name: r.name }));
-    },
-  );
+  .handler(async ({ context }): Promise<Array<{ id: string; name: string }>> => {
+    requireSupabaseAuth(context);
+    const { data, error } = await context.supabase
+      .from("vendors")
+      .select("id, name")
+      .order("name", { ascending: true });
+    if (error) throw error;
+    return ((data ?? []) as any[]).map((r) => ({ id: r.id, name: r.name }));
+  });
 
 // ---------------------------------------------------------------------------
 // create / update / delete
@@ -212,20 +204,16 @@ export const upsertSparePart = createServerFn({ method: "POST" })
           .update(payload as any)
           .eq("id", data.id)
       : context.supabase.from("spare_parts").insert(payload as any);
-    const { data: row, error } = await q
-      .select("*, vendors:preferred_vendor_id(name)")
-      .single();
+    const { data: row, error } = await q.select("*, vendors:preferred_vendor_id(name)").single();
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       if ((error as any).code === "23505") httpError(409, "part_number_exists");
       throw error;
     }
-    await audit(
-      context,
-      data.id ? "spare_part.update" : "spare_part.create",
-      (row as any).id,
-      { part_number: data.part_number, name: data.name },
-    );
+    await audit(context, data.id ? "spare_part.update" : "spare_part.create", (row as any).id, {
+      part_number: data.part_number,
+      name: data.name,
+    });
     return toRow(row);
   });
 
@@ -244,10 +232,7 @@ export const adjustStock = createServerFn({ method: "POST" })
     if (rErr) throw rErr;
     if (!current) httpError(404, "part_not_found");
 
-    const nextQty = applyStockDelta(
-      Number((current as any).qty_on_hand ?? 0),
-      data.delta,
-    );
+    const nextQty = applyStockDelta(Number((current as any).qty_on_hand ?? 0), data.delta);
 
     const { data: row, error } = await context.supabase
       .from("spare_parts")
@@ -270,16 +255,11 @@ export const adjustStock = createServerFn({ method: "POST" })
 
 export const deleteSparePart = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyWriteRole(context))) httpError(403, "forbidden");
-    const { error } = await context.supabase
-      .from("spare_parts")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("spare_parts").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;

@@ -17,8 +17,8 @@ export function PoStatusStepper({ status }: { status: PoStatus }) {
   if ((status as string) === "cancelled" || (status as string) === "rejected") {
     return (
       <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">
-        Purchase order is <span className="font-semibold">{status}</span> — no
-        further actions available.
+        Purchase order is <span className="font-semibold">{status}</span> — no further actions
+        available.
       </div>
     );
   }
@@ -56,12 +56,7 @@ export function PoStatusStepper({ status }: { status: PoStatus }) {
               {step.label}
             </span>
             {i < STEPS.length - 1 && (
-              <span
-                className={cn(
-                  "mx-1 h-px w-6 sm:w-10",
-                  done ? "bg-primary" : "bg-border",
-                )}
-              />
+              <span className={cn("mx-1 h-px w-6 sm:w-10", done ? "bg-primary" : "bg-border")} />
             )}
           </li>
         );

@@ -74,8 +74,7 @@ export const Route = createFileRoute("/_authenticated/settings/portal-audit")({
       { title: "Portal audit — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Read-only audit of every portal view, ticket, approval, and share-link access.",
+        content: "Read-only audit of every portal view, ticket, approval, and share-link access.",
       },
     ],
   }),
@@ -149,19 +148,16 @@ function PortalAuditPage() {
 
   const isForbidden = Boolean(
     (listQuery.error as Error | undefined)?.message?.includes("forbidden") ||
-      (summaryQuery.error as Error | undefined)?.message?.includes("forbidden"),
+    (summaryQuery.error as Error | undefined)?.message?.includes("forbidden"),
   );
 
   if (isForbidden) {
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-3 p-10 text-center">
         <AlertTriangle className="h-8 w-8 text-destructive" />
-        <h1 className="font-display text-xl font-semibold text-foreground">
-          Company admins only
-        </h1>
+        <h1 className="font-display text-xl font-semibold text-foreground">Company admins only</h1>
         <p className="text-sm text-muted-foreground">
-          Portal audit is restricted to company_admin. Ask an administrator for
-          access.
+          Portal audit is restricted to company_admin. Ask an administrator for access.
         </p>
       </div>
     );
@@ -177,8 +173,8 @@ function PortalAuditPage() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Every portal view, ticket, approval decision, and investor share-link
-          access. Read-only. Retention follows your audit_log_retention_policies.
+          Every portal view, ticket, approval decision, and investor share-link access. Read-only.
+          Retention follows your audit_log_retention_policies.
         </p>
       </header>
 
@@ -236,9 +232,7 @@ function PortalAuditPage() {
         <FilterField label="Membership">
           <Select
             value={membershipId ?? "all"}
-            onValueChange={(v) =>
-              updateSearch({ membershipId: v === "all" ? undefined : v })
-            }
+            onValueChange={(v) => updateSearch({ membershipId: v === "all" ? undefined : v })}
           >
             <SelectTrigger className="w-56">
               <SelectValue placeholder="All members" />
@@ -257,9 +251,7 @@ function PortalAuditPage() {
         <FilterField label="Event">
           <Select
             value={eventFilter ?? "all"}
-            onValueChange={(v) =>
-              updateSearch({ event: v === "all" ? undefined : v })
-            }
+            onValueChange={(v) => updateSearch({ event: v === "all" ? undefined : v })}
           >
             <SelectTrigger className="w-56">
               <SelectValue placeholder="All events" />
@@ -313,23 +305,16 @@ function PortalAuditPage() {
       ) : listQuery.error ? (
         <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 p-6 text-sm text-destructive">
           <span>Could not load portal audit events.</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => listQuery.refetch()}
-          >
+          <Button size="sm" variant="outline" onClick={() => listQuery.refetch()}>
             Retry
           </Button>
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-10 text-center">
           <Activity className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">
-            No portal activity yet
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">No portal activity yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Once portal members log in or share links are viewed, events appear
-            here.
+            Once portal members log in or share links are viewed, events appear here.
           </p>
         </div>
       ) : (
@@ -339,13 +324,7 @@ function PortalAuditPage() {
   );
 }
 
-function FilterField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -420,17 +399,13 @@ function EventsTable({ rows }: { rows: PortalAuditRow[] }) {
                   {r.actor_email ? (
                     <span className="font-mono text-xs">{r.actor_email}</span>
                   ) : r.event === "share_link.viewed" ? (
-                    <span className="text-xs italic text-muted-foreground">
-                      share link visitor
-                    </span>
+                    <span className="text-xs italic text-muted-foreground">share link visitor</span>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {r.project_name ?? (
-                    <span className="font-mono">{r.project_id.slice(0, 8)}</span>
-                  )}
+                  {r.project_name ?? <span className="font-mono">{r.project_id.slice(0, 8)}</span>}
                 </TableCell>
                 <TableCell className="text-xs">
                   {r.membership_email ? (

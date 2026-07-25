@@ -5,12 +5,7 @@
 // literally "O&M" everywhere.
 import { z } from "zod";
 
-export const TURNOVER_STATUSES = [
-  "compiling",
-  "ready",
-  "delivered",
-  "accepted",
-] as const;
+export const TURNOVER_STATUSES = ["compiling", "ready", "delivered", "accepted"] as const;
 export type TurnoverStatus = (typeof TURNOVER_STATUSES)[number];
 
 export const TURNOVER_SECTION_KEYS = [
@@ -38,9 +33,7 @@ export interface TurnoverSection {
   items: TurnoverSectionItem[];
 }
 
-export const TURNOVER_SECTIONS: ReadonlyArray<
-  Omit<TurnoverSection, "complete" | "items">
-> = [
+export const TURNOVER_SECTIONS: ReadonlyArray<Omit<TurnoverSection, "complete" | "items">> = [
   { key: "as_builts", label: "As-built drawings", required: true },
   { key: "warranties", label: "Warranties", required: true },
   { key: "om_manual", label: "O&M manual", required: true },
@@ -52,18 +45,14 @@ export function emptySections(): TurnoverSection[] {
   return TURNOVER_SECTIONS.map((s) => ({ ...s, complete: false, items: [] }));
 }
 
-export function withComputedCompletion(
-  sections: TurnoverSection[],
-): TurnoverSection[] {
+export function withComputedCompletion(sections: TurnoverSection[]): TurnoverSection[] {
   return sections.map((s) => ({
     ...s,
     complete: (s.items ?? []).length >= 1,
   }));
 }
 
-export function missingRequiredSections(
-  sections: TurnoverSection[],
-): TurnoverSectionKey[] {
+export function missingRequiredSections(sections: TurnoverSection[]): TurnoverSectionKey[] {
   return withComputedCompletion(sections)
     .filter((s) => s.required && !s.complete)
     .map((s) => s.key);

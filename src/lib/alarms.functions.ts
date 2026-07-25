@@ -107,11 +107,8 @@ export interface AlarmRow {
 // ---- rules CRUD ------------------------------------------------------------
 export const listAlarmRules = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator(
-    (raw: unknown) =>
-      z
-        .object({ project_id: z.string().uuid().nullable().optional() })
-        .parse(raw ?? {}),
+  .inputValidator((raw: unknown) =>
+    z.object({ project_id: z.string().uuid().nullable().optional() }).parse(raw ?? {}),
   )
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
@@ -212,9 +209,7 @@ export const listAlarms = createServerFn({ method: "GET" })
     const companyId = await currentCompanyId(context);
     let q = context.supabase
       .from("scada_alarms")
-      .select(
-        "*, project:projects(name), asset:scada_assets(asset_key), rule:alarm_rules(name)",
-      )
+      .select("*, project:projects(name), asset:scada_assets(asset_key), rule:alarm_rules(name)")
       .eq("company_id", companyId)
       .order("raised_at", { ascending: false })
       .limit(data.limit);

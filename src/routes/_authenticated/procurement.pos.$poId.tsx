@@ -1,10 +1,6 @@
 // P-064/P-065 — Purchase Order detail: approval, issue, PDF, vendor share link.
 import { useMemo, useState } from "react";
-import {
-  createFileRoute,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -36,11 +32,7 @@ import {
 } from "@/components/ui/table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
 import { PoStatusStepper } from "@/components/procurement/po-status-stepper";
-import {
-  getPo,
-  getPoApprovalThreshold,
-  getPoWriteAccess,
-} from "@/lib/po.functions";
+import { getPo, getPoApprovalThreshold, getPoWriteAccess } from "@/lib/po.functions";
 import {
   poApprovalThresholdQueryOptions,
   poDetailQueryOptions,
@@ -60,8 +52,7 @@ export const Route = createFileRoute("/_authenticated/procurement/pos/$poId")({
       { title: "Purchase Order — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Review, approve, issue, and share a purchase order with full audit trail.",
+        content: "Review, approve, issue, and share a purchase order with full audit trail.",
       },
     ],
   }),
@@ -95,9 +86,7 @@ function PoDetail() {
 
   const poQuery = useSuspenseQuery(poDetailQueryOptions(detailFn, poId));
   const accessQuery = useSuspenseQuery(poWriteAccessQueryOptions(accessFn));
-  const thresholdQuery = useSuspenseQuery(
-    poApprovalThresholdQueryOptions(thresholdFn),
-  );
+  const thresholdQuery = useSuspenseQuery(poApprovalThresholdQueryOptions(thresholdFn));
 
   const po = poQuery.data;
   const access = accessQuery.data;
@@ -131,11 +120,7 @@ function PoDetail() {
   return (
     <div className="space-y-6">
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/procurement/pos" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/pos" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to POs
         </Button>
       </div>
@@ -145,9 +130,7 @@ function PoDetail() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <Receipt className="h-3.5 w-3.5" /> Procurement · Purchase Order
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            {po.po_number}
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">{po.po_number}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <PoStatusBadge status={po.status} />
             <span>{po.vendor_name}</span>
@@ -156,9 +139,7 @@ function PoDetail() {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Total
-          </div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
           <div className="font-display text-2xl font-semibold">
             {fmtMoney(po.total_amount, po.currency_code)}
           </div>
@@ -180,10 +161,7 @@ function PoDetail() {
                 ? "Above threshold — will require CFO approval."
                 : "Below threshold — will auto-approve on submit."}
             </p>
-            <Button
-              onClick={() => submit.mutate(null)}
-              disabled={submit.isPending}
-            >
+            <Button onClick={() => submit.mutate(null)} disabled={submit.isPending}>
               <Send className="mr-2 h-4 w-4" />
               {submit.isPending ? "Submitting…" : "Submit"}
             </Button>
@@ -192,9 +170,7 @@ function PoDetail() {
 
         {po.status === "pending_approval" && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Awaiting CFO / company admin approval.
-            </p>
+            <p className="text-sm text-muted-foreground">Awaiting CFO / company admin approval.</p>
             {access.canApprove ? (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -209,9 +185,7 @@ function PoDetail() {
                   <Button
                     className="w-full"
                     onClick={() => approve.mutate(approveNote)}
-                    disabled={
-                      approve.isPending || approveNote.trim().length === 0
-                    }
+                    disabled={approve.isPending || approveNote.trim().length === 0}
                   >
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Approve
@@ -230,9 +204,7 @@ function PoDetail() {
                     variant="destructive"
                     className="w-full"
                     onClick={() => reject.mutate(rejectNote)}
-                    disabled={
-                      reject.isPending || rejectNote.trim().length === 0
-                    }
+                    disabled={reject.isPending || rejectNote.trim().length === 0}
                   >
                     <XCircle className="mr-2 h-4 w-4" />
                     Reject
@@ -250,9 +222,7 @@ function PoDetail() {
         {po.status === "approved" && access.canAuthor && (
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm text-muted-foreground">
-              {po.approved_at
-                ? `Approved ${format(new Date(po.approved_at), "PPp")}`
-                : "Approved."}
+              {po.approved_at ? `Approved ${format(new Date(po.approved_at), "PPp")}` : "Approved."}
               {po.approval_note ? ` · ${po.approval_note}` : ""}
             </div>
             <Button onClick={() => issue.mutate()} disabled={issue.isPending}>
@@ -278,11 +248,7 @@ function PoDetail() {
           <dl className="mt-2 grid grid-cols-2 gap-y-2 text-sm md:grid-cols-3">
             <div>
               <dt className="text-muted-foreground">Approved at</dt>
-              <dd>
-                {po.approved_at
-                  ? format(new Date(po.approved_at), "PPp")
-                  : "—"}
-              </dd>
+              <dd>{po.approved_at ? format(new Date(po.approved_at), "PPp") : "—"}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Approved by</dt>
@@ -425,9 +391,7 @@ function PoDetail() {
               <TableRow key={l.line_no}>
                 <TableCell className="font-mono">{l.line_no}</TableCell>
                 <TableCell className="font-medium">{l.description}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {l.spec ?? "—"}
-                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{l.spec ?? "—"}</TableCell>
                 <TableCell className="text-right">{l.qty}</TableCell>
                 <TableCell>{l.uom}</TableCell>
                 <TableCell className="text-right">
@@ -439,10 +403,7 @@ function PoDetail() {
               </TableRow>
             ))}
             <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-right text-sm text-muted-foreground"
-              >
+              <TableCell colSpan={6} className="text-right text-sm text-muted-foreground">
                 Subtotal
               </TableCell>
               <TableCell className="text-right">
@@ -450,10 +411,7 @@ function PoDetail() {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-right text-sm text-muted-foreground"
-              >
+              <TableCell colSpan={6} className="text-right text-sm text-muted-foreground">
                 Tax ({po.tax_pct}%)
               </TableCell>
               <TableCell className="text-right">

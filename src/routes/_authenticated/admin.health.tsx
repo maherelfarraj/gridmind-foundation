@@ -19,13 +19,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { getOpsHealth, type OpsHealth, type SignalStatus } from "@/lib/ops-health.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/admin/health")({
@@ -95,8 +89,8 @@ function HealthPage() {
             Ops Health
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Audit-driven signals from the public API guard, webhook framework, and cron
-            schedulers. Refreshes automatically every minute.
+            Audit-driven signals from the public API guard, webhook framework, and cron schedulers.
+            Refreshes automatically every minute.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -139,8 +133,7 @@ function HealthPage() {
 
 function HealthContent({ data }: { data: OpsHealth }) {
   const emptyAll =
-    data.signals.every((s) => s.value24h === 0) &&
-    data.crons.every((c) => !c.lastRunAt);
+    data.signals.every((s) => s.value24h === 0) && data.crons.every((c) => !c.lastRunAt);
 
   if (emptyAll) {
     return (
@@ -148,8 +141,8 @@ function HealthContent({ data }: { data: OpsHealth }) {
         <CardHeader>
           <CardTitle className="text-foreground">All quiet</CardTitle>
           <CardDescription className="text-muted-foreground">
-            No guard events in 24h and no cron runs recorded. The public API surface is
-            either idle or has never been exercised on this environment.
+            No guard events in 24h and no cron runs recorded. The public API surface is either idle
+            or has never been exercised on this environment.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -180,15 +173,11 @@ function HealthContent({ data }: { data: OpsHealth }) {
                 </span>
                 <span className="text-xs text-muted-foreground">last 24h</span>
                 {s.peakPerHour > 0 ? (
-                  <span className="text-xs text-muted-foreground">
-                    · peak {s.peakPerHour}/h
-                  </span>
+                  <span className="text-xs text-muted-foreground">· peak {s.peakPerHour}/h</span>
                 ) : null}
               </div>
               {s.status !== "ok" ? (
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  {s.runbookHint}
-                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{s.runbookHint}</p>
               ) : null}
             </CardContent>
           </Card>

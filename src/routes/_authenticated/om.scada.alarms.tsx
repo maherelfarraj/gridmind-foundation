@@ -59,7 +59,8 @@ export const Route = createFileRoute("/_authenticated/om/scada/alarms")({
       { title: "SCADA alarms · GridMind EPC" },
       {
         name: "description",
-        content: "Active and historical SCADA alarms with severity filters and acknowledge workflow.",
+        content:
+          "Active and historical SCADA alarms with severity filters and acknowledge workflow.",
       },
       { property: "og:title", content: "SCADA alarms · GridMind EPC" },
       { property: "og:description", content: "Alarm inbox for O&M teams." },
@@ -153,29 +154,41 @@ function AlarmsPage() {
           <CardTitle className="text-base">Filters</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 {ALARM_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={severity} onValueChange={(v) => setSeverity(v as typeof severity)}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All severities</SelectItem>
                 {ALARM_SEVERITIES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-56"><SelectValue placeholder="All projects" /></SelectTrigger>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="All projects" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All projects</SelectItem>
                 {projectOptions.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -193,7 +206,9 @@ function AlarmsPage() {
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" /> Failed to load alarms.
               </div>
-              <Button variant="outline" onClick={() => query.refetch()}>Retry</Button>
+              <Button variant="outline" onClick={() => query.refetch()}>
+                Retry
+              </Button>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center text-muted-foreground">
@@ -242,7 +257,9 @@ function AlarmsPage() {
                           Acknowledge
                         </Button>
                       ) : row.acknowledge_note ? (
-                        <span className="text-xs text-muted-foreground">{row.acknowledge_note}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {row.acknowledge_note}
+                        </span>
                       ) : null}
                     </TableCell>
                   </TableRow>
@@ -259,10 +276,7 @@ function AlarmsPage() {
             <DialogTitle>Acknowledge alarm</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((v) => ackMut.mutate(v))}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit((v) => ackMut.mutate(v))} className="space-y-4">
               <FormField
                 control={form.control}
                 name="note"

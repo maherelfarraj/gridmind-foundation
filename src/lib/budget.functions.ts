@@ -73,17 +73,16 @@ export interface EligiblePoRow {
 // ---------------------------------------------------------------------------
 // Roles
 // ---------------------------------------------------------------------------
-const COST_CODE_ROLES = [
-  "finance_admin",
-  "project_admin",
-  "company_admin",
-] as const;
+const COST_CODE_ROLES = ["finance_admin", "project_admin", "company_admin"] as const;
 const BUDGET_ROLES = ["finance_admin", "company_admin"] as const;
 
 // POs that represent real commitments (post-approval).
-const COMMITTED_PO_STATUSES: Array<
-  "approved" | "issued" | "partially_received" | "received"
-> = ["approved", "issued", "partially_received", "received"];
+const COMMITTED_PO_STATUSES: Array<"approved" | "issued" | "partially_received" | "received"> = [
+  "approved",
+  "issued",
+  "partially_received",
+  "received",
+];
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,14 +95,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -187,9 +181,7 @@ function toBudgetRow(r: any): BudgetRow {
 export const getBudgetAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .handler(
-    async ({
-      context,
-    }): Promise<{ canWriteCostCodes: boolean; canWriteBudgets: boolean }> => {
+    async ({ context }): Promise<{ canWriteCostCodes: boolean; canWriteBudgets: boolean }> => {
       requireSupabaseAuth(context);
       const [canCostCodes, canBudgets] = await Promise.all([
         hasAnyRole(context, COST_CODE_ROLES),
@@ -226,8 +218,7 @@ export const createCostCode = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => costCodeCreateSchema.parse(input))
   .handler(async ({ data, context }): Promise<CostCodeRow> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyRole(context, COST_CODE_ROLES)))
-      httpError(403, "forbidden");
+    if (!(await hasAnyRole(context, COST_CODE_ROLES))) httpError(403, "forbidden");
     const project = await loadProject(context, data.projectId);
 
     const insert = {
@@ -267,8 +258,7 @@ export const updateCostCode = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => costCodeUpdateSchema.parse(input))
   .handler(async ({ data, context }): Promise<CostCodeRow> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyRole(context, COST_CODE_ROLES)))
-      httpError(403, "forbidden");
+    if (!(await hasAnyRole(context, COST_CODE_ROLES))) httpError(403, "forbidden");
 
     const patch: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(data.patch)) {
@@ -300,8 +290,7 @@ export const deleteCostCode = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => costCodeDeleteSchema.parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyRole(context, COST_CODE_ROLES)))
-      httpError(403, "forbidden");
+    if (!(await hasAnyRole(context, COST_CODE_ROLES))) httpError(403, "forbidden");
 
     // Guard: refuse when a budget row references it (financial retention).
     const { count } = await context.supabase
@@ -321,10 +310,7 @@ export const deleteCostCode = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
 
-    const { error } = await context.supabase
-      .from("cost_codes")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("cost_codes").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
@@ -365,8 +351,7 @@ export const upsertBudget = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => budgetUpsertSchema.parse(input))
   .handler(async ({ data, context }): Promise<BudgetRow> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyRole(context, BUDGET_ROLES)))
-      httpError(403, "forbidden");
+    if (!(await hasAnyRole(context, BUDGET_ROLES))) httpError(403, "forbidden");
     const project = await loadProject(context, data.projectId);
 
     const { data: latest, error: latestErr } = await context.supabase
@@ -513,137 +498,121 @@ export const listProjectPurchaseOrders = createServerFn({ method: "GET" })
 export const importPoCommitments = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => importPoCommitmentsSchema.parse(input))
-  .handler(
-    async ({ data, context }): Promise<{ updated: number; skipped: number }> => {
-      requireSupabaseAuth(context);
-      if (!(await hasAnyRole(context, BUDGET_ROLES)))
-        httpError(403, "forbidden");
-      const project = await loadProject(context, data.projectId);
+  .handler(async ({ data, context }): Promise<{ updated: number; skipped: number }> => {
+    requireSupabaseAuth(context);
+    if (!(await hasAnyRole(context, BUDGET_ROLES))) httpError(403, "forbidden");
+    const project = await loadProject(context, data.projectId);
 
-      // Fetch the eligible POs so the server, not the client, owns the amount.
-      const { data: poRows, error: poErr } = await context.supabase
-        .from("purchase_orders")
-        .select(
-          "id, po_number, total_amount, currency_code, status, vendor:vendor_id(name)",
-        )
-        .eq("project_id", project.id)
-        .in("status", COMMITTED_PO_STATUSES);
-      if (poErr) throw poErr;
-      const poById = new Map<string, any>(
-        ((poRows ?? []) as any[]).map((p) => [p.id, p]),
+    // Fetch the eligible POs so the server, not the client, owns the amount.
+    const { data: poRows, error: poErr } = await context.supabase
+      .from("purchase_orders")
+      .select("id, po_number, total_amount, currency_code, status, vendor:vendor_id(name)")
+      .eq("project_id", project.id)
+      .in("status", COMMITTED_PO_STATUSES);
+    if (poErr) throw poErr;
+    const poById = new Map<string, any>(((poRows ?? []) as any[]).map((p) => [p.id, p]));
+
+    // Group assignments per cost code (null = unassigned; skipped).
+    const perCostCode = new Map<string, PoCommitmentEntry[]>();
+    let skipped = 0;
+    for (const a of data.assignments) {
+      if (!a.cost_code_id) {
+        skipped += 1;
+        continue;
+      }
+      const po = poById.get(a.po_id);
+      if (!po) {
+        skipped += 1;
+        continue;
+      }
+      const entry = buildPoSnapshotEntry({
+        id: po.id,
+        po_number: po.po_number,
+        vendor_name: po.vendor?.name ?? null,
+        total_amount: po.total_amount,
+        currency_code: po.currency_code,
+      });
+      const list = perCostCode.get(a.cost_code_id) ?? [];
+      list.push(entry);
+      perCostCode.set(a.cost_code_id, list);
+    }
+
+    // Load latest budget rows for the affected cost codes; create if missing.
+    const costCodeIds = [...perCostCode.keys()];
+    const { data: existing, error: exErr } = await context.supabase
+      .from("budgets")
+      .select("*")
+      .eq("project_id", project.id)
+      .in(
+        "cost_code_id",
+        costCodeIds.length ? costCodeIds : ["00000000-0000-0000-0000-000000000000"],
       );
+    if (exErr) throw exErr;
 
-      // Group assignments per cost code (null = unassigned; skipped).
-      const perCostCode = new Map<string, PoCommitmentEntry[]>();
-      let skipped = 0;
-      for (const a of data.assignments) {
-        if (!a.cost_code_id) {
-          skipped += 1;
-          continue;
-        }
-        const po = poById.get(a.po_id);
-        if (!po) {
-          skipped += 1;
-          continue;
-        }
-        const entry = buildPoSnapshotEntry({
-          id: po.id,
-          po_number: po.po_number,
-          vendor_name: po.vendor?.name ?? null,
-          total_amount: po.total_amount,
-          currency_code: po.currency_code,
-        });
-        const list = perCostCode.get(a.cost_code_id) ?? [];
-        list.push(entry);
-        perCostCode.set(a.cost_code_id, list);
+    const latestByCostCode = new Map<string, any>();
+    for (const b of (existing ?? []) as any[]) {
+      const prev = latestByCostCode.get(b.cost_code_id);
+      if (!prev || (b.version ?? 1) > (prev.version ?? 1)) {
+        latestByCostCode.set(b.cost_code_id, b);
       }
+    }
 
-      // Load latest budget rows for the affected cost codes; create if missing.
-      const costCodeIds = [...perCostCode.keys()];
-      const { data: existing, error: exErr } = await context.supabase
-        .from("budgets")
-        .select("*")
-        .eq("project_id", project.id)
-        .in("cost_code_id", costCodeIds.length ? costCodeIds : ["00000000-0000-0000-0000-000000000000"]);
-      if (exErr) throw exErr;
+    let updated = 0;
+    for (const [costCodeId, entries] of perCostCode) {
+      const committed = sumSnapshot(entries);
+      const currency = entries[0]?.currency_code ?? "USD";
+      const latest = latestByCostCode.get(costCodeId);
 
-      const latestByCostCode = new Map<string, any>();
-      for (const b of (existing ?? []) as any[]) {
-        const prev = latestByCostCode.get(b.cost_code_id);
-        if (!prev || (b.version ?? 1) > (prev.version ?? 1)) {
-          latestByCostCode.set(b.cost_code_id, b);
-        }
-      }
-
-      let updated = 0;
-      for (const [costCodeId, entries] of perCostCode) {
-        const committed = sumSnapshot(entries);
-        const currency = entries[0]?.currency_code ?? "USD";
-        const latest = latestByCostCode.get(costCodeId);
-
-        if (!latest) {
-          // Auto-create a version-1 row with zero original so commitments can land.
-          const { data: inserted, error } = await context.supabase
-            .from("budgets")
-            .insert({
-              company_id: project.company_id,
-              project_id: project.id,
-              cost_code_id: costCodeId,
-              version: 1,
-              original_amount: 0,
-              committed_amount: committed,
-              po_commitments: entries as any,
-              currency_code: currency,
-              created_by: (context as any).user.id,
-            } as any)
-            .select("*")
-            .single();
-          if (error) {
-            if ((error as any).code === "42501") httpError(403, "forbidden");
-            throw error;
-          }
-          await audit(
-            context,
-            "budget.import_commitments",
-            "budgets",
-            (inserted as any).id,
-            {
-              project_id: project.id,
-              cost_code_id: costCodeId,
-              po_ids: entries.map((e) => e.po_id),
-              total: committed,
-            },
-          );
-          updated += 1;
-          continue;
-        }
-
-        const { error } = await context.supabase
+      if (!latest) {
+        // Auto-create a version-1 row with zero original so commitments can land.
+        const { data: inserted, error } = await context.supabase
           .from("budgets")
-          .update({
+          .insert({
+            company_id: project.company_id,
+            project_id: project.id,
+            cost_code_id: costCodeId,
+            version: 1,
+            original_amount: 0,
             committed_amount: committed,
             po_commitments: entries as any,
+            currency_code: currency,
+            created_by: (context as any).user.id,
           } as any)
-          .eq("id", latest.id);
+          .select("*")
+          .single();
         if (error) {
           if ((error as any).code === "42501") httpError(403, "forbidden");
           throw error;
         }
-        await audit(
-          context,
-          "budget.import_commitments",
-          "budgets",
-          latest.id,
-          {
-            project_id: project.id,
-            cost_code_id: costCodeId,
-            po_ids: entries.map((e) => e.po_id),
-            total: committed,
-          },
-        );
+        await audit(context, "budget.import_commitments", "budgets", (inserted as any).id, {
+          project_id: project.id,
+          cost_code_id: costCodeId,
+          po_ids: entries.map((e) => e.po_id),
+          total: committed,
+        });
         updated += 1;
+        continue;
       }
 
-      return { updated, skipped };
-    },
-  );
+      const { error } = await context.supabase
+        .from("budgets")
+        .update({
+          committed_amount: committed,
+          po_commitments: entries as any,
+        } as any)
+        .eq("id", latest.id);
+      if (error) {
+        if ((error as any).code === "42501") httpError(403, "forbidden");
+        throw error;
+      }
+      await audit(context, "budget.import_commitments", "budgets", latest.id, {
+        project_id: project.id,
+        cost_code_id: costCodeId,
+        po_ids: entries.map((e) => e.po_id),
+        total: committed,
+      });
+      updated += 1;
+    }
+
+    return { updated, skipped };
+  });

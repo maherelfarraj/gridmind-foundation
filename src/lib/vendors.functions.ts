@@ -8,12 +8,7 @@ import {
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
 
-export const VENDOR_STATUSES = [
-  "onboarding",
-  "active",
-  "suspended",
-  "blacklisted",
-] as const;
+export const VENDOR_STATUSES = ["onboarding", "active", "suspended", "blacklisted"] as const;
 export type VendorStatus = (typeof VENDOR_STATUSES)[number];
 
 export const PAYMENT_TERMS = ["net_15", "net_30", "net_45", "net_60"] as const;
@@ -130,10 +125,7 @@ export const listVendors = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => listInput.parse(input ?? {}))
   .handler(async ({ data, context }): Promise<VendorRow[]> => {
     requireSupabaseAuth(context);
-    let q = context.supabase
-      .from("vendors")
-      .select("*")
-      .order("created_at", { ascending: false });
+    let q = context.supabase.from("vendors").select("*").order("created_at", { ascending: false });
     if (data.status) q = q.eq("status", data.status);
     if (data.search && data.search.trim().length > 0) {
       const s = data.search.trim().replace(/[%_]/g, "");
@@ -148,9 +140,7 @@ export const listVendors = createServerFn({ method: "GET" })
 
 export const getVendor = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<VendorRow> => {
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase

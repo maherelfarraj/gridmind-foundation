@@ -5,23 +5,12 @@ import { Presentation, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  buildProposalPptx,
-  downloadBlob,
-} from "@/lib/exports/proposal-pptx";
+import { buildProposalPptx, downloadBlob } from "@/lib/exports/proposal-pptx";
 import { assertExportAllowed } from "@/lib/export-guard";
 import { useIsExportLocked } from "@/lib/export-locks.hooks";
-import {
-  getProposalExportData,
-  recordProposalExport,
-} from "@/lib/proposal.functions";
+import { getProposalExportData, recordProposalExport } from "@/lib/proposal.functions";
 
 interface ExportPptxButtonProps {
   proposalId: string;
@@ -96,9 +85,7 @@ export function ExportPptxButton({
         <TooltipTrigger asChild>
           <span className="inline-block">{btn}</span>
         </TooltipTrigger>
-        <TooltipContent>
-          Export blocked while approvals are pending
-        </TooltipContent>
+        <TooltipContent>Export blocked while approvals are pending</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

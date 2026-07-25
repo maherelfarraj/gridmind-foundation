@@ -27,9 +27,7 @@ const DRAWING_DISCIPLINE_MAP: Record<string, WbsDiscipline> = {
   process: "mechanical",
 };
 
-export function mapDrawingDiscipline(
-  raw: string | null | undefined,
-): WbsDiscipline | null {
+export function mapDrawingDiscipline(raw: string | null | undefined): WbsDiscipline | null {
   if (!raw) return null;
   return DRAWING_DISCIPLINE_MAP[String(raw).toLowerCase()] ?? null;
 }
@@ -46,10 +44,7 @@ export function buildIfcProposals(
     released_at: string | null;
     revision_snapshot: unknown;
   }>,
-  drawingsById: Map<
-    string,
-    { discipline: string | null; drawing_number: string; title: string }
-  >,
+  drawingsById: Map<string, { discipline: string | null; drawing_number: string; title: string }>,
   alreadyImportedRefs: Set<string>,
   usedCodes: Set<string>,
   rootPrefix: string,

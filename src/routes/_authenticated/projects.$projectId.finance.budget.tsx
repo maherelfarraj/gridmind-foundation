@@ -1,11 +1,7 @@
 // P-075 — Budget workspace: cost codes tree + PO commitment import.
 import { useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Banknote, Download, Import, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -39,15 +35,10 @@ import { wbsTreeQueryOptions } from "@/lib/wbs-query";
 
 import { BudgetKpiStrip } from "@/components/finance/budget-kpi-strip";
 import { BudgetTreeTable } from "@/components/finance/budget-tree-table";
-import {
-  CostCodeDialog,
-  type CostCodeFormValues,
-} from "@/components/finance/cost-code-dialog";
+import { CostCodeDialog, type CostCodeFormValues } from "@/components/finance/cost-code-dialog";
 import { ImportCommitmentsDialog } from "@/components/finance/import-commitments-dialog";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/budget",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/budget")({
   head: () => ({
     meta: [
       { title: "Budget — GridMind EPC" },
@@ -59,8 +50,7 @@ export const Route = createFileRoute(
       { property: "og:title", content: "Budget — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Project budget: cost codes mapped to WBS, PO commitments, and live variance.",
+        content: "Project budget: cost codes mapped to WBS, PO commitments, and live variance.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -82,9 +72,7 @@ function BudgetPage() {
   const wbsFn = useServerFn(listWbsTree);
 
   const ccQuery = useSuspenseQuery(costCodesQueryOptions(listCcFn, projectId));
-  const budgetsQuery = useSuspenseQuery(
-    budgetsQueryOptions(listBudgetsFn, projectId),
-  );
+  const budgetsQuery = useSuspenseQuery(budgetsQueryOptions(listBudgetsFn, projectId));
   const accessQuery = useSuspenseQuery(budgetAccessQueryOptions(accessFn));
   const wbsQuery = useSuspenseQuery(wbsTreeQueryOptions(wbsFn, projectId));
 
@@ -195,11 +183,7 @@ function BudgetPage() {
   });
 
   const upsertBudgetMut = useMutation({
-    mutationFn: (input: {
-      cost_code_id: string;
-      original_amount: number;
-      currency_code: string;
-    }) =>
+    mutationFn: (input: { cost_code_id: string; original_amount: number; currency_code: string }) =>
       upsertBudgetFn({
         data: {
           projectId,
@@ -218,9 +202,8 @@ function BudgetPage() {
   });
 
   const importMut = useMutation({
-    mutationFn: (
-      assignments: Array<{ po_id: string; cost_code_id: string | null }>,
-    ) => importFn({ data: { projectId, assignments } }),
+    mutationFn: (assignments: Array<{ po_id: string; cost_code_id: string | null }>) =>
+      importFn({ data: { projectId, assignments } }),
     onSuccess: (res) => {
       toast.success(
         `Commitments imported (${res.updated} updated${res.skipped ? `, ${res.skipped} skipped` : ""})`,
@@ -261,14 +244,8 @@ function BudgetPage() {
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Banknote
-            size={18}
-            aria-hidden
-            className="text-muted-foreground"
-          />
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Budget
-          </h2>
+          <Banknote size={18} aria-hidden className="text-muted-foreground" />
+          <h2 className="font-display text-lg font-semibold text-foreground">Budget</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {access.canWriteCostCodes && (
@@ -289,8 +266,8 @@ function BudgetPage() {
 
       {!access.canWriteBudgets && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
-          You have read-only access to budgets. Contact a finance or company
-          admin to edit financial rows.
+          You have read-only access to budgets. Contact a finance or company admin to edit financial
+          rows.
         </Card>
       )}
 
@@ -322,9 +299,7 @@ function BudgetPage() {
         costCodeOptions={ccOptions}
         wbsOptions={wbsOptions}
         saving={createCcMut.isPending || updateCcMut.isPending}
-        onSubmit={(v) =>
-          ccMode === "create" ? createCcMut.mutate(v) : updateCcMut.mutate(v)
-        }
+        onSubmit={(v) => (ccMode === "create" ? createCcMut.mutate(v) : updateCcMut.mutate(v))}
         onDelete={ccMode === "edit" ? () => deleteCcMut.mutate() : undefined}
         deleting={deleteCcMut.isPending}
       />
@@ -361,9 +336,7 @@ function BudgetError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   return (
     <Card className="border-destructive/40 bg-card p-4">
-      <p className="text-sm text-foreground">
-        Couldn't load budget: {error.message}
-      </p>
+      <p className="text-sm text-foreground">Couldn't load budget: {error.message}</p>
       <Button
         size="sm"
         className="mt-3"

@@ -1,11 +1,7 @@
 // P-091 — Query options for submittals.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getSubmittal,
-  listSubmittalProjects,
-  listSubmittals,
-} from "@/lib/submittals.functions";
+import { getSubmittal, listSubmittalProjects, listSubmittals } from "@/lib/submittals.functions";
 import type { SubmittalStatus } from "@/lib/submittals.rules";
 
 export { errorMessage } from "@/lib/hse-query";

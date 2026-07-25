@@ -24,18 +24,15 @@ export function CaptureEvmDialog(props: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   projectId: string;
-  onCapture: (input: {
-    snapshotDate: string;
-    includeAccruals: boolean;
-  }) => Promise<void>;
+  onCapture: (input: { snapshotDate: string; includeAccruals: boolean }) => Promise<void>;
   submitting: boolean;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [accruals, setAccruals] = useState(false);
-  const [preview, setPreview] = useState<
-    { computation: EvmComputation; currency: string } | null
-  >(null);
+  const [preview, setPreview] = useState<{ computation: EvmComputation; currency: string } | null>(
+    null,
+  );
   const [previewing, setPreviewing] = useState(false);
 
   const previewFn = useServerFn(previewEvmSnapshot);
@@ -87,8 +84,7 @@ export function CaptureEvmDialog(props: {
         <DialogHeader>
           <DialogTitle>Capture EVM snapshot</DialogTitle>
           <DialogDescription>
-            Snapshots are immutable — one per date. Confirm values below before
-            saving.
+            Snapshots are immutable — one per date. Confirm values below before saving.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -104,11 +100,7 @@ export function CaptureEvmDialog(props: {
             </div>
             <div className="flex items-end gap-2">
               <div className="flex items-center gap-2">
-                <Switch
-                  id="evm-accruals"
-                  checked={accruals}
-                  onCheckedChange={setAccruals}
-                />
+                <Switch id="evm-accruals" checked={accruals} onCheckedChange={setAccruals} />
                 <Label htmlFor="evm-accruals" className="text-sm">
                   Accrue uninvoiced commitments
                 </Label>
@@ -117,9 +109,7 @@ export function CaptureEvmDialog(props: {
           </div>
 
           <div className="rounded-md border border-border p-3">
-            <div className="mb-2 text-xs uppercase text-muted-foreground">
-              Preview
-            </div>
+            <div className="mb-2 text-xs uppercase text-muted-foreground">Preview</div>
             {previewing || !c ? (
               <div className="grid grid-cols-2 gap-2">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -142,10 +132,7 @@ export function CaptureEvmDialog(props: {
                   value={c.cpi == null ? "—" : c.cpi.toFixed(2)}
                   valueClass={healthColor(cpiHealth)}
                 />
-                <Row
-                  label="EAC"
-                  value={c.eac == null ? "—" : fmt(c.eac)}
-                />
+                <Row label="EAC" value={c.eac == null ? "—" : fmt(c.eac)} />
                 <Row label="Tasks" value={String(c.taskCount)} />
               </div>
             )}
@@ -160,9 +147,7 @@ export function CaptureEvmDialog(props: {
             Cancel
           </Button>
           <Button
-            onClick={() =>
-              props.onCapture({ snapshotDate: date, includeAccruals: accruals })
-            }
+            onClick={() => props.onCapture({ snapshotDate: date, includeAccruals: accruals })}
             disabled={props.submitting || previewing || !c}
           >
             {props.submitting ? "Capturing…" : "Capture snapshot"}
@@ -173,15 +158,7 @@ export function CaptureEvmDialog(props: {
   );
 }
 
-function Row({
-  label,
-  value,
-  valueClass,
-}: {
-  label: string;
-  value: string;
-  valueClass?: string;
-}) {
+function Row({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
   return (
     <div className="flex items-baseline justify-between rounded bg-muted/40 px-2 py-1">
       <span className="text-xs text-muted-foreground">{label}</span>

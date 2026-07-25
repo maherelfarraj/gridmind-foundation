@@ -27,10 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  dprDetailQueryOptions,
-  errorMessage,
-} from "@/lib/dpr-query";
+import { dprDetailQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { approveDpr, submitDpr } from "@/lib/dpr.functions";
 
 const searchSchema = z.object({
@@ -83,8 +80,7 @@ function DprDetailPage() {
     qc.invalidateQueries({ queryKey: dprDetailQueryOptions(dprId).queryKey });
 
   const submitMut = useMutation({
-    mutationFn: () =>
-      submit({ data: { id: dprId, acknowledgeNoPhotos: ack } }),
+    mutationFn: () => submit({ data: { id: dprId, acknowledgeNoPhotos: ack } }),
     onSuccess: () => {
       toast.success("DPR submitted");
       setGuardOpen(false);
@@ -119,15 +115,8 @@ function DprDetailPage() {
             <AlertTriangle className="h-4 w-4" aria-hidden />
             <span className="font-medium">Failed to load DPR</span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {errorMessage(query.error)}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => query.refetch()}
-          >
+          <p className="mt-1 text-sm text-muted-foreground">{errorMessage(query.error)}</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
             Retry
           </Button>
         </div>
@@ -136,8 +125,7 @@ function DprDetailPage() {
   }
 
   const detail = query.data;
-  const { header, manpower, weather, photos, observations, permissions, project } =
-    detail;
+  const { header, manpower, weather, photos, observations, permissions, project } = detail;
   const readOnly = !permissions.canEdit;
   const isSubmitted = header.status !== "draft";
 
@@ -158,9 +146,7 @@ function DprDetailPage() {
 
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Daily report
-          </div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Daily report</div>
           <h1 className="truncate font-display text-xl font-semibold text-foreground sm:text-2xl">
             {project?.name ?? header.project_id}
           </h1>
@@ -214,12 +200,8 @@ function DprDetailPage() {
         </CardContent>
       </Card>
 
-      {step === 1 && (
-        <StepManpower dprId={dprId} rows={manpower} readOnly={readOnly} />
-      )}
-      {step === 2 && (
-        <StepWeather header={header} delays={weather} readOnly={readOnly} />
-      )}
+      {step === 1 && <StepManpower dprId={dprId} rows={manpower} readOnly={readOnly} />}
+      {step === 2 && <StepWeather header={header} delays={weather} readOnly={readOnly} />}
       {step === 3 && <StepQuantities header={header} readOnly={readOnly} />}
       {step === 4 && (
         <StepPhotos
@@ -244,11 +226,7 @@ function DprDetailPage() {
             Prev
           </Button>
           {step < 4 ? (
-            <Button
-              type="button"
-              className="h-12 flex-1"
-              onClick={() => goStep(step + 1)}
-            >
+            <Button type="button" className="h-12 flex-1" onClick={() => goStep(step + 1)}>
               Next
               <ChevronRight className="ml-1 h-4 w-4" aria-hidden />
             </Button>
@@ -277,9 +255,7 @@ function DprDetailPage() {
             </Button>
           ) : (
             <div className="flex-1 text-center text-xs text-muted-foreground">
-              {header.status === "submitted"
-                ? "Awaiting admin approval"
-                : "Approved"}
+              {header.status === "submitted" ? "Awaiting admin approval" : "Approved"}
             </div>
           )}
         </div>

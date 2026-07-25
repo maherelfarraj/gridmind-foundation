@@ -109,12 +109,7 @@ async function currentRoles(context: AuthContext): Promise<string[]> {
   return ((data ?? []) as { role: string }[]).map((r) => r.role);
 }
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "foreman",
-  "field_technician",
-  "company_admin",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "foreman", "field_technician", "company_admin"]);
 function canWrite(roles: string[]): boolean {
   return roles.some((r) => WRITE_ROLES.has(r));
 }
@@ -138,10 +133,7 @@ async function audit(
   }
 }
 
-async function allocateInspectionNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function allocateInspectionNumber(context: AuthContext, companyId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("qaqc_inspections")
     .select("inspection_number")
@@ -149,9 +141,7 @@ async function allocateInspectionNumber(
     .order("inspection_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  const list = ((data ?? []) as { inspection_number: string }[]).map(
-    (r) => r.inspection_number,
-  );
+  const list = ((data ?? []) as { inspection_number: string }[]).map((r) => r.inspection_number);
   return nextInspectionNumber(list);
 }
 
@@ -196,8 +186,16 @@ const listInput = z.object({
   area: z.string().trim().max(200).nullable().optional(),
   reworkOnly: z.boolean().nullable().optional(),
   search: z.string().trim().max(200).nullable().optional(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 
 export const listInspections = createServerFn({ method: "GET" })
@@ -208,9 +206,7 @@ export const listInspections = createServerFn({ method: "GET" })
     const companyId = await currentCompanyId(context);
     let q = context.supabase
       .from("qaqc_inspections")
-      .select(
-        "*, projects:project_id(name, code), inspector:inspector_id(email)",
-      )
+      .select("*, projects:project_id(name, code), inspector:inspector_id(email)")
       .eq("company_id", companyId)
       .order("inspection_date", { ascending: false })
       .limit(500);
@@ -226,13 +222,15 @@ export const listInspections = createServerFn({ method: "GET" })
     if (error) throw error;
     const search = data.search?.toLowerCase() ?? "";
     return (rows ?? [])
-      .map((r: any): InspectionListItem => ({
-        ...(r as InspectionRow),
-        attachments: (r.attachments ?? []) as QaqcAttachment[],
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-        inspector_email: r.inspector?.email ?? null,
-      }))
+      .map(
+        (r: any): InspectionListItem => ({
+          ...(r as InspectionRow),
+          attachments: (r.attachments ?? []) as QaqcAttachment[],
+          project_name: r.projects?.name ?? null,
+          project_code: r.projects?.code ?? null,
+          inspector_email: r.inspector?.email ?? null,
+        }),
+      )
       .filter((r) => {
         if (!search) return true;
         return (
@@ -255,9 +253,7 @@ export const getInspection = createServerFn({ method: "GET" })
     const companyId = await currentCompanyId(context);
     const { data: row, error } = await context.supabase
       .from("qaqc_inspections")
-      .select(
-        "*, projects:project_id(name, code), inspector:inspector_id(email)",
-      )
+      .select("*, projects:project_id(name, code), inspector:inspector_id(email)")
       .eq("company_id", companyId)
       .eq("id", data.id)
       .maybeSingle();
@@ -265,7 +261,7 @@ export const getInspection = createServerFn({ method: "GET" })
     if (!row) httpError(404, "inspection_not_found");
     const roles = await currentRoles(context);
     const inspection: InspectionListItem = {
-      ...((row as unknown) as InspectionRow),
+      ...(row as unknown as InspectionRow),
       attachments: ((row as any).attachments ?? []) as QaqcAttachment[],
       project_name: (row as any).projects?.name ?? null,
       project_code: (row as any).projects?.code ?? null,
@@ -293,8 +289,7 @@ export const createInspection = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -321,21 +316,15 @@ export const createInspection = createServerFn({ method: "POST" })
         .select("*")
         .maybeSingle();
       if (!error && inserted) {
-        await audit(
-          context,
-          "qaqc.inspection_create",
-          "qaqc_inspections",
-          (inserted as any).id,
-          {
-            project_id: data.projectId,
-            discipline: data.discipline,
-            area: data.area,
-            result: insertRow.result,
-            rework_required: insertRow.rework_required,
-          },
-        );
+        await audit(context, "qaqc.inspection_create", "qaqc_inspections", (inserted as any).id, {
+          project_id: data.projectId,
+          discipline: data.discipline,
+          area: data.area,
+          result: insertRow.result,
+          rework_required: insertRow.rework_required,
+        });
         return {
-          ...((inserted as unknown) as InspectionRow),
+          ...(inserted as unknown as InspectionRow),
           attachments: ((inserted as any).attachments ?? []) as QaqcAttachment[],
         };
       }
@@ -361,16 +350,12 @@ export const updateInspection = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {};
     if (data.discipline !== undefined) patch.discipline = data.discipline;
     if (data.area !== undefined) patch.area = data.area;
-    if (data.itpReference !== undefined)
-      patch.itp_reference = data.itpReference ?? null;
+    if (data.itpReference !== undefined) patch.itp_reference = data.itpReference ?? null;
     if (data.wbsItemId !== undefined) patch.wbs_item_id = data.wbsItemId ?? null;
-    if (data.inspectionDate !== undefined)
-      patch.inspection_date = data.inspectionDate;
-    if (data.inspectorId !== undefined)
-      patch.inspector_id = data.inspectorId ?? null;
+    if (data.inspectionDate !== undefined) patch.inspection_date = data.inspectionDate;
+    if (data.inspectorId !== undefined) patch.inspector_id = data.inspectorId ?? null;
     if (data.result !== undefined) patch.result = data.result;
-    if (data.reworkRequired !== undefined)
-      patch.rework_required = data.reworkRequired;
+    if (data.reworkRequired !== undefined) patch.rework_required = data.reworkRequired;
     if (data.reworkNotes !== undefined) patch.rework_notes = data.reworkNotes ?? null;
     if (data.attachments !== undefined) patch.attachments = data.attachments as any;
 
@@ -384,16 +369,12 @@ export const updateInspection = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!updated) httpError(404, "inspection_not_found");
 
-    await audit(
-      context,
-      "qaqc.inspection_update",
-      "qaqc_inspections",
-      data.id,
-      { fields: Object.keys(patch) },
-    );
+    await audit(context, "qaqc.inspection_update", "qaqc_inspections", data.id, {
+      fields: Object.keys(patch),
+    });
 
     return {
-      ...((updated as unknown) as InspectionRow),
+      ...(updated as unknown as InspectionRow),
       attachments: ((updated as any).attachments ?? []) as QaqcAttachment[],
     };
   });
@@ -403,9 +384,7 @@ export const updateInspection = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const signInspectionAttachment = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ path: z.string().min(1) }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ path: z.string().min(1) }).parse(raw))
   .handler(async ({ data, context }): Promise<{ url: string | null }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -441,7 +420,7 @@ export const getQaqcHeatmap = createServerFn({ method: "GET" })
       .gte("inspection_date", data.from)
       .lte("inspection_date", data.to);
     if (error) throw error;
-    return computeHeatmap(((rows ?? []) as any) as any);
+    return computeHeatmap((rows ?? []) as any as any);
   });
 
 // ---------------------------------------------------------------------------
@@ -500,10 +479,7 @@ export interface PunchMemberPick {
   email: string | null;
 }
 
-async function allocatePunchNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function allocatePunchNumber(context: AuthContext, companyId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("qaqc_punch_items")
     .select("punch_number")
@@ -511,15 +487,13 @@ async function allocatePunchNumber(
     .order("punch_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  const list = ((data ?? []) as { punch_number: string }[]).map(
-    (r) => r.punch_number,
-  );
+  const list = ((data ?? []) as { punch_number: string }[]).map((r) => r.punch_number);
   return nextPunchNumber(list);
 }
 
 function mapPunch(r: any): PunchItemListItem {
   return {
-    ...((r as unknown) as PunchItemRow),
+    ...(r as unknown as PunchItemRow),
     photo_ids: Array.isArray(r.photo_ids) ? (r.photo_ids as string[]) : [],
     project_name: r.projects?.name ?? null,
     project_code: r.projects?.code ?? null,
@@ -575,9 +549,7 @@ export const listPunchItems = createServerFn({ method: "GET" })
 // detail --------------------------------------------------------------------
 export const getPunchItem = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<PunchItemDetail> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -602,11 +574,11 @@ export const getPunchItem = createServerFn({ method: "GET" })
         .select("id, file_path, caption")
         .in("id", item.photo_ids)
         .eq("company_id", companyId);
-      const rows2 = ((photoRows ?? []) as {
+      const rows2 = (photoRows ?? []) as {
         id: string;
         file_path: string;
         caption: string | null;
-      }[]);
+      }[];
       photos = await Promise.all(
         rows2.map(async (p) => {
           let signed: string | null = null;
@@ -650,9 +622,7 @@ export const getPunchItem = createServerFn({ method: "GET" })
 // walk context (assignees) --------------------------------------------------
 export const getPunchWalkContext = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ projectId: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<PunchMemberPick[]> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -684,8 +654,7 @@ export const createPunchItem = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -711,21 +680,15 @@ export const createPunchItem = createServerFn({ method: "POST" })
         .select("*")
         .maybeSingle();
       if (!error && inserted) {
-        await audit(
-          context,
-          "punch.create",
-          "qaqc_punch_items",
-          (inserted as any).id,
-          {
-            project_id: data.projectId,
-            area: data.area,
-            discipline: data.discipline,
-            category: insertRow.category,
-          },
-        );
+        await audit(context, "punch.create", "qaqc_punch_items", (inserted as any).id, {
+          project_id: data.projectId,
+          area: data.area,
+          discipline: data.discipline,
+          category: insertRow.category,
+        });
         const row = inserted as any;
         return {
-          ...((row as unknown) as PunchItemRow),
+          ...(row as unknown as PunchItemRow),
           photo_ids: Array.isArray(row.photo_ids) ? row.photo_ids : [],
         };
       }
@@ -754,8 +717,7 @@ export const updatePunchItem = createServerFn({ method: "POST" })
       .maybeSingle();
     if (exErr) throw exErr;
     if (!existing) httpError(404, "punch_not_found");
-    if ((existing as any).status === "closed")
-      httpError(409, "already_closed");
+    if ((existing as any).status === "closed") httpError(409, "already_closed");
 
     const patch: Record<string, unknown> = {};
     if (data.area !== undefined) patch.area = data.area;
@@ -763,8 +725,7 @@ export const updatePunchItem = createServerFn({ method: "POST" })
     if (data.category !== undefined) patch.category = data.category;
     if (data.description !== undefined) patch.description = data.description;
     if (data.dueDate !== undefined) patch.due_date = data.dueDate ?? null;
-    if (data.assignedTo !== undefined)
-      patch.assigned_to = data.assignedTo ?? null;
+    if (data.assignedTo !== undefined) patch.assigned_to = data.assignedTo ?? null;
     if (data.photoIds !== undefined) patch.photo_ids = data.photoIds as any;
 
     const { data: updated, error } = await context.supabase
@@ -781,7 +742,7 @@ export const updatePunchItem = createServerFn({ method: "POST" })
     });
     const row = updated as any;
     return {
-      ...((row as unknown) as PunchItemRow),
+      ...(row as unknown as PunchItemRow),
       photo_ids: Array.isArray(row.photo_ids) ? row.photo_ids : [],
     };
   });
@@ -789,9 +750,7 @@ export const updatePunchItem = createServerFn({ method: "POST" })
 // mark ready ----------------------------------------------------------------
 export const markPunchReady = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<PunchItemRow> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -821,7 +780,7 @@ export const markPunchReady = createServerFn({ method: "POST" })
     await audit(context, "punch.ready", "qaqc_punch_items", data.id, {});
     const row = updated as any;
     return {
-      ...((row as unknown) as PunchItemRow),
+      ...(row as unknown as PunchItemRow),
       photo_ids: Array.isArray(row.photo_ids) ? row.photo_ids : [],
     };
   });
@@ -868,7 +827,7 @@ export const signoffPunchItem = createServerFn({ method: "POST" })
     });
     const row = updated as any;
     return {
-      ...((row as unknown) as PunchItemRow),
+      ...(row as unknown as PunchItemRow),
       photo_ids: Array.isArray(row.photo_ids) ? row.photo_ids : [],
     };
   });
@@ -891,8 +850,7 @@ export const voidPunchItem = createServerFn({ method: "POST" })
       .maybeSingle();
     if (exErr) throw exErr;
     if (!existing) httpError(404, "punch_not_found");
-    if ((existing as any).status === "closed")
-      httpError(409, "already_closed");
+    if ((existing as any).status === "closed") httpError(409, "already_closed");
 
     const { data: updated, error } = await context.supabase
       .from("qaqc_punch_items")
@@ -908,7 +866,7 @@ export const voidPunchItem = createServerFn({ method: "POST" })
     });
     const row = updated as any;
     return {
-      ...((row as unknown) as PunchItemRow),
+      ...(row as unknown as PunchItemRow),
       photo_ids: Array.isArray(row.photo_ids) ? row.photo_ids : [],
     };
   });
@@ -979,5 +937,3 @@ export const registerPunchPhoto = createServerFn({ method: "POST" })
     if (!row) httpError(500, "insert_failed");
     return row as { id: string; file_path: string };
   });
-
-

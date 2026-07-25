@@ -37,9 +37,12 @@ export async function assertExportAllowed(
   if (!projectId) return;
 
   // Auto-release completed approval locks first (best-effort; ignore missing).
-  const sync = await supabase.rpc("sync_export_locks" as never, {
-    p_project_id: projectId,
-  } as never);
+  const sync = await supabase.rpc(
+    "sync_export_locks" as never,
+    {
+      p_project_id: projectId,
+    } as never,
+  );
   if (sync.error) {
     const code = (sync.error as { code?: string }).code;
     // 42P01 = table missing (pre-migration env) → treat as unlocked.
@@ -48,19 +51,20 @@ export async function assertExportAllowed(
     // is the source of truth.
   }
 
-  const { error } = await supabase.rpc("assert_export_unlocked" as never, {
-    p_project_id: projectId,
-    p_export_type: exportType,
-  } as never);
+  const { error } = await supabase.rpc(
+    "assert_export_unlocked" as never,
+    {
+      p_project_id: projectId,
+      p_export_type: exportType,
+    } as never,
+  );
   if (!error) return;
 
   const code = (error as { code?: string }).code;
   if (code === "42P01" || code === "42883") return; // migration not applied yet
 
   if (isPgMessage(error, "export_locked:")) {
-    const err = new Error(
-      "Export blocked: approval pending",
-    ) as ExportLockedError;
+    const err = new Error("Export blocked: approval pending") as ExportLockedError;
     err.statusCode = 423;
     err.code = "export_locked";
     err.exportType = exportType;

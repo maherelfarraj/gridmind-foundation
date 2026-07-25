@@ -8,10 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useActiveCompany } from "@/components/company-switcher";
-import {
-  ArchetypePicker,
-  ArchetypePickerSkeleton,
-} from "@/components/wizard/archetype-picker";
+import { ArchetypePicker, ArchetypePickerSkeleton } from "@/components/wizard/archetype-picker";
 import { ProjectBasicsForm } from "@/components/wizard/project-basics-form";
 import { ProjectSelectionForm } from "@/components/wizard/project-selection-form";
 import { TeamForm } from "@/components/wizard/team-form";
@@ -37,7 +34,6 @@ import {
   type ProjectTeam,
 } from "@/lib/schemas/project-wizard";
 import { useProjectDraft, type ProjectArchetype } from "@/lib/wizard-draft";
-
 
 const searchSchema = z.object({
   step: z.coerce.number().int().min(1).max(4).catch(1).default(1),
@@ -94,12 +90,7 @@ function NewProjectPage() {
   });
 
   const templatesQuery = useQuery({
-    queryKey: [
-      "project-templates",
-      activeCompanyId,
-      draft.archetype,
-      search.forceError,
-    ],
+    queryKey: ["project-templates", activeCompanyId, draft.archetype, search.forceError],
     queryFn: async () => {
       if (search.forceError) {
         throw new Error("Simulated failure — remove ?forceError=1 to retry.");
@@ -239,7 +230,6 @@ function NewProjectPage() {
           ? "Choose a template, then tune the gates, budget, and departments."
           : "Assign the project admin, members, and department leads.";
 
-
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -263,9 +253,7 @@ function NewProjectPage() {
                   <AlertTriangle size={20} aria-hidden />
                 </span>
                 <div className="flex flex-col gap-1">
-                  <div className="font-medium text-foreground">
-                    Could not load project options
-                  </div>
+                  <div className="font-medium text-foreground">Could not load project options</div>
                   <p className="text-sm text-muted-foreground">
                     {accessQuery.error instanceof Error
                       ? accessQuery.error.message
@@ -274,10 +262,7 @@ function NewProjectPage() {
                 </div>
               </div>
               <div>
-                <Button
-                  variant="outline"
-                  onClick={() => void accessQuery.refetch()}
-                >
+                <Button variant="outline" onClick={() => void accessQuery.refetch()}>
                   Try again
                 </Button>
               </div>
@@ -309,9 +294,7 @@ function NewProjectPage() {
             archetype={draft.archetype}
             defaultValues={draft.basics}
             onSubmit={handleBasicsSubmit}
-            onBack={() =>
-              void navigate({ to: "/projects/new", search: { step: 1 } })
-            }
+            onBack={() => void navigate({ to: "/projects/new", search: { step: 1 } })}
           />
         )
       ) : currentStep === 3 ? (
@@ -334,48 +317,37 @@ function NewProjectPage() {
             templates={templatesQuery.data}
             defaultValues={draft.selection}
             onSubmit={handleSelectionSubmit}
-            onBack={() =>
-              void navigate({ to: "/projects/new", search: { step: 2 } })
-            }
+            onBack={() => void navigate({ to: "/projects/new", search: { step: 2 } })}
           />
         )
-      ) : (
-        !hydrated ||
+      ) : !hydrated ||
         !activeCompanyId ||
         !draft.archetype ||
         !draft.basics ||
         !draft.selection ||
         teamQuery.isPending ? (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : teamQuery.isError ? (
-          <WizardErrorPanel
-            title="Could not load team candidates"
-            message={
-              teamQuery.error instanceof Error
-                ? teamQuery.error.message
-                : "Unexpected error"
-            }
-            onRetry={() => void teamQuery.refetch()}
-          />
-        ) : (
-          <TeamForm
-            projectAdmins={teamQuery.data.admins}
-            members={teamQuery.data.profiles}
-            deptCandidates={teamQuery.data.deptCandidates}
-            defaultValues={draft.team}
-            submitting={createMutation.isPending}
-            onSubmit={handleTeamSubmit}
-            onBack={() =>
-              void navigate({ to: "/projects/new", search: { step: 3 } })
-            }
-          />
-        )
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : teamQuery.isError ? (
+        <WizardErrorPanel
+          title="Could not load team candidates"
+          message={teamQuery.error instanceof Error ? teamQuery.error.message : "Unexpected error"}
+          onRetry={() => void teamQuery.refetch()}
+        />
+      ) : (
+        <TeamForm
+          projectAdmins={teamQuery.data.admins}
+          members={teamQuery.data.profiles}
+          deptCandidates={teamQuery.data.deptCandidates}
+          defaultValues={draft.team}
+          submitting={createMutation.isPending}
+          onSubmit={handleTeamSubmit}
+          onBack={() => void navigate({ to: "/projects/new", search: { step: 3 } })}
+        />
       )}
     </div>
   );
 }
-

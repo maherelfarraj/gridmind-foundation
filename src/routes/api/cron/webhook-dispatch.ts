@@ -43,11 +43,11 @@ const MAX_ATTEMPTS = 5;
 // attempts value BEFORE the current send. Backoff table indexed by that.
 // (attempts=0 means first try; on failure we schedule the 1st retry.)
 const BACKOFF_MS: number[] = [
-  60_000,        // after attempt 1 → retry in 1 min
-  5 * 60_000,    // after attempt 2 → retry in 5 min
-  30 * 60_000,   // after attempt 3 → retry in 30 min
-  2 * 60 * 60_000,   // after attempt 4 → retry in 2 h
-  24 * 60 * 60_000,  // after attempt 5 → retry in 24 h (only used if MAX_ATTEMPTS raised)
+  60_000, // after attempt 1 → retry in 1 min
+  5 * 60_000, // after attempt 2 → retry in 5 min
+  30 * 60_000, // after attempt 3 → retry in 30 min
+  2 * 60 * 60_000, // after attempt 4 → retry in 2 h
+  24 * 60 * 60_000, // after attempt 5 → retry in 24 h (only used if MAX_ATTEMPTS raised)
 ];
 
 interface DeliveryRow {
@@ -104,10 +104,7 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
         // Fetch endpoints + secrets for all target endpoints in one shot.
         const endpointIds = Array.from(new Set(deliveries.map((d) => d.endpoint_id)));
         const [epRes, secRes] = await Promise.all([
-          admin
-            .from("webhook_endpoints")
-            .select("id, url, is_active")
-            .in("id", endpointIds),
+          admin.from("webhook_endpoints").select("id, url, is_active").in("id", endpointIds),
           admin
             .from("webhook_endpoint_secrets")
             .select("endpoint_id, secret")
@@ -136,10 +133,7 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
           string,
           { success: number; failed: number; retried: number; skipped: number }
         >();
-        function bump(
-          companyId: string,
-          key: "success" | "failed" | "retried" | "skipped",
-        ) {
+        function bump(companyId: string, key: "success" | "failed" | "retried" | "skipped") {
           const cur = perCompany.get(companyId) ?? {
             success: 0,
             failed: 0,
@@ -165,9 +159,7 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
               .update({
                 status: "failed" as const,
                 attempts: d.attempts + 1,
-                response_body: !endpoint
-                  ? "endpoint_missing"
-                  : "signing_secret_missing",
+                response_body: !endpoint ? "endpoint_missing" : "signing_secret_missing",
                 next_retry_at: null,
               } as never)
               .eq("id", d.id);
@@ -215,9 +207,8 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
             });
             responseStatus = res.status;
             const text = await res.text().catch(() => "");
-            responseBody = text.length > RESPONSE_BODY_CAP
-              ? text.slice(0, RESPONSE_BODY_CAP)
-              : text;
+            responseBody =
+              text.length > RESPONSE_BODY_CAP ? text.slice(0, RESPONSE_BODY_CAP) : text;
             ok = res.status >= 200 && res.status < 300;
           } catch (err) {
             responseBody = `fetch_error: ${err instanceof Error ? err.message : String(err)}`.slice(

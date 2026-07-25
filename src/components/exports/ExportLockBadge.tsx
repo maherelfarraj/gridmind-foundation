@@ -19,15 +19,10 @@ interface ExportLockBadgeProps {
   className?: string;
 }
 
-export function ExportLockBadge({
-  projectId,
-  className,
-}: ExportLockBadgeProps) {
+export function ExportLockBadge({ projectId, className }: ExportLockBadgeProps) {
   const { data } = useActiveExportLocks(projectId);
   if (!data || data.length === 0) return null;
-  const labels = Array.from(
-    new Set(data.map((l) => LABELS[l.export_type] ?? l.export_type)),
-  );
+  const labels = Array.from(new Set(data.map((l) => LABELS[l.export_type] ?? l.export_type)));
   return (
     <span
       className={cn(

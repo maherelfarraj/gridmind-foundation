@@ -5,20 +5,12 @@ import { FileDown, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { buildProposalPdf, downloadBlob } from "@/lib/exports/proposal-pdf";
 import { assertExportAllowed } from "@/lib/export-guard";
 import { useIsExportLocked } from "@/lib/export-locks.hooks";
-import {
-  getProposalPdfData,
-  recordProposalExport,
-} from "@/lib/proposal.functions";
+import { getProposalPdfData, recordProposalExport } from "@/lib/proposal.functions";
 
 interface ExportPdfButtonProps {
   proposalId: string;
@@ -94,9 +86,7 @@ export function ExportPdfButton({
         <TooltipTrigger asChild>
           <span className="inline-block">{btn}</span>
         </TooltipTrigger>
-        <TooltipContent>
-          Export blocked while approvals are pending
-        </TooltipContent>
+        <TooltipContent>Export blocked while approvals are pending</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

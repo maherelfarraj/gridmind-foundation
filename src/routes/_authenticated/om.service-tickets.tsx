@@ -9,12 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -22,12 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -46,14 +36,8 @@ import {
   type BreachLogRow,
   type TicketRow,
 } from "@/lib/service-tickets.functions";
-import {
-  TICKET_STATUSES,
-  type TicketStatus,
-} from "@/lib/service-tickets.rules";
-import {
-  WORK_ORDER_PRIORITIES,
-  type WorkOrderPriority,
-} from "@/lib/work-orders.rules";
+import { TICKET_STATUSES, type TicketStatus } from "@/lib/service-tickets.rules";
+import { WORK_ORDER_PRIORITIES, type WorkOrderPriority } from "@/lib/work-orders.rules";
 
 export const Route = createFileRoute("/_authenticated/om/service-tickets")({
   head: () => ({
@@ -184,8 +168,7 @@ function ServiceTicketsPage() {
     () => ({
       project_id: projectId === "all" ? undefined : projectId,
       status: status === "all" ? undefined : (status as TicketStatus),
-      priority:
-        priority === "all" ? undefined : (priority as WorkOrderPriority),
+      priority: priority === "all" ? undefined : (priority as WorkOrderPriority),
       q: q || undefined,
     }),
     [projectId, status, priority, q],
@@ -221,16 +204,10 @@ function ServiceTicketsPage() {
       <Tabs defaultValue="tickets">
         <TabsList>
           <TabsTrigger value="tickets">
-            Tickets{" "}
-            <span className="ml-1 text-xs text-muted-foreground">
-              {rows.length}
-            </span>
+            Tickets <span className="ml-1 text-xs text-muted-foreground">{rows.length}</span>
           </TabsTrigger>
           <TabsTrigger value="breaches">
-            Breach log{" "}
-            <span className="ml-1 text-xs text-muted-foreground">
-              {breaches.length}
-            </span>
+            Breach log <span className="ml-1 text-xs text-muted-foreground">{breaches.length}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -332,28 +309,18 @@ function ServiceTicketsPage() {
                   </TableHeader>
                   <TableBody>
                     {rows.map((t) => (
-                      <TableRow
-                        key={t.id}
-                        className="cursor-pointer"
-                        onClick={() => setDrawer(t)}
-                      >
-                        <TableCell className="font-mono text-xs">
-                          {t.ticket_number}
-                        </TableCell>
+                      <TableRow key={t.id} className="cursor-pointer" onClick={() => setDrawer(t)}>
+                        <TableCell className="font-mono text-xs">{t.ticket_number}</TableCell>
                         <TableCell>
                           <div className="text-sm">{t.title}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {t.project_name}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{t.project_name}</div>
                         </TableCell>
                         <TableCell>{priorityBadge(t.priority)}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{t.status}</Badge>
                         </TableCell>
                         <TableCell className="text-sm">
-                          {t.assignee_name ?? (
-                            <span className="text-muted-foreground">—</span>
-                          )}
+                          {t.assignee_name ?? <span className="text-muted-foreground">—</span>}
                         </TableCell>
                         <TableCell>
                           <SlaCountdownChip
@@ -427,14 +394,10 @@ function ServiceTicketsPage() {
                       if (b.resolution_breached) types.push("resolution");
                       return (
                         <TableRow key={b.id}>
-                          <TableCell className="font-mono text-xs">
-                            {b.ticket_number}
-                          </TableCell>
+                          <TableCell className="font-mono text-xs">{b.ticket_number}</TableCell>
                           <TableCell>
                             <div className="text-sm">{b.title}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {b.project_name}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{b.project_name}</div>
                           </TableCell>
                           <TableCell>
                             <Badge className="bg-destructive text-destructive-foreground">

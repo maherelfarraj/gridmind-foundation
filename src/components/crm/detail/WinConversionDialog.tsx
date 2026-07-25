@@ -45,12 +45,7 @@ interface Props {
   onConverted?: (intakeId: string) => void;
 }
 
-export function WinConversionDialog({
-  opportunityId,
-  open,
-  onOpenChange,
-  onConverted,
-}: Props) {
+export function WinConversionDialog({ opportunityId, open, onOpenChange, onConverted }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -76,9 +71,7 @@ function WinConversionForm({
   onConverted?: (intakeId: string) => void;
 }) {
   const prefillFn = useServerFn(getWinConversionPrefill);
-  const { data } = useSuspenseQuery(
-    winConversionPrefillQueryOptions(prefillFn, opportunityId),
-  );
+  const { data } = useSuspenseQuery(winConversionPrefillQueryOptions(prefillFn, opportunityId));
 
   const opp = data?.opportunity;
   const owners = data?.owners ?? [];
@@ -144,12 +137,7 @@ function WinConversionForm({
       <div className="mt-4 grid gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="wc-name">Project name</Label>
-          <Input
-            id="wc-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          <Input id="wc-name" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -183,11 +171,7 @@ function WinConversionForm({
 
         <div className="grid gap-1.5">
           <Label htmlFor="wc-off">Offtaker</Label>
-          <Input
-            id="wc-off"
-            value={offtaker}
-            onChange={(e) => setOfftaker(e.target.value)}
-          />
+          <Input id="wc-off" value={offtaker} onChange={(e) => setOfftaker(e.target.value)} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">

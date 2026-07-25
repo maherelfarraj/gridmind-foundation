@@ -204,10 +204,7 @@ async function projectCompany(
   return data as any;
 }
 
-async function loadDprOrThrow(
-  context: AuthContext,
-  id: string,
-): Promise<DprRow> {
+async function loadDprOrThrow(context: AuthContext, id: string): Promise<DprRow> {
   const { data, error } = await context.supabase
     .from("construction_daily_reports")
     .select("*")
@@ -256,11 +253,7 @@ async function recomputeTotals(context: AuthContext, dprId: string) {
   if (upErr) throw upErr;
 }
 
-function assertEditable(
-  header: DprRow,
-  roles: readonly string[],
-  userId: string,
-) {
+function assertEditable(header: DprRow, roles: readonly string[], userId: string) {
   if (!canEditDpr(header.status, roles, header.created_by === userId)) {
     httpError(403, "not_editable", "This DPR is not editable");
   }
@@ -288,8 +281,16 @@ export const listDprProjects = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 const listInput = z.object({
   projectId: z.string().uuid().nullable().optional(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   status: z.enum(["draft", "submitted", "approved"]).nullable().optional(),
   search: z.string().trim().max(120).nullable().optional(),
 });
@@ -332,19 +333,21 @@ export const listDprs = createServerFn({ method: "GET" })
 
     const search = data.search?.toLowerCase() ?? "";
     return (rows ?? [])
-      .map((r: any): DprListItem => ({
-        id: r.id,
-        project_id: r.project_id,
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-        report_date: r.report_date,
-        shift: r.shift,
-        status: r.status,
-        total_manpower: r.total_manpower ?? 0,
-        total_hours: r.total_hours ?? 0,
-        photo_count: photoCounts.get(r.id) ?? 0,
-        updated_at: r.updated_at,
-      }))
+      .map(
+        (r: any): DprListItem => ({
+          id: r.id,
+          project_id: r.project_id,
+          project_name: r.projects?.name ?? null,
+          project_code: r.projects?.code ?? null,
+          report_date: r.report_date,
+          shift: r.shift,
+          status: r.status,
+          total_manpower: r.total_manpower ?? 0,
+          total_hours: r.total_hours ?? 0,
+          photo_count: photoCounts.get(r.id) ?? 0,
+          updated_at: r.updated_at,
+        }),
+      )
       .filter((r) => {
         if (!search) return true;
         return (
@@ -366,35 +369,34 @@ export const getDpr = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<DprDetail> => {
     requireSupabaseAuth(context);
     const header = await loadDprOrThrow(context, data.id);
-    const [manpower, weather, photos, observations, roles, projectRow] =
-      await Promise.all([
-        context.supabase
-          .from("manpower_logs")
-          .select("*")
-          .eq("dpr_id", data.id)
-          .order("created_at", { ascending: true }),
-        context.supabase
-          .from("weather_delays")
-          .select("*")
-          .eq("dpr_id", data.id)
-          .order("created_at", { ascending: true }),
-        context.supabase
-          .from("site_photos")
-          .select("*")
-          .eq("dpr_id", data.id)
-          .order("taken_at", { ascending: true }),
-        context.supabase
-          .from("field_observations")
-          .select("*")
-          .eq("dpr_id", data.id)
-          .order("created_at", { ascending: true }),
-        currentRoles(context),
-        context.supabase
-          .from("projects")
-          .select("id, name, code")
-          .eq("id", header.project_id)
-          .maybeSingle(),
-      ]);
+    const [manpower, weather, photos, observations, roles, projectRow] = await Promise.all([
+      context.supabase
+        .from("manpower_logs")
+        .select("*")
+        .eq("dpr_id", data.id)
+        .order("created_at", { ascending: true }),
+      context.supabase
+        .from("weather_delays")
+        .select("*")
+        .eq("dpr_id", data.id)
+        .order("created_at", { ascending: true }),
+      context.supabase
+        .from("site_photos")
+        .select("*")
+        .eq("dpr_id", data.id)
+        .order("taken_at", { ascending: true }),
+      context.supabase
+        .from("field_observations")
+        .select("*")
+        .eq("dpr_id", data.id)
+        .order("created_at", { ascending: true }),
+      currentRoles(context),
+      context.supabase
+        .from("projects")
+        .select("id, name, code")
+        .eq("id", header.project_id)
+        .maybeSingle(),
+    ]);
     if (manpower.error) throw manpower.error;
     if (weather.error) throw weather.error;
     if (photos.error) throw photos.error;
@@ -573,10 +575,7 @@ export const deleteManpowerRow = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const { error } = await context.supabase
-      .from("manpower_logs")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("manpower_logs").delete().eq("id", data.id);
     if (error) throw error;
     await recomputeTotals(context, data.dprId);
     await audit(context, "dpr.update", "manpower_logs", data.id, {
@@ -649,10 +648,7 @@ export const deleteWeatherDelay = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const { error } = await context.supabase
-      .from("weather_delays")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("weather_delays").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
@@ -804,7 +800,10 @@ export const attachPhoto = createServerFn({ method: "POST" })
     );
   });
 
-const removePhotoInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid().nullable().optional() });
+const removePhotoInput = z.object({
+  id: z.string().uuid(),
+  dprId: z.string().uuid().nullable().optional(),
+});
 
 export const removePhoto = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -822,16 +821,11 @@ export const removePhoto = createServerFn({ method: "POST" })
       .select("file_path, company_id")
       .eq("id", data.id)
       .maybeSingle();
-    const { error } = await context.supabase
-      .from("site_photos")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("site_photos").delete().eq("id", data.id);
     if (error) throw error;
     if (existing && (existing as any).file_path) {
       try {
-        await context.supabase.storage
-          .from("photos")
-          .remove([(existing as any).file_path]);
+        await context.supabase.storage.from("photos").remove([(existing as any).file_path]);
       } catch {
         /* best-effort */
       }

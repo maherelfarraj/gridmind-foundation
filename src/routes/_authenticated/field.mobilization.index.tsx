@@ -1,10 +1,6 @@
 // P-084 — Mobilization checklist list page (project picker + list).
 import { useMemo, useState } from "react";
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, HardHat, Plus } from "lucide-react";
@@ -66,7 +62,8 @@ function MobilizationIndexPage() {
           Site mobilization
         </h1>
         <p className="text-sm text-muted-foreground">
-          Prove cabins, fencing, HSE induction, utilities, access and permits are ready before crews mobilize.
+          Prove cabins, fencing, HSE induction, utilities, access and permits are ready before crews
+          mobilize.
         </p>
       </header>
 
@@ -89,22 +86,17 @@ function MobilizationIndexPage() {
               <SelectContent>
                 {(projectsQuery.data ?? []).map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.name}{" "}
-                    <span className="text-muted-foreground">({p.code})</span>
+                    {p.name} <span className="text-muted-foreground">({p.code})</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
-          {projectId ? (
-            <CreateChecklistButton projectId={projectId} />
-          ) : null}
+          {projectId ? <CreateChecklistButton projectId={projectId} /> : null}
         </CardContent>
       </Card>
 
-      {projectId ? (
-        <ChecklistList projectId={projectId} query={listQuery} />
-      ) : null}
+      {projectId ? <ChecklistList projectId={projectId} query={listQuery} /> : null}
     </div>
   );
 }
@@ -126,11 +118,7 @@ function CreateChecklistButton({ projectId }: { projectId: string }) {
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <Button
-      size="sm"
-      onClick={() => mutation.mutate()}
-      disabled={mutation.isPending}
-    >
+    <Button size="sm" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
       <Plus className="mr-2 h-4 w-4" /> New checklist
     </Button>
   );
@@ -160,15 +148,8 @@ function ChecklistList({
           <AlertTriangle className="h-4 w-4" />
           <span className="font-medium">Failed to load checklists</span>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {errorMessage(query.error)}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3"
-          onClick={() => query.refetch()}
-        >
+        <p className="mt-1 text-sm text-muted-foreground">{errorMessage(query.error)}</p>
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
           Retry
         </Button>
       </div>
@@ -189,9 +170,7 @@ function ChecklistList({
       {rows.map((row) => {
         const p = computeProgress(row.items ?? []);
         const pct =
-          p.requiredTotal === 0
-            ? 0
-            : Math.round((p.requiredComplete / p.requiredTotal) * 100);
+          p.requiredTotal === 0 ? 0 : Math.round((p.requiredComplete / p.requiredTotal) * 100);
         return (
           <Link
             key={row.id}
@@ -200,9 +179,7 @@ function ChecklistList({
             className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
           >
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-display text-base font-medium text-foreground">
-                {row.name}
-              </h3>
+              <h3 className="font-display text-base font-medium text-foreground">{row.name}</h3>
               <StatusBadge status={row.status} />
             </div>
             <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">

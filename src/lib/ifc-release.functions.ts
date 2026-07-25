@@ -2,10 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // constants + helpers
@@ -24,10 +21,7 @@ export const IFC_SIGNOFF_ROLES = [
 ] as const;
 export type IfcSignoffRoleLabel = (typeof IFC_SIGNOFF_ROLES)[number];
 
-const REQUIRED_SIGNOFF_ROLES: IfcSignoffRoleLabel[] = [
-  "Lead Engineer",
-  "Engineering Manager",
-];
+const REQUIRED_SIGNOFF_ROLES: IfcSignoffRoleLabel[] = ["Lead Engineer", "Engineering Manager"];
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
@@ -162,9 +156,7 @@ export interface ReleasableDrawing {
 // ---------------------------------------------------------------------------
 export const listIfcReleases = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<IfcReleaseRow[]> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -207,11 +199,9 @@ function toReleaseRow(r: any, signoffCount: number): IfcReleaseRow {
       ? (r.distribution_list as DistributionEntry[])
       : [],
     prepared_by: r.prepared_by ?? null,
-    prepared_by_name:
-      r.prepared_profile?.full_name ?? r.prepared_profile?.email ?? null,
+    prepared_by_name: r.prepared_profile?.full_name ?? r.prepared_profile?.email ?? null,
     released_by: r.released_by ?? null,
-    released_by_name:
-      r.released_profile?.full_name ?? r.released_profile?.email ?? null,
+    released_by_name: r.released_profile?.full_name ?? r.released_profile?.email ?? null,
     released_at: r.released_at ?? null,
     voided_by: r.voided_by ?? null,
     voided_at: r.voided_at ?? null,
@@ -227,14 +217,9 @@ function toReleaseRow(r: any, signoffCount: number): IfcReleaseRow {
 // ---------------------------------------------------------------------------
 export const getIfcRelease = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ releaseId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ releaseId: z.string().uuid() }).parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ release: IfcReleaseRow; signoffs: IfcSignoffRow[] }> => {
+    async ({ data, context }): Promise<{ release: IfcReleaseRow; signoffs: IfcSignoffRow[] }> => {
       requireSupabaseAuth(context);
       const { data: r, error } = await context.supabase
         .from("ifc_releases")
@@ -274,16 +259,11 @@ export const getIfcRelease = createServerFn({ method: "GET" })
 // listReleasableDrawings — evaluates every drawing against the same governance
 // rules the drawings transition uses for IFC, returning per-drawing reasons.
 // ---------------------------------------------------------------------------
-async function computeReleasable(
-  context: any,
-  projectId: string,
-): Promise<ReleasableDrawing[]> {
+async function computeReleasable(context: any, projectId: string): Promise<ReleasableDrawing[]> {
   {
     const { data: drawings, error } = await context.supabase
       .from("drawing_register")
-      .select(
-        "id, drawing_number, title, discipline, current_status, locked",
-      )
+      .select("id, drawing_number, title, discipline, current_status, locked")
       .eq("project_id", projectId)
       .order("drawing_number", { ascending: true });
     if (error) throw error;
@@ -328,17 +308,12 @@ async function computeReleasable(
       for (const m of (markups ?? []) as any[]) {
         const did = revToDrawing.get(m.revision_id);
         if (!did) continue;
-        openMarkupsByDrawing.set(
-          did,
-          (openMarkupsByDrawing.get(did) ?? 0) + 1,
-        );
+        openMarkupsByDrawing.set(did, (openMarkupsByDrawing.get(did) ?? 0) + 1);
       }
     }
 
     // Review rounds for the latest IFD revisions.
-    const latestIfdIds = Array.from(latestIfdByDrawing.values()).map(
-      (r) => r.id,
-    );
+    const latestIfdIds = Array.from(latestIfdByDrawing.values()).map((r) => r.id);
     const roundsByRevision = new Map<string, any>();
     if (latestIfdIds.length > 0) {
       const { data: rounds, error: rrErr } = await context.supabase
@@ -415,14 +390,11 @@ async function computeReleasable(
 
 export const listReleasableDrawings = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<ReleasableDrawing[]> => {
     requireSupabaseAuth(context);
     return computeReleasable(context, data.projectId);
   });
-
 
 // ---------------------------------------------------------------------------
 // prepareIfcRelease
@@ -447,86 +419,84 @@ const prepareInput = z.object({
 export const prepareIfcRelease = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => prepareInput.parse(input))
-  .handler(
-    async ({ data, context }): Promise<{ id: string }> => {
-      requireSupabaseAuth(context);
-      const project = await loadProjectCompany(context, data.projectId);
-      await assertIfcAdmin(context, project.company_id);
+  .handler(async ({ data, context }): Promise<{ id: string }> => {
+    requireSupabaseAuth(context);
+    const project = await loadProjectCompany(context, data.projectId);
+    await assertIfcAdmin(context, project.company_id);
 
-      const releasable = await computeReleasable(context, data.projectId);
+    const releasable = await computeReleasable(context, data.projectId);
 
-      const byId = new Map<string, ReleasableDrawing>();
-      for (const d of releasable) byId.set(d.drawing_id, d);
+    const byId = new Map<string, ReleasableDrawing>();
+    for (const d of releasable) byId.set(d.drawing_id, d);
 
-      const missing: string[] = [];
-      const blocked: Array<{ drawing_number: string; reasons: string[] }> = [];
-      const snapshot: RevisionSnapshotEntry[] = [];
-      for (const did of data.drawingIds) {
-        const d = byId.get(did);
-        if (!d) {
-          missing.push(did);
-          continue;
-        }
-        if (!d.eligible || !d.latest_ifd_revision_id) {
-          blocked.push({
-            drawing_number: d.drawing_number,
-            reasons: d.reasons.length > 0 ? d.reasons : ["Not eligible."],
-          });
-          continue;
-        }
-        snapshot.push({
-          drawing_id: d.drawing_id,
-          revision_id: d.latest_ifd_revision_id,
+    const missing: string[] = [];
+    const blocked: Array<{ drawing_number: string; reasons: string[] }> = [];
+    const snapshot: RevisionSnapshotEntry[] = [];
+    for (const did of data.drawingIds) {
+      const d = byId.get(did);
+      if (!d) {
+        missing.push(did);
+        continue;
+      }
+      if (!d.eligible || !d.latest_ifd_revision_id) {
+        blocked.push({
           drawing_number: d.drawing_number,
-          revision_code: d.latest_ifd_revision_code ?? "",
-          discipline: d.discipline,
-          title: d.title,
+          reasons: d.reasons.length > 0 ? d.reasons : ["Not eligible."],
         });
+        continue;
       }
-
-      if (missing.length > 0) {
-        httpError(404, "drawings_not_found", `Missing drawings: ${missing.length}`);
-      }
-      if (blocked.length > 0) {
-        throw Object.assign(new Error("ifc_prepare_blocked"), {
-          statusCode: 409,
-          body: JSON.stringify({
-            error: "ifc_prepare_blocked",
-            message: `${blocked.length} drawing(s) not eligible for IFC.`,
-            blocked,
-          }),
-          headers: { "content-type": "application/json; charset=utf-8" },
-        });
-      }
-
-      const insertRow = {
-        company_id: project.company_id,
-        project_id: data.projectId,
-        package_name: data.packageName,
-        notes: data.notes ?? null,
-        revision_snapshot: snapshot,
-        distribution_list: data.distribution,
-        status: "prepared" as const,
-        prepared_by: context.user.id,
-        created_by: context.user.id,
-      };
-
-      const { data: inserted, error: iErr } = await context.supabase
-        .from("ifc_releases")
-        .insert(insertRow as any)
-        .select("id")
-        .single();
-      if (iErr) throw iErr;
-
-      await audit(context, "engineering.ifc_prepared", (inserted as any).id, {
-        project_id: data.projectId,
-        package_name: data.packageName,
-        drawing_count: snapshot.length,
+      snapshot.push({
+        drawing_id: d.drawing_id,
+        revision_id: d.latest_ifd_revision_id,
+        drawing_number: d.drawing_number,
+        revision_code: d.latest_ifd_revision_code ?? "",
+        discipline: d.discipline,
+        title: d.title,
       });
+    }
 
-      return { id: (inserted as any).id as string };
-    },
-  );
+    if (missing.length > 0) {
+      httpError(404, "drawings_not_found", `Missing drawings: ${missing.length}`);
+    }
+    if (blocked.length > 0) {
+      throw Object.assign(new Error("ifc_prepare_blocked"), {
+        statusCode: 409,
+        body: JSON.stringify({
+          error: "ifc_prepare_blocked",
+          message: `${blocked.length} drawing(s) not eligible for IFC.`,
+          blocked,
+        }),
+        headers: { "content-type": "application/json; charset=utf-8" },
+      });
+    }
+
+    const insertRow = {
+      company_id: project.company_id,
+      project_id: data.projectId,
+      package_name: data.packageName,
+      notes: data.notes ?? null,
+      revision_snapshot: snapshot,
+      distribution_list: data.distribution,
+      status: "prepared" as const,
+      prepared_by: context.user.id,
+      created_by: context.user.id,
+    };
+
+    const { data: inserted, error: iErr } = await context.supabase
+      .from("ifc_releases")
+      .insert(insertRow as any)
+      .select("id")
+      .single();
+    if (iErr) throw iErr;
+
+    await audit(context, "engineering.ifc_prepared", (inserted as any).id, {
+      project_id: data.projectId,
+      package_name: data.packageName,
+      drawing_count: snapshot.length,
+    });
+
+    return { id: (inserted as any).id as string };
+  });
 
 // ---------------------------------------------------------------------------
 // signIfcRelease
@@ -555,11 +525,7 @@ export const signIfcRelease = createServerFn({ method: "POST" })
       .eq("id", context.user.id)
       .maybeSingle();
     if (pErr) throw pErr;
-    const known = (
-      (profile as any)?.full_name ??
-      (profile as any)?.email ??
-      ""
-    )
+    const known = ((profile as any)?.full_name ?? (profile as any)?.email ?? "")
       .toString()
       .trim()
       .toLowerCase();
@@ -606,9 +572,7 @@ export const signIfcRelease = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const releaseIfc = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ releaseId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ releaseId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const release = await loadRelease(context, data.releaseId);
@@ -622,21 +586,13 @@ export const releaseIfc = createServerFn({ method: "POST" })
       .select("role_label, signer_id, signature_text, signed_at")
       .eq("release_id", data.releaseId);
     if (sErr) throw sErr;
-    const signedRoles = new Set(
-      ((signoffs ?? []) as any[]).map((s) => s.role_label as string),
-    );
+    const signedRoles = new Set(((signoffs ?? []) as any[]).map((s) => s.role_label as string));
     const missing = REQUIRED_SIGNOFF_ROLES.filter((r) => !signedRoles.has(r));
     if (missing.length > 0) {
-      httpError(
-        409,
-        "signoff_missing",
-        `Missing sign-offs: ${missing.join(", ")}`,
-      );
+      httpError(409, "signoff_missing", `Missing sign-offs: ${missing.join(", ")}`);
     }
 
-    const snapshot: RevisionSnapshotEntry[] = Array.isArray(
-      release.revision_snapshot,
-    )
+    const snapshot: RevisionSnapshotEntry[] = Array.isArray(release.revision_snapshot)
       ? (release.revision_snapshot as RevisionSnapshotEntry[])
       : [];
 
@@ -682,17 +638,12 @@ export const releaseIfc = createServerFn({ method: "POST" })
         .eq("phase", "development")
         .maybeSingle();
       if (gate && (gate as any).status !== "closed") {
-        const items: any[] = Array.isArray((gate as any).checklist)
-          ? (gate as any).checklist
-          : [];
+        const items: any[] = Array.isArray((gate as any).checklist) ? (gate as any).checklist : [];
         let changed = false;
         const nextList = items.map((it: any) => {
           const key = String(it?.key ?? "");
           const label = String(it?.label ?? it?.name ?? "");
-          if (
-            key === "design_freeze" ||
-            label === "Design freeze — IFC package released"
-          ) {
+          if (key === "design_freeze" || label === "Design freeze — IFC package released") {
             if (it?.done) return it;
             changed = true;
             return {
@@ -788,9 +739,7 @@ export const voidIfcRelease = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const notifyDistribution = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ releaseId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ releaseId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const release = await loadRelease(context, data.releaseId);
@@ -812,9 +761,7 @@ export const notifyDistribution = createServerFn({ method: "POST" })
       link: `/projects/${release.project_id}/engineering/ifc-release/${release.id}/certificate`,
     }));
 
-    const { error } = await context.supabase
-      .from("notifications")
-      .insert(rows as any);
+    const { error } = await context.supabase.from("notifications").insert(rows as any);
     if (error) throw error;
 
     await audit(context, "engineering.ifc_distributed", data.releaseId, {
@@ -828,9 +775,7 @@ export const notifyDistribution = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const getMyIfcRole = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -873,9 +818,7 @@ export interface IfcKpiResult {
 
 export const getIfcKpis = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<IfcKpiResult> => {
     requireSupabaseAuth(context);
     const [releasesRes, revsRes] = await Promise.all([
@@ -887,7 +830,9 @@ export const getIfcKpis = createServerFn({ method: "GET" })
         .order("released_at", { ascending: false }),
       context.supabase
         .from("drawing_revisions")
-        .select("id, drawing_id, status, created_at, drawing:drawing_register!inner(project_id, locked)")
+        .select(
+          "id, drawing_id, status, created_at, drawing:drawing_register!inner(project_id, locked)",
+        )
         .eq("drawing.project_id", data.projectId),
     ]);
     if (releasesRes.error) throw releasesRes.error;
@@ -899,15 +844,10 @@ export const getIfcKpis = createServerFn({ method: "GET" })
     const latestReleasedAt = released[0]?.released_at ?? null;
     const firstIfd = revs
       .filter((r) => r.status === "IFD")
-      .sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-      )[0];
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
     let cycle: number | null = null;
     if (firstIfd && latestReleasedAt) {
-      const ms =
-        new Date(latestReleasedAt).getTime() -
-        new Date(firstIfd.created_at).getTime();
+      const ms = new Date(latestReleasedAt).getTime() - new Date(firstIfd.created_at).getTime();
       cycle = Math.max(0, Math.round(ms / 86_400_000));
     }
 

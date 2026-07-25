@@ -33,11 +33,7 @@ import {
 import { useSaveYieldScenario } from "@/lib/yield-query";
 
 const formSchema = z.object({
-  scenarioName: z
-    .string()
-    .trim()
-    .min(1, "Name required")
-    .max(60, "Max 60 chars"),
+  scenarioName: z.string().trim().min(1, "Name required").max(60, "Max 60 chars"),
   tilt_deg: z.number().min(0, "Min 0°").max(90, "Max 90°"),
   azimuth_deg: z.number().min(0).max(360),
   gcr: z.number().min(0.1, "Min 0.10").max(0.9, "Max 0.90"),
@@ -192,10 +188,14 @@ export function YieldScenarioDrawer({
                 value={form.watch("tracking")}
                 onValueChange={(v) => form.setValue("tracking", v as TrackingType)}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {TRACKING_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{TRACKING_LABELS[t]}</SelectItem>
+                    <SelectItem key={t} value={t}>
+                      {TRACKING_LABELS[t]}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -206,7 +206,9 @@ export function YieldScenarioDrawer({
                 onCheckedChange={(v) => form.setValue("bifacial", v)}
                 id="bifacial"
               />
-              <Label htmlFor="bifacial" className="text-sm">Bifacial</Label>
+              <Label htmlFor="bifacial" className="text-sm">
+                Bifacial
+              </Label>
             </div>
           </div>
 

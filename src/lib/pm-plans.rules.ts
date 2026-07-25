@@ -1,13 +1,7 @@
 // P-107 — Pure schemas + defaults for preventive maintenance plans.
 import { z } from "zod";
 
-export const PM_FREQUENCIES = [
-  "weekly",
-  "monthly",
-  "quarterly",
-  "semiannual",
-  "annual",
-] as const;
+export const PM_FREQUENCIES = ["weekly", "monthly", "quarterly", "semiannual", "annual"] as const;
 export type PmFrequency = (typeof PM_FREQUENCIES)[number];
 
 export const FREQUENCY_DEFAULT_DAYS: Record<PmFrequency, number> = {

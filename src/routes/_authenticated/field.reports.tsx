@@ -2,30 +2,12 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  CalendarRange,
-  ClipboardList,
-  FileDown,
-  Info,
-} from "lucide-react";
-import {
-  addDays,
-  addWeeks,
-  format,
-  parseISO,
-  startOfISOWeek,
-  subWeeks,
-} from "date-fns";
+import { AlertTriangle, CalendarRange, ClipboardList, FileDown, Info } from "lucide-react";
+import { addDays, addWeeks, format, parseISO, startOfISOWeek, subWeeks } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -41,10 +23,7 @@ import {
   weeklyReportProjectsQueryOptions,
 } from "@/components/field/ExportWeeklyReportButton";
 
-const DEFAULT_WEEK = format(
-  startOfISOWeek(subWeeks(new Date(), 1)),
-  "yyyy-MM-dd",
-);
+const DEFAULT_WEEK = format(startOfISOWeek(subWeeks(new Date(), 1)), "yyyy-MM-dd");
 
 export const Route = createFileRoute("/_authenticated/field/reports")({
   head: () => ({
@@ -101,9 +80,7 @@ function WeeklyReportPage() {
   const [weekStart, setWeekStart] = useState<string>(DEFAULT_WEEK);
   const weeks = useMemo(() => weekOptions(), []);
 
-  const data = useQuery(
-    weeklyReportDataQueryOptions(projectId || null, weekStart || null),
-  );
+  const data = useQuery(weeklyReportDataQueryOptions(projectId || null, weekStart || null));
   const dto = data.data;
 
   return (
@@ -116,8 +93,8 @@ function WeeklyReportPage() {
           Weekly client report
         </h1>
         <p className="text-sm text-muted-foreground">
-          Pick a project and ISO week — preview the sections, then export a
-          branded PDF pulled live from field data.
+          Pick a project and ISO week — preview the sections, then export a branded PDF pulled live
+          from field data.
         </p>
       </header>
 
@@ -184,20 +161,13 @@ function WeeklyReportPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {data.error instanceof Error ? data.error.message : "Unknown error"}
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => data.refetch()}
-          >
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => data.refetch()}>
             Retry
           </Button>
         </div>
       ) : !dto?.hasData ? (
         <EmptyState
-          icon={
-            <ClipboardList className="h-8 w-8 text-muted-foreground" aria-hidden />
-          }
+          icon={<ClipboardList className="h-8 w-8 text-muted-foreground" aria-hidden />}
           title="No field data for this week"
           body="Submit DPRs first — then this report will populate automatically."
         />
@@ -208,15 +178,7 @@ function WeeklyReportPage() {
   );
 }
 
-function EmptyState({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function EmptyState({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="rounded-md border border-dashed border-border bg-muted/30 p-10 text-center">
       <div className="mx-auto mb-3 flex justify-center">{icon}</div>
@@ -236,7 +198,11 @@ function PreviewSkeleton() {
   );
 }
 
-function PreviewSections({ dto }: { dto: NonNullable<ReturnType<typeof useQuery>["data"]> extends infer T ? T : never } & { dto: any }) {
+function PreviewSections({
+  dto,
+}: { dto: NonNullable<ReturnType<typeof useQuery>["data"]> extends infer T ? T : never } & {
+  dto: any;
+}) {
   const d = dto;
   return (
     <div className="flex flex-col gap-4">
@@ -273,17 +239,11 @@ function PreviewSections({ dto }: { dto: NonNullable<ReturnType<typeof useQuery>
             <tbody>
               {d.daily.map((r: any) => (
                 <tr key={`${r.reportDate}-${r.shift}`} className="border-t border-border/60">
-                  <td className="py-1.5">
-                    {format(parseISO(r.reportDate), "EEE, MMM d")}
-                  </td>
+                  <td className="py-1.5">{format(parseISO(r.reportDate), "EEE, MMM d")}</td>
                   <td className="py-1.5">{r.shift}</td>
                   <td className="py-1.5 text-right">{r.totalManpower}</td>
-                  <td className="py-1.5 text-right">
-                    {Number(r.totalHours).toFixed(1)}
-                  </td>
-                  <td className="py-1.5 text-muted-foreground">
-                    {r.weatherSummary ?? "—"}
-                  </td>
+                  <td className="py-1.5 text-right">{Number(r.totalHours).toFixed(1)}</td>
+                  <td className="py-1.5 text-muted-foreground">{r.weatherSummary ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -347,9 +307,7 @@ function PreviewSections({ dto }: { dto: NonNullable<ReturnType<typeof useQuery>
                     </div>
                   )}
                   {p.caption && (
-                    <div className="px-2 py-1 text-xs text-muted-foreground">
-                      {p.caption}
-                    </div>
+                    <div className="px-2 py-1 text-xs text-muted-foreground">{p.caption}</div>
                   )}
                 </div>
               ))}
@@ -367,9 +325,7 @@ function Kpi({ label, value }: { label: string; value: string }) {
       <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 font-display text-2xl font-semibold text-foreground">
-        {value}
-      </div>
+      <div className="mt-1 font-display text-2xl font-semibold text-foreground">{value}</div>
     </div>
   );
 }

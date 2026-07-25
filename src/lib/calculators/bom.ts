@@ -61,11 +61,7 @@ export interface BomLine extends BomLineInput {
  *    ceil to the next whole unit — you cannot ship a fraction of a module.
  *  - Continuous categories (cables, BOS, other) round to 4 decimals.
  */
-export function applyBuffer(
-  qty: number,
-  bufferPct: number,
-  category: BomCategory,
-): number {
+export function applyBuffer(qty: number, bufferPct: number, category: BomCategory): number {
   const safeQty = Number.isFinite(qty) ? qty : 0;
   const safePct = Number.isFinite(bufferPct) ? bufferPct : 0;
   const raw = safeQty * (1 + safePct / 100);
@@ -106,19 +102,15 @@ export function computeBom(params: BomParams): BomLine[] {
 
   const moduleWp = params.module_wp ?? DEFAULTS.module_wp;
   const dcAcRatio = params.dc_ac_ratio ?? DEFAULTS.dc_ac_ratio;
-  const modulesPerString =
-    params.modules_per_string ?? DEFAULTS.modules_per_string;
+  const modulesPerString = params.modules_per_string ?? DEFAULTS.modules_per_string;
   const modulesPerRow = params.modules_per_row ?? DEFAULTS.modules_per_row;
   const avgDcRunM = params.avg_dc_run_m ?? DEFAULTS.avg_dc_run_m;
   const mvCableMPerMw = params.mv_cable_m_per_mw ?? DEFAULTS.mv_cable_m_per_mw;
 
-  const moduleCount =
-    moduleWp > 0 ? Math.ceil(capacityWp / moduleWp) : 0;
+  const moduleCount = moduleWp > 0 ? Math.ceil(capacityWp / moduleWp) : 0;
 
-  const stringCount =
-    modulesPerString > 0 ? Math.ceil(moduleCount / modulesPerString) : 0;
-  const rowCount =
-    modulesPerRow > 0 ? Math.ceil(moduleCount / modulesPerRow) : 0;
+  const stringCount = modulesPerString > 0 ? Math.ceil(moduleCount / modulesPerString) : 0;
+  const rowCount = modulesPerRow > 0 ? Math.ceil(moduleCount / modulesPerRow) : 0;
 
   const capacityMwAc = dcAcRatio > 0 ? capacityMwp / dcAcRatio : capacityMwp;
   // Assume a 5 MVA reference inverter block when count not provided.
@@ -157,9 +149,7 @@ export function computeBom(params: BomParams): BomLine[] {
     {
       category: "structures",
       item:
-        params.tracker_type && params.tracker_type !== "fixed"
-          ? "Tracker row"
-          : "Fixed-tilt table",
+        params.tracker_type && params.tracker_type !== "fixed" ? "Tracker row" : "Fixed-tilt table",
       spec: `${modulesPerRow} modules per row`,
       unit: "ea",
       qty: rowCount,

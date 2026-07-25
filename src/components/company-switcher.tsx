@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -78,13 +86,8 @@ export function ActiveCompanyProvider({ children }: { children: ReactNode }) {
     };
   }, [companies, activeCompanyId, setActiveCompanyId]);
 
-  return (
-    <ActiveCompanyContext.Provider value={value}>
-      {children}
-    </ActiveCompanyContext.Provider>
-  );
+  return <ActiveCompanyContext.Provider value={value}>{children}</ActiveCompanyContext.Provider>;
 }
-
 
 export function useActiveCompany(): ActiveCompanyContextValue {
   const ctx = useContext(ActiveCompanyContext);
@@ -147,10 +150,7 @@ export function CompanySwitcher() {
               </Avatar>
               <span className="flex-1 truncate">{company.name}</span>
               <Check
-                className={cn(
-                  "h-4 w-4 text-primary",
-                  isActive ? "opacity-100" : "opacity-0",
-                )}
+                className={cn("h-4 w-4 text-primary", isActive ? "opacity-100" : "opacity-0")}
               />
             </DropdownMenuItem>
           );

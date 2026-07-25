@@ -19,11 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  errorMessage,
-  punchListQueryOptions,
-  qaqcProjectsQueryOptions,
-} from "@/lib/qaqc-query";
+import { errorMessage, punchListQueryOptions, qaqcProjectsQueryOptions } from "@/lib/qaqc-query";
 import {
   PUNCH_CATEGORIES,
   PUNCH_CATEGORY_LABELS,
@@ -49,15 +45,13 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/qaqc/punch/")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Punch list — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Track A/B/C punch items across projects and close them out with typed signoff.",
+        content: "Track A/B/C punch items across projects and close them out with typed signoff.",
       },
       { property: "og:title", content: "Punch list — GridMind EPC" },
       {
@@ -153,9 +147,7 @@ function PunchIndexPage() {
             <FilterField label="Project">
               <Select
                 value={sp.projectId ?? "all"}
-                onValueChange={(v) =>
-                  updateSearch({ projectId: v === "all" ? undefined : v })
-                }
+                onValueChange={(v) => updateSearch({ projectId: v === "all" ? undefined : v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All projects" />
@@ -175,8 +167,7 @@ function PunchIndexPage() {
                 value={sp.category ?? "all"}
                 onValueChange={(v) =>
                   updateSearch({
-                    category:
-                      v === "all" ? undefined : (v as PunchCategory),
+                    category: v === "all" ? undefined : (v as PunchCategory),
                   })
                 }
               >
@@ -220,8 +211,7 @@ function PunchIndexPage() {
                 value={sp.discipline ?? "all"}
                 onValueChange={(v) =>
                   updateSearch({
-                    discipline:
-                      v === "all" ? undefined : (v as QaqcDiscipline),
+                    discipline: v === "all" ? undefined : (v as QaqcDiscipline),
                   })
                 }
               >
@@ -241,9 +231,7 @@ function PunchIndexPage() {
             <FilterField label="Area">
               <Input
                 value={sp.area ?? ""}
-                onChange={(e) =>
-                  updateSearch({ area: e.target.value || undefined })
-                }
+                onChange={(e) => updateSearch({ area: e.target.value || undefined })}
                 placeholder="e.g. Block A"
               />
             </FilterField>
@@ -260,12 +248,7 @@ function PunchIndexPage() {
             </FilterField>
           </div>
           <div className="flex items-center justify-between">
-            <Tabs
-              value={view}
-              onValueChange={(v) =>
-                updateSearch({ view: v as "board" | "list" })
-              }
-            >
+            <Tabs value={view} onValueChange={(v) => updateSearch({ view: v as "board" | "list" })}>
               <TabsList>
                 <TabsTrigger value="board">
                   <LayoutGrid className="mr-1 h-4 w-4" /> Board
@@ -346,13 +329,7 @@ function KpiTile({
   );
 }
 
-function FilterField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
@@ -361,11 +338,12 @@ function FilterField({
   );
 }
 
-type Item = NonNullable<
-  ReturnType<typeof useQuery<typeof punchListQueryOptions>>["data"]
-> extends readonly (infer T)[]
-  ? T
-  : never;
+type Item =
+  NonNullable<
+    ReturnType<typeof useQuery<typeof punchListQueryOptions>>["data"]
+  > extends readonly (infer T)[]
+    ? T
+    : never;
 
 function BoardView({ items }: { items: any[] }) {
   const columns: PunchCategory[] = ["A", "B", "C"];
@@ -388,9 +366,7 @@ function BoardView({ items }: { items: any[] }) {
               </div>
               <div className="flex flex-col gap-2">
                 {colItems.length === 0 ? (
-                  <p className="p-4 text-center text-xs text-muted-foreground">
-                    Nothing here.
-                  </p>
+                  <p className="p-4 text-center text-xs text-muted-foreground">Nothing here.</p>
                 ) : (
                   colItems.map((i) => <PunchCard key={i.id} item={i} />)
                 )}
@@ -422,9 +398,7 @@ function ListView({ items }: { items: any[] }) {
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {i.punch_number}
-                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">{i.punch_number}</span>
                   <span className="truncate">{i.description}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -432,9 +406,7 @@ function ListView({ items }: { items: any[] }) {
                   {QAQC_DISCIPLINE_LABELS[i.discipline as QaqcDiscipline]}
                 </div>
               </div>
-              <span
-                className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(i.status)}`}
-              >
+              <span className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(i.status)}`}>
                 {PUNCH_STATUS_LABELS[i.status as PunchStatus]}
               </span>
             </Link>
@@ -453,19 +425,14 @@ function PunchCard({ item }: { item: any }) {
       className="flex flex-col gap-1 rounded-md border border-border p-3 hover:border-primary hover:bg-muted/40"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xs text-muted-foreground">
-          {item.punch_number}
-        </span>
-        <span
-          className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(item.status)}`}
-        >
+        <span className="font-mono text-xs text-muted-foreground">{item.punch_number}</span>
+        <span className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(item.status)}`}>
           {PUNCH_STATUS_LABELS[item.status as PunchStatus]}
         </span>
       </div>
       <p className="line-clamp-2 text-sm text-foreground">{item.description}</p>
       <div className="text-xs text-muted-foreground">
-        {item.area} ·{" "}
-        {QAQC_DISCIPLINE_LABELS[item.discipline as QaqcDiscipline]}
+        {item.area} · {QAQC_DISCIPLINE_LABELS[item.discipline as QaqcDiscipline]}
         {item.due_date ? ` · due ${item.due_date}` : ""}
       </div>
     </Link>

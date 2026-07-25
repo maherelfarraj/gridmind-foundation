@@ -17,10 +17,7 @@ function PlanningLayout() {
   const { projectId } = Route.useParams();
   return (
     <div className="flex flex-col gap-4">
-      <nav
-        aria-label="Planning sections"
-        className="flex flex-wrap gap-1 border-b border-border"
-      >
+      <nav aria-label="Planning sections" className="flex flex-wrap gap-1 border-b border-border">
         {SUB_TABS.map((t) => (
           <Link
             key={t.to}

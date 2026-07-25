@@ -17,12 +17,7 @@ export function normalizeDiscipline(input: unknown): BoardDiscipline | null {
   if (!v) return null;
   if (v.startsWith("civ")) return "civil";
   if (v.startsWith("mech") || v === "m") return "mechanical";
-  if (
-    v.startsWith("elec") ||
-    v === "e" ||
-    v.startsWith("i&c") ||
-    v.startsWith("ic")
-  )
+  if (v.startsWith("elec") || v === "e" || v.startsWith("i&c") || v.startsWith("ic"))
     return "electrical";
   return null;
 }
@@ -143,7 +138,7 @@ export function rollupBoard(
   const buckets = new Map<string, Bucket>();
 
   for (const q of quantities) {
-    const w = q.wbs_item_id ? wbsById.get(q.wbs_item_id) ?? null : null;
+    const w = q.wbs_item_id ? (wbsById.get(q.wbs_item_id) ?? null) : null;
     const disc = normalizeDiscipline(q.discipline) ?? normalizeDiscipline(w?.discipline);
     if (!disc) continue;
     const area = (q.area ?? w?.area ?? "Unassigned").trim() || "Unassigned";

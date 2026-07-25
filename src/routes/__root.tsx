@@ -105,10 +105,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "GridMind EPC" },
-      { name: "description", content: "Energy Performance Certificate management powered by GridMind." },
+      {
+        name: "description",
+        content: "Energy Performance Certificate management powered by GridMind.",
+      },
       { name: "author", content: "GridMind EPC" },
       { property: "og:title", content: "GridMind EPC" },
-      { property: "og:description", content: "Energy Performance Certificate management powered by GridMind." },
+      {
+        property: "og:description",
+        content: "Energy Performance Certificate management powered by GridMind.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
@@ -158,11 +164,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (
-        event !== "SIGNED_IN" &&
-        event !== "SIGNED_OUT" &&
-        event !== "USER_UPDATED"
-      ) {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") {
         return;
       }
 
@@ -206,7 +208,10 @@ function Header() {
         <div className="flex items-center gap-2 sm:gap-4">
           {!isLoading && user ? (
             <>
-              <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
                 Dashboard
               </Link>
               <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>

@@ -119,10 +119,7 @@ export function ServiceTicketDialog({ trigger, defaultProjectId }: Props) {
           <DialogTitle>New service ticket</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            className="space-y-4"
-            onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-          >
+          <form className="space-y-4" onSubmit={form.handleSubmit((v) => mut.mutate(v))}>
             <FormField
               control={form.control}
               name="project_id"
@@ -167,11 +164,7 @@ export function ServiceTicketDialog({ trigger, defaultProjectId }: Props) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={3}
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                    />
+                    <Textarea rows={3} value={field.value ?? ""} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -17,7 +17,9 @@ import {
 } from "@/lib/crm.functions";
 
 // ---- Query options ---------------------------------------------------------
-export function opportunitiesQueryOptions(fn: ReturnType<typeof useServerFn<typeof listOpportunities>>) {
+export function opportunitiesQueryOptions(
+  fn: ReturnType<typeof useServerFn<typeof listOpportunities>>,
+) {
   return queryOptions({
     queryKey: ["crm", "opportunities"],
     queryFn: () => fn({ data: {} }),
@@ -60,7 +62,7 @@ export function useMoveOpportunityStage() {
                   ...o,
                   stage: vars.stage,
                   probability: STAGE_PROBABILITY[vars.stage],
-                  loss_reason: vars.stage === "lost" ? vars.lossReason ?? null : null,
+                  loss_reason: vars.stage === "lost" ? (vars.lossReason ?? null) : null,
                 }
               : o,
           ),

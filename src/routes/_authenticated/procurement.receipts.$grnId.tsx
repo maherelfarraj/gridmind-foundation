@@ -1,10 +1,5 @@
 // P-066 — Goods Receipt detail (read-only).
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, PackageOpen } from "lucide-react";
@@ -30,8 +25,7 @@ export const Route = createFileRoute("/_authenticated/procurement/receipts/$grnI
       { title: "Goods Receipt — GridMind EPC" },
       {
         name: "description",
-        content:
-          "View a confirmed goods receipt: lines, lot IDs, defects, and photos.",
+        content: "View a confirmed goods receipt: lines, lot IDs, defects, and photos.",
       },
     ],
   }),
@@ -49,11 +43,7 @@ function GrnDetail() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate({ to: "/procurement/receipts" })}
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to receipts
       </Button>
 
@@ -62,9 +52,7 @@ function GrnDetail() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <PackageOpen className="h-3.5 w-3.5" /> Procurement · GRN
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            {grn.grn_number}
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">{grn.grn_number}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <GrnStatusBadge status={grn.status} />
             {grn.po_number && (
@@ -148,18 +136,14 @@ function GrnDetail() {
 
       {grn.notes && (
         <section className="rounded-md border border-border p-4">
-          <h2 className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-            Notes
-          </h2>
+          <h2 className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Notes</h2>
           <p className="whitespace-pre-wrap text-sm">{grn.notes}</p>
         </section>
       )}
 
       {grn.photos.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-xs uppercase tracking-wide text-muted-foreground">
-            Photos
-          </h2>
+          <h2 className="text-xs uppercase tracking-wide text-muted-foreground">Photos</h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {grn.photos.map((p, i) => {
               const url = grn.photo_urls[i];

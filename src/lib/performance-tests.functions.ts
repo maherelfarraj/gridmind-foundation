@@ -43,12 +43,7 @@ async function currentRoles(context: AuthContext): Promise<string[]> {
   return ((data ?? []) as { role: string }[]).map((r) => r.role);
 }
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "company_admin",
-  "project_admin",
-  "engineer",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "company_admin", "project_admin", "engineer"]);
 function canWrite(roles: string[]): boolean {
   return roles.some((r) => WRITE_ROLES.has(r));
 }
@@ -122,12 +117,8 @@ function toRow(r: any, capacityMwp: number | null): PrTestRow {
     status: r.status,
     period_start: r.period_start,
     period_end: r.period_end,
-    metered_energy_mwh:
-      r.metered_energy_mwh != null ? Number(r.metered_energy_mwh) : null,
-    plane_of_array_kwh_m2:
-      r.plane_of_array_kwh_m2 != null
-        ? Number(r.plane_of_array_kwh_m2)
-        : null,
+    metered_energy_mwh: r.metered_energy_mwh != null ? Number(r.metered_energy_mwh) : null,
+    plane_of_array_kwh_m2: r.plane_of_array_kwh_m2 != null ? Number(r.plane_of_array_kwh_m2) : null,
     contract_value: contract,
     measured_value: measured,
     capacity_mwp: capacityMwp,
@@ -155,37 +146,35 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(404, "project_not_found");
+    if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
-    const [{ data: pv }, { data: yc }, { data: co }, { data: br }] =
-      await Promise.all([
-        context.supabase
-          .from("project_pv_config")
-          .select("dc_capacity_mwp")
-          .eq("project_id", data.projectId)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        context.supabase
-          .from("project_yield_config")
-          .select("contract_pr, updated_at")
-          .eq("project_id", data.projectId)
-          .not("contract_pr", "is", null)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        context.supabase
-          .from("companies")
-          .select("name, legal_name")
-          .eq("id", companyId)
-          .maybeSingle(),
-        context.supabase
-          .from("company_branding")
-          .select("primary_color, accent_color, logo_url")
-          .eq("company_id", companyId)
-          .maybeSingle(),
-      ]);
+    const [{ data: pv }, { data: yc }, { data: co }, { data: br }] = await Promise.all([
+      context.supabase
+        .from("project_pv_config")
+        .select("dc_capacity_mwp")
+        .eq("project_id", data.projectId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      context.supabase
+        .from("project_yield_config")
+        .select("contract_pr, updated_at")
+        .eq("project_id", data.projectId)
+        .not("contract_pr", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      context.supabase
+        .from("companies")
+        .select("name, legal_name")
+        .eq("id", companyId)
+        .maybeSingle(),
+      context.supabase
+        .from("company_branding")
+        .select("primary_color, accent_color, logo_url")
+        .eq("company_id", companyId)
+        .maybeSingle(),
+    ]);
 
     const logoPath = (br as any)?.logo_url ?? null;
     let logoSignedUrl: string | null = null;
@@ -198,13 +187,8 @@ export const getPerformanceTestDefaults = createServerFn({ method: "GET" })
 
     return {
       capacityMwp:
-        (pv as any)?.dc_capacity_mwp != null
-          ? Number((pv as any).dc_capacity_mwp)
-          : null,
-      contractPr:
-        (yc as any)?.contract_pr != null
-          ? Number((yc as any).contract_pr)
-          : null,
+        (pv as any)?.dc_capacity_mwp != null ? Number((pv as any).dc_capacity_mwp) : null,
+      contractPr: (yc as any)?.contract_pr != null ? Number((yc as any).contract_pr) : null,
       projectName: (proj as any).name ?? null,
       projectCode: (proj as any).code ?? null,
       companyName: (co as any)?.name ?? null,
@@ -244,9 +228,7 @@ export const listPerformanceTests = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
     const capacity =
-      (pv as any)?.dc_capacity_mwp != null
-        ? Number((pv as any).dc_capacity_mwp)
-        : null;
+      (pv as any)?.dc_capacity_mwp != null ? Number((pv as any).dc_capacity_mwp) : null;
 
     return {
       rows: ((rows ?? []) as any[]).map((r) => toRow(r, capacity)),
@@ -270,14 +252,9 @@ export const createPerformanceRatioTest = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(404, "project_not_found");
+    if (!proj || (proj as any).company_id !== companyId) httpError(404, "project_not_found");
 
-    const pr = computePerformanceRatio(
-      data.meteredEnergyMwh,
-      data.poaKwhPerM2,
-      data.capacityMwp,
-    );
+    const pr = computePerformanceRatio(data.meteredEnergyMwh, data.poaKwhPerM2, data.capacityMwp);
     if (pr == null) httpError(400, "invalid_inputs");
 
     const results = {
@@ -334,8 +311,7 @@ export const attachPerformanceReport = createServerFn({ method: "POST" })
       .eq("id", data.testId)
       .maybeSingle();
     if (error) throw error;
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "test_not_found");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "test_not_found");
     const r = row as any;
 
     const expectedPrefix = `${companyId}/pr-report/${r.project_id}/${data.testId}/`;
@@ -363,12 +339,8 @@ export const attachPerformanceReport = createServerFn({ method: "POST" })
       metadata: { performance_test_id: data.testId } as any,
     } as any);
 
-    await audit(
-      context,
-      "performance.pr_report_attached",
-      "performance_tests",
-      data.testId,
-      { path: data.storagePath },
-    );
+    await audit(context, "performance.pr_report_attached", "performance_tests", data.testId, {
+      path: data.storagePath,
+    });
     return { id: data.testId };
   });

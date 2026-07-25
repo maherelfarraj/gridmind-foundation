@@ -104,10 +104,7 @@ export function CreateWorkOrderDialog() {
           <DialogTitle>Create work order</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            className="space-y-4"
-            onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-          >
+          <form className="space-y-4" onSubmit={form.handleSubmit((v) => mut.mutate(v))}>
             <FormField
               control={form.control}
               name="project_id"
@@ -116,11 +113,15 @@ export function CreateWorkOrderDialog() {
                   <FormLabel>Project</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project" />
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {(projects.data ?? []).map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -140,13 +141,16 @@ export function CreateWorkOrderDialog() {
                     disabled={!projectId}
                   >
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="—" />
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">— None —</SelectItem>
                       {(equipment.data ?? []).map((e) => (
                         <SelectItem key={e.id} value={e.id}>
-                          {e.tag}{e.manufacturer ? ` · ${e.manufacturer}` : ""}
+                          {e.tag}
+                          {e.manufacturer ? ` · ${e.manufacturer}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -195,11 +199,15 @@ export function CreateWorkOrderDialog() {
                     <FormLabel>Type</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {WORK_ORDER_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -215,11 +223,15 @@ export function CreateWorkOrderDialog() {
                     <FormLabel>Priority</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {WORK_ORDER_PRIORITIES.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                          <SelectItem key={p} value={p}>
+                            {p}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -275,7 +287,9 @@ export function CreateWorkOrderDialog() {
                     onValueChange={(v) => field.onChange(v === "none" ? null : v)}
                   >
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">— Unassigned —</SelectItem>

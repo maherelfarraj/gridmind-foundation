@@ -123,7 +123,7 @@ export function pickPrAtCod(input: {
 }): PrAtCodKpi {
   const contract = input.certificate
     ? input.contractPr
-    : input.latestPerfTest?.contract_value ?? input.contractPr;
+    : (input.latestPerfTest?.contract_value ?? input.contractPr);
 
   if (input.certificate && input.certificate.pr_at_cod != null) {
     const measured = Number(input.certificate.pr_at_cod);

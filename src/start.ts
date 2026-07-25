@@ -24,7 +24,9 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   let pathname: string | undefined;
   try {
     pathname = request ? new URL(request.url).pathname : undefined;
-  } catch {}
+  } catch {
+    /* noop */
+  }
 
   if (shouldBypass(pathname)) {
     return next();

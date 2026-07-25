@@ -16,10 +16,7 @@ import { YieldSimulationCard } from "@/components/proposals/YieldSimulationCard"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  proposalDetailQueryOptions,
-  useCreateProposalVersion,
-} from "@/lib/proposal-query";
+import { proposalDetailQueryOptions, useCreateProposalVersion } from "@/lib/proposal-query";
 import { getProposal } from "@/lib/proposal.functions";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 
@@ -38,8 +35,7 @@ export const Route = createFileRoute("/_authenticated/proposals/$proposalId")({
       },
       {
         property: "og:description",
-        content:
-          "Deterministic yield simulation and versioned pricing for EPC proposals.",
+        content: "Deterministic yield simulation and versioned pricing for EPC proposals.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -73,12 +69,10 @@ function ProposalBuilderPage() {
     staleTime: 60_000,
   });
   const roles = new Set((rolesQuery.data ?? []).map((r) => r.role));
-  const canWrite =
-    roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
+  const canWrite = roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
   const isFinanceAdmin = roles.has("finance_admin") || roles.has("super_admin");
   const isCompanyAdmin = roles.has("company_admin") || roles.has("super_admin");
-  const isReadOnlyStatus =
-    proposal && !["draft", "in_review"].includes(proposal.status);
+  const isReadOnlyStatus = proposal && !["draft", "in_review"].includes(proposal.status);
   const readOnly = !canWrite || !!isReadOnlyStatus;
 
   const version = useCreateProposalVersion(proposalId);
@@ -99,10 +93,7 @@ function ProposalBuilderPage() {
               Back to opportunity
             </Link>
           ) : (
-            <Link
-              to="/proposals"
-              className="inline-flex items-center gap-1 hover:text-foreground"
-            >
+            <Link to="/proposals" className="inline-flex items-center gap-1 hover:text-foreground">
               <ArrowLeft size={14} aria-hidden />
               All proposals
             </Link>
@@ -141,11 +132,7 @@ function ProposalBuilderPage() {
             projectId={proposal.project_id}
           />
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => router.invalidate()}
-          >
+          <Button size="sm" variant="ghost" onClick={() => router.invalidate()}>
             <RefreshCw size={14} aria-hidden />
             Refresh
           </Button>
@@ -154,8 +141,8 @@ function ProposalBuilderPage() {
 
       {isReadOnlyStatus && (
         <Card className="border-warning/40 bg-warning/10 p-3 text-xs text-warning">
-          This proposal is <strong>{statusLabel(proposal.status)}</strong> and
-          locked. Create a new version to change pricing or configuration.
+          This proposal is <strong>{statusLabel(proposal.status)}</strong> and locked. Create a new
+          version to change pricing or configuration.
         </Card>
       )}
 
@@ -168,11 +155,7 @@ function ProposalBuilderPage() {
         canWrite={canWrite}
         isFinanceAdmin={isFinanceAdmin}
       />
-      <EsignCard
-        proposal={proposal}
-        canWrite={canWrite}
-        isCompanyAdmin={isCompanyAdmin}
-      />
+      <EsignCard proposal={proposal} canWrite={canWrite} isCompanyAdmin={isCompanyAdmin} />
     </div>
   );
 }
@@ -180,16 +163,11 @@ function ProposalBuilderPage() {
 function ProposalNotFound() {
   return (
     <div className="mx-auto max-w-md p-8 text-center">
-      <h2 className="mb-2 text-lg font-semibold text-foreground">
-        Proposal not found
-      </h2>
+      <h2 className="mb-2 text-lg font-semibold text-foreground">Proposal not found</h2>
       <p className="mb-4 text-sm text-muted-foreground">
         This proposal doesn’t exist or you don’t have access to it.
       </p>
-      <Link
-        to="/proposals"
-        className="text-sm text-primary hover:underline"
-      >
+      <Link to="/proposals" className="text-sm text-primary hover:underline">
         Back to proposals
       </Link>
     </div>

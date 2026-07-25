@@ -1,35 +1,17 @@
 // P-082 — LCOE scenarios tab (server-computed LCOE + Recharts compare).
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, Plus } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -56,8 +38,7 @@ export const Route = createFileRoute(
       { title: "LCOE scenarios — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Levelised cost of energy scenarios with server-computed LCOE.",
+        content: "Levelised cost of energy scenarios with server-computed LCOE.",
       },
       { property: "og:title", content: "LCOE scenarios — GridMind EPC" },
       {
@@ -70,17 +51,13 @@ export const Route = createFileRoute(
   }),
   loader: async ({ params, context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
-        lcoeListQueryOptions(params.projectId),
-      ),
+      context.queryClient.ensureQueryData(lcoeListQueryOptions(params.projectId)),
       context.queryClient.ensureQueryData(projectFinanceAccessQueryOptions()),
     ]);
   },
   errorComponent: ({ error, reset }) => (
     <Card className="p-4">
-      <p className="text-sm text-destructive">
-        {projectFinanceErrorMessage(error)}
-      </p>
+      <p className="text-sm text-destructive">{projectFinanceErrorMessage(error)}</p>
       <Button size="sm" variant="outline" className="mt-3" onClick={reset}>
         Try again
       </Button>
@@ -113,9 +90,7 @@ function LcoeTab() {
   const rows = list.data.rows;
 
   const lowest = useMemo(() => {
-    const withLcoe = rows.filter((r) => r.lcoe != null) as Array<
-      LcoeRow & { lcoe: number }
-    >;
+    const withLcoe = rows.filter((r) => r.lcoe != null) as Array<LcoeRow & { lcoe: number }>;
     if (withLcoe.length === 0) return null;
     return withLcoe.reduce((a, b) => (a.lcoe <= b.lcoe ? a : b));
   }, [rows]);
@@ -166,9 +141,7 @@ function LcoeTab() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {rows.length === 0
-            ? "No scenarios yet."
-            : `${rows.length} scenario(s)`}
+          {rows.length === 0 ? "No scenarios yet." : `${rows.length} scenario(s)`}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportCsv}>
@@ -224,19 +197,13 @@ function LcoeTab() {
                   <TableCell className="text-right tabular-nums">
                     {money(r.opex_annual, r.currency_code, 0)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {r.discount_rate_pct}%
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{r.discount_rate_pct}%</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.annual_energy_mwh.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {r.project_life_years}y
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{r.project_life_years}y</TableCell>
                   <TableCell className="text-right tabular-nums font-medium">
-                    {r.lcoe == null
-                      ? "—"
-                      : money(r.lcoe, r.currency_code, 4)}
+                    {r.lcoe == null ? "—" : money(r.lcoe, r.currency_code, 4)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -251,31 +218,17 @@ function LcoeTab() {
             <h2 className="text-sm font-semibold">Scenario comparison</h2>
             {lowest ? (
               <div className="text-xs text-muted-foreground">
-                Lowest LCOE:{" "}
-                <span className="font-medium text-foreground">
-                  {lowest.name}
-                </span>{" "}
-                at r = {lowest.discount_rate_pct}% (
-                {money(lowest.lcoe, lowest.currency_code, 4)}/MWh)
+                Lowest LCOE: <span className="font-medium text-foreground">{lowest.name}</span> at r
+                = {lowest.discount_rate_pct}% ({money(lowest.lcoe, lowest.currency_code, 4)}/MWh)
               </div>
             ) : null}
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer>
               <BarChart data={chartData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                />
-                <XAxis
-                  dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <Tooltip
                   contentStyle={{
                     background: "hsl(var(--popover))",
@@ -292,11 +245,7 @@ function LcoeTab() {
       ) : null}
 
       {open ? (
-        <LcoeDrawer
-          projectId={projectId}
-          initial={editing}
-          onClose={() => setOpen(false)}
-        />
+        <LcoeDrawer projectId={projectId} initial={editing} onClose={() => setOpen(false)} />
       ) : null}
     </div>
   );
@@ -316,9 +265,7 @@ function LcoeDrawer({ projectId, initial, onClose }: LcoeDrawerProps) {
   const [opex, setOpex] = useState(String(initial?.opex_annual ?? 1_800_000));
   const [rate, setRate] = useState(String(initial?.discount_rate_pct ?? 7));
   const [energy, setEnergy] = useState(String(initial?.annual_energy_mwh ?? 260_000));
-  const [degradation, setDegradation] = useState(
-    String(initial?.degradation_pct ?? 0.5),
-  );
+  const [degradation, setDegradation] = useState(String(initial?.degradation_pct ?? 0.5));
   const [life, setLife] = useState(String(initial?.project_life_years ?? 25));
   const [currency, setCurrency] = useState(initial?.currency_code ?? "USD");
 
@@ -373,9 +320,7 @@ function LcoeDrawer({ projectId, initial, onClose }: LcoeDrawerProps) {
     <Sheet open onOpenChange={(o) => (!o ? onClose() : undefined)}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>
-            {initial ? "Edit scenario" : "New LCOE scenario"}
-          </SheetTitle>
+          <SheetTitle>{initial ? "Edit scenario" : "New LCOE scenario"}</SheetTitle>
         </SheetHeader>
         <div className="mt-4 grid gap-3">
           <div className="grid gap-1.5">
@@ -423,12 +368,7 @@ function LcoeDrawer({ projectId, initial, onClose }: LcoeDrawerProps) {
             </div>
             <div className="grid gap-1.5">
               <Label>Life (years)</Label>
-              <Input
-                type="number"
-                min="1"
-                value={life}
-                onChange={(e) => setLife(e.target.value)}
-              />
+              <Input type="number" min="1" value={life} onChange={(e) => setLife(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -463,10 +403,7 @@ function LcoeDrawer({ projectId, initial, onClose }: LcoeDrawerProps) {
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            disabled={!canSave || mut.isPending}
-            onClick={() => mut.mutate()}
-          >
+          <Button disabled={!canSave || mut.isPending} onClick={() => mut.mutate()}>
             {mut.isPending ? "Saving…" : initial ? "Update" : "Create"}
           </Button>
         </SheetFooter>

@@ -52,9 +52,7 @@ export function monthRange(startPeriod: string, endPeriod: string): string[] {
 // ---------------------------------------------------------------------------
 export const createCashFlowSchema = z.object({
   projectId: z.string().uuid(),
-  period: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected yyyy-mm-dd"),
+  period: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected yyyy-mm-dd"),
   direction: z.enum(CASH_FLOW_DIRECTIONS),
   kind: z.enum(CASH_FLOW_KINDS),
   category: z.enum(CASH_FLOW_CATEGORIES),
@@ -68,8 +66,14 @@ export type CreateCashFlowInput = z.infer<typeof createCashFlowSchema>;
 
 export const listCashFlowsSchema = z.object({
   projectId: z.string().uuid(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   includeVoided: z.boolean().optional(),
 });
 export type ListCashFlowsInput = z.infer<typeof listCashFlowsSchema>;
@@ -136,10 +140,7 @@ export interface PivotResult {
 }
 
 /** Build a pivot of rows (category × direction) over months, in BASE currency. */
-export function buildPivot(
-  rows: CashFlowRow[],
-  months: string[],
-): PivotResult {
+export function buildPivot(rows: CashFlowRow[], months: string[]): PivotResult {
   const active = rows.filter((r) => !r.voided);
   const pivot = new Map<string, PivotRow>();
 

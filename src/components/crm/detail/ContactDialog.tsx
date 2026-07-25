@@ -123,20 +123,14 @@ export function ContactDialog({ open, onOpenChange, opportunityId, existing }: P
             <Checkbox
               id="c-primary"
               checked={form.is_primary}
-              onCheckedChange={(v) =>
-                setForm({ ...form, is_primary: v === true })
-              }
+              onCheckedChange={(v) => setForm({ ...form, is_primary: v === true })}
             />
             <Label htmlFor="c-primary" className="text-sm font-normal">
               Primary contact (demotes other primaries)
             </Label>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={save.isPending}>

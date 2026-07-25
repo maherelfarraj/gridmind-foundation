@@ -26,12 +26,7 @@ interface Props {
   canWrite: boolean;
 }
 
-export function ActivityTimeline({
-  opportunityId,
-  items,
-  isLoading,
-  canWrite,
-}: Props) {
+export function ActivityTimeline({ opportunityId, items, isLoading, canWrite }: Props) {
   const post = usePostNote(opportunityId);
   const [body, setBody] = useState("");
 
@@ -47,9 +42,7 @@ export function ActivityTimeline({
     <Card className="flex flex-col gap-3 border-border bg-card p-5">
       <header className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-sm font-semibold text-foreground">
-            Activity
-          </h2>
+          <h2 className="font-display text-sm font-semibold text-foreground">Activity</h2>
           <p className="text-xs text-muted-foreground">
             Every change on this opportunity — from the audit log
           </p>
@@ -67,11 +60,7 @@ export function ActivityTimeline({
           />
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
             <span>{body.length}/2000</span>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!body.trim() || post.isPending}
-            >
+            <Button type="submit" size="sm" disabled={!body.trim() || post.isPending}>
               Post note
             </Button>
           </div>
@@ -102,8 +91,7 @@ export function ActivityTimeline({
 function TimelineRow({ item }: { item: ActivityItem }) {
   const { Icon, tone } = iconFor(item);
   const when = safeDate(item.at);
-  const actorName =
-    item.actor?.full_name || item.actor?.email || "system";
+  const actorName = item.actor?.full_name || item.actor?.email || "system";
   const initials = (actorName || "?")
     .split(/\s+/)
     .map((s) => s[0])
@@ -127,19 +115,14 @@ function TimelineRow({ item }: { item: ActivityItem }) {
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-xs font-medium text-foreground">
-              {actorName}
-            </span>
+            <span className="text-xs font-medium text-foreground">{actorName}</span>
             <span className="text-xs text-muted-foreground">
               {item.kind === "audit" && item.action === "opportunity.note"
                 ? "posted a note"
                 : item.label}
             </span>
             {when && (
-              <span
-                className="text-[11px] text-muted-foreground"
-                title={format(when, "PPpp")}
-              >
+              <span className="text-[11px] text-muted-foreground" title={format(when, "PPpp")}>
                 · {formatDistanceToNowStrict(when, { addSuffix: true })}
               </span>
             )}

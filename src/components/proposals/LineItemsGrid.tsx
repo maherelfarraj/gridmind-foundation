@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useSaveLineItems } from "@/lib/proposal-query";
-import type {
-  ProposalDetail,
-  ProposalLineItem,
-} from "@/lib/proposal.functions";
+import type { ProposalDetail, ProposalLineItem } from "@/lib/proposal.functions";
 
 type Row = {
   id?: string;
@@ -62,16 +59,11 @@ export function LineItemsGrid({
 
   const subtotal = useMemo(
     () =>
-      rows.reduce(
-        (sum, r) =>
-          sum + Math.round((r.qty ?? 0) * (r.unit_price ?? 0) * 100) / 100,
-        0,
-      ),
+      rows.reduce((sum, r) => sum + Math.round((r.qty ?? 0) * (r.unit_price ?? 0) * 100) / 100, 0),
     [rows],
   );
   const contingencyAmt = subtotal * (proposal.contingency_pct / 100);
-  const marginAmt =
-    (subtotal + contingencyAmt) * (proposal.margin_pct / 100);
+  const marginAmt = (subtotal + contingencyAmt) * (proposal.margin_pct / 100);
   const total = Math.round((subtotal + contingencyAmt + marginAmt) * 100) / 100;
 
   const update = (i: number, patch: Partial<Row>) => {
@@ -123,9 +115,7 @@ export function LineItemsGrid({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold">Scope &amp; pricing</h3>
-          <p className="text-xs text-muted-foreground">
-            Line items — totals recompute on save
-          </p>
+          <p className="text-xs text-muted-foreground">Line items — totals recompute on save</p>
         </div>
         {!readOnly && (
           <div className="flex gap-2">
@@ -133,11 +123,7 @@ export function LineItemsGrid({
               <Plus size={14} aria-hidden />
               Add line
             </Button>
-            <Button
-              size="sm"
-              onClick={saveAll}
-              disabled={!dirty || save.isPending}
-            >
+            <Button size="sm" onClick={saveAll} disabled={!dirty || save.isPending}>
               {save.isPending ? "Saving…" : "Save lines"}
             </Button>
           </div>
@@ -146,8 +132,7 @@ export function LineItemsGrid({
 
       {rows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No line items yet.{" "}
-          {!readOnly && "Click “Add line” to get started."}
+          No line items yet. {!readOnly && "Click “Add line” to get started."}
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -165,26 +150,21 @@ export function LineItemsGrid({
             </thead>
             <tbody>
               {rows.map((r, i) => {
-                const line =
-                  Math.round((r.qty ?? 0) * (r.unit_price ?? 0) * 100) / 100;
+                const line = Math.round((r.qty ?? 0) * (r.unit_price ?? 0) * 100) / 100;
                 return (
                   <tr key={r.id ?? `new-${i}`} className="border-b border-border/60">
                     <td className="p-1">
                       <Input
                         value={r.category}
                         disabled={readOnly}
-                        onChange={(e) =>
-                          update(i, { category: e.target.value })
-                        }
+                        onChange={(e) => update(i, { category: e.target.value })}
                       />
                     </td>
                     <td className="p-1">
                       <Input
                         value={r.description}
                         disabled={readOnly}
-                        onChange={(e) =>
-                          update(i, { description: e.target.value })
-                        }
+                        onChange={(e) => update(i, { description: e.target.value })}
                       />
                     </td>
                     <td className="p-1 text-right">
@@ -194,9 +174,7 @@ export function LineItemsGrid({
                         className="text-right"
                         value={r.qty}
                         disabled={readOnly}
-                        onChange={(e) =>
-                          update(i, { qty: parseFloat(e.target.value) || 0 })
-                        }
+                        onChange={(e) => update(i, { qty: parseFloat(e.target.value) || 0 })}
                       />
                     </td>
                     <td className="p-1">
@@ -253,25 +231,13 @@ export function LineItemsGrid({
           label={`Margin (${proposal.margin_pct}%)`}
           value={formatCurrency(marginAmt, proposal.currency_code)}
         />
-        <Tile
-          label="Total"
-          value={formatCurrency(total, proposal.currency_code)}
-          strong
-        />
+        <Tile label="Total" value={formatCurrency(total, proposal.currency_code)} strong />
       </div>
     </Card>
   );
 }
 
-function Tile({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
+function Tile({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="rounded-md border border-border bg-muted/30 p-3">
       <div className="text-xs text-muted-foreground">{label}</div>

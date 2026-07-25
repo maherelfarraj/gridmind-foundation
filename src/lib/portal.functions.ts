@@ -206,9 +206,7 @@ export const listMyPortalMemberships = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const { data, error } = await context.supabase
       .from("portal_memberships")
-      .select(
-        "id, project_id, company_id, role, status, exposure, expires_at, last_seen_at",
-      )
+      .select("id, project_id, company_id, role, status, exposure, expires_at, last_seen_at")
       .eq("user_id", context.user.id)
       .eq("status", "active")
       .order("last_seen_at", { ascending: false, nullsFirst: false });
@@ -229,10 +227,7 @@ export const listMyPortalMemberships = createServerFn({ method: "GET" })
     const companyIds = Array.from(new Set(rows.map((r) => r.company_id)));
 
     const [projRes, coRes] = await Promise.all([
-      context.supabase
-        .from("projects")
-        .select("id, name, code")
-        .in("id", projectIds),
+      context.supabase.from("projects").select("id, name, code").in("id", projectIds),
       context.supabase.from("companies").select("id, name").in("id", companyIds),
     ]);
 
@@ -405,10 +400,7 @@ export const decidePortalApproval = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => decideInput.parse(raw))
   .handler(async ({ context, data }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    if (
-      data.decision === "rejected" &&
-      (!data.comment || data.comment.trim().length === 0)
-    ) {
+    if (data.decision === "rejected" && (!data.comment || data.comment.trim().length === 0)) {
       throw Object.assign(new Error("comment_required_on_reject"), {
         statusCode: 400,
       });
@@ -484,9 +476,10 @@ export const listPortalMembers = createServerFn({ method: "POST" })
       .eq("project_id", data.projectId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return ((rows ?? []) as Array<PortalMemberAdminRow & { exposure: Json }>).map(
-      (r) => ({ ...r, exposure: normalizeExposure(r.exposure) }),
-    );
+    return ((rows ?? []) as Array<PortalMemberAdminRow & { exposure: Json }>).map((r) => ({
+      ...r,
+      exposure: normalizeExposure(r.exposure),
+    }));
   });
 
 const inviteInput = z.object({
@@ -530,14 +523,11 @@ export const invitePortalMember = createServerFn({ method: "POST" })
       }
 
       // Create invite (returns raw token).
-      const { data: token, error: invErr } = await context.supabase.rpc(
-        "create_invite",
-        {
-          p_company_id: companyId,
-          p_email: data.email,
-          p_role: data.role,
-        },
-      );
+      const { data: token, error: invErr } = await context.supabase.rpc("create_invite", {
+        p_company_id: companyId,
+        p_email: data.email,
+        p_role: data.role,
+      });
       if (invErr) throw invErr;
 
       // Find that invite row for FK linkage.

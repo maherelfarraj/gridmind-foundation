@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  dprDetailQueryOptions,
-  errorMessage,
-  wbsPickerQueryOptions,
-} from "@/lib/dpr-query";
+import { dprDetailQueryOptions, errorMessage, wbsPickerQueryOptions } from "@/lib/dpr-query";
 import {
   addQuantityRow,
   deleteQuantityRow,
@@ -68,8 +64,7 @@ export function StepQuantities({ header, readOnly }: Props) {
   });
 
   const delMut = useMutation({
-    mutationFn: (entryId: string) =>
-      del({ data: { dprId: header.id, entryId } }),
+    mutationFn: (entryId: string) => del({ data: { dprId: header.id, entryId } }),
     onSuccess: () => invalidate(),
     onError: (e) => toast.error(errorMessage(e)),
   });
@@ -90,8 +85,7 @@ export function StepQuantities({ header, readOnly }: Props) {
         <CardContent>
           {entries.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No quantities yet. These drive tomorrow's discipline board install
-              rate.
+              No quantities yet. These drive tomorrow's discipline board install rate.
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -154,13 +148,10 @@ export function StepQuantities({ header, readOnly }: Props) {
             {q && (
               <div className="max-h-64 overflow-y-auto rounded-md border border-border">
                 {wbsQuery.isLoading ? (
-                  <div className="p-3 text-sm text-muted-foreground">
-                    Loading…
-                  </div>
+                  <div className="p-3 text-sm text-muted-foreground">Loading…</div>
                 ) : options.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground">
-                    No matches. Baseline items need `planned_quantity` set to
-                    drive install rate.
+                    No matches. Baseline items need `planned_quantity` set to drive install rate.
                   </div>
                 ) : (
                   <ul>

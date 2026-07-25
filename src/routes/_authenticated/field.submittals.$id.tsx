@@ -34,10 +34,7 @@ import {
   signSubmittalUpload,
   submitSubmittal,
 } from "@/lib/submittals.functions";
-import {
-  errorMessage,
-  submittalDetailQueryOptions,
-} from "@/lib/submittals-query";
+import { errorMessage, submittalDetailQueryOptions } from "@/lib/submittals-query";
 import {
   REVIEW_DECISIONS,
   SUBMITTAL_STATUS_LABELS,
@@ -204,13 +201,8 @@ function SubmittalDetailPage() {
           <div>
             <span className="text-muted-foreground">Submitted / Reviewed</span>
             <div>
-              {submittal.submitted_at
-                ? new Date(submittal.submitted_at).toLocaleDateString()
-                : "—"}{" "}
-              /{" "}
-              {submittal.reviewed_at
-                ? new Date(submittal.reviewed_at).toLocaleDateString()
-                : "—"}
+              {submittal.submitted_at ? new Date(submittal.submitted_at).toLocaleDateString() : "—"}{" "}
+              / {submittal.reviewed_at ? new Date(submittal.reviewed_at).toLocaleDateString() : "—"}
             </div>
           </div>
           <div className="col-span-2">
@@ -238,13 +230,8 @@ function SubmittalDetailPage() {
           </CardHeader>
           <CardContent className="flex flex-wrap justify-end gap-2">
             {isDraft ? (
-              <Button
-                onClick={() => submitMut.mutate()}
-                disabled={submitMut.isPending}
-              >
-                {submitMut.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
+              <Button onClick={() => submitMut.mutate()} disabled={submitMut.isPending}>
+                {submitMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Submit for review
               </Button>
             ) : null}
@@ -319,13 +306,8 @@ function SubmittalDetailPage() {
             <Button variant="outline" onClick={() => setReviewOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={() => reviewMut.mutate()}
-              disabled={reviewMut.isPending}
-            >
-              {reviewMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+            <Button onClick={() => reviewMut.mutate()} disabled={reviewMut.isPending}>
+              {reviewMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save review
             </Button>
           </DialogFooter>
@@ -371,13 +353,8 @@ function SubmittalDetailPage() {
             <Button variant="outline" onClick={() => setReviseOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={() => reviseMut.mutate()}
-              disabled={reviseMut.isPending}
-            >
-              {reviseMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+            <Button onClick={() => reviseMut.mutate()} disabled={reviseMut.isPending}>
+              {reviseMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create revision
             </Button>
           </DialogFooter>

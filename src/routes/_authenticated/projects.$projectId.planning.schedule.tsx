@@ -2,11 +2,7 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarClock } from "lucide-react";
 import { toast } from "sonner";
@@ -32,11 +28,7 @@ import {
   scheduleErrorMessage,
   scheduleTasksQueryOptions,
 } from "@/lib/schedule.query";
-import {
-  avgFinishVariance,
-  isOverdue,
-  weightedProgress,
-} from "@/lib/schedule.rules";
+import { avgFinishVariance, isOverdue, weightedProgress } from "@/lib/schedule.rules";
 import { buildVarianceCsv, downloadCsv } from "@/lib/schedule.csv";
 
 import { GanttView } from "@/components/planning/gantt-view";
@@ -45,22 +37,18 @@ import { ScheduleToolbar } from "@/components/planning/schedule-toolbar";
 import { BaselineManager } from "@/components/planning/baseline-manager";
 import type { TaskEditPatch } from "@/components/planning/task-inline-editor";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/planning/schedule",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/schedule")({
   head: () => ({
     meta: [
       { title: "Schedule Gantt — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Project Gantt with baseline lock and variance tracking for GridMind EPC.",
+        content: "Project Gantt with baseline lock and variance tracking for GridMind EPC.",
       },
       { property: "og:title", content: "Schedule Gantt — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Project Gantt with baseline lock and variance tracking for GridMind EPC.",
+        content: "Project Gantt with baseline lock and variance tracking for GridMind EPC.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -79,12 +67,8 @@ function SchedulePage() {
   const baselinesFn = useServerFn(listBaselines);
   const accessFn = useServerFn(getScheduleAccess);
 
-  const tasksQuery = useSuspenseQuery(
-    scheduleTasksQueryOptions(tasksFn, projectId),
-  );
-  const baselinesQuery = useSuspenseQuery(
-    baselinesQueryOptions(baselinesFn, projectId),
-  );
+  const tasksQuery = useSuspenseQuery(scheduleTasksQueryOptions(tasksFn, projectId));
+  const baselinesQuery = useSuspenseQuery(baselinesQueryOptions(baselinesFn, projectId));
   const accessQuery = useSuspenseQuery(scheduleAccessQueryOptions(accessFn));
 
   const tasks = tasksQuery.data;
@@ -92,9 +76,7 @@ function SchedulePage() {
   const canWrite = accessQuery.data.canWrite;
   const canLock = accessQuery.data.canLockBaseline;
 
-  const [selectedBaselineId, setSelectedBaselineId] = useState<string | null>(
-    null,
-  );
+  const [selectedBaselineId, setSelectedBaselineId] = useState<string | null>(null);
   const [compare, setCompare] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
 
@@ -146,10 +128,7 @@ function SchedulePage() {
           name: "New task",
           discipline: null,
           start_date: format(new Date(), "yyyy-MM-dd"),
-          end_date: format(
-            new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-            "yyyy-MM-dd",
-          ),
+          end_date: format(new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
           progress_pct: 0,
           status: "not_started",
           is_milestone: false,
@@ -165,8 +144,7 @@ function SchedulePage() {
   });
 
   const updateTaskMut = useMutation({
-    mutationFn: (v: { id: string; patch: TaskEditPatch }) =>
-      updateFn({ data: v }),
+    mutationFn: (v: { id: string; patch: TaskEditPatch }) => updateFn({ data: v }),
     onSuccess: () => {
       toast.success("Task saved");
       invalidateTasks();
@@ -203,15 +181,8 @@ function SchedulePage() {
   });
 
   const handleExport = () => {
-    const csv = buildVarianceCsv(
-      tasks,
-      selectedBaseline?.name ?? null,
-      snapshot,
-    );
-    downloadCsv(
-      `schedule-variance-${format(new Date(), "yyyyMMdd-HHmm")}.csv`,
-      csv,
-    );
+    const csv = buildVarianceCsv(tasks, selectedBaseline?.name ?? null, snapshot);
+    downloadCsv(`schedule-variance-${format(new Date(), "yyyyMMdd-HHmm")}.csv`, csv);
   };
 
   const showCompare = compare && !!snapshot;
@@ -220,21 +191,15 @@ function SchedulePage() {
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <CalendarClock
-            size={18}
-            aria-hidden
-            className="text-muted-foreground"
-          />
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Schedule
-          </h2>
+          <CalendarClock size={18} aria-hidden className="text-muted-foreground" />
+          <h2 className="font-display text-lg font-semibold text-foreground">Schedule</h2>
         </div>
       </header>
 
       {!canWrite && (
         <Card className="border-border bg-card p-3 text-sm text-muted-foreground">
-          You have read-only access to the schedule. Ask a project or company
-          admin for write access.
+          You have read-only access to the schedule. Ask a project or company admin for write
+          access.
         </Card>
       )}
 
@@ -260,9 +225,7 @@ function SchedulePage() {
           canLock={canLock}
           onNewTask={() => createTaskMut.mutate()}
           onCreateBaseline={() => createBaselineMut.mutate()}
-          onLockSelected={() =>
-            effectiveBaselineId && lockBaselineMut.mutate(effectiveBaselineId)
-          }
+          onLockSelected={() => effectiveBaselineId && lockBaselineMut.mutate(effectiveBaselineId)}
           onExportCsv={handleExport}
           onManageBaselines={() => setManagerOpen(true)}
           creatingBaseline={createBaselineMut.isPending}
@@ -281,9 +244,7 @@ function SchedulePage() {
           compare={showCompare}
           baselineSnapshot={snapshot}
           saving={updateTaskMut.isPending || deleteTaskMut.isPending}
-          onSaveTask={(id: string, patch: TaskEditPatch) =>
-            updateTaskMut.mutate({ id, patch })
-          }
+          onSaveTask={(id: string, patch: TaskEditPatch) => updateTaskMut.mutate({ id, patch })}
           onDeleteTask={(id: string) => deleteTaskMut.mutate(id)}
         />
       )}
@@ -315,24 +276,13 @@ function SchedulePending() {
   );
 }
 
-function ScheduleError({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
+function ScheduleError({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <Card className="border-destructive/40 bg-card p-4">
       <p className="text-sm text-foreground">
         Couldn&rsquo;t load the schedule: {scheduleErrorMessage(error)}
       </p>
-      <Button
-        variant="outline"
-        size="sm"
-        className="mt-3"
-        onClick={() => reset()}
-      >
+      <Button variant="outline" size="sm" className="mt-3" onClick={() => reset()}>
         Retry
       </Button>
     </Card>

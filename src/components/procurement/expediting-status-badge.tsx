@@ -2,10 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { ExpeditingStatus } from "@/lib/expediting-rules";
 
-const VARIANTS: Record<
-  ExpeditingStatus,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
+const VARIANTS: Record<ExpeditingStatus, "default" | "secondary" | "outline" | "destructive"> = {
   on_track: "outline",
   at_risk: "secondary",
   delayed: "destructive",

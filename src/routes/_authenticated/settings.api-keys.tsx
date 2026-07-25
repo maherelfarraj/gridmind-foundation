@@ -70,8 +70,7 @@ export const Route = createFileRoute("/_authenticated/settings/api-keys")({
       { title: "API keys — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Create, rotate, and revoke API keys for SCADA and external integrations.",
+        content: "Create, rotate, and revoke API keys for SCADA and external integrations.",
       },
     ],
   }),
@@ -93,7 +92,10 @@ const createFormSchema = z.object({
 type CreateForm = z.infer<typeof createFormSchema>;
 
 function statusBadge(status: ApiKeyRow["status"]) {
-  const map: Record<ApiKeyRow["status"], { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  const map: Record<
+    ApiKeyRow["status"],
+    { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+  > = {
     active: { label: "Active", variant: "default" },
     expired: { label: "Expired", variant: "secondary" },
     revoked: { label: "Revoked", variant: "destructive" },
@@ -112,7 +114,11 @@ function ApiKeysPage() {
   const query = useQuery({ queryKey: ["api-keys"], queryFn: () => list() });
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [showRaw, setShowRaw] = useState<{ raw: string; name: string; mode: "created" | "rotated" } | null>(null);
+  const [showRaw, setShowRaw] = useState<{
+    raw: string;
+    name: string;
+    mode: "created" | "rotated";
+  } | null>(null);
   const [rotateConfirm, setRotateConfirm] = useState<ApiKeyRow | null>(null);
   const [revokeConfirm, setRevokeConfirm] = useState<ApiKeyRow | null>(null);
   const [copied, setCopied] = useState(false);
@@ -145,8 +151,7 @@ function ApiKeysPage() {
   });
 
   const rotateMut = useMutation({
-    mutationFn: async (keyId: string): Promise<CreatedKeyResult> =>
-      rotate({ data: { keyId } }),
+    mutationFn: async (keyId: string): Promise<CreatedKeyResult> => rotate({ data: { keyId } }),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["api-keys"] });
       setRotateConfirm(null);
@@ -180,8 +185,7 @@ function ApiKeysPage() {
   }
 
   const isForbidden =
-    query.error instanceof Error &&
-    /forbidden|401|unauth/i.test(query.error.message);
+    query.error instanceof Error && /forbidden|401|unauth/i.test(query.error.message);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -189,8 +193,8 @@ function ApiKeysPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">API keys</h1>
           <p className="text-sm text-muted-foreground">
-            Create and manage keys for SCADA ingestion and external integrations.
-            Keys are shown once — store them in a secret manager.
+            Create and manage keys for SCADA ingestion and external integrations. Keys are shown
+            once — store them in a secret manager.
           </p>
         </div>
         <div className="flex gap-2">
@@ -216,8 +220,8 @@ function ApiKeysPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            API key management is restricted to company administrators. Ask
-            your admin for access if you need to integrate an external system.
+            API key management is restricted to company administrators. Ask your admin for access if
+            you need to integrate an external system.
           </CardContent>
         </Card>
       ) : query.error ? (
@@ -337,8 +341,8 @@ function ApiKeysPage() {
           <DialogHeader>
             <DialogTitle>New API key</DialogTitle>
             <DialogDescription>
-              Pick the minimum set of scopes this key needs. You can rotate or
-              revoke it at any time.
+              Pick the minimum set of scopes this key needs. You can rotate or revoke it at any
+              time.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -350,9 +354,7 @@ function ApiKeysPage() {
                 {...form.register("name")}
               />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.name.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
               )}
             </div>
 
@@ -385,9 +387,7 @@ function ApiKeysPage() {
                 })}
               </div>
               {form.formState.errors.scopes && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.scopes.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.scopes.message}</p>
               )}
             </div>
 
@@ -400,11 +400,7 @@ function ApiKeysPage() {
             </div>
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createMut.isPending}>
@@ -443,8 +439,7 @@ function ApiKeysPage() {
             </Button>
             {showRaw?.mode === "rotated" && (
               <p className="text-xs text-muted-foreground">
-                The previous secret is invalid immediately. Update any
-                integrations using this key.
+                The previous secret is invalid immediately. Update any integrations using this key.
               </p>
             )}
           </div>
@@ -460,15 +455,13 @@ function ApiKeysPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Rotate “{rotateConfirm?.name}”?</AlertDialogTitle>
             <AlertDialogDescription>
-              A new secret will be issued and the current one will stop working
-              immediately. This action cannot be undone.
+              A new secret will be issued and the current one will stop working immediately. This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => rotateConfirm && rotateMut.mutate(rotateConfirm.id)}
-            >
+            <AlertDialogAction onClick={() => rotateConfirm && rotateMut.mutate(rotateConfirm.id)}>
               {rotateMut.isPending ? "Rotating…" : "Rotate"}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -481,8 +474,8 @@ function ApiKeysPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke “{revokeConfirm?.name}”?</AlertDialogTitle>
             <AlertDialogDescription>
-              The key will stop working immediately. Revoked keys stay in the
-              audit trail and cannot be reactivated — create a new key instead.
+              The key will stop working immediately. Revoked keys stay in the audit trail and cannot
+              be reactivated — create a new key instead.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

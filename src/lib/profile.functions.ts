@@ -54,13 +54,9 @@ const DEFAULT_EVENT_PREFS: Record<NotificationEventKey, boolean> = {
   alarm_escalation: true,
 };
 
-function normalizeEventPrefs(
-  raw: unknown,
-): Record<NotificationEventKey, boolean> {
+function normalizeEventPrefs(raw: unknown): Record<NotificationEventKey, boolean> {
   const src =
-    raw && typeof raw === "object" && !Array.isArray(raw)
-      ? (raw as Record<string, unknown>)
-      : {};
+    raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const out = { ...DEFAULT_EVENT_PREFS };
   for (const key of NOTIFICATION_EVENT_KEYS) {
     if (typeof src[key] === "boolean") out[key] = src[key] as boolean;
@@ -68,9 +64,7 @@ function normalizeEventPrefs(
   return out;
 }
 
-async function resolveContext(
-  context: AuthContext & { user: NonNullable<AuthContext["user"]> },
-) {
+async function resolveContext(context: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
   const { data, error } = await context.supabase
     .from("profiles")
     .select("id, company_id, full_name, email, locale, avatar_url")
@@ -209,9 +203,7 @@ export const removeProfileAvatar = createServerFn({ method: "POST" })
     const profile = await resolveContext(context);
 
     if (profile.avatar_url) {
-      await context.supabase.storage
-        .from(AVATAR_BUCKET)
-        .remove([profile.avatar_url]);
+      await context.supabase.storage.from(AVATAR_BUCKET).remove([profile.avatar_url]);
     }
 
     const { error: updErr } = await context.supabase
@@ -249,17 +241,15 @@ export const updateNotificationPrefs = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
 
-    const { error: upsertErr } = await context.supabase
-      .from("notification_prefs")
-      .upsert(
-        {
-          user_id: context.user.id,
-          email_enabled: data.email_enabled,
-          in_app_enabled: data.in_app_enabled,
-          prefs: data.prefs,
-        },
-        { onConflict: "user_id" },
-      );
+    const { error: upsertErr } = await context.supabase.from("notification_prefs").upsert(
+      {
+        user_id: context.user.id,
+        email_enabled: data.email_enabled,
+        in_app_enabled: data.in_app_enabled,
+        prefs: data.prefs,
+      },
+      { onConflict: "user_id" },
+    );
     if (upsertErr) throw upsertErr;
 
     const { error: auditErr } = await context.supabase.rpc("write_audit_log", {

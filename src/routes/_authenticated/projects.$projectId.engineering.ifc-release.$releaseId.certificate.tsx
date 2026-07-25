@@ -47,9 +47,7 @@ function Certificate() {
           <h2 className="mt-1 text-2xl font-semibold">{r.package_name}</h2>
           <p className="text-sm text-muted-foreground">
             Status: {r.status.toUpperCase()}
-            {r.released_at
-              ? ` · Released ${new Date(r.released_at).toLocaleString()}`
-              : ""}
+            {r.released_at ? ` · Released ${new Date(r.released_at).toLocaleString()}` : ""}
           </p>
         </header>
 
@@ -76,14 +74,10 @@ function Certificate() {
             <tbody>
               {r.revision_snapshot.map((row) => (
                 <tr key={row.revision_id} className="border-t border-border">
-                  <td className="px-3 py-2 font-mono text-xs">
-                    {row.drawing_number}
-                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{row.drawing_number}</td>
                   <td className="px-3 py-2">{row.title}</td>
                   <td className="px-3 py-2 text-xs">{row.discipline}</td>
-                  <td className="px-3 py-2 font-mono text-xs">
-                    {row.revision_code}
-                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{row.revision_code}</td>
                 </tr>
               ))}
             </tbody>
@@ -106,21 +100,14 @@ function Certificate() {
                   <td className="px-3 py-2">{s.role_label}</td>
                   <td className="px-3 py-2">
                     <span className="font-medium">{s.signature_text}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({s.signer_name})
-                    </span>
+                    <span className="ml-2 text-xs text-muted-foreground">({s.signer_name})</span>
                   </td>
-                  <td className="px-3 py-2 text-xs">
-                    {new Date(s.signed_at).toLocaleString()}
-                  </td>
+                  <td className="px-3 py-2 text-xs">{new Date(s.signed_at).toLocaleString()}</td>
                 </tr>
               ))}
               {data.signoffs.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={3}
-                    className="px-3 py-2 text-center text-xs text-muted-foreground"
-                  >
+                  <td colSpan={3} className="px-3 py-2 text-center text-xs text-muted-foreground">
                     No sign-offs recorded.
                   </td>
                 </tr>

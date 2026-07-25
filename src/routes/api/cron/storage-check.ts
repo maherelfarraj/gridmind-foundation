@@ -38,11 +38,7 @@ type BucketRow = { id: string; name: string; is_public: boolean };
 type PolicyRow = { policyname: string };
 type Failure = {
   bucket?: string;
-  reason:
-    | "missing_bucket"
-    | "bucket_is_public"
-    | "missing_storage_policies"
-    | "query_failed";
+  reason: "missing_bucket" | "bucket_is_public" | "missing_storage_policies" | "query_failed";
   details?: unknown;
 };
 
@@ -113,12 +109,8 @@ export const Route = createFileRoute("/api/cron/storage-check")({
             },
           });
         } else {
-          policyNames = ((policies.data ?? []) as PolicyRow[]).map(
-            (r) => r.policyname,
-          );
-          const missing = REQUIRED_POLICIES.filter(
-            (p) => !policyNames.includes(p),
-          );
+          policyNames = ((policies.data ?? []) as PolicyRow[]).map((r) => r.policyname);
+          const missing = REQUIRED_POLICIES.filter((p) => !policyNames.includes(p));
           if (missing.length > 0) {
             failures.push({
               reason: "missing_storage_policies",
@@ -134,11 +126,7 @@ export const Route = createFileRoute("/api/cron/storage-check")({
 
         // Failure path: single audit row (best-effort; do not throw if the
         // audit insert itself fails, just surface it in the response).
-        const anyCompanyId = await admin
-          .from("companies")
-          .select("id")
-          .limit(1)
-          .maybeSingle();
+        const anyCompanyId = await admin.from("companies").select("id").limit(1).maybeSingle();
 
         const insertRes = await admin.from("audit_logs").insert({
           company_id: anyCompanyId.data?.id ?? null,

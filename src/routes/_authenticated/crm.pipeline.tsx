@@ -14,10 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  crmKpisQueryOptions,
-  opportunitiesQueryOptions,
-} from "@/lib/crm-query";
+import { crmKpisQueryOptions, opportunitiesQueryOptions } from "@/lib/crm-query";
 import { getCrmKpis, listOpportunities } from "@/lib/crm.functions";
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 
@@ -33,14 +30,12 @@ export const Route = createFileRoute("/_authenticated/crm/pipeline")({
       { title: "Pipeline — GridMind CRM" },
       {
         name: "description",
-        content:
-          "Kanban pipeline, list view, and lead conversion for your EPC sales team.",
+        content: "Kanban pipeline, list view, and lead conversion for your EPC sales team.",
       },
       { property: "og:title", content: "Pipeline — GridMind CRM" },
       {
         property: "og:description",
-        content:
-          "Drag opportunities across stages, track KPIs, and convert leads.",
+        content: "Drag opportunities across stages, track KPIs, and convert leads.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -60,8 +55,7 @@ function CrmPipelinePage() {
     staleTime: 60_000,
   });
   const roles = new Set((rolesQuery.data ?? []).map((r) => r.role));
-  const canWrite =
-    roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
+  const canWrite = roles.has("sales") || roles.has("company_admin") || roles.has("super_admin");
   const readOnly = !canWrite;
 
   const listFn = useServerFn(listOpportunities);
@@ -114,9 +108,7 @@ function CrmPipelinePage() {
             <span className="text-sm font-medium">Couldn't load opportunities</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            {oppsQuery.error instanceof Error
-              ? oppsQuery.error.message
-              : "Unknown error"}
+            {oppsQuery.error instanceof Error ? oppsQuery.error.message : "Unknown error"}
           </p>
           <Button size="sm" variant="outline" onClick={() => oppsQuery.refetch()}>
             Retry

@@ -1,11 +1,6 @@
 // P-067 — Three-way match detail: variance breakdown, block banner, override.
 import { useState } from "react";
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, ArrowLeft, FileText, Scale } from "lucide-react";
@@ -16,12 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -39,16 +29,13 @@ import {
   useUpdateMatchThreshold,
 } from "@/lib/match-query";
 
-export const Route = createFileRoute(
-  "/_authenticated/procurement/matches/$matchId",
-)({
+export const Route = createFileRoute("/_authenticated/procurement/matches/$matchId")({
   head: () => ({
     meta: [
       { title: "Invoice Match — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Review a three-way match, variance breakdown, and payment release status.",
+        content: "Review a three-way match, variance breakdown, and payment release status.",
       },
     ],
   }),
@@ -82,23 +69,14 @@ function MatchDetail() {
   const updateThreshold = useUpdateMatchThreshold(matchId);
 
   const [note, setNote] = useState("");
-  const [thresholdInput, setThresholdInput] = useState(
-    String(m.variance_threshold_pct),
-  );
+  const [thresholdInput, setThresholdInput] = useState(String(m.variance_threshold_pct));
   const [overrideOpen, setOverrideOpen] = useState(false);
 
-  const pct =
-    m.po_total > 0
-      ? ((m.amount_variance ?? 0) / m.po_total) * 100
-      : 0;
+  const pct = m.po_total > 0 ? ((m.amount_variance ?? 0) / m.po_total) * 100 : 0;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate({ to: "/procurement/matches" })}
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to matches
       </Button>
 
@@ -146,9 +124,8 @@ function MatchDetail() {
           <div className="flex-1">
             <div className="font-semibold">Payment release blocked</div>
             <div className="text-xs">
-              Variance exceeds the {m.variance_threshold_pct}% tolerance. A
-              finance admin must review and approve before payment can be
-              released.
+              Variance exceeds the {m.variance_threshold_pct}% tolerance. A finance admin must
+              review and approve before payment can be released.
             </div>
           </div>
           {access.data.canOverride && (
@@ -173,10 +150,7 @@ function MatchDetail() {
                   />
                 </div>
                 <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setOverrideOpen(false)}
-                  >
+                  <Button variant="outline" onClick={() => setOverrideOpen(false)}>
                     Cancel
                   </Button>
                   <Button
@@ -208,9 +182,7 @@ function MatchDetail() {
             <div className="font-display text-xl font-bold">
               {formatCurrency(m.invoice_amount, m.invoice_currency_code)}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {m.vendor_invoice_number}
-            </div>
+            <div className="text-xs text-muted-foreground">{m.vendor_invoice_number}</div>
             {m.invoice_file_url && (
               <a
                 href={m.invoice_file_url}
@@ -231,9 +203,7 @@ function MatchDetail() {
             <div className="font-display text-xl font-bold">
               {formatCurrency(m.po_total, m.invoice_currency_code)}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {m.po_number ?? "—"}
-            </div>
+            <div className="text-xs text-muted-foreground">{m.po_number ?? "—"}</div>
           </CardContent>
         </Card>
         <Card>
@@ -241,12 +211,8 @@ function MatchDetail() {
             <CardTitle className="text-sm">GRN</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <div className="font-display text-xl font-bold">
-              {m.grn_number ?? "—"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Confirmed receipt reference
-            </div>
+            <div className="font-display text-xl font-bold">{m.grn_number ?? "—"}</div>
+            <div className="text-xs text-muted-foreground">Confirmed receipt reference</div>
           </CardContent>
         </Card>
       </section>
@@ -259,33 +225,21 @@ function MatchDetail() {
           <dt className="text-muted-foreground">Amount Δ</dt>
           <dd className="sm:col-span-2">
             {formatCurrency(m.amount_variance ?? 0, m.invoice_currency_code)}{" "}
-            <Badge
-              variant={
-                Math.abs(pct) > m.variance_threshold_pct
-                  ? "destructive"
-                  : "default"
-              }
-            >
+            <Badge variant={Math.abs(pct) > m.variance_threshold_pct ? "destructive" : "default"}>
               {pct >= 0 ? "+" : ""}
               {pct.toFixed(2)}%
             </Badge>
           </dd>
           <dt className="text-muted-foreground">Qty variance</dt>
           <dd className="sm:col-span-2">
-            {m.qty_variance_pct == null
-              ? "—"
-              : `${m.qty_variance_pct.toFixed(2)}%`}
+            {m.qty_variance_pct == null ? "—" : `${m.qty_variance_pct.toFixed(2)}%`}
           </dd>
           <dt className="text-muted-foreground">Price variance</dt>
           <dd className="sm:col-span-2">
-            {m.price_variance_pct == null
-              ? "—"
-              : `${m.price_variance_pct.toFixed(2)}%`}
+            {m.price_variance_pct == null ? "—" : `${m.price_variance_pct.toFixed(2)}%`}
           </dd>
           <dt className="text-muted-foreground">Tolerance</dt>
-          <dd className="sm:col-span-2">
-            {m.variance_threshold_pct.toFixed(2)}%
-          </dd>
+          <dd className="sm:col-span-2">{m.variance_threshold_pct.toFixed(2)}%</dd>
         </dl>
 
         {access.data.canOverride && (

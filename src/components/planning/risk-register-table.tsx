@@ -42,12 +42,7 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-export function RiskRegisterTable({
-  risks,
-  canWrite,
-  onNew,
-  onSelect,
-}: Props) {
+export function RiskRegisterTable({ risks, canWrite, onNew, onSelect }: Props) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<RiskCategory | "all">("all");
   const [status, setStatus] = useState<RiskStatus | "all">("all");
@@ -68,10 +63,7 @@ export function RiskRegisterTable({
   const today = new Date();
 
   const handleExport = () => {
-    downloadCsv(
-      `risks-${format(today, "yyyyMMdd-HHmm")}.csv`,
-      buildRisksCsv(filtered),
-    );
+    downloadCsv(`risks-${format(today, "yyyyMMdd-HHmm")}.csv`, buildRisksCsv(filtered));
   };
 
   return (
@@ -117,12 +109,7 @@ export function RiskRegisterTable({
             ))}
           </SelectContent>
         </Select>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExport}
-          disabled={filtered.length === 0}
-        >
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0}>
           <Download size={14} aria-hidden className="mr-1" />
           Export CSV
         </Button>
@@ -158,18 +145,10 @@ export function RiskRegisterTable({
             </TableHeader>
             <TableBody>
               {filtered.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className="cursor-pointer"
-                  onClick={() => onSelect(r.id)}
-                >
-                  <TableCell className="font-medium text-foreground">
-                    {r.title}
-                  </TableCell>
+                <TableRow key={r.id} className="cursor-pointer" onClick={() => onSelect(r.id)}>
+                  <TableCell className="font-medium text-foreground">{r.title}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
-                      {RISK_CATEGORY_LABEL[r.category]}
-                    </Badge>
+                    <Badge variant="secondary">{RISK_CATEGORY_LABEL[r.category]}</Badge>
                   </TableCell>
                   <TableCell className="text-center">{r.probability}</TableCell>
                   <TableCell className="text-center">{r.impact}</TableCell>

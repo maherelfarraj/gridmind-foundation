@@ -131,11 +131,7 @@ export function CrmListView({ opportunities }: Props) {
           onChange={setOwnerId}
           options={owners.map((o) => ({ value: o.id, label: o.label }))}
         />
-        <Button
-          variant="outline"
-          onClick={handleExport}
-          disabled={exporting || rows.length === 0}
-        >
+        <Button variant="outline" onClick={handleExport} disabled={exporting || rows.length === 0}>
           <Download size={16} aria-hidden />
           Export CSV
         </Button>
@@ -164,9 +160,7 @@ export function CrmListView({ opportunities }: Props) {
               rows.map((o) => (
                 <TableRow key={o.id}>
                   <TableCell className="font-medium">{o.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {o.account_name ?? "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{o.account_name ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="text-[10px] font-normal">
                       {STAGE_LABELS[o.stage]}

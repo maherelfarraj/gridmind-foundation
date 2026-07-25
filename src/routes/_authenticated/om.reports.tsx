@@ -9,12 +9,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GenerateOmReportDialog } from "@/components/om/GenerateOmReportDialog";
 import {
@@ -79,8 +74,7 @@ function OmReportsPage() {
               Monthly O&amp;M reports
             </h1>
             <p className="text-sm text-muted-foreground">
-              Availability, PR, alarms, work orders and spend — one branded PDF
-              per project + month.
+              Availability, PR, alarms, work orders and spend — one branded PDF per project + month.
             </p>
           </div>
           <GenerateOmReportDialog projects={projects.data ?? []} />
@@ -102,38 +96,23 @@ function OmReportsPage() {
             <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" aria-hidden />
-                <span className="text-sm font-medium">
-                  Failed to load reports
-                </span>
+                <span className="text-sm font-medium">Failed to load reports</span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                {list.error instanceof Error
-                  ? list.error.message
-                  : "Unknown error"}
+                {list.error instanceof Error ? list.error.message : "Unknown error"}
               </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-3"
-                onClick={() => list.refetch()}
-              >
+              <Button size="sm" variant="outline" className="mt-3" onClick={() => list.refetch()}>
                 Retry
               </Button>
             </div>
           ) : (list.data ?? []).length === 0 ? (
             <div className="rounded-md border border-dashed border-border bg-muted/30 p-10 text-center">
               <div className="mx-auto mb-3 flex justify-center">
-                <Info
-                  className="h-8 w-8 text-muted-foreground"
-                  aria-hidden
-                />
+                <Info className="h-8 w-8 text-muted-foreground" aria-hidden />
               </div>
-              <p className="text-sm font-medium text-foreground">
-                No reports yet
-              </p>
+              <p className="text-sm font-medium text-foreground">No reports yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Click <strong>Generate monthly report</strong> to build the
-                first one.
+                Click <strong>Generate monthly report</strong> to build the first one.
               </p>
             </div>
           ) : (
@@ -167,9 +146,7 @@ function ReportRow({ row }: { row: OmReportRow }) {
   const getUrl = useServerFn(getOmReportDownloadUrl);
   const [busy, setBusy] = useState(false);
   const period = format(parseISO(`${row.period_start}T00:00:00`), "MMM yyyy");
-  const generated = row.generated_at
-    ? format(parseISO(row.generated_at), "PP p")
-    : "—";
+  const generated = row.generated_at ? format(parseISO(row.generated_at), "PP p") : "—";
 
   async function download() {
     setBusy(true);
@@ -190,18 +167,11 @@ function ReportRow({ row }: { row: OmReportRow }) {
       <td className="py-2">{period}</td>
       <td className="py-2 capitalize">{row.report_type}</td>
       <td className="py-2">
-        <Badge variant={row.status === "generated" ? "default" : "outline"}>
-          {row.status}
-        </Badge>
+        <Badge variant={row.status === "generated" ? "default" : "outline"}>{row.status}</Badge>
       </td>
       <td className="py-2 text-muted-foreground">{generated}</td>
       <td className="py-2 text-right">
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!row.pdf_path || busy}
-          onClick={download}
-        >
+        <Button size="sm" variant="outline" disabled={!row.pdf_path || busy} onClick={download}>
           <Download className="mr-2 h-3.5 w-3.5" aria-hidden />
           PDF
         </Button>

@@ -7,11 +7,7 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  pmPlanUpsertSchema,
-  type PmChecklistStep,
-  type PmFrequency,
-} from "@/lib/pm-plans.rules";
+import { pmPlanUpsertSchema, type PmChecklistStep, type PmFrequency } from "@/lib/pm-plans.rules";
 import { generatePmWorkOrders } from "@/lib/pm-plans.server";
 
 function httpError(status: number, code: string, message?: string): never {
@@ -34,10 +30,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
     roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as never })),
   );

@@ -7,10 +7,7 @@ import {
   getHandoverBoardInput,
   signCccTransferInput,
 } from "@/lib/handover.rules";
-import {
-  autoCompleteHandoverChecklist,
-  checkHandoverPrereqs,
-} from "@/lib/handover.server";
+import { autoCompleteHandoverChecklist, checkHandoverPrereqs } from "@/lib/handover.server";
 
 // ---------------------------------------------------------------------------
 // rules
@@ -23,12 +20,8 @@ describe("handover.rules", () => {
   });
 
   it("input schemas require a uuid", () => {
-    expect(() =>
-      getHandoverBoardInput.parse({ projectId: "not-a-uuid" }),
-    ).toThrow();
-    expect(() =>
-      signCccTransferInput.parse({ projectId: "still-not" }),
-    ).toThrow();
+    expect(() => getHandoverBoardInput.parse({ projectId: "not-a-uuid" })).toThrow();
+    expect(() => signCccTransferInput.parse({ projectId: "still-not" })).toThrow();
     const good = "11111111-1111-1111-1111-111111111111";
     expect(getHandoverBoardInput.parse({ projectId: good }).projectId).toBe(good);
     expect(signCccTransferInput.parse({ projectId: good }).projectId).toBe(good);
@@ -106,9 +99,7 @@ function makeFakeSupabase(fixtures: {
           }
           if (table === "commissioning_certificates" && !q._head) {
             return resolve({
-              data: fixtures.cccStatus
-                ? [{ id: "ccc-1", status: fixtures.cccStatus }]
-                : [],
+              data: fixtures.cccStatus ? [{ id: "ccc-1", status: fixtures.cccStatus }] : [],
               error: null,
             });
           }
@@ -134,12 +125,7 @@ describe("checkHandoverPrereqs", () => {
     expect(res.passes.turnover_delivered).toBe(false);
     expect(res.passes.ccc_signed).toBe(false);
     expect(res.reasons.map((r) => r.key).sort()).toEqual(
-      [
-        "ccc_signed",
-        "cod_signed",
-        "no_open_category_a_punch",
-        "turnover_delivered",
-      ].sort(),
+      ["ccc_signed", "cod_signed", "no_open_category_a_punch", "turnover_delivered"].sort(),
     );
   });
 

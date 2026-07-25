@@ -7,10 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  getMyDrawingRoles,
-  listDrawingSignoffs,
-} from "@/lib/drawings.functions";
+import { getMyDrawingRoles, listDrawingSignoffs } from "@/lib/drawings.functions";
 import {
   drawingRolesQueryOptions,
   drawingSignoffsQueryOptions,
@@ -38,9 +35,7 @@ export function SignoffCard({ drawingId, projectId }: Props) {
   return (
     <Card className="flex flex-col gap-4 p-4">
       <header className="flex flex-col gap-1">
-        <h3 className="font-display text-base font-semibold text-foreground">
-          IFD sign-off
-        </h3>
+        <h3 className="font-display text-base font-semibold text-foreground">IFD sign-off</h3>
         <p className="text-xs text-muted-foreground">
           IFC promotion is blocked until an engineering_admin or project_admin approves.
         </p>
@@ -61,7 +56,9 @@ export function SignoffCard({ drawingId, projectId }: Props) {
           <div>
             <Button
               size="sm"
-              onClick={() => request.mutate({ note: note || null }, { onSuccess: () => setNote("") })}
+              onClick={() =>
+                request.mutate({ note: note || null }, { onSuccess: () => setNote("") })
+              }
               disabled={request.isPending}
             >
               Request sign-off
@@ -73,9 +70,7 @@ export function SignoffCard({ drawingId, projectId }: Props) {
       {pending && (
         <div className="flex flex-col gap-2 rounded-md border border-accent/40 bg-accent/10 p-3">
           <p className="text-sm">
-            <Badge className="bg-accent/20 text-accent-foreground border-accent/40">
-              Pending
-            </Badge>{" "}
+            <Badge className="bg-accent/20 text-accent-foreground border-accent/40">Pending</Badge>{" "}
             Requested {new Date(pending.created_at).toLocaleString()}
           </p>
           {pending.metadata?.note && (

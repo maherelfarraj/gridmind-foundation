@@ -34,7 +34,11 @@ export const submittalCreateInput = z.object({
   projectId: z.string().uuid(),
   title: z.string().trim().min(2).max(300),
   specSection: z.string().trim().max(120).nullable().optional(),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   filePath: z.string().trim().max(500).nullable().optional(),
 });
 export type SubmittalCreateInput = z.infer<typeof submittalCreateInput>;
@@ -50,16 +54,16 @@ export const submittalReviseInput = z.object({
   id: z.string().uuid(),
   title: z.string().trim().min(2).max(300).optional(),
   specSection: z.string().trim().max(120).nullable().optional(),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   filePath: z.string().trim().max(500).nullable().optional(),
 });
 export type SubmittalReviseInput = z.infer<typeof submittalReviseInput>;
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "engineering_admin",
-  "company_admin",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "engineering_admin", "company_admin"]);
 export function canWriteSubmittal(roles: readonly string[]): boolean {
   return roles.some((r) => WRITE_ROLES.has(r));
 }

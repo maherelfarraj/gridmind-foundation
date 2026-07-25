@@ -134,8 +134,7 @@ export function useAttachInvoiceFile() {
   const qc = useQueryClient();
   const fn = useServerFn(attachInvoiceFile);
   return useMutation({
-    mutationFn: (input: { matchId: string; path: string }) =>
-      fn({ data: input }),
+    mutationFn: (input: { matchId: string; path: string }) => fn({ data: input }),
     onSuccess: (_res, vars) => {
       qc.invalidateQueries({ queryKey: ["match", vars.matchId] });
     },
@@ -147,8 +146,7 @@ export function useOverrideMatch(matchId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(overrideMatchVariance);
   return useMutation({
-    mutationFn: (resolution_note: string) =>
-      fn({ data: { matchId, resolution_note } }),
+    mutationFn: (resolution_note: string) => fn({ data: { matchId, resolution_note } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["match", matchId] });
       qc.invalidateQueries({ queryKey: ["matches"] });

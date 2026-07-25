@@ -40,8 +40,22 @@ describe("parseQuantities", () => {
 });
 
 const WBS: RollupInputWbs[] = [
-  { id: "w1", name: "Pile foundations", discipline: "civil", area: "Block A", uom: "piles", planned_quantity: 100 },
-  { id: "w2", name: "Trackers", discipline: "mechanical", area: "Block B", uom: "trackers", planned_quantity: null },
+  {
+    id: "w1",
+    name: "Pile foundations",
+    discipline: "civil",
+    area: "Block A",
+    uom: "piles",
+    planned_quantity: 100,
+  },
+  {
+    id: "w2",
+    name: "Trackers",
+    discipline: "mechanical",
+    area: "Block B",
+    uom: "trackers",
+    planned_quantity: null,
+  },
 ];
 
 function q(date: string, wbs: string, qty: number, disc = "civil", area = "Block A"): DprQuantity {
@@ -87,10 +101,7 @@ describe("rollupBoard", () => {
 
   it("keeps all three columns in stable order and drops non-board disciplines", () => {
     const cols = rollupBoard(
-      [
-        q("2026-07-25", "w1", 1, "hse", "X"),
-        q("2026-07-25", "w1", 2, "civil"),
-      ],
+      [q("2026-07-25", "w1", 1, "hse", "X"), q("2026-07-25", "w1", 2, "civil")],
       WBS,
       { today },
     );

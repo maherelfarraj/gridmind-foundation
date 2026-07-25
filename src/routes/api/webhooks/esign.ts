@@ -10,11 +10,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/integrations/supabase/admin";
 import { auditGuardEvent } from "@/lib/public-api/guard";
-import {
-  enforceMode,
-  inboundGate,
-  jsonResponse,
-} from "@/lib/public-api/inbound-guard";
+import { enforceMode, inboundGate, jsonResponse } from "@/lib/public-api/inbound-guard";
 import { verifyWebhook } from "@/lib/esign/provider";
 
 const ROUTE = "webhooks:esign";
@@ -104,9 +100,7 @@ export const Route = createFileRoute("/api/webhooks/esign")({
           });
         }
 
-        const { applyEsignEventInternal } = await import(
-          "@/lib/proposal.functions"
-        );
+        const { applyEsignEventInternal } = await import("@/lib/proposal.functions");
         try {
           await applyEsignEventInternal(
             admin,

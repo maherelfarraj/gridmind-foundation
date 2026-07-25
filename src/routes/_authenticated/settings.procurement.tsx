@@ -50,12 +50,10 @@ function ProcurementSettings() {
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
           <Settings2 className="h-3.5 w-3.5" /> Settings · Procurement
         </div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Procurement policy
-        </h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">Procurement policy</h1>
         <p className="text-sm text-muted-foreground">
-          Purchase orders above this total require finance-admin (CFO) or
-          company-admin approval before they can be issued.
+          Purchase orders above this total require finance-admin (CFO) or company-admin approval
+          before they can be issued.
         </p>
       </header>
 
@@ -73,10 +71,7 @@ function ProcurementSettings() {
           />
           <p className="text-xs text-muted-foreground">
             In your default company currency. Currently{" "}
-            <span className="font-medium">
-              {thresholdQ.data.threshold.toLocaleString()}
-            </span>
-            .
+            <span className="font-medium">{thresholdQ.data.threshold.toLocaleString()}</span>.
           </p>
         </div>
 
@@ -84,10 +79,7 @@ function ProcurementSettings() {
           <Button
             onClick={() => setThreshold.mutate(parsed)}
             disabled={
-              !canEdit ||
-              !isValid ||
-              parsed === thresholdQ.data.threshold ||
-              setThreshold.isPending
+              !canEdit || !isValid || parsed === thresholdQ.data.threshold || setThreshold.isPending
             }
           >
             {setThreshold.isPending ? "Saving…" : "Save threshold"}

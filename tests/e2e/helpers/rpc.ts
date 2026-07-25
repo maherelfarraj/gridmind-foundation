@@ -6,16 +6,16 @@
 // triggers the server-function handlers use. Fixture setup/teardown uses a
 // service-role client that never appears in assertions.
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/integrations/supabase/types';
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-const URL_ = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '';
+const URL_ = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
   process.env.SUPABASE_PUBLISHABLE_KEY ??
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
   process.env.VITE_SUPABASE_ANON_KEY ??
-  '';
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+  "";
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 export function envReady(): boolean {
   return !!URL_ && !!ANON && !!SERVICE;
@@ -35,7 +35,7 @@ export async function login(
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data, error } = await c.auth.signInWithPassword({ email, password });
-  if (error || !data.session) throw error ?? new Error('login failed');
+  if (error || !data.session) throw error ?? new Error("login failed");
   const token = data.session.access_token;
   const userId = data.user!.id;
   const authed = createClient<Database>(URL_, ANON, {

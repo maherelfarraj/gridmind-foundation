@@ -23,16 +23,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import { __resetDbForTests, listAllMutations } from "@/lib/offline/db";
-import {
-  clearDispatchersForTests,
-  registerDispatcher,
-} from "@/lib/offline/dispatch";
-import {
-  discardMutation,
-  enqueueMutation,
-  retryMutation,
-  syncQueue,
-} from "@/lib/offline/queue";
+import { clearDispatchersForTests, registerDispatcher } from "@/lib/offline/dispatch";
+import { discardMutation, enqueueMutation, retryMutation, syncQueue } from "@/lib/offline/queue";
 
 async function resetIdb() {
   await __resetDbForTests();
@@ -59,9 +51,7 @@ describe("offline queue", () => {
       action: "manpower",
       payload: { dprId: "abc", headcount: 5 },
     });
-    expect(key).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
+    expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
     const rows = await listAllMutations();
     expect(rows).toHaveLength(1);
     expect(rows[0].status).toBe("pending");
@@ -129,9 +119,7 @@ describe("offline queue", () => {
   it("retry re-drains a previously failed entry", async () => {
     const spy = vi
       .fn()
-      .mockRejectedValueOnce(
-        Object.assign(new Error("boom"), { statusCode: 400, body: "{}" }),
-      )
+      .mockRejectedValueOnce(Object.assign(new Error("boom"), { statusCode: 400, body: "{}" }))
       .mockResolvedValueOnce({ ok: true });
     registerDispatcher("dpr", "manpower", spy);
     const key = await enqueueMutation({

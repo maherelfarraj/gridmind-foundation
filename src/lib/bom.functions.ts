@@ -3,10 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   applyBuffer,
   BOM_CATEGORIES,
@@ -77,9 +74,7 @@ export const listBomSnapshots = createServerFn({ method: "GET" })
     const project = await loadBomProject(context, data.projectId);
     const { data: rows, error } = await context.supabase
       .from("bom_snapshots")
-      .select(
-        "id, project_id, company_id, version, status, params, totals, created_at, updated_at",
-      )
+      .select("id, project_id, company_id, version, status, params, totals, created_at, updated_at")
       .eq("project_id", project.id)
       .order("version", { ascending: false });
     if (error) throw error;
@@ -97,9 +92,7 @@ export const getBomSnapshot = createServerFn({ method: "GET" })
     const snap = await loadSnapshotWithProject(context, data.snapshotId);
     const { data: full, error: sErr } = await context.supabase
       .from("bom_snapshots")
-      .select(
-        "id, project_id, company_id, version, status, params, totals, created_at, updated_at",
-      )
+      .select("id, project_id, company_id, version, status, params, totals, created_at, updated_at")
       .eq("id", snap.id)
       .maybeSingle();
     if (sErr) throw sErr;
@@ -161,8 +154,7 @@ export const generateBom = createServerFn({ method: "POST" })
       capacity_mwp_dc: capacityMwp,
       module_wp: moduleWp,
       dc_ac_ratio: pv?.dc_ac_ratio != null ? Number(pv.dc_ac_ratio) : undefined,
-      inverter_count:
-        pv?.inverter_count != null ? Number(pv.inverter_count) : undefined,
+      inverter_count: pv?.inverter_count != null ? Number(pv.inverter_count) : undefined,
       tracker_type: (pv?.tracker_type as any) ?? undefined,
     };
     const computed = computeBom(params);
@@ -216,23 +208,15 @@ export const generateBom = createServerFn({ method: "POST" })
       notes: l.notes ?? null,
     }));
 
-    const { error: lErr } = await context.supabase
-      .from("bom_lines")
-      .insert(linesPayload as any);
+    const { error: lErr } = await context.supabase.from("bom_lines").insert(linesPayload as any);
     if (lErr) throw lErr;
 
-    await audit(
-      context,
-      "engineering.bom_generated",
-      "bom_snapshots",
-      snap!.id,
-      {
-        project_id: project.id,
-        version: nextVersion,
-        line_count: computed.length,
-        params,
-      },
-    );
+    await audit(context, "engineering.bom_generated", "bom_snapshots", snap!.id, {
+      project_id: project.id,
+      version: nextVersion,
+      line_count: computed.length,
+      params,
+    });
 
     return { ok: true, snapshotId: snap!.id, version: nextVersion };
   });
@@ -256,17 +240,13 @@ export const updateBomLine = createServerFn({ method: "POST" })
 
     await assertBomRole(context, (line as any).company_id, BOM_WRITE_ROLES);
 
-    const snap = await loadSnapshotWithProject(
-      context,
-      (line as any).snapshot_id,
-    );
+    const snap = await loadSnapshotWithProject(context, (line as any).snapshot_id);
     if (snap.status === "released" || snap.status === "superseded") {
       bomHttpError(409, "snapshot_locked", "Released BOM lines are read-only.");
     }
 
     const nextQty = data.qty ?? Number((line as any).qty);
-    const nextBuffer =
-      data.buffer_pct ?? Number((line as any).buffer_pct);
+    const nextBuffer = data.buffer_pct ?? Number((line as any).buffer_pct);
     const category = isBomCategory((line as any).category)
       ? ((line as any).category as BomCategory)
       : "other";
@@ -285,7 +265,6 @@ export const updateBomLine = createServerFn({ method: "POST" })
       .update(patch as any)
       .eq("id", data.lineId);
     if (uErr) throw uErr;
-
 
     // Refresh snapshot totals.
     const { data: siblingLines } = await context.supabase
@@ -338,16 +317,10 @@ export const releaseBom = createServerFn({ method: "POST" })
       .eq("id", snap.id);
     if (rErr) throw rErr;
 
-    await audit(
-      context,
-      "engineering.bom_released",
-      "bom_snapshots",
-      snap.id,
-      {
-        project_id: snap.project_id,
-        version: snap.version,
-      },
-    );
+    await audit(context, "engineering.bom_released", "bom_snapshots", snap.id, {
+      project_id: snap.project_id,
+      version: snap.version,
+    });
 
     return { ok: true };
   });
@@ -358,24 +331,19 @@ export const releaseBom = createServerFn({ method: "POST" })
 export const getMyBomRoles = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => projectIdInput.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ canWrite: boolean; canRelease: boolean }> => {
-      requireSupabaseAuth(context);
-      const project = await loadBomProject(context, data.projectId);
-      const { data: rows, error } = await context.supabase
-        .from("user_roles")
-        .select("role")
-        .eq("company_id", project.company_id);
-      if (error) throw error;
-      const roles = new Set((rows ?? []).map((r: any) => r.role));
-      const canWrite = BOM_WRITE_ROLES.some((r) => roles.has(r));
-      const canRelease = BOM_RELEASE_ROLES.some((r) => roles.has(r));
-      return { canWrite, canRelease };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ canWrite: boolean; canRelease: boolean }> => {
+    requireSupabaseAuth(context);
+    const project = await loadBomProject(context, data.projectId);
+    const { data: rows, error } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("company_id", project.company_id);
+    if (error) throw error;
+    const roles = new Set((rows ?? []).map((r: any) => r.role));
+    const canWrite = BOM_WRITE_ROLES.some((r) => roles.has(r));
+    const canRelease = BOM_RELEASE_ROLES.some((r) => roles.has(r));
+    return { canWrite, canRelease };
+  });
 
 // ---------------------------------------------------------------------------
 // KPI hook for procurement Batch 07
@@ -405,9 +373,7 @@ export const getBomKpi = createServerFn({ method: "GET" })
         snapshotCount: list.length,
         releasedVersion: released?.version ?? null,
         releasedTotalCost:
-          released?.totals?.total_cost != null
-            ? Number(released.totals.total_cost)
-            : null,
+          released?.totals?.total_cost != null ? Number(released.totals.total_cost) : null,
       };
     },
   );

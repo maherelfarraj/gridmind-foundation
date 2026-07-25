@@ -41,9 +41,7 @@ describe("assertSovMatchesValue", () => {
 
   it("no-ops when value is null", () => {
     expect(() =>
-      assertSovMatchesValue(null, [
-        { line_no: 1, description: "a", scheduled_amount: 100 },
-      ]),
+      assertSovMatchesValue(null, [{ line_no: 1, description: "a", scheduled_amount: 100 }]),
     ).not.toThrow();
   });
 });
@@ -75,19 +73,14 @@ describe("isObligationOverdue", () => {
 
 describe("ExtractedObligationSchema", () => {
   it("accepts minimum shape", () => {
-    expect(
-      ExtractedObligationSchema.safeParse({ title: "Bond" }).success,
-    ).toBe(true);
+    expect(ExtractedObligationSchema.safeParse({ title: "Bond" }).success).toBe(true);
   });
   it("rejects empty title", () => {
-    expect(
-      ExtractedObligationSchema.safeParse({ title: "" }).success,
-    ).toBe(false);
+    expect(ExtractedObligationSchema.safeParse({ title: "" }).success).toBe(false);
   });
   it("rejects malformed due_date", () => {
     expect(
-      ExtractedObligationSchema.safeParse({ title: "x", due_date: "next month" })
-        .success,
+      ExtractedObligationSchema.safeParse({ title: "x", due_date: "next month" }).success,
     ).toBe(false);
   });
 });

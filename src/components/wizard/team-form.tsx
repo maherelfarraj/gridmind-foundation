@@ -17,11 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { EligibleUser } from "@/lib/projects.functions";
-import {
-  DEPT_LEAD_ROLES,
-  type DeptLeadKey,
-  type ProjectTeam,
-} from "@/lib/schemas/project-wizard";
+import { DEPT_LEAD_ROLES, type DeptLeadKey, type ProjectTeam } from "@/lib/schemas/project-wizard";
 
 const DEPT_LABELS: Record<DeptLeadKey, string> = {
   engineering: "Engineering",
@@ -54,12 +50,8 @@ export function TeamForm({
   onSubmit,
   onBack,
 }: TeamFormProps) {
-  const [adminId, setAdminId] = useState<string>(
-    defaultValues?.project_admin_id ?? "",
-  );
-  const [memberIds, setMemberIds] = useState<Set<string>>(
-    new Set(defaultValues?.member_ids ?? []),
-  );
+  const [adminId, setAdminId] = useState<string>(defaultValues?.project_admin_id ?? "");
+  const [memberIds, setMemberIds] = useState<Set<string>>(new Set(defaultValues?.member_ids ?? []));
   const [deptLeads, setDeptLeads] = useState<Partial<Record<DeptLeadKey, string>>>(
     defaultValues?.dept_leads ?? {},
   );
@@ -113,8 +105,8 @@ export function TeamForm({
         </div>
         {projectAdmins.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No users hold the <code>project_admin</code> role yet. Grant the
-            role in Settings → Users, then return here.
+            No users hold the <code>project_admin</code> role yet. Grant the role in Settings →
+            Users, then return here.
           </p>
         ) : (
           <Select value={adminId} onValueChange={setAdminId}>
@@ -136,9 +128,7 @@ export function TeamForm({
       <Card className="flex flex-col gap-3 border-border bg-card p-6">
         <div>
           <Label className="text-sm font-medium text-foreground">Members</Label>
-          <p className="text-xs text-muted-foreground">
-            The project admin is added automatically.
-          </p>
+          <p className="text-xs text-muted-foreground">The project admin is added automatically.</p>
         </div>
         <div className="relative max-w-md">
           <Search
@@ -155,19 +145,14 @@ export function TeamForm({
         </div>
         <div className="max-h-72 overflow-auto rounded-md border border-border">
           {filteredMembers.length === 0 ? (
-            <p className="p-3 text-sm text-muted-foreground">
-              No matching users.
-            </p>
+            <p className="p-3 text-sm text-muted-foreground">No matching users.</p>
           ) : (
             <ul className="divide-y divide-border">
               {filteredMembers.map((u) => {
                 const isAdmin = u.id === adminId;
                 const checked = isAdmin || memberIds.has(u.id);
                 return (
-                  <li
-                    key={u.id}
-                    className="flex items-center gap-3 px-3 py-2"
-                  >
+                  <li key={u.id} className="flex items-center gap-3 px-3 py-2">
                     <Checkbox
                       id={`m-${u.id}`}
                       checked={checked}
@@ -180,9 +165,7 @@ export function TeamForm({
                     >
                       <span className="text-foreground">{displayName(u)}</span>
                       {u.email && u.full_name ? (
-                        <span className="text-xs text-muted-foreground">
-                          {u.email}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{u.email}</span>
                       ) : null}
                     </label>
                     {isAdmin ? (
@@ -201,12 +184,8 @@ export function TeamForm({
       {/* Department leads */}
       <Card className="flex flex-col gap-4 border-border bg-card p-6">
         <div>
-          <Label className="text-sm font-medium text-foreground">
-            Department leads
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            Optional. Leave blank to assign later.
-          </p>
+          <Label className="text-sm font-medium text-foreground">Department leads</Label>
+          <p className="text-xs text-muted-foreground">Optional. Leave blank to assign later.</p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {DEPT_LEAD_ROLES.map((dept) => {
@@ -214,9 +193,7 @@ export function TeamForm({
             const value = deptLeads[dept] ?? "";
             return (
               <div key={dept} className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground">
-                  {DEPT_LABELS[dept]}
-                </Label>
+                <Label className="text-xs text-muted-foreground">{DEPT_LABELS[dept]}</Label>
                 <Select
                   value={value || "__none__"}
                   onValueChange={(v) =>
@@ -228,11 +205,7 @@ export function TeamForm({
                 >
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={
-                        options.length === 0
-                          ? "No eligible users"
-                          : "Assign later"
-                      }
+                      placeholder={options.length === 0 ? "No eligible users" : "Assign later"}
                     />
                   </SelectTrigger>
                   <SelectContent>

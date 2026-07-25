@@ -26,10 +26,7 @@ import {
 import { InvoiceDetailDrawer } from "@/components/finance/invoice-detail-drawer";
 import { downloadCsv } from "@/lib/csv";
 import { toInvoicesCsv } from "@/lib/invoices.csv";
-import {
-  invoicesAccessQueryOptions,
-  invoicesListQueryOptions,
-} from "@/lib/invoices.query";
+import { invoicesAccessQueryOptions, invoicesListQueryOptions } from "@/lib/invoices.query";
 import {
   INVOICE_DIRECTIONS,
   INVOICE_STATUSES,
@@ -42,9 +39,16 @@ export const Route = createFileRoute("/_authenticated/finance/invoices")({
   head: () => ({
     meta: [
       { title: "Invoices — GridMind EPC" },
-      { name: "description", content: "Track payable and receivable invoices, guard payment release with 3-way match variance." },
+      {
+        name: "description",
+        content:
+          "Track payable and receivable invoices, guard payment release with 3-way match variance.",
+      },
       { property: "og:title", content: "Invoices — GridMind EPC" },
-      { property: "og:description", content: "Track payable and receivable invoices with milestone billing." },
+      {
+        property: "og:description",
+        content: "Track payable and receivable invoices with milestone billing.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -97,7 +101,10 @@ function InvoicesPage() {
           size="sm"
           disabled={rows.length === 0}
           onClick={() =>
-            downloadCsv(`invoices-${new Date().toISOString().slice(0, 10)}.csv`, toInvoicesCsv(rows))
+            downloadCsv(
+              `invoices-${new Date().toISOString().slice(0, 10)}.csv`,
+              toInvoicesCsv(rows),
+            )
           }
         >
           <Download className="mr-2 size-4" /> Export CSV

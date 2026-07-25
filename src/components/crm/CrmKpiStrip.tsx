@@ -11,18 +11,12 @@ export function CrmKpiStrip({ data, isLoading }: Props) {
   const items = [
     {
       label: "Win rate",
-      value:
-        data?.winRate == null
-          ? "—"
-          : `${(data.winRate * 100).toFixed(0)}%`,
+      value: data?.winRate == null ? "—" : `${(data.winRate * 100).toFixed(0)}%`,
       hint: "Trailing 12 months",
     },
     {
       label: "Proposal cycle",
-      value:
-        data?.proposalCycleDays == null
-          ? "—"
-          : `${data.proposalCycleDays.toFixed(1)}d`,
+      value: data?.proposalCycleDays == null ? "—" : `${data.proposalCycleDays.toFixed(1)}d`,
       hint: "Avg create → sent",
     },
     {
@@ -39,10 +33,7 @@ export function CrmKpiStrip({ data, isLoading }: Props) {
     },
     {
       label: "Pipeline coverage",
-      value:
-        data?.pipelineCoverage == null
-          ? "—"
-          : `${data.pipelineCoverage.toFixed(1)}×`,
+      value: data?.pipelineCoverage == null ? "—" : `${data.pipelineCoverage.toFixed(1)}×`,
       hint: "Weighted vs. 3-mo target",
     },
   ];

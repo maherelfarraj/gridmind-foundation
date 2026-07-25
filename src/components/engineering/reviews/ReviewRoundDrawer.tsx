@@ -67,25 +67,16 @@ export function ReviewRoundDrawer({
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap gap-2 text-xs">
             <Badge>Status: {round.status}</Badge>
-            <Badge variant="outline">
-              Markups open: {round.markup_summary.open}
-            </Badge>
-            <Badge variant="outline">
-              Resolved: {round.markup_summary.resolved}
-            </Badge>
-            {round.due_date && (
-              <Badge variant="outline">Due {round.due_date}</Badge>
-            )}
+            <Badge variant="outline">Markups open: {round.markup_summary.open}</Badge>
+            <Badge variant="outline">Resolved: {round.markup_summary.resolved}</Badge>
+            {round.due_date && <Badge variant="outline">Due {round.due_date}</Badge>}
           </div>
 
           <Separator />
 
           <div className="space-y-3">
             {round.signoffs.map((s) => (
-              <div
-                key={s.id}
-                className="rounded-md border border-border p-3"
-              >
+              <div key={s.id} className="rounded-md border border-border p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-medium">{s.reviewer_name}</p>
@@ -93,10 +84,7 @@ export function ReviewRoundDrawer({
                       {s.reviewer_org} · {s.reviewer_email ?? "no email"}
                     </p>
                   </div>
-                  <Badge
-                    variant={s.decision == null ? "outline" : "default"}
-                    className="text-xs"
-                  >
+                  <Badge variant={s.decision == null ? "outline" : "default"} className="text-xs">
                     {decisionLabel(s.decision)}
                   </Badge>
                 </div>
@@ -128,31 +116,21 @@ export function ReviewRoundDrawer({
                   />
                 )}
 
-                {s.decision == null &&
-                  s.reviewer_id !== currentUserId &&
-                  canWaive && (
-                    <WaiveForm
-                      onSubmit={(comment) =>
-                        waive.mutate({ signoffId: s.id, comment })
-                      }
-                      pending={waive.isPending}
-                    />
-                  )}
+                {s.decision == null && s.reviewer_id !== currentUserId && canWaive && (
+                  <WaiveForm
+                    onSubmit={(comment) => waive.mutate({ signoffId: s.id, comment })}
+                    pending={waive.isPending}
+                  />
+                )}
               </div>
             ))}
           </div>
 
-          {canClose &&
-            round.status === "open" &&
-            roundIsComplete(round.signoffs) && (
-              <Button
-                variant="outline"
-                onClick={() => close.mutate()}
-                disabled={close.isPending}
-              >
-                Close round
-              </Button>
-            )}
+          {canClose && round.status === "open" && roundIsComplete(round.signoffs) && (
+            <Button variant="outline" onClick={() => close.mutate()} disabled={close.isPending}>
+              Close round
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>
@@ -163,18 +141,14 @@ function SignoffForm({
   onSubmit,
   pending,
 }: {
-  onSubmit: (
-    decision: "approved" | "approved_with_comments" | "rejected",
-    comment: string,
-  ) => void;
+  onSubmit: (decision: "approved" | "approved_with_comments" | "rejected", comment: string) => void;
   pending: boolean;
 }) {
-  const [decision, setDecision] = useState<
-    "approved" | "approved_with_comments" | "rejected"
-  >("approved");
+  const [decision, setDecision] = useState<"approved" | "approved_with_comments" | "rejected">(
+    "approved",
+  );
   const [comment, setComment] = useState("");
-  const commentRequired =
-    decision === "approved_with_comments" || decision === "rejected";
+  const commentRequired = decision === "approved_with_comments" || decision === "rejected";
   const disabled = pending || (commentRequired && comment.trim().length === 0);
 
   return (
@@ -187,9 +161,7 @@ function SignoffForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="approved_with_comments">
-              Approved with comments
-            </SelectItem>
+            <SelectItem value="approved_with_comments">Approved with comments</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
@@ -205,11 +177,7 @@ function SignoffForm({
           placeholder="Reviewer notes..."
         />
       </div>
-      <Button
-        size="sm"
-        disabled={disabled}
-        onClick={() => onSubmit(decision, comment.trim())}
-      >
+      <Button size="sm" disabled={disabled} onClick={() => onSubmit(decision, comment.trim())}>
         Submit sign-off
       </Button>
     </div>

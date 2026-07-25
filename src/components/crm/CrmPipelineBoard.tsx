@@ -49,9 +49,7 @@ export function CrmPipelineBoard({ opportunities, readOnly }: Props) {
     return map;
   }, [opportunities]);
 
-  const activeOpp = activeId
-    ? opportunities.find((o) => o.id === activeId) ?? null
-    : null;
+  const activeOpp = activeId ? (opportunities.find((o) => o.id === activeId) ?? null) : null;
 
   const handleDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id));
 
@@ -79,10 +77,7 @@ export function CrmPipelineBoard({ opportunities, readOnly }: Props) {
         <div className="flex gap-3 overflow-x-auto pb-2">
           {OPPORTUNITY_STAGES.map((stage) => {
             const items = grouped[stage];
-            const total = items.reduce(
-              (a, o) => a + Number(o.estimated_value ?? 0),
-              0,
-            );
+            const total = items.reduce((a, o) => a + Number(o.estimated_value ?? 0), 0);
             const currency = items[0]?.currency_code ?? "USD";
             return (
               <PipelineColumn
@@ -98,9 +93,7 @@ export function CrmPipelineBoard({ opportunities, readOnly }: Props) {
                     Drop opportunities here
                   </p>
                 ) : (
-                  items.map((o) => (
-                    <OpportunityCard key={o.id} opp={o} readOnly={readOnly} />
-                  ))
+                  items.map((o) => <OpportunityCard key={o.id} opp={o} readOnly={readOnly} />)
                 )}
               </PipelineColumn>
             );
@@ -118,8 +111,7 @@ export function CrmPipelineBoard({ opportunities, readOnly }: Props) {
         }}
         onCancel={() => setPendingLoss(null)}
         onConfirm={(reason) => {
-          if (pendingLoss)
-            move.mutate({ id: pendingLoss.id, stage: "lost", lossReason: reason });
+          if (pendingLoss) move.mutate({ id: pendingLoss.id, stage: "lost", lossReason: reason });
           setPendingLoss(null);
         }}
       />

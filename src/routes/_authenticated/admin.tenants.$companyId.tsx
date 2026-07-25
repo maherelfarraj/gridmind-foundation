@@ -5,29 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, Loader2 } from "lucide-react";
 
-import {
-  getTenantDetail,
-  updateTenantPlan,
-  type PlanTier,
-} from "@/lib/tenants.functions";
+import { getTenantDetail, updateTenantPlan, type PlanTier } from "@/lib/tenants.functions";
 import { ModuleAccessTable } from "@/components/module-access-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -49,7 +34,9 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/$companyId")
   }),
   component: TenantDetailPage,
   errorComponent: TenantDetailError,
-  notFoundComponent: () => <div className="p-8 text-sm text-muted-foreground">Tenant not found.</div>,
+  notFoundComponent: () => (
+    <div className="p-8 text-sm text-muted-foreground">Tenant not found.</div>
+  ),
 });
 
 const PLAN_LABELS: Record<PlanTier, string> = {
@@ -59,8 +46,7 @@ const PLAN_LABELS: Record<PlanTier, string> = {
 };
 
 function PlanBadge({ tier }: { tier: PlanTier }) {
-  const variant =
-    tier === "enterprise" ? "default" : tier === "growth" ? "secondary" : "outline";
+  const variant = tier === "enterprise" ? "default" : tier === "growth" ? "secondary" : "outline";
   return <Badge variant={variant}>{PLAN_LABELS[tier]}</Badge>;
 }
 
@@ -73,7 +59,13 @@ function TenantDetailError({ error, reset }: { error: Error; reset: () => void }
         <CardDescription>{error.message}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button variant="outline" onClick={() => { router.invalidate(); reset(); }}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+        >
           Retry
         </Button>
       </CardContent>
@@ -132,7 +124,9 @@ function TenantDetailPage() {
     return (
       <div className="p-6">
         <p className="text-sm text-destructive">{(query.error as Error)?.message ?? "Not found"}</p>
-        <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>Retry</Button>
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
+          Retry
+        </Button>
       </div>
     );
   }
@@ -173,7 +167,9 @@ function TenantDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Tenant ID</CardTitle>
-              <CardDescription>Use this UUID when opening a support or debugging ticket.</CardDescription>
+              <CardDescription>
+                Use this UUID when opening a support or debugging ticket.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground">
@@ -188,12 +184,17 @@ function TenantDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Plan tier</CardTitle>
-              <CardDescription>Changing the plan is audit-logged. Downgrading from Enterprise auto-disables Green H₂.</CardDescription>
+              <CardDescription>
+                Changing the plan is audit-logged. Downgrading from Enterprise auto-disables Green
+                H₂.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex items-end gap-3">
               <div className="flex-1">
                 <Select value={draft} onValueChange={(v) => setPlanDraft(v as PlanTier)}>
-                  <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="max-w-xs">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="starter">Starter</SelectItem>
                     <SelectItem value="growth">Growth</SelectItem>
@@ -229,7 +230,6 @@ function TenantDetailPage() {
     </div>
   );
 }
-
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (

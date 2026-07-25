@@ -2,14 +2,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Check,
-  ExternalLink,
-  Loader2,
-  ShieldAlert,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Loader2, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -29,15 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  errorMessage,
-  punchDetailQueryOptions,
-} from "@/lib/qaqc-query";
-import {
-  markPunchReady,
-  signoffPunchItem,
-  voidPunchItem,
-} from "@/lib/qaqc.functions";
+import { errorMessage, punchDetailQueryOptions } from "@/lib/qaqc-query";
+import { markPunchReady, signoffPunchItem, voidPunchItem } from "@/lib/qaqc.functions";
 import {
   PUNCH_CATEGORY_LABELS,
   PUNCH_STATUS_LABELS,
@@ -130,9 +116,7 @@ function PunchDetailPage() {
       <div className="mx-auto w-full max-w-3xl p-6">
         <Alert variant="destructive">
           <AlertTitle>Could not load punch item</AlertTitle>
-          <AlertDescription>
-            {errorMessage(detailQuery.error) || "Not found"}
-          </AlertDescription>
+          <AlertDescription>{errorMessage(detailQuery.error) || "Not found"}</AlertDescription>
         </Alert>
       </div>
     );
@@ -145,8 +129,7 @@ function PunchDetailPage() {
 
   const signoffConfirmed =
     signoffName.trim().length >= 2 &&
-    signoffName.trim().toLowerCase() ===
-      signoffName.trim().replace(/\s+/g, " ").toLowerCase();
+    signoffName.trim().toLowerCase() === signoffName.trim().replace(/\s+/g, " ").toLowerCase();
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 md:p-8">
@@ -158,17 +141,13 @@ function PunchDetailPage() {
         </Button>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm text-muted-foreground">
-              {item.punch_number}
-            </span>
+            <span className="font-mono text-sm text-muted-foreground">{item.punch_number}</span>
             <span
               className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${punchCategoryTint(category)}`}
             >
               {PUNCH_CATEGORY_LABELS[category]}
             </span>
-            <span
-              className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(status)}`}
-            >
+            <span className={`rounded-md px-2 py-0.5 text-xs ${punchStatusTint(status)}`}>
               {PUNCH_STATUS_LABELS[status]}
             </span>
           </div>
@@ -198,9 +177,7 @@ function PunchDetailPage() {
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Category A blocker</AlertTitle>
-          <AlertDescription>
-            This item must be closed before COD / energization.
-          </AlertDescription>
+          <AlertDescription>This item must be closed before COD / energization.</AlertDescription>
         </Alert>
       ) : null}
 
@@ -211,16 +188,12 @@ function PunchDetailPage() {
           <Row label="Due date">{item.due_date ?? "—"}</Row>
           <Row label="Assigned to">{item.assignee_email ?? "Unassigned"}</Row>
           <Row label="Raised by">{item.raised_by_email ?? "—"}</Row>
-          <Row label="Updated">
-            {new Date(item.updated_at).toLocaleString()}
-          </Row>
+          <Row label="Updated">{new Date(item.updated_at).toLocaleString()}</Row>
           <div className="md:col-span-2">
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Description
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-foreground">
-              {item.description}
-            </p>
+            <p className="mt-1 whitespace-pre-wrap text-foreground">{item.description}</p>
           </div>
         </CardContent>
       </Card>
@@ -271,8 +244,7 @@ function PunchDetailPage() {
             </div>
             <div className="text-sm text-foreground">
               Signed off by <strong>{item.signoff_name}</strong> on{" "}
-              {new Date(item.signoff_at).toLocaleString()}. This action is
-              irreversible.
+              {new Date(item.signoff_at).toLocaleString()}. This action is irreversible.
             </div>
           </CardContent>
         </Card>
@@ -280,13 +252,8 @@ function PunchDetailPage() {
 
       <div className="flex flex-wrap gap-2">
         {status === "open" && permissions.canMarkReady ? (
-          <Button
-            onClick={() => readyMut.mutate()}
-            disabled={readyMut.isPending}
-          >
-            {readyMut.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+          <Button onClick={() => readyMut.mutate()} disabled={readyMut.isPending}>
+            {readyMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Mark ready for review
           </Button>
         ) : null}
@@ -301,9 +268,7 @@ function PunchDetailPage() {
           </Button>
         ) : null}
         {status === "ready_for_review" && !permissions.canSignoff ? (
-          <Badge variant="outline">
-            Awaiting construction admin signoff
-          </Badge>
+          <Badge variant="outline">Awaiting construction admin signoff</Badge>
         ) : null}
       </div>
 
@@ -312,8 +277,8 @@ function PunchDetailPage() {
           <DialogHeader>
             <DialogTitle>Sign off and close {item.punch_number}</DialogTitle>
             <DialogDescription>
-              Type your full name to confirm. This action is irreversible —
-              closed items cannot be reopened.
+              Type your full name to confirm. This action is irreversible — closed items cannot be
+              reopened.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
@@ -332,13 +297,9 @@ function PunchDetailPage() {
             </Button>
             <Button
               disabled={!signoffConfirmed || signoffMut.isPending}
-              onClick={() =>
-                signoffMut.mutate({ signoffName: signoffName.trim() })
-              }
+              onClick={() => signoffMut.mutate({ signoffName: signoffName.trim() })}
             >
-              {signoffMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {signoffMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Confirm signoff
             </Button>
           </DialogFooter>
@@ -350,8 +311,7 @@ function PunchDetailPage() {
           <DialogHeader>
             <DialogTitle>Void {item.punch_number}</DialogTitle>
             <DialogDescription>
-              Voided items are archived and excluded from KPIs. Provide a
-              reason.
+              Voided items are archived and excluded from KPIs. Provide a reason.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
@@ -372,9 +332,7 @@ function PunchDetailPage() {
               disabled={voidReason.trim().length < 2 || voidMut.isPending}
               onClick={() => voidMut.mutate({ reason: voidReason.trim() })}
             >
-              {voidMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {voidMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Void item
             </Button>
           </DialogFooter>
@@ -384,13 +342,7 @@ function PunchDetailPage() {
   );
 }
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

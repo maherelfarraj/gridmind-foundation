@@ -129,9 +129,7 @@ describe("grnDraftPayload zod", () => {
 
 describe("assertGrnPhotoPath", () => {
   it("accepts paths under the tenant/grn prefix", () => {
-    expect(() =>
-      assertGrnPhotoPath("co/grn/g1/pic.jpg", "co", "g1"),
-    ).not.toThrow();
+    expect(() => assertGrnPhotoPath("co/grn/g1/pic.jpg", "co", "g1")).not.toThrow();
   });
   it("rejects paths outside the prefix", () => {
     expect(() => assertGrnPhotoPath("other/grn/g1/pic.jpg", "co", "g1")).toThrow();

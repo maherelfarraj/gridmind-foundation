@@ -103,7 +103,9 @@ function PayAppDetail() {
   const access = useSuspenseQuery(payAppAccessQueryOptions());
 
   const [drafts, setDrafts] = useState<Record<string, string>>(() =>
-    Object.fromEntries(detail.data.payApp.lines.map((l) => [String(l.sov_line_no), String(l.this_period)])),
+    Object.fromEntries(
+      detail.data.payApp.lines.map((l) => [String(l.sov_line_no), String(l.this_period)]),
+    ),
   );
   const [retention, setRetention] = useState(String(detail.data.payApp.retention_pct));
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -296,9 +298,7 @@ function PayAppDetail() {
                   <TableCell className="text-right tabular-nums">
                     {fmt(l.scheduled_amount)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {fmt(l.prev_certified)}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{fmt(l.prev_certified)}</TableCell>
                   <TableCell className="text-right">
                     {isDraft ? (
                       <Input
@@ -315,7 +315,9 @@ function PayAppDetail() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {(l.scheduled_amount > 0
-                      ? Math.round(((l.prev_certified + currentThis) / l.scheduled_amount) * 10000) / 100
+                      ? Math.round(
+                          ((l.prev_certified + currentThis) / l.scheduled_amount) * 10000,
+                        ) / 100
                       : 0
                     ).toFixed(1)}
                     %
@@ -359,11 +361,7 @@ function PayAppDetail() {
               >
                 <Save className="mr-2 size-4" /> Save draft
               </Button>
-              <Button
-                size="sm"
-                onClick={() => certify.mutate()}
-                disabled={certify.isPending}
-              >
+              <Button size="sm" onClick={() => certify.mutate()} disabled={certify.isPending}>
                 <CheckCircle2 className="mr-2 size-4" /> Certify
               </Button>
             </>
@@ -389,9 +387,7 @@ function PayAppDetail() {
               {invoice.isPending ? "Generating…" : "Generate invoice"}
             </Button>
           ) : null}
-          {p.invoice_id ? (
-            <Badge variant="secondary">Invoice generated</Badge>
-          ) : null}
+          {p.invoice_id ? <Badge variant="secondary">Invoice generated</Badge> : null}
         </div>
       </div>
 

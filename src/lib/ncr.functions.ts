@@ -103,10 +103,7 @@ async function audit(
   }
 }
 
-async function allocateNcrNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function allocateNcrNumber(context: AuthContext, companyId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("ncrs")
     .select("ncr_number")
@@ -206,9 +203,7 @@ async function resolveSourceSummary(
 
 export const getNcr = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<NcrDetail> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -251,8 +246,7 @@ export const createNcr = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -286,9 +280,7 @@ export const createNcr = createServerFn({ method: "POST" })
         return {
           ...(inserted as unknown as NcrRow),
           cost_impact:
-            (inserted as any).cost_impact === null
-              ? null
-              : Number((inserted as any).cost_impact),
+            (inserted as any).cost_impact === null ? null : Number((inserted as any).cost_impact),
         };
       }
       lastErr = error;
@@ -309,8 +301,7 @@ export const setNcrDisposition = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {
       disposition: data.disposition,
     };
-    if (data.rootCause !== undefined)
-      patch.root_cause = data.rootCause ?? null;
+    if (data.rootCause !== undefined) patch.root_cause = data.rootCause ?? null;
     if (data.correctiveAction !== undefined)
       patch.corrective_action = data.correctiveAction ?? null;
     if (data.status !== undefined) patch.status = data.status;
@@ -333,9 +324,7 @@ export const setNcrDisposition = createServerFn({ method: "POST" })
     return {
       ...(updated as unknown as NcrRow),
       cost_impact:
-        (updated as any).cost_impact === null
-          ? null
-          : Number((updated as any).cost_impact),
+        (updated as any).cost_impact === null ? null : Number((updated as any).cost_impact),
     };
   });
 
@@ -366,9 +355,7 @@ export const closeNcr = createServerFn({ method: "POST" })
     return {
       ...(updated as unknown as NcrRow),
       cost_impact:
-        (updated as any).cost_impact === null
-          ? null
-          : Number((updated as any).cost_impact),
+        (updated as any).cost_impact === null ? null : Number((updated as any).cost_impact),
     };
   });
 
@@ -394,9 +381,7 @@ export const voidNcr = createServerFn({ method: "POST" })
     return {
       ...(updated as unknown as NcrRow),
       cost_impact:
-        (updated as any).cost_impact === null
-          ? null
-          : Number((updated as any).cost_impact),
+        (updated as any).cost_impact === null ? null : Number((updated as any).cost_impact),
     };
   });
 

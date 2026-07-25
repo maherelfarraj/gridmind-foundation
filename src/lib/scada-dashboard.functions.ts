@@ -114,7 +114,12 @@ async function loadCore(context: AuthContext, opts: { projectId?: string }) {
       .limit(50_000);
     if (tErr) throw tErr;
     telemetry = ((tData ?? []) as unknown[]).map((r) => {
-      const row = r as { scada_asset_id: string; ts: string; metric: string; value: number | string };
+      const row = r as {
+        scada_asset_id: string;
+        ts: string;
+        metric: string;
+        value: number | string;
+      };
       return {
         scada_asset_id: row.scada_asset_id,
         ts: row.ts,
@@ -192,8 +197,7 @@ function computePayload(
   core: Awaited<ReturnType<typeof loadCore>>,
   scopeProjectId: string | null,
 ): DashboardPayload {
-  const { assets, projects, equipment, telemetry, windowStart, windowEnd, todayStart } =
-    core;
+  const { assets, projects, equipment, telemetry, windowStart, windowEnd, todayStart } = core;
 
   const plants = computePlantRows({ assets, projects, equipment, telemetry, todayStart });
 
@@ -213,10 +217,7 @@ function computePayload(
   const irradiance = telemetry
     .filter((t) => t.metric === "irradiance_wm2" && weatherAssetIds.has(t.scada_asset_id))
     .map((t) => ({ ts: t.ts, value: Number(t.value) }));
-  const nameplateKw = equipment.reduce(
-    (sum, e) => sum + (Number(e.nameplate_capacity_kw) || 0),
-    0,
-  );
+  const nameplateKw = equipment.reduce((sum, e) => sum + (Number(e.nameplate_capacity_kw) || 0), 0);
   const performanceRatioPct = performanceRatio({
     actualKwh: energyTodayKwh,
     irradianceSeries: irradiance,
@@ -246,29 +247,31 @@ function computePayload(
 
 export const listOperationsPlants = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(async ({ context }): Promise<{ projects: { id: string; name: string; phase: string }[] }> => {
-    requireSupabaseAuth(context);
-    const companyId = await currentCompanyId(context);
-    // "Operations" = has at least one scada_asset (i.e. an operating plant with
-    // a live SCADA stream configured). Falls back to all company projects when
-    // no assets exist yet so the selector isn't empty during onboarding.
-    const { data: assetsData, error: aErr } = await context.supabase
-      .from("scada_assets")
-      .select("project_id")
-      .eq("company_id", companyId);
-    if (aErr) throw aErr;
-    const projectIds = Array.from(
-      new Set(((assetsData ?? []) as { project_id: string }[]).map((a) => a.project_id)),
-    );
-    if (projectIds.length === 0) return { projects: [] };
-    const { data: projData, error: pErr } = await context.supabase
-      .from("projects")
-      .select("id, name, phase")
-      .in("id", projectIds)
-      .order("name");
-    if (pErr) throw pErr;
-    return { projects: (projData ?? []) as { id: string; name: string; phase: string }[] };
-  });
+  .handler(
+    async ({ context }): Promise<{ projects: { id: string; name: string; phase: string }[] }> => {
+      requireSupabaseAuth(context);
+      const companyId = await currentCompanyId(context);
+      // "Operations" = has at least one scada_asset (i.e. an operating plant with
+      // a live SCADA stream configured). Falls back to all company projects when
+      // no assets exist yet so the selector isn't empty during onboarding.
+      const { data: assetsData, error: aErr } = await context.supabase
+        .from("scada_assets")
+        .select("project_id")
+        .eq("company_id", companyId);
+      if (aErr) throw aErr;
+      const projectIds = Array.from(
+        new Set(((assetsData ?? []) as { project_id: string }[]).map((a) => a.project_id)),
+      );
+      if (projectIds.length === 0) return { projects: [] };
+      const { data: projData, error: pErr } = await context.supabase
+        .from("projects")
+        .select("id, name, phase")
+        .in("id", projectIds)
+        .order("name");
+      if (pErr) throw pErr;
+      return { projects: (projData ?? []) as { id: string; name: string; phase: string }[] };
+    },
+  );
 
 export const getScadaDashboard = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])

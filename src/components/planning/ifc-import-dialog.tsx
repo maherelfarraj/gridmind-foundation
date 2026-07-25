@@ -18,14 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import {
-  importIfcPackages,
-  proposeIfcPackages,
-} from "@/lib/wbs.functions";
-import {
-  wbsErrorMessage,
-  wbsIfcProposalsQueryOptions,
-} from "@/lib/wbs-query";
+import { importIfcPackages, proposeIfcPackages } from "@/lib/wbs.functions";
+import { wbsErrorMessage, wbsIfcProposalsQueryOptions } from "@/lib/wbs-query";
 import { WBS_DISCIPLINE_LABEL, type WbsDiscipline } from "@/lib/wbs-rules";
 
 interface IfcImportDialogProps {
@@ -47,9 +41,8 @@ export function IfcImportDialog({
         <DialogHeader>
           <DialogTitle>Import IFC packages</DialogTitle>
           <DialogDescription>
-            Released Issued-for-Construction packages become WBS nodes under
-            an &ldquo;Engineering&rdquo; root. Already-imported packages are
-            skipped.
+            Released Issued-for-Construction packages become WBS nodes under an
+            &ldquo;Engineering&rdquo; root. Already-imported packages are skipped.
           </DialogDescription>
         </DialogHeader>
 
@@ -77,25 +70,18 @@ function IfcProposalsBody({
   const proposeFn = useServerFn(proposeIfcPackages);
   const importFn = useServerFn(importIfcPackages);
 
-  const query = useSuspenseQuery(
-    wbsIfcProposalsQueryOptions(proposeFn, projectId),
-  );
+  const query = useSuspenseQuery(wbsIfcProposalsQueryOptions(proposeFn, projectId));
   const { proposals } = query.data;
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   useEffect(() => {
     // Pre-select proposals that aren't already imported.
     setSelected(
-      new Set(
-        proposals.filter((p) => !p.already_imported).map((p) => p.ifc_package_ref),
-      ),
+      new Set(proposals.filter((p) => !p.already_imported).map((p) => p.ifc_package_ref)),
     );
   }, [proposals]);
 
-  const importable = useMemo(
-    () => proposals.filter((p) => !p.already_imported),
-    [proposals],
-  );
+  const importable = useMemo(() => proposals.filter((p) => !p.already_imported), [proposals]);
 
   const importMut = useMutation({
     mutationFn: (packages: typeof proposals) =>
@@ -137,8 +123,8 @@ function IfcProposalsBody({
       <ScrollArea className="max-h-[420px]">
         {proposals.length === 0 ? (
           <p className="p-2 text-sm text-muted-foreground">
-            No released IFC packages found for this project. Publish an IFC
-            release first to enable import.
+            No released IFC packages found for this project. Publish an IFC release first to enable
+            import.
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
@@ -152,20 +138,14 @@ function IfcProposalsBody({
                 >
                   <Checkbox
                     checked={checked}
-                    onCheckedChange={() =>
-                      !disabled && toggle(p.ifc_package_ref)
-                    }
+                    onCheckedChange={() => !disabled && toggle(p.ifc_package_ref)}
                     disabled={disabled}
                     aria-label={`Select ${p.name}`}
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {p.code}
-                      </span>
-                      <span className="text-sm font-medium text-foreground">
-                        {p.name}
-                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">{p.code}</span>
+                      <span className="text-sm font-medium text-foreground">{p.name}</span>
                       {p.discipline && (
                         <Badge variant="secondary" className="text-xs">
                           {WBS_DISCIPLINE_LABEL[p.discipline as WbsDiscipline]}
@@ -180,9 +160,7 @@ function IfcProposalsBody({
                     <p className="text-xs text-muted-foreground">
                       {p.drawing_count} drawing
                       {p.drawing_count === 1 ? "" : "s"} · Released{" "}
-                      {p.released_at
-                        ? format(new Date(p.released_at), "dd MMM yyyy")
-                        : "—"}
+                      {p.released_at ? format(new Date(p.released_at), "dd MMM yyyy") : "—"}
                     </p>
                   </div>
                 </li>

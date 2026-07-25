@@ -53,16 +53,13 @@ import {
   type ChangeOrderStatus,
 } from "@/lib/change-orders.rules";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/change-orders",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/change-orders")({
   head: () => ({
     meta: [
       { title: "Change orders — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Contract change orders with scope, cost, schedule impact, and approval routing.",
+        content: "Contract change orders with scope, cost, schedule impact, and approval routing.",
       },
       { property: "og:title", content: "Change orders — GridMind EPC" },
       {
@@ -128,18 +125,12 @@ function ChangeOrdersPage() {
     return rows.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (!term) return true;
-      return (
-        r.co_number.toLowerCase().includes(term) ||
-        r.title.toLowerCase().includes(term)
-      );
+      return r.co_number.toLowerCase().includes(term) || r.title.toLowerCase().includes(term);
     });
   }, [rows, q, statusFilter]);
 
   // Exposure KPI
-  const contractTotal = pickers.data.contracts.reduce(
-    (s, c) => s + (c.value ?? 0),
-    0,
-  );
+  const contractTotal = pickers.data.contracts.reduce((s, c) => s + (c.value ?? 0), 0);
   const approvedExposure = rows
     .filter((r) => r.status === "approved" || r.status === "incorporated")
     .reduce((s, r) => s + r.amount, 0);
@@ -203,12 +194,8 @@ function ChangeOrdersPage() {
       <Card className={cn("p-4", bucketTone)}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <div className="text-xs uppercase tracking-wide opacity-80">
-              Approved CO exposure
-            </div>
-            <div className="text-2xl font-semibold tabular-nums">
-              {pct.toFixed(1)}%
-            </div>
+            <div className="text-xs uppercase tracking-wide opacity-80">Approved CO exposure</div>
+            <div className="text-2xl font-semibold tabular-nums">{pct.toFixed(1)}%</div>
           </div>
           <div className="text-sm tabular-nums opacity-90">
             {money(approvedExposure)} vs {money(contractTotal)} contract value
@@ -496,14 +483,10 @@ function NewCoDialog({ projectId, onClose }: { projectId: string; onClose: () =>
                   </TableHeader>
                   <TableBody>
                     {pickers.data.budgets.map((b) => {
-                      const cc = pickers.data.costCodes.find(
-                        (c) => c.id === b.cost_code_id,
-                      );
+                      const cc = pickers.data.costCodes.find((c) => c.id === b.cost_code_id);
                       return (
                         <TableRow key={b.id}>
-                          <TableCell className="font-mono text-xs">
-                            {cc?.code ?? "—"}
-                          </TableCell>
+                          <TableCell className="font-mono text-xs">{cc?.code ?? "—"}</TableCell>
                           <TableCell>{cc?.name ?? "—"}</TableCell>
                           <TableCell className="text-right tabular-nums text-muted-foreground">
                             {money(b.current_amount, b.currency_code)}

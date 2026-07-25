@@ -13,10 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import {
-  TENDER_TYPE_LABELS,
-  TenderEventDialog,
-} from "@/components/crm/detail/TenderEventDialog";
+import { TENDER_TYPE_LABELS, TenderEventDialog } from "@/components/crm/detail/TenderEventDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -68,7 +65,6 @@ export function TenderEventsCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openTrigger]);
 
-
   const openNew = () => {
     setEditing(null);
     setOpen(true);
@@ -84,9 +80,7 @@ export function TenderEventsCard({
     <Card className="flex flex-col gap-3 border-border bg-card p-5">
       <header className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-sm font-semibold text-foreground">
-            Tender events
-          </h2>
+          <h2 className="font-display text-sm font-semibold text-foreground">Tender events</h2>
           <p className="text-xs text-muted-foreground">
             Meetings, Q&A cut-offs, submission deadlines
           </p>
@@ -158,9 +152,7 @@ export function TenderEventsCard({
                         </Badge>
                       )
                     ) : (
-                      <Badge className="text-[10px]">
-                        in {formatDistanceToNowStrict(at)}
-                      </Badge>
+                      <Badge className="text-[10px]">in {formatDistanceToNowStrict(at)}</Badge>
                     )}
                   </div>
                   <div className="mt-0.5 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -173,9 +165,7 @@ export function TenderEventsCard({
                     )}
                   </div>
                   {t.notes && (
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                      {t.notes}
-                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.notes}</p>
                   )}
                 </div>
                 {canDelete && (

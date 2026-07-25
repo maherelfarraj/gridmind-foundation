@@ -33,17 +33,9 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   superseded: "outline",
 };
 
-export function SldGallery({
-  projectId,
-  canWrite,
-}: {
-  projectId: string;
-  canWrite: boolean;
-}) {
+export function SldGallery({ projectId, canWrite }: { projectId: string; canWrite: boolean }) {
   const listFn = useServerFn(listSldDrawings);
-  const { data: rows } = useSuspenseQuery(
-    sldDrawingsQueryOptions(listFn, projectId),
-  );
+  const { data: rows } = useSuspenseQuery(sldDrawingsQueryOptions(listFn, projectId));
 
   return (
     <div className="space-y-4">
@@ -74,16 +66,10 @@ export function SldGallery({
               <Card className="h-full transition-colors hover:border-primary">
                 <CardHeader className="space-y-1">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-sm font-mono">
-                      {row.drawing_number}
-                    </CardTitle>
-                    {row.locked && (
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    <CardTitle className="text-sm font-mono">{row.drawing_number}</CardTitle>
+                    {row.locked && <Lock className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {row.title}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{row.title}</p>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex h-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/30 text-muted-foreground">
@@ -91,20 +77,14 @@ export function SldGallery({
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
-                      variant={
-                        STATUS_VARIANTS[row.current_status] ?? "outline"
-                      }
+                      variant={STATUS_VARIANTS[row.current_status] ?? "outline"}
                       className={
-                        row.current_status === "superseded"
-                          ? "line-through opacity-70"
-                          : ""
+                        row.current_status === "superseded" ? "line-through opacity-70" : ""
                       }
                     >
                       {row.current_status}
                     </Badge>
-                    {row.revision_code && (
-                      <Badge variant="outline">Rev {row.revision_code}</Badge>
-                    )}
+                    {row.revision_code && <Badge variant="outline">Rev {row.revision_code}</Badge>}
                     {row.markup_count > 0 && (
                       <Badge variant="secondary">
                         {row.markup_count} markup
@@ -158,9 +138,8 @@ function NewSldDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle>New single-line diagram</DialogTitle>
           <DialogDescription>
-            The drawing number is auto-prefixed with{" "}
-            <code className="font-mono">SLD-</code> so it appears in this
-            gallery.
+            The drawing number is auto-prefixed with <code className="font-mono">SLD-</code> so it
+            appears in this gallery.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -185,17 +164,11 @@ function NewSldDialog({ projectId }: { projectId: string }) {
               {...form.register("title")}
             />
             {form.formState.errors.title && (
-              <p className="mt-1 text-xs text-destructive">
-                {form.formState.errors.title.message}
-              </p>
+              <p className="mt-1 text-xs text-destructive">{form.formState.errors.title.message}</p>
             )}
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={create.isPending}>

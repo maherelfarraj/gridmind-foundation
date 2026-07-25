@@ -7,12 +7,7 @@
  * `MODULE_PLAN_REQUIREMENTS`, `getVisibleModules`, `DEV_SESSION_CONTEXT`.
  */
 
-export type Role =
-  | "viewer"
-  | "member"
-  | "manager"
-  | "company_admin"
-  | "super_admin";
+export type Role = "viewer" | "member" | "manager" | "company_admin" | "super_admin";
 
 export type PlanTier = "starter" | "growth" | "enterprise";
 
@@ -55,7 +50,6 @@ export function getVisibleModules(role: Role, planTier: PlanTier): Set<ModuleKey
   });
   return new Set(visible);
 }
-
 
 export interface SessionContext {
   role: Role;
@@ -116,24 +110,21 @@ export const DEPARTMENTS: readonly Department[] = [
     key: "engineering",
     name: "Engineering",
     adminRole: "engineering_admin",
-    responsibilities:
-      "Designs, drawings register, calculations, BOM, IFC releases.",
+    responsibilities: "Designs, drawings register, calculations, BOM, IFC releases.",
     icon: Ruler,
   },
   {
     key: "procurement",
     name: "Procurement",
     adminRole: "procurement_admin",
-    responsibilities:
-      "Vendors, RFQs, purchase orders, receipts, three-way match.",
+    responsibilities: "Vendors, RFQs, purchase orders, receipts, three-way match.",
     icon: ShoppingCart,
   },
   {
     key: "construction",
     name: "Construction",
     adminRole: "construction_admin",
-    responsibilities:
-      "Daily reports, manpower, discipline progress, mobilization.",
+    responsibilities: "Daily reports, manpower, discipline progress, mobilization.",
     icon: HardHat,
   },
   {
@@ -148,16 +139,14 @@ export const DEPARTMENTS: readonly Department[] = [
     key: "finance",
     name: "Finance",
     adminRole: "finance_admin",
-    responsibilities:
-      "Budgets, EVM, cash flow, invoices, change orders.",
+    responsibilities: "Budgets, EVM, cash flow, invoices, change orders.",
     icon: Wallet,
   },
   {
     key: "legal",
     name: "Legal",
     adminRole: "legal_admin",
-    responsibilities:
-      "Contracts, obligations, claims, lender DD items.",
+    responsibilities: "Contracts, obligations, claims, lender DD items.",
     icon: Scale,
   },
   {
@@ -172,25 +161,20 @@ export const DEPARTMENTS: readonly Department[] = [
     key: "scada",
     name: "SCADA",
     adminRole: "scada_admin",
-    responsibilities:
-      "Connectors, telemetry, alarms, plant KPIs.",
+    responsibilities: "Connectors, telemetry, alarms, plant KPIs.",
     icon: Activity,
   },
   {
     key: "billing",
     name: "Billing",
     adminRole: "billing_admin",
-    responsibilities:
-      "Pay applications, milestone billing, debit notes.",
+    responsibilities: "Pay applications, milestone billing, debit notes.",
     icon: Receipt,
   },
 ] as const;
 
 // Compile-time exhaustiveness: adding a DepartmentKey requires adding an entry above.
-type _DepartmentExhaustive = Exclude<
-  DepartmentKey,
-  (typeof DEPARTMENTS)[number]["key"]
->;
+type _DepartmentExhaustive = Exclude<DepartmentKey, (typeof DEPARTMENTS)[number]["key"]>;
 const _departmentExhaustive: _DepartmentExhaustive[] = [];
 void _departmentExhaustive;
 
@@ -204,8 +188,6 @@ void _departmentExhaustive;
 
 import { GRANTABLE_ROLES } from "./role-groups";
 import { MODULE_KEYS as _MK } from "./modules";
-
-
 
 export type Action = "view" | "create" | "edit" | "approve" | "export";
 export const ACTIONS: readonly Action[] = ["view", "create", "edit", "approve", "export"] as const;
@@ -314,4 +296,3 @@ export function getActionsFor(role: GrantableRole, moduleKey: ModuleKey): readon
 type _RoleModuleExhaustive = Exclude<GrantableRole, keyof typeof ROLE_MODULE_MAP>;
 const _roleModuleExhaustive: _RoleModuleExhaustive[] = [];
 void _roleModuleExhaustive;
-

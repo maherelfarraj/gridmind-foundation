@@ -33,21 +33,21 @@ export const APPROVAL_INSTANCE_STATUSES = [
   "rejected",
   "cancelled",
 ] as const;
-export type ApprovalInstanceStatus =
-  (typeof APPROVAL_INSTANCE_STATUSES)[number];
+export type ApprovalInstanceStatus = (typeof APPROVAL_INSTANCE_STATUSES)[number];
 
-export const APPROVAL_STATUSES = [
-  "pending",
-  "approved",
-  "rejected",
-  "skipped",
-] as const;
+export const APPROVAL_STATUSES = ["pending", "approved", "rejected", "skipped"] as const;
 export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number];
 
 export const chainStepSchema = z.object({
   step_order: z.number().int().min(1),
   role: z.enum(APPROVAL_ROLES),
-  sla_hours: z.number().int().min(1).max(24 * 365).nullable().optional(),
+  sla_hours: z
+    .number()
+    .int()
+    .min(1)
+    .max(24 * 365)
+    .nullable()
+    .optional(),
 });
 export type ChainStepInput = z.infer<typeof chainStepSchema>;
 
@@ -61,14 +61,13 @@ export const approvalRuleInputSchema = z.object({
   name: z.string().min(2).max(160),
   description: z.string().max(2000).nullable().optional(),
   entity_type: z.string().min(2).max(64),
-  threshold_amount: z
-    .number()
-    .nonnegative()
-    .max(1e12)
-    .nullable()
-    .optional(),
+  threshold_amount: z.number().nonnegative().max(1e12).nullable().optional(),
   threshold_currency: z.string().length(3),
-  sla_hours: z.number().int().min(1).max(24 * 365),
+  sla_hours: z
+    .number()
+    .int()
+    .min(1)
+    .max(24 * 365),
   escalation_role: z.enum(APPROVAL_ROLES).nullable().optional(),
   blocks_export: z.boolean(),
   is_active: z.boolean(),
@@ -92,8 +91,7 @@ export const decideApprovalSchema = z
   })
   .refine(
     (v) =>
-      v.decision !== "rejected" ||
-      (typeof v.comment === "string" && v.comment.trim().length > 0),
+      v.decision !== "rejected" || (typeof v.comment === "string" && v.comment.trim().length > 0),
     { message: "comment_required_on_reject", path: ["comment"] },
   );
 

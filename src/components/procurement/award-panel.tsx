@@ -59,16 +59,10 @@ export function AwardPanel({
   const unaward = useUnawardLine(rfq.id);
   const generate = useGeneratePos(rfq.id);
 
-  const awardByLine = useMemo(
-    () => new Map(awards.map((a) => [a.line_no, a])),
-    [awards],
-  );
+  const awardByLine = useMemo(() => new Map(awards.map((a) => [a.line_no, a])), [awards]);
 
   const eligibleBids = useMemo(
-    () =>
-      bids.filter((b) =>
-        ["submitted", "under_review", "awarded"].includes(b.status),
-      ),
+    () => bids.filter((b) => ["submitted", "under_review", "awarded"].includes(b.status)),
     [bids],
   );
 
@@ -126,11 +120,9 @@ export function AwardPanel({
             {rfq.lines.map((line) => {
               const existing = awardByLine.get(line.line_no);
               const winningBid = existing
-                ? bids.find((b) => b.id === existing.rfq_bid_id) ?? null
+                ? (bids.find((b) => b.id === existing.rfq_bid_id) ?? null)
                 : null;
-              const pending =
-                selection[line.line_no] ??
-                (existing ? existing.rfq_bid_id : "");
+              const pending = selection[line.line_no] ?? (existing ? existing.rfq_bid_id : "");
 
               return (
                 <TableRow key={line.line_no}>
@@ -153,9 +145,7 @@ export function AwardPanel({
                     ) : (
                       <Select
                         value={pending}
-                        onValueChange={(v) =>
-                          setSelection((s) => ({ ...s, [line.line_no]: v }))
-                        }
+                        onValueChange={(v) => setSelection((s) => ({ ...s, [line.line_no]: v }))}
                         disabled={isDisabled || eligibleBids.length === 0}
                       >
                         <SelectTrigger>
@@ -163,13 +153,9 @@ export function AwardPanel({
                         </SelectTrigger>
                         <SelectContent>
                           {eligibleBids
-                            .filter((b) =>
-                              b.lines.some((bl) => bl.line_no === line.line_no),
-                            )
+                            .filter((b) => b.lines.some((bl) => bl.line_no === line.line_no))
                             .map((b) => {
-                              const bl = b.lines.find(
-                                (x) => x.line_no === line.line_no,
-                              );
+                              const bl = b.lines.find((x) => x.line_no === line.line_no);
                               return (
                                 <SelectItem key={b.id} value={b.id}>
                                   {b.vendor_name}

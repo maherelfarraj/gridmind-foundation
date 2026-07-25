@@ -7,18 +7,11 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { createHash } from "node:crypto";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { Constants } from "@/integrations/supabase/types";
 
 const appRoleSchema = z.enum(Constants.public.Enums.app_role);
-const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .email("Invalid email");
+const emailSchema = z.string().trim().toLowerCase().email("Invalid email");
 const uuidSchema = z.string().uuid();
 const tokenSchema = z.string().regex(/^[a-f0-9]{64}$/i, "Invalid invite token");
 
@@ -46,9 +39,7 @@ export type InviteListRow = {
 
 export const listInvites = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: uuidSchema }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -76,9 +67,7 @@ export type CompanyAdminSnapshot = {
 
 export const getCompanyAdminSnapshot = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: uuidSchema }).parse(input))
   .handler(async ({ data, context }): Promise<CompanyAdminSnapshot> => {
     requireSupabaseAuth(context);
 
@@ -92,18 +81,13 @@ export const getCompanyAdminSnapshot = createServerFn({ method: "GET" })
     const rows = roleRows ?? [];
     const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
 
-    const profileMap = new Map<
-      string,
-      { email: string | null; full_name: string | null }
-    >();
+    const profileMap = new Map<string, { email: string | null; full_name: string | null }>();
     if (userIds.length > 0) {
       const { data: profiles, error: profErr } = await context.supabase
         .from("profiles")
         .select("id, email, full_name")
         .in("id", userIds)
-        .returns<
-          Array<{ id: string; email: string | null; full_name: string | null }>
-        >();
+        .returns<Array<{ id: string; email: string | null; full_name: string | null }>>();
       if (profErr) throw profErr;
       for (const p of profiles ?? []) {
         profileMap.set(p.id, { email: p.email, full_name: p.full_name });
@@ -117,28 +101,24 @@ export const getCompanyAdminSnapshot = createServerFn({ method: "GET" })
       byUser.set(r.user_id, list);
     }
 
-    const members: CompanyMember[] = Array.from(byUser.entries()).map(
-      ([userId, roles]) => {
-        const prof = profileMap.get(userId);
-        return {
-          userId,
-          email: prof?.email ?? null,
-          fullName: prof?.full_name ?? null,
-          roles,
-        };
-      },
-    );
+    const members: CompanyMember[] = Array.from(byUser.entries()).map(([userId, roles]) => {
+      const prof = profileMap.get(userId);
+      return {
+        userId,
+        email: prof?.email ?? null,
+        fullName: prof?.full_name ?? null,
+        roles,
+      };
+    });
 
-    const adminCount = new Set(
-      rows.filter((r) => r.role === "company_admin").map((r) => r.user_id),
-    ).size;
+    const adminCount = new Set(rows.filter((r) => r.role === "company_admin").map((r) => r.user_id))
+      .size;
 
     const currentUserRoles = byUser.get(context.user.id) ?? [];
     const isSuperAdmin = rows.some(
       (r) => r.user_id === context.user.id && r.role === "super_admin",
     );
-    const isAdmin =
-      currentUserRoles.includes("company_admin") || isSuperAdmin;
+    const isAdmin = currentUserRoles.includes("company_admin") || isSuperAdmin;
 
     return { isAdmin, adminCount, members };
   });
@@ -185,9 +165,7 @@ export const createInvite = createServerFn({ method: "POST" })
 
 export const revokeInvite = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ inviteId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ inviteId: uuidSchema }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: existing, error: readErr } = await context.supabase
@@ -220,9 +198,7 @@ export const revokeInvite = createServerFn({ method: "POST" })
 
 export const resendInvite = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ inviteId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ inviteId: uuidSchema }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: existing, error: readErr } = await context.supabase
@@ -297,10 +273,9 @@ export const bulkCreateInvites = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
 
     // Defense in depth on top of create_invite's own gate.
-    const { data: isAdmin, error: adminErr } = await context.supabase.rpc(
-      "is_company_admin",
-      { _company_id: data.companyId },
-    );
+    const { data: isAdmin, error: adminErr } = await context.supabase.rpc("is_company_admin", {
+      _company_id: data.companyId,
+    });
     if (adminErr) throw new Error(adminErr.message);
     if (!isAdmin) {
       throw Object.assign(new Error("Only company admins can bulk invite."), {
@@ -341,33 +316,27 @@ export const bulkCreateInvites = createServerFn({ method: "POST" })
     }
 
     // Pre-load existing members + pending invites for the company.
-    const [
-      { data: existingMembers, error: memErr },
-      { data: pending, error: pendErr },
-    ] = await Promise.all([
-      context.supabase
-        .from("profiles")
-        .select("email")
-        .eq("company_id", data.companyId)
-        .returns<Array<{ email: string | null }>>(),
-      context.supabase
-        .from("invites")
-        .select("email")
-        .eq("company_id", data.companyId)
-        .eq("status", "pending")
-        .returns<Array<{ email: string }>>(),
-    ]);
+    const [{ data: existingMembers, error: memErr }, { data: pending, error: pendErr }] =
+      await Promise.all([
+        context.supabase
+          .from("profiles")
+          .select("email")
+          .eq("company_id", data.companyId)
+          .returns<Array<{ email: string | null }>>(),
+        context.supabase
+          .from("invites")
+          .select("email")
+          .eq("company_id", data.companyId)
+          .eq("status", "pending")
+          .returns<Array<{ email: string }>>(),
+      ]);
     if (memErr) throw memErr;
     if (pendErr) throw pendErr;
 
     const memberEmails = new Set(
-      (existingMembers ?? [])
-        .map((p) => (p.email ?? "").toLowerCase())
-        .filter(Boolean),
+      (existingMembers ?? []).map((p) => (p.email ?? "").toLowerCase()).filter(Boolean),
     );
-    const pendingEmails = new Set(
-      (pending ?? []).map((p) => p.email.toLowerCase()),
-    );
+    const pendingEmails = new Set((pending ?? []).map((p) => p.email.toLowerCase()));
 
     const created: BulkInviteResult["created"] = [];
     const failed: BulkInviteResult["failed"] = [];
@@ -380,14 +349,11 @@ export const bulkCreateInvites = createServerFn({ method: "POST" })
         skipped.push({ ...row, reason: "already_pending" });
         continue;
       }
-      const { data: token, error } = await context.supabase.rpc(
-        "create_invite",
-        {
-          p_company_id: data.companyId,
-          p_email: row.email,
-          p_role: row.role,
-        },
-      );
+      const { data: token, error } = await context.supabase.rpc("create_invite", {
+        p_company_id: data.companyId,
+        p_email: row.email,
+        p_role: row.role,
+      });
       if (error || !token) {
         failed.push({
           ...row,
@@ -418,15 +384,12 @@ export const bulkCreateInvites = createServerFn({ method: "POST" })
 
 export const redeemInviteRpc = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ token: tokenSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ token: tokenSchema }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
-    const { data: companyId, error } = await context.supabase.rpc(
-      "redeem_invite",
-      { p_token: data.token },
-    );
+    const { data: companyId, error } = await context.supabase.rpc("redeem_invite", {
+      p_token: data.token,
+    });
     if (error) throw new Error(error.message);
     return { companyId };
   });
@@ -447,9 +410,7 @@ export type PeekInviteResult =
 
 async function readInviteSafely(token: string) {
   const hash = hashToken(token);
-  const { supabaseAdmin } = await import(
-    "@/integrations/supabase/client.server"
-  );
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: invite, error } = await supabaseAdmin
     .from("invites")
     .select("email, role, status, expires_at, company_id")
@@ -467,9 +428,7 @@ async function readInviteSafely(token: string) {
 
 export const peekInvite = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ token: tokenSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ token: tokenSchema }).parse(input))
   .handler(async ({ data, context }): Promise<PeekInviteResult> => {
     requireSupabaseAuth(context);
     const { invite, supabaseAdmin } = await readInviteSafely(data.token);
@@ -478,8 +437,7 @@ export const peekInvite = createServerFn({ method: "GET" })
     if (invite.status === "revoked") return { status: "revoked" };
     if (invite.status === "expired") return { status: "expired" };
     if (invite.status !== "pending") return { status: "invalid" };
-    if (new Date(invite.expires_at).getTime() <= Date.now())
-      return { status: "expired" };
+    if (new Date(invite.expires_at).getTime() <= Date.now()) return { status: "expired" };
 
     const callerEmail = (context.user.email ?? "").toLowerCase();
     if (callerEmail !== invite.email.toLowerCase()) {
@@ -509,9 +467,7 @@ export const peekInvite = createServerFn({ method: "GET" })
 export type AnonPeekResult = Exclude<PeekInviteResult, { status: "wrong_account" }>;
 
 export const peekInviteAnonymous = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) =>
-    z.object({ token: tokenSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ token: tokenSchema }).parse(input))
   .handler(async ({ data }): Promise<AnonPeekResult> => {
     const { invite, supabaseAdmin } = await readInviteSafely(data.token);
 
@@ -519,8 +475,7 @@ export const peekInviteAnonymous = createServerFn({ method: "GET" })
     if (invite.status === "revoked") return { status: "revoked" };
     if (invite.status === "expired") return { status: "expired" };
     if (invite.status !== "pending") return { status: "invalid" };
-    if (new Date(invite.expires_at).getTime() <= Date.now())
-      return { status: "expired" };
+    if (new Date(invite.expires_at).getTime() <= Date.now()) return { status: "expired" };
 
     const { data: company } = await supabaseAdmin
       .from("companies")

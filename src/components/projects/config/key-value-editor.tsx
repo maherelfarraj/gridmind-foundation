@@ -21,9 +21,7 @@ export function KeyValueEditor({
   const { fields, append, remove } = useFieldArray({ control, name });
   return (
     <div className="flex flex-col gap-2">
-      {fields.length === 0 && (
-        <p className="text-xs text-muted-foreground">No entries yet.</p>
-      )}
+      {fields.length === 0 && <p className="text-xs text-muted-foreground">No entries yet.</p>}
       {fields.map((field, idx) => (
         <div key={field.id} className="flex items-center gap-2">
           <Input

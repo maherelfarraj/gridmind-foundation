@@ -1,15 +1,21 @@
 // P-093 — Commissioning test board.
 import { useMemo, useState } from "react";
-import {
-  createFileRoute,
-  Link,
-  useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { BarChart3, Download, FileText, Gauge, Handshake, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import {
+  BarChart3,
+  Download,
+  FileText,
+  Gauge,
+  Handshake,
+  Loader2,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -35,11 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Table,
   TableBody,
@@ -61,22 +63,18 @@ import {
   type CommissioningTestType,
 } from "@/lib/commissioning.functions";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/commissioning",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning")({
   head: () => ({
     meta: [
       { title: "Commissioning — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Commissioning test board: assign, filter and track site test progress.",
+        content: "Commissioning test board: assign, filter and track site test progress.",
       },
       { property: "og:title", content: "Commissioning — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Commissioning test board: assign, filter and track site test progress.",
+        content: "Commissioning test board: assign, filter and track site test progress.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -120,13 +118,7 @@ function CommissioningBoard() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const query = useQuery({
-    queryKey: [
-      "commissioning-tests",
-      projectId,
-      testType,
-      status,
-      search,
-    ] as const,
+    queryKey: ["commissioning-tests", projectId, testType, status, search] as const,
     queryFn: () =>
       listCommissioningTests({
         data: {
@@ -164,55 +156,37 @@ function CommissioningBoard() {
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/punch"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/punch" params={{ projectId }}>
               <ShieldCheck size={14} aria-hidden />
               Punch closure
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/performance"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/performance" params={{ projectId }}>
               <Gauge size={14} aria-hidden />
               Performance tests
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/certificates"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/certificates" params={{ projectId }}>
               <FileText size={14} aria-hidden />
               Certificates
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/turnover"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/turnover" params={{ projectId }}>
               <FileText size={14} aria-hidden />
               Turnover pack
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/handover"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/handover" params={{ projectId }}>
               <Handshake size={14} aria-hidden />
               Handover
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/commissioning/kpis"
-              params={{ projectId }}
-            >
+            <Link to="/projects/$projectId/commissioning/kpis" params={{ projectId }}>
               <BarChart3 size={14} aria-hidden />
               KPIs
             </Link>
@@ -259,10 +233,7 @@ function CommissioningBoard() {
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-sm"
           />
-          <Select
-            value={status}
-            onValueChange={(v) => setStatus(v as typeof status)}
-          >
+          <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -293,11 +264,7 @@ function CommissioningBoard() {
         </div>
       )}
 
-      <AssignDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        projectId={projectId}
-      />
+      <AssignDialog open={dialogOpen} onOpenChange={setDialogOpen} projectId={projectId} />
     </div>
   );
 }
@@ -305,13 +272,7 @@ function CommissioningBoard() {
 // ---------------------------------------------------------------------------
 // Area section
 // ---------------------------------------------------------------------------
-function AreaSection({
-  area,
-  rows,
-}: {
-  area: string;
-  rows: CommissioningTestRow[];
-}) {
+function AreaSection({ area, rows }: { area: string; rows: CommissioningTestRow[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
 
@@ -337,9 +298,7 @@ function AreaSection({
             className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50"
           >
             <div className="flex items-center gap-3">
-              <span className="font-display text-base font-semibold text-foreground">
-                {area}
-              </span>
+              <span className="font-display text-base font-semibold text-foreground">{area}</span>
               <span className="text-xs text-muted-foreground">
                 {rows.length} test{rows.length === 1 ? "" : "s"}
               </span>
@@ -395,14 +354,11 @@ function AreaSection({
                       })
                     }
                   >
-
                     <TableCell className="font-medium">
                       {COMMISSIONING_TEST_TYPE_LABELS[r.test_type]}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {[r.equipment_ref, r.string_ref]
-                        .filter(Boolean)
-                        .join(" · ") || "—"}
+                      {[r.equipment_ref, r.string_ref].filter(Boolean).join(" · ") || "—"}
                     </TableCell>
                     <TableCell className="text-sm">
                       {r.assigned_email ?? (
@@ -410,15 +366,10 @@ function AreaSection({
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {r.planned_date ?? (
-                        <span className="text-muted-foreground">—</span>
-                      )}
+                      {r.planned_date ?? <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn("border", statusTint(r.status))}
-                      >
+                      <Badge variant="outline" className={cn("border", statusTint(r.status))}>
                         {STATUS_LABELS[r.status]}
                       </Badge>
                     </TableCell>
@@ -448,9 +399,7 @@ function AreaSection({
 // ---------------------------------------------------------------------------
 const assignSchema = z.object({
   area: z.string().trim().min(1, "Area is required").max(120),
-  testTypes: z
-    .array(z.enum(COMMISSIONING_TEST_TYPES))
-    .min(1, "Pick at least one test type"),
+  testTypes: z.array(z.enum(COMMISSIONING_TEST_TYPES)).min(1, "Pick at least one test type"),
   equipmentRef: z.string().trim().max(120).optional(),
   stringRef: z.string().trim().max(120).optional(),
   assignedTo: z.string().uuid().optional().or(z.literal("")),
@@ -513,17 +462,14 @@ function AssignDialog({
         },
       }),
     onSuccess: (data) => {
-      toast.success(
-        `Assigned ${data.ids.length} test${data.ids.length === 1 ? "" : "s"}`,
-      );
+      toast.success(`Assigned ${data.ids.length} test${data.ids.length === 1 ? "" : "s"}`);
       qc.invalidateQueries({ queryKey: ["commissioning-tests", projectId] });
       form.reset();
       onOpenChange(false);
       router.invalidate();
     },
     onError: (err: unknown) => {
-      const message =
-        err instanceof Error ? err.message : "Failed to assign tests";
+      const message = err instanceof Error ? err.message : "Failed to assign tests";
       toast.error(message);
     },
   });
@@ -554,15 +500,9 @@ function AssignDialog({
         >
           <div className="grid gap-2">
             <Label htmlFor="area">Area *</Label>
-            <Input
-              id="area"
-              placeholder="e.g. Array Block 1"
-              {...form.register("area")}
-            />
+            <Input id="area" placeholder="e.g. Array Block 1" {...form.register("area")} />
             {form.formState.errors.area ? (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.area.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.area.message}</p>
             ) : null}
           </div>
 
@@ -574,10 +514,7 @@ function AssignDialog({
                   key={t}
                   className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted"
                 >
-                  <Checkbox
-                    checked={selected.includes(t)}
-                    onCheckedChange={() => toggleType(t)}
-                  />
+                  <Checkbox checked={selected.includes(t)} onCheckedChange={() => toggleType(t)} />
                   <span>{COMMISSIONING_TEST_TYPE_LABELS[t]}</span>
                 </label>
               ))}
@@ -605,9 +542,7 @@ function AssignDialog({
               <Label htmlFor="assignedTo">Assignee</Label>
               <Select
                 value={form.watch("assignedTo") || ""}
-                onValueChange={(v) =>
-                  form.setValue("assignedTo", v === "__none__" ? "" : v)
-                }
+                onValueChange={(v) => form.setValue("assignedTo", v === "__none__" ? "" : v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Unassigned" />
@@ -624,19 +559,13 @@ function AssignDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="plannedDate">Planned date</Label>
-              <Input
-                id="plannedDate"
-                type="date"
-                {...form.register("plannedDate")}
-              />
+              <Input id="plannedDate" type="date" {...form.register("plannedDate")} />
             </div>
           </div>
 
           <div className="flex items-center justify-between rounded-md border border-border bg-secondary/30 px-3 py-2">
             <div>
-              <p className="text-sm font-medium text-foreground">
-                Utility witness required
-              </p>
+              <p className="text-sm font-medium text-foreground">Utility witness required</p>
               <p className="text-xs text-muted-foreground">
                 Hipot always requires a utility witness.
               </p>
@@ -732,21 +661,14 @@ function BoardError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function EmptyState({
-  canWrite,
-  onAssign,
-}: {
-  canWrite: boolean;
-  onAssign: () => void;
-}) {
+function EmptyState({ canWrite, onAssign }: { canWrite: boolean; onAssign: () => void }) {
   return (
     <Card className="flex flex-col items-start gap-3 border-border bg-card p-6">
       <h3 className="font-display text-lg font-semibold text-foreground">
         No commissioning tests assigned yet
       </h3>
       <p className="text-sm text-muted-foreground">
-        Group tests by area and assign them to your commissioning team to get
-        started.
+        Group tests by area and assign them to your commissioning team to get started.
       </p>
       {canWrite ? (
         <Button size="sm" onClick={onAssign}>

@@ -2,11 +2,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import {
-  getScorecardAccess,
-  getVendorHistory,
-  listScorecards,
-} from "@/lib/scorecard.functions";
+import { getScorecardAccess, getVendorHistory, listScorecards } from "@/lib/scorecard.functions";
 
 export function scorecardAccessQueryOptions(
   fn: ReturnType<typeof useServerFn<typeof getScorecardAccess>>,

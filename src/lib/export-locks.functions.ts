@@ -31,9 +31,12 @@ const listInput = z.object({ project_id: z.string().uuid() });
 
 async function assertLockRole(context: AuthContext) {
   for (const role of LOCK_ROLES) {
-    const { data } = await context.supabase.rpc("has_company_role" as never, {
-      p_role: role as never,
-    } as never);
+    const { data } = await context.supabase.rpc(
+      "has_company_role" as never,
+      {
+        p_role: role as never,
+      } as never,
+    );
     if (data === true) return;
   }
   throw Object.assign(new Error("forbidden_role"), { statusCode: 403 });
@@ -60,12 +63,15 @@ async function audit(
   metadata: Record<string, unknown>,
 ) {
   try {
-    await context.supabase.rpc("write_audit_log" as never, {
-      p_action: action,
-      p_entity: "project_export_locks",
-      p_entity_id: entityId,
-      p_metadata: metadata as never,
-    } as never);
+    await context.supabase.rpc(
+      "write_audit_log" as never,
+      {
+        p_action: action,
+        p_entity: "project_export_locks",
+        p_entity_id: entityId,
+        p_metadata: metadata as never,
+      } as never,
+    );
   } catch {
     /* non-fatal */
   }

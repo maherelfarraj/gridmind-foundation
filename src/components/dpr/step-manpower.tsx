@@ -17,11 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { dprDetailQueryOptions, errorMessage } from "@/lib/dpr-query";
-import {
-  addManpowerRow,
-  deleteManpowerRow,
-  type ManpowerRow,
-} from "@/lib/dpr.functions";
+import { addManpowerRow, deleteManpowerRow, type ManpowerRow } from "@/lib/dpr.functions";
 import { sumManpower, TRADE_LABELS, TRADES, type Trade } from "@/lib/dpr.rules";
 
 interface Props {
@@ -86,9 +82,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
       </Card>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No manpower rows yet. Add trades below.
-        </p>
+        <p className="text-sm text-muted-foreground">No manpower rows yet. Add trades below.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((r) => (
@@ -174,9 +168,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                     inputMode="numeric"
                     className="h-11 text-center"
                     value={headcount}
-                    onChange={(e) =>
-                      setHeadcount(Math.max(0, Number(e.target.value) || 0))
-                    }
+                    onChange={(e) => setHeadcount(Math.max(0, Number(e.target.value) || 0))}
                   />
                   <Button
                     type="button"
@@ -201,9 +193,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                   max={24}
                   className="h-11"
                   value={hours}
-                  onChange={(e) =>
-                    setHours(Math.min(24, Math.max(0, Number(e.target.value) || 0)))
-                  }
+                  onChange={(e) => setHours(Math.min(24, Math.max(0, Number(e.target.value) || 0)))}
                 />
               </div>
             </div>
@@ -226,9 +216,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
 function TotalTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border bg-muted/40 p-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 font-display text-2xl font-semibold tabular-nums text-foreground">
         {value}
       </div>

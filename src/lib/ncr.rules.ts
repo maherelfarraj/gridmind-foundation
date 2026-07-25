@@ -1,12 +1,7 @@
 // P-091 — NCR pure helpers and zod schemas.
 import { z } from "zod";
 
-export const NCR_SOURCES = [
-  "inspection",
-  "punch_item",
-  "observation",
-  "other",
-] as const;
+export const NCR_SOURCES = ["inspection", "punch_item", "observation", "other"] as const;
 export type NcrSource = (typeof NCR_SOURCES)[number];
 export const NCR_SOURCE_LABELS: Record<NcrSource, string> = {
   inspection: "Inspection",
@@ -15,13 +10,7 @@ export const NCR_SOURCE_LABELS: Record<NcrSource, string> = {
   other: "Other",
 };
 
-export const NCR_DISPOSITIONS = [
-  "pending",
-  "rework",
-  "repair",
-  "use_as_is",
-  "scrap",
-] as const;
+export const NCR_DISPOSITIONS = ["pending", "rework", "repair", "use_as_is", "scrap"] as const;
 export type NcrDisposition = (typeof NCR_DISPOSITIONS)[number];
 export const NCR_DISPOSITION_LABELS: Record<NcrDisposition, string> = {
   pending: "Pending",
@@ -86,12 +75,7 @@ export const ncrVoidInput = z.object({
   reason: z.string().trim().min(2).max(500),
 });
 
-const WRITE_ROLES = new Set([
-  "construction_admin",
-  "foreman",
-  "field_technician",
-  "company_admin",
-]);
+const WRITE_ROLES = new Set(["construction_admin", "foreman", "field_technician", "company_admin"]);
 export function canWriteNcr(roles: readonly string[]): boolean {
   return roles.some((r) => WRITE_ROLES.has(r));
 }
@@ -114,9 +98,7 @@ export function daysOpen(row: {
 }): number {
   const start = new Date(row.created_at).getTime();
   const end =
-    row.status === "closed" && row.closed_at
-      ? new Date(row.closed_at).getTime()
-      : Date.now();
+    row.status === "closed" && row.closed_at ? new Date(row.closed_at).getTime() : Date.now();
   const diff = end - start;
   return Math.max(0, Math.floor(diff / 86_400_000));
 }

@@ -13,19 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BidRow } from "@/lib/rfq.functions";
-import {
-  DEFAULT_TCO_CONFIG,
-  computeTcoMatrix,
-  type BidInput,
-  type RfqLine,
-} from "@/lib/rfq-rules";
+import { DEFAULT_TCO_CONFIG, computeTcoMatrix, type BidInput, type RfqLine } from "@/lib/rfq-rules";
 
 function fmtMoney(n: number | null | undefined, currency: string) {
   if (n == null || Number.isNaN(n)) return "—";
@@ -55,9 +45,7 @@ export function BidTabulationTable({
   bids: BidRow[];
   currency: string;
 }) {
-  const [delayCostPctPerDay, setDelay] = useState(
-    DEFAULT_TCO_CONFIG.delayCostPctPerDay,
-  );
+  const [delayCostPctPerDay, setDelay] = useState(DEFAULT_TCO_CONFIG.delayCostPctPerDay);
   const [logisticsPct, setLogistics] = useState(DEFAULT_TCO_CONFIG.logisticsPct);
   const [defectRiskPct, setDefect] = useState(DEFAULT_TCO_CONFIG.defectRiskPct);
 
@@ -90,15 +78,12 @@ export function BidTabulationTable({
   if (bids.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-        No bids submitted yet — invite vendors and record their quotes to run the
-        TCO leveling.
+        No bids submitted yet — invite vendors and record their quotes to run the TCO leveling.
       </div>
     );
   }
 
-  const overallWinner = matrix.rows.find(
-    (r) => r.bidId === matrix.overallWinnerBidId,
-  );
+  const overallWinner = matrix.rows.find((r) => r.bidId === matrix.overallWinnerBidId);
 
   return (
     <div className="space-y-4">
@@ -106,9 +91,7 @@ export function BidTabulationTable({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="grid grid-cols-3 gap-3 rounded-md border border-border p-4">
           <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              Lowest TCO
-            </div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Lowest TCO</div>
             <div className="text-sm font-semibold">
               {overallWinner ? overallWinner.vendorName : "—"}
             </div>
@@ -122,9 +105,7 @@ export function BidTabulationTable({
             <div className="text-xs uppercase tracking-wide text-muted-foreground">
               Avg. price vs target
             </div>
-            <div className="text-sm font-semibold">
-              {fmtPct(matrix.averagePriceVariancePct)}
-            </div>
+            <div className="text-sm font-semibold">{fmtPct(matrix.averagePriceVariancePct)}</div>
           </div>
           <div>
             <div className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -180,14 +161,11 @@ export function BidTabulationTable({
                     #{l.line_no} · {l.description}
                   </div>
                   <div className="text-xs font-normal text-muted-foreground">
-                    Target {fmtMoney(l.target_price ?? null, currency)} · qty{" "}
-                    {l.qty} {l.uom}
+                    Target {fmtMoney(l.target_price ?? null, currency)} · qty {l.qty} {l.uom}
                   </div>
                 </TableHead>
               ))}
-              <TableHead className="min-w-[140px] text-right">
-                Vendor total TCO
-              </TableHead>
+              <TableHead className="min-w-[140px] text-right">Vendor total TCO</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -198,18 +176,13 @@ export function BidTabulationTable({
                   <TableCell className="align-top">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{row.vendorName}</span>
-                      {isVendorWinner && (
-                        <Trophy className="h-4 w-4 text-primary" />
-                      )}
+                      {isVendorWinner && <Trophy className="h-4 w-4 text-primary" />}
                     </div>
                     {!row.compliant && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Badge
-                              variant="destructive"
-                              className="mt-1 gap-1"
-                            >
+                            <Badge variant="destructive" className="mt-1 gap-1">
                               <AlertTriangle className="h-3 w-3" />
                               Non-compliant
                             </Badge>
@@ -218,12 +191,10 @@ export function BidTabulationTable({
                             <ul className="space-y-1">
                               {row.issues.map((i, idx) => (
                                 <li key={idx}>
-                                  {i.kind === "missing_line" &&
-                                    `Missing line #${i.line_no}`}
+                                  {i.kind === "missing_line" && `Missing line #${i.line_no}`}
                                   {i.kind === "expired_validity" &&
                                     `Validity expired ${i.validityDate}`}
-                                  {i.kind === "invalid_status" &&
-                                    `Bid status: ${i.status}`}
+                                  {i.kind === "invalid_status" && `Bid status: ${i.status}`}
                                 </li>
                               ))}
                             </ul>
@@ -237,40 +208,29 @@ export function BidTabulationTable({
                   </TableCell>
                   {rfqLines.map((l) => {
                     const cell = row.cells.get(l.line_no);
-                    const isWinner =
-                      matrix.winnersByLine.get(l.line_no) === row.bidId;
+                    const isWinner = matrix.winnersByLine.get(l.line_no) === row.bidId;
                     return (
                       <TableCell
                         key={l.line_no}
-                        className={`align-top ${
-                          isWinner ? "bg-primary/10" : ""
-                        }`}
+                        className={`align-top ${isWinner ? "bg-primary/10" : ""}`}
                       >
                         {cell ? (
                           <div className="space-y-0.5">
                             <div className="font-medium">
                               {fmtMoney(cell.tco, currency)}
-                              {isWinner && (
-                                <span className="ml-1 text-xs text-primary">
-                                  ★
-                                </span>
-                              )}
+                              {isWinner && <span className="ml-1 text-xs text-primary">★</span>}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {fmtMoney(cell.unit_price, currency)} /{" "}
-                              {cell.qty} · ext{" "}
+                              {fmtMoney(cell.unit_price, currency)} / {cell.qty} · ext{" "}
                               {fmtMoney(cell.extended, currency)}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               Δ target {fmtPct(cell.price_variance_pct)} · lead{" "}
-                              {cell.lead_time_days ?? "—"}d (+{cell.delay_days}
-                              )
+                              {cell.lead_time_days ?? "—"}d (+{cell.delay_days})
                             </div>
                           </div>
                         ) : (
-                          <span className="text-xs text-destructive">
-                            not quoted
-                          </span>
+                          <span className="text-xs text-destructive">not quoted</span>
                         )}
                       </TableCell>
                     );

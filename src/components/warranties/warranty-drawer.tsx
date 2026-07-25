@@ -52,14 +52,15 @@ interface Props {
 }
 
 function StatusBadge({ status }: { status: WarrantyClaimStatus }) {
-  const variant: Record<WarrantyClaimStatus, "default" | "secondary" | "outline" | "destructive"> = {
-    draft: "outline",
-    submitted: "secondary",
-    under_review: "secondary",
-    approved: "default",
-    rejected: "destructive",
-    settled: "default",
-  };
+  const variant: Record<WarrantyClaimStatus, "default" | "secondary" | "outline" | "destructive"> =
+    {
+      draft: "outline",
+      submitted: "secondary",
+      under_review: "secondary",
+      approved: "default",
+      rejected: "destructive",
+      settled: "default",
+    };
   return <Badge variant={variant[status]}>{status.replace("_", " ")}</Badge>;
 }
 
@@ -120,8 +121,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
   const claimMut = useMutation({
     mutationFn: async (args: { kind: "submit" | "advance" | "settle"; payload: unknown }) => {
       if (args.kind === "submit") return submitFn({ data: args.payload as { id: string } });
-      if (args.kind === "advance")
-        return advanceFn({ data: args.payload as never });
+      if (args.kind === "advance") return advanceFn({ data: args.payload as never });
       return settleFn({ data: args.payload as never });
     },
     onSuccess: () => {
@@ -163,9 +163,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
                     : "bg-muted text-muted-foreground"
               }
             >
-              {badge === "expired"
-                ? `Expired ${Math.abs(days)}d ago`
-                : `${days}d remaining`}
+              {badge === "expired" ? `Expired ${Math.abs(days)}d ago` : `${days}d remaining`}
             </Badge>
           </SheetTitle>
           <SheetDescription>
@@ -205,9 +203,7 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
               <div className="col-span-2">
                 <div className="text-xs text-muted-foreground">Coverage notes</div>
                 <div className="whitespace-pre-wrap">
-                  {warranty.coverage_notes || (
-                    <span className="text-muted-foreground">—</span>
-                  )}
+                  {warranty.coverage_notes || <span className="text-muted-foreground">—</span>}
                 </div>
               </div>
             </div>
@@ -390,7 +386,8 @@ export function WarrantyDrawer({ warranty, open, onOpenChange }: Props) {
                                 payload: {
                                   id: c.id,
                                   settled_amount: amount,
-                                  currency_code: curr && curr.length === 3 ? curr.toUpperCase() : null,
+                                  currency_code:
+                                    curr && curr.length === 3 ? curr.toUpperCase() : null,
                                 },
                               });
                             }}

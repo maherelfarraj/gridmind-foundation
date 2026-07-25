@@ -67,8 +67,7 @@ function ScadaConnectorsPage() {
 
   const toggleFn = useServerFn(toggleScadaConnector);
   const toggleMut = useMutation({
-    mutationFn: (vars: { id: string; enabled: boolean }) =>
-      toggleFn({ data: vars }),
+    mutationFn: (vars: { id: string; enabled: boolean }) => toggleFn({ data: vars }),
     onMutate: async (vars) => {
       await qc.cancelQueries({ queryKey: ["scada", "connectors", activeCompanyId] });
       const prev = qc.getQueryData<{ rows: ConnectorRow[] }>([
@@ -89,8 +88,7 @@ function ScadaConnectorsPage() {
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev)
-        qc.setQueryData(["scada", "connectors", activeCompanyId], ctx.prev);
+      if (ctx?.prev) qc.setQueryData(["scada", "connectors", activeCompanyId], ctx.prev);
       toast.error("Toggle failed");
     },
     onSuccess: (_data, vars) => {
@@ -213,9 +211,7 @@ function ScadaConnectorsPage() {
                     <TableCell>
                       <Badge variant="outline">{r.connector_type}</Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {r.project_name ?? "—"}
-                    </TableCell>
+                    <TableCell className="text-muted-foreground">{r.project_name ?? "—"}</TableCell>
                     <TableCell>
                       <Switch
                         checked={r.enabled}

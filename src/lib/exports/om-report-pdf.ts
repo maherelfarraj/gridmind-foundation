@@ -3,23 +3,13 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format, parseISO } from "date-fns";
 
-import {
-  omReportFilename,
-  sanitizeText,
-  type OmReportSnapshot,
-} from "@/lib/om-reports.rules";
-import type {
-  OmReportBrandingDTO,
-  OmReportGeneratedDTO,
-} from "@/lib/om-reports.functions";
+import { omReportFilename, sanitizeText, type OmReportSnapshot } from "@/lib/om-reports.rules";
+import type { OmReportBrandingDTO, OmReportGeneratedDTO } from "@/lib/om-reports.functions";
 
 const DEFAULT_PRIMARY = "#1e40af";
 const DEFAULT_ACCENT = "#0d9488";
 
-function hexToRgb(
-  hex: string | null | undefined,
-  fallback: string,
-): [number, number, number] {
+function hexToRgb(hex: string | null | undefined, fallback: string): [number, number, number] {
   const s = (hex ?? "").trim();
   const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
   const raw = m ? m[1] : fallback.slice(1);
@@ -88,7 +78,6 @@ function sectionTitle(
 }
 
 function tableEnd(doc: jsPDF, fallback: number): number {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (doc as any).lastAutoTable?.finalY ?? fallback;
 }
 
@@ -106,9 +95,7 @@ function ensureRoom(
   return cursorY;
 }
 
-export async function buildOmReportPdfBytes(
-  input: OmReportGeneratedDTO,
-): Promise<Uint8Array> {
+export async function buildOmReportPdfBytes(input: OmReportGeneratedDTO): Promise<Uint8Array> {
   const branding: OmReportBrandingDTO = input.branding;
   const snap: OmReportSnapshot = input.report.data;
   const primary = hexToRgb(branding.primaryColor, DEFAULT_PRIMARY);
@@ -120,10 +107,7 @@ export async function buildOmReportPdfBytes(
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 40;
 
-  const periodLabel = format(
-    parseISO(`${input.report.period_start}T00:00:00`),
-    "MMMM yyyy",
-  );
+  const periodLabel = format(parseISO(`${input.report.period_start}T00:00:00`), "MMMM yyyy");
 
   // ---- Header band ---------------------------------------------------------
   doc.setFillColor(primary[0], primary[1], primary[2]);
@@ -146,17 +130,13 @@ export async function buildOmReportPdfBytes(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.text(
-    sanitizeText(
-      `Monthly O&M Report — ${input.project.name} · ${periodLabel}`,
-    ),
+    sanitizeText(`Monthly O&M Report — ${input.project.name} · ${periodLabel}`),
     margin + (logo ? 66 : 0),
     64,
   );
   doc.setFontSize(9);
   doc.text(
-    sanitizeText(
-      `${fmtDate(input.report.period_start)} – ${fmtDate(input.report.period_end)}`,
-    ),
+    sanitizeText(`${fmtDate(input.report.period_start)} – ${fmtDate(input.report.period_end)}`),
     margin + (logo ? 66 : 0),
     80,
   );
@@ -164,9 +144,7 @@ export async function buildOmReportPdfBytes(
   const rightMeta: string[] = [];
   if (input.project.code) rightMeta.push(`Code ${input.project.code}`);
   if (snap.performanceRatio.capacityKwp != null) {
-    rightMeta.push(
-      `${fmtNum(snap.performanceRatio.capacityKwp / 1000, 1)} MWp`,
-    );
+    rightMeta.push(`${fmtNum(snap.performanceRatio.capacityKwp / 1000, 1)} MWp`);
   }
   rightMeta.forEach((line, i) => {
     doc.text(sanitizeText(line), pageW - margin, 40 + i * 14, {
@@ -216,10 +194,7 @@ export async function buildOmReportPdfBytes(
     body: [
       ["Period hours", fmtNum(snap.periodHours, 1)],
       ["Alarm downtime (h)", fmtNum(snap.availability.alarmDowntimeHours, 2)],
-      [
-        "Corrective WO downtime (h)",
-        fmtNum(snap.availability.correctiveWoDowntimeHours, 2),
-      ],
+      ["Corrective WO downtime (h)", fmtNum(snap.availability.correctiveWoDowntimeHours, 2)],
       ["Total downtime (h)", fmtNum(snap.availability.downtimeHours, 2)],
       ["Availability %", fmtPct(snap.availability.value)],
     ],
@@ -239,22 +214,14 @@ export async function buildOmReportPdfBytes(
   cursorY += 6;
   const prBody: string[][] =
     snap.performanceRatio.reason === "insufficient_data"
-      ? [
-          [
-            "Status",
-            "Insufficient telemetry — connect meters and irradiance sensors to populate.",
-          ],
-        ]
+      ? [["Status", "Insufficient telemetry — connect meters and irradiance sensors to populate."]]
       : [
           ["Metered energy (kWh)", fmtNum(snap.performanceRatio.actualKwh, 0)],
           [
             "Plane-of-array irradiance (kWh/m²)",
             fmtNum(snap.performanceRatio.irradianceKwhPerM2, 2),
           ],
-          [
-            "Installed capacity (kWp)",
-            fmtNum(snap.performanceRatio.capacityKwp, 1),
-          ],
+          ["Installed capacity (kWp)", fmtNum(snap.performanceRatio.capacityKwp, 1)],
           ["Performance ratio", fmtPct(snap.performanceRatio.value)],
         ];
   autoTable(doc, {
@@ -274,16 +241,14 @@ export async function buildOmReportPdfBytes(
   cursorY = ensureRoom(doc, cursorY, 160, margin, pageH);
   sectionTitle(doc, "Alarms summary", margin, cursorY, accent);
   cursorY += 6;
-  const severityRows: string[][] = Object.entries(snap.alarms.bySeverity).map(
-    ([sev, n]) => [sanitizeText(sev), String(n)],
-  );
+  const severityRows: string[][] = Object.entries(snap.alarms.bySeverity).map(([sev, n]) => [
+    sanitizeText(sev),
+    String(n),
+  ]);
   autoTable(doc, {
     startY: cursorY + 6,
     head: [["Severity", "Count"]],
-    body:
-      severityRows.length > 0
-        ? severityRows
-        : [["—", "No alarms in period"]],
+    body: severityRows.length > 0 ? severityRows : [["—", "No alarms in period"]],
     margin: { left: margin, right: margin },
     styles: { fontSize: 9, cellPadding: 5 },
     headStyles: {
@@ -343,12 +308,7 @@ export async function buildOmReportPdfBytes(
       ["Preventive", String(snap.workOrders.preventive)],
       ["Corrective", String(snap.workOrders.corrective)],
       ["PM : CM ratio", fmtPct(snap.workOrders.pmCmRatio)],
-      [
-        "MTTR (h)",
-        snap.workOrders.mttrHours == null
-          ? "—"
-          : fmtNum(snap.workOrders.mttrHours, 2),
-      ],
+      ["MTTR (h)", snap.workOrders.mttrHours == null ? "—" : fmtNum(snap.workOrders.mttrHours, 2)],
     ],
     margin: { left: margin, right: margin },
     styles: { fontSize: 9, cellPadding: 5 },
@@ -364,12 +324,10 @@ export async function buildOmReportPdfBytes(
   cursorY = ensureRoom(doc, cursorY, 140, margin, pageH);
   sectionTitle(doc, "Spend by work-order type", margin, cursorY, accent);
   cursorY += 6;
-  const spendRows: string[][] = Object.entries(snap.spend.byType).map(
-    ([type, amount]) => [
-      sanitizeText(type),
-      snap.spend.byTypeFormatted[type] ?? String(amount),
-    ],
-  );
+  const spendRows: string[][] = Object.entries(snap.spend.byType).map(([type, amount]) => [
+    sanitizeText(type),
+    snap.spend.byTypeFormatted[type] ?? String(amount),
+  ]);
   autoTable(doc, {
     startY: cursorY + 6,
     head: [["Type", "Amount"]],
@@ -403,12 +361,9 @@ export async function buildOmReportPdfBytes(
     doc.text(`Page ${i} of ${pageCount}`, pageW - margin, pageH - 24, {
       align: "right",
     });
-    doc.text(
-      sanitizeText(`${input.project.name} · ${periodLabel}`),
-      pageW / 2,
-      pageH - 24,
-      { align: "center" },
-    );
+    doc.text(sanitizeText(`${input.project.name} · ${periodLabel}`), pageW / 2, pageH - 24, {
+      align: "center",
+    });
   }
 
   const ab = doc.output("arraybuffer");

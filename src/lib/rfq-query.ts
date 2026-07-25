@@ -138,13 +138,11 @@ export function useSaveRfqDraft() {
   });
 }
 
-
 export function useInviteVendors(rfqId: string) {
   const qc = useQueryClient();
   const fn = useServerFn(inviteRfqVendors);
   return useMutation({
-    mutationFn: (vendorIds: string[]) =>
-      fn({ data: { rfqId, vendorIds } }),
+    mutationFn: (vendorIds: string[]) => fn({ data: { rfqId, vendorIds } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rfq", rfqId] });
       toast.success("Vendors invited");
@@ -208,4 +206,3 @@ export function useSubmitBid(rfqId: string) {
     onError: (err) => toast.error(errorMessage(err)),
   });
 }
-

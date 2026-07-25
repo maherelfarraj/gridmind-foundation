@@ -167,9 +167,7 @@ export interface InvoiceDetail {
 
 export const getInvoiceDetail = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<InvoiceDetail> => {
     requireSupabaseAuth(context);
     const { data: r, error } = await context.supabase
@@ -194,10 +192,7 @@ export const getInvoiceDetail = createServerFn({ method: "GET" })
         .select("id, application_number")
         .eq("invoice_id", invoice.id)
         .maybeSingle(),
-      context.supabase
-        .from("debit_notes")
-        .select("amount, status")
-        .eq("invoice_id", invoice.id),
+      context.supabase.from("debit_notes").select("amount, status").eq("invoice_id", invoice.id),
       invoice.direction === "payable"
         ? context.supabase
             .from("three_way_matches")
@@ -213,8 +208,9 @@ export const getInvoiceDetail = createServerFn({ method: "GET" })
     const openSum = ((dnRes.data ?? []) as { amount: number; status: string }[])
       .filter((d) => d.status === "issued" || d.status === "settled")
       .reduce((acc, d) => acc + Number(d.amount || 0), 0);
-    const blocked = ((matchRes.data ?? []) as { id: string; payment_release_blocked: boolean }[])
-      .filter((m) => m.payment_release_blocked);
+    const blocked = (
+      (matchRes.data ?? []) as { id: string; payment_release_blocked: boolean }[]
+    ).filter((m) => m.payment_release_blocked);
 
     return {
       invoice,
@@ -252,9 +248,9 @@ export const markInvoicePaid = createServerFn({ method: "POST" })
         .select("id, payment_release_blocked")
         .eq("invoice_id", invoice.id);
       if (mErr) throw mErr;
-      const blocked = ((matches ?? []) as { id: string; payment_release_blocked: boolean }[]).filter(
-        (m) => m.payment_release_blocked,
-      );
+      const blocked = (
+        (matches ?? []) as { id: string; payment_release_blocked: boolean }[]
+      ).filter((m) => m.payment_release_blocked);
       if (blocked.length > 0) {
         await audit(context, "invoice.pay_blocked", "invoices", invoice.id, {
           blocked_match_ids: blocked.map((m) => m.id),
@@ -320,9 +316,9 @@ export const billMilestone = createServerFn({ method: "POST" })
       if (!["signed", "active"].includes(contract.status)) {
         httpError(400, "contract_not_signed", "Contract must be signed or active.");
       }
-      const sov = (Array.isArray(contract.schedule_of_values)
-        ? (contract.schedule_of_values as SovLine[])
-        : []) as SovLine[];
+      const sov = (
+        Array.isArray(contract.schedule_of_values) ? (contract.schedule_of_values as SovLine[]) : []
+      ) as SovLine[];
       const line = sov.find((l) => l.line_no === data.sov_line_no);
       if (!line) httpError(404, "sov_line_not_found");
 
@@ -391,9 +387,7 @@ export interface SovBillingSummary {
 
 export const getContractBillingSummary = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ contract_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ contract_id: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -411,9 +405,11 @@ export const getContractBillingSummary = createServerFn({ method: "GET" })
         .maybeSingle();
       if (cErr) throw cErr;
       if (!cRaw) httpError(404, "contract_not_found");
-      const sov = (Array.isArray((cRaw as any).schedule_of_values)
-        ? ((cRaw as any).schedule_of_values as SovLine[])
-        : []) as SovLine[];
+      const sov = (
+        Array.isArray((cRaw as any).schedule_of_values)
+          ? ((cRaw as any).schedule_of_values as SovLine[])
+          : []
+      ) as SovLine[];
       const { data: prior, error: pErr } = await context.supabase
         .from("invoices")
         .select("milestone_label, amount, status")
@@ -445,9 +441,7 @@ export const getContractBillingSummary = createServerFn({ method: "GET" })
 // Keep the P-079 read-only fetcher for backwards compatibility.
 export const getInvoice = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<InvoiceRow | null> => {
     requireSupabaseAuth(context);
     const { data: r, error } = await context.supabase

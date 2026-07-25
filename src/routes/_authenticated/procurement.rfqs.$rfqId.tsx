@@ -1,10 +1,6 @@
 // P-063 — RFQ detail page with Lines / Vendors / Bids / Tabulation tabs.
 import { useMemo, useState } from "react";
-import {
-  createFileRoute,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, MailPlus, Send, Trash2 } from "lucide-react";
@@ -20,18 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  RfqBidStatusBadge,
-  RfqStatusBadge,
-} from "@/components/procurement/rfq-status-badge";
+import { RfqBidStatusBadge, RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
 import { InviteVendorDialog } from "@/components/procurement/invite-vendor-dialog";
 import { SubmitBidDialog } from "@/components/procurement/submit-bid-dialog";
 import { BidTabulationTable } from "@/components/procurement/bid-tabulation-table";
 import { AwardPanel } from "@/components/procurement/award-panel";
-import {
-  getRfq,
-  getRfqWriteAccess,
-} from "@/lib/rfq.functions";
+import { getRfq, getRfqWriteAccess } from "@/lib/rfq.functions";
 import {
   rfqDetailQueryOptions,
   rfqWriteAccessQueryOptions,
@@ -71,10 +61,7 @@ function RfqDetail() {
   const issue = useIssueRfq(rfqId);
   const submitBid = useSubmitBid(rfqId);
 
-  const invitedVendorIds = useMemo(
-    () => new Set(bids.map((b) => b.vendor_id)),
-    [bids],
-  );
+  const invitedVendorIds = useMemo(() => new Set(bids.map((b) => b.vendor_id)), [bids]);
 
   const inviteCount = bids.length;
   const submittedCount = bids.filter(
@@ -84,11 +71,7 @@ function RfqDetail() {
   return (
     <div className="space-y-6">
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/procurement/rfqs" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/rfqs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
       </div>
@@ -98,9 +81,7 @@ function RfqDetail() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <MailPlus className="h-3.5 w-3.5" /> Procurement · RFQ
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            {rfq.title}
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">{rfq.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span className="font-mono">{rfq.rfq_number}</span>
             <RfqStatusBadge status={rfq.status} />
@@ -162,13 +143,9 @@ function RfqDetail() {
                       </TableCell>
                       <TableCell>{l.qty}</TableCell>
                       <TableCell>{l.uom}</TableCell>
+                      <TableCell>{l.target_price != null ? l.target_price : "—"}</TableCell>
                       <TableCell>
-                        {l.target_price != null ? l.target_price : "—"}
-                      </TableCell>
-                      <TableCell>
-                        {l.site_need_date
-                          ? format(new Date(l.site_need_date), "PP")
-                          : "—"}
+                        {l.site_need_date ? format(new Date(l.site_need_date), "PP") : "—"}
                       </TableCell>
                     </TableRow>
                   ))
@@ -276,14 +253,10 @@ function RfqDetail() {
                       </TableCell>
                       <TableCell>{b.lead_time_days ?? "—"}</TableCell>
                       <TableCell>
-                        {b.validity_date
-                          ? format(new Date(b.validity_date), "PP")
-                          : "—"}
+                        {b.validity_date ? format(new Date(b.validity_date), "PP") : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {b.submitted_at
-                          ? format(new Date(b.submitted_at), "PP")
-                          : "—"}
+                        {b.submitted_at ? format(new Date(b.submitted_at), "PP") : "—"}
                       </TableCell>
                       <TableCell className="text-right">
                         {canAuthor &&
@@ -313,11 +286,7 @@ function RfqDetail() {
 
         <TabsContent value="tabulation" className="space-y-6 pt-4">
           <AwardPanel rfq={rfq} bids={bids} canAward={canAward} />
-          <BidTabulationTable
-            rfqLines={rfq.lines}
-            bids={bids}
-            currency={rfq.currency_code}
-          />
+          <BidTabulationTable rfqLines={rfq.lines} bids={bids} currency={rfq.currency_code} />
         </TabsContent>
       </Tabs>
     </div>

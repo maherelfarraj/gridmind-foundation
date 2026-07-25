@@ -30,11 +30,7 @@ interface Props {
   isFinanceAdmin: boolean;
 }
 
-export function PricingApprovalCard({
-  proposalId,
-  canWrite,
-  isFinanceAdmin,
-}: Props) {
+export function PricingApprovalCard({ proposalId, canWrite, isFinanceAdmin }: Props) {
   const fn = useServerFn(getPricingChecklist);
   const q = useQuery(pricingChecklistQueryOptions(fn, proposalId));
 
@@ -57,11 +53,7 @@ export function PricingApprovalCard({
     return (
       <Card className="p-4 text-sm text-destructive">
         Failed to load pricing checklist.{" "}
-        <button
-          type="button"
-          className="underline"
-          onClick={() => q.refetch()}
-        >
+        <button type="button" className="underline" onClick={() => q.refetch()}>
           Retry
         </button>
       </Card>
@@ -70,13 +62,11 @@ export function PricingApprovalCard({
 
   const { items, allPass, pricingLock, approvalInstance } = q.data;
   const lockStatus = pricingLock?.status;
-  const pending =
-    lockStatus === "pending" || approvalInstance?.status === "pending";
+  const pending = lockStatus === "pending" || approvalInstance?.status === "pending";
   const approved = lockStatus === "approved";
   const rejected = lockStatus === "rejected";
 
-  const requestedAt =
-    pricingLock?.requested_at ?? approvalInstance?.created_at ?? null;
+  const requestedAt = pricingLock?.requested_at ?? approvalInstance?.created_at ?? null;
 
   return (
     <Card className="flex flex-col gap-4 p-4">
@@ -107,19 +97,11 @@ export function PricingApprovalCard({
             }`}
           >
             <span className="mt-0.5" aria-hidden>
-              {it.pass ? (
-                <Check size={14} className="text-success" />
-              ) : (
-                <X size={14} />
-              )}
+              {it.pass ? <Check size={14} className="text-success" /> : <X size={14} />}
             </span>
             <span className="flex-1">
               <span className="font-medium">{it.label}</span>
-              {it.detail && (
-                <span className="ml-1 text-muted-foreground">
-                  — {it.detail}
-                </span>
-              )}
+              {it.detail && <span className="ml-1 text-muted-foreground">— {it.detail}</span>}
             </span>
           </li>
         ))}
@@ -131,8 +113,8 @@ export function PricingApprovalCard({
           <div>
             <div className="font-semibold">Pricing locked by CFO approval</div>
             <div className="text-success/80">
-              Margin, contingency, FX and totals are immutable. Create a new
-              version to change pricing.
+              Margin, contingency, FX and totals are immutable. Create a new version to change
+              pricing.
             </div>
           </div>
         </div>
@@ -157,11 +139,7 @@ export function PricingApprovalCard({
             disabled={!allPass || pending || submit.isPending}
             onClick={() => submit.mutate()}
           >
-            {submit.isPending
-              ? "Submitting…"
-              : pending
-                ? "Submitted"
-                : "Submit to CFO"}
+            {submit.isPending ? "Submitting…" : pending ? "Submitted" : "Submit to CFO"}
           </Button>
         )}
 
@@ -208,11 +186,7 @@ export function PricingApprovalCard({
             placeholder="Reason for rejection…"
           />
           <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setRejectOpen(false)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setRejectOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -251,11 +225,7 @@ function StatusBadge({
   requestedAt: string | null;
 }) {
   if (approved) {
-    return (
-      <Badge className="bg-success/15 text-success hover:bg-success/15">
-        Approved
-      </Badge>
-    );
+    return <Badge className="bg-success/15 text-success hover:bg-success/15">Approved</Badge>;
   }
   if (rejected) return <Badge variant="destructive">Rejected</Badge>;
   if (pending) {

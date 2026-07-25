@@ -40,10 +40,7 @@ export function sanitizeText(v: unknown): string {
 // downtime_hours = ∑ alarm-open-window + ∑ corrective-WO labor hours,
 // bounded to the period length.
 // ---------------------------------------------------------------------------
-export function computeAvailability(
-  periodHours: number,
-  downtimeHours: number,
-): number | null {
+export function computeAvailability(periodHours: number, downtimeHours: number): number | null {
   if (!Number.isFinite(periodHours) || periodHours <= 0) return null;
   const clamped = Math.max(0, Math.min(downtimeHours, periodHours));
   return 1 - clamped / periodHours;
@@ -128,9 +125,7 @@ export function computeWoSummary(rows: WorkOrderSlice[]): {
 // ---------------------------------------------------------------------------
 // Spend by WO type
 // ---------------------------------------------------------------------------
-export function computeSpendByType(
-  rows: WorkOrderSlice[],
-): Record<string, number> {
+export function computeSpendByType(rows: WorkOrderSlice[]): Record<string, number> {
   const out: Record<string, number> = {};
   for (const w of rows) {
     const k = w.type ?? "other";
@@ -139,10 +134,7 @@ export function computeSpendByType(
   return out;
 }
 
-export function formatCurrency(
-  amount: number,
-  currency: string | null | undefined,
-): string {
+export function formatCurrency(amount: number, currency: string | null | undefined): string {
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
@@ -180,10 +172,7 @@ export function computeAlarmSummary(rows: AlarmSlice[]): {
   const bySeverity: Record<string, number> = {};
   let ackTotal = 0;
   let ackCount = 0;
-  const byRule = new Map<
-    string,
-    { ruleId: string | null; ruleName: string; count: number }
-  >();
+  const byRule = new Map<string, { ruleId: string | null; ruleName: string; count: number }>();
   for (const a of rows) {
     bySeverity[a.severity] = (bySeverity[a.severity] ?? 0) + 1;
     if (a.acknowledgedAt) {
@@ -257,13 +246,8 @@ export function sumLaborHours(labor: unknown): number {
 // ---------------------------------------------------------------------------
 // Filename helper
 // ---------------------------------------------------------------------------
-export function omReportFilename(
-  projectName: string,
-  periodStart: string,
-): string {
-  const safeProj = (projectName || "project")
-    .replace(/[^A-Za-z0-9_-]+/g, "_")
-    .slice(0, 40);
+export function omReportFilename(projectName: string, periodStart: string): string {
+  const safeProj = (projectName || "project").replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 40);
   const yyyymm = periodStart.slice(0, 7); // YYYY-MM
   return `GridMind_OM_Report_${safeProj}_${yyyymm}.pdf`;
 }

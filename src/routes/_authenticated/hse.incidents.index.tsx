@@ -17,11 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  errorMessage,
-  hseProjectsQueryOptions,
-  incidentListQueryOptions,
-} from "@/lib/hse-query";
+import { errorMessage, hseProjectsQueryOptions, incidentListQueryOptions } from "@/lib/hse-query";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
 import { objectsToCsv, downloadCsv } from "@/lib/csv";
 
@@ -187,9 +183,7 @@ function IncidentListPage() {
               className="flex flex-col gap-1 rounded-md border border-border bg-card p-3 transition-colors hover:bg-accent"
             >
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-medium text-foreground">
-                  {r.incident_number}
-                </span>
+                <span className="font-medium text-foreground">{r.incident_number}</span>
                 <Badge variant="secondary" className="capitalize">
                   {r.incident_type.replace("_", " ")}
                 </Badge>
@@ -202,10 +196,7 @@ function IncidentListPage() {
                 {r.osha_recordable ? (
                   <Badge className="bg-destructive/10 text-destructive">OSHA</Badge>
                 ) : null}
-                <IncidentTimingBadge
-                  occurredAt={r.occurred_at}
-                  reportedAt={r.reported_at}
-                />
+                <IncidentTimingBadge occurredAt={r.occurred_at} reportedAt={r.reported_at} />
                 <span className="ml-auto text-xs text-muted-foreground">
                   {new Date(r.occurred_at).toLocaleString()}
                 </span>

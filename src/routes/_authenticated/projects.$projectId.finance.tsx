@@ -12,9 +12,7 @@ const SUB_TABS = [
   { to: "project-finance" as const, label: "Project finance" },
 ];
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance")({
   component: FinanceLayout,
 });
 
@@ -22,10 +20,7 @@ function FinanceLayout() {
   const { projectId } = Route.useParams();
   return (
     <div className="flex flex-col gap-4">
-      <nav
-        aria-label="Finance sections"
-        className="flex flex-wrap gap-1 border-b border-border"
-      >
+      <nav aria-label="Finance sections" className="flex flex-wrap gap-1 border-b border-border">
         {SUB_TABS.map((t) => (
           <Link
             key={t.to}

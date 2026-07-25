@@ -132,17 +132,14 @@ export function ArrayConfigForm({
 
   const tracking = watch("tracking");
 
-  const onSubmit = (v: FormValues) =>
-    save.mutate(toConfig(v), { onSuccess: () => reset(v) });
+  const onSubmit = (v: FormValues) => save.mutate(toConfig(v), { onSuccess: () => reset(v) });
 
   return (
     <Card className="p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold">Array configuration</h3>
-          <p className="text-xs text-muted-foreground">
-            Feeds the yield simulation engine
-          </p>
+          <p className="text-xs text-muted-foreground">Feeds the yield simulation engine</p>
         </div>
       </div>
 
@@ -196,12 +193,34 @@ export function ArrayConfigForm({
         <div className="sm:col-span-3 mt-2 border-t border-border pt-3">
           <h4 className="mb-2 text-sm font-semibold">Losses (fraction)</h4>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="Soiling"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_soiling")} /></Field>
-            <Field label="Temperature"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_temperature")} /></Field>
-            <Field label="Mismatch"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_mismatch")} /></Field>
-            <Field label="Wiring"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_wiring")} /></Field>
-            <Field label="Inverter"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_inverter")} /></Field>
-            <Field label="Availability"><Input type="number" step="0.01" disabled={readOnly} {...register("loss_availability")} /></Field>
+            <Field label="Soiling">
+              <Input type="number" step="0.01" disabled={readOnly} {...register("loss_soiling")} />
+            </Field>
+            <Field label="Temperature">
+              <Input
+                type="number"
+                step="0.01"
+                disabled={readOnly}
+                {...register("loss_temperature")}
+              />
+            </Field>
+            <Field label="Mismatch">
+              <Input type="number" step="0.01" disabled={readOnly} {...register("loss_mismatch")} />
+            </Field>
+            <Field label="Wiring">
+              <Input type="number" step="0.01" disabled={readOnly} {...register("loss_wiring")} />
+            </Field>
+            <Field label="Inverter">
+              <Input type="number" step="0.01" disabled={readOnly} {...register("loss_inverter")} />
+            </Field>
+            <Field label="Availability">
+              <Input
+                type="number"
+                step="0.01"
+                disabled={readOnly}
+                {...register("loss_availability")}
+              />
+            </Field>
           </div>
         </div>
 

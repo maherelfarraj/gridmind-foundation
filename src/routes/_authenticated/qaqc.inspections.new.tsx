@@ -80,8 +80,7 @@ function NewInspectionPage() {
   });
 
   const createMut = useMutation({
-    mutationFn: (payload: InspectionInput) =>
-      createInspection({ data: payload as any }),
+    mutationFn: (payload: InspectionInput) => createInspection({ data: payload as any }),
     onSuccess: async (row) => {
       toast.success(`Inspection ${row.inspection_number} created`);
       await qc.invalidateQueries({ queryKey: ["qaqc"] });
@@ -98,20 +97,15 @@ function NewInspectionPage() {
         toast.error("Select a project first");
         return;
       }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("company_id")
-        .maybeSingle();
+      const { data: profile } = await supabase.from("profiles").select("company_id").maybeSingle();
       const companyId = (profile as any)?.company_id as string | undefined;
       if (!companyId) throw new Error("no_company");
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
       const path = `${companyId}/qaqc/${projectId}/${crypto.randomUUID()}-${safeName}`;
-      const { error } = await supabase.storage
-        .from("documents")
-        .upload(path, file, {
-          upsert: false,
-          contentType: file.type || undefined,
-        });
+      const { error } = await supabase.storage.from("documents").upload(path, file, {
+        upsert: false,
+        contentType: file.type || undefined,
+      });
       if (error) throw error;
       const next: QaqcAttachment = { file_path: path, label: file.name };
       const nextList = [...attachments, next];
@@ -163,9 +157,7 @@ function NewInspectionPage() {
               <Label>Project</Label>
               <Select
                 value={form.watch("projectId")}
-                onValueChange={(v) =>
-                  form.setValue("projectId", v, { shouldValidate: true })
-                }
+                onValueChange={(v) => form.setValue("projectId", v, { shouldValidate: true })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select project" />
@@ -258,9 +250,7 @@ function NewInspectionPage() {
               <Label>Result</Label>
               <Select
                 value={form.watch("result")}
-                onValueChange={(v) =>
-                  form.setValue("result", v as any, { shouldValidate: true })
-                }
+                onValueChange={(v) => form.setValue("result", v as any, { shouldValidate: true })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -277,9 +267,7 @@ function NewInspectionPage() {
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
                 <div className="text-sm font-medium">Rework required</div>
-                <div className="text-xs text-muted-foreground">
-                  Requires notes below
-                </div>
+                <div className="text-xs text-muted-foreground">Requires notes below</div>
               </div>
               <Switch
                 checked={reworkRequired}
@@ -289,17 +277,13 @@ function NewInspectionPage() {
               />
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
-              <Label htmlFor="reworkNotes">
-                Rework notes{reworkRequired ? " *" : ""}
-              </Label>
+              <Label htmlFor="reworkNotes">Rework notes{reworkRequired ? " *" : ""}</Label>
               <Textarea
                 id="reworkNotes"
                 rows={3}
                 {...form.register("reworkNotes")}
                 placeholder={
-                  reworkRequired
-                    ? "Describe defects and required rework"
-                    : "Optional notes"
+                  reworkRequired ? "Describe defects and required rework" : "Optional notes"
                 }
               />
               {form.formState.errors.reworkNotes ? (
@@ -316,10 +300,7 @@ function NewInspectionPage() {
             <CardTitle className="text-base">Attachments</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <AttachmentList
-              attachments={attachments}
-              onRemove={removeAttachment}
-            />
+            <AttachmentList attachments={attachments} onRemove={removeAttachment} />
             <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground hover:bg-accent">
               <Upload size={14} aria-hidden />
               {uploading ? "Uploading…" : "Add file (PDF or image)"}
@@ -345,11 +326,7 @@ function NewInspectionPage() {
           >
             <X size={14} aria-hidden /> Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={createMut.isPending}
-            className="ml-auto"
-          >
+          <Button type="submit" disabled={createMut.isPending} className="ml-auto">
             {createMut.isPending ? "Saving…" : "Log inspection"}
           </Button>
         </div>

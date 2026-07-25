@@ -24,17 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  errorMessage,
-  hseDashboardQueryOptions,
-  hseProjectsQueryOptions,
-} from "@/lib/hse-query";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { errorMessage, hseDashboardQueryOptions, hseProjectsQueryOptions } from "@/lib/hse-query";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
 
 export const Route = createFileRoute("/_authenticated/hse/")({
@@ -122,8 +113,7 @@ function HseDashboardPage() {
             <AlertTriangle size={16} className="mt-0.5" aria-hidden />
             <div>
               <div className="font-medium">
-                {data.unloggedWindow} incident(s) inside the 24-hour logging
-                window
+                {data.unloggedWindow} incident(s) inside the 24-hour logging window
               </div>
               <div className="text-xs opacity-90">
                 Incidents must be logged within 24 hours of occurrence.
@@ -175,9 +165,7 @@ function HseDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Recent incidents
-            </CardTitle>
+            <CardTitle className="text-base font-semibold">Recent incidents</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {dashQuery.isLoading ? (
@@ -199,19 +187,14 @@ function HseDashboardPage() {
                   className="flex flex-col gap-1 rounded-md border border-border p-3 transition-colors hover:bg-accent"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="font-medium text-foreground">
-                      {r.incident_number}
-                    </span>
+                    <span className="font-medium text-foreground">{r.incident_number}</span>
                     <Badge variant="secondary" className="capitalize">
                       {r.incident_type.replace("_", " ")}
                     </Badge>
                     <Badge variant="outline" className="capitalize">
                       {r.severity}
                     </Badge>
-                    <IncidentTimingBadge
-                      occurredAt={r.occurred_at}
-                      reportedAt={r.reported_at}
-                    />
+                    <IncidentTimingBadge occurredAt={r.occurred_at} reportedAt={r.reported_at} />
                     <span className="ml-auto text-xs text-muted-foreground">
                       {new Date(r.occurred_at).toLocaleString()}
                     </span>

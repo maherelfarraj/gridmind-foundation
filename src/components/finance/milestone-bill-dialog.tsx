@@ -26,10 +26,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { billMilestone } from "@/lib/invoices.functions";
 import { computeMilestoneBill } from "@/lib/invoices.rules";
-import {
-  contractBillingSummaryQueryOptions,
-  invoiceErrorMessage,
-} from "@/lib/invoices.query";
+import { contractBillingSummaryQueryOptions, invoiceErrorMessage } from "@/lib/invoices.query";
 
 function fmt(n: number, currency: string | null) {
   return new Intl.NumberFormat(undefined, {
@@ -179,9 +176,7 @@ export function MilestoneBillDialog({
                 {preview.hitCap && (
                   <div className="mt-2 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                    <span>
-                      Capped to remaining unbilled ({preview.cappedPct}% of scheduled).
-                    </span>
+                    <span>Capped to remaining unbilled ({preview.cappedPct}% of scheduled).</span>
                   </div>
                 )}
               </div>
@@ -199,10 +194,7 @@ export function MilestoneBillDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            disabled={!canSubmit || mutation.isPending}
-            onClick={() => mutation.mutate()}
-          >
+          <Button disabled={!canSubmit || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? "Creating…" : "Create draft invoice"}
           </Button>
         </DialogFooter>

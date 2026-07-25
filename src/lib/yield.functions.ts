@@ -2,19 +2,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // Constants + schemas
 // ---------------------------------------------------------------------------
-export const TRACKING_TYPES = [
-  "fixed",
-  "1p_tracker",
-  "2p_tracker",
-] as const;
+export const TRACKING_TYPES = ["fixed", "1p_tracker", "2p_tracker"] as const;
 export type TrackingType = (typeof TRACKING_TYPES)[number];
 
 export const LOSS_KEYS = [
@@ -70,7 +63,6 @@ export interface YieldScenarioRow {
   capacity_mw: number | null;
 }
 
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -96,11 +88,7 @@ async function loadProject(
   return data as any;
 }
 
-async function assertRole(
-  context: any,
-  companyId: string,
-  roles: readonly string[],
-) {
+async function assertRole(context: any, companyId: string, roles: readonly string[]) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")
@@ -163,11 +151,7 @@ export function estimateFromParams(
 
   // Baseline specific yield (kWh/kWp/yr) tuned by tracking type.
   const baseline =
-    params.tracking === "2p_tracker"
-      ? 1800
-      : params.tracking === "1p_tracker"
-        ? 1720
-        : 1600;
+    params.tracking === "2p_tracker" ? 1800 : params.tracking === "1p_tracker" ? 1720 : 1600;
 
   // Tilt penalty: peak at 25°, quadratic falloff.
   const tiltDelta = Math.max(0, Math.min(90, params.tilt_deg)) - 25;
@@ -181,17 +165,13 @@ export function estimateFromParams(
   const bifacialFactor = params.bifacial ? 1.06 : 1.0;
 
   // Losses total (%): each loss subtracts directly.
-  const lossTotal = LOSS_KEYS.reduce(
-    (acc, k) => acc + Number(params.losses_pct?.[k] ?? 0),
-    0,
-  );
+  const lossTotal = LOSS_KEYS.reduce((acc, k) => acc + Number(params.losses_pct?.[k] ?? 0), 0);
   const lossFactor = Math.max(0.4, 1 - lossTotal / 100);
 
   // Small deterministic wobble ±0.5%.
   const wobble = 1 + (rand() - 0.5) * 0.01;
 
-  const specific =
-    baseline * tiltFactor * gcrFactor * bifacialFactor * lossFactor * wobble;
+  const specific = baseline * tiltFactor * gcrFactor * bifacialFactor * lossFactor * wobble;
 
   const p50_mwh = Math.round((specific * mwp * 1) / 1) / 1; // kWh/kWp × MWp = MWh
   const p90_mwh = Math.round(p50_mwh * 0.92 * 100) / 100;
@@ -245,9 +225,7 @@ export const listYieldScenarios = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await context.supabase
       .from("project_yield_config")
-      .select(
-        "id, project_id, company_id, scenario_name, params, results, updated_at",
-      )
+      .select("id, project_id, company_id, scenario_name, params, results, updated_at")
       .eq("project_id", project.id)
       .order("scenario_name", { ascending: true });
     if (error) throw error;
@@ -309,10 +287,7 @@ export const saveYieldScenario = createServerFn({ method: "POST" })
     if (!prior) {
       changed.push("created");
     } else {
-      if (
-        JSON.stringify((prior as any).params ?? {}) !==
-        JSON.stringify(data.params)
-      ) {
+      if (JSON.stringify((prior as any).params ?? {}) !== JSON.stringify(data.params)) {
         changed.push("params");
       }
     }
@@ -363,11 +338,7 @@ export const estimateYieldScenario = createServerFn({ method: "POST" })
     }
 
     const capacity = project.capacity_mw != null ? Number(project.capacity_mw) : 0;
-    const results = estimateFromParams(
-      params,
-      capacity,
-      `${project.id}:${row.scenario_name}`,
-    );
+    const results = estimateFromParams(params, capacity, `${project.id}:${row.scenario_name}`);
 
     const { error: uErr } = await context.supabase
       .from("project_yield_config")
@@ -375,18 +346,12 @@ export const estimateYieldScenario = createServerFn({ method: "POST" })
       .eq("id", row.id);
     if (uErr) throw uErr;
 
-    await audit(
-      context,
-      "engineering.yield_scenario_saved",
-      "project_yield_config",
-      row.id,
-      {
-        project_id: project.id,
-        scenario_name: row.scenario_name,
-        action: "estimate",
-        stub_version: YIELD_STUB_VERSION,
-      },
-    );
+    await audit(context, "engineering.yield_scenario_saved", "project_yield_config", row.id, {
+      project_id: project.id,
+      scenario_name: row.scenario_name,
+      action: "estimate",
+      stub_version: YIELD_STUB_VERSION,
+    });
 
     return { ok: true, results };
   });
@@ -489,17 +454,11 @@ export const deleteYieldScenario = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (dErr) throw dErr;
 
-    await audit(
-      context,
-      "engineering.yield_scenario_saved",
-      "project_yield_config",
-      data.id,
-      {
-        project_id: project.id,
-        scenario_name: row.scenario_name,
-        action: "delete",
-      },
-    );
+    await audit(context, "engineering.yield_scenario_saved", "project_yield_config", data.id, {
+      project_id: project.id,
+      scenario_name: row.scenario_name,
+      action: "delete",
+    });
 
     return { ok: true };
   });

@@ -4,12 +4,7 @@ import { z } from "zod";
 export const CERT_TYPES = ["mechanical_completion", "cod", "ccc_transfer"] as const;
 export type CertificateType = (typeof CERT_TYPES)[number];
 
-export const CERT_STATUSES = [
-  "draft",
-  "pending_signatures",
-  "signed",
-  "void",
-] as const;
+export const CERT_STATUSES = ["draft", "pending_signatures", "signed", "void"] as const;
 export type CertificateStatus = (typeof CERT_STATUSES)[number];
 
 export const CERT_PARTIES = ["contractor", "client", "utility"] as const;
@@ -55,10 +50,7 @@ export function missingCertParties(
   return REQUIRED_PARTIES[type].filter((p) => !have.has(p));
 }
 
-export function allSigned(
-  type: CertificateType,
-  signatures: readonly CertSignature[],
-): boolean {
+export function allSigned(type: CertificateType, signatures: readonly CertSignature[]): boolean {
   return missingCertParties(type, signatures).length === 0;
 }
 

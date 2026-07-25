@@ -98,10 +98,7 @@ function classifyError(err: unknown): {
   const anyErr = err as any;
 
   // Fetch/network layer — always retry.
-  if (
-    typeof navigator !== "undefined" &&
-    !navigator.onLine
-  ) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return { transient: true, message: "offline" };
   }
   if (anyErr instanceof TypeError && /fetch|network/i.test(anyErr.message)) {
@@ -144,12 +141,10 @@ async function uploadPhotos(mutation: QueuedMutation): Promise<void> {
   for (const ref of mutation.photoRefs) {
     const blob = await getBlob(ref.blobKey);
     if (!blob) continue; // already uploaded on a previous attempt
-    const { error } = await supabase.storage
-      .from("photos")
-      .upload(ref.objectPath, blob.blob, {
-        contentType: blob.mimeType,
-        upsert: true,
-      });
+    const { error } = await supabase.storage.from("photos").upload(ref.objectPath, blob.blob, {
+      contentType: blob.mimeType,
+      upsert: true,
+    });
     if (error) {
       // Storage "already exists" is a benign retry — treat as success.
       const msg = error.message ?? "";

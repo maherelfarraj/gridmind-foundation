@@ -164,10 +164,9 @@ export async function evaluateAlarmRules(
   if (toClear.length) {
     const { error, count } = await admin
       .from("scada_alarms")
-      .update(
-        { status: "cleared", cleared_at: new Date().toISOString() } as never,
-        { count: "exact" },
-      )
+      .update({ status: "cleared", cleared_at: new Date().toISOString() } as never, {
+        count: "exact",
+      })
       .in("id", toClear)
       .eq("status", "active");
     if (!error) cleared = count ?? toClear.length;

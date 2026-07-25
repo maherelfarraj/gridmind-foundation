@@ -11,22 +11,18 @@ import { SldConfigForm } from "@/components/engineering/sld-config-form";
 import { getMySldRoles, getSldConfig } from "@/lib/sld.functions";
 import { sldConfigQueryOptions, sldRolesQueryOptions } from "@/lib/sld-query";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/sld",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/sld")({
   head: () => ({
     meta: [
       { title: "SLD — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Single-line diagram gallery and electrical configuration for the project.",
+        content: "Single-line diagram gallery and electrical configuration for the project.",
       },
       { property: "og:title", content: "SLD — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Single-line diagram gallery and electrical configuration for the project.",
+        content: "Single-line diagram gallery and electrical configuration for the project.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -75,30 +71,19 @@ function ConfigTab({ projectId }: { projectId: string }) {
   const rolesFn = useServerFn(getMySldRoles);
   const { data: cfg } = useSuspenseQuery(sldConfigQueryOptions(cfgFn, projectId));
   const { data: roles } = useSuspenseQuery(sldRolesQueryOptions(rolesFn, projectId));
-  return (
-    <SldConfigForm
-      projectId={projectId}
-      initial={cfg}
-      canWrite={roles.canWrite}
-    />
-  );
+  return <SldConfigForm projectId={projectId} initial={cfg} canWrite={roles.canWrite} />;
 }
 
 function GallerySkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-56 animate-pulse rounded-md border border-border bg-muted/40"
-        />
+        <div key={i} className="h-56 animate-pulse rounded-md border border-border bg-muted/40" />
       ))}
     </div>
   );
 }
 
 function ConfigSkeleton() {
-  return (
-    <div className="h-80 animate-pulse rounded-md border border-border bg-muted/40" />
-  );
+  return <div className="h-80 animate-pulse rounded-md border border-border bg-muted/40" />;
 }

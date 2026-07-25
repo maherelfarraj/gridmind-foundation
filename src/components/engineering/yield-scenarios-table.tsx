@@ -172,10 +172,7 @@ export function YieldScenariosTable({
                             >
                               <Play className="mr-2 h-4 w-4" /> Run estimate
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={!canWrite}
-                              onClick={() => openEdit(s)}
-                            >
+                            <DropdownMenuItem disabled={!canWrite} onClick={() => openEdit(s)}>
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -188,9 +185,7 @@ export function YieldScenariosTable({
                               <Copy className="mr-2 h-4 w-4" /> Duplicate
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled={
-                                !canWrite || s.scenario_name === "Proposal"
-                              }
+                              disabled={!canWrite || s.scenario_name === "Proposal"}
                               onClick={() => setDelTarget(s)}
                               className="text-destructive"
                             >
@@ -225,11 +220,7 @@ export function YieldScenariosTable({
           </DialogHeader>
           <div className="space-y-2">
             <Label>New scenario name</Label>
-            <Input
-              value={dupName}
-              onChange={(e) => setDupName(e.target.value)}
-              maxLength={60}
-            />
+            <Input value={dupName} onChange={(e) => setDupName(e.target.value)} maxLength={60} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDupTarget(undefined)}>
@@ -264,10 +255,7 @@ export function YieldScenariosTable({
             <AlertDialogAction
               onClick={() => {
                 if (!delTarget) return;
-                del.mutate(
-                  { id: delTarget.id },
-                  { onSuccess: () => setDelTarget(undefined) },
-                );
+                del.mutate({ id: delTarget.id }, { onSuccess: () => setDelTarget(undefined) });
               }}
             >
               Delete

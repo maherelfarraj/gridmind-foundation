@@ -7,12 +7,7 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  currentCompanyId,
-  hasAnyRole,
-  httpError,
-  writeAudit,
-} from "@/lib/project-finance-shared";
+import { currentCompanyId, hasAnyRole, httpError, writeAudit } from "@/lib/project-finance-shared";
 import {
   assertDrawdownAllowed,
   FacilityDrawdownSchema,
@@ -32,8 +27,7 @@ function toRow(r: any): BankFacilityRow {
     commitment_amount: Number(r.commitment_amount),
     drawn_amount: Number(r.drawn_amount ?? 0),
     currency_code: r.currency_code,
-    interest_rate_pct:
-      r.interest_rate_pct == null ? null : Number(r.interest_rate_pct),
+    interest_rate_pct: r.interest_rate_pct == null ? null : Number(r.interest_rate_pct),
     margin_pct: r.margin_pct == null ? null : Number(r.margin_pct),
     maturity_date: r.maturity_date ?? null,
     covenants: Array.isArray(r.covenants) ? r.covenants : [],
@@ -43,10 +37,7 @@ function toRow(r: any): BankFacilityRow {
   };
 }
 
-async function loadFacility(
-  ctx: AuthContext,
-  id: string,
-): Promise<BankFacilityRow> {
+async function loadFacility(ctx: AuthContext, id: string): Promise<BankFacilityRow> {
   const { data, error } = await ctx.supabase
     .from("bank_facilities" as any)
     .select("*")
@@ -60,22 +51,18 @@ async function loadFacility(
 export const listBankFacilities = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ project_id: z.string().uuid().nullable().optional() })
-      .parse(input),
+    z.object({ project_id: z.string().uuid().nullable().optional() }).parse(input),
   )
-  .handler(
-    async ({ data, context }): Promise<{ rows: BankFacilityRow[] }> => {
-      requireSupabaseAuth(context);
-      let q = context.supabase.from("bank_facilities" as any).select("*");
-      if (data.project_id) q = q.eq("project_id", data.project_id);
-      const { data: rows, error } = await q.order("created_at", {
-        ascending: false,
-      });
-      if (error) throw error;
-      return { rows: ((rows ?? []) as any[]).map(toRow) };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ rows: BankFacilityRow[] }> => {
+    requireSupabaseAuth(context);
+    let q = context.supabase.from("bank_facilities" as any).select("*");
+    if (data.project_id) q = q.eq("project_id", data.project_id);
+    const { data: rows, error } = await q.order("created_at", {
+      ascending: false,
+    });
+    if (error) throw error;
+    return { rows: ((rows ?? []) as any[]).map(toRow) };
+  });
 
 export const upsertBankFacility = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -113,13 +100,10 @@ export const upsertBankFacility = createServerFn({ method: "POST" })
         .maybeSingle();
       if (error) httpError(422, "facility_update_failed", error.message);
       const row = toRow(upd);
-      await writeAudit(
-        context as AuthContext,
-        "facility.update",
-        "bank_facilities",
-        row.id,
-        { commitment: row.commitment_amount, drawn: row.drawn_amount },
-      );
+      await writeAudit(context as AuthContext, "facility.update", "bank_facilities", row.id, {
+        commitment: row.commitment_amount,
+        drawn: row.drawn_amount,
+      });
       return row;
     }
 
@@ -134,17 +118,11 @@ export const upsertBankFacility = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) httpError(422, "facility_create_failed", error.message);
     const row = toRow(ins);
-    await writeAudit(
-      context as AuthContext,
-      "facility.create",
-      "bank_facilities",
-      row.id,
-      {
-        commitment: row.commitment_amount,
-        facility_type: row.facility_type,
-        lender: row.lender_name,
-      },
-    );
+    await writeAudit(context as AuthContext, "facility.create", "bank_facilities", row.id, {
+      commitment: row.commitment_amount,
+      facility_type: row.facility_type,
+      lender: row.lender_name,
+    });
     return row;
   });
 
@@ -158,11 +136,7 @@ export const recordFacilityDrawdown = createServerFn({ method: "POST" })
     }
     const before = await loadFacility(context as AuthContext, data.id);
     try {
-      assertDrawdownAllowed(
-        before.drawn_amount,
-        data.amount,
-        before.commitment_amount,
-      );
+      assertDrawdownAllowed(before.drawn_amount, data.amount, before.commitment_amount);
     } catch (e) {
       httpError(422, "drawdown_exceeds_commitment", (e as Error).message);
     }
@@ -175,17 +149,11 @@ export const recordFacilityDrawdown = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) httpError(422, "drawdown_failed", error.message);
     const row = toRow(upd);
-    await writeAudit(
-      context as AuthContext,
-      "facility.drawdown",
-      "bank_facilities",
-      row.id,
-      {
-        amount: data.amount,
-        previous_drawn: before.drawn_amount,
-        new_drawn: row.drawn_amount,
-        note: data.note ?? null,
-      },
-    );
+    await writeAudit(context as AuthContext, "facility.drawdown", "bank_facilities", row.id, {
+      amount: data.amount,
+      previous_drawn: before.drawn_amount,
+      new_drawn: row.drawn_amount,
+      note: data.note ?? null,
+    });
     return row;
   });

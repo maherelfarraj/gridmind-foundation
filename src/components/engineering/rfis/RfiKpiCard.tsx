@@ -32,9 +32,7 @@ function Tile({
         : "text-foreground";
   return (
     <div className="rounded border border-border bg-card p-3">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={`mt-1 text-2xl font-semibold ${toneClass}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
@@ -42,10 +40,7 @@ function Tile({
 }
 
 export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
-  const avg =
-    kpis.turnaround_days_avg == null
-      ? "—"
-      : `${kpis.turnaround_days_avg} d`;
+  const avg = kpis.turnaround_days_avg == null ? "—" : `${kpis.turnaround_days_avg} d`;
   const pct = kpis.pct_on_time == null ? "—" : `${kpis.pct_on_time}%`;
   return (
     <Card className="p-4">
@@ -54,16 +49,8 @@ export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
         <span className="text-xs text-muted-foreground">Last 90 days</span>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile
-          label="Turnaround"
-          value={avg}
-          hint={`${kpis.answered_count} answered`}
-        />
-        <Tile
-          label="Open"
-          value={String(kpis.open_count)}
-          hint={`${kpis.total_count} total`}
-        />
+        <Tile label="Turnaround" value={avg} hint={`${kpis.answered_count} answered`} />
+        <Tile label="Open" value={String(kpis.open_count)} hint={`${kpis.total_count} total`} />
         <Tile
           label="Overdue"
           value={String(kpis.overdue_count)}
@@ -72,30 +59,15 @@ export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
         <Tile
           label="On-time"
           value={pct}
-          tone={
-            kpis.pct_on_time != null && kpis.pct_on_time >= 80
-              ? "success"
-              : "default"
-          }
+          tone={kpis.pct_on_time != null && kpis.pct_on_time >= 80 ? "success" : "default"}
         />
       </div>
       <div className="mt-4 h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={kpis.by_month}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
-            />
-            <XAxis
-              dataKey="month"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-            />
-            <YAxis
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              allowDecimals={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--popover))",
@@ -104,16 +76,8 @@ export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
               }}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar
-              dataKey="raised"
-              fill="hsl(var(--primary))"
-              name="Raised"
-            />
-            <Bar
-              dataKey="answered"
-              fill="hsl(var(--muted-foreground))"
-              name="Answered"
-            />
+            <Bar dataKey="raised" fill="hsl(var(--primary))" name="Raised" />
+            <Bar dataKey="answered" fill="hsl(var(--muted-foreground))" name="Answered" />
           </BarChart>
         </ResponsiveContainer>
       </div>

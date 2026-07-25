@@ -69,10 +69,12 @@ async function fetchLogoDataUrl(url: string | null): Promise<string | null> {
 }
 
 function slug(s: string, max = 40): string {
-  return (s || "untitled")
-    .replace(/[^A-Za-z0-9_-]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, max) || "untitled";
+  return (
+    (s || "untitled")
+      .replace(/[^A-Za-z0-9_-]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, max) || "untitled"
+  );
 }
 
 export function proposalPdfFilename(
@@ -118,9 +120,7 @@ export async function buildProposalPdf(
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 40;
 
-  const footerLabel = sanitize(
-    branding.footerText || company.legal_name || company.name,
-  );
+  const footerLabel = sanitize(branding.footerText || company.legal_name || company.name);
 
   const drawFooter = () => {
     const pageCount = doc.getNumberOfPages();
@@ -164,11 +164,7 @@ export async function buildProposalPdf(
   doc.setFontSize(11);
   doc.text("Prepared for", margin, y);
   doc.setFont("helvetica", "normal");
-  doc.text(
-    sanitize(opportunity?.account_name || opportunity?.name || "—"),
-    margin + 90,
-    y,
-  );
+  doc.text(sanitize(opportunity?.account_name || opportunity?.name || "—"), margin + 90, y);
   y += 16;
   doc.setFont("helvetica", "bold");
   doc.text("Date", margin, y);
@@ -198,21 +194,14 @@ export async function buildProposalPdf(
   const dcMw = Number(array.dc_capacity_kw ?? 0) / 1000;
   const summaryRows: Array<[string, string]> = [
     ["Archetype", sanitize(proposal.archetype ?? "—")],
-    [
-      "Capacity",
-      dcMw > 0 ? `${fmtNum(dcMw, 2)} MW DC` : "—",
-    ],
+    ["Capacity", dcMw > 0 ? `${fmtNum(dcMw, 2)} MW DC` : "—"],
     [
       "P50 energy (yr)",
-      yieldResult?.p50_kwh != null
-        ? `${fmtNum(yieldResult.p50_kwh, 0)} kWh`
-        : "—",
+      yieldResult?.p50_kwh != null ? `${fmtNum(yieldResult.p50_kwh, 0)} kWh` : "—",
     ],
     [
       "P90 energy (yr)",
-      yieldResult?.p90_kwh != null
-        ? `${fmtNum(yieldResult.p90_kwh, 0)} kWh`
-        : "—",
+      yieldResult?.p90_kwh != null ? `${fmtNum(yieldResult.p90_kwh, 0)} kWh` : "—",
     ],
     [
       "Specific yield",
@@ -268,10 +257,7 @@ export async function buildProposalPdf(
     (Number(proposal.subtotal ?? 0) * Number(proposal.contingency_pct ?? 0)) / 100;
   const totalsRows: Array<[string, string]> = [
     ["Subtotal", fmtMoney(proposal.subtotal, currency)],
-    [
-      `Contingency (${fmtNum(proposal.contingency_pct, 2)}%)`,
-      fmtMoney(contingencyAmt, currency),
-    ],
+    [`Contingency (${fmtNum(proposal.contingency_pct, 2)}%)`, fmtMoney(contingencyAmt, currency)],
     ["Total", fmtMoney(proposal.total, currency)],
   ];
   autoTable(doc, {
@@ -314,9 +300,7 @@ export async function buildProposalPdf(
     ],
     [
       "Performance ratio",
-      yieldResult?.performance_ratio != null
-        ? fmtNum(yieldResult.performance_ratio, 3)
-        : "—",
+      yieldResult?.performance_ratio != null ? fmtNum(yieldResult.performance_ratio, 3) : "—",
     ],
   ];
   autoTable(doc, {
@@ -331,13 +315,21 @@ export async function buildProposalPdf(
   });
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  const monthly: number[] = Array.isArray(yieldResult?.monthly)
-    ? yieldResult.monthly
-    : [];
+  const monthly: number[] = Array.isArray(yieldResult?.monthly) ? yieldResult.monthly : [];
   if (monthly.length === 12) {
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     autoTable(doc, {
       startY: y + 6,
@@ -391,11 +383,7 @@ export async function buildProposalPdf(
   drawFooter();
 
   const blob = doc.output("blob");
-  const filename = proposalPdfFilename(
-    opportunity?.account_name,
-    proposal.title,
-    proposal.version,
-  );
+  const filename = proposalPdfFilename(opportunity?.account_name, proposal.title, proposal.version);
   return { blob, filename };
 }
 

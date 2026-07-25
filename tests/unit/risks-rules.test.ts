@@ -73,8 +73,7 @@ describe("matrixCells", () => {
 describe("heatCellClass", () => {
   it("returns only semantic-token classes", () => {
     const seen = new Set<string>();
-    for (let p = 1; p <= 5; p++)
-      for (let i = 1; i <= 5; i++) seen.add(heatCellClass(p, i));
+    for (let p = 1; p <= 5; p++) for (let i = 1; i <= 5; i++) seen.add(heatCellClass(p, i));
     for (const cls of seen) {
       expect(cls.startsWith("bg-")).toBe(true);
       expect(cls).not.toMatch(/#|rgb|\[/);
@@ -156,29 +155,18 @@ describe("riskCreateSchema", () => {
     expect(riskCreateSchema.safeParse(base).success).toBe(true);
   });
   it("rejects empty title", () => {
-    expect(
-      riskCreateSchema.safeParse({ ...base, title: "  " }).success,
-    ).toBe(false);
+    expect(riskCreateSchema.safeParse({ ...base, title: "  " }).success).toBe(false);
   });
   it("rejects invalid category", () => {
-    expect(
-      riskCreateSchema.safeParse({ ...base, category: "other" as any })
-        .success,
-    ).toBe(false);
+    expect(riskCreateSchema.safeParse({ ...base, category: "other" as any }).success).toBe(false);
   });
   it("rejects out-of-range probability", () => {
-    expect(
-      riskCreateSchema.safeParse({ ...base, probability: 6 }).success,
-    ).toBe(false);
+    expect(riskCreateSchema.safeParse({ ...base, probability: 6 }).success).toBe(false);
   });
   it("rejects negative contingency", () => {
-    expect(
-      riskCreateSchema.safeParse({ ...base, contingency_amount: -1 }).success,
-    ).toBe(false);
+    expect(riskCreateSchema.safeParse({ ...base, contingency_amount: -1 }).success).toBe(false);
   });
   it("rejects malformed currency", () => {
-    expect(
-      riskCreateSchema.safeParse({ ...base, currency_code: "us$" }).success,
-    ).toBe(false);
+    expect(riskCreateSchema.safeParse({ ...base, currency_code: "us$" }).success).toBe(false);
   });
 });

@@ -38,15 +38,18 @@ async function renderPdfBase64(schedule: {
   const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const companyName = schedule.companies?.name ?? "GridMind EPC";
-  doc.setFontSize(20); doc.text(companyName, 40, 60);
-  doc.setFontSize(14); doc.text(schedule.name, 40, 90);
+  doc.setFontSize(20);
+  doc.text(companyName, 40, 60);
+  doc.setFontSize(14);
+  doc.text(schedule.name, 40, 90);
   doc.setFontSize(11);
   doc.text(`Report type: ${schedule.report_type}`, 40, 120);
   doc.text(`Frequency: ${schedule.frequency}`, 40, 140);
   doc.text(`Project: ${schedule.projects?.name ?? "All projects (company-wide)"}`, 40, 160);
   doc.text(`Generated: ${new Date().toISOString()}`, 40, 180);
   const sections = Object.entries(schedule.template_sections ?? {})
-    .filter(([, v]) => v).map(([k]) => k);
+    .filter(([, v]) => v)
+    .map(([k]) => k);
   if (sections.length) {
     doc.text("Sections included:", 40, 210);
     sections.forEach((s, i) => doc.text(`• ${s}`, 60, 230 + i * 18));
@@ -101,10 +104,20 @@ export const Route = createFileRoute("/api/cron/scheduled-reports")({
         const privateKey = process.env.EMAILJS_PRIVATE_KEY;
         const emailjsReady = !!(serviceId && templateId && publicKey && privateKey);
 
-        type Counts = { sent: number; failed: number; recipients_ok: number; recipients_failed: number };
+        type Counts = {
+          sent: number;
+          failed: number;
+          recipients_ok: number;
+          recipients_failed: number;
+        };
         const perCompany = new Map<string, Counts>();
         const bump = (c: string, patch: Partial<Counts>) => {
-          const cur = perCompany.get(c) ?? { sent: 0, failed: 0, recipients_ok: 0, recipients_failed: 0 };
+          const cur = perCompany.get(c) ?? {
+            sent: 0,
+            failed: 0,
+            recipients_ok: 0,
+            recipients_failed: 0,
+          };
           perCompany.set(c, {
             sent: cur.sent + (patch.sent ?? 0),
             failed: cur.failed + (patch.failed ?? 0),
@@ -130,11 +143,14 @@ export const Route = createFileRoute("/api/cron/scheduled-reports")({
           };
 
           if (!emailjsReady) {
-            await admin.from("scheduled_reports").update({
-              last_run_at: nowIso,
-              last_run_status: "error",
-              last_run_error: "emailjs_not_configured",
-            } as never).eq("id", schedule.id);
+            await admin
+              .from("scheduled_reports")
+              .update({
+                last_run_at: nowIso,
+                last_run_status: "error",
+                last_run_error: "emailjs_not_configured",
+              } as never)
+              .eq("id", schedule.id);
             bump(schedule.company_id, { failed: 1 });
             continue;
           }
@@ -186,12 +202,15 @@ export const Route = createFileRoute("/api/cron/scheduled-reports")({
             p_day_of_month: schedule.day_of_month,
             p_hour_utc: schedule.hour_utc,
           } as never);
-          await admin.from("scheduled_reports").update({
-            last_run_at: nowIso,
-            last_run_status: success ? "success" : "error",
-            last_run_error: success ? null : lastError,
-            next_run_at: (nextRun as unknown as string | null) ?? null,
-          } as never).eq("id", schedule.id);
+          await admin
+            .from("scheduled_reports")
+            .update({
+              last_run_at: nowIso,
+              last_run_status: success ? "success" : "error",
+              last_run_error: success ? null : lastError,
+              next_run_at: (nextRun as unknown as string | null) ?? null,
+            } as never)
+            .eq("id", schedule.id);
 
           bump(schedule.company_id, {
             sent: success ? 1 : 0,

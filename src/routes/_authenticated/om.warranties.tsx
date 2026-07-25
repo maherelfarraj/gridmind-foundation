@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -60,9 +54,7 @@ export const Route = createFileRoute("/_authenticated/om/warranties")({
   component: WarrantiesPage,
   errorComponent: ({ error, reset }) => (
     <div className="p-6">
-      <div className="text-sm text-destructive">
-        Failed to load warranties: {error.message}
-      </div>
+      <div className="text-sm text-destructive">Failed to load warranties: {error.message}</div>
       <Button className="mt-2" size="sm" onClick={reset}>
         Retry
       </Button>
@@ -74,11 +66,7 @@ function CoverageBadge({ dateISO }: { dateISO: string }) {
   const days = daysRemaining(dateISO);
   const badge = warrantyStatusBadge(days);
   if (badge === "expired") {
-    return (
-      <Badge className="bg-muted text-muted-foreground">
-        Expired {Math.abs(days)}d
-      </Badge>
-    );
+    return <Badge className="bg-muted text-muted-foreground">Expired {Math.abs(days)}d</Badge>;
   }
   if (badge === "expiring") {
     return <Badge className="bg-warning text-warning-foreground">In {days}d</Badge>;
@@ -133,8 +121,7 @@ function WarrantiesPage() {
   const filters = useMemo(
     () => ({
       project_id: projectId === "all" ? undefined : projectId,
-      warranty_type:
-        warrantyType === "all" ? undefined : (warrantyType as WarrantyType),
+      warranty_type: warrantyType === "all" ? undefined : (warrantyType as WarrantyType),
       expiring_within_days: expiringOnly ? 90 : undefined,
       q: q || undefined,
     }),
@@ -169,8 +156,7 @@ function WarrantiesPage() {
         <div>
           <h1 className="text-xl font-semibold">Warranties</h1>
           <p className="text-sm text-muted-foreground">
-            Manufacturer, EPC, extended, and performance warranties across your O&amp;M
-            fleet.
+            Manufacturer, EPC, extended, and performance warranties across your O&amp;M fleet.
           </p>
         </div>
         <div className="flex gap-2">
@@ -186,9 +172,7 @@ function WarrantiesPage() {
           <CardHeader className="pb-2">
             <CardDescription>Active coverage</CardDescription>
             <CardTitle className="text-3xl">
-              {kpisQ.data?.activeCoveragePct == null
-                ? "—"
-                : `${kpisQ.data.activeCoveragePct}%`}
+              {kpisQ.data?.activeCoveragePct == null ? "—" : `${kpisQ.data.activeCoveragePct}%`}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 text-xs text-muted-foreground">
@@ -297,28 +281,20 @@ function WarrantiesPage() {
               </TableHeader>
               <TableBody>
                 {rows.map((r) => (
-                  <TableRow
-                    key={r.id}
-                    className="cursor-pointer"
-                    onClick={() => setDrawer(r)}
-                  >
+                  <TableRow key={r.id} className="cursor-pointer" onClick={() => setDrawer(r)}>
                     <TableCell>
                       <div className="font-medium">
                         {r.equipment_tag ?? (
                           <span className="text-muted-foreground">Project-wide</span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {r.project_name}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{r.project_name}</div>
                     </TableCell>
                     <TableCell className="text-sm">
                       {r.vendor_name ?? <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {r.warranty_type.replace("_", " ")}
-                      </Badge>
+                      <Badge variant="outline">{r.warranty_type.replace("_", " ")}</Badge>
                     </TableCell>
                     <TableCell className="text-xs">
                       {r.start_date} → {r.end_date}

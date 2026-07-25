@@ -26,9 +26,15 @@ export const Route = createFileRoute("/(auth)/forgot-password")({
   head: () => ({
     meta: [
       { title: "Reset password | GridMind EPC" },
-      { name: "description", content: "Request a password reset link for your GridMind EPC account." },
+      {
+        name: "description",
+        content: "Request a password reset link for your GridMind EPC account.",
+      },
       { property: "og:title", content: "Reset password | GridMind EPC" },
-      { property: "og:description", content: "Request a password reset link for your GridMind EPC account." },
+      {
+        property: "og:description",
+        content: "Request a password reset link for your GridMind EPC account.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -61,9 +67,7 @@ function ForgotPasswordPage() {
           <CheckCircle2 className="h-6 w-6" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Check your inbox
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">Check your inbox</h1>
           <p className="text-sm text-muted-foreground">
             If an account exists for that email, we&apos;ve sent a link to reset your password.
           </p>
@@ -93,7 +97,12 @@ function ForgotPasswordPage() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" autoComplete="email" placeholder="you@company.com" {...field} />
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

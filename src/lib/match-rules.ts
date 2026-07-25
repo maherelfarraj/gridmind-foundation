@@ -34,9 +34,7 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-function toMap(
-  m: Map<number, number> | Record<number, number>,
-): Map<number, number> {
+function toMap(m: Map<number, number> | Record<number, number>): Map<number, number> {
   if (m instanceof Map) return m;
   return new Map(Object.entries(m).map(([k, v]) => [Number(k), Number(v)]));
 }
@@ -50,9 +48,7 @@ function toMap(
  */
 export function computeVariances(inputs: VarianceInputs): VarianceResult {
   const grn = toMap(inputs.grnQtyByLine);
-  const amount_variance = round2(
-    Number(inputs.invoiceAmount || 0) - Number(inputs.poTotal || 0),
-  );
+  const amount_variance = round2(Number(inputs.invoiceAmount || 0) - Number(inputs.poTotal || 0));
 
   let qty_variance_pct: number | null = null;
   let price_variance_pct: number | null = null;
@@ -87,10 +83,7 @@ export function computeVariances(inputs: VarianceInputs): VarianceResult {
 }
 
 /** Absolute amount variance as a % of PO total (used by the KPI tile too). */
-export function amountVariancePct(
-  amount_variance: number,
-  poTotal: number,
-): number {
+export function amountVariancePct(amount_variance: number, poTotal: number): number {
   if (!poTotal || poTotal === 0) return 0;
   return round2((Math.abs(amount_variance) / poTotal) * 100);
 }
@@ -116,11 +109,7 @@ export function deriveMatchStatus(args: {
 }
 
 /** Enforce that a storage path is scoped to `{company_id}/invoices/{match_id}/…`. */
-export function assertInvoicePath(
-  path: string,
-  companyId: string,
-  matchId: string,
-): void {
+export function assertInvoicePath(path: string, companyId: string, matchId: string): void {
   const prefix = `${companyId}/invoices/${matchId}/`;
   if (!path.startsWith(prefix)) throw new Error(`invalid_invoice_path:${path}`);
   if (path.includes("..")) throw new Error("invalid_invoice_path");

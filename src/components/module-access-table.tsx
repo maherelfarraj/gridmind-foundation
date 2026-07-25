@@ -22,12 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ALL_PLANS: PlanTier[] = ["starter", "growth", "enterprise"];
 const PLAN_LABEL: Record<PlanTier, string> = {
@@ -64,9 +59,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
         queryClient.setQueryData<ModuleAccessResult>(queryKey, {
           ...snapshot,
           modules: snapshot.modules.map((m) =>
-            m.key === vars.module
-              ? { ...m, enabled: vars.enabled, source: "override" }
-              : m,
+            m.key === vars.module ? { ...m, enabled: vars.enabled, source: "override" } : m,
           ),
         });
       }
@@ -78,9 +71,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
       toast.error(msg);
     },
     onSuccess: (_data, vars) => {
-      toast.success(
-        `${vars.enabled ? "Enabled" : "Disabled"} ${vars.module}`,
-      );
+      toast.success(`${vars.enabled ? "Enabled" : "Disabled"} ${vars.module}`);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -113,8 +104,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
 
   const { planTier, modules } = query.data;
   const editable = canEdit && query.data.canEdit;
-  const pendingKey =
-    mutation.isPending && mutation.variables ? mutation.variables.module : null;
+  const pendingKey = mutation.isPending && mutation.variables ? mutation.variables.module : null;
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -130,13 +120,13 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
           <TableBody>
             {modules.map((row) => {
               const planBlocked = !row.allowedByPlan;
-              const disabledSwitch =
-                !editable || planBlocked || mutation.isPending;
-              const tooltipMsg = row.enterpriseOnly && planTier !== "enterprise"
-                ? "Green H₂ requires the Enterprise plan — upgrade to enable."
-                : planBlocked
-                  ? `Not included in the ${PLAN_LABEL[planTier]} plan.`
-                  : null;
+              const disabledSwitch = !editable || planBlocked || mutation.isPending;
+              const tooltipMsg =
+                row.enterpriseOnly && planTier !== "enterprise"
+                  ? "Green H₂ requires the Enterprise plan — upgrade to enable."
+                  : planBlocked
+                    ? `Not included in the ${PLAN_LABEL[planTier]} plan.`
+                    : null;
 
               const switchNode = (
                 <Switch
@@ -161,9 +151,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
                           </span>
                         )}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {row.description}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{row.description}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -174,11 +162,7 @@ export function ModuleAccessTable({ companyId, canEdit }: ModuleAccessTableProps
                           <Badge
                             key={p}
                             variant={included ? "secondary" : "outline"}
-                            className={
-                              included
-                                ? undefined
-                                : "text-muted-foreground opacity-60"
-                            }
+                            className={included ? undefined : "text-muted-foreground opacity-60"}
                           >
                             {PLAN_LABEL[p]}
                           </Badge>

@@ -117,7 +117,11 @@ async function loadPo(
 async function receivableFor(
   context: AuthContext,
   poId: string,
-): Promise<{ po: Awaited<ReturnType<typeof loadPo>>; receivable: ReceivableLine[]; confirmedLines: GrnLine[] }> {
+): Promise<{
+  po: Awaited<ReturnType<typeof loadPo>>;
+  receivable: ReceivableLine[];
+  confirmedLines: GrnLine[];
+}> {
   const po = await loadPo(context, poId);
 
   const { data: rows, error } = await context.supabase
@@ -153,15 +157,10 @@ async function receivableFor(
   return { po, receivable, confirmedLines };
 }
 
-async function signPhotoPaths(
-  context: AuthContext,
-  paths: string[],
-): Promise<string[]> {
+async function signPhotoPaths(context: AuthContext, paths: string[]): Promise<string[]> {
   if (paths.length === 0) return [];
   try {
-    const { data } = await context.supabase.storage
-      .from("photos")
-      .createSignedUrls(paths, 600);
+    const { data } = await context.supabase.storage.from("photos").createSignedUrls(paths, 600);
     return (data ?? []).map((d: any) => d?.signedUrl ?? "");
   } catch {
     return paths.map(() => "");
@@ -230,9 +229,7 @@ export const listGrns = createServerFn({ method: "GET" })
 
 export const getGrn = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ grnId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ grnId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<GrnRow> => {
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase
@@ -249,9 +246,7 @@ export const getGrn = createServerFn({ method: "GET" })
 
 export const getReceivableForPo = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(
     async ({
       data,
@@ -280,14 +275,9 @@ export const getReceivableForPo = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const createDraftGrn = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ id: string; company_id: string; project_id: string }> => {
+    async ({ data, context }): Promise<{ id: string; company_id: string; project_id: string }> => {
       requireSupabaseAuth(context);
       const companyId = await currentCompanyId(context);
       const po = await loadPo(context, data.poId);
@@ -345,22 +335,16 @@ export const saveGrnDraft = createServerFn({ method: "POST" })
       .eq("id", data.grnId)
       .maybeSingle();
     if (eErr) throw eErr;
-    if (!existing || (existing as any).company_id !== companyId)
-      httpError(404, "grn_not_found");
+    if (!existing || (existing as any).company_id !== companyId) httpError(404, "grn_not_found");
     if ((existing as any).status !== "draft")
       httpError(409, "grn_not_draft", "Only draft GRNs can be edited.");
 
     const { receivable } = await receivableFor(context, (existing as any).po_id);
     const bad = overReceivedLines(data.payload.lines as GrnLine[], receivable);
     if (bad.length > 0)
-      httpError(
-        400,
-        "over_received",
-        `Quantity exceeds remaining on line(s) ${bad.join(", ")}.`,
-      );
+      httpError(400, "over_received", `Quantity exceeds remaining on line(s) ${bad.join(", ")}.`);
 
-    for (const p of data.payload.photos)
-      assertGrnPhotoPath(p, companyId, data.grnId);
+    for (const p of data.payload.photos) assertGrnPhotoPath(p, companyId, data.grnId);
 
     const { error } = await context.supabase
       .from("goods_receipts")
@@ -396,16 +380,13 @@ export const addGrnPhoto = createServerFn({ method: "POST" })
       .eq("id", data.grnId)
       .maybeSingle();
     if (error) throw error;
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "grn_not_found");
-    if ((row as any).status !== "draft")
-      httpError(409, "grn_not_draft");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "grn_not_found");
+    if ((row as any).status !== "draft") httpError(409, "grn_not_draft");
 
     assertGrnPhotoPath(data.path, companyId, data.grnId);
     const current = (((row as any).photos ?? []) as string[]).filter(Boolean);
     if (current.includes(data.path)) return { photos: current };
-    if (current.length >= 10)
-      httpError(400, "photo_limit", "A GRN can hold at most 10 photos.");
+    if (current.length >= 10) httpError(400, "photo_limit", "A GRN can hold at most 10 photos.");
     const next = [...current, data.path];
     const { error: uErr } = await context.supabase
       .from("goods_receipts")
@@ -434,10 +415,8 @@ export const removeGrnPhoto = createServerFn({ method: "POST" })
       .eq("id", data.grnId)
       .maybeSingle();
     if (error) throw error;
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "grn_not_found");
-    if ((row as any).status !== "draft")
-      httpError(409, "grn_not_draft");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "grn_not_found");
+    if ((row as any).status !== "draft") httpError(409, "grn_not_draft");
 
     const current = (((row as any).photos ?? []) as string[]).filter(Boolean);
     const next = current.filter((p) => p !== data.path);
@@ -482,10 +461,8 @@ export const confirmGrn = createServerFn({ method: "POST" })
         .eq("id", data.grnId)
         .maybeSingle();
       if (eErr) throw eErr;
-      if (!existing || (existing as any).company_id !== companyId)
-        httpError(404, "grn_not_found");
-      if ((existing as any).status !== "draft")
-        httpError(409, "grn_not_draft");
+      if (!existing || (existing as any).company_id !== companyId) httpError(404, "grn_not_found");
+      if ((existing as any).status !== "draft") httpError(409, "grn_not_draft");
 
       const { po, receivable, confirmedLines } = await receivableFor(
         context,
@@ -497,13 +474,8 @@ export const confirmGrn = createServerFn({ method: "POST" })
       const lines = data.payload.lines as GrnLine[];
       const bad = overReceivedLines(lines, receivable);
       if (bad.length > 0)
-        httpError(
-          400,
-          "over_received",
-          `Quantity exceeds remaining on line(s) ${bad.join(", ")}.`,
-        );
-      for (const p of data.payload.photos)
-        assertGrnPhotoPath(p, companyId, data.grnId);
+        httpError(400, "over_received", `Quantity exceeds remaining on line(s) ${bad.join(", ")}.`);
+      for (const p of data.payload.photos) assertGrnPhotoPath(p, companyId, data.grnId);
 
       const status = deriveGrnStatus(lines);
       const defects = countDefects(lines);
@@ -545,8 +517,7 @@ export const confirmGrn = createServerFn({ method: "POST" })
           seed = [...seed, grnNumber];
           continue;
         }
-        if (error && (error as any).code === "42501")
-          httpError(403, "forbidden");
+        if (error && (error as any).code === "42501") httpError(403, "forbidden");
         if (error) throw error;
         httpError(409, "grn_not_draft");
       }
@@ -554,8 +525,7 @@ export const confirmGrn = createServerFn({ method: "POST" })
 
       // Project PO status from all confirmed receipts + this one.
       const nextPoStatus =
-        computePoStatusAfterGrn(po.lines, [...confirmedLines, ...lines]) ??
-        po.status;
+        computePoStatusAfterGrn(po.lines, [...confirmedLines, ...lines]) ?? po.status;
       if (nextPoStatus !== po.status) {
         await context.supabase
           .from("purchase_orders")

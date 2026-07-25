@@ -30,9 +30,7 @@ export function buildEvmCsv(rows: EvmSnapshotRow[]): string {
         r.actual_cost.toFixed(2),
         r.spi == null ? "" : r.spi.toFixed(3),
         r.cpi == null ? "" : r.cpi.toFixed(3),
-        r.estimate_at_completion == null
-          ? ""
-          : r.estimate_at_completion.toFixed(2),
+        r.estimate_at_completion == null ? "" : r.estimate_at_completion.toFixed(2),
         r.source,
       ]
         .map(esc)

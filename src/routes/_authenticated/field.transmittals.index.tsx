@@ -47,8 +47,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/field/transmittals/")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Transmittals — GridMind EPC" },
@@ -95,9 +94,7 @@ function TransmittalsIndexPage() {
 
   const rows = listQuery.data ?? [];
   const overdue = rows.filter((r) => isTransmittalOverdue(r)).length;
-  const openOut = rows.filter(
-    (r) => r.direction === "outgoing" && !r.acknowledged_at,
-  ).length;
+  const openOut = rows.filter((r) => r.direction === "outgoing" && !r.acknowledged_at).length;
 
   const onExport = () => {
     const csv = objectsToCsv(
@@ -152,9 +149,7 @@ function TransmittalsIndexPage() {
             <Label className="text-xs">Project</Label>
             <Select
               value={sp.projectId ?? "all"}
-              onValueChange={(v) =>
-                setSearchParam({ projectId: v === "all" ? undefined : v })
-              }
+              onValueChange={(v) => setSearchParam({ projectId: v === "all" ? undefined : v })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All projects" />
@@ -261,9 +256,7 @@ function TransmittalsIndexPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {TRANSMITTAL_DIRECTION_LABELS[r.direction]}
-                        </Badge>
+                        <Badge variant="outline">{TRANSMITTAL_DIRECTION_LABELS[r.direction]}</Badge>
                       </TableCell>
                       <TableCell className="text-sm">{r.subject}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
@@ -279,9 +272,7 @@ function TransmittalsIndexPage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {r.sent_at ? new Date(r.sent_at).toLocaleDateString() : "—"} /{" "}
-                        {r.acknowledged_at
-                          ? new Date(r.acknowledged_at).toLocaleDateString()
-                          : "—"}
+                        {r.acknowledged_at ? new Date(r.acknowledged_at).toLocaleDateString() : "—"}
                       </TableCell>
                     </TableRow>
                   );

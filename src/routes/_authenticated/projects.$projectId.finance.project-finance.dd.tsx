@@ -1,11 +1,7 @@
 // P-082 — Lender DD tab (checklist grouped by category + document upload).
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, isValid } from "date-fns";
 import { Download, ExternalLink, Plus, Upload } from "lucide-react";
@@ -23,13 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -74,8 +64,7 @@ export const Route = createFileRoute(
       { title: "Lender DD — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Lender due diligence checklist with document upload and readiness KPI.",
+        content: "Lender due diligence checklist with document upload and readiness KPI.",
       },
       { property: "og:title", content: "Lender DD — GridMind EPC" },
       {
@@ -95,9 +84,7 @@ export const Route = createFileRoute(
   },
   errorComponent: ({ error, reset }) => (
     <Card className="p-4">
-      <p className="text-sm text-destructive">
-        {projectFinanceErrorMessage(error)}
-      </p>
+      <p className="text-sm text-destructive">{projectFinanceErrorMessage(error)}</p>
       <Button size="sm" variant="outline" className="mt-3" onClick={reset}>
         Try again
       </Button>
@@ -145,14 +132,7 @@ function DdTab() {
   }, [rows]);
 
   const exportCsv = () => {
-    const header = [
-      "category",
-      "title",
-      "status",
-      "due_date",
-      "owner_id",
-      "document_path",
-    ];
+    const header = ["category", "title", "status", "due_date", "owner_id", "document_path"];
     const lines = [header.join(",")];
     for (const r of rows) {
       lines.push(
@@ -181,16 +161,14 @@ function DdTab() {
       <Card className={cn("p-4", bucketTone)}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <div className="text-xs uppercase tracking-wide opacity-80">
-              DD readiness
-            </div>
+            <div className="text-xs uppercase tracking-wide opacity-80">DD readiness</div>
             <div className="text-2xl font-semibold tabular-nums">
               {summary.readinessPct.toFixed(1)}%
             </div>
           </div>
           <div className="text-sm tabular-nums opacity-90">
-            {summary.accepted + summary.waived} of {summary.total} complete ·{" "}
-            {summary.submitted} submitted · {summary.in_progress} in progress
+            {summary.accepted + summary.waived} of {summary.total} complete · {summary.submitted}{" "}
+            submitted · {summary.in_progress} in progress
           </div>
         </div>
       </Card>
@@ -229,12 +207,8 @@ function DdTab() {
             return (
               <Card key={cat} className="overflow-hidden">
                 <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-2">
-                  <div className="text-sm font-semibold capitalize">
-                    {cat}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {items.length} item(s)
-                  </div>
+                  <div className="text-sm font-semibold capitalize">{cat}</div>
+                  <div className="text-xs text-muted-foreground">{items.length} item(s)</div>
                 </div>
                 <Table>
                   <TableHeader>
@@ -295,8 +269,7 @@ function DdRow({ row, canWrite, members, onEdit, projectId }: DdRowProps) {
   const signDownload = useServerFn(signDdDocumentDownloadUrl);
 
   const mut = useMutation({
-    mutationFn: (status: DdItemStatus) =>
-      changeStatus({ data: { id: row.id, status } }),
+    mutationFn: (status: DdItemStatus) => changeStatus({ data: { id: row.id, status } }),
     onSuccess: async () => {
       toast.success("Status updated");
       await qc.invalidateQueries({ queryKey: ["pf", "dd", projectId] });
@@ -319,10 +292,7 @@ function DdRow({ row, canWrite, members, onEdit, projectId }: DdRowProps) {
       <TableCell className="font-medium">{row.title}</TableCell>
       <TableCell>
         {canWrite ? (
-          <Select
-            value={row.status}
-            onValueChange={(v) => mut.mutate(v as DdItemStatus)}
-          >
+          <Select value={row.status} onValueChange={(v) => mut.mutate(v as DdItemStatus)}>
             <SelectTrigger className={cn("h-8 w-40 capitalize", STATUS_TONE[row.status])}>
               <SelectValue />
             </SelectTrigger>
@@ -396,9 +366,7 @@ function DdDrawer({ projectId, initial, members, onClose }: DdDrawerProps) {
   const [dueDate, setDueDate] = useState(initial?.due_date ?? "");
   const [ownerId, setOwnerId] = useState(initial?.owner_id ?? "");
   const [note, setNote] = useState(initial?.response_note ?? "");
-  const [docPath, setDocPath] = useState<string | null>(
-    initial?.document_path ?? null,
-  );
+  const [docPath, setDocPath] = useState<string | null>(initial?.document_path ?? null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -460,10 +428,7 @@ function DdDrawer({ projectId, initial, members, onClose }: DdDrawerProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <Label>Category</Label>
-              <Select
-                value={category}
-                onValueChange={(v) => setCategory(v as DdCategory)}
-              >
+              <Select value={category} onValueChange={(v) => setCategory(v as DdCategory)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -514,11 +479,7 @@ function DdDrawer({ projectId, initial, members, onClose }: DdDrawerProps) {
           </div>
           <div className="grid gap-1.5">
             <Label>Response note</Label>
-            <Textarea
-              rows={2}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
           <div className="grid gap-1.5">
             <Label>Document</Label>
@@ -543,9 +504,7 @@ function DdDrawer({ projectId, initial, members, onClose }: DdDrawerProps) {
                 {uploading ? "Uploading…" : "Upload"}
               </Button>
               {docPath ? (
-                <span className="text-xs text-muted-foreground truncate">
-                  {docPath}
-                </span>
+                <span className="text-xs text-muted-foreground truncate">{docPath}</span>
               ) : null}
             </div>
           </div>

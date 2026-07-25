@@ -98,7 +98,10 @@ export const Route = createFileRoute("/api/public/hooks/scada-telemetry")({
           assetMap.set(r.asset_key, { scada_asset_id: r.id, project_id: r.project_id });
         }
 
-        const { accepted, rejected: rejectedFromFilter } = filterReadingsByAsset(readings, assetMap);
+        const { accepted, rejected: rejectedFromFilter } = filterReadingsByAsset(
+          readings,
+          assetMap,
+        );
 
         // ---- Chunked upsert -------------------------------------------------
         const errors: RejectedReading[] = [...rejectedFromFilter];
@@ -115,12 +118,10 @@ export const Route = createFileRoute("/api/public/hooks/scada-telemetry")({
         }));
 
         for (const batch of chunk(insertRows, INSERT_CHUNK_SIZE)) {
-          const { error } = await admin
-            .from("scada_telemetry")
-            .upsert(batch as never, {
-              onConflict: "scada_asset_id,metric,ts",
-              ignoreDuplicates: true,
-            });
+          const { error } = await admin.from("scada_telemetry").upsert(batch as never, {
+            onConflict: "scada_asset_id,metric,ts",
+            ignoreDuplicates: true,
+          });
           if (error) {
             for (const row of batch) {
               if (errors.length < MAX_ERROR_DETAILS) {

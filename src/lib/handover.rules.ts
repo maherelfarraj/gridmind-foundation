@@ -22,10 +22,7 @@ export const HANDOVER_GATE_ITEM_KEYS = [
   "punch_list_closed",
 ] as const;
 
-export const HANDOVER_GATE_ITEM_LABELS: Record<
-  (typeof HANDOVER_GATE_ITEM_KEYS)[number],
-  string
-> = {
+export const HANDOVER_GATE_ITEM_LABELS: Record<(typeof HANDOVER_GATE_ITEM_KEYS)[number], string> = {
   ccc_signed: "Care, Custody & Control certificate signed",
   turnover_delivered: "Turnover pack delivered",
   punch_list_closed: "Category A punch list closed",

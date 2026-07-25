@@ -49,21 +49,13 @@ async function hasAnyRole(
   roles: readonly string[],
 ): Promise<Record<string, boolean>> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
-  return Object.fromEntries(
-    roles.map((r, i) => [r, Boolean(results[i]?.data)]),
-  );
+  return Object.fromEntries(roles.map((r, i) => [r, Boolean(results[i]?.data)]));
 }
 
 async function requireWriter(context: AuthContext) {
-  const flags = await hasAnyRole(context, [
-    "procurement_admin",
-    "finance_admin",
-    "company_admin",
-  ]);
+  const flags = await hasAnyRole(context, ["procurement_admin", "finance_admin", "company_admin"]);
   if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
   return flags;
 }
@@ -123,10 +115,7 @@ async function loadPoForMatch(
   };
 }
 
-async function receivedQtyByLine(
-  context: AuthContext,
-  poId: string,
-): Promise<Map<number, number>> {
+async function receivedQtyByLine(context: AuthContext, poId: string): Promise<Map<number, number>> {
   const { data, error } = await context.supabase
     .from("goods_receipts")
     .select("lines, status")
@@ -136,10 +125,7 @@ async function receivedQtyByLine(
   const acc = new Map<number, number>();
   for (const r of (data ?? []) as any[]) {
     for (const l of (r.lines ?? []) as GrnLine[]) {
-      acc.set(
-        l.po_line_no,
-        (acc.get(l.po_line_no) ?? 0) + Number(l.qty_received || 0),
-      );
+      acc.set(l.po_line_no, (acc.get(l.po_line_no) ?? 0) + Number(l.qty_received || 0));
     }
   }
   return acc;
@@ -177,15 +163,10 @@ export interface MatchRow {
   updated_at: string;
 }
 
-async function signInvoice(
-  context: AuthContext,
-  path: string | null,
-): Promise<string | null> {
+async function signInvoice(context: AuthContext, path: string | null): Promise<string | null> {
   if (!path) return null;
   try {
-    const { data } = await context.supabase.storage
-      .from("documents")
-      .createSignedUrl(path, 600);
+    const { data } = await context.supabase.storage.from("documents").createSignedUrl(path, 600);
     return data?.signedUrl ?? null;
   } catch {
     return null;
@@ -209,10 +190,8 @@ async function toMatchRow(context: AuthContext, r: any): Promise<MatchRow> {
     invoice_file_url: await signInvoice(context, r.invoice_file_path),
     status: r.status as MatchStatus,
     qty_variance_pct: r.qty_variance_pct == null ? null : Number(r.qty_variance_pct),
-    price_variance_pct:
-      r.price_variance_pct == null ? null : Number(r.price_variance_pct),
-    amount_variance:
-      r.amount_variance == null ? null : Number(r.amount_variance),
+    price_variance_pct: r.price_variance_pct == null ? null : Number(r.price_variance_pct),
+    amount_variance: r.amount_variance == null ? null : Number(r.amount_variance),
     variance_threshold_pct: Number(r.variance_threshold_pct ?? 0),
     payment_release_blocked: Boolean(r.payment_release_blocked),
     resolution_note: r.resolution_note,
@@ -258,9 +237,7 @@ export const listMatches = createServerFn({ method: "GET" })
 
 export const getMatch = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ matchId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ matchId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<MatchRow> => {
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase
@@ -297,9 +274,7 @@ export interface MatchContext {
 
 export const getMatchContextForPo = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<MatchContext> => {
     requireSupabaseAuth(context);
     const po = await loadPoForMatch(context, data.poId);
@@ -350,15 +325,8 @@ export const listMatchablePos = createServerFn({ method: "GET" })
       requireSupabaseAuth(context);
       const { data, error } = await context.supabase
         .from("purchase_orders")
-        .select(
-          "id, po_number, status, currency_code, total_amount, vendors:vendor_id(name)",
-        )
-        .in("status", [
-          "issued",
-          "partially_received",
-          "received",
-          "closed",
-        ])
+        .select("id, po_number, status, currency_code, total_amount, vendors:vendor_id(name)")
+        .in("status", ["issued", "partially_received", "received", "closed"])
         .order("issued_at", { ascending: false });
       if (error) throw error;
       return ((data ?? []) as any[]).map((r) => ({
@@ -402,11 +370,7 @@ export const createMatch = createServerFn({ method: "POST" })
           .eq("id", data.goodsReceiptId)
           .maybeSingle();
         if (gErr) throw gErr;
-        if (
-          !grn ||
-          (grn as any).company_id !== companyId ||
-          (grn as any).po_id !== po.id
-        )
+        if (!grn || (grn as any).company_id !== companyId || (grn as any).po_id !== po.id)
           httpError(400, "invalid_grn");
       }
 
@@ -443,8 +407,7 @@ export const createMatch = createServerFn({ method: "POST" })
           vendor_invoice_number: data.vendor_invoice_number,
           invoice_date: data.invoice_date ?? null,
           invoice_amount: data.invoice_amount,
-          invoice_currency_code:
-            data.invoice_currency_code ?? po.currency_code,
+          invoice_currency_code: data.invoice_currency_code ?? po.currency_code,
           status: derived,
           qty_variance_pct: variances.qty_variance_pct,
           price_variance_pct: variances.price_variance_pct,
@@ -476,10 +439,7 @@ export const createMatch = createServerFn({ method: "POST" })
       if (blocked) {
         await audit(context, "match.block", id, {
           po_id: po.id,
-          amount_variance_pct: amountVariancePct(
-            variances.amount_variance,
-            po.total_amount,
-          ),
+          amount_variance_pct: amountVariancePct(variances.amount_variance, po.total_amount),
           threshold_pct: threshold,
         });
       }
@@ -515,8 +475,7 @@ export const attachInvoiceFile = createServerFn({ method: "POST" })
       .eq("id", data.matchId)
       .maybeSingle();
     if (error) throw error;
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "match_not_found");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "match_not_found");
 
     assertInvoicePath(data.path, companyId, data.matchId);
 
@@ -548,8 +507,7 @@ export const overrideMatchVariance = createServerFn({ method: "POST" })
       .eq("id", data.matchId)
       .maybeSingle();
     if (error) throw error;
-    if (!row || (row as any).company_id !== companyId)
-      httpError(404, "match_not_found");
+    if (!row || (row as any).company_id !== companyId) httpError(404, "match_not_found");
     if ((row as any).status !== "variance_blocked")
       httpError(409, "not_blocked", "Only variance-blocked matches can be overridden.");
 
@@ -598,8 +556,7 @@ export const updateMatchThreshold = createServerFn({ method: "POST" })
         .eq("id", data.matchId)
         .maybeSingle();
       if (error) throw error;
-      if (!row || (row as any).company_id !== companyId)
-        httpError(404, "match_not_found");
+      if (!row || (row as any).company_id !== companyId) httpError(404, "match_not_found");
       // Once overridden the threshold stays informational; we won't downgrade.
       if ((row as any).status === "approved_with_variance") {
         return { status: "approved_with_variance", payment_release_blocked: false };
@@ -608,12 +565,12 @@ export const updateMatchThreshold = createServerFn({ method: "POST" })
       const poTotal = Number((row as any).purchase_orders?.total_amount ?? 0);
       const derived = deriveMatchStatus({
         variances: {
-          qty_variance_pct: (row as any).qty_variance_pct == null
-            ? null
-            : Number((row as any).qty_variance_pct),
-          price_variance_pct: (row as any).price_variance_pct == null
-            ? null
-            : Number((row as any).price_variance_pct),
+          qty_variance_pct:
+            (row as any).qty_variance_pct == null ? null : Number((row as any).qty_variance_pct),
+          price_variance_pct:
+            (row as any).price_variance_pct == null
+              ? null
+              : Number((row as any).price_variance_pct),
           amount_variance: Number((row as any).amount_variance ?? 0),
         },
         poTotal,
@@ -654,58 +611,43 @@ function currentQuarterStart(now = new Date()): string {
 
 export const getMatchVarianceKpi = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<{ avgPct: number; count: number }> => {
-      requireSupabaseAuth(context);
-      const since = currentQuarterStart();
-      const { data, error } = await context.supabase
-        .from("three_way_matches")
-        .select(
-          "amount_variance, purchase_orders:po_id(total_amount), created_at",
-        )
-        .gte("created_at", since);
-      if (error) throw error;
-      const rows = (data ?? []) as any[];
-      const pcts = rows
-        .map((r) => {
-          const total = Number(r.purchase_orders?.total_amount ?? 0);
-          if (!total) return null;
-          return (Math.abs(Number(r.amount_variance ?? 0)) / total) * 100;
-        })
-        .filter((n): n is number => n != null);
-      const avgPct =
-        pcts.length === 0
-          ? 0
-          : Math.round((pcts.reduce((a, b) => a + b, 0) / pcts.length) * 100) /
-            100;
-      return { avgPct, count: rows.length };
-    },
-  );
+  .handler(async ({ context }): Promise<{ avgPct: number; count: number }> => {
+    requireSupabaseAuth(context);
+    const since = currentQuarterStart();
+    const { data, error } = await context.supabase
+      .from("three_way_matches")
+      .select("amount_variance, purchase_orders:po_id(total_amount), created_at")
+      .gte("created_at", since);
+    if (error) throw error;
+    const rows = (data ?? []) as any[];
+    const pcts = rows
+      .map((r) => {
+        const total = Number(r.purchase_orders?.total_amount ?? 0);
+        if (!total) return null;
+        return (Math.abs(Number(r.amount_variance ?? 0)) / total) * 100;
+      })
+      .filter((n): n is number => n != null);
+    const avgPct =
+      pcts.length === 0
+        ? 0
+        : Math.round((pcts.reduce((a, b) => a + b, 0) / pcts.length) * 100) / 100;
+    return { avgPct, count: rows.length };
+  });
 
 // ---------------------------------------------------------------------------
 // role flags for UI gating
 // ---------------------------------------------------------------------------
 export const getMatchWriteAccess = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .handler(
-    async ({
-      context,
-    }): Promise<{ canWrite: boolean; canOverride: boolean }> => {
-      requireSupabaseAuth(context);
-      const flags = await hasAnyRole(context, [
-        "procurement_admin",
-        "finance_admin",
-        "company_admin",
-      ]);
-      return {
-        canWrite: Boolean(
-          flags.procurement_admin ||
-            flags.finance_admin ||
-            flags.company_admin,
-        ),
-        canOverride: Boolean(flags.finance_admin || flags.company_admin),
-      };
-    },
-  );
+  .handler(async ({ context }): Promise<{ canWrite: boolean; canOverride: boolean }> => {
+    requireSupabaseAuth(context);
+    const flags = await hasAnyRole(context, [
+      "procurement_admin",
+      "finance_admin",
+      "company_admin",
+    ]);
+    return {
+      canWrite: Boolean(flags.procurement_admin || flags.finance_admin || flags.company_admin),
+      canOverride: Boolean(flags.finance_admin || flags.company_admin),
+    };
+  });

@@ -116,9 +116,9 @@ export const updateCompanyDetails = createServerFn({ method: "POST" })
       phone: data.phone ?? null,
       address: data.address ?? null,
     };
-    const changed_fields = (
-      Object.keys(patch) as (keyof typeof patch)[]
-    ).filter((k) => (existing as Record<string, unknown>)[k] !== patch[k]);
+    const changed_fields = (Object.keys(patch) as (keyof typeof patch)[]).filter(
+      (k) => (existing as Record<string, unknown>)[k] !== patch[k],
+    );
 
     if (changed_fields.length === 0) return { ok: true, changed: 0 };
 
@@ -209,10 +209,7 @@ export const setCompanyLogo = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("company_branding")
-      .upsert(
-        { company_id: companyId, logo_url: data.path },
-        { onConflict: "company_id" },
-      );
+      .upsert({ company_id: companyId, logo_url: data.path }, { onConflict: "company_id" });
     if (error) throw error;
 
     const { error: auditErr } = await context.supabase.rpc("write_audit_log", {
@@ -247,10 +244,7 @@ export const removeCompanyLogo = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("company_branding")
-      .upsert(
-        { company_id: companyId, logo_url: null },
-        { onConflict: "company_id" },
-      );
+      .upsert({ company_id: companyId, logo_url: null }, { onConflict: "company_id" });
     if (error) throw error;
 
     const { error: auditErr } = await context.supabase.rpc("write_audit_log", {

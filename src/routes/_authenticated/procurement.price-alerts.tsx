@@ -1,11 +1,7 @@
 // P-070 — Material price alerts workbench.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import {
@@ -71,9 +67,7 @@ import {
 } from "@/lib/procurement-extras-rules";
 import { downloadCsv, toCsv } from "@/lib/csv";
 
-export const Route = createFileRoute(
-  "/_authenticated/procurement/price-alerts",
-)({
+export const Route = createFileRoute("/_authenticated/procurement/price-alerts")({
   head: () => ({
     meta: [
       { title: "Material price alerts — GridMind EPC" },
@@ -147,9 +141,7 @@ function PriceAlertsPage() {
   const ackFn = useServerFn(acknowledgePriceAlert);
   const delFn = useServerFn(deletePriceAlert);
 
-  const { data: access } = useSuspenseQuery(
-    priceAlertsAccessQueryOptions(accessFn),
-  );
+  const { data: access } = useSuspenseQuery(priceAlertsAccessQueryOptions(accessFn));
   const { data: rows } = useSuspenseQuery(priceAlertsListQueryOptions(listFn));
 
   const [subscribeOpen, setSubscribeOpen] = useState(false);
@@ -159,9 +151,7 @@ function PriceAlertsPage() {
 
   const triggeredCount = rows.filter((r) => r.triggered).length;
   const avgChange = useMemo(() => {
-    const known = rows
-      .map((r) => r.change_pct)
-      .filter((v): v is number => v != null);
+    const known = rows.map((r) => r.change_pct).filter((v): v is number => v != null);
     if (known.length === 0) return null;
     return known.reduce((a, b) => a + b, 0) / known.length;
   }, [rows]);
@@ -184,17 +174,12 @@ function PriceAlertsPage() {
   });
 
   const observeMutation = useMutation({
-    mutationFn: (vars: {
-      id: string;
-      index_price: number;
-      source?: string | null;
-    }) => observeFn({ data: vars }),
+    mutationFn: (vars: { id: string; index_price: number; source?: string | null }) =>
+      observeFn({ data: vars }),
     onSuccess: (res) => {
       invalidate();
       if (res.triggered) {
-        toast.warning(
-          `Threshold crossed · ${res.changePct?.toFixed(2) ?? "?"}% change`,
-        );
+        toast.warning(`Threshold crossed · ${res.changePct?.toFixed(2) ?? "?"}% change`);
       } else {
         toast.success("Observation recorded");
       }
@@ -248,10 +233,7 @@ function PriceAlertsPage() {
       r.observed_at,
       r.source ?? "",
     ]);
-    downloadCsv(
-      `price-alerts-${format(new Date(), "yyyyMMdd")}.csv`,
-      toCsv(headers, data),
-    );
+    downloadCsv(`price-alerts-${format(new Date(), "yyyyMMdd")}.csv`, toCsv(headers, data));
   }
 
   return (
@@ -261,12 +243,10 @@ function PriceAlertsPage() {
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" /> Procurement · Price alerts
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Material price alerts
-          </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Material price alerts</h1>
           <p className="text-sm text-muted-foreground">
-            Watch commodity indices per category and region. Log observations
-            and get flagged when moves exceed your threshold.
+            Watch commodity indices per category and region. Log observations and get flagged when
+            moves exceed your threshold.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -323,8 +303,7 @@ function PriceAlertsPage() {
 
       {rows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No price alerts yet — subscribe to a material category to start
-          tracking prices.
+          No price alerts yet — subscribe to a material category to start tracking prices.
         </div>
       ) : (
         <div className="rounded-md border border-border">
@@ -344,17 +323,12 @@ function PriceAlertsPage() {
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className={r.triggered ? "bg-destructive/5" : undefined}
-                >
+                <TableRow key={r.id} className={r.triggered ? "bg-destructive/5" : undefined}>
                   <TableCell className="font-medium">
                     {MATERIAL_CATEGORY_LABELS[r.category]}
                   </TableCell>
                   <TableCell className="capitalize">{r.region}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {r.unit}
-                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.unit}</TableCell>
                   <TableCell>{fmtPrice(r)}</TableCell>
                   <TableCell>
                     <ChangeChip value={r.change_pct} />
@@ -371,18 +345,12 @@ function PriceAlertsPage() {
                       <Badge variant="secondary">Watching</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {r.observed_at}
-                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.observed_at}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       {access.canWrite ? (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setObserveFor(r)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => setObserveFor(r)}>
                             Record
                           </Button>
                           {r.triggered ? (
@@ -400,8 +368,7 @@ function PriceAlertsPage() {
                             variant="ghost"
                             aria-label="Delete subscription"
                             onClick={() => {
-                              if (confirm("Remove this price alert?"))
-                                deleteMutation.mutate(r.id);
+                              if (confirm("Remove this price alert?")) deleteMutation.mutate(r.id);
                             }}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -417,10 +384,7 @@ function PriceAlertsPage() {
         </div>
       )}
 
-      <Dialog
-        open={observeFor != null}
-        onOpenChange={(o) => !o && setObserveFor(null)}
-      >
+      <Dialog open={observeFor != null} onOpenChange={(o) => !o && setObserveFor(null)}>
         {observeFor ? (
           <ObserveDialog
             row={observeFor}
@@ -444,16 +408,11 @@ function Kpi({
   hint: string;
   tone?: "muted" | "destructive";
 }) {
-  const valueClass =
-    tone === "destructive" ? "text-destructive" : "text-foreground";
+  const valueClass = tone === "destructive" ? "text-destructive" : "text-foreground";
   return (
     <div className="rounded-md border border-border p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
-      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>
-        {value}
-      </div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`mt-1 font-display text-2xl font-semibold ${valueClass}`}>{value}</div>
       <div className="text-xs text-muted-foreground">{hint}</div>
     </div>
   );
@@ -463,11 +422,7 @@ function ChangeChip({ value }: { value: number | null }) {
   if (value == null) return <span className="text-xs text-muted-foreground">—</span>;
   const up = value > 0;
   const down = value < 0;
-  const cls = up
-    ? "text-destructive"
-    : down
-      ? "text-primary"
-      : "text-muted-foreground";
+  const cls = up ? "text-destructive" : down ? "text-primary" : "text-muted-foreground";
   const Icon = up ? TrendingUp : down ? TrendingDown : TrendingUp;
   return (
     <span className={`inline-flex items-center gap-1 text-sm font-medium ${cls}`}>
@@ -507,18 +462,14 @@ function SubscribeDialog({
       <DialogHeader>
         <DialogTitle>Subscribe to a material index</DialogTitle>
         <DialogDescription>
-          Watch prices for a category & region. One subscription per unique
-          (category, region).
+          Watch prices for a category & region. One subscription per unique (category, region).
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label>Category</Label>
-            <Select
-              value={category}
-              onValueChange={(v) => setCategory(v as MaterialCategory)}
-            >
+            <Select value={category} onValueChange={(v) => setCategory(v as MaterialCategory)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -543,11 +494,7 @@ function SubscribeDialog({
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
             <Label>Unit</Label>
-            <Input
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-              placeholder="USD/Wp"
-            />
+            <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="USD/Wp" />
           </div>
           <div className="space-y-1">
             <Label>Currency</Label>
@@ -605,15 +552,9 @@ function ObserveDialog({
 }: {
   row: PriceAlertRow;
   submitting: boolean;
-  onSubmit: (vars: {
-    id: string;
-    index_price: number;
-    source?: string | null;
-  }) => void;
+  onSubmit: (vars: { id: string; index_price: number; source?: string | null }) => void;
 }) {
-  const [price, setPrice] = useState(
-    row.index_price == null ? "" : String(row.index_price),
-  );
+  const [price, setPrice] = useState(row.index_price == null ? "" : String(row.index_price));
   const [source, setSource] = useState(row.source ?? "");
   return (
     <DialogContent>
@@ -622,7 +563,10 @@ function ObserveDialog({
         <DialogDescription>
           {MATERIAL_CATEGORY_LABELS[row.category]} · {row.region} · {row.unit}
           {row.index_price != null ? (
-            <> · previous {row.index_price} {row.currency_code}</>
+            <>
+              {" "}
+              · previous {row.index_price} {row.currency_code}
+            </>
           ) : null}
         </DialogDescription>
       </DialogHeader>

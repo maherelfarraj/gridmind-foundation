@@ -5,16 +5,16 @@
 // RLS is evaluated as the authenticated user; the service-role client is
 // NEVER used for assertions.
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/integrations/supabase/types';
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '';
+const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
   process.env.SUPABASE_PUBLISHABLE_KEY ??
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
   process.env.VITE_SUPABASE_ANON_KEY ??
-  '';
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+  "";
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 export async function isSupabaseUp(): Promise<boolean> {
   try {
@@ -83,7 +83,7 @@ async function createUser(
     password,
     email_confirm: true,
   });
-  if (error || !data.user) throw error ?? new Error('createUser failed');
+  if (error || !data.user) throw error ?? new Error("createUser failed");
 
   const auth = createClient(URL, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -92,7 +92,7 @@ async function createUser(
     email,
     password,
   });
-  if (signInErr || !signIn.session) throw signInErr ?? new Error('sign-in failed');
+  if (signInErr || !signIn.session) throw signInErr ?? new Error("sign-in failed");
   return { userId: data.user.id, email, password, jwt: signIn.session.access_token };
 }
 
@@ -104,86 +104,86 @@ async function seedTenant(
 ): Promise<TenantDeps> {
   const slug = `p132-${label}-${crypto.randomUUID().slice(0, 8)}`;
   const { data: co, error: coErr } = await svc
-    .from('companies')
-    .insert({ name: `P132 ${label}`, slug, plan_tier: 'enterprise' })
-    .select('id')
+    .from("companies")
+    .insert({ name: `P132 ${label}`, slug, plan_tier: "enterprise" })
+    .select("id")
     .single();
-  if (coErr || !co) throw coErr ?? new Error('company insert failed');
+  if (coErr || !co) throw coErr ?? new Error("company insert failed");
 
-  await svc.from('profiles').upsert({ id: userId, company_id: co.id, email });
+  await svc.from("profiles").upsert({ id: userId, company_id: co.id, email });
   await svc
-    .from('user_roles')
-    .insert({ user_id: userId, company_id: co.id, role: 'company_admin' });
+    .from("user_roles")
+    .insert({ user_id: userId, company_id: co.id, role: "company_admin" });
 
   const { data: proj, error: projErr } = await svc
-    .from('projects')
+    .from("projects")
     .insert({
       company_id: co.id,
       name: `P132 project ${label}`,
       code: `P132-${label.toUpperCase()}`,
-      archetype: 'utility_pv',
-      phase: 'development',
-      status: 'active',
+      archetype: "utility_pv",
+      phase: "development",
+      status: "active",
       created_by: userId,
     })
-    .select('id')
+    .select("id")
     .single();
-  if (projErr || !proj) throw projErr ?? new Error('project insert failed');
+  if (projErr || !proj) throw projErr ?? new Error("project insert failed");
 
   const { data: opp } = await svc
-    .from('opportunities')
+    .from("opportunities")
     .insert({ company_id: co.id, name: `Opp ${label}`, created_by: userId })
-    .select('id')
+    .select("id")
     .single();
 
   const { data: cc } = await svc
-    .from('cost_codes')
+    .from("cost_codes")
     .insert({
       company_id: co.id,
       project_id: proj.id,
       code: `CC-${label}`,
       name: `Cost ${label}`,
     })
-    .select('id')
+    .select("id")
     .single();
 
   const { data: vendor } = await svc
-    .from('vendors')
+    .from("vendors")
     .insert({ company_id: co.id, name: `Vendor ${label}` })
-    .select('id')
+    .select("id")
     .single();
 
   const { data: asset } = await svc
-    .from('scada_assets')
+    .from("scada_assets")
     .insert({
       company_id: co.id,
       project_id: proj.id,
       tag: `AST-${label}`,
-      asset_type: 'inverter',
+      asset_type: "inverter",
     })
-    .select('id')
+    .select("id")
     .single();
 
   const { data: equip } = await svc
-    .from('equipment_registry')
+    .from("equipment_registry")
     .insert({
       company_id: co.id,
       project_id: proj.id,
       tag: `EQ-${label}`,
-      equipment_type: 'inverter',
+      equipment_type: "inverter",
     })
-    .select('id')
+    .select("id")
     .single();
 
   return {
     companyId: co.id,
     slug,
     projectId: proj.id,
-    opportunityId: opp?.id ?? '',
-    costCodeId: cc?.id ?? '',
-    vendorId: vendor?.id ?? '',
-    scadaAssetId: asset?.id ?? '',
-    equipmentId: equip?.id ?? '',
+    opportunityId: opp?.id ?? "",
+    costCodeId: cc?.id ?? "",
+    vendorId: vendor?.id ?? "",
+    scadaAssetId: asset?.id ?? "",
+    equipmentId: equip?.id ?? "",
   };
 }
 
@@ -191,35 +191,35 @@ export async function setupFixtures(): Promise<Fixtures> {
   const svc = serviceClient();
 
   const [rawA, rawB, rawViewer] = await Promise.all([
-    createUser(svc, 'ua'),
-    createUser(svc, 'ub'),
-    createUser(svc, 'viewer'),
+    createUser(svc, "ua"),
+    createUser(svc, "ub"),
+    createUser(svc, "viewer"),
   ]);
 
   const [depsA, depsB] = await Promise.all([
-    seedTenant(svc, 'a', rawA.userId, rawA.email),
-    seedTenant(svc, 'b', rawB.userId, rawB.email),
+    seedTenant(svc, "a", rawA.userId, rawA.email),
+    seedTenant(svc, "b", rawB.userId, rawB.email),
   ]);
 
   // Viewer: NO profile (so is_company_member returns false), plus a portal
   // membership scoped to project B with curated exposure.
   const { data: membership, error: memErr } = await svc
-    .from('portal_memberships')
+    .from("portal_memberships")
     .insert({
       company_id: depsB.companyId,
       project_id: depsB.projectId,
       user_id: rawViewer.userId,
       email: rawViewer.email,
-      role: 'client_viewer',
-      status: 'active',
+      role: "client_viewer",
+      status: "active",
       exposure: { milestones: true, kpis: true, photos: true },
       invited_by: rawB.userId,
     })
-    .select('id')
+    .select("id")
     .single();
-  if (memErr || !membership) throw memErr ?? new Error('portal_membership insert failed');
+  if (memErr || !membership) throw memErr ?? new Error("portal_membership insert failed");
 
-  const A: Fixtures['A'] = {
+  const A: Fixtures["A"] = {
     ...depsA,
     userId: rawA.userId,
     email: rawA.email,
@@ -227,7 +227,7 @@ export async function setupFixtures(): Promise<Fixtures> {
     jwt: rawA.jwt,
     client: jwtClient(rawA.jwt),
   };
-  const B: Fixtures['B'] = {
+  const B: Fixtures["B"] = {
     ...depsB,
     userId: rawB.userId,
     email: rawB.email,
@@ -235,7 +235,7 @@ export async function setupFixtures(): Promise<Fixtures> {
     jwt: rawB.jwt,
     client: jwtClient(rawB.jwt),
   };
-  const viewer: Fixtures['viewer'] = {
+  const viewer: Fixtures["viewer"] = {
     userId: rawViewer.userId,
     email: rawViewer.email,
     password: rawViewer.password,
@@ -251,40 +251,43 @@ export async function setupFixtures(): Promise<Fixtures> {
     for (const cid of [depsA.companyId, depsB.companyId]) {
       // Delete tables that reference company_id in dependency-safe order.
       const tables: readonly string[] = [
-        'scada_telemetry',
-        'work_orders',
-        'equipment_registry',
-        'scada_assets',
-        'commissioning_tests',
-        'performance_tests',
-        'qaqc_inspections',
-        'hse_incidents',
-        'construction_daily_reports',
-        'change_orders',
-        'invoices',
-        'budgets',
-        'cost_codes',
-        'purchase_orders',
-        'rfqs',
-        'vendors',
-        'proposals',
-        'opportunities',
-        'leads',
-        'project_phase_gates',
-        'project_members',
-        'portal_tickets',
-        'investor_share_links',
-        'portal_memberships',
-        'projects',
-        'invites',
-        'user_roles',
-        'profiles',
+        "scada_telemetry",
+        "work_orders",
+        "equipment_registry",
+        "scada_assets",
+        "commissioning_tests",
+        "performance_tests",
+        "qaqc_inspections",
+        "hse_incidents",
+        "construction_daily_reports",
+        "change_orders",
+        "invoices",
+        "budgets",
+        "cost_codes",
+        "purchase_orders",
+        "rfqs",
+        "vendors",
+        "proposals",
+        "opportunities",
+        "leads",
+        "project_phase_gates",
+        "project_members",
+        "portal_tickets",
+        "investor_share_links",
+        "portal_memberships",
+        "projects",
+        "invites",
+        "user_roles",
+        "profiles",
       ];
       for (const t of tables) {
         // Cast: table union is generated; unknown members are ignored by TS.
-        await svc.from(t as never).delete().eq('company_id', cid);
+        await svc
+          .from(t as never)
+          .delete()
+          .eq("company_id", cid);
       }
-      await svc.from('companies').delete().eq('id', cid);
+      await svc.from("companies").delete().eq("id", cid);
     }
     for (const uid of [rawA.userId, rawB.userId, rawViewer.userId]) {
       try {
@@ -323,56 +326,56 @@ export type TableSpec = {
 export const MATRIX: TableSpec[] = [
   // --- Tenancy -----------------------------------------------------------
   {
-    group: 'Tenancy',
-    table: 'profiles',
+    group: "Tenancy",
+    table: "profiles",
     seedForB: () => ({}), // profile already seeded by setup
-    insertAsA: (f) => ({ id: crypto.randomUUID(), company_id: f.B.companyId, email: 'x@x' }),
+    insertAsA: (f) => ({ id: crypto.randomUUID(), company_id: f.B.companyId, email: "x@x" }),
     skipInsertDenial: true, // profiles.id FK to auth.users; SELECT check suffices
   },
   {
-    group: 'Tenancy',
-    table: 'user_roles',
+    group: "Tenancy",
+    table: "user_roles",
     seedForB: () => ({}),
-    insertAsA: (f) => ({ user_id: f.A.userId, company_id: f.B.companyId, role: 'engineer' }),
+    insertAsA: (f) => ({ user_id: f.A.userId, company_id: f.B.companyId, role: "engineer" }),
   },
   {
-    group: 'Tenancy',
-    table: 'invites',
+    group: "Tenancy",
+    table: "invites",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       email: `seed-${crypto.randomUUID().slice(0, 6)}@x.local`,
-      role: 'engineer',
-      token_hash: crypto.randomUUID().replace(/-/g, ''),
+      role: "engineer",
+      token_hash: crypto.randomUUID().replace(/-/g, ""),
       invited_by: f.B.userId,
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       email: `evil-${crypto.randomUUID().slice(0, 6)}@x.local`,
-      role: 'engineer',
-      token_hash: crypto.randomUUID().replace(/-/g, ''),
+      role: "engineer",
+      token_hash: crypto.randomUUID().replace(/-/g, ""),
       invited_by: f.A.userId,
     }),
   },
   // --- Projects ----------------------------------------------------------
   {
-    group: 'Projects',
-    table: 'projects',
+    group: "Projects",
+    table: "projects",
     seedForB: (f) => ({
       company_id: f.B.companyId,
-      name: 'B extra',
+      name: "B extra",
       code: `B-EXTRA-${crypto.randomUUID().slice(0, 6)}`,
-      archetype: 'utility_pv',
+      archetype: "utility_pv",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
-      name: 'A hijack',
+      name: "A hijack",
       code: `A-HIJACK-${crypto.randomUUID().slice(0, 6)}`,
-      archetype: 'utility_pv',
+      archetype: "utility_pv",
     }),
   },
   {
-    group: 'Projects',
-    table: 'project_members',
+    group: "Projects",
+    table: "project_members",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
@@ -385,262 +388,262 @@ export const MATRIX: TableSpec[] = [
     }),
   },
   {
-    group: 'Projects',
-    table: 'project_phase_gates',
+    group: "Projects",
+    table: "project_phase_gates",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      phase: 'development',
-      name: 'Gate B',
+      phase: "development",
+      name: "Gate B",
       sort_order: 1,
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      phase: 'development',
-      name: 'Gate A hijack',
+      phase: "development",
+      name: "Gate A hijack",
       sort_order: 99,
     }),
   },
   // --- CRM ---------------------------------------------------------------
   {
-    group: 'CRM',
-    table: 'leads',
-    seedForB: (f) => ({ company_id: f.B.companyId, name: 'Lead B' }),
-    insertAsA: (f) => ({ company_id: f.B.companyId, name: 'Lead A hijack' }),
+    group: "CRM",
+    table: "leads",
+    seedForB: (f) => ({ company_id: f.B.companyId, name: "Lead B" }),
+    insertAsA: (f) => ({ company_id: f.B.companyId, name: "Lead A hijack" }),
   },
   {
-    group: 'CRM',
-    table: 'opportunities',
-    seedForB: (f) => ({ company_id: f.B.companyId, name: 'Opp B' }),
-    insertAsA: (f) => ({ company_id: f.B.companyId, name: 'Opp A hijack' }),
+    group: "CRM",
+    table: "opportunities",
+    seedForB: (f) => ({ company_id: f.B.companyId, name: "Opp B" }),
+    insertAsA: (f) => ({ company_id: f.B.companyId, name: "Opp A hijack" }),
   },
   {
-    group: 'CRM',
-    table: 'proposals',
+    group: "CRM",
+    table: "proposals",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       opportunity_id: f.B.opportunityId,
-      title: 'Proposal B',
+      title: "Proposal B",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       opportunity_id: f.B.opportunityId,
-      title: 'Proposal A hijack',
+      title: "Proposal A hijack",
     }),
   },
   // --- Procurement -------------------------------------------------------
   {
-    group: 'Procurement',
-    table: 'vendors',
-    seedForB: (f) => ({ company_id: f.B.companyId, name: 'Vendor extra B' }),
-    insertAsA: (f) => ({ company_id: f.B.companyId, name: 'Vendor A hijack' }),
+    group: "Procurement",
+    table: "vendors",
+    seedForB: (f) => ({ company_id: f.B.companyId, name: "Vendor extra B" }),
+    insertAsA: (f) => ({ company_id: f.B.companyId, name: "Vendor A hijack" }),
   },
   {
-    group: 'Procurement',
-    table: 'rfqs',
+    group: "Procurement",
+    table: "rfqs",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       rfq_number: `RFQ-B-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'RFQ B',
-      currency_code: 'USD',
+      title: "RFQ B",
+      currency_code: "USD",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       rfq_number: `RFQ-A-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'RFQ A hijack',
-      currency_code: 'USD',
+      title: "RFQ A hijack",
+      currency_code: "USD",
     }),
   },
   {
-    group: 'Procurement',
-    table: 'purchase_orders',
+    group: "Procurement",
+    table: "purchase_orders",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       vendor_id: f.B.vendorId,
       po_number: `PO-B-${crypto.randomUUID().slice(0, 6)}`,
-      currency_code: 'USD',
+      currency_code: "USD",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       vendor_id: f.B.vendorId,
       po_number: `PO-A-${crypto.randomUUID().slice(0, 6)}`,
-      currency_code: 'USD',
+      currency_code: "USD",
     }),
   },
   // --- Finance -----------------------------------------------------------
   {
-    group: 'Finance',
-    table: 'budgets',
+    group: "Finance",
+    table: "budgets",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       cost_code_id: f.B.costCodeId,
-      currency_code: 'USD',
+      currency_code: "USD",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       cost_code_id: f.B.costCodeId,
-      currency_code: 'USD',
+      currency_code: "USD",
     }),
   },
   {
-    group: 'Finance',
-    table: 'invoices',
+    group: "Finance",
+    table: "invoices",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       invoice_number: `INV-B-${crypto.randomUUID().slice(0, 6)}`,
-      direction: 'payable',
-      currency_code: 'USD',
+      direction: "payable",
+      currency_code: "USD",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       invoice_number: `INV-A-${crypto.randomUUID().slice(0, 6)}`,
-      direction: 'payable',
-      currency_code: 'USD',
+      direction: "payable",
+      currency_code: "USD",
     }),
   },
   {
-    group: 'Finance',
-    table: 'change_orders',
+    group: "Finance",
+    table: "change_orders",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       co_number: `CO-B-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'CO B',
+      title: "CO B",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       co_number: `CO-A-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'CO A hijack',
+      title: "CO A hijack",
     }),
   },
   // --- Field -------------------------------------------------------------
   {
-    group: 'Field',
-    table: 'construction_daily_reports',
+    group: "Field",
+    table: "construction_daily_reports",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      report_date: '2026-01-01',
+      report_date: "2026-01-01",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      report_date: '2026-01-02',
+      report_date: "2026-01-02",
     }),
   },
   {
-    group: 'Field',
-    table: 'hse_incidents',
+    group: "Field",
+    table: "hse_incidents",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       incident_number: `INC-B-${crypto.randomUUID().slice(0, 6)}`,
-      incident_type: 'near_miss',
+      incident_type: "near_miss",
       occurred_at: new Date().toISOString(),
-      description: 'seed',
+      description: "seed",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       incident_number: `INC-A-${crypto.randomUUID().slice(0, 6)}`,
-      incident_type: 'near_miss',
+      incident_type: "near_miss",
       occurred_at: new Date().toISOString(),
-      description: 'hijack',
+      description: "hijack",
     }),
   },
   {
-    group: 'Field',
-    table: 'qaqc_inspections',
+    group: "Field",
+    table: "qaqc_inspections",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       inspection_number: `QA-B-${crypto.randomUUID().slice(0, 6)}`,
-      discipline: 'electrical',
-      area: 'A1',
-      inspection_date: '2026-01-01',
+      discipline: "electrical",
+      area: "A1",
+      inspection_date: "2026-01-01",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       inspection_number: `QA-A-${crypto.randomUUID().slice(0, 6)}`,
-      discipline: 'electrical',
-      area: 'A1',
-      inspection_date: '2026-01-02',
+      discipline: "electrical",
+      area: "A1",
+      inspection_date: "2026-01-02",
     }),
   },
   // --- Commissioning -----------------------------------------------------
   {
-    group: 'Commissioning',
-    table: 'commissioning_tests',
+    group: "Commissioning",
+    table: "commissioning_tests",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      area: 'Block-1',
-      test_type: 'functional',
+      area: "Block-1",
+      test_type: "functional",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      area: 'Block-1',
-      test_type: 'functional',
+      area: "Block-1",
+      test_type: "functional",
     }),
   },
   {
-    group: 'Commissioning',
-    table: 'performance_tests',
+    group: "Commissioning",
+    table: "performance_tests",
     seedForB: (f) => ({ company_id: f.B.companyId, project_id: f.B.projectId }),
     insertAsA: (f) => ({ company_id: f.B.companyId, project_id: f.B.projectId }),
   },
   // --- O&M ---------------------------------------------------------------
   {
-    group: 'O&M',
-    table: 'equipment_registry',
+    group: "O&M",
+    table: "equipment_registry",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       tag: `EQ-B-${crypto.randomUUID().slice(0, 6)}`,
-      equipment_type: 'inverter',
+      equipment_type: "inverter",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       tag: `EQ-A-${crypto.randomUUID().slice(0, 6)}`,
-      equipment_type: 'inverter',
+      equipment_type: "inverter",
     }),
   },
   {
-    group: 'O&M',
-    table: 'work_orders',
+    group: "O&M",
+    table: "work_orders",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       wo_number: `WO-B-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'WO B',
+      title: "WO B",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       wo_number: `WO-A-${crypto.randomUUID().slice(0, 6)}`,
-      title: 'WO A hijack',
+      title: "WO A hijack",
     }),
   },
   {
-    group: 'O&M',
-    table: 'scada_telemetry',
+    group: "O&M",
+    table: "scada_telemetry",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: 'power_kw',
+      metric: "power_kw",
       value: 100,
     }),
     insertAsA: (f) => ({
@@ -648,55 +651,55 @@ export const MATRIX: TableSpec[] = [
       project_id: f.B.projectId,
       scada_asset_id: f.B.scadaAssetId,
       ts: new Date().toISOString(),
-      metric: 'power_kw',
+      metric: "power_kw",
       value: 999,
     }),
   },
   // --- Portals -----------------------------------------------------------
   {
-    group: 'Portals',
-    table: 'portal_memberships',
+    group: "Portals",
+    table: "portal_memberships",
     seedForB: () => ({}), // seeded by setup
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
       user_id: f.A.userId,
-      email: 'evil@x.local',
-      role: 'client_viewer',
+      email: "evil@x.local",
+      role: "client_viewer",
     }),
   },
   {
-    group: 'Portals',
-    table: 'investor_share_links',
+    group: "Portals",
+    table: "investor_share_links",
     seedForB: (f) => ({
       company_id: f.B.companyId,
-      label: 'Seed B share',
-      token_hash: 'a'.repeat(64),
-      role: 'investor_viewer',
+      label: "Seed B share",
+      token_hash: "a".repeat(64),
+      role: "investor_viewer",
       expires_at: new Date(Date.now() + 86_400_000).toISOString(),
-      scope: { project_ids: [f.B.projectId], sections: ['milestones'] },
+      scope: { project_ids: [f.B.projectId], sections: ["milestones"] },
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
-      label: 'Hijack share',
-      token_hash: 'b'.repeat(64),
-      role: 'investor_viewer',
+      label: "Hijack share",
+      token_hash: "b".repeat(64),
+      role: "investor_viewer",
       expires_at: new Date(Date.now() + 86_400_000).toISOString(),
-      scope: { project_ids: [f.B.projectId], sections: ['milestones'] },
+      scope: { project_ids: [f.B.projectId], sections: ["milestones"] },
     }),
   },
   {
-    group: 'Portals',
-    table: 'portal_tickets',
+    group: "Portals",
+    table: "portal_tickets",
     seedForB: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      subject: 'Seed B ticket',
+      subject: "Seed B ticket",
     }),
     insertAsA: (f) => ({
       company_id: f.B.companyId,
       project_id: f.B.projectId,
-      subject: 'Hijack ticket',
+      subject: "Hijack ticket",
     }),
   },
 ];

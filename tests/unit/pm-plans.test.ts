@@ -1,11 +1,7 @@
 // P-107 — Unit tests for PM plan rules.
 import { describe, expect, it } from "vitest";
 
-import {
-  addDaysISO,
-  FREQUENCY_DEFAULT_DAYS,
-  pmPlanUpsertSchema,
-} from "@/lib/pm-plans.rules";
+import { addDaysISO, FREQUENCY_DEFAULT_DAYS, pmPlanUpsertSchema } from "@/lib/pm-plans.rules";
 
 describe("PM plans rules", () => {
   it("maps frequency to default day intervals", () => {

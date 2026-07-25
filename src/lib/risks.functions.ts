@@ -48,12 +48,7 @@ export interface ProjectMember {
   email: string | null;
 }
 
-const WRITE_ROLES = [
-  "project_admin",
-  "hse_admin",
-  "finance_admin",
-  "company_admin",
-] as const;
+const WRITE_ROLES = ["project_admin", "hse_admin", "finance_admin", "company_admin"] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -66,14 +61,9 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
@@ -109,9 +99,7 @@ async function audit(
 }
 
 function toRiskRow(r: any, ownerLookup?: Map<string, ProjectMember>): RiskRow {
-  const owner = r.owner_id
-    ? (ownerLookup?.get(r.owner_id) ?? null)
-    : null;
+  const owner = r.owner_id ? (ownerLookup?.get(r.owner_id) ?? null) : null;
   return {
     id: r.id,
     company_id: r.company_id,
@@ -127,8 +115,7 @@ function toRiskRow(r: any, ownerLookup?: Map<string, ProjectMember>): RiskRow {
     owner_name: owner?.full_name ?? null,
     owner_email: owner?.email ?? null,
     mitigation: r.mitigation,
-    contingency_amount:
-      r.contingency_amount == null ? null : Number(r.contingency_amount),
+    contingency_amount: r.contingency_amount == null ? null : Number(r.contingency_amount),
     currency_code: r.currency_code,
     target_close_date: r.target_close_date,
     identified_at: r.identified_at,
@@ -167,9 +154,7 @@ export const listRisks = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw error;
     const list = (rows ?? []) as any[];
-    const ownerIds = Array.from(
-      new Set(list.map((r) => r.owner_id).filter(Boolean)),
-    ) as string[];
+    const ownerIds = Array.from(new Set(list.map((r) => r.owner_id).filter(Boolean))) as string[];
     let lookup = new Map<string, ProjectMember>();
     if (ownerIds.length > 0) {
       const { data: owners, error: oErr } = await context.supabase
@@ -343,10 +328,7 @@ export const deleteRisk = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!current) httpError(404, "risk_not_found");
 
-    const { error } = await context.supabase
-      .from("risks")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("risks").delete().eq("id", data.id);
     if (error) {
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;

@@ -26,9 +26,9 @@ export interface SolarStringInput {
 }
 
 export type SolarStringInvalidReason =
-  | 'voc_exceeds_inverter_max'
-  | 'vmp_below_mppt_min'
-  | 'vmp_above_mppt_max';
+  | "voc_exceeds_inverter_max"
+  | "vmp_below_mppt_min"
+  | "vmp_above_mppt_max";
 
 export interface SolarStringResult {
   valid: boolean;
@@ -62,13 +62,13 @@ export function evaluateSolarString(input: SolarStringInput): SolarStringResult 
   let reason: SolarStringInvalidReason | undefined;
   if (stringVocCold > input.inverterMaxVdc) {
     valid = false;
-    reason = 'voc_exceeds_inverter_max';
+    reason = "voc_exceeds_inverter_max";
   } else if (stringVmpHot < input.inverterMpptMinVdc) {
     valid = false;
-    reason = 'vmp_below_mppt_min';
+    reason = "vmp_below_mppt_min";
   } else if (stringVmpHot > input.inverterMpptMaxVdc) {
     valid = false;
-    reason = 'vmp_above_mppt_max';
+    reason = "vmp_above_mppt_max";
   }
 
   return {

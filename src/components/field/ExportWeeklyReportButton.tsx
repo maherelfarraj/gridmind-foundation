@@ -6,10 +6,7 @@ import { FileDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  buildWeeklyReportPdfBytes,
-  weeklyReportFilename,
-} from "@/lib/exports/weekly-report-pdf";
+import { buildWeeklyReportPdfBytes, weeklyReportFilename } from "@/lib/exports/weekly-report-pdf";
 import {
   getWeeklyReportData,
   listWeeklyReportProjects,
@@ -25,10 +22,7 @@ export function weeklyReportProjectsQueryOptions() {
   });
 }
 
-export function weeklyReportDataQueryOptions(
-  projectId: string | null,
-  weekStart: string | null,
-) {
+export function weeklyReportDataQueryOptions(projectId: string | null, weekStart: string | null) {
   const enabled = Boolean(projectId && weekStart);
   return queryOptions({
     queryKey: ["weekly-report", "data", projectId, weekStart],
@@ -83,9 +77,11 @@ export function ExportWeeklyReportButton({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!projectId || !weekStart) throw new Error("Pick a project and week");
-      let dto: WeeklyReportDTO = preview.data ?? (await getData({
-        data: { projectId, weekStart },
-      }));
+      const dto: WeeklyReportDTO =
+        preview.data ??
+        (await getData({
+          data: { projectId, weekStart },
+        }));
       if (!dto.hasData) {
         throw new Error("No field data for this week — submit DPRs first");
       }
@@ -98,10 +94,7 @@ export function ExportWeeklyReportButton({
         },
       });
       const bytes = await buildWeeklyReportPdfBytes(dto);
-      triggerDownload(
-        bytes,
-        weeklyReportFilename(dto.project.name, dto.isoWeekLabel),
-      );
+      triggerDownload(bytes, weeklyReportFilename(dto.project.name, dto.isoWeekLabel));
       return dto;
     },
     onError: (err: unknown) => {
@@ -120,12 +113,7 @@ export function ExportWeeklyReportButton({
   if (!canExport) return null;
 
   const disabled =
-    !projectId ||
-    !weekStart ||
-    busy ||
-    mutation.isPending ||
-    preview.isLoading ||
-    !hasData;
+    !projectId || !weekStart || busy || mutation.isPending || preview.isLoading || !hasData;
 
   return (
     <Button

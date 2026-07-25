@@ -1,12 +1,6 @@
 // P-072 — WBS tree component.
 import { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  GripVertical,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,8 +31,7 @@ function buildTree(items: WbsItemRow[]): TreeNode[] {
   const sort = (arr: TreeNode[]) => {
     arr.sort(
       (a, b) =>
-        a.sort_order - b.sort_order ||
-        a.code.localeCompare(b.code, undefined, { numeric: true }),
+        a.sort_order - b.sort_order || a.code.localeCompare(b.code, undefined, { numeric: true }),
     );
     for (const n of arr) sort(n.children);
   };
@@ -52,11 +45,7 @@ export interface WbsTreeProps {
   onSelect: (id: string) => void;
   onAddChild?: (parent: WbsItemRow) => void;
   onDelete?: (id: string) => void;
-  onReparent?: (
-    id: string,
-    parent_id: string | null,
-    sort_order: number,
-  ) => void;
+  onReparent?: (id: string, parent_id: string | null, sort_order: number) => void;
   busy?: boolean;
 }
 
@@ -84,11 +73,7 @@ export function WbsTree({
       return next;
     });
 
-  const isDescendant = (
-    ancestorId: string,
-    candidateId: string,
-    all: WbsItemRow[],
-  ): boolean => {
+  const isDescendant = (ancestorId: string, candidateId: string, all: WbsItemRow[]): boolean => {
     const children = all.filter((i) => i.parent_id === ancestorId);
     for (const c of children) {
       if (c.id === candidateId) return true;
@@ -107,10 +92,7 @@ export function WbsTree({
   };
 
   return (
-    <div
-      className="flex flex-col"
-      onDragOver={(e) => onReparent && e.preventDefault()}
-    >
+    <div className="flex flex-col" onDragOver={(e) => onReparent && e.preventDefault()}>
       {tree.map((node) => (
         <TreeRow
           key={node.id}
@@ -194,13 +176,7 @@ function TreeRow({
           onClick={() => onToggle(node.id)}
           aria-label={isOpen ? "Collapse" : "Expand"}
         >
-          {hasChildren ? (
-            isOpen ? (
-              <ChevronDown size={14} />
-            ) : (
-              <ChevronRight size={14} />
-            )
-          ) : null}
+          {hasChildren ? isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : null}
         </button>
 
         <GripVertical
@@ -214,9 +190,7 @@ function TreeRow({
           onClick={() => onSelect(node.id)}
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
         >
-          <span className="font-mono text-xs text-muted-foreground">
-            {node.code}
-          </span>
+          <span className="font-mono text-xs text-muted-foreground">{node.code}</span>
           <span className="truncate text-foreground">{node.name}</span>
           <Badge variant="outline" className="ml-auto shrink-0 text-xs">
             {WBS_ITEM_TYPE_LABEL[node.item_type as WbsItemType]}

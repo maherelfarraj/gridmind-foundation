@@ -8,9 +8,25 @@ export type CableSizeMm2 = (typeof IEC_60228_SIZES_MM2)[number];
 
 // Indicative copper ampacity (A) — single-core PVC in ground, ambient 30 °C.
 const AMPACITY_A: Record<number, number> = {
-  1.5: 22, 2.5: 30, 4: 40, 6: 51, 10: 70, 16: 94, 25: 119, 35: 148,
-  50: 180, 70: 232, 95: 282, 120: 328, 150: 379, 185: 434, 240: 514,
-  300: 593, 400: 683, 500: 783, 630: 908,
+  1.5: 22,
+  2.5: 30,
+  4: 40,
+  6: 51,
+  10: 70,
+  16: 94,
+  25: 119,
+  35: 148,
+  50: 180,
+  70: 232,
+  95: 282,
+  120: 328,
+  150: 379,
+  185: 434,
+  240: 514,
+  300: 593,
+  400: 683,
+  500: 783,
+  630: 908,
 };
 
 // Copper resistivity at 20 °C, Ω·mm²/m.

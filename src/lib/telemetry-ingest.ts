@@ -23,9 +23,7 @@ export const MAX_ERROR_DETAILS = 20;
 
 export const readingSchema = z.object({
   asset_key: z.string().trim().min(1).max(128),
-  ts: z
-    .string()
-    .refine((s) => !Number.isNaN(Date.parse(s)), "ts must be ISO 8601"),
+  ts: z.string().refine((s) => !Number.isNaN(Date.parse(s)), "ts must be ISO 8601"),
   metric: z.enum(TELEMETRY_METRICS),
   value: z.number().finite(),
   quality: z.enum(TELEMETRY_QUALITIES).optional(),

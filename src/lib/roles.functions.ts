@@ -5,10 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { Constants } from "@/integrations/supabase/types";
 import type { AppRole, GrantableRole } from "@/lib/role-groups";
 
@@ -35,9 +32,7 @@ export type CompanyMembersResult = {
 
 export const listCompanyMembers = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ companyId: uuidSchema }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ companyId: uuidSchema }).parse(input))
   .handler(async ({ data, context }): Promise<CompanyMembersResult> => {
     requireSupabaseAuth(context);
 
@@ -86,17 +81,12 @@ export const listCompanyMembers = createServerFn({ method: "GET" })
     adminCount = adminSet.size;
 
     const members = Array.from(rowsByUser.values()).sort((a, b) =>
-      (a.fullName ?? a.email ?? "").localeCompare(
-        b.fullName ?? b.email ?? "",
-      ),
+      (a.fullName ?? a.email ?? "").localeCompare(b.fullName ?? b.email ?? ""),
     );
 
     const selfRoles =
-      (roles ?? [])
-        .filter((r) => r.user_id === context.user.id)
-        .map((r) => r.role) ?? [];
-    const isAdmin =
-      selfRoles.includes("company_admin") || selfRoles.includes("super_admin");
+      (roles ?? []).filter((r) => r.user_id === context.user.id).map((r) => r.role) ?? [];
+    const isAdmin = selfRoles.includes("company_admin") || selfRoles.includes("super_admin");
 
     return { isAdmin, adminCount, members };
   });
@@ -179,14 +169,11 @@ export const revokeRole = createServerFn({ method: "POST" })
       if (adminsErr) throw new Error(adminsErr.message);
       const ids = new Set((admins ?? []).map((r) => r.user_id));
       if (ids.size <= 1 && ids.has(data.targetUserId)) {
-        throw Object.assign(
-          new Error("Cannot revoke the last company admin."),
-          {
-            statusCode: 409,
-            body: JSON.stringify({ error: "last_company_admin" }),
-            headers: { "content-type": "application/json; charset=utf-8" },
-          },
-        );
+        throw Object.assign(new Error("Cannot revoke the last company admin."), {
+          statusCode: 409,
+          body: JSON.stringify({ error: "last_company_admin" }),
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
       }
     }
 

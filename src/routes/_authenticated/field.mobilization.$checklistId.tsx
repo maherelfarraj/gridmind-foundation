@@ -27,10 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  errorMessage,
-  mobilizationDetailQueryOptions,
-} from "@/lib/mobilization-query";
+import { errorMessage, mobilizationDetailQueryOptions } from "@/lib/mobilization-query";
 import {
   attachMobilizationEvidence,
   completeMobilizationChecklist,
@@ -46,31 +43,25 @@ import {
   type RosterEntry,
 } from "@/lib/mobilization.rules";
 
-export const Route = createFileRoute(
-  "/_authenticated/field/mobilization/$checklistId",
-)({
+export const Route = createFileRoute("/_authenticated/field/mobilization/$checklistId")({
   head: () => ({
     meta: [
       { title: "Mobilization checklist — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Track cabins, fencing, HSE induction and permits for a project site.",
+        content: "Track cabins, fencing, HSE induction and permits for a project site.",
       },
       { property: "og:title", content: "Mobilization checklist — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Track cabins, fencing, HSE induction and permits for a project site.",
+        content: "Track cabins, fencing, HSE induction and permits for a project site.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
-      mobilizationDetailQueryOptions(params.checklistId),
-    ),
+    context.queryClient.ensureQueryData(mobilizationDetailQueryOptions(params.checklistId)),
   component: MobilizationDetailPage,
 });
 
@@ -87,15 +78,8 @@ function MobilizationDetailPage() {
             <AlertTriangle className="h-4 w-4" />
             <span className="font-medium">Failed to load checklist</span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {errorMessage(query.error)}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => query.refetch()}
-          >
+          <p className="mt-1 text-sm text-muted-foreground">{errorMessage(query.error)}</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
             Retry
           </Button>
         </div>
@@ -108,9 +92,7 @@ function MobilizationDetailPage() {
   const pct =
     progress.requiredTotal === 0
       ? 0
-      : Math.round(
-          (progress.requiredComplete / progress.requiredTotal) * 100,
-        );
+      : Math.round((progress.requiredComplete / progress.requiredTotal) * 100);
   const isComplete = row.status === "complete";
   const showAmberBanner = !isComplete && !progress.allRequiredDone;
 
@@ -156,7 +138,8 @@ function MobilizationDetailPage() {
             <AlertTriangle className="h-4 w-4" /> Site not yet ready for field work
           </div>
           <p className="mt-1 text-xs">
-            Required items remain incomplete. Field mobilization cannot be marked complete until every required item is checked off.
+            Required items remain incomplete. Field mobilization cannot be marked complete until
+            every required item is checked off.
           </p>
         </div>
       ) : null}
@@ -178,13 +161,7 @@ function MobilizationDetailPage() {
   );
 }
 
-function CompleteButton({
-  checklistId,
-  disabled,
-}: {
-  checklistId: string;
-  disabled: boolean;
-}) {
+function CompleteButton({ checklistId, disabled }: { checklistId: string; disabled: boolean }) {
   const queryClient = useQueryClient();
   const completeFn = useServerFn(completeMobilizationChecklist);
   const mutation = useMutation({
@@ -196,10 +173,7 @@ function CompleteButton({
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <Button
-      onClick={() => mutation.mutate()}
-      disabled={disabled || mutation.isPending}
-    >
+    <Button onClick={() => mutation.mutate()} disabled={disabled || mutation.isPending}>
       {mutation.isPending ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       ) : (
@@ -339,9 +313,7 @@ function ItemRow({
           type="button"
           className="mt-0.5"
           disabled={disabled || toggle.isPending}
-          onClick={() =>
-            toggle.mutate({ status: isDone ? "not_started" : "complete" })
-          }
+          onClick={() => toggle.mutate({ status: isDone ? "not_started" : "complete" })}
           aria-label={isDone ? "Mark not started" : "Mark complete"}
         >
           {isDone ? (
@@ -352,9 +324,7 @@ function ItemRow({
         </button>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
-              {item.label}
-            </span>
+            <span className="text-sm font-medium text-foreground">{item.label}</span>
             {item.required ? (
               <Badge variant="outline" className="text-[10px]">
                 required
@@ -461,13 +431,10 @@ function RosterEditor({
   const updateFn = useServerFn(updateInductionRoster);
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
-  const [inductedAt, setInductedAt] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [inductedAt, setInductedAt] = useState(new Date().toISOString().slice(0, 10));
 
   const mutation = useMutation({
-    mutationFn: (next: RosterEntry[]) =>
-      updateFn({ data: { checklistId, itemKey, roster: next } }),
+    mutationFn: (next: RosterEntry[]) => updateFn({ data: { checklistId, itemKey, roster: next } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mobilization"] });
     },
@@ -496,9 +463,7 @@ function RosterEditor({
         </span>
       </div>
       {roster.length === 0 ? (
-        <p className="mb-2 text-xs text-muted-foreground">
-          No attendees recorded yet.
-        </p>
+        <p className="mb-2 text-xs text-muted-foreground">No attendees recorded yet.</p>
       ) : (
         <ul className="mb-3 flex flex-col gap-1 text-sm">
           {roster.map((r, i) => (
@@ -509,9 +474,7 @@ function RosterEditor({
               <span className="truncate">
                 <span className="font-medium text-foreground">{r.name}</span>
                 <span className="ml-2 text-muted-foreground">{r.company}</span>
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {r.inducted_at}
-                </span>
+                <span className="ml-2 text-xs text-muted-foreground">{r.inducted_at}</span>
               </span>
               <Button
                 size="icon"

@@ -1,10 +1,6 @@
 // P-106 — Work orders pure-logic unit tests.
 import { describe, expect, it } from "vitest";
-import {
-  canTransition,
-  computeTotalCost,
-  workOrderCloseSchema,
-} from "@/lib/work-orders.rules";
+import { canTransition, computeTotalCost, workOrderCloseSchema } from "@/lib/work-orders.rules";
 
 describe("computeTotalCost", () => {
   it("sums parts qty*unit_cost + labor hours*rate, rounded to 2dp", () => {

@@ -12,17 +12,9 @@ export const BOM_WRITE_ROLES = [
   "super_admin",
 ] as const;
 
-export const BOM_RELEASE_ROLES = [
-  "engineering_admin",
-  "company_admin",
-  "super_admin",
-] as const;
+export const BOM_RELEASE_ROLES = ["engineering_admin", "company_admin", "super_admin"] as const;
 
-export function bomHttpError(
-  status: number,
-  code: string,
-  message?: string,
-): never {
+export function bomHttpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
     statusCode: status,
     body: JSON.stringify({ error: code, message: message ?? code }),
@@ -64,11 +56,7 @@ export async function loadSnapshotWithProject(
   return data as any;
 }
 
-export async function assertBomRole(
-  context: any,
-  companyId: string,
-  roles: readonly string[],
-) {
+export async function assertBomRole(context: any, companyId: string, roles: readonly string[]) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")

@@ -1,18 +1,8 @@
 // P-074 — 5×5 probability × impact heat matrix.
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RiskRow } from "@/lib/risks.functions";
-import {
-  heatCellClass,
-  IMPACT_LABELS,
-  matrixCells,
-  PROBABILITY_LABELS,
-} from "@/lib/risks.rules";
+import { heatCellClass, IMPACT_LABELS, matrixCells, PROBABILITY_LABELS } from "@/lib/risks.rules";
 
 interface Props {
   risks: RiskRow[];
@@ -90,9 +80,7 @@ function MatrixRow({
             )}
           >
             {items.length === 0 ? (
-              <span className="m-auto text-xs text-muted-foreground/60">
-                ·
-              </span>
+              <span className="m-auto text-xs text-muted-foreground/60">·</span>
             ) : (
               items.map((r) => (
                 <TooltipProvider key={r.id}>

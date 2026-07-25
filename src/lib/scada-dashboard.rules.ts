@@ -67,10 +67,7 @@ export interface PowerCurvePoint {
 }
 
 /** 5-minute buckets: sum of ac_power_kw per bucket, mean irradiance per bucket. */
-export function bucketPowerCurve(
-  rows: TelemetryRow[],
-  minutes = 5,
-): PowerCurvePoint[] {
+export function bucketPowerCurve(rows: TelemetryRow[], minutes = 5): PowerCurvePoint[] {
   const bucketMs = minutes * 60 * 1000;
   interface Agg {
     powerByAsset: Map<string, number>; // latest ac_power_kw per asset in bucket
@@ -106,8 +103,7 @@ export function bucketPowerCurve(
       return {
         bucket: new Date(bucket).toISOString(),
         ac_power_kw: Number(power.toFixed(2)),
-        irradiance_wm2:
-          agg.irrCount > 0 ? Number((agg.irrSum / agg.irrCount).toFixed(1)) : null,
+        irradiance_wm2: agg.irrCount > 0 ? Number((agg.irrSum / agg.irrCount).toFixed(1)) : null,
       };
     });
 }
@@ -129,8 +125,7 @@ export function performanceRatio(input: {
   let sumWhPerM2 = 0;
   for (let i = 1; i < sorted.length; i++) {
     const dtHours =
-      (new Date(sorted[i]!.ts).getTime() - new Date(sorted[i - 1]!.ts).getTime()) /
-      3_600_000;
+      (new Date(sorted[i]!.ts).getTime() - new Date(sorted[i - 1]!.ts).getTime()) / 3_600_000;
     if (dtHours <= 0 || dtHours > 1) continue; // guard huge gaps
     const meanIrr = (sorted[i]!.value + sorted[i - 1]!.value) / 2;
     sumWhPerM2 += meanIrr * dtHours;

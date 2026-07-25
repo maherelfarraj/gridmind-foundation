@@ -1,18 +1,16 @@
 // P-078 — TanStack Query options for contracts.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getContract,
-  getContractsAccess,
-  listContracts,
-} from "@/lib/contracts.functions";
+import { getContract, getContractsAccess, listContracts } from "@/lib/contracts.functions";
 
-export function contractsListQueryOptions(input: {
-  projectId?: string;
-  status?: string;
-  contractType?: string;
-  q?: string;
-} = {}) {
+export function contractsListQueryOptions(
+  input: {
+    projectId?: string;
+    status?: string;
+    contractType?: string;
+    q?: string;
+  } = {},
+) {
   return queryOptions({
     queryKey: [
       "contracts",

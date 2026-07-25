@@ -136,10 +136,7 @@ export function WarrantyDialog({ warranty, trigger }: Props) {
           <DialogTitle>{warranty ? "Edit warranty" : "Register warranty"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            className="space-y-4"
-            onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-          >
+          <form className="space-y-4" onSubmit={form.handleSubmit((v) => mut.mutate(v))}>
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}

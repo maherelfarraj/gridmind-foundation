@@ -9,7 +9,6 @@ import {
 } from "@/integrations/supabase/auth-attacher";
 import { withIdempotency } from "@/lib/offline-mirror";
 
-
 export const COMMISSIONING_TEST_TYPES = [
   "insulation_resistance",
   "hipot",
@@ -30,13 +29,9 @@ export const COMMISSIONING_TEST_STATUSES = [
   "failed",
   "on_hold",
 ] as const;
-export type CommissioningTestStatus =
-  (typeof COMMISSIONING_TEST_STATUSES)[number];
+export type CommissioningTestStatus = (typeof COMMISSIONING_TEST_STATUSES)[number];
 
-export const COMMISSIONING_TEST_TYPE_LABELS: Record<
-  CommissioningTestType,
-  string
-> = {
+export const COMMISSIONING_TEST_TYPE_LABELS: Record<CommissioningTestType, string> = {
   insulation_resistance: "Insulation Resistance (IR)",
   hipot: "Hipot",
   iv_curve: "IV Curve",
@@ -150,7 +145,10 @@ export const listCommissioningTests = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => listInput.parse(raw))
   .handler(
-    async ({ data, context }): Promise<{
+    async ({
+      data,
+      context,
+    }): Promise<{
       rows: CommissioningTestRow[];
       canWrite: boolean;
     }> => {
@@ -173,9 +171,7 @@ export const listCommissioningTests = createServerFn({ method: "GET" })
       if (data.area) q = q.eq("area", data.area);
       if (data.search) {
         const s = `%${data.search}%`;
-        q = q.or(
-          `area.ilike.${s},equipment_ref.ilike.${s},string_ref.ilike.${s},notes.ilike.${s}`,
-        );
+        q = q.or(`area.ilike.${s},equipment_ref.ilike.${s},string_ref.ilike.${s},notes.ilike.${s}`);
       }
 
       const { data: rows, error } = await q;
@@ -210,25 +206,21 @@ export const listCommissioningTests = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const listCommissioningAssignees = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(raw),
-  )
-  .handler(
-    async ({ data, context }): Promise<CommissioningMemberPick[]> => {
-      requireSupabaseAuth(context);
-      const companyId = await currentCompanyId(context);
-      const { data: rows, error } = await context.supabase
-        .from("project_members")
-        .select("user_id, profiles:user_id(email)")
-        .eq("project_id", data.projectId)
-        .eq("company_id", companyId);
-      if (error) throw error;
-      return ((rows ?? []) as any[]).map((r) => ({
-        id: r.user_id as string,
-        email: (r.profiles?.email as string | null) ?? null,
-      }));
-    },
-  );
+  .inputValidator((raw: unknown) => z.object({ projectId: z.string().uuid() }).parse(raw))
+  .handler(async ({ data, context }): Promise<CommissioningMemberPick[]> => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
+    const { data: rows, error } = await context.supabase
+      .from("project_members")
+      .select("user_id, profiles:user_id(email)")
+      .eq("project_id", data.projectId)
+      .eq("company_id", companyId);
+    if (error) throw error;
+    return ((rows ?? []) as any[]).map((r) => ({
+      id: r.user_id as string,
+      email: (r.profiles?.email as string | null) ?? null,
+    }));
+  });
 
 // ---------------------------------------------------------------------------
 // assign (bulk)
@@ -263,8 +255,7 @@ export const assignCommissioningTests = createServerFn({ method: "POST" })
       .eq("id", data.projectId)
       .maybeSingle();
     if (pErr) throw pErr;
-    if (!proj || (proj as any).company_id !== companyId)
-      httpError(400, "invalid_project");
+    if (!proj || (proj as any).company_id !== companyId) httpError(400, "invalid_project");
 
     const uniqueTypes = Array.from(new Set(data.testTypes));
     const payload = uniqueTypes.map((t) => ({
@@ -274,13 +265,10 @@ export const assignCommissioningTests = createServerFn({ method: "POST" })
       equipment_ref: data.equipmentRef ?? null,
       string_ref: data.stringRef ?? null,
       test_type: t,
-      status: (data.plannedDate ? "scheduled" : "not_started") as
-        | "scheduled"
-        | "not_started",
+      status: (data.plannedDate ? "scheduled" : "not_started") as "scheduled" | "not_started",
       assigned_to: data.assignedTo ?? null,
       planned_date: data.plannedDate ?? null,
-      utility_witness_required:
-        t === "hipot" ? true : data.utilityWitnessRequired,
+      utility_witness_required: t === "hipot" ? true : data.utilityWitnessRequired,
       notes: data.notes ?? null,
       created_by: context.user!.id,
     }));
@@ -294,17 +282,11 @@ export const assignCommissioningTests = createServerFn({ method: "POST" })
     const ids = ((rows ?? []) as any[]).map((r) => r.id as string);
 
     for (const r of (rows ?? []) as any[]) {
-      await audit(
-        context,
-        "commissioning.test_assigned",
-        "commissioning_tests",
-        r.id,
-        {
-          test_type: r.test_type,
-          area: r.area,
-          assigned_to: r.assigned_to,
-        },
-      );
+      await audit(context, "commissioning.test_assigned", "commissioning_tests", r.id, {
+        test_type: r.test_type,
+        area: r.area,
+        assigned_to: r.assigned_to,
+      });
     }
 
     return { ids };
@@ -314,39 +296,25 @@ export const assignCommissioningTests = createServerFn({ method: "POST" })
 // P-094 — Execution: get / save result / witness / re-open
 // ---------------------------------------------------------------------------
 
-const EXECUTE_ROLES = new Set([
-  "field_technician",
-  "foreman",
-  "engineer",
-  "construction_admin",
-]);
-const READ_ONLY_ROLES = new Set([
-  "om_admin",
-  "project_admin",
-  "company_admin",
-]);
+const EXECUTE_ROLES = new Set(["field_technician", "foreman", "engineer", "construction_admin"]);
+const READ_ONLY_ROLES = new Set(["om_admin", "project_admin", "company_admin"]);
 function canExecute(roles: string[]): boolean {
   return roles.some((r) => EXECUTE_ROLES.has(r));
 }
 function canReopen(roles: string[]): boolean {
-  return roles.some(
-    (r) => r === "construction_admin" || r === "company_admin",
-  );
+  return roles.some((r) => r === "construction_admin" || r === "company_admin");
 }
 function canRead(roles: string[]): boolean {
-  return (
-    canExecute(roles) || roles.some((r) => READ_ONLY_ROLES.has(r))
-  );
+  return canExecute(roles) || roles.some((r) => READ_ONLY_ROLES.has(r));
 }
 
 export interface CommissioningTestDetail extends CommissioningTestRow {
   utility_witness_name: string | null;
   utility_witnessed_at: string | null;
   witness_file_path: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   result: Record<string, any>;
 }
-
 
 export interface CommissioningIvPoint {
   voltageV: number;
@@ -368,14 +336,9 @@ export interface CommissioningIvSummary {
  * - FF: Pmax / (Voc * Isc).
  * Exported for unit tests.
  */
-export function computeIvSummary(
-  points: CommissioningIvPoint[],
-): CommissioningIvSummary | null {
+export function computeIvSummary(points: CommissioningIvPoint[]): CommissioningIvSummary | null {
   const clean = points
-    .filter(
-      (p) =>
-        Number.isFinite(p.voltageV) && Number.isFinite(p.currentA),
-    )
+    .filter((p) => Number.isFinite(p.voltageV) && Number.isFinite(p.currentA))
     .slice()
     .sort((a, b) => a.voltageV - b.voltageV);
   if (clean.length < 2) return null;
@@ -536,22 +499,15 @@ export const saveCommissioningTestResult = createServerFn({ method: "POST" })
           .eq("id", data.testId)
           .maybeSingle();
         if (error) throw error;
-        if (!row || (row as any).company_id !== companyId)
-          httpError(404, "test_not_found");
+        if (!row || (row as any).company_id !== companyId) httpError(404, "test_not_found");
         const r = row as any;
 
         if (
           r.utility_witness_required &&
           data.status === "passed" &&
-          (!r.witness_file_path ||
-            !r.utility_witnessed_at ||
-            !r.utility_witness_name)
+          (!r.witness_file_path || !r.utility_witnessed_at || !r.utility_witness_name)
         ) {
-          httpError(
-            409,
-            "witness_required",
-            "Utility witness record required to pass this test",
-          );
+          httpError(409, "witness_required", "Utility witness record required to pass this test");
         }
 
         const now = new Date().toISOString();
@@ -571,13 +527,10 @@ export const saveCommissioningTestResult = createServerFn({ method: "POST" })
           .eq("id", data.testId);
         if (upErr) throw upErr;
 
-        await audit(
-          context,
-          "commissioning.test_executed",
-          "commissioning_tests",
-          data.testId,
-          { test_type: r.test_type, status: data.status },
-        );
+        await audit(context, "commissioning.test_executed", "commissioning_tests", data.testId, {
+          test_type: r.test_type,
+          status: data.status,
+        });
 
         return { id: data.testId, status: data.status };
       },
@@ -617,8 +570,7 @@ export const recordUtilityWitness = createServerFn({ method: "POST" })
           .eq("id", data.testId)
           .maybeSingle();
         if (error) throw error;
-        if (!row || (row as any).company_id !== companyId)
-          httpError(404, "test_not_found");
+        if (!row || (row as any).company_id !== companyId) httpError(404, "test_not_found");
         const r = row as any;
 
         // Enforce path shape: {company_id}/witness/{project_id}/{test_id}/...
@@ -638,13 +590,9 @@ export const recordUtilityWitness = createServerFn({ method: "POST" })
           .eq("id", data.testId);
         if (upErr) throw upErr;
 
-        await audit(
-          context,
-          "commissioning.witness_recorded",
-          "commissioning_tests",
-          data.testId,
-          { path: data.witnessFilePath },
-        );
+        await audit(context, "commissioning.witness_recorded", "commissioning_tests", data.testId, {
+          path: data.witnessFilePath,
+        });
 
         return { id: data.testId, witnessedAt: now };
       },
@@ -682,8 +630,7 @@ export const reopenCommissioningTest = createServerFn({ method: "POST" })
           .eq("id", data.testId)
           .maybeSingle();
         if (error) throw error;
-        if (!row || (row as any).company_id !== companyId)
-          httpError(404, "test_not_found");
+        if (!row || (row as any).company_id !== companyId) httpError(404, "test_not_found");
         const r = row as any;
         if (r.status !== "passed" && r.status !== "failed") {
           httpError(409, "not_completed", "Only completed tests can be re-opened");
@@ -698,15 +645,10 @@ export const reopenCommissioningTest = createServerFn({ method: "POST" })
           .eq("id", data.testId);
         if (upErr) throw upErr;
 
-        await audit(
-          context,
-          "commissioning.test_reopened",
-          "commissioning_tests",
-          data.testId,
-          { test_type: r.test_type },
-        );
+        await audit(context, "commissioning.test_reopened", "commissioning_tests", data.testId, {
+          test_type: r.test_type,
+        });
         return { id: data.testId };
       },
     );
   });
-

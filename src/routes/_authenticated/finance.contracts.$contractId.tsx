@@ -118,9 +118,7 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-function statusVariant(
-  s: ContractStatus,
-): "default" | "secondary" | "outline" | "destructive" {
+function statusVariant(s: ContractStatus): "default" | "secondary" | "outline" | "destructive" {
   switch (s) {
     case "signed":
     case "active":
@@ -164,9 +162,7 @@ function ContractDetail() {
               <Badge variant="outline">Retention until {contract.retention_until}</Badge>
             )}
           </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            {contract.title}
-          </h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">{contract.title}</h1>
           <p className="text-sm text-muted-foreground">
             {contract.counterparty} · {contractLabelForType(contract.contract_type)}
             {contract.value != null &&
@@ -191,11 +187,7 @@ function ContractDetail() {
           <SovTab contract={contract} canWrite={canWrite} />
         </TabsContent>
         <TabsContent value="obligations" className="mt-4">
-          <ObligationsTab
-            contract={contract}
-            obligations={obligations}
-            canWrite={canWrite}
-          />
+          <ObligationsTab contract={contract} obligations={obligations} canWrite={canWrite} />
         </TabsContent>
       </Tabs>
     </div>
@@ -208,13 +200,7 @@ function ContractDetail() {
 const OverviewFormSchema = ContractUpsertSchema.omit({ id: true, project_id: true });
 type OverviewFormValues = z.infer<typeof OverviewFormSchema>;
 
-function OverviewTab({
-  contract,
-  canWrite,
-}: {
-  contract: ContractRow;
-  canWrite: boolean;
-}) {
+function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: boolean }) {
   const qc = useQueryClient();
   const upsert = useServerFn(upsertContract);
   const uploadFn = useServerFn(uploadSignedContract);
@@ -255,10 +241,7 @@ function OverviewTab({
           <CardTitle>Contract details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))}
-            className="space-y-3"
-          >
+          <form onSubmit={form.handleSubmit((v) => saveMutation.mutate(v))} className="space-y-3">
             <div className="space-y-1">
               <Label>Title</Label>
               <Input disabled={!canWrite} {...form.register("title")} />
@@ -327,19 +310,11 @@ function OverviewTab({
               </div>
               <div className="space-y-1">
                 <Label>Effective date</Label>
-                <Input
-                  disabled={!canWrite}
-                  type="date"
-                  {...form.register("effective_date")}
-                />
+                <Input disabled={!canWrite} type="date" {...form.register("effective_date")} />
               </div>
               <div className="space-y-1">
                 <Label>Expiry date</Label>
-                <Input
-                  disabled={!canWrite}
-                  type="date"
-                  {...form.register("expiry_date")}
-                />
+                <Input disabled={!canWrite} type="date" {...form.register("expiry_date")} />
               </div>
             </div>
             {locked && (
@@ -371,7 +346,9 @@ function OverviewTab({
           <Button
             className="w-full"
             variant={contract.status === "signed" ? "outline" : "default"}
-            disabled={!canWrite || contract.status !== "draft" && contract.status !== "negotiation"}
+            disabled={
+              !canWrite || (contract.status !== "draft" && contract.status !== "negotiation")
+            }
             onClick={() => setSignOpen(true)}
           >
             <CheckCircle2 className="mr-2 size-4" />
@@ -583,10 +560,7 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
     setLines((cur) => cur.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   }
   function addLine() {
-    setLines((cur) => [
-      ...cur,
-      { line_no: cur.length + 1, description: "", scheduled_amount: 0 },
-    ]);
+    setLines((cur) => [...cur, { line_no: cur.length + 1, description: "", scheduled_amount: 0 }]);
   }
   function removeLine(i: number) {
     setLines((cur) => cur.filter((_, idx) => idx !== i));
@@ -694,11 +668,7 @@ function SovTab({ contract, canWrite }: { contract: ContractRow; canWrite: boole
           </Button>
         </div>
       </CardContent>
-      <MilestoneBillDialog
-        contractId={contract.id}
-        open={billOpen}
-        onOpenChange={setBillOpen}
-      />
+      <MilestoneBillDialog contractId={contract.id} open={billOpen} onOpenChange={setBillOpen} />
     </Card>
   );
 }
@@ -728,11 +698,7 @@ function ObligationsTab({
           {obligations.length} obligation{obligations.length === 1 ? "" : "s"} tracked
         </p>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            disabled={!canWrite}
-            onClick={() => setExtractOpen(true)}
-          >
+          <Button variant="outline" disabled={!canWrite} onClick={() => setExtractOpen(true)}>
             <Sparkles className="mr-2 size-4" /> Extract clauses with AI
           </Button>
           <Button disabled={!canWrite} onClick={() => setCreating(true)}>
@@ -814,10 +780,7 @@ function ObligationsTab({
       )}
 
       {extractOpen && (
-        <ExtractClausesDialog
-          contract={contract}
-          onClose={() => setExtractOpen(false)}
-        />
+        <ExtractClausesDialog contract={contract} onClose={() => setExtractOpen(false)} />
       )}
     </div>
   );
@@ -866,10 +829,7 @@ function ObligationDialog({
         <DialogHeader>
           <DialogTitle>{existing ? "Edit obligation" : "New obligation"}</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-          className="space-y-3"
-        >
+        <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-3">
           <div className="space-y-1">
             <Label>Title</Label>
             <Input {...form.register("title")} />
@@ -1002,8 +962,8 @@ function ExtractClausesDialog({
             <Sparkles className="size-4" /> Extract clauses with AI
           </DialogTitle>
           <DialogDescription>
-            The AI reads the contract text and suggests obligations. You choose which ones to
-            import — nothing is added automatically.
+            The AI reads the contract text and suggests obligations. You choose which ones to import
+            — nothing is added automatically.
           </DialogDescription>
         </DialogHeader>
 
@@ -1069,18 +1029,13 @@ function ExtractClausesDialog({
             </p>
             <div className="max-h-[380px] space-y-2 overflow-y-auto">
               {items.map((it, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 rounded-md border border-border p-3"
-                >
+                <div key={i} className="flex items-start gap-3 rounded-md border border-border p-3">
                   <Checkbox
                     checked={it.selected}
                     onCheckedChange={(v) =>
                       setItems((cur) =>
                         cur
-                          ? cur.map((r, idx) =>
-                              idx === i ? { ...r, selected: Boolean(v) } : r,
-                            )
+                          ? cur.map((r, idx) => (idx === i ? { ...r, selected: Boolean(v) } : r))
                           : cur,
                       )
                     }
@@ -1107,9 +1062,7 @@ function ExtractClausesDialog({
                           setItems((cur) =>
                             cur
                               ? cur.map((r, idx) =>
-                                  idx === i
-                                    ? { ...r, due_date: e.target.value || null }
-                                    : r,
+                                  idx === i ? { ...r, due_date: e.target.value || null } : r,
                                 )
                               : cur,
                           )

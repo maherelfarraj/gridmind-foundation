@@ -53,12 +53,7 @@ function toLocalInput(iso: string | undefined | null): string {
   )}:${pad(d.getMinutes())}`;
 }
 
-export function TenderEventDialog({
-  open,
-  onOpenChange,
-  opportunityId,
-  existing,
-}: Props) {
+export function TenderEventDialog({ open, onOpenChange, opportunityId, existing }: Props) {
   const save = useSaveTenderEvent(opportunityId);
   const [form, setForm] = useState({
     event_type: "pre_bid_meeting" as TenderEventType,
@@ -101,9 +96,7 @@ export function TenderEventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {existing ? "Edit tender event" : "Add tender event"}
-          </DialogTitle>
+          <DialogTitle>{existing ? "Edit tender event" : "Add tender event"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -111,9 +104,7 @@ export function TenderEventDialog({
               <Label>Type</Label>
               <Select
                 value={form.event_type}
-                onValueChange={(v) =>
-                  setForm({ ...form, event_type: v as TenderEventType })
-                }
+                onValueChange={(v) => setForm({ ...form, event_type: v as TenderEventType })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -165,11 +156,7 @@ export function TenderEventDialog({
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={save.isPending}>

@@ -59,8 +59,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/field/submittals/")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Submittals — GridMind EPC" },
@@ -165,9 +164,7 @@ function SubmittalsIndexPage() {
             <Label className="text-xs">Project</Label>
             <Select
               value={sp.projectId ?? "all"}
-              onValueChange={(v) =>
-                setSearchParam({ projectId: v === "all" ? undefined : v })
-              }
+              onValueChange={(v) => setSearchParam({ projectId: v === "all" ? undefined : v })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All projects" />
@@ -290,7 +287,11 @@ function SubmittalsIndexPage() {
         </Card>
       )}
 
-      <NewSubmittalDialog open={dlgOpen} onOpenChange={setDlgOpen} defaultProjectId={sp.projectId} />
+      <NewSubmittalDialog
+        open={dlgOpen}
+        onOpenChange={setDlgOpen}
+        defaultProjectId={sp.projectId}
+      />
     </div>
   );
 }
@@ -375,8 +376,7 @@ function NewSubmittalDialog({
     }
   };
 
-  const canSubmit =
-    !!resolvedProjectId && title.trim().length >= 2 && !createMut.isPending;
+  const canSubmit = !!resolvedProjectId && title.trim().length >= 2 && !createMut.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -408,18 +408,11 @@ function NewSubmittalDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <Label>Spec section</Label>
-              <Input
-                value={specSection}
-                onChange={(e) => setSpecSection(e.target.value)}
-              />
+              <Input value={specSection} onChange={(e) => setSpecSection(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1">
               <Label>Due date</Label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
+              <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
           </div>
           <div className="flex flex-col gap-1">
@@ -453,9 +446,7 @@ function NewSubmittalDialog({
             Cancel
           </Button>
           <Button disabled={!canSubmit} onClick={() => createMut.mutate()}>
-            {createMut.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+            {createMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Create draft
           </Button>
         </DialogFooter>

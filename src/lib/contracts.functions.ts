@@ -33,25 +33,16 @@ function httpError(status: number, code: string, message?: string): never {
   });
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
   return results.some((r) => Boolean(r?.data));
 }
 
 async function requireWriteRole(context: AuthContext): Promise<void> {
   if (!(await hasAnyRole(context, WRITE_ROLES))) {
-    httpError(
-      403,
-      "forbidden",
-      "Only finance, legal, or company admins can modify contracts.",
-    );
+    httpError(403, "forbidden", "Only finance, legal, or company admins can modify contracts.");
   }
 }
 
@@ -165,9 +156,7 @@ export const listContracts = createServerFn({ method: "GET" })
     if (data.contractType) q = q.eq("contract_type", data.contractType as any);
     if (data.q && data.q.trim()) {
       const term = `%${data.q.trim()}%`;
-      q = q.or(
-        `title.ilike.${term},counterparty.ilike.${term},contract_number.ilike.${term}`,
-      );
+      q = q.or(`title.ilike.${term},counterparty.ilike.${term},contract_number.ilike.${term}`);
     }
     const { data: rows, error } = await q;
     if (error) throw error;
@@ -179,14 +168,9 @@ export const listContracts = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 export const getContract = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ contract: ContractRow; obligations: ObligationRow[] }> => {
+    async ({ data, context }): Promise<{ contract: ContractRow; obligations: ObligationRow[] }> => {
       requireSupabaseAuth(context);
       const { data: c, error } = await context.supabase
         .from("contracts")
@@ -211,10 +195,7 @@ export const getContract = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 // Auto-number
 // ---------------------------------------------------------------------------
-async function nextContractNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function nextContractNumber(context: AuthContext, companyId: string): Promise<string> {
   const year = new Date().getUTCFullYear();
   const prefix = `CT-${year}-`;
   const { data, error } = await context.supabase
@@ -482,9 +463,7 @@ export const markContractSigned = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const getContractFileUrl = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ url: string | null }> => {
     requireSupabaseAuth(context);
     const { data: c, error } = await context.supabase
@@ -579,55 +558,48 @@ const bulkInsertSchema = z.object({
 export const bulkInsertObligations = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => bulkInsertSchema.parse(input))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ inserted: ObligationRow[]; count: number }> => {
-      requireSupabaseAuth(context);
-      await requireWriteRole(context);
+  .handler(async ({ data, context }): Promise<{ inserted: ObligationRow[]; count: number }> => {
+    requireSupabaseAuth(context);
+    await requireWriteRole(context);
 
-      const { data: contract, error: cErr } = await context.supabase
-        .from("contracts")
-        .select("id, company_id")
-        .eq("id", data.contract_id)
-        .maybeSingle();
-      if (cErr) throw cErr;
-      if (!contract) httpError(404, "contract_not_found");
+    const { data: contract, error: cErr } = await context.supabase
+      .from("contracts")
+      .select("id, company_id")
+      .eq("id", data.contract_id)
+      .maybeSingle();
+    if (cErr) throw cErr;
+    if (!contract) httpError(404, "contract_not_found");
 
-      const rows = data.items.map((it) => ({
-        company_id: (contract as any).company_id,
-        contract_id: data.contract_id,
-        title: it.title,
-        description: it.description ?? null,
-        clause_ref: it.clause_ref ?? null,
-        due_date: it.due_date ?? null,
-        status: "open",
-        extracted_by_ai: true,
-        created_by: (context as any).user.id,
-      }));
+    const rows = data.items.map((it) => ({
+      company_id: (contract as any).company_id,
+      contract_id: data.contract_id,
+      title: it.title,
+      description: it.description ?? null,
+      clause_ref: it.clause_ref ?? null,
+      due_date: it.due_date ?? null,
+      status: "open",
+      extracted_by_ai: true,
+      created_by: (context as any).user.id,
+    }));
 
-      const { data: inserted, error } = await context.supabase
-        .from("contract_obligations")
-        .insert(rows as any)
-        .select("*");
-      if (error) {
-        if ((error as any).code === "42501") httpError(403, "forbidden");
-        throw error;
-      }
-      await audit(
-        context,
-        "contract.ai_extract",
-        "contracts",
-        data.contract_id,
-        { extracted: data.items.length, accepted: rows.length, phase: "accept" },
-      );
-      return {
-        inserted: ((inserted ?? []) as any[]).map(toObligationRow),
-        count: rows.length,
-      };
-    },
-  );
+    const { data: inserted, error } = await context.supabase
+      .from("contract_obligations")
+      .insert(rows as any)
+      .select("*");
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+    await audit(context, "contract.ai_extract", "contracts", data.contract_id, {
+      extracted: data.items.length,
+      accepted: rows.length,
+      phase: "accept",
+    });
+    return {
+      inserted: ((inserted ?? []) as any[]).map(toObligationRow),
+      count: rows.length,
+    };
+  });
 
 // ---------------------------------------------------------------------------
 // AI clause extractor — Lovable AI Gateway (server-only key)
@@ -673,10 +645,11 @@ export const extractContractClauses = createServerFn({ method: "POST" })
 
       // Rate-limit: 10 extractions per hour per company.
       const key = `ai:contract_extract:${(c as any).company_id}`;
-      const { data: allowed, error: rlErr } = await context.supabase.rpc(
-        "consume_rate_limit",
-        { p_key: key, p_capacity: 10, p_refill_per_sec: 10 / 3600 },
-      );
+      const { data: allowed, error: rlErr } = await context.supabase.rpc("consume_rate_limit", {
+        p_key: key,
+        p_capacity: 10,
+        p_refill_per_sec: 10 / 3600,
+      });
       if (rlErr) throw rlErr;
       if (allowed === false) {
         httpError(429, "rate_limited", "Too many AI extractions — try again later.");
@@ -690,27 +663,24 @@ export const extractContractClauses = createServerFn({ method: "POST" })
       const truncated = data.pdf_text.slice(0, 120_000);
       let response: Response;
       try {
-        response = await fetch(
-          "https://ai.gateway.lovable.dev/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${apiKey!}`,
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                {
-                  role: "user",
-                  content: `Contract text follows.\n---\n${truncated}\n---\nReturn the JSON now.`,
-                },
-              ],
-              response_format: { type: "json_object" },
-            }),
+        response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey!}`,
           },
-        );
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              {
+                role: "user",
+                content: `Contract text follows.\n---\n${truncated}\n---\nReturn the JSON now.`,
+              },
+            ],
+            response_format: { type: "json_object" },
+          }),
+        });
       } catch (e) {
         httpError(502, "gateway_error", "Could not reach the AI Gateway. Retry in a moment.");
       }
@@ -764,18 +734,12 @@ export const extractContractClauses = createServerFn({ method: "POST" })
         due_date: o.due_date ?? null,
       }));
 
-      await audit(
-        context,
-        "contract.ai_extract",
-        "contracts",
-        data.contract_id,
-        {
-          extracted: obligations.length,
-          accepted: 0,
-          phase: "extract",
-          model: "google/gemini-2.5-flash",
-        },
-      );
+      await audit(context, "contract.ai_extract", "contracts", data.contract_id, {
+        extracted: obligations.length,
+        accepted: 0,
+        phase: "extract",
+        model: "google/gemini-2.5-flash",
+      });
 
       return { obligations };
     },

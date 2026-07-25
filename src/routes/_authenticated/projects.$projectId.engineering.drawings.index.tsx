@@ -18,10 +18,7 @@ import {
   getMyDrawingRoles,
   listDrawings,
 } from "@/lib/drawings.functions";
-import {
-  drawingRolesQueryOptions,
-  drawingsListQueryOptions,
-} from "@/lib/drawings-query";
+import { drawingRolesQueryOptions, drawingsListQueryOptions } from "@/lib/drawings-query";
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -30,9 +27,7 @@ const searchSchema = z.object({
   page: z.number().int().min(1).optional(),
 });
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/drawings/",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/drawings/")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
@@ -64,21 +59,17 @@ function RegisterPage() {
   return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Drawing register
-        </h2>
+        <h2 className="font-display text-lg font-semibold text-foreground">Drawing register</h2>
         <p className="text-sm text-muted-foreground">
-          Track drawings, revisions, and IFC governance. IFC promotion requires an
-          approved engineering sign-off.
+          Track drawings, revisions, and IFC governance. IFC promotion requires an approved
+          engineering sign-off.
         </p>
       </header>
       <Suspense fallback={<DrawingRegisterTableSkeleton />}>
         <DrawingRegisterTable
           projectId={projectId}
           filters={search}
-          onFilterChange={(next) =>
-            navigate({ search: (prev) => ({ ...prev, ...next }) as any })
-          }
+          onFilterChange={(next) => navigate({ search: (prev) => ({ ...prev, ...next }) as any })}
         />
       </Suspense>
     </div>

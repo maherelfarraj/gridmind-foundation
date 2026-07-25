@@ -132,13 +132,9 @@ async function hasAnyRole(
   roles: readonly string[],
 ): Promise<Record<string, boolean>> {
   const results = await Promise.all(
-    roles.map((r) =>
-      context.supabase.rpc("has_company_role", { p_role: r as any }),
-    ),
+    roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as any })),
   );
-  return Object.fromEntries(
-    roles.map((r, i) => [r, Boolean(results[i]?.data)]),
-  );
+  return Object.fromEntries(roles.map((r, i) => [r, Boolean(results[i]?.data)]));
 }
 
 // ---------------------------------------------------------------------------
@@ -199,12 +195,11 @@ export const awardRfqLine = createServerFn({ method: "POST" })
       .eq("id", data.rfqId)
       .maybeSingle();
     if (rErr) throw rErr;
-    if (!rfq || (rfq as any).company_id !== companyId)
-      httpError(404, "rfq_not_found");
+    if (!rfq || (rfq as any).company_id !== companyId) httpError(404, "rfq_not_found");
     if ((rfq as any).status !== "issued")
       httpError(409, "rfq_not_issued", "RFQ must be issued before awards.");
 
-    const rfqLines = (((rfq as any).lines ?? []) as RfqLine[]);
+    const rfqLines = ((rfq as any).lines ?? []) as RfqLine[];
     const rfqLine = rfqLines.find((l) => l.line_no === data.lineNo);
     if (!rfqLine) httpError(400, "line_not_on_rfq");
 
@@ -214,16 +209,12 @@ export const awardRfqLine = createServerFn({ method: "POST" })
       .eq("id", data.bidId)
       .maybeSingle();
     if (bErr) throw bErr;
-    if (!bid || (bid as any).rfq_id !== data.rfqId)
-      httpError(400, "bid_not_for_rfq");
+    if (!bid || (bid as any).rfq_id !== data.rfqId) httpError(400, "bid_not_for_rfq");
     if (!["submitted", "under_review", "awarded"].includes((bid as any).status))
       httpError(409, "bid_not_awardable");
 
-    const bidLine = ((bid as any).lines ?? []).find(
-      (l: any) => l.line_no === data.lineNo,
-    );
-    if (!bidLine)
-      httpError(400, "bid_missing_line", "Bid does not include this line.");
+    const bidLine = ((bid as any).lines ?? []).find((l: any) => l.line_no === data.lineNo);
+    if (!bidLine) httpError(400, "bid_missing_line", "Bid does not include this line.");
 
     const qty = Number(data.awardedQty ?? bidLine.qty ?? rfqLine.qty);
     const unit = Number(bidLine.unit_price);
@@ -271,9 +262,7 @@ export const awardRfqLine = createServerFn({ method: "POST" })
 
 export const unawardRfqLine = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ awardId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ awardId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const { data: award, error: aErr } = await context.supabase
@@ -291,11 +280,7 @@ export const unawardRfqLine = createServerFn({ method: "POST" })
       .eq("rfq_id", (award as any).rfq_id);
     if (cErr) throw cErr;
     if ((count ?? 0) > 0)
-      httpError(
-        409,
-        "award_locked",
-        "POs already exist for this RFQ — cannot unaward.",
-      );
+      httpError(409, "award_locked", "POs already exist for this RFQ — cannot unaward.");
 
     const { error } = await context.supabase
       .from("rfq_line_awards")
@@ -317,174 +302,154 @@ export const unawardRfqLine = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const generatePosFromAwards = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfqId: z.string().uuid() }).parse(input),
-  )
-  .handler(
-    async ({ data, context }): Promise<{ created: number; skipped: number }> => {
-      requireSupabaseAuth(context);
-      const companyId = await currentCompanyId(context);
+  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ created: number; skipped: number }> => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
 
-      const { data: rfq, error: rErr } = await context.supabase
-        .from("rfqs")
-        .select("id, company_id, project_id, currency_code, lines, status")
-        .eq("id", data.rfqId)
-        .maybeSingle();
-      if (rErr) throw rErr;
-      if (!rfq || (rfq as any).company_id !== companyId)
-        httpError(404, "rfq_not_found");
+    const { data: rfq, error: rErr } = await context.supabase
+      .from("rfqs")
+      .select("id, company_id, project_id, currency_code, lines, status")
+      .eq("id", data.rfqId)
+      .maybeSingle();
+    if (rErr) throw rErr;
+    if (!rfq || (rfq as any).company_id !== companyId) httpError(404, "rfq_not_found");
 
-      const rfqLines = (((rfq as any).lines ?? []) as RfqLine[]);
-      if (rfqLines.length === 0) httpError(400, "no_lines");
+    const rfqLines = ((rfq as any).lines ?? []) as RfqLine[];
+    if (rfqLines.length === 0) httpError(400, "no_lines");
 
-      const { data: awards, error: aErr } = await context.supabase
-        .from("rfq_line_awards")
-        .select("id, line_no, rfq_bid_id, awarded_qty, awarded_unit_price, award_note")
-        .eq("rfq_id", data.rfqId);
-      if (aErr) throw aErr;
-      const awardRows = (awards ?? []) as any[];
+    const { data: awards, error: aErr } = await context.supabase
+      .from("rfq_line_awards")
+      .select("id, line_no, rfq_bid_id, awarded_qty, awarded_unit_price, award_note")
+      .eq("rfq_id", data.rfqId);
+    if (aErr) throw aErr;
+    const awardRows = (awards ?? []) as any[];
 
-      if (awardRows.length !== rfqLines.length) {
-        httpError(
-          409,
-          "awards_incomplete",
-          `Award every line first (${awardRows.length}/${rfqLines.length}).`,
-        );
+    if (awardRows.length !== rfqLines.length) {
+      httpError(
+        409,
+        "awards_incomplete",
+        `Award every line first (${awardRows.length}/${rfqLines.length}).`,
+      );
+    }
+
+    // Load vendor per bid.
+    const bidIds = Array.from(new Set(awardRows.map((a) => a.rfq_bid_id)));
+    const { data: bids, error: bErr } = await context.supabase
+      .from("rfq_bids")
+      .select(
+        "id, vendor_id, vendors:vendor_id(id, name, payment_terms, incoterms, address_line, city, country)",
+      )
+      .in("id", bidIds);
+    if (bErr) throw bErr;
+    const bidByIdMap = new Map(((bids ?? []) as any[]).map((b) => [b.id, b]));
+
+    // Existing POs for this RFQ → idempotency.
+    const { data: existing, error: eErr } = await context.supabase
+      .from("purchase_orders")
+      .select("id, vendor_id")
+      .eq("rfq_id", data.rfqId);
+    if (eErr) throw eErr;
+    const existingVendorSet = new Set(((existing ?? []) as any[]).map((p) => p.vendor_id));
+
+    // Group awards by vendor.
+    const byVendor = new Map<string, typeof awardRows>();
+    for (const a of awardRows) {
+      const bid = bidByIdMap.get(a.rfq_bid_id);
+      const vendorId = bid?.vendor_id;
+      if (!vendorId) continue;
+      if (!byVendor.has(vendorId)) byVendor.set(vendorId, []);
+      byVendor.get(vendorId)!.push(a);
+    }
+
+    // For per-company PO sequence we fetch once and increment locally.
+    const { data: numRows, error: nErr } = await context.supabase
+      .from("purchase_orders")
+      .select("po_number")
+      .eq("company_id", companyId)
+      .like("po_number", "PO-%");
+    if (nErr) throw nErr;
+    let seedNumbers = ((numRows ?? []) as any[]).map((r) => r.po_number as string);
+
+    let created = 0;
+    let skipped = 0;
+    for (const [vendorId, group] of byVendor) {
+      if (existingVendorSet.has(vendorId)) {
+        skipped++;
+        continue;
       }
+      const bid = bidByIdMap.get(group[0].rfq_bid_id);
+      const vendor = bid?.vendors ?? null;
 
-      // Load vendor per bid.
-      const bidIds = Array.from(new Set(awardRows.map((a) => a.rfq_bid_id)));
-      const { data: bids, error: bErr } = await context.supabase
-        .from("rfq_bids")
-        .select("id, vendor_id, vendors:vendor_id(id, name, payment_terms, incoterms, address_line, city, country)")
-        .in("id", bidIds);
-      if (bErr) throw bErr;
-      const bidByIdMap = new Map(
-        ((bids ?? []) as any[]).map((b) => [b.id, b]),
+      const lines = buildPoLinesFromAwards(
+        rfqLines,
+        group.map((a) => ({
+          line_no: a.line_no,
+          awarded_qty: Number(a.awarded_qty),
+          awarded_unit_price: Number(a.awarded_unit_price),
+        })),
       );
+      const totals = computePoTotals(lines, 0);
 
-      // Existing POs for this RFQ → idempotency.
-      const { data: existing, error: eErr } = await context.supabase
-        .from("purchase_orders")
-        .select("id, vendor_id")
-        .eq("rfq_id", data.rfqId);
-      if (eErr) throw eErr;
-      const existingVendorSet = new Set(
-        ((existing ?? []) as any[]).map((p) => p.vendor_id),
-      );
-
-      // Group awards by vendor.
-      const byVendor = new Map<string, typeof awardRows>();
-      for (const a of awardRows) {
-        const bid = bidByIdMap.get(a.rfq_bid_id);
-        const vendorId = bid?.vendor_id;
-        if (!vendorId) continue;
-        if (!byVendor.has(vendorId)) byVendor.set(vendorId, []);
-        byVendor.get(vendorId)!.push(a);
-      }
-
-      // For per-company PO sequence we fetch once and increment locally.
-      const { data: numRows, error: nErr } = await context.supabase
-        .from("purchase_orders")
-        .select("po_number")
-        .eq("company_id", companyId)
-        .like("po_number", "PO-%");
-      if (nErr) throw nErr;
-      let seedNumbers = ((numRows ?? []) as any[]).map(
-        (r) => r.po_number as string,
-      );
-
-      let created = 0;
-      let skipped = 0;
-      for (const [vendorId, group] of byVendor) {
-        if (existingVendorSet.has(vendorId)) {
-          skipped++;
+      // One retry on 23505 (po_number collision).
+      let insertedId: string | null = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const poNumber = nextPoNumber(seedNumbers);
+        const deliveryAddress = vendor
+          ? [vendor.address_line, vendor.city, vendor.country].filter(Boolean).join(", ") || null
+          : null;
+        const row = {
+          company_id: companyId,
+          project_id: (rfq as any).project_id,
+          vendor_id: vendorId,
+          rfq_id: data.rfqId,
+          po_number: poNumber,
+          status: "draft" as PoStatus,
+          currency_code: (rfq as any).currency_code,
+          lines: lines as any,
+          subtotal: totals.subtotal,
+          tax_pct: 0,
+          tax_amount: totals.tax_amount,
+          total_amount: totals.total_amount,
+          payment_terms: vendor?.payment_terms ?? null,
+          incoterms: vendor?.incoterms ?? null,
+          delivery_address: deliveryAddress,
+          required_by_date: maxSiteNeedDate(lines),
+          created_by: (context as any).user.id,
+        };
+        const { data: inserted, error } = await context.supabase
+          .from("purchase_orders")
+          .insert(row as any)
+          .select("id, po_number, total_amount")
+          .single();
+        if (!error) {
+          insertedId = (inserted as any).id;
+          seedNumbers.push((inserted as any).po_number);
+          await audit(context, "po.create", "purchase_orders", (inserted as any).id, {
+            rfq_id: data.rfqId,
+            vendor_id: vendorId,
+            po_number: (inserted as any).po_number,
+            total_amount: (inserted as any).total_amount,
+          });
+          break;
+        }
+        if ((error as any).code === "23505" && attempt === 0) {
+          // Refresh sequence and retry once.
+          const { data: refresh } = await context.supabase
+            .from("purchase_orders")
+            .select("po_number")
+            .eq("company_id", companyId)
+            .like("po_number", "PO-%");
+          seedNumbers = ((refresh ?? []) as any[]).map((r) => r.po_number as string);
           continue;
         }
-        const bid = bidByIdMap.get(group[0].rfq_bid_id);
-        const vendor = bid?.vendors ?? null;
-
-        const lines = buildPoLinesFromAwards(
-          rfqLines,
-          group.map((a) => ({
-            line_no: a.line_no,
-            awarded_qty: Number(a.awarded_qty),
-            awarded_unit_price: Number(a.awarded_unit_price),
-          })),
-        );
-        const totals = computePoTotals(lines, 0);
-
-        // One retry on 23505 (po_number collision).
-        let insertedId: string | null = null;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const poNumber = nextPoNumber(seedNumbers);
-          const deliveryAddress =
-            vendor
-              ? [vendor.address_line, vendor.city, vendor.country]
-                  .filter(Boolean)
-                  .join(", ") || null
-              : null;
-          const row = {
-            company_id: companyId,
-            project_id: (rfq as any).project_id,
-            vendor_id: vendorId,
-            rfq_id: data.rfqId,
-            po_number: poNumber,
-            status: "draft" as PoStatus,
-            currency_code: (rfq as any).currency_code,
-            lines: lines as any,
-            subtotal: totals.subtotal,
-            tax_pct: 0,
-            tax_amount: totals.tax_amount,
-            total_amount: totals.total_amount,
-            payment_terms: vendor?.payment_terms ?? null,
-            incoterms: vendor?.incoterms ?? null,
-            delivery_address: deliveryAddress,
-            required_by_date: maxSiteNeedDate(lines),
-            created_by: (context as any).user.id,
-          };
-          const { data: inserted, error } = await context.supabase
-            .from("purchase_orders")
-            .insert(row as any)
-            .select("id, po_number, total_amount")
-            .single();
-          if (!error) {
-            insertedId = (inserted as any).id;
-            seedNumbers.push((inserted as any).po_number);
-            await audit(
-              context,
-              "po.create",
-              "purchase_orders",
-              (inserted as any).id,
-              {
-                rfq_id: data.rfqId,
-                vendor_id: vendorId,
-                po_number: (inserted as any).po_number,
-                total_amount: (inserted as any).total_amount,
-              },
-            );
-            break;
-          }
-          if ((error as any).code === "23505" && attempt === 0) {
-            // Refresh sequence and retry once.
-            const { data: refresh } = await context.supabase
-              .from("purchase_orders")
-              .select("po_number")
-              .eq("company_id", companyId)
-              .like("po_number", "PO-%");
-            seedNumbers = ((refresh ?? []) as any[]).map(
-              (r) => r.po_number as string,
-            );
-            continue;
-          }
-          if ((error as any).code === "42501") httpError(403, "forbidden");
-          throw error;
-        }
-        if (insertedId) created++;
+        if ((error as any).code === "42501") httpError(403, "forbidden");
+        throw error;
       }
-      return { created, skipped };
-    },
-  );
+      if (insertedId) created++;
+    }
+    return { created, skipped };
+  });
 
 // ---------------------------------------------------------------------------
 // list / get
@@ -517,9 +482,7 @@ export const listPos = createServerFn({ method: "GET" })
 
 export const getPo = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PoRow> => {
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase
@@ -545,61 +508,34 @@ export const submitPoForApproval = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(
-    async (
-      { data, context },
-    ): Promise<{ status: PoStatus; auto_approved: boolean }> => {
-      requireSupabaseAuth(context);
-      const companyId = await currentCompanyId(context);
+  .handler(async ({ data, context }): Promise<{ status: PoStatus; auto_approved: boolean }> => {
+    requireSupabaseAuth(context);
+    const companyId = await currentCompanyId(context);
 
-      const { data: po, error: pErr } = await context.supabase
-        .from("purchase_orders")
-        .select("id, status, total_amount, company_id")
-        .eq("id", data.poId)
-        .maybeSingle();
-      if (pErr) throw pErr;
-      if (!po || (po as any).company_id !== companyId)
-        httpError(404, "po_not_found");
-      if ((po as any).status !== "draft")
-        httpError(409, "po_not_draft");
+    const { data: po, error: pErr } = await context.supabase
+      .from("purchase_orders")
+      .select("id, status, total_amount, company_id")
+      .eq("id", data.poId)
+      .maybeSingle();
+    if (pErr) throw pErr;
+    if (!po || (po as any).company_id !== companyId) httpError(404, "po_not_found");
+    if ((po as any).status !== "draft") httpError(409, "po_not_draft");
 
-      const { data: co, error: cErr } = await context.supabase
-        .from("companies")
-        .select("po_approval_threshold")
-        .eq("id", companyId)
-        .maybeSingle();
-      if (cErr) throw cErr;
-      const threshold = Number((co as any)?.po_approval_threshold ?? 0);
-      const total = Number((po as any).total_amount ?? 0);
+    const { data: co, error: cErr } = await context.supabase
+      .from("companies")
+      .select("po_approval_threshold")
+      .eq("id", companyId)
+      .maybeSingle();
+    if (cErr) throw cErr;
+    const threshold = Number((co as any)?.po_approval_threshold ?? 0);
+    const total = Number((po as any).total_amount ?? 0);
 
-      if (total > threshold) {
-        const { error } = await context.supabase
-          .from("purchase_orders")
-          .update({
-            status: "pending_approval" as PoStatus,
-            approval_note: data.note ?? null,
-          } as any)
-          .eq("id", data.poId);
-        if (error) {
-          if ((error as any).code === "42501") httpError(403, "forbidden");
-          throw error;
-        }
-        await audit(context, "po.submit", "purchase_orders", data.poId, {
-          total_amount: total,
-          threshold,
-          outcome: "pending_approval",
-        });
-        return { status: "pending_approval", auto_approved: false };
-      }
-
-      const now = new Date().toISOString();
+    if (total > threshold) {
       const { error } = await context.supabase
         .from("purchase_orders")
         .update({
-          status: "approved" as PoStatus,
-          approval_note: "Auto-approved (below threshold)",
-          approved_by: (context as any).user.id,
-          approved_at: now,
+          status: "pending_approval" as PoStatus,
+          approval_note: data.note ?? null,
         } as any)
         .eq("id", data.poId);
       if (error) {
@@ -609,11 +545,32 @@ export const submitPoForApproval = createServerFn({ method: "POST" })
       await audit(context, "po.submit", "purchase_orders", data.poId, {
         total_amount: total,
         threshold,
-        outcome: "auto_approved",
+        outcome: "pending_approval",
       });
-      return { status: "approved", auto_approved: true };
-    },
-  );
+      return { status: "pending_approval", auto_approved: false };
+    }
+
+    const now = new Date().toISOString();
+    const { error } = await context.supabase
+      .from("purchase_orders")
+      .update({
+        status: "approved" as PoStatus,
+        approval_note: "Auto-approved (below threshold)",
+        approved_by: (context as any).user.id,
+        approved_at: now,
+      } as any)
+      .eq("id", data.poId);
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+    await audit(context, "po.submit", "purchase_orders", data.poId, {
+      total_amount: total,
+      threshold,
+      outcome: "auto_approved",
+    });
+    return { status: "approved", auto_approved: true };
+  });
 
 export const approvePo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -627,10 +584,7 @@ export const approvePo = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    const flags = await hasAnyRole(context, [
-      "finance_admin",
-      "company_admin",
-    ]);
+    const flags = await hasAnyRole(context, ["finance_admin", "company_admin"]);
     if (!flags.finance_admin && !flags.company_admin)
       httpError(403, "forbidden", "Only finance_admin or company_admin can approve.");
 
@@ -641,8 +595,7 @@ export const approvePo = createServerFn({ method: "POST" })
       .maybeSingle();
     if (pErr) throw pErr;
     if (!po) httpError(404, "po_not_found");
-    if ((po as any).status !== "pending_approval")
-      httpError(409, "po_not_pending");
+    if ((po as any).status !== "pending_approval") httpError(409, "po_not_pending");
 
     const now = new Date().toISOString();
     const { error } = await context.supabase
@@ -676,12 +629,8 @@ export const rejectPo = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    const flags = await hasAnyRole(context, [
-      "finance_admin",
-      "company_admin",
-    ]);
-    if (!flags.finance_admin && !flags.company_admin)
-      httpError(403, "forbidden");
+    const flags = await hasAnyRole(context, ["finance_admin", "company_admin"]);
+    if (!flags.finance_admin && !flags.company_admin) httpError(403, "forbidden");
 
     const { data: po, error: pErr } = await context.supabase
       .from("purchase_orders")
@@ -690,8 +639,7 @@ export const rejectPo = createServerFn({ method: "POST" })
       .maybeSingle();
     if (pErr) throw pErr;
     if (!po) httpError(404, "po_not_found");
-    if ((po as any).status !== "pending_approval")
-      httpError(409, "po_not_pending");
+    if ((po as any).status !== "pending_approval") httpError(409, "po_not_pending");
 
     const { error } = await context.supabase
       .from("purchase_orders")
@@ -796,22 +744,17 @@ async function loadPoForPdf(
   };
 }
 
-async function generateAndStorePoPdf(
-  context: AuthContext,
-  poId: string,
-): Promise<string> {
+async function generateAndStorePoPdf(context: AuthContext, poId: string): Promise<string> {
   const { companyId, input } = await loadPoForPdf(context, poId);
   const { buildPoPdfBytes } = await import("@/lib/exports/po-pdf");
   const bytes = await buildPoPdfBytes(input);
   // FIRST path segment MUST be the company UUID — storage RLS enforces this.
   const path = `${companyId}/po/${poId}.pdf`;
 
-  const { error: upErr } = await context.supabase.storage
-    .from("documents")
-    .upload(path, bytes, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
+  const { error: upErr } = await context.supabase.storage.from("documents").upload(path, bytes, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
   if (upErr) throw upErr;
 
   await context.supabase
@@ -824,9 +767,7 @@ async function generateAndStorePoPdf(
 
 export const issuePo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true; pdfPath: string }> => {
     requireSupabaseAuth(context);
     const { data: po, error: pErr } = await context.supabase
@@ -866,9 +807,7 @@ export const issuePo = createServerFn({ method: "POST" })
 /** Signed URL for the authenticated authoring UI. Regenerates if missing. */
 export const getPoPdfDownloadUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ url: string | null }> => {
     requireSupabaseAuth(context);
     const { data: po, error } = await context.supabase
@@ -897,71 +836,49 @@ const SHARE_TTL_DAYS = 14;
 
 export const createPoShareLink = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
-  .handler(
-    async (
-      { data, context },
-    ): Promise<{ token: string; expiresAt: string }> => {
-      requireSupabaseAuth(context);
-      const flags = await hasAnyRole(context, [
-        "procurement_admin",
-        "procurement_officer",
-        "finance_admin",
-        "company_admin",
-      ]);
-      if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ token: string; expiresAt: string }> => {
+    requireSupabaseAuth(context);
+    const flags = await hasAnyRole(context, [
+      "procurement_admin",
+      "procurement_officer",
+      "finance_admin",
+      "company_admin",
+    ]);
+    if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden");
 
-      const { data: po, error } = await context.supabase
-        .from("purchase_orders")
-        .select("id, status")
-        .eq("id", data.poId)
-        .maybeSingle();
-      if (error) throw error;
-      if (!po) httpError(404, "po_not_found");
-      if (
-        !["approved", "issued", "partially_received", "received"].includes(
-          (po as any).status,
-        )
-      )
-        httpError(
-          409,
-          "po_not_shareable",
-          "PO must be approved before sharing with a vendor.",
-        );
+    const { data: po, error } = await context.supabase
+      .from("purchase_orders")
+      .select("id, status")
+      .eq("id", data.poId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!po) httpError(404, "po_not_found");
+    if (!["approved", "issued", "partially_received", "received"].includes((po as any).status))
+      httpError(409, "po_not_shareable", "PO must be approved before sharing with a vendor.");
 
-      const token = crypto.randomUUID();
-      const expiresAt = new Date(
-        Date.now() + SHARE_TTL_DAYS * 24 * 60 * 60 * 1000,
-      ).toISOString();
-      const { error: uErr } = await context.supabase
-        .from("purchase_orders")
-        .update({
-          share_token: token,
-          share_token_expires_at: expiresAt,
-        } as any)
-        .eq("id", data.poId);
-      if (uErr) {
-        if ((uErr as any).code === "42501") httpError(403, "forbidden");
-        throw uErr;
-      }
-      await audit(
-        context,
-        "po.share_link_create",
-        "purchase_orders",
-        data.poId,
-        { expires_at: expiresAt },
-      );
-      return { token, expiresAt };
-    },
-  );
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + SHARE_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const { error: uErr } = await context.supabase
+      .from("purchase_orders")
+      .update({
+        share_token: token,
+        share_token_expires_at: expiresAt,
+      } as any)
+      .eq("id", data.poId);
+    if (uErr) {
+      if ((uErr as any).code === "42501") httpError(403, "forbidden");
+      throw uErr;
+    }
+    await audit(context, "po.share_link_create", "purchase_orders", data.poId, {
+      expires_at: expiresAt,
+    });
+    return { token, expiresAt };
+  });
 
 export const revokePoShareLink = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ poId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const now = new Date().toISOString();
@@ -973,13 +890,7 @@ export const revokePoShareLink = createServerFn({ method: "POST" })
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
     }
-    await audit(
-      context,
-      "po.share_link_revoke",
-      "purchase_orders",
-      data.poId,
-      {},
-    );
+    await audit(context, "po.share_link_revoke", "purchase_orders", data.poId, {});
     return { ok: true };
   });
 
@@ -1020,16 +931,13 @@ export interface PublicPoView {
 
 export const getPoByShareToken = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ token: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ token: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PublicPoView> => {
     // No requireSupabaseAuth — this is intentionally public.
     // The SECURITY DEFINER RPC enforces token + expiry server-side.
-    const { data: rows, error } = await context.supabase.rpc(
-      "get_po_by_share_token",
-      { p_token: data.token },
-    );
+    const { data: rows, error } = await context.supabase.rpc("get_po_by_share_token", {
+      p_token: data.token,
+    });
     if (error) throw error;
     const row = (rows as any[] | null)?.[0];
     if (!row) httpError(410, "share_link_expired", "This link is no longer valid.");
@@ -1040,9 +948,7 @@ export const getPoByShareToken = createServerFn({ method: "POST" })
     let pdfUrl: string | null = null;
     if (row.pdf_path) {
       try {
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: signed } = await supabaseAdmin.storage
           .from("documents")
           .createSignedUrl(row.pdf_path, 300);
@@ -1076,7 +982,6 @@ export const getPoByShareToken = createServerFn({ method: "POST" })
     };
   });
 
-
 // ---------------------------------------------------------------------------
 // threshold
 // ---------------------------------------------------------------------------
@@ -1097,9 +1002,7 @@ export const getPoApprovalThreshold = createServerFn({ method: "GET" })
 export const setPoApprovalThreshold = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ threshold: z.number().nonnegative().max(99_999_999) })
-      .parse(input),
+    z.object({ threshold: z.number().nonnegative().max(99_999_999) }).parse(input),
   )
   .handler(async ({ data, context }): Promise<{ threshold: number }> => {
     requireSupabaseAuth(context);
@@ -1114,26 +1017,21 @@ export const setPoApprovalThreshold = createServerFn({ method: "POST" })
       if ((error as any).code === "42501") httpError(403, "forbidden");
       throw error;
     }
-    await audit(
-      context,
-      "company.po_threshold_update",
-      "companies",
-      companyId,
-      { threshold: data.threshold },
-    );
+    await audit(context, "company.po_threshold_update", "companies", companyId, {
+      threshold: data.threshold,
+    });
     return { threshold: data.threshold };
   });
 
 // list of awards for an RFQ (UI convenience)
 export const listRfqAwards = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ rfqId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
   .handler(
-    async (
-      { data, context },
-    ): Promise<
+    async ({
+      data,
+      context,
+    }): Promise<
       Array<{
         id: string;
         rfq_id: string;
@@ -1147,9 +1045,7 @@ export const listRfqAwards = createServerFn({ method: "GET" })
       requireSupabaseAuth(context);
       const { data: rows, error } = await context.supabase
         .from("rfq_line_awards")
-        .select(
-          "id, rfq_id, rfq_bid_id, line_no, awarded_qty, awarded_unit_price, awarded_amount",
-        )
+        .select("id, rfq_id, rfq_bid_id, line_no, awarded_qty, awarded_unit_price, awarded_amount")
         .eq("rfq_id", data.rfqId);
       if (error) throw error;
       return ((rows ?? []) as any[]).map((r) => ({

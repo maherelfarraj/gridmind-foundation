@@ -1,11 +1,7 @@
 // P-077 — Cash-flow workbench.
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Download, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -17,10 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
-import {
-  createCashFlow,
-  voidCashFlow,
-} from "@/lib/cash-flow.functions";
+import { createCashFlow, voidCashFlow } from "@/lib/cash-flow.functions";
 import {
   cashFlowAccessQueryOptions,
   cashFlowErrorMessage,
@@ -40,9 +33,7 @@ import { CashFlowKpi } from "@/components/finance/cash-flow-kpi";
 import { CashFlowPivot } from "@/components/finance/cash-flow-pivot";
 import { CashFlowEntryDialog } from "@/components/finance/cash-flow-entry-dialog";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/cash-flow",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/cash-flow")({
   head: () => ({
     meta: [
       { title: "Cash flow — GridMind EPC" },
@@ -54,8 +45,7 @@ export const Route = createFileRoute(
       { property: "og:title", content: "Cash flow — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Lender-ready cash-flow workspace with FX-at-entry immutability and audit trail.",
+        content: "Lender-ready cash-flow workspace with FX-at-entry immutability and audit trail.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -80,16 +70,11 @@ function CashFlowPage() {
   const [showOriginal, setShowOriginal] = useState(false);
   const [entryOpen, setEntryOpen] = useState(false);
 
-  const list = useSuspenseQuery(
-    cashFlowsQueryOptions({ projectId, from, to }),
-  );
+  const list = useSuspenseQuery(cashFlowsQueryOptions({ projectId, from, to }));
   const access = useSuspenseQuery(cashFlowAccessQueryOptions());
 
   const months = useMemo(() => monthRange(from, to), [from, to]);
-  const pivot = useMemo(
-    () => buildPivot(list.data.rows, months),
-    [list.data.rows, months],
-  );
+  const pivot = useMemo(() => buildPivot(list.data.rows, months), [list.data.rows, months]);
 
   const totals = useMemo(() => {
     let netF = 0;
@@ -135,8 +120,8 @@ function CashFlowPage() {
         <div>
           <h1 className="text-xl font-semibold text-foreground">Cash flow</h1>
           <p className="text-sm text-muted-foreground">
-            Forecast vs actual by month, in {list.data.baseCurrency}. FX rates are
-            captured at entry time — historical rows never restate.
+            Forecast vs actual by month, in {list.data.baseCurrency}. FX rates are captured at entry
+            time — historical rows never restate.
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
@@ -165,11 +150,7 @@ function CashFlowPage() {
             />
           </div>
           <div className="flex items-center gap-2 pb-2">
-            <Switch
-              id="cf-orig"
-              checked={showOriginal}
-              onCheckedChange={setShowOriginal}
-            />
+            <Switch id="cf-orig" checked={showOriginal} onCheckedChange={setShowOriginal} />
             <Label htmlFor="cf-orig" className="text-xs">
               Show original currency
             </Label>
@@ -178,10 +159,7 @@ function CashFlowPage() {
             variant="outline"
             size="sm"
             onClick={() =>
-              downloadCashFlowCsv(
-                `cash-flow-${projectId}.csv`,
-                buildCashFlowCsv(list.data.rows),
-              )
+              downloadCashFlowCsv(`cash-flow-${projectId}.csv`, buildCashFlowCsv(list.data.rows))
             }
           >
             <Download className="mr-1.5 h-4 w-4" /> CSV
@@ -258,8 +236,8 @@ function CashFlowError({ reset }: { error: unknown; reset: () => void }) {
         <span className="font-medium">Cash-flow workspace failed to load</span>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        The server returned an error. Try again — if it persists, check that this
-        project has a base currency set in Finance settings.
+        The server returned an error. Try again — if it persists, check that this project has a base
+        currency set in Finance settings.
       </p>
       <Button variant="outline" size="sm" className="mt-3" onClick={reset}>
         <RefreshCw className="mr-1.5 h-4 w-4" /> Retry

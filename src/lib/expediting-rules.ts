@@ -1,12 +1,7 @@
 // P-068 — Pure expediting helpers: status derivation, KPI thresholds, schemas.
 import { z } from "zod";
 
-export const EXPEDITING_STATUSES = [
-  "on_track",
-  "at_risk",
-  "delayed",
-  "delivered",
-] as const;
+export const EXPEDITING_STATUSES = ["on_track", "at_risk", "delayed", "delivered"] as const;
 export type ExpeditingStatus = (typeof EXPEDITING_STATUSES)[number];
 
 export const CONTACT_STALE_DAYS = 14;
@@ -45,10 +40,7 @@ export interface StatusInputs {
   fully_received: boolean;
 }
 
-export function deriveStatus(
-  input: StatusInputs,
-  now: Date = new Date(),
-): ExpeditingStatus {
+export function deriveStatus(input: StatusInputs, now: Date = new Date()): ExpeditingStatus {
   if (input.fully_received) return "delivered";
   const eta = parseDate(input.current_eta);
   const need = parseDate(input.site_need_date);
@@ -89,9 +81,7 @@ export interface LongLeadKpi {
 export function computeLongLeadKpi(rows: KpiRow[]): LongLeadKpi {
   const lls = rows.filter((r) => r.is_long_lead);
   const total = lls.length;
-  const ready = lls.filter(
-    (r) => r.status === "delivered" || r.eta_confirmed,
-  ).length;
+  const ready = lls.filter((r) => r.status === "delivered" || r.eta_confirmed).length;
   const pct = total === 0 ? 0 : (ready / total) * 100;
   const band: KpiBand =
     total === 0 ? "amber" : pct >= 95 ? "green" : pct >= 85 ? "amber" : "destructive";
@@ -101,9 +91,7 @@ export function computeLongLeadKpi(rows: KpiRow[]): LongLeadKpi {
 // ---------------------------------------------------------------------------
 // Zod schemas
 // ---------------------------------------------------------------------------
-export const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
+export const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
 
 export const importFromPoSchema = z.object({
   poId: z.string().uuid(),

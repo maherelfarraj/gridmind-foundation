@@ -33,13 +33,7 @@ type Props = {
   onBack: () => void;
 };
 
-function SectionHeader({
-  title,
-  hint,
-}: {
-  title: string;
-  hint?: string;
-}) {
+function SectionHeader({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="flex flex-col gap-1">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -50,12 +44,7 @@ function SectionHeader({
   );
 }
 
-export function ProjectSelectionForm({
-  templates,
-  defaultValues,
-  onSubmit,
-  onBack,
-}: Props) {
+export function ProjectSelectionForm({ templates, defaultValues, onSubmit, onBack }: Props) {
   const initial: ProjectSelection =
     defaultValues ??
     (templates[0]
@@ -74,9 +63,7 @@ export function ProjectSelectionForm({
   });
 
   const userEditedSinceLoad = useRef(false);
-  const [pendingTemplateId, setPendingTemplateId] = useState<
-    string | null | undefined
-  >(undefined);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null | undefined>(undefined);
 
   const applyTemplate = (id: string | null) => {
     if (id === null) {
@@ -110,10 +97,7 @@ export function ProjectSelectionForm({
   const budgetError = errors.budget_lines?.message ?? errors.budget_lines?.root?.message;
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-6"
-    >
+    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <Card className="flex flex-col gap-4 border-border bg-card p-6">
         <SectionHeader
           title="Template"
@@ -173,16 +157,11 @@ export function ProjectSelectionForm({
             />
           )}
         />
-        {budgetError ? (
-          <p className="text-sm text-destructive">{budgetError}</p>
-        ) : null}
+        {budgetError ? <p className="text-sm text-destructive">{budgetError}</p> : null}
       </Card>
 
       <Card className="flex flex-col gap-4 border-border bg-card p-6">
-        <SectionHeader
-          title="Departments"
-          hint="Which teams take part in this project."
-        />
+        <SectionHeader title="Departments" hint="Which teams take part in this project." />
         <Controller
           control={form.control}
           name="departments"
@@ -197,9 +176,7 @@ export function ProjectSelectionForm({
           )}
         />
         {errors.departments?.message ? (
-          <p className="text-sm text-destructive">
-            {errors.departments.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.departments.message}</p>
         ) : null}
       </Card>
 
@@ -220,8 +197,8 @@ export function ProjectSelectionForm({
           <AlertDialogHeader>
             <AlertDialogTitle>Replace your edits?</AlertDialogTitle>
             <AlertDialogDescription>
-              Loading this template will overwrite the gates, budget lines, and
-              departments you&apos;ve edited.
+              Loading this template will overwrite the gates, budget lines, and departments
+              you&apos;ve edited.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

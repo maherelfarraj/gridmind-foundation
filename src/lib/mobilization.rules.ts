@@ -18,11 +18,7 @@ export const CATEGORY_LABELS: Record<MobilizationCategory, string> = {
   permits_licenses: "Permits & licenses",
 };
 
-export const MOBILIZATION_STATUSES = [
-  "not_started",
-  "in_progress",
-  "complete",
-] as const;
+export const MOBILIZATION_STATUSES = ["not_started", "in_progress", "complete"] as const;
 export type MobilizationStatus = (typeof MOBILIZATION_STATUSES)[number];
 
 export const ITEM_STATUSES = ["not_started", "in_progress", "complete"] as const;

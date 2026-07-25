@@ -3,14 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import {
-  CloudUpload,
-  Download,
-  FileWarning,
-  Loader2,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { CloudUpload, Download, FileWarning, Loader2, RefreshCw, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,13 +35,7 @@ import {
 } from "@/lib/site-data-query";
 import { SiteDataCategoryDialog } from "./site-data-category-dialog";
 
-type QueueStatus =
-  | "pending"
-  | "uploading"
-  | "registering"
-  | "done"
-  | "error"
-  | "rejected";
+type QueueStatus = "pending" | "uploading" | "registering" | "done" | "error" | "rejected";
 
 interface QueueItem {
   id: string;
@@ -74,16 +61,10 @@ function formatBytes(n: number | null): string {
 function extAllowed(name: string): boolean {
   const idx = name.lastIndexOf(".");
   if (idx < 0) return false;
-  return (ALLOWED_EXTENSIONS as readonly string[]).includes(
-    name.slice(idx).toLowerCase(),
-  );
+  return (ALLOWED_EXTENSIONS as readonly string[]).includes(name.slice(idx).toLowerCase());
 }
 
-async function xhrPut(
-  url: string,
-  file: File,
-  onProgress: (pct: number) => void,
-): Promise<void> {
+async function xhrPut(url: string, file: File, onProgress: (pct: number) => void): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url, true);
@@ -104,9 +85,7 @@ async function xhrPut(
 
 export function SiteDataUploads({ projectId }: { projectId: string }) {
   const listFn = useServerFn(listSiteData);
-  const listQuery = useSuspenseQuery(
-    siteDataListQueryOptions(listFn, projectId),
-  );
+  const listQuery = useSuspenseQuery(siteDataListQueryOptions(listFn, projectId));
   const uploadMutation = useUploadSiteData();
   const registerMutation = useRegisterSiteDataDocument(projectId);
   const download = useDownloadSiteData();
@@ -186,9 +165,7 @@ export function SiteDataUploads({ projectId }: { projectId: string }) {
     async (item: QueueItem) => {
       setQueue((q) =>
         q.map((it) =>
-          it.id === item.id
-            ? { ...it, status: "uploading", progress: 0, error: undefined }
-            : it,
+          it.id === item.id ? { ...it, status: "uploading", progress: 0, error: undefined } : it,
         ),
       );
       try {
@@ -200,18 +177,10 @@ export function SiteDataUploads({ projectId }: { projectId: string }) {
           mimeType: item.file.type || null,
         });
         await xhrPut(signed.signedUrl, item.file, (pct) => {
-          setQueue((q) =>
-            q.map((it) =>
-              it.id === item.id ? { ...it, progress: pct } : it,
-            ),
-          );
+          setQueue((q) => q.map((it) => (it.id === item.id ? { ...it, progress: pct } : it)));
         });
         setQueue((q) =>
-          q.map((it) =>
-            it.id === item.id
-              ? { ...it, status: "registering", progress: 100 }
-              : it,
-          ),
+          q.map((it) => (it.id === item.id ? { ...it, status: "registering", progress: 100 } : it)),
         );
         await registerMutation.mutateAsync({
           category: item.category!,
@@ -223,20 +192,12 @@ export function SiteDataUploads({ projectId }: { projectId: string }) {
           tags: item.tags,
           metadata: item.metadata,
         });
-        setQueue((q) =>
-          q.map((it) =>
-            it.id === item.id ? { ...it, status: "done" } : it,
-          ),
-        );
+        setQueue((q) => q.map((it) => (it.id === item.id ? { ...it, status: "done" } : it)));
         toast.success(`${item.file.name} uploaded`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Upload failed";
         setQueue((q) =>
-          q.map((it) =>
-            it.id === item.id
-              ? { ...it, status: "error", error: msg }
-              : it,
-          ),
+          q.map((it) => (it.id === item.id ? { ...it, status: "error", error: msg } : it)),
         );
         toast.error(`${item.file.name}: ${msg}`);
       }
@@ -322,11 +283,7 @@ export function SiteDataUploads({ projectId }: { projectId: string }) {
       <SiteDataList
         rows={listQuery.data}
         onDownload={(id) => download.mutate(id)}
-        downloadingId={
-          download.isPending
-            ? (download.variables as string | undefined)
-            : undefined
-        }
+        downloadingId={download.isPending ? (download.variables as string | undefined) : undefined}
       />
 
       {pendingFile && (
@@ -360,16 +317,10 @@ function Dropzone({
       onDrop={onDrop}
       className={
         "flex flex-col items-center justify-center gap-3 border-2 border-dashed p-10 text-center transition-colors " +
-        (active
-          ? "border-primary bg-primary/5"
-          : "border-border bg-card hover:border-primary/60")
+        (active ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/60")
       }
     >
-      <CloudUpload
-        size={32}
-        className="text-muted-foreground"
-        aria-hidden
-      />
+      <CloudUpload size={32} className="text-muted-foreground" aria-hidden />
       <div className="flex flex-col gap-1">
         <h3 className="font-display text-base font-semibold text-foreground">
           Drop site data files here
@@ -414,12 +365,8 @@ function QueueList({
           >
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="truncate font-medium text-foreground">
-                  {it.file.name}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {formatBytes(it.file.size)}
-                </span>
+                <span className="truncate font-medium text-foreground">{it.file.name}</span>
+                <span className="text-xs text-muted-foreground">{formatBytes(it.file.size)}</span>
                 {it.category && (
                   <Badge variant="outline" className="text-xs">
                     {SITE_DATA_CATEGORY_LABEL[it.category]}
@@ -429,18 +376,12 @@ function QueueList({
               {(it.status === "uploading" || it.status === "registering") && (
                 <Progress value={it.progress} className="h-1.5" />
               )}
-              {it.error && (
-                <p className="text-xs text-destructive">{it.error}</p>
-              )}
+              {it.error && <p className="text-xs text-destructive">{it.error}</p>}
             </div>
             <div className="flex items-center gap-2">
               <StatusBadge status={it.status} />
               {(it.status === "error" || it.status === "rejected") && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onRetry(it.id)}
-                >
+                <Button size="sm" variant="outline" onClick={() => onRetry(it.id)}>
                   <RefreshCw size={14} aria-hidden />
                   Retry
                 </Button>
@@ -545,18 +486,12 @@ function SiteDataList({
             <TableRow key={r.id}>
               <TableCell>
                 <div className="flex flex-col">
-                  <span className="font-medium text-foreground">
-                    {r.title}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {r.file_name}
-                  </span>
+                  <span className="font-medium text-foreground">{r.title}</span>
+                  <span className="text-xs text-muted-foreground">{r.file_name}</span>
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  {SITE_DATA_CATEGORY_LABEL[r.site_data_category]}
-                </Badge>
+                <Badge variant="outline">{SITE_DATA_CATEGORY_LABEL[r.site_data_category]}</Badge>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {r.uploader?.full_name ?? r.uploader?.email ?? "—"}

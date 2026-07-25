@@ -1,20 +1,12 @@
 import { describe, expect, it } from "vitest";
-import {
-  canAnswer,
-  canClose,
-  computeKpis,
-  isOverdue,
-  nextRfiNumber,
-} from "@/lib/rfi-rules";
+import { canAnswer, canClose, computeKpis, isOverdue, nextRfiNumber } from "@/lib/rfi-rules";
 
 describe("nextRfiNumber", () => {
   it("returns RFI-0001 when list is empty", () => {
     expect(nextRfiNumber([])).toBe("RFI-0001");
   });
   it("increments past highest existing number, ignoring gaps and junk", () => {
-    expect(nextRfiNumber(["RFI-0001", "RFI-0003", "junk", "RFI-9"])).toBe(
-      "RFI-0004",
-    );
+    expect(nextRfiNumber(["RFI-0001", "RFI-0003", "junk", "RFI-9"])).toBe("RFI-0004");
   });
   it("pads to 4 digits", () => {
     expect(nextRfiNumber(["RFI-0099"])).toBe("RFI-0100");
@@ -27,19 +19,13 @@ describe("isOverdue", () => {
     expect(isOverdue({ status: "open", due_date: null }, today)).toBe(false);
   });
   it("false when answered", () => {
-    expect(
-      isOverdue({ status: "answered", due_date: "2026-07-01" }, today),
-    ).toBe(false);
+    expect(isOverdue({ status: "answered", due_date: "2026-07-01" }, today)).toBe(false);
   });
   it("true when open and past due", () => {
-    expect(
-      isOverdue({ status: "open", due_date: "2026-07-23" }, today),
-    ).toBe(true);
+    expect(isOverdue({ status: "open", due_date: "2026-07-23" }, today)).toBe(true);
   });
   it("false when due today", () => {
-    expect(
-      isOverdue({ status: "open", due_date: "2026-07-24" }, today),
-    ).toBe(false);
+    expect(isOverdue({ status: "open", due_date: "2026-07-24" }, today)).toBe(false);
   });
 });
 

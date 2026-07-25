@@ -32,11 +32,7 @@ function toDateOnly(iso: string): Date {
   return new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1));
 }
 
-export function plannedPercentAtDate(
-  start: string,
-  end: string,
-  snapshot: string,
-): number {
+export function plannedPercentAtDate(start: string, end: string, snapshot: string): number {
   const s = toDateOnly(start).getTime();
   const e = toDateOnly(end).getTime();
   const t = toDateOnly(snapshot).getTime();
@@ -70,24 +66,15 @@ export function computeEvm(input: {
   const { bac, tasks, snapshotDate, actualCost } = input;
 
   // Split tasks into explicit vs implicit (even-split) shares.
-  const explicit = tasks.filter(
-    (t) => t.budgeted_amount != null && t.budgeted_amount > 0,
-  );
-  const implicit = tasks.filter(
-    (t) => t.budgeted_amount == null || (t.budgeted_amount ?? 0) <= 0,
-  );
+  const explicit = tasks.filter((t) => t.budgeted_amount != null && t.budgeted_amount > 0);
+  const implicit = tasks.filter((t) => t.budgeted_amount == null || (t.budgeted_amount ?? 0) <= 0);
 
-  const explicitSum = explicit.reduce(
-    (s, t) => s + (t.budgeted_amount ?? 0),
-    0,
-  );
+  const explicitSum = explicit.reduce((s, t) => s + (t.budgeted_amount ?? 0), 0);
   const residual = Math.max(0, bac - explicitSum);
   const evenShare = implicit.length > 0 ? residual / implicit.length : 0;
 
   const shareFor = (t: EvmTaskInput) =>
-    t.budgeted_amount != null && t.budgeted_amount > 0
-      ? t.budgeted_amount
-      : evenShare;
+    t.budgeted_amount != null && t.budgeted_amount > 0 ? t.budgeted_amount : evenShare;
 
   let pv = 0;
   let ev = 0;
@@ -143,9 +130,7 @@ export function indexHealth(value: number | null | undefined): IndexHealth {
 // ---------------------------------------------------------------------------
 export const captureEvmSnapshotSchema = z.object({
   projectId: z.string().uuid(),
-  snapshotDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+  snapshotDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
   includeAccruals: z.boolean().optional().default(false),
   notes: z.string().max(500).optional(),
 });

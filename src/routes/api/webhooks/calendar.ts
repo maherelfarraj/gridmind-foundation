@@ -8,15 +8,8 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createServiceRoleClient } from "@/integrations/supabase/admin";
-import {
-  auditGuardEvent,
-  timingSafeEqual,
-} from "@/lib/public-api/guard";
-import {
-  enforceMode,
-  inboundGate,
-  jsonResponse,
-} from "@/lib/public-api/inbound-guard";
+import { auditGuardEvent, timingSafeEqual } from "@/lib/public-api/guard";
+import { enforceMode, inboundGate, jsonResponse } from "@/lib/public-api/inbound-guard";
 
 const ROUTE = "webhooks:calendar";
 
@@ -96,7 +89,10 @@ export const Route = createFileRoute("/api/webhooks/calendar")({
           const client = admin as unknown as {
             from: (t: string) => {
               select: (c: string) => {
-                eq: (col: string, val: string) => {
+                eq: (
+                  col: string,
+                  val: string,
+                ) => {
                   maybeSingle: () => Promise<{
                     data: { company_id: string | null; project_id: string | null } | null;
                     error: { code?: string; message: string } | null;
@@ -146,7 +142,6 @@ export const Route = createFileRoute("/api/webhooks/calendar")({
             },
           });
         }
-
 
         return jsonResponse(200, { ok: true, state: resourceState || "unknown" });
       },

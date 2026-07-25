@@ -1,10 +1,6 @@
 // P-072 — Align schedule tasks to WBS nodes and disciplines.
 import { useMemo } from "react";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { Link2 } from "lucide-react";
@@ -39,11 +35,7 @@ import {
   scheduleTasksAlignQueryOptions,
   wbsErrorMessage,
 } from "@/lib/wbs-query";
-import {
-  WBS_DISCIPLINES,
-  WBS_DISCIPLINE_LABEL,
-  type WbsDiscipline,
-} from "@/lib/wbs-rules";
+import { WBS_DISCIPLINES, WBS_DISCIPLINE_LABEL, type WbsDiscipline } from "@/lib/wbs-rules";
 import type { WbsItemRow } from "@/lib/wbs.functions";
 
 const NONE = "__none";
@@ -53,21 +45,14 @@ interface TaskAlignmentPanelProps {
   items: WbsItemRow[];
 }
 
-export function TaskAlignmentPanel({
-  projectId,
-  items,
-}: TaskAlignmentPanelProps) {
+export function TaskAlignmentPanel({ projectId, items }: TaskAlignmentPanelProps) {
   const queryClient = useQueryClient();
   const listFn = useServerFn(listScheduleTasksForAlign);
   const accessFn = useServerFn(getScheduleTaskAssignAccess);
   const assignFn = useServerFn(assignScheduleTask);
 
-  const tasksQuery = useSuspenseQuery(
-    scheduleTasksAlignQueryOptions(listFn, projectId),
-  );
-  const accessQuery = useSuspenseQuery(
-    scheduleTaskAssignAccessQueryOptions(accessFn),
-  );
+  const tasksQuery = useSuspenseQuery(scheduleTasksAlignQueryOptions(listFn, projectId));
+  const accessQuery = useSuspenseQuery(scheduleTaskAssignAccessQueryOptions(accessFn));
   const canAssign = accessQuery.data.canAssign;
 
   const wbsOptions = useMemo(
@@ -103,9 +88,7 @@ export function TaskAlignmentPanel({
   });
 
   const tasks = tasksQuery.data;
-  const unaligned = tasks.filter(
-    (t) => !t.wbs_item_id || !t.discipline,
-  ).length;
+  const unaligned = tasks.filter((t) => !t.wbs_item_id || !t.discipline).length;
 
   return (
     <Card className="border-border bg-card p-4">
@@ -116,15 +99,13 @@ export function TaskAlignmentPanel({
             Align schedule tasks
           </h3>
         </div>
-        <Badge variant={unaligned > 0 ? "destructive" : "secondary"}>
-          {unaligned} unaligned
-        </Badge>
+        <Badge variant={unaligned > 0 ? "destructive" : "secondary"}>{unaligned} unaligned</Badge>
       </div>
 
       {tasks.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No schedule tasks yet. Once tasks are created you can pin them to
-          WBS nodes and disciplines here.
+          No schedule tasks yet. Once tasks are created you can pin them to WBS nodes and
+          disciplines here.
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -169,10 +150,7 @@ function TaskRow({
   wbsOptions: { id: string; label: string }[];
   wbsLabelById: Map<string, string>;
   canAssign: boolean;
-  onAssign: (
-    discipline: WbsDiscipline | null,
-    wbs_item_id: string | null,
-  ) => void;
+  onAssign: (discipline: WbsDiscipline | null, wbs_item_id: string | null) => void;
 }) {
   return (
     <TableRow>
@@ -193,10 +171,7 @@ function TaskRow({
         <Select
           value={task.discipline ?? NONE}
           onValueChange={(v) =>
-            onAssign(
-              v === NONE ? null : (v as WbsDiscipline),
-              task.wbs_item_id,
-            )
+            onAssign(v === NONE ? null : (v as WbsDiscipline), task.wbs_item_id)
           }
           disabled={!canAssign}
         >
@@ -216,16 +191,12 @@ function TaskRow({
       <TableCell>
         <Select
           value={task.wbs_item_id ?? NONE}
-          onValueChange={(v) =>
-            onAssign(task.discipline, v === NONE ? null : v)
-          }
+          onValueChange={(v) => onAssign(task.discipline, v === NONE ? null : v)}
           disabled={!canAssign}
         >
           <SelectTrigger className="h-8 w-64">
             <SelectValue placeholder="—">
-              {task.wbs_item_id
-                ? (wbsLabelById.get(task.wbs_item_id) ?? "—")
-                : "—"}
+              {task.wbs_item_id ? (wbsLabelById.get(task.wbs_item_id) ?? "—") : "—"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>

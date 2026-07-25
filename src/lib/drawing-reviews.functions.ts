@@ -4,34 +4,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // constants + errors
 // ---------------------------------------------------------------------------
-export const REVIEWER_ORGS = [
-  "client",
-  "lender",
-  "utility",
-  "internal",
-] as const;
+export const REVIEWER_ORGS = ["client", "lender", "utility", "internal"] as const;
 export type ReviewerOrg = (typeof REVIEWER_ORGS)[number];
 
-export const REVIEW_DECISIONS = [
-  "approved",
-  "approved_with_comments",
-  "rejected",
-] as const;
+export const REVIEW_DECISIONS = ["approved", "approved_with_comments", "rejected"] as const;
 export type ReviewDecisionInput = (typeof REVIEW_DECISIONS)[number];
 
-const ROUND_ADMIN_ROLES = [
-  "engineering_admin",
-  "project_admin",
-  "super_admin",
-] as const;
+const ROUND_ADMIN_ROLES = ["engineering_admin", "project_admin", "super_admin"] as const;
 const WAIVE_ROLES = ["engineering_admin", "super_admin"] as const;
 const ELIGIBLE_REVIEWER_ROLES = [
   "client_viewer",
@@ -86,7 +70,9 @@ async function loadRevision(context: any, revisionId: string) {
 async function loadRoundWithContext(context: any, roundId: string) {
   const { data, error } = await context.supabase
     .from("drawing_review_rounds")
-    .select("id, company_id, project_id, revision_id, round_no, status, due_date, created_by, created_at, updated_at")
+    .select(
+      "id, company_id, project_id, revision_id, round_no, status, due_date, created_by, created_at, updated_at",
+    )
     .eq("id", roundId)
     .maybeSingle();
   if (error) throw error;
@@ -105,11 +91,7 @@ async function loadRoundWithContext(context: any, roundId: string) {
   };
 }
 
-async function assertRole(
-  context: any,
-  companyId: string,
-  roles: readonly string[],
-) {
+async function assertRole(context: any, companyId: string, roles: readonly string[]) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")
@@ -170,12 +152,7 @@ export interface ReviewSignoffRow {
   reviewer_name: string;
   reviewer_email: string | null;
   reviewer_org: ReviewerOrg;
-  decision:
-    | "approved"
-    | "approved_with_comments"
-    | "rejected"
-    | "waived"
-    | null;
+  decision: "approved" | "approved_with_comments" | "rejected" | "waived" | null;
   comment: string | null;
   signed_at: string | null;
   created_at: string;
@@ -274,11 +251,8 @@ export const listReviewRounds = createServerFn({ method: "GET" })
           by_decision: byDecision,
         },
         markup_summary: {
-          open: mk.filter((x) => x.status === "open" || x.status === "rejected")
-            .length,
-          resolved: mk.filter(
-            (x) => x.status === "resolved" || x.status === "accepted",
-          ).length,
+          open: mk.filter((x) => x.status === "open" || x.status === "rejected").length,
+          resolved: mk.filter((x) => x.status === "resolved" || x.status === "accepted").length,
         },
       };
     });
@@ -311,18 +285,20 @@ export const getReviewRound = createServerFn({ method: "GET" })
       .select("status")
       .eq("revision_id", round.revision_id);
 
-    const so = ((signoffs ?? []) as any[]).map((s): ReviewSignoffRow => ({
-      id: s.id,
-      round_id: s.round_id,
-      reviewer_id: s.reviewer_id,
-      reviewer_name: s.profiles?.full_name ?? s.profiles?.email ?? "Reviewer",
-      reviewer_email: s.profiles?.email ?? null,
-      reviewer_org: s.reviewer_org,
-      decision: s.decision,
-      comment: s.comment,
-      signed_at: s.signed_at,
-      created_at: s.created_at,
-    }));
+    const so = ((signoffs ?? []) as any[]).map(
+      (s): ReviewSignoffRow => ({
+        id: s.id,
+        round_id: s.round_id,
+        reviewer_id: s.reviewer_id,
+        reviewer_name: s.profiles?.full_name ?? s.profiles?.email ?? "Reviewer",
+        reviewer_email: s.profiles?.email ?? null,
+        reviewer_org: s.reviewer_org,
+        decision: s.decision,
+        comment: s.comment,
+        signed_at: s.signed_at,
+        created_at: s.created_at,
+      }),
+    );
 
     const byDecision: Record<string, number> = {};
     for (const x of so) {
@@ -350,11 +326,8 @@ export const getReviewRound = createServerFn({ method: "GET" })
         by_decision: byDecision,
       },
       markup_summary: {
-        open: mk.filter((x) => x.status === "open" || x.status === "rejected")
-          .length,
-        resolved: mk.filter(
-          (x) => x.status === "resolved" || x.status === "accepted",
-        ).length,
+        open: mk.filter((x) => x.status === "open" || x.status === "rejected").length,
+        resolved: mk.filter((x) => x.status === "resolved" || x.status === "accepted").length,
       },
       signoffs: so,
     };
@@ -386,17 +359,14 @@ export const listEligibleReviewers = createServerFn({ method: "GET" })
       } else {
         byUser.set(uid, {
           user_id: uid,
-          full_name:
-            r.profiles?.full_name ?? r.profiles?.email ?? "Team member",
+          full_name: r.profiles?.full_name ?? r.profiles?.email ?? "Team member",
           email: r.profiles?.email ?? null,
           roles: [r.role],
           suggested_org: guessOrg(r.role),
         });
       }
     }
-    return Array.from(byUser.values()).sort((a, b) =>
-      a.full_name.localeCompare(b.full_name),
-    );
+    return Array.from(byUser.values()).sort((a, b) => a.full_name.localeCompare(b.full_name));
   });
 
 function guessOrg(role: string): ReviewerOrg {
@@ -435,11 +405,7 @@ export const startReviewRound = createServerFn({ method: "POST" })
     await assertRole(context, rev.company_id, ROUND_ADMIN_ROLES);
 
     if (rev.status !== "IFD") {
-      httpError(
-        409,
-        "revision_not_ifd",
-        "Review rounds can only be opened on an IFD revision.",
-      );
+      httpError(409, "revision_not_ifd", "Review rounds can only be opened on an IFD revision.");
     }
 
     // Deduplicate reviewers by userId.
@@ -695,8 +661,7 @@ export const getMyReviewRoles = createServerFn({ method: "GET" })
         list.includes("engineering_admin") ||
         list.includes("project_admin") ||
         list.includes("super_admin"),
-      canWaive:
-        list.includes("engineering_admin") || list.includes("super_admin"),
+      canWaive: list.includes("engineering_admin") || list.includes("super_admin"),
       canClose:
         list.includes("engineering_admin") ||
         list.includes("project_admin") ||

@@ -33,10 +33,7 @@ export const ChangeOrderUpsertSchema = z.object({
 export type ChangeOrderUpsertInput = z.infer<typeof ChangeOrderUpsertSchema>;
 
 /** Next CO-YYYY-#### scoped to year. `existing` are same-year CO numbers. */
-export function nextChangeOrderNumber(
-  existing: readonly string[],
-  now: Date = new Date(),
-): string {
+export function nextChangeOrderNumber(existing: readonly string[], now: Date = new Date()): string {
   const year = now.getUTCFullYear();
   const prefix = `CO-${year}-`;
   let max = 0;
@@ -106,20 +103,14 @@ const TRANSITIONS: Record<ChangeOrderStatus, readonly ChangeOrderStatus[]> = {
   incorporated: [],
 };
 
-export function canTransition(
-  from: ChangeOrderStatus,
-  to: ChangeOrderStatus,
-): boolean {
+export function canTransition(from: ChangeOrderStatus, to: ChangeOrderStatus): boolean {
   return TRANSITIONS[from].includes(to);
 }
 
 // ---------- Exposure ----------
 export type ExposureBucket = "ok" | "warn" | "danger";
 
-export function exposurePct(
-  approvedCoAmount: number,
-  contractValue: number,
-): number {
+export function exposurePct(approvedCoAmount: number, contractValue: number): number {
   if (contractValue <= 0) return 0;
   return (approvedCoAmount / contractValue) * 100;
 }

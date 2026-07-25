@@ -25,11 +25,7 @@ import {
   punchWalkContextQueryOptions,
   qaqcProjectsQueryOptions,
 } from "@/lib/qaqc-query";
-import {
-  createPunchItem,
-  registerPunchPhoto,
-  signPunchPhotoUpload,
-} from "@/lib/qaqc.functions";
+import { createPunchItem, registerPunchPhoto, signPunchPhotoUpload } from "@/lib/qaqc.functions";
 import {
   PUNCH_CATEGORIES,
   PUNCH_CATEGORY_DESCRIPTIONS,
@@ -95,19 +91,13 @@ function PunchWalkPage() {
   const projectsQuery = useQuery(qaqcProjectsQueryOptions());
   const [draft, setDraft] = useState<Draft>(() => makeDraft());
   const [photoIds, setPhotoIds] = useState<string[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<
-    { id: string; url: string }[]
-  >([]);
+  const [photoPreviews, setPhotoPreviews] = useState<{ id: string; url: string }[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [added, setAdded] = useState<{ number: string; description: string }[]>(
-    [],
-  );
+  const [added, setAdded] = useState<{ number: string; description: string }[]>([]);
   const cameraRef = useRef<HTMLInputElement | null>(null);
   const galleryRef = useRef<HTMLInputElement | null>(null);
 
-  const walkCtxQuery = useQuery(
-    punchWalkContextQueryOptions(draft.projectId || null),
-  );
+  const walkCtxQuery = useQuery(punchWalkContextQueryOptions(draft.projectId || null));
 
   const canSubmit = useMemo(() => {
     const p = punchInput.safeParse({
@@ -128,10 +118,7 @@ function PunchWalkPage() {
     mutationFn: (payload: any) => createPunchItem({ data: payload }),
     onSuccess: (row) => {
       toast.success(`${row.punch_number} added`);
-      setAdded((prev) => [
-        { number: row.punch_number, description: row.description },
-        ...prev,
-      ]);
+      setAdded((prev) => [{ number: row.punch_number, description: row.description }, ...prev]);
       // Reset transient fields, keep project/area/discipline for streak entry.
       setDraft((d) =>
         makeDraft({
@@ -222,9 +209,7 @@ function PunchWalkPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="font-display text-xl font-semibold text-foreground">
-            Punch walk
-          </h1>
+          <h1 className="font-display text-xl font-semibold text-foreground">Punch walk</h1>
           <p className="text-xs text-muted-foreground">
             Snap, tag, save. {added.length} added this session.
           </p>
@@ -255,18 +240,14 @@ function PunchWalkPage() {
               <Input
                 type="date"
                 value={draft.walkDate}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, walkDate: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, walkDate: e.target.value }))}
                 className="min-h-11"
               />
             </Field>
             <Field label="Area">
               <Input
                 value={draft.area}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, area: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, area: e.target.value }))}
                 placeholder="e.g. Block A row 3"
                 className="min-h-11"
               />
@@ -275,9 +256,7 @@ function PunchWalkPage() {
           <Field label="Discipline">
             <Tabs
               value={draft.discipline}
-              onValueChange={(v) =>
-                setDraft((d) => ({ ...d, discipline: v as QaqcDiscipline }))
-              }
+              onValueChange={(v) => setDraft((d) => ({ ...d, discipline: v as QaqcDiscipline }))}
             >
               <TabsList className="w-full">
                 {QAQC_DISCIPLINES.map((d) => (
@@ -303,9 +282,7 @@ function PunchWalkPage() {
                         : "border-border bg-card text-muted-foreground hover:border-primary"
                     }`}
                   >
-                    <div className="text-sm font-semibold">
-                      {PUNCH_CATEGORY_LABELS[cat]}
-                    </div>
+                    <div className="text-sm font-semibold">{PUNCH_CATEGORY_LABELS[cat]}</div>
                     <div className="mt-0.5 text-[10px] leading-tight opacity-80">
                       {PUNCH_CATEGORY_DESCRIPTIONS[cat]}
                     </div>
@@ -318,9 +295,7 @@ function PunchWalkPage() {
             <Textarea
               rows={3}
               value={draft.description}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, description: e.target.value }))
-              }
+              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               placeholder="What needs to change?"
             />
           </Field>
@@ -329,9 +304,7 @@ function PunchWalkPage() {
               <Input
                 type="date"
                 value={draft.dueDate}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, dueDate: e.target.value }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, dueDate: e.target.value }))}
                 className="min-h-11"
               />
             </Field>
@@ -367,11 +340,7 @@ function PunchWalkPage() {
                   key={p.id}
                   className="relative h-20 w-20 overflow-hidden rounded-md border border-border"
                 >
-                  <img
-                    src={p.url}
-                    alt="punch"
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={p.url} alt="punch" className="h-full w-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removePhoto(p.id)}
@@ -441,9 +410,7 @@ function PunchWalkPage() {
               {added.map((a) => (
                 <li key={a.number} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-emerald-600" />
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {a.number}
-                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">{a.number}</span>
                   <span className="truncate">{a.description}</span>
                 </li>
               ))}
@@ -482,13 +449,7 @@ function PunchWalkPage() {
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>

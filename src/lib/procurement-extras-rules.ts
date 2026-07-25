@@ -39,19 +39,13 @@ export function computeChangePct(
   return Math.round(pct * 100) / 100;
 }
 
-export function shouldTrigger(
-  changePct: number | null,
-  thresholdPct: number,
-): boolean {
+export function shouldTrigger(changePct: number | null, thresholdPct: number): boolean {
   if (changePct == null) return false;
   if (thresholdPct <= 0) return false;
   return Math.abs(changePct) >= thresholdPct;
 }
 
-export function isLowStock(
-  qtyOnHand: number,
-  reorderPoint: number,
-): boolean {
+export function isLowStock(qtyOnHand: number, reorderPoint: number): boolean {
   return qtyOnHand <= reorderPoint;
 }
 
@@ -97,13 +91,7 @@ export const sparePartSchema = z.object({
   compatible_equipment: z.string().trim().max(200).optional().nullable(),
   uom: z.string().trim().min(1).max(16).default("ea"),
   unit_cost: z.coerce.number().nonnegative().nullable().optional(),
-  currency_code: z
-    .string()
-    .trim()
-    .length(3)
-    .toUpperCase()
-    .nullable()
-    .optional(),
+  currency_code: z.string().trim().length(3).toUpperCase().nullable().optional(),
   preferred_vendor_id: z.string().uuid().nullable().optional(),
   reorder_point: z.coerce.number().int().nonnegative().default(0),
   safety_stock: z.coerce.number().int().nonnegative().default(0),
@@ -115,7 +103,10 @@ export type SparePartInput = z.infer<typeof sparePartSchema>;
 
 export const stockAdjustSchema = z.object({
   id: z.string().uuid(),
-  delta: z.coerce.number().int().refine((v) => v !== 0, "delta must be non-zero"),
+  delta: z.coerce
+    .number()
+    .int()
+    .refine((v) => v !== 0, "delta must be non-zero"),
   reason: z.string().trim().min(3, "reason is required").max(240),
 });
 export type StockAdjustInput = z.infer<typeof stockAdjustSchema>;

@@ -17,11 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HeatmapGrid } from "@/components/qaqc/heatmap-grid";
-import {
-  errorMessage,
-  qaqcHeatmapQueryOptions,
-  qaqcProjectsQueryOptions,
-} from "@/lib/qaqc-query";
+import { errorMessage, qaqcHeatmapQueryOptions, qaqcProjectsQueryOptions } from "@/lib/qaqc-query";
 import type { QaqcDiscipline } from "@/lib/qaqc.rules";
 
 export const Route = createFileRoute("/_authenticated/qaqc/heatmap")({
@@ -30,8 +26,7 @@ export const Route = createFileRoute("/_authenticated/qaqc/heatmap")({
       { title: "QA/QC heatmap — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Inspection heatmap by area and discipline with fail-rate tints and rework KPI.",
+        content: "Inspection heatmap by area and discipline with fail-rate tints and rework KPI.",
       },
       { property: "og:title", content: "QA/QC heatmap" },
       {
@@ -130,32 +125,20 @@ function HeatmapPage() {
         <Kpi
           icon={TrendingUp}
           label="Rework %"
-          value={
-            summary
-              ? `${Math.round(summary.totals.reworkPct * 100)}%`
-              : "—"
-          }
+          value={summary ? `${Math.round(summary.totals.reworkPct * 100)}%` : "—"}
           loading={heatmapQuery.isLoading}
           tone={summary && summary.totals.reworkPct > 0.15 ? "danger" : "default"}
         />
         <Kpi
           icon={TrendingUp}
           label="Pass %"
-          value={
-            summary
-              ? `${Math.round(summary.totals.passPct * 100)}%`
-              : "—"
-          }
+          value={summary ? `${Math.round(summary.totals.passPct * 100)}%` : "—"}
           loading={heatmapQuery.isLoading}
         />
         <Kpi
           icon={ClipboardCheck}
           label="Open"
-          value={
-            summary
-              ? String(summary.totals.pending + summary.totals.conditional)
-              : "—"
-          }
+          value={summary ? String(summary.totals.pending + summary.totals.conditional) : "—"}
           loading={heatmapQuery.isLoading}
         />
       </div>

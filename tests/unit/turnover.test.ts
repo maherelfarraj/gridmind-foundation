@@ -9,10 +9,7 @@ import {
   TURNOVER_SECTIONS,
   withComputedCompletion,
 } from "@/lib/turnover.rules";
-import {
-  buildTurnoverIndexPdfBytes,
-  sanitize,
-} from "@/lib/exports/turnover-index-pdf";
+import { buildTurnoverIndexPdfBytes, sanitize } from "@/lib/exports/turnover-index-pdf";
 
 describe("turnover.rules", () => {
   it("empty sections mirror the section catalog and are all incomplete", () => {
@@ -20,9 +17,7 @@ describe("turnover.rules", () => {
     expect(s.map((x) => x.key)).toEqual(TURNOVER_SECTIONS.map((x) => x.key));
     expect(s.every((x) => x.complete === false)).toBe(true);
     expect(allRequiredComplete(s)).toBe(false);
-    expect(missingRequiredSections(s)).toEqual(
-      TURNOVER_SECTIONS.map((x) => x.key),
-    );
+    expect(missingRequiredSections(s)).toEqual(TURNOVER_SECTIONS.map((x) => x.key));
   });
 
   it("withComputedCompletion flips complete when items exist", () => {
@@ -59,9 +54,7 @@ describe("turnover.rules", () => {
     const bad = addItemInput.safeParse({
       projectId: "00000000-0000-0000-0000-000000000001",
       sectionKey: "as_builts",
-      items: [
-        { label: "x", file_path: "p", source: "manual" },
-      ],
+      items: [{ label: "x", file_path: "p", source: "manual" }],
     });
     expect(bad.success).toBe(false);
   });

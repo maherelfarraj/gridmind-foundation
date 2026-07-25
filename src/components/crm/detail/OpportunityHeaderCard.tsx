@@ -20,17 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMoveOpportunityStage } from "@/lib/crm-query";
-import {
-  OPPORTUNITY_STAGES,
-  STAGE_LABELS,
-  STAGE_PROBABILITY,
-} from "@/lib/crm.functions";
+import { OPPORTUNITY_STAGES, STAGE_LABELS, STAGE_PROBABILITY } from "@/lib/crm.functions";
 import type { OpportunityDetail } from "@/lib/opportunity.functions";
-import {
-  useDownloadKickoffPack,
-  useUpdateOpportunity,
-} from "@/lib/opportunity-query";
-
+import { useDownloadKickoffPack, useUpdateOpportunity } from "@/lib/opportunity-query";
 
 const ARCHETYPE_SHORT: Record<string, string> = {
   utility_pv: "Utility PV",
@@ -48,11 +40,7 @@ interface Props {
   onAddTenderEvent: () => void;
 }
 
-export function OpportunityHeaderCard({
-  opportunity: opp,
-  readOnly,
-  onAddTenderEvent,
-}: Props) {
+export function OpportunityHeaderCard({ opportunity: opp, readOnly, onAddTenderEvent }: Props) {
   const update = useUpdateOpportunity(opp.id);
   const move = useMoveOpportunityStage();
   const downloadKickoff = useDownloadKickoffPack();
@@ -60,7 +48,6 @@ export function OpportunityHeaderCard({
   const [winOpen, setWinOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(opp.name);
-
 
   const value =
     opp.estimated_value != null
@@ -182,9 +169,7 @@ export function OpportunityHeaderCard({
                   {ARCHETYPE_SHORT[opp.archetype] ?? opp.archetype}
                 </Badge>
               )}
-              {opp.capacity_mw != null && (
-                <span className="text-xs">· {opp.capacity_mw} MW</span>
-              )}
+              {opp.capacity_mw != null && <span className="text-xs">· {opp.capacity_mw} MW</span>}
             </div>
           </div>
           {!readOnly && (
@@ -304,22 +289,15 @@ export function OpportunityHeaderCard({
         }}
       />
 
-      <WinConversionDialog
-        opportunityId={opp.id}
-        open={winOpen}
-        onOpenChange={setWinOpen}
-      />
+      <WinConversionDialog opportunityId={opp.id} open={winOpen} onOpenChange={setWinOpen} />
     </>
-
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
-        {label}
-      </Label>
+      <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</Label>
       {children}
     </div>
   );

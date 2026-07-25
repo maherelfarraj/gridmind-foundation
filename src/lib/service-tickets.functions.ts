@@ -42,10 +42,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
     roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as never })),
   );
@@ -279,8 +276,7 @@ async function refreshSlaForTicket(
   const cur = sla as SlaRecordRow;
   const tRow = t as { status: TicketStatus; resolved_at: string | null };
 
-  const responded_at =
-    cur.responded_at ?? (tRow.status !== "open" ? now.toISOString() : null);
+  const responded_at = cur.responded_at ?? (tRow.status !== "open" ? now.toISOString() : null);
   const resolved_at =
     cur.resolved_at ??
     (tRow.status === "resolved" || tRow.status === "closed"
@@ -439,7 +435,7 @@ export const listBreaches = createServerFn({ method: "GET" })
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
-    let q = context.supabase
+    const q = context.supabase
       .from("sla_records")
       .select(
         "*, ticket:service_tickets!inner(ticket_number, title, priority, status, project_id, project:projects(name))",
@@ -449,18 +445,20 @@ export const listBreaches = createServerFn({ method: "GET" })
       .order("updated_at", { ascending: false });
     const { data: rows, error } = await q;
     if (error) throw error;
-    let mapped = ((rows ?? []) as Array<
-      SlaRecordRow & {
-        ticket: {
-          ticket_number: string;
-          title: string;
-          priority: WorkOrderPriority;
-          status: TicketStatus;
-          project_id: string;
-          project?: { name: string } | null;
-        };
-      }
-    >).map((r) => ({
+    let mapped = (
+      (rows ?? []) as Array<
+        SlaRecordRow & {
+          ticket: {
+            ticket_number: string;
+            title: string;
+            priority: WorkOrderPriority;
+            status: TicketStatus;
+            project_id: string;
+            project?: { name: string } | null;
+          };
+        }
+      >
+    ).map((r) => ({
       ...r,
       ticket_number: r.ticket.ticket_number,
       title: r.ticket.title,
@@ -513,9 +511,7 @@ export const listTicketAssignees = createServerFn({ method: "GET" })
 
 export const listOpenWorkOrders = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ project_id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase

@@ -28,11 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { downloadCsv, objectsToCsv } from "@/lib/csv";
-import {
-  errorMessage,
-  ncrListQueryOptions,
-  ncrProjectsQueryOptions,
-} from "@/lib/ncr-query";
+import { errorMessage, ncrListQueryOptions, ncrProjectsQueryOptions } from "@/lib/ncr-query";
 import {
   daysOpen,
   NCR_DISPOSITION_LABELS,
@@ -57,20 +53,19 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/qaqc/ncrs/")({
-  validateSearch: (raw): z.infer<typeof searchSchema> =>
-    searchSchema.parse(raw ?? {}),
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Non-conformance reports — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Track NCRs across projects with disposition, corrective action, and cost impact.",
+        content: "Track NCRs across projects with disposition, corrective action, and cost impact.",
       },
       { property: "og:title", content: "NCRs — GridMind EPC" },
       {
         property: "og:description",
-        content: "Raise, disposition, and close NCRs from inspections, punch items, and observations.",
+        content:
+          "Raise, disposition, and close NCRs from inspections, punch items, and observations.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -109,11 +104,7 @@ function NcrIndexPage() {
   const rows = listQuery.data ?? [];
   const openCount = rows.filter((r) => r.status === "open").length;
   const avgOpen =
-    rows.length === 0
-      ? 0
-      : Math.round(
-          rows.reduce((acc, r) => acc + daysOpen(r), 0) / rows.length,
-        );
+    rows.length === 0 ? 0 : Math.round(rows.reduce((acc, r) => acc + daysOpen(r), 0) / rows.length);
 
   // total cost impact per currency
   const costByCurrency = rows.reduce<Record<string, number>>((acc, r) => {
@@ -126,13 +117,12 @@ function NcrIndexPage() {
     Object.keys(costByCurrency).length === 0
       ? "—"
       : Object.entries(costByCurrency)
-          .map(
-            ([cur, amt]) =>
-              new Intl.NumberFormat(undefined, {
-                style: "currency",
-                currency: cur,
-                maximumFractionDigits: 0,
-              }).format(amt),
+          .map(([cur, amt]) =>
+            new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency: cur,
+              maximumFractionDigits: 0,
+            }).format(amt),
           )
           .join(" · ");
 
@@ -192,9 +182,7 @@ function NcrIndexPage() {
             <Label className="text-xs">Project</Label>
             <Select
               value={sp.projectId ?? "all"}
-              onValueChange={(v) =>
-                setSearchParam({ projectId: v === "all" ? undefined : v })
-              }
+              onValueChange={(v) => setSearchParam({ projectId: v === "all" ? undefined : v })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All projects" />
@@ -352,9 +340,7 @@ function NcrIndexPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {r.project_name ?? "—"}
                     </TableCell>
-                    <TableCell className="text-sm">
-                      {NCR_SOURCE_LABELS[r.source]}
-                    </TableCell>
+                    <TableCell className="text-sm">{NCR_SOURCE_LABELS[r.source]}</TableCell>
                     <TableCell>
                       <Badge className={ncrStatusTint(r.status)} variant="outline">
                         {NCR_STATUS_LABELS[r.status]}
@@ -390,12 +376,8 @@ function KpiTile({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <CardContent className="flex flex-col gap-1 p-4">
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          {label}
-        </span>
-        <span className="font-display text-xl font-semibold text-foreground">
-          {value}
-        </span>
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="font-display text-xl font-semibold text-foreground">{value}</span>
       </CardContent>
     </Card>
   );

@@ -11,15 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type {
-  BomSnapshotDetail,
-  BomSnapshotRow,
-} from "@/lib/bom.functions";
+import type { BomSnapshotDetail, BomSnapshotRow } from "@/lib/bom.functions";
 
-const STATUS_VARIANT: Record<
-  BomSnapshotRow["status"],
-  "default" | "secondary" | "outline"
-> = {
+const STATUS_VARIANT: Record<BomSnapshotRow["status"], "default" | "secondary" | "outline"> = {
   draft: "outline",
   released: "default",
   superseded: "secondary",
@@ -66,11 +60,7 @@ export function BomHeader({
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <CardTitle className="text-base">Bill of materials</CardTitle>
-          {snap && (
-            <Badge variant={STATUS_VARIANT[snap.status]}>
-              {STATUS_LABEL[snap.status]}
-            </Badge>
-          )}
+          {snap && <Badge variant={STATUS_VARIANT[snap.status]}>{STATUS_LABEL[snap.status]}</Badge>}
           {snapshots.length > 0 && (
             <Select value={selectedId} onValueChange={onSelect}>
               <SelectTrigger className="w-40">
@@ -102,11 +92,7 @@ export function BomHeader({
             disabled={!canWrite || generating}
           >
             <Play className="mr-1 h-4 w-4" />
-            {generating
-              ? "Generating…"
-              : snapshots.length === 0
-                ? "Generate"
-                : "Regenerate"}
+            {generating ? "Generating…" : snapshots.length === 0 ? "Generate" : "Regenerate"}
           </Button>
           <Button
             size="sm"
@@ -123,17 +109,11 @@ export function BomHeader({
           <Metric label="Version" value={`v${snap.version}`} />
           <Metric
             label="Capacity (MWp DC)"
-            value={
-              params.capacity_mwp_dc != null
-                ? Number(params.capacity_mwp_dc).toFixed(1)
-                : "—"
-            }
+            value={params.capacity_mwp_dc != null ? Number(params.capacity_mwp_dc).toFixed(1) : "—"}
           />
           <Metric
             label="Line count"
-            value={
-              totals.line_count != null ? String(totals.line_count) : "—"
-            }
+            value={totals.line_count != null ? String(totals.line_count) : "—"}
           />
           <Metric
             label="Estimated total"
@@ -152,9 +132,7 @@ export function BomHeader({
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-1 text-lg font-medium">{value}</p>
     </div>
   );

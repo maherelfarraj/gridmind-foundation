@@ -14,7 +14,10 @@ import {
   type ScheduleTaskLite,
 } from "@/lib/schedule.rules";
 
-function task(id: string, preds: string[] = []): {
+function task(
+  id: string,
+  preds: string[] = [],
+): {
   id: string;
   predecessor_ids: string[];
 } {
@@ -43,34 +46,22 @@ describe("isOverdue", () => {
   const today = new Date("2026-07-24");
   it("flags in_progress past end + < 100%", () => {
     expect(
-      isOverdue(
-        { end_date: "2026-07-01", progress_pct: 50, status: "in_progress" },
-        today,
-      ),
+      isOverdue({ end_date: "2026-07-01", progress_pct: 50, status: "in_progress" }, today),
     ).toBe(true);
   });
   it("does not flag completed", () => {
     expect(
-      isOverdue(
-        { end_date: "2026-07-01", progress_pct: 100, status: "completed" },
-        today,
-      ),
+      isOverdue({ end_date: "2026-07-01", progress_pct: 100, status: "completed" }, today),
     ).toBe(false);
   });
   it("does not flag if progress 100", () => {
     expect(
-      isOverdue(
-        { end_date: "2026-07-01", progress_pct: 100, status: "in_progress" },
-        today,
-      ),
+      isOverdue({ end_date: "2026-07-01", progress_pct: 100, status: "in_progress" }, today),
     ).toBe(false);
   });
   it("does not flag if end in future", () => {
     expect(
-      isOverdue(
-        { end_date: "2026-08-01", progress_pct: 20, status: "in_progress" },
-        today,
-      ),
+      isOverdue({ end_date: "2026-08-01", progress_pct: 20, status: "in_progress" }, today),
     ).toBe(false);
   });
 });
@@ -100,10 +91,7 @@ describe("wouldCreateCycle", () => {
 
 describe("computeVariance", () => {
   it("returns null variance when no baseline", () => {
-    const v = computeVariance(
-      { start_date: "2026-01-01", end_date: "2026-01-10" },
-      undefined,
-    );
+    const v = computeVariance({ start_date: "2026-01-01", end_date: "2026-01-10" }, undefined);
     expect(v).toEqual({ start_var_days: null, finish_var_days: null });
   });
   it("computes positive variance (late)", () => {
@@ -173,9 +161,7 @@ describe("avgFinishVariance + band", () => {
     },
   ];
   it("returns null when no snapshot", () => {
-    expect(avgFinishVariance([{ id: "t1", end_date: "2026-01-11" }], null)).toBe(
-      null,
-    );
+    expect(avgFinishVariance([{ id: "t1", end_date: "2026-01-11" }], null)).toBe(null);
   });
   it("averages variances", () => {
     const v = avgFinishVariance(

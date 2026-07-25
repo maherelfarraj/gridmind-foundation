@@ -64,10 +64,7 @@ export function RfqLineEditor({
         <TableBody>
           {fields.length === 0 && (
             <TableRow>
-              <TableCell
-                colSpan={8}
-                className="py-8 text-center text-sm text-muted-foreground"
-              >
+              <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
                 No lines yet — add at least one before issuing.
               </TableCell>
             </TableRow>
@@ -126,8 +123,7 @@ export function RfqLineEditor({
                   disabled={disabled}
                   defaultValue={(field as any).target_price ?? ""}
                   {...control.register(`lines.${idx}.target_price` as const, {
-                    setValueAs: (v) =>
-                      v === "" || v == null ? null : Number(v),
+                    setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
                   })}
                 />
               </TableCell>

@@ -197,20 +197,17 @@ function WebhooksPage() {
       form.reset();
       setShowRaw({ raw: res.raw, url: res.endpoint.url, mode: "created" });
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Failed to create endpoint"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to create endpoint"),
   });
 
   const rotateMut = useMutation({
-    mutationFn: async (id: string): Promise<CreatedEndpointResult> =>
-      rotate({ data: { id } }),
+    mutationFn: async (id: string): Promise<CreatedEndpointResult> => rotate({ data: { id } }),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["webhook-endpoints"] });
       setRotateConfirm(null);
       setShowRaw({ raw: res.raw, url: res.endpoint.url, mode: "rotated" });
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Failed to rotate secret"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to rotate secret"),
   });
 
   const toggleActiveMut = useMutation({
@@ -236,8 +233,7 @@ function WebhooksPage() {
       toast.success("Test event queued — dispatcher will deliver within ~5 min");
       qc.invalidateQueries({ queryKey: ["webhook-deliveries"] });
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Failed to queue test event"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to queue test event"),
   });
 
   const onSubmit = form.handleSubmit((v) => createMut.mutate(v));
@@ -255,8 +251,7 @@ function WebhooksPage() {
   }
 
   const isForbidden =
-    endpoints.error instanceof Error &&
-    /forbidden|401|unauth/i.test(endpoints.error.message);
+    endpoints.error instanceof Error && /forbidden|401|unauth/i.test(endpoints.error.message);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -264,8 +259,8 @@ function WebhooksPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Webhooks</h1>
           <p className="text-sm text-muted-foreground">
-            Register HTTPS endpoints, pick the tables you want exported, and
-            we'll POST signed events with automatic retries.
+            Register HTTPS endpoints, pick the tables you want exported, and we'll POST signed
+            events with automatic retries.
           </p>
         </div>
         <div className="flex gap-2">
@@ -364,19 +359,13 @@ function WebhooksPage() {
                         <TableCell className="max-w-[280px]">
                           <div className="truncate font-mono text-xs">{e.url}</div>
                           {e.description ? (
-                            <div className="text-xs text-muted-foreground">
-                              {e.description}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{e.description}</div>
                           ) : null}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {e.events.slice(0, 4).map((ev) => (
-                              <Badge
-                                key={ev}
-                                variant="outline"
-                                className="font-mono text-[10px]"
-                              >
+                              <Badge key={ev} variant="outline" className="font-mono text-[10px]">
                                 {ev}
                               </Badge>
                             ))}
@@ -416,27 +405,15 @@ function WebhooksPage() {
                               <Send className="mr-1 h-3.5 w-3.5" />
                               Test
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeliveriesFor(e)}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => setDeliveriesFor(e)}>
                               <History className="mr-1 h-3.5 w-3.5" />
                               Log
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setRotateConfirm(e)}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => setRotateConfirm(e)}>
                               <RefreshCcw className="mr-1 h-3.5 w-3.5" />
                               Rotate
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteConfirm(e)}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(e)}>
                               <Trash2 className="mr-1 h-3.5 w-3.5" />
                               Delete
                             </Button>
@@ -462,8 +439,7 @@ function WebhooksPage() {
           <DialogHeader>
             <DialogTitle>New webhook endpoint</DialogTitle>
             <DialogDescription>
-              Only HTTPS URLs are accepted. A signing secret will be generated
-              and shown once.
+              Only HTTPS URLs are accepted. A signing secret will be generated and shown once.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -475,9 +451,7 @@ function WebhooksPage() {
                 {...form.register("url")}
               />
               {form.formState.errors.url ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.url.message}
-                </p>
+                <p className="text-xs text-destructive">{form.formState.errors.url.message}</p>
               ) : null}
             </div>
             <div className="space-y-1.5">
@@ -497,8 +471,7 @@ function WebhooksPage() {
                 {...form.register("events")}
               />
               <p className="text-xs text-muted-foreground">
-                Comma- or space-separated. Use <code>*</code> to subscribe to
-                every event.
+                Comma- or space-separated. Use <code>*</code> to subscribe to every event.
               </p>
               <div className="flex flex-wrap gap-1 pt-1">
                 {SUGGESTED_EVENTS.map((ev) => (
@@ -520,9 +493,7 @@ function WebhooksPage() {
                 ))}
               </div>
               {form.formState.errors.events ? (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.events.message}
-                </p>
+                <p className="text-xs text-destructive">{form.formState.errors.events.message}</p>
               ) : null}
             </div>
             <div className="flex items-center gap-2">
@@ -536,11 +507,7 @@ function WebhooksPage() {
               </Label>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createMut.isPending}>
@@ -556,13 +523,11 @@ function WebhooksPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {showRaw?.mode === "rotated"
-                ? "New signing secret"
-                : "Endpoint created"}
+              {showRaw?.mode === "rotated" ? "New signing secret" : "Endpoint created"}
             </DialogTitle>
             <DialogDescription>
-              Store this now — it will never be shown again. Use it to verify
-              incoming <code>x-gridmind-signature</code> headers.
+              Store this now — it will never be shown again. Use it to verify incoming{" "}
+              <code>x-gridmind-signature</code> headers.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -570,17 +535,9 @@ function WebhooksPage() {
               Endpoint: <span className="font-mono">{showRaw?.url}</span>
             </p>
             <div className="flex gap-2">
-              <Input
-                readOnly
-                value={showRaw?.raw ?? ""}
-                className="font-mono text-xs"
-              />
+              <Input readOnly value={showRaw?.raw ?? ""} className="font-mono text-xs" />
               <Button size="icon" variant="outline" onClick={copyRaw}>
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -591,23 +548,18 @@ function WebhooksPage() {
       </Dialog>
 
       {/* ---------------- Rotate confirm ---------------- */}
-      <AlertDialog
-        open={!!rotateConfirm}
-        onOpenChange={(v) => !v && setRotateConfirm(null)}
-      >
+      <AlertDialog open={!!rotateConfirm} onOpenChange={(v) => !v && setRotateConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Rotate signing secret?</AlertDialogTitle>
             <AlertDialogDescription>
-              The current secret will stop signing new deliveries immediately.
-              Update your receiver with the new value before the next event.
+              The current secret will stop signing new deliveries immediately. Update your receiver
+              with the new value before the next event.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => rotateConfirm && rotateMut.mutate(rotateConfirm.id)}
-            >
+            <AlertDialogAction onClick={() => rotateConfirm && rotateMut.mutate(rotateConfirm.id)}>
               Rotate
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -615,23 +567,18 @@ function WebhooksPage() {
       </AlertDialog>
 
       {/* ---------------- Delete confirm ---------------- */}
-      <AlertDialog
-        open={!!deleteConfirm}
-        onOpenChange={(v) => !v && setDeleteConfirm(null)}
-      >
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(v) => !v && setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this endpoint?</AlertDialogTitle>
             <AlertDialogDescription>
-              Pending deliveries for this endpoint will be dropped. The action
-              is recorded in the audit log.
+              Pending deliveries for this endpoint will be dropped. The action is recorded in the
+              audit log.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirm && deleteMut.mutate(deleteConfirm.id)}
-            >
+            <AlertDialogAction onClick={() => deleteConfirm && deleteMut.mutate(deleteConfirm.id)}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -639,18 +586,14 @@ function WebhooksPage() {
       </AlertDialog>
 
       {/* ---------------- Deliveries drawer (dialog) ---------------- */}
-      <Dialog
-        open={!!deliveriesFor}
-        onOpenChange={(v) => !v && setDeliveriesFor(null)}
-      >
+      <Dialog open={!!deliveriesFor} onOpenChange={(v) => !v && setDeliveriesFor(null)}>
         <DialogContent className="max-h-[80vh] overflow-hidden sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="truncate">
               Deliveries — <span className="font-mono text-sm">{deliveriesFor?.url}</span>
             </DialogTitle>
             <DialogDescription>
-              Last 50 delivery attempts. Failures retry on a 1m → 5m → 30m →
-              2h → 24h schedule.
+              Last 50 delivery attempts. Failures retry on a 1m → 5m → 30m → 2h → 24h schedule.
             </DialogDescription>
           </DialogHeader>
           {deliveriesFor ? <DeliveriesTable endpointId={deliveriesFor.id} /> : null}
@@ -743,9 +686,7 @@ function DeliveryRow({ row }: { row: WebhookDeliveryRow }) {
             onClick={() => setOpen((v) => !v)}
           >
             {format(new Date(row.created_at), "yyyy-MM-dd HH:mm:ss")}
-            <ChevronDown
-              className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
-            />
+            <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
         </TableCell>
       </TableRow>
@@ -754,9 +695,7 @@ function DeliveryRow({ row }: { row: WebhookDeliveryRow }) {
           <TableCell colSpan={6} className="bg-muted/30">
             <div className="space-y-2">
               <div>
-                <p className="text-[10px] font-medium uppercase text-muted-foreground">
-                  Payload
-                </p>
+                <p className="text-[10px] font-medium uppercase text-muted-foreground">Payload</p>
                 <pre className="max-h-48 overflow-auto rounded bg-background p-2 text-xs">
                   {JSON.stringify(row.payload, null, 2)}
                 </pre>
@@ -798,17 +737,19 @@ function ExportAllowlistSection({ isForbidden }: { isForbidden: boolean }) {
   }, [q.data]);
 
   const setMut = useMutation({
-    mutationFn: async (v: { table: string; enabled: boolean }) =>
-      set({ data: v }),
+    mutationFn: async (v: { table: string; enabled: boolean }) => set({ data: v }),
     onMutate: async (v) => {
       await qc.cancelQueries({ queryKey: ["webhook-allowlist"] });
       const prev = qc.getQueryData<{ table_name: string; is_enabled: boolean }[]>([
         "webhook-allowlist",
       ]);
-      const next = [...(prev ?? []).filter((r) => r.table_name !== v.table), {
-        table_name: v.table,
-        is_enabled: v.enabled,
-      }];
+      const next = [
+        ...(prev ?? []).filter((r) => r.table_name !== v.table),
+        {
+          table_name: v.table,
+          is_enabled: v.enabled,
+        },
+      ];
       qc.setQueryData(["webhook-allowlist"], next);
       return { prev };
     },
@@ -851,16 +792,14 @@ function ExportAllowlistSection({ isForbidden }: { isForbidden: boolean }) {
       <CardHeader>
         <CardTitle className="text-base">Export allowlist</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Enable a table to allow row-change events on it to be emitted as
-          webhooks. Nothing is emitted for tables that are off.
+          Enable a table to allow row-change events on it to be emitted as webhooks. Nothing is
+          emitted for tables that are off.
         </p>
       </CardHeader>
       <CardContent>
         <Accordion type="multiple" className="w-full">
           {EXPORT_ALLOWLIST_CATALOG.map((domain) => {
-            const enabledCount = domain.tables.filter((t) =>
-              enabledMap.get(t.table),
-            ).length;
+            const enabledCount = domain.tables.filter((t) => enabledMap.get(t.table)).length;
             return (
               <AccordionItem key={domain.key} value={domain.key}>
                 <AccordionTrigger>

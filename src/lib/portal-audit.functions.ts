@@ -104,9 +104,7 @@ export const listPortalAuditEvents = createServerFn({ method: "POST" })
 
     let q = context.supabase
       .from("portal_audit_events")
-      .select(
-        "id, created_at, event, project_id, membership_id, actor_id, metadata",
-      )
+      .select("id, created_at, event, project_id, membership_id, actor_id, metadata")
       .eq("company_id", companyId)
       .gte("created_at", sinceIso(data.days))
       .order("created_at", { ascending: false })
@@ -143,22 +141,13 @@ export const listPortalAuditEvents = createServerFn({ method: "POST" })
 
     const [projRes, memRes, actorRes] = await Promise.all([
       projectIds.length
-        ? context.supabase
-            .from("projects")
-            .select("id, name")
-            .in("id", projectIds)
+        ? context.supabase.from("projects").select("id, name").in("id", projectIds)
         : Promise.resolve({ data: [], error: null }),
       membershipIds.length
-        ? context.supabase
-            .from("portal_memberships")
-            .select("id, email")
-            .in("id", membershipIds)
+        ? context.supabase.from("portal_memberships").select("id, email").in("id", membershipIds)
         : Promise.resolve({ data: [], error: null }),
       actorIds.length
-        ? context.supabase
-            .from("profiles")
-            .select("id, email")
-            .in("id", actorIds)
+        ? context.supabase.from("profiles").select("id, email").in("id", actorIds)
         : Promise.resolve({ data: [], error: null }),
     ]);
 
@@ -249,9 +238,7 @@ export const getPortalAuditSummary = createServerFn({ method: "POST" })
 export const listPortalAuditProjects = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .handler(
-    async ({
-      context,
-    }): Promise<Array<{ id: string; name: string; code: string | null }>> => {
+    async ({ context }): Promise<Array<{ id: string; name: string; code: string | null }>> => {
       requireSupabaseAuth(context);
       await assertCompanyAdmin(context);
       const companyId = await currentCompanyId(context);
@@ -274,9 +261,7 @@ export const listPortalAuditMemberships = createServerFn({ method: "POST" })
     async ({
       context,
       data,
-    }): Promise<
-      Array<{ id: string; email: string; project_id: string; role: string }>
-    > => {
+    }): Promise<Array<{ id: string; email: string; project_id: string; role: string }>> => {
       requireSupabaseAuth(context);
       await assertCompanyAdmin(context);
       const companyId = await currentCompanyId(context);

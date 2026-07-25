@@ -39,21 +39,16 @@ export function PhotoGuardDialog({
         <DialogHeader>
           <DialogTitle>Submit daily report?</DialogTitle>
           <DialogDescription>
-            Once submitted, this report becomes read-only. Only an admin can
-            approve it.
+            Once submitted, this report becomes read-only. Only an admin can approve it.
           </DialogDescription>
         </DialogHeader>
 
         {noPhotos && (
           <div className="rounded-md border border-warning-foreground/30 bg-warning/15 p-3 text-sm text-warning-foreground">
             <div className="flex items-start gap-2">
-              <AlertTriangle
-                className="mt-0.5 h-4 w-4 shrink-0"
-                aria-hidden
-              />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
               <div>
-                No photos attached — site photos <b>SHOULD</b> accompany every
-                DPR.
+                No photos attached — site photos <b>SHOULD</b> accompany every DPR.
               </div>
             </div>
           </div>

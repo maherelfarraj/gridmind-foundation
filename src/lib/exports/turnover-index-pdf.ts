@@ -45,10 +45,7 @@ export function sanitize(v: unknown): string {
     .replace(/&#39;/g, "'");
 }
 
-function hexToRgb(
-  hex: string | null | undefined,
-  fallback: string,
-): [number, number, number] {
+function hexToRgb(hex: string | null | undefined, fallback: string): [number, number, number] {
   const s = (hex ?? "").trim();
   const m = /^#?([0-9a-fA-F]{6})$/.exec(s);
   const raw = m ? m[1] : fallback.slice(1);
@@ -68,9 +65,7 @@ function fmtDate(iso: string | null | undefined): string {
   }
 }
 
-export function buildTurnoverIndexPdfBytes(
-  input: TurnoverPdfInput,
-): Uint8Array {
+export function buildTurnoverIndexPdfBytes(input: TurnoverPdfInput): Uint8Array {
   const primary = hexToRgb(input.branding.primaryColor, DEFAULT_PRIMARY);
   const accent = hexToRgb(input.branding.accentColor, DEFAULT_ACCENT);
 
@@ -130,12 +125,9 @@ export function buildTurnoverIndexPdfBytes(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(90, 90, 90);
-    doc.text(
-      sanitize(`${section.items.length} document(s)`),
-      pageW - marginX,
-      y,
-      { align: "right" },
-    );
+    doc.text(sanitize(`${section.items.length} document(s)`), pageW - marginX, y, {
+      align: "right",
+    });
     y += 6;
 
     if (section.items.length === 0) {
@@ -183,11 +175,7 @@ export function buildTurnoverIndexPdfBytes(
   doc.rect(0, 812, pageW, 30, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
-  doc.text(
-    sanitize(`${input.company.name} • Turnover Package`),
-    marginX,
-    830,
-  );
+  doc.text(sanitize(`${input.company.name} • Turnover Package`), marginX, 830);
   doc.text(sanitize(fmtDate(input.compiledAt)), pageW - marginX, 830, {
     align: "right",
   });

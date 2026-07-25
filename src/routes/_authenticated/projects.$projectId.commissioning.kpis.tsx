@@ -20,10 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getCommissioningKpis } from "@/lib/commissioning-kpis.functions";
-import {
-  serializeKpisCsv,
-  type CommissioningKpisPayload,
-} from "@/lib/commissioning-kpis.rules";
+import { serializeKpisCsv, type CommissioningKpisPayload } from "@/lib/commissioning-kpis.rules";
 
 const KPI_STALE_MS = 5 * 60_000;
 
@@ -34,9 +31,7 @@ const kpisQueryOptions = (projectId: string) =>
     staleTime: KPI_STALE_MS,
   });
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/commissioning/kpis",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning/kpis")({
   head: () => ({
     meta: [
       { title: "Commissioning KPIs — GridMind EPC" },
@@ -48,8 +43,7 @@ export const Route = createFileRoute(
       { property: "og:title", content: "Commissioning KPIs — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "Read-only commissioning KPI dashboard for project handover readiness.",
+        content: "Read-only commissioning KPI dashboard for project handover readiness.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -144,9 +138,7 @@ function TileShell({
     <Card className="flex flex-col gap-3 border-border bg-card p-4">
       <div>
         <p className="text-xs uppercase tracking-wide text-muted-foreground">{title}</p>
-        {subtitle ? (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        ) : null}
+        {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
       </div>
       {children}
     </Card>
@@ -186,9 +178,7 @@ function McCodTile({ data }: { data: CommissioningKpisPayload }) {
         <span className="text-xs text-muted-foreground">days</span>
       </div>
       {k.projected_cod && k.cod_date ? (
-        <p className="text-xs text-muted-foreground">
-          Target was {k.projected_cod}.
-        </p>
+        <p className="text-xs text-muted-foreground">Target was {k.projected_cod}.</p>
       ) : null}
     </TileShell>
   );
@@ -332,9 +322,7 @@ function SecondaryStrip({ data }: { data: CommissioningKpisPayload }) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <Card className="lg:col-span-2 border-border bg-card p-4">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-          Commissioning tests
-        </p>
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commissioning tests</p>
         {data.testSummary.length === 0 ? (
           <div className="mt-3 text-sm text-muted-foreground">No tests assigned yet.</div>
         ) : (

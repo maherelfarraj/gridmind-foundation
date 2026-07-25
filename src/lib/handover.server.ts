@@ -112,18 +112,12 @@ export async function assembleHandoverHistory(
     .eq("project_id", projectId);
   const gateIds = ((gates ?? []) as { id: string }[]).map((g) => g.id);
 
-  const filters: string[] = [
-    `and(entity.eq.projects,entity_id.eq.${projectId})`,
-  ];
+  const filters: string[] = [`and(entity.eq.projects,entity_id.eq.${projectId})`];
   if (gateIds.length > 0) {
-    filters.push(
-      `and(entity.eq.project_phase_gates,entity_id.in.(${gateIds.join(",")}))`,
-    );
+    filters.push(`and(entity.eq.project_phase_gates,entity_id.in.(${gateIds.join(",")}))`);
   }
   if (certIds.length > 0) {
-    filters.push(
-      `and(entity.eq.commissioning_certificates,entity_id.in.(${certIds.join(",")}))`,
-    );
+    filters.push(`and(entity.eq.commissioning_certificates,entity_id.in.(${certIds.join(",")}))`);
   }
 
   const { data: rows } = await supabase
@@ -138,10 +132,7 @@ export async function assembleHandoverHistory(
   const actorIds = Array.from(
     new Set(list.map((r) => r.actor_id).filter((v: unknown): v is string => !!v)),
   );
-  let actorMap: Record<
-    string,
-    { full_name: string | null; email: string | null }
-  > = {};
+  const actorMap: Record<string, { full_name: string | null; email: string | null }> = {};
   if (actorIds.length > 0) {
     const { data: profs } = await supabase
       .from("profiles")
@@ -160,8 +151,8 @@ export async function assembleHandoverHistory(
     id: r.id,
     action: r.action,
     actor_id: r.actor_id ?? null,
-    actor_name: r.actor_id ? actorMap[r.actor_id]?.full_name ?? null : null,
-    actor_email: r.actor_id ? actorMap[r.actor_id]?.email ?? null : null,
+    actor_name: r.actor_id ? (actorMap[r.actor_id]?.full_name ?? null) : null,
+    actor_email: r.actor_id ? (actorMap[r.actor_id]?.email ?? null) : null,
     entity: r.entity,
     entity_id: r.entity_id ?? null,
     metadata: r.metadata ?? {},

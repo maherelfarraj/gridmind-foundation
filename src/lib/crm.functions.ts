@@ -2,10 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { assertExportAllowed } from "@/lib/export-guard";
 import { toCsv } from "@/lib/csv";
 
@@ -50,22 +47,9 @@ const ARCHETYPES = [
   "green_hydrogen",
 ] as const;
 
-const LEAD_STATUSES = [
-  "new",
-  "working",
-  "qualified",
-  "unqualified",
-  "converted",
-] as const;
+const LEAD_STATUSES = ["new", "working", "qualified", "unqualified", "converted"] as const;
 
-const LEAD_SOURCES = [
-  "referral",
-  "inbound",
-  "outbound",
-  "event",
-  "partner",
-  "other",
-] as const;
+const LEAD_SOURCES = ["referral", "inbound", "outbound", "event", "partner", "other"] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -99,7 +83,11 @@ async function getMyCompanyId(context: any): Promise<string> {
 
 async function resolveOwnerMap(context: any, ids: (string | null)[]) {
   const uniq = Array.from(new Set(ids.filter((v): v is string => !!v)));
-  if (uniq.length === 0) return {} as Record<string, { full_name: string | null; email: string | null; avatar_url: string | null }>;
+  if (uniq.length === 0)
+    return {} as Record<
+      string,
+      { full_name: string | null; email: string | null; avatar_url: string | null }
+    >;
   const { data } = await context.supabase
     .from("profiles")
     .select("id, full_name, email, avatar_url")
@@ -190,10 +178,13 @@ export const listOpportunities = createServerFn({ method: "GET" })
     const { data: rows, error } = await q;
     if (error) throw error;
 
-    const ownerMap = await resolveOwnerMap(context, (rows ?? []).map((r: any) => r.owner_id));
+    const ownerMap = await resolveOwnerMap(
+      context,
+      (rows ?? []).map((r: any) => r.owner_id),
+    );
     return (rows ?? []).map((r: any) => ({
       ...r,
-      owner: r.owner_id ? ownerMap[r.owner_id] ?? null : null,
+      owner: r.owner_id ? (ownerMap[r.owner_id] ?? null) : null,
     }));
   });
 
@@ -307,7 +298,7 @@ export const moveOpportunityStage = createServerFn({ method: "POST" })
         opportunity_id: data.id,
         from: existing.stage,
         to: data.stage,
-        loss_reason: data.stage === "lost" ? data.lossReason ?? null : null,
+        loss_reason: data.stage === "lost" ? (data.lossReason ?? null) : null,
       },
     });
     return { ok: true };
@@ -342,7 +333,10 @@ export const exportOpportunitiesCsv = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw error;
 
-    const ownerMap = await resolveOwnerMap(context, (rows ?? []).map((r: any) => r.owner_id));
+    const ownerMap = await resolveOwnerMap(
+      context,
+      (rows ?? []).map((r: any) => r.owner_id),
+    );
     const headers = [
       "id",
       "name",
@@ -370,9 +364,7 @@ export const exportOpportunitiesCsv = createServerFn({ method: "POST" })
         r.expected_decision_date ?? "",
         r.stage,
         r.probability ?? "",
-        r.owner_id
-          ? ownerMap[r.owner_id]?.full_name ?? ownerMap[r.owner_id]?.email ?? ""
-          : "",
+        r.owner_id ? (ownerMap[r.owner_id]?.full_name ?? ownerMap[r.owner_id]?.email ?? "") : "",
         r.created_at,
       ]),
     );
@@ -409,11 +401,17 @@ export const listLeads = createServerFn({ method: "GET" })
     const { data: rows, error } = await q;
     if (error) throw error;
 
-    const ownerMap = await resolveOwnerMap(context, (rows ?? []).map((r: any) => r.owner_id));
+    const ownerMap = await resolveOwnerMap(
+      context,
+      (rows ?? []).map((r: any) => r.owner_id),
+    );
     return (rows ?? []).map((r: any) => ({
       ...r,
       owner: r.owner_id
-        ? { full_name: ownerMap[r.owner_id]?.full_name ?? null, email: ownerMap[r.owner_id]?.email ?? null }
+        ? {
+            full_name: ownerMap[r.owner_id]?.full_name ?? null,
+            email: ownerMap[r.owner_id]?.email ?? null,
+          }
         : null,
     }));
   });
@@ -547,9 +545,7 @@ export const getCrmKpis = createServerFn({ method: "GET" })
       .map((r: any) => Number(r.estimated_value ?? 0))
       .filter((n) => Number.isFinite(n) && n > 0);
     const avgDealSize =
-      wonValues.length > 0
-        ? wonValues.reduce((a, b) => a + b, 0) / wonValues.length
-        : null;
+      wonValues.length > 0 ? wonValues.reduce((a, b) => a + b, 0) / wonValues.length : null;
     const avgDealCurrency = (wons[0] as any)?.currency_code ?? "USD";
 
     // Pipeline coverage: sum(open value * prob/100) / max(avg monthly won * 3, 1).
@@ -561,7 +557,7 @@ export const getCrmKpis = createServerFn({ method: "GET" })
     const weightedPipeline = (openRows ?? []).reduce((sum: number, r: any) => {
       const val = Number(r.estimated_value ?? 0);
       const p = Number(r.probability ?? 0);
-      return sum + (Number.isFinite(val) ? val : 0) * (Number.isFinite(p) ? p : 0) / 100;
+      return sum + ((Number.isFinite(val) ? val : 0) * (Number.isFinite(p) ? p : 0)) / 100;
     }, 0);
     const totalWonValue = wonValues.reduce((a, b) => a + b, 0);
     const avgMonthlyWon = totalWonValue / 12;
@@ -587,7 +583,8 @@ export const getCrmKpis = createServerFn({ method: "GET" })
           return (s - c) / (1000 * 60 * 60 * 24);
         })
         .filter((n: number) => Number.isFinite(n) && n >= 0);
-      if (days.length > 0) proposalCycleDays = days.reduce((a: number, b: number) => a + b, 0) / days.length;
+      if (days.length > 0)
+        proposalCycleDays = days.reduce((a: number, b: number) => a + b, 0) / days.length;
     }
 
     return {

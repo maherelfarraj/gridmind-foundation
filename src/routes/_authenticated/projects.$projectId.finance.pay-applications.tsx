@@ -190,10 +190,7 @@ function PayAppsPage() {
       </Card>
 
       {dialogOpen ? (
-        <NewPayAppDialog
-          projectId={projectId}
-          onClose={() => setDialogOpen(false)}
-        />
+        <NewPayAppDialog projectId={projectId} onClose={() => setDialogOpen(false)} />
       ) : null}
     </div>
   );

@@ -1,17 +1,8 @@
 // P-091 — Query options for NCRs.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getNcr,
-  listNcrCurrencies,
-  listNcrProjects,
-  listNcrs,
-} from "@/lib/ncr.functions";
-import type {
-  NcrDisposition,
-  NcrSource,
-  NcrStatus,
-} from "@/lib/ncr.rules";
+import { getNcr, listNcrCurrencies, listNcrProjects, listNcrs } from "@/lib/ncr.functions";
+import type { NcrDisposition, NcrSource, NcrStatus } from "@/lib/ncr.rules";
 
 export { errorMessage } from "@/lib/hse-query";
 

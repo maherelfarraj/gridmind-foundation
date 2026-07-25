@@ -86,6 +86,7 @@ export type CapturedError = {
   statusCode?: number;
   cause?: string;
   route?: string;
+  path?: string;
   requestId?: string;
   userHash?: string | null;
 };
@@ -124,25 +125,43 @@ async function hashUserId(userId: string | null | undefined): Promise<string | n
     const enc = new TextEncoder().encode(userId);
     const digest = await crypto.subtle.digest("SHA-256", enc);
     const bytes = Array.from(new Uint8Array(digest));
-    return bytes.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+    return bytes
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 12);
   } catch {
     return null;
   }
 }
 
-function normalizeError(error: unknown): { message: string; stack?: string; statusCode?: number; cause?: string } {
+function normalizeError(error: unknown): {
+  message: string;
+  stack?: string;
+  statusCode?: number;
+  cause?: string;
+} {
   if (error instanceof Error) {
     const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
-    const code = typeof statusCode === "number" ? statusCode : typeof status === "number" ? status : undefined;
+    const code =
+      typeof statusCode === "number" ? statusCode : typeof status === "number" ? status : undefined;
     const causeStr = error.cause != null ? describeError(error.cause) : undefined;
-    return { message: error.message || error.name || "Error", stack: error.stack, statusCode: code, cause: causeStr };
+    return {
+      message: error.message || error.name || "Error",
+      stack: error.stack,
+      statusCode: code,
+      cause: causeStr,
+    };
   }
   if (typeof error === "string") return { message: error };
   if (error && typeof error === "object") {
     const obj = error as { message?: unknown; statusCode?: unknown; status?: unknown };
     const message = typeof obj.message === "string" ? obj.message : safeStringify(error);
     const code =
-      typeof obj.statusCode === "number" ? obj.statusCode : typeof obj.status === "number" ? obj.status : undefined;
+      typeof obj.statusCode === "number"
+        ? obj.statusCode
+        : typeof obj.status === "number"
+          ? obj.status
+          : undefined;
     return { message, statusCode: code };
   }
   return { message: String(error ?? "Unknown error") };
@@ -174,6 +193,7 @@ export function captureError(error: unknown, context: CaptureContext = {}): Capt
     statusCode: normalized.statusCode,
     cause: normalized.cause,
     route,
+    path: route,
     requestId,
   };
 
@@ -194,6 +214,3 @@ export function captureError(error: unknown, context: CaptureContext = {}): Capt
 
   return { errorRef, requestId, captured };
 }
-
-
-

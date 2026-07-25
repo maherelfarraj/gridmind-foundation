@@ -26,11 +26,7 @@ export function useUploadSiteData() {
   return useMutation({
     mutationFn: (input: {
       projectId: string;
-      category:
-        | "survey_topo"
-        | "geotech"
-        | "meteorological"
-        | "other";
+      category: "survey_topo" | "geotech" | "meteorological" | "other";
       fileName: string;
       fileSize: number;
       mimeType: string | null;
@@ -43,11 +39,7 @@ export function useRegisterSiteDataDocument(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: {
-      category:
-        | "survey_topo"
-        | "geotech"
-        | "meteorological"
-        | "other";
+      category: "survey_topo" | "geotech" | "meteorological" | "other";
       storagePath: string;
       fileName: string;
       fileSize: number;
@@ -83,7 +75,6 @@ export function useDownloadSiteData() {
         toast.error("Download link unavailable");
       }
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Download failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Download failed"),
   });
 }

@@ -10,11 +10,7 @@ import {
 
 // ---------- shared types ---------------------------------------------------
 
-export const REPORT_TYPES = [
-  "om_monthly",
-  "weekly_field",
-  "quarterly_investor",
-] as const;
+export const REPORT_TYPES = ["om_monthly", "weekly_field", "quarterly_investor"] as const;
 export type ReportType = (typeof REPORT_TYPES)[number];
 
 export const FREQUENCIES = ["weekly", "monthly", "quarterly"] as const;
@@ -52,9 +48,7 @@ const WRITE_ROLES = ["company_admin", "project_admin"] as const;
 
 async function assertWriter(ctx: AuthContext): Promise<void> {
   const results = await Promise.all(
-    WRITE_ROLES.map((r) =>
-      ctx.supabase.rpc("has_company_role", { p_role: r as never }),
-    ),
+    WRITE_ROLES.map((r) => ctx.supabase.rpc("has_company_role", { p_role: r as never })),
   );
   if (!results.some((r) => r.data === true)) httpError(403, "forbidden_role");
 }
@@ -200,9 +194,7 @@ export const upsertScheduledReport = createServerFn({ method: "POST" })
 
 export const deleteScheduledReport = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -227,9 +219,7 @@ export type SendResult = {
 
 export const sendScheduledReport = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }): Promise<SendResult> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
@@ -283,11 +273,7 @@ export const sendScheduledReport = createServerFn({ method: "POST" })
     doc.setFontSize(11);
     doc.text(`Report type: ${schedule.report_type}`, 40, 120);
     doc.text(`Frequency: ${schedule.frequency}`, 40, 140);
-    doc.text(
-      `Project: ${schedule.projects?.name ?? "All projects (company-wide)"}`,
-      40,
-      160,
-    );
+    doc.text(`Project: ${schedule.projects?.name ?? "All projects (company-wide)"}`, 40, 160);
     doc.text(`Generated: ${new Date().toISOString()}`, 40, 180);
     const sections = Object.entries(schedule.template_sections ?? {})
       .filter(([, v]) => v)

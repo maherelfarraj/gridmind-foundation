@@ -2,10 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   isoToday,
   isoWeekStart,
@@ -112,10 +109,7 @@ export const getDisciplineBoard = createServerFn({ method: "GET" })
         .select("headcount, dpr_id")
         .in("dpr_id", todaysDprIds);
       if (mpErr) throw mpErr;
-      manpowerToday = (mp ?? []).reduce(
-        (s: number, r: any) => s + Number(r.headcount ?? 0),
-        0,
-      );
+      manpowerToday = (mp ?? []).reduce((s: number, r: any) => s + Number(r.headcount ?? 0), 0);
     }
 
     // 6. Latest EVM snapshot for SPI/CPI.

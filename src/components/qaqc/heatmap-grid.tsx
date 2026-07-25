@@ -1,9 +1,4 @@
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   heatmapCellTint,
@@ -58,9 +53,7 @@ export function HeatmapGrid({ data, onCellClick }: Props) {
                         <TooltipTrigger asChild>
                           <button
                             type="button"
-                            onClick={() =>
-                              c.count > 0 && onCellClick?.(area, d)
-                            }
+                            onClick={() => c.count > 0 && onCellClick?.(area, d)}
                             disabled={c.count === 0}
                             className={cn(
                               "flex h-16 w-full flex-col items-center justify-center rounded-md border border-border text-sm transition-colors",
@@ -79,9 +72,7 @@ export function HeatmapGrid({ data, onCellClick }: Props) {
                                 {Math.round(c.failRate * 100)}% issues
                               </span>
                             ) : (
-                              <span className="text-[10px] text-muted-foreground">
-                                —
-                              </span>
+                              <span className="text-[10px] text-muted-foreground">—</span>
                             )}
                           </button>
                         </TooltipTrigger>

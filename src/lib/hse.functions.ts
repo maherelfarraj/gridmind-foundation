@@ -184,10 +184,7 @@ async function audit(
   }
 }
 
-async function allocateIncidentNumber(
-  context: AuthContext,
-  companyId: string,
-): Promise<string> {
+async function allocateIncidentNumber(context: AuthContext, companyId: string): Promise<string> {
   const { data, error } = await context.supabase
     .from("hse_incidents")
     .select("incident_number")
@@ -195,9 +192,7 @@ async function allocateIncidentNumber(
     .order("incident_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  const list = ((data ?? []) as { incident_number: string }[]).map(
-    (r) => r.incident_number,
-  );
+  const list = ((data ?? []) as { incident_number: string }[]).map((r) => r.incident_number);
   return nextIncidentNumber(list);
 }
 
@@ -225,8 +220,16 @@ const incidentListInput = z.object({
   projectId: z.string().uuid().nullable().optional(),
   status: z.enum(["open", "investigating", "closed"]).nullable().optional(),
   search: z.string().trim().max(120).nullable().optional(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 
 export const listIncidents = createServerFn({ method: "GET" })
@@ -249,11 +252,13 @@ export const listIncidents = createServerFn({ method: "GET" })
     if (error) throw error;
     const search = data.search?.toLowerCase() ?? "";
     return (rows ?? [])
-      .map((r: any): IncidentListItem => ({
-        ...(r as IncidentRow),
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-      }))
+      .map(
+        (r: any): IncidentListItem => ({
+          ...(r as IncidentRow),
+          project_name: r.projects?.name ?? null,
+          project_code: r.projects?.code ?? null,
+        }),
+      )
       .filter((r) => {
         if (!search) return true;
         return (
@@ -281,7 +286,7 @@ export const getIncident = createServerFn({ method: "GET" })
     const proj = (row as any).projects ?? null;
     return {
       incident: {
-        ...((row as unknown) as IncidentRow),
+        ...(row as unknown as IncidentRow),
         project_name: proj?.name ?? null,
         project_code: proj?.code ?? null,
       } as IncidentListItem,
@@ -359,13 +364,10 @@ export const updateIncident = createServerFn({ method: "POST" })
     if (data.occurredAt !== undefined) patch.occurred_at = data.occurredAt;
     if (data.location !== undefined) patch.location = data.location ?? null;
     if (data.description !== undefined) patch.description = data.description;
-    if (data.personsInvolved !== undefined)
-      patch.persons_involved = data.personsInvolved ?? null;
-    if (data.daysAwayFromWork !== undefined)
-      patch.days_away_from_work = data.daysAwayFromWork;
+    if (data.personsInvolved !== undefined) patch.persons_involved = data.personsInvolved ?? null;
+    if (data.daysAwayFromWork !== undefined) patch.days_away_from_work = data.daysAwayFromWork;
     if (data.restrictedDuty !== undefined) patch.restricted_duty = data.restrictedDuty;
-    if (data.medicalTreatment !== undefined)
-      patch.medical_treatment = data.medicalTreatment;
+    if (data.medicalTreatment !== undefined) patch.medical_treatment = data.medicalTreatment;
     if (data.oshaRecordable !== undefined) patch.osha_recordable = data.oshaRecordable;
     if (data.correctiveActions !== undefined)
       patch.corrective_actions = data.correctiveActions as any;
@@ -440,11 +442,13 @@ export const listInspections = createServerFn({ method: "GET" })
     if (error) throw error;
     const search = data.search?.toLowerCase() ?? "";
     return (rows ?? [])
-      .map((r: any): InspectionRow => ({
-        ...(r as InspectionRow),
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-      }))
+      .map(
+        (r: any): InspectionRow => ({
+          ...(r as InspectionRow),
+          project_name: r.projects?.name ?? null,
+          project_code: r.projects?.code ?? null,
+        }),
+      )
       .filter((r) => {
         if (!search) return true;
         return (
@@ -535,11 +539,13 @@ export const listTraining = createServerFn({ method: "GET" })
     if (error) throw error;
     const search = data.search?.toLowerCase() ?? "";
     return (rows ?? [])
-      .map((r: any): TrainingRow => ({
-        ...(r as TrainingRow),
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-      }))
+      .map(
+        (r: any): TrainingRow => ({
+          ...(r as TrainingRow),
+          project_name: r.projects?.name ?? null,
+          project_code: r.projects?.code ?? null,
+        }),
+      )
       .filter((r) => {
         if (!search) return true;
         return (
@@ -639,23 +645,17 @@ export const getHseDashboard = createServerFn({ method: "GET" })
       return q;
     };
 
-    const trailingIncidents = incidentBase().gte(
-      "occurred_at",
-      twelveMonthsAgo.toISOString(),
-    );
+    const trailingIncidents = incidentBase().gte("occurred_at", twelveMonthsAgo.toISOString());
 
     let manpowerQ = context.supabase
       .from("manpower_logs")
-      .select("hours, dpr_id, construction_daily_reports!inner(project_id, report_date, company_id)")
+      .select(
+        "hours, dpr_id, construction_daily_reports!inner(project_id, report_date, company_id)",
+      )
       .eq("construction_daily_reports.company_id", companyId)
-      .gte("construction_daily_reports.report_date", twelveMonthsAgo
-        .toISOString()
-        .slice(0, 10));
+      .gte("construction_daily_reports.report_date", twelveMonthsAgo.toISOString().slice(0, 10));
     if (data.projectId) {
-      manpowerQ = manpowerQ.eq(
-        "construction_daily_reports.project_id",
-        data.projectId,
-      );
+      manpowerQ = manpowerQ.eq("construction_daily_reports.project_id", data.projectId);
     }
 
     let inspectionsMonthQ = context.supabase
@@ -663,8 +663,7 @@ export const getHseDashboard = createServerFn({ method: "GET" })
       .select("id", { count: "exact", head: true })
       .eq("company_id", companyId)
       .gte("inspection_date", startOfMonth.toISOString().slice(0, 10));
-    if (data.projectId)
-      inspectionsMonthQ = inspectionsMonthQ.eq("project_id", data.projectId);
+    if (data.projectId) inspectionsMonthQ = inspectionsMonthQ.eq("project_id", data.projectId);
 
     let trainingExpiryQ = context.supabase
       .from("hse_training_records")
@@ -673,8 +672,7 @@ export const getHseDashboard = createServerFn({ method: "GET" })
       .not("expires_on", "is", null)
       .gte("expires_on", now.toISOString().slice(0, 10))
       .lte("expires_on", thirtyDaysAhead.toISOString().slice(0, 10));
-    if (data.projectId)
-      trainingExpiryQ = trainingExpiryQ.eq("project_id", data.projectId);
+    if (data.projectId) trainingExpiryQ = trainingExpiryQ.eq("project_id", data.projectId);
 
     const [incRes, mpRes, inspRes, trainRes] = await Promise.all([
       trailingIncidents,
@@ -697,9 +695,7 @@ export const getHseDashboard = createServerFn({ method: "GET" })
         unloggedWindow += 1;
       }
       const gap =
-        (new Date(r.reported_at).getTime() -
-          new Date(r.occurred_at).getTime()) /
-        3_600_000;
+        (new Date(r.reported_at).getTime() - new Date(r.occurred_at).getTime()) / 3_600_000;
       if (gap > 24) overdueLogs += 1;
     }
 
@@ -708,13 +704,11 @@ export const getHseDashboard = createServerFn({ method: "GET" })
       0,
     );
 
-    const recentIncidents: IncidentListItem[] = rows
-      .slice(0, 8)
-      .map((r: any) => ({
-        ...(r as IncidentRow),
-        project_name: r.projects?.name ?? null,
-        project_code: r.projects?.code ?? null,
-      }));
+    const recentIncidents: IncidentListItem[] = rows.slice(0, 8).map((r: any) => ({
+      ...(r as IncidentRow),
+      project_name: r.projects?.name ?? null,
+      project_code: r.projects?.code ?? null,
+    }));
 
     return {
       openIncidents,

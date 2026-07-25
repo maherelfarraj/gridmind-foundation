@@ -87,7 +87,6 @@ function LoginPage() {
     navigate({ to: redirectTo, replace: true });
   };
 
-
   return (
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
@@ -106,7 +105,12 @@ function LoginPage() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" autoComplete="email" placeholder="you@company.com" {...field} />
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -161,7 +165,9 @@ function LoginPage() {
         {oauthPending ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <span className="mr-2 inline-flex"><GoogleGlyph /></span>
+          <span className="mr-2 inline-flex">
+            <GoogleGlyph />
+          </span>
         )}
         Continue with Google
       </Button>

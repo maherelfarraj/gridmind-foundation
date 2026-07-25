@@ -22,22 +22,14 @@ describe("costCodeCreateSchema", () => {
   };
   it("accepts a dotted or dashed code", () => {
     expect(costCodeCreateSchema.safeParse(base).success).toBe(true);
-    expect(
-      costCodeCreateSchema.safeParse({ ...base, code: "1.2.3" }).success,
-    ).toBe(true);
+    expect(costCodeCreateSchema.safeParse({ ...base, code: "1.2.3" }).success).toBe(true);
   });
   it("rejects malformed code", () => {
-    expect(
-      costCodeCreateSchema.safeParse({ ...base, code: "01 1000" }).success,
-    ).toBe(false);
-    expect(
-      costCodeCreateSchema.safeParse({ ...base, code: "01--" }).success,
-    ).toBe(false);
+    expect(costCodeCreateSchema.safeParse({ ...base, code: "01 1000" }).success).toBe(false);
+    expect(costCodeCreateSchema.safeParse({ ...base, code: "01--" }).success).toBe(false);
   });
   it("rejects empty name", () => {
-    expect(
-      costCodeCreateSchema.safeParse({ ...base, name: "   " }).success,
-    ).toBe(false);
+    expect(costCodeCreateSchema.safeParse({ ...base, name: "   " }).success).toBe(false);
   });
 });
 
@@ -52,14 +44,10 @@ describe("budgetUpsertSchema", () => {
     expect(budgetUpsertSchema.safeParse(base).success).toBe(true);
   });
   it("rejects negative amounts", () => {
-    expect(
-      budgetUpsertSchema.safeParse({ ...base, original_amount: -1 }).success,
-    ).toBe(false);
+    expect(budgetUpsertSchema.safeParse({ ...base, original_amount: -1 }).success).toBe(false);
   });
   it("rejects short currency code", () => {
-    expect(
-      budgetUpsertSchema.safeParse({ ...base, currency_code: "US" }).success,
-    ).toBe(false);
+    expect(budgetUpsertSchema.safeParse({ ...base, currency_code: "US" }).success).toBe(false);
   });
 });
 
@@ -102,10 +90,42 @@ describe("po snapshot", () => {
 
 describe("tree grouping", () => {
   const rows = [
-    { id: "a", code: "01", name: "Eng", description: null, parent_id: null, wbs_item_id: null, is_active: true },
-    { id: "b", code: "01-1", name: "Civil", description: null, parent_id: "a", wbs_item_id: null, is_active: true },
-    { id: "c", code: "02", name: "Equip", description: null, parent_id: null, wbs_item_id: null, is_active: true },
-    { id: "d", code: "01-2", name: "Elec", description: null, parent_id: "a", wbs_item_id: null, is_active: true },
+    {
+      id: "a",
+      code: "01",
+      name: "Eng",
+      description: null,
+      parent_id: null,
+      wbs_item_id: null,
+      is_active: true,
+    },
+    {
+      id: "b",
+      code: "01-1",
+      name: "Civil",
+      description: null,
+      parent_id: "a",
+      wbs_item_id: null,
+      is_active: true,
+    },
+    {
+      id: "c",
+      code: "02",
+      name: "Equip",
+      description: null,
+      parent_id: null,
+      wbs_item_id: null,
+      is_active: true,
+    },
+    {
+      id: "d",
+      code: "01-2",
+      name: "Elec",
+      description: null,
+      parent_id: "a",
+      wbs_item_id: null,
+      is_active: true,
+    },
   ];
   it("groups children under parents and sorts", () => {
     const tree = groupCostCodesByParent(rows);
@@ -116,12 +136,7 @@ describe("tree grouping", () => {
   });
   it("flattens in preorder", () => {
     const tree = groupCostCodesByParent(rows);
-    expect(flattenTree(tree).map((n) => n.code)).toEqual([
-      "01",
-      "01-1",
-      "01-2",
-      "02",
-    ]);
+    expect(flattenTree(tree).map((n) => n.code)).toEqual(["01", "01-1", "01-2", "02"]);
   });
 });
 

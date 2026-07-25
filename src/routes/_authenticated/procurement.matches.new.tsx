@@ -1,10 +1,6 @@
 // P-067 — New three-way match form.
 import { useMemo, useState } from "react";
-import {
-  createFileRoute,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Loader2, Save, Upload } from "lucide-react";
@@ -15,12 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -29,16 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  getMatchContextForPo,
-  getMatchWriteAccess,
-  listMatchablePos,
-} from "@/lib/match.functions";
-import {
-  amountVariancePct,
-  computeVariances,
-  deriveMatchStatus,
-} from "@/lib/match-rules";
+import { getMatchContextForPo, getMatchWriteAccess, listMatchablePos } from "@/lib/match.functions";
+import { amountVariancePct, computeVariances, deriveMatchStatus } from "@/lib/match-rules";
 import {
   matchContextForPoQueryOptions,
   matchWriteAccessQueryOptions,
@@ -58,8 +41,7 @@ export const Route = createFileRoute("/_authenticated/procurement/matches/new")(
       { title: "New Invoice Match — GridMind EPC" },
       {
         name: "description",
-        content:
-          "Match a vendor invoice against its purchase order and received goods.",
+        content: "Match a vendor invoice against its purchase order and received goods.",
       },
     ],
   }),
@@ -89,18 +71,12 @@ function NewMatch() {
   if (!po) {
     return (
       <div className="mx-auto max-w-lg space-y-4 p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/procurement/matches" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <h1 className="font-display text-xl font-semibold">Pick a PO to match</h1>
         {posQuery.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No issued POs are available yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No issued POs are available yet.</p>
         ) : (
           <div className="space-y-2">
             {posQuery.data.map((p) => (
@@ -118,8 +94,7 @@ function NewMatch() {
                 <div>
                   <div className="font-mono text-sm">{p.po_number}</div>
                   <div className="text-xs text-muted-foreground">
-                    {p.vendor_name ?? "—"} ·{" "}
-                    {formatCurrency(p.total_amount, p.currency_code)}
+                    {p.vendor_name ?? "—"} · {formatCurrency(p.total_amount, p.currency_code)}
                   </div>
                 </div>
                 <Badge variant="outline" className="capitalize">
@@ -174,9 +149,7 @@ function MatchForm({ poId }: { poId: string }) {
         qty: l.qty_ordered,
         unit_price: l.unit_price,
       })),
-      grnQtyByLine: Object.fromEntries(
-        ctx.lines.map((l) => [l.po_line_no, l.qty_received]),
-      ),
+      grnQtyByLine: Object.fromEntries(ctx.lines.map((l) => [l.po_line_no, l.qty_received])),
       invoiceAmount: parsedAmount,
     });
     const status = deriveMatchStatus({
@@ -216,11 +189,9 @@ function MatchForm({ poId }: { poId: string }) {
           // NOTE: companyId is not returned by createMatch — read from ctx.
           const companyPath = await resolveCompanyId();
           const path = `${companyPath}/invoices/${res.id}/${id}.${ext}`;
-          const { error } = await supabase.storage
-            .from("documents")
-            .upload(path, file, {
-              contentType: file.type || "application/pdf",
-            });
+          const { error } = await supabase.storage.from("documents").upload(path, file, {
+            contentType: file.type || "application/pdf",
+          });
           if (error) throw error;
           await attach.mutateAsync({ matchId: res.id, path });
         } catch (e: any) {
@@ -238,11 +209,7 @@ function MatchForm({ poId }: { poId: string }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 pb-32">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate({ to: "/procurement/matches" })}
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/matches" })}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
@@ -253,9 +220,7 @@ function MatchForm({ poId }: { poId: string }) {
         <h1 className="font-display text-xl font-bold">{ctx.po_number}</h1>
         <p className="text-sm text-muted-foreground">
           {ctx.vendor_name ?? "—"} · PO total{" "}
-          <span className="font-medium">
-            {formatCurrency(ctx.po_total, ctx.currency_code)}
-          </span>
+          <span className="font-medium">{formatCurrency(ctx.po_total, ctx.currency_code)}</span>
         </p>
       </header>
 
@@ -268,9 +233,7 @@ function MatchForm({ poId }: { poId: string }) {
             {ctx.lines.map((l) => (
               <li key={l.po_line_no} className="flex justify-between">
                 <span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    #{l.po_line_no}
-                  </span>{" "}
+                  <span className="font-mono text-xs text-muted-foreground">#{l.po_line_no}</span>{" "}
                   {l.description}
                 </span>
                 <span className="text-muted-foreground">
@@ -308,9 +271,7 @@ function MatchForm({ poId }: { poId: string }) {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="inv-amount">
-                Amount ({ctx.currency_code})
-              </Label>
+              <Label htmlFor="inv-amount">Amount ({ctx.currency_code})</Label>
               <Input
                 id="inv-amount"
                 type="number"
@@ -325,9 +286,7 @@ function MatchForm({ poId }: { poId: string }) {
               <Label htmlFor="threshold">
                 Variance tolerance (%)
                 {!accessQuery.data.canOverride && (
-                  <span className="ml-1 text-xs text-muted-foreground">
-                    (finance admins only)
-                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">(finance admins only)</span>
                 )}
               </Label>
               <Input
@@ -380,9 +339,7 @@ function MatchForm({ poId }: { poId: string }) {
                   {preview.pct.toFixed(2)}%)
                 </span>
                 <span className="text-muted-foreground">Derived status</span>
-                <span className="col-span-2 capitalize">
-                  {preview.status.replace(/_/g, " ")}
-                </span>
+                <span className="col-span-2 capitalize">{preview.status.replace(/_/g, " ")}</span>
               </div>
             </div>
           )}
@@ -398,11 +355,7 @@ function MatchForm({ poId }: { poId: string }) {
           >
             Cancel
           </Button>
-          <Button
-            className="flex-1"
-            disabled={!canSubmit || create.isPending}
-            onClick={submit}
-          >
+          <Button className="flex-1" disabled={!canSubmit || create.isPending} onClick={submit}>
             {create.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : file ? (

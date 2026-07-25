@@ -8,23 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { SlaCountdownChip } from "@/components/service-tickets/sla-countdown-chip";
-import {
-  applySlaCredit,
-  updateTicket,
-  type TicketRow,
-} from "@/lib/service-tickets.functions";
-import {
-  TICKET_STATUSES,
-  type TicketStatus,
-} from "@/lib/service-tickets.rules";
+import { applySlaCredit, updateTicket, type TicketRow } from "@/lib/service-tickets.functions";
+import { TICKET_STATUSES, type TicketStatus } from "@/lib/service-tickets.rules";
 
 interface Props {
   ticket: TicketRow | null;
@@ -54,8 +42,7 @@ export function ServiceTicketDrawer({ ticket, open, onOpenChange }: Props) {
   const [currency, setCurrency] = useState<string>("USD");
 
   const updateMut = useMutation({
-    mutationFn: (input: { id: string; status?: TicketStatus }) =>
-      updateFn({ data: input }),
+    mutationFn: (input: { id: string; status?: TicketStatus }) => updateFn({ data: input }),
     onSuccess: () => {
       toast.success("Ticket updated");
       qc.invalidateQueries({ queryKey: ["service-tickets"] });
@@ -65,11 +52,8 @@ export function ServiceTicketDrawer({ ticket, open, onOpenChange }: Props) {
   });
 
   const creditMut = useMutation({
-    mutationFn: (v: {
-      ticket_id: string;
-      monthly_fee: number;
-      currency_code: string;
-    }) => creditFn({ data: v }),
+    mutationFn: (v: { ticket_id: string; monthly_fee: number; currency_code: string }) =>
+      creditFn({ data: v }),
     onSuccess: (row: { credit_pct: number; credit_amount: number | null }) => {
       toast.success(
         `Credit applied: ${row.credit_pct}%${
@@ -125,9 +109,7 @@ export function ServiceTicketDrawer({ ticket, open, onOpenChange }: Props) {
           <Separator />
 
           <div>
-            <div className="mb-2 text-xs uppercase text-muted-foreground">
-              Status transitions
-            </div>
+            <div className="mb-2 text-xs uppercase text-muted-foreground">Status transitions</div>
             <div className="flex flex-wrap gap-2">
               {TICKET_STATUSES.map((s) => (
                 <Button
@@ -135,9 +117,7 @@ export function ServiceTicketDrawer({ ticket, open, onOpenChange }: Props) {
                   size="sm"
                   variant={s === ticket.status ? "default" : "outline"}
                   disabled={s === ticket.status || updateMut.isPending}
-                  onClick={() =>
-                    updateMut.mutate({ id: ticket.id, status: s })
-                  }
+                  onClick={() => updateMut.mutate({ id: ticket.id, status: s })}
                 >
                   {s}
                 </Button>
@@ -211,9 +191,7 @@ export function ServiceTicketDrawer({ ticket, open, onOpenChange }: Props) {
           <Separator />
 
           <div className="space-y-2">
-            <div className="text-xs uppercase text-muted-foreground">
-              Apply SLA credit
-            </div>
+            <div className="text-xs uppercase text-muted-foreground">Apply SLA credit</div>
             <p className="text-xs text-muted-foreground">
               Response 5% + Resolution 10%, capped at 20% of the monthly O&amp;M fee.
             </p>

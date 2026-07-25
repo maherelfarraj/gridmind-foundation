@@ -13,14 +13,7 @@ interface Props {
   children: ReactNode;
 }
 
-export function PipelineColumn({
-  stage,
-  label,
-  count,
-  totalValue,
-  currency,
-  children,
-}: Props) {
+export function PipelineColumn({ stage, label, count, totalValue, currency, children }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: `col:${stage}`, data: { stage } });
   return (
     <div
@@ -36,7 +29,8 @@ export function PipelineColumn({
             {label}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {count} · {new Intl.NumberFormat(undefined, {
+            {count} ·{" "}
+            {new Intl.NumberFormat(undefined, {
               style: "currency",
               currency: currency || "USD",
               maximumFractionDigits: 0,

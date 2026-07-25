@@ -7,23 +7,10 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  currentCompanyId,
-  hasAnyRole,
-  httpError,
-  writeAudit,
-} from "@/lib/project-finance-shared";
-import {
-  DdStatusChangeSchema,
-  DdUpsertSchema,
-  type DdItemRow,
-} from "@/lib/project-finance.rules";
+import { currentCompanyId, hasAnyRole, httpError, writeAudit } from "@/lib/project-finance-shared";
+import { DdStatusChangeSchema, DdUpsertSchema, type DdItemRow } from "@/lib/project-finance.rules";
 
-const WRITE_ROLES = [
-  "finance_admin",
-  "legal_admin",
-  "company_admin",
-] as const;
+const WRITE_ROLES = ["finance_admin", "legal_admin", "company_admin"] as const;
 
 function toRow(r: any): DdItemRow {
   return {
@@ -56,9 +43,7 @@ async function loadDd(ctx: AuthContext, id: string): Promise<DdItemRow> {
 
 export const listDdItems = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ project_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ rows: DdItemRow[] }> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -127,13 +112,10 @@ export const upsertDdItem = createServerFn({ method: "POST" })
         .maybeSingle();
       if (error) throw error;
       const row = toRow(upd);
-      await writeAudit(
-        context as AuthContext,
-        "dd.update",
-        "lender_dd_items",
-        row.id,
-        { project_id: row.project_id, category: row.category },
-      );
+      await writeAudit(context as AuthContext, "dd.update", "lender_dd_items", row.id, {
+        project_id: row.project_id,
+        category: row.category,
+      });
       return row;
     }
 
@@ -148,13 +130,11 @@ export const upsertDdItem = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw error;
     const row = toRow(ins);
-    await writeAudit(
-      context as AuthContext,
-      "dd.create",
-      "lender_dd_items",
-      row.id,
-      { project_id: row.project_id, category: row.category, title: row.title },
-    );
+    await writeAudit(context as AuthContext, "dd.create", "lender_dd_items", row.id, {
+      project_id: row.project_id,
+      category: row.category,
+      title: row.title,
+    });
     return row;
   });
 
@@ -178,13 +158,11 @@ export const changeDdStatus = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw error;
     const row = toRow(upd);
-    await writeAudit(
-      context as AuthContext,
-      "dd.status_change",
-      "lender_dd_items",
-      row.id,
-      { from: before.status, to: row.status, note: data.note ?? null },
-    );
+    await writeAudit(context as AuthContext, "dd.status_change", "lender_dd_items", row.id, {
+      from: before.status,
+      to: row.status,
+      note: data.note ?? null,
+    });
     return row;
   });
 
@@ -203,39 +181,30 @@ export const signDdDocumentUploadUrl = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ path: string; token: string }> => {
-      requireSupabaseAuth(context);
-      if (!(await hasAnyRole(context as AuthContext, WRITE_ROLES))) {
-        httpError(403, "forbidden");
-      }
-      const companyId = await currentCompanyId(context as AuthContext);
-      const safeName = data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const stamp = Date.now();
-      const path = `${companyId}/lender-dd/${data.projectId}/${stamp}_${safeName}`;
-      const { data: signed, error } = await context.supabase.storage
-        .from("documents")
-        .createSignedUploadUrl(path);
-      if (error) throw error;
-      return { path, token: signed?.token ?? "" };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ path: string; token: string }> => {
+    requireSupabaseAuth(context);
+    if (!(await hasAnyRole(context as AuthContext, WRITE_ROLES))) {
+      httpError(403, "forbidden");
+    }
+    const companyId = await currentCompanyId(context as AuthContext);
+    const safeName = data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const stamp = Date.now();
+    const path = `${companyId}/lender-dd/${data.projectId}/${stamp}_${safeName}`;
+    const { data: signed, error } = await context.supabase.storage
+      .from("documents")
+      .createSignedUploadUrl(path);
+    if (error) throw error;
+    return { path, token: signed?.token ?? "" };
+  });
 
 export const signDdDocumentDownloadUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ path: z.string().min(1) }).parse(input),
-  )
-  .handler(
-    async ({ data, context }): Promise<{ url: string | null }> => {
-      requireSupabaseAuth(context);
-      const { data: signed, error } = await context.supabase.storage
-        .from("documents")
-        .createSignedUrl(data.path, 300);
-      if (error) return { url: null };
-      return { url: signed?.signedUrl ?? null };
-    },
-  );
+  .inputValidator((input: unknown) => z.object({ path: z.string().min(1) }).parse(input))
+  .handler(async ({ data, context }): Promise<{ url: string | null }> => {
+    requireSupabaseAuth(context);
+    const { data: signed, error } = await context.supabase.storage
+      .from("documents")
+      .createSignedUrl(data.path, 300);
+    if (error) return { url: null };
+    return { url: signed?.signedUrl ?? null };
+  });

@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DepartmentPlaceholder } from "@/components/projects/department-placeholder";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/procurement",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/procurement")({
   component: Tab,
 });
 

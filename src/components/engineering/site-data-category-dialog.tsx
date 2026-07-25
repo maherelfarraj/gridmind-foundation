@@ -97,10 +97,7 @@ export function SiteDataCategoryDialog({
 
         <div className="grid gap-2">
           <Label htmlFor="site-data-category">Category</Label>
-          <Select
-            value={category}
-            onValueChange={(v) => setCategory(v as SiteDataCategory)}
-          >
+          <Select value={category} onValueChange={(v) => setCategory(v as SiteDataCategory)}>
             <SelectTrigger id="site-data-category">
               <SelectValue />
             </SelectTrigger>
@@ -118,21 +115,13 @@ export function SiteDataCategoryDialog({
           <SurveyForm fileName={fileName} onSubmit={onSubmit} onCancel={onCancel} />
         )}
         {category === "geotech" && (
-          <GeotechFormView
-            fileName={fileName}
-            onSubmit={onSubmit}
-            onCancel={onCancel}
-          />
+          <GeotechFormView fileName={fileName} onSubmit={onSubmit} onCancel={onCancel} />
         )}
         {category === "meteorological" && (
           <MetFormView fileName={fileName} onSubmit={onSubmit} onCancel={onCancel} />
         )}
         {category === "other" && (
-          <OtherFormView
-            fileName={fileName}
-            onSubmit={onSubmit}
-            onCancel={onCancel}
-          />
+          <OtherFormView fileName={fileName} onSubmit={onSubmit} onCancel={onCancel} />
         )}
       </DialogContent>
     </Dialog>
@@ -163,13 +152,7 @@ function Field({
   );
 }
 
-function Actions({
-  onCancel,
-  submitting,
-}: {
-  onCancel: () => void;
-  submitting: boolean;
-}) {
+function Actions({ onCancel, submitting }: { onCancel: () => void; submitting: boolean }) {
   return (
     <DialogFooter className="mt-2">
       <Button type="button" variant="ghost" onClick={onCancel}>
@@ -225,11 +208,7 @@ function SurveyForm({
       <Field label="Title" htmlFor="s-title" error={errors.title?.message}>
         <Input id="s-title" {...register("title")} />
       </Field>
-      <Field
-        label="Survey date"
-        htmlFor="s-date"
-        error={errors.survey_date?.message}
-      >
+      <Field label="Survey date" htmlFor="s-date" error={errors.survey_date?.message}>
         <Input id="s-date" type="date" {...register("survey_date")} />
       </Field>
       <Field label="Coordinate system (EPSG)" htmlFor="s-epsg" error={errors.epsg?.message}>
@@ -296,42 +275,22 @@ function GeotechFormView({
       <Field label="Title" htmlFor="g-title" error={errors.title?.message}>
         <Input id="g-title" {...register("title")} />
       </Field>
-      <Field
-        label="Report number"
-        htmlFor="g-report"
-        error={errors.report_number?.message}
-      >
+      <Field label="Report number" htmlFor="g-report" error={errors.report_number?.message}>
         <Input id="g-report" {...register("report_number")} />
       </Field>
       <Field label="Lab" htmlFor="g-lab" error={errors.lab?.message}>
         <Input id="g-lab" {...register("lab")} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field
-          label="Boring count"
-          htmlFor="g-boring"
-          error={errors.boring_count?.message}
-        >
-          <Input
-            id="g-boring"
-            type="number"
-            min={0}
-            step={1}
-            {...register("boring_count")}
-          />
+        <Field label="Boring count" htmlFor="g-boring" error={errors.boring_count?.message}>
+          <Input id="g-boring" type="number" min={0} step={1} {...register("boring_count")} />
         </Field>
         <Field
           label="Groundwater depth (m)"
           htmlFor="g-gw"
           error={errors.groundwater_depth_m?.message}
         >
-          <Input
-            id="g-gw"
-            type="number"
-            min={0}
-            step="0.1"
-            {...register("groundwater_depth_m")}
-          />
+          <Input id="g-gw" type="number" min={0} step="0.1" {...register("groundwater_depth_m")} />
         </Field>
       </div>
       <Actions onCancel={onCancel} submitting={isSubmitting} />
@@ -389,18 +348,10 @@ function MetFormView({
         <Input id="m-station" {...register("station")} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field
-          label="Period start"
-          htmlFor="m-start"
-          error={errors.period_start?.message}
-        >
+        <Field label="Period start" htmlFor="m-start" error={errors.period_start?.message}>
           <Input id="m-start" type="date" {...register("period_start")} />
         </Field>
-        <Field
-          label="Period end"
-          htmlFor="m-end"
-          error={errors.period_end?.message}
-        >
+        <Field label="Period end" htmlFor="m-end" error={errors.period_end?.message}>
           <Input id="m-end" type="date" {...register("period_end")} />
         </Field>
       </div>

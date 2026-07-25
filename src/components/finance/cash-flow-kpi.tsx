@@ -34,26 +34,18 @@ export function CashFlowKpi(props: {
         </div>
       </Card>
       <Card className="p-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Net forecast
-        </div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">Net forecast</div>
         <div className="mt-1 text-2xl font-semibold text-foreground">
           {fmt(props.netForecast, props.baseCurrency)}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Sum of forecast inflows − outflows
-        </div>
+        <div className="mt-1 text-xs text-muted-foreground">Sum of forecast inflows − outflows</div>
       </Card>
       <Card className="p-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-          Net actual
-        </div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">Net actual</div>
         <div className="mt-1 text-2xl font-semibold text-foreground">
           {fmt(props.netActual, props.baseCurrency)}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Sum of realised inflows − outflows
-        </div>
+        <div className="mt-1 text-xs text-muted-foreground">Sum of realised inflows − outflows</div>
       </Card>
     </div>
   );

@@ -20,7 +20,6 @@ import {
   updateOpportunity,
 } from "@/lib/opportunity.functions";
 
-
 // ---- Query options ---------------------------------------------------------
 export function opportunityDetailQueryOptions(
   fn: ReturnType<typeof useServerFn<typeof getOpportunity>>,
@@ -86,8 +85,7 @@ export function useUpdateOpportunity(id: string) {
       toast.success("Opportunity updated");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Update failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Update failed"),
   });
 }
 
@@ -100,8 +98,7 @@ export function useSaveContact(opportunityId: string) {
       toast.success("Contact saved");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -114,8 +111,7 @@ export function useDeleteContact(opportunityId: string) {
       toast.success("Contact removed");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Delete failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Delete failed"),
   });
 }
 
@@ -128,8 +124,7 @@ export function useSaveTenderEvent(opportunityId: string) {
       toast.success("Tender event saved");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
 }
 
@@ -142,8 +137,7 @@ export function useDeleteTenderEvent(opportunityId: string) {
       toast.success("Event removed");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Delete failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Delete failed"),
   });
 }
 
@@ -156,8 +150,7 @@ export function usePostNote(opportunityId: string) {
       toast.success("Note posted");
       invalidate();
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Post failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Post failed"),
   });
 }
 
@@ -204,8 +197,7 @@ export function useConvertOpportunity(opportunityId: string) {
       invalidate();
       qc.invalidateQueries({ queryKey: ["crm"] });
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Conversion failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Conversion failed"),
   });
 }
 
@@ -215,8 +207,7 @@ export function useBuildKickoffPack(opportunityId: string) {
     mutationFn: (input: { intakeId: string }) =>
       fn({ data: { opportunityId, intakeId: input.intakeId } }),
     onSuccess: () => toast.success("Kick-off pack ready"),
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Kick-off pack failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Kick-off pack failed"),
   });
 }
 
@@ -231,8 +222,6 @@ export function useDownloadKickoffPack() {
         toast.error("Kick-off pack not available yet");
       }
     },
-    onError: (err) =>
-      toast.error(err instanceof Error ? err.message : "Download failed"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Download failed"),
   });
 }
-

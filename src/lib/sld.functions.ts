@@ -2,27 +2,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  attachSupabaseAuth,
-  requireSupabaseAuth,
-} from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 // ---------------------------------------------------------------------------
 // Constants + schemas
 // ---------------------------------------------------------------------------
-export const BUS_CONFIGS = [
-  "single",
-  "single_sectionalized",
-  "double",
-  "ring",
-] as const;
+export const BUS_CONFIGS = ["single", "single_sectionalized", "double", "ring"] as const;
 export type BusConfig = (typeof BUS_CONFIGS)[number];
 
-export const VOLTAGE_TYPES = [
-  "collection",
-  "export",
-  "auxiliary",
-] as const;
+export const VOLTAGE_TYPES = ["collection", "export", "auxiliary"] as const;
 export type VoltageType = (typeof VOLTAGE_TYPES)[number];
 
 const WRITE_ROLES = [
@@ -79,11 +67,7 @@ async function loadProjectCompany(
   return data as { id: string; company_id: string };
 }
 
-async function assertRole(
-  context: any,
-  companyId: string,
-  roles: readonly string[],
-) {
+async function assertRole(context: any, companyId: string, roles: readonly string[]) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")
@@ -175,9 +159,7 @@ const meteringPointSchema = z.object({
 const saveInput = z.object({
   projectId: z.string().uuid(),
   bus_config: z.enum(BUS_CONFIGS),
-  voltage_levels: z
-    .array(voltageLevelSchema)
-    .min(1, "At least one voltage level is required"),
+  voltage_levels: z.array(voltageLevelSchema).min(1, "At least one voltage level is required"),
   metering_points: z.array(meteringPointSchema).max(50),
   protection_scheme: z.string().trim().max(2000).nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
@@ -194,9 +176,7 @@ export const saveSldConfig = createServerFn({ method: "POST" })
     // Load prior for diff.
     const { data: prior } = await context.supabase
       .from("project_sld_config")
-      .select(
-        "bus_config, voltage_levels, metering_points, protection_scheme, notes",
-      )
+      .select("bus_config, voltage_levels, metering_points, protection_scheme, notes")
       .eq("project_id", project.id)
       .maybeSingle();
 
@@ -235,13 +215,10 @@ export const saveSldConfig = createServerFn({ method: "POST" })
       }
     }
 
-    await audit(
-      context,
-      "engineering.sld_config_saved",
-      "project_sld_config",
-      project.id,
-      { project_id: project.id, changed_fields: changed },
-    );
+    await audit(context, "engineering.sld_config_saved", "project_sld_config", project.id, {
+      project_id: project.id,
+      changed_fields: changed,
+    });
 
     return { ok: true, changed_fields: changed };
   });
@@ -286,14 +263,12 @@ export const listSldDrawings = createServerFn({ method: "GET" })
     const list = (rows ?? []) as any[];
     const revisionIds = list
       .map((r) => {
-        const rev = Array.isArray(r.current_revision)
-          ? r.current_revision[0]
-          : r.current_revision;
+        const rev = Array.isArray(r.current_revision) ? r.current_revision[0] : r.current_revision;
         return rev?.id as string | undefined;
       })
       .filter((v): v is string => Boolean(v));
 
-    let counts: Record<string, number> = {};
+    const counts: Record<string, number> = {};
     if (revisionIds.length > 0) {
       const { data: markups } = await context.supabase
         .from("document_markups")
@@ -305,9 +280,7 @@ export const listSldDrawings = createServerFn({ method: "GET" })
     }
 
     return list.map((r) => {
-      const rev = Array.isArray(r.current_revision)
-        ? r.current_revision[0]
-        : r.current_revision;
+      const rev = Array.isArray(r.current_revision) ? r.current_revision[0] : r.current_revision;
       const revId = rev?.id ?? null;
       return {
         id: r.id,
@@ -318,7 +291,7 @@ export const listSldDrawings = createServerFn({ method: "GET" })
         updated_at: r.updated_at,
         revision_code: rev?.revision_code ?? null,
         revision_id: revId,
-        markup_count: revId ? counts[revId] ?? 0 : 0,
+        markup_count: revId ? (counts[revId] ?? 0) : 0,
       };
     });
   });
@@ -379,9 +352,7 @@ export const createSldDrawing = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const getMySldRoles = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ projectId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const project = await loadProjectCompany(context, data.projectId);
@@ -391,8 +362,6 @@ export const getMySldRoles = createServerFn({ method: "GET" })
       .eq("company_id", project.company_id);
     if (error) throw error;
     const roles = ((rows ?? []) as any[]).map((r) => r.role as string);
-    const canWrite = roles.some((r) =>
-      (WRITE_ROLES as readonly string[]).includes(r),
-    );
+    const canWrite = roles.some((r) => (WRITE_ROLES as readonly string[]).includes(r));
     return { canWrite };
   });

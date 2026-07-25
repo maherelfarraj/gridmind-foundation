@@ -1,11 +1,6 @@
 // P-058 — Pure review-workflow helpers (shared by server + UI).
 
-export type ReviewDecision =
-  | "approved"
-  | "approved_with_comments"
-  | "rejected"
-  | "waived"
-  | null;
+export type ReviewDecision = "approved" | "approved_with_comments" | "rejected" | "waived" | null;
 
 export interface SignoffRow {
   decision: ReviewDecision;
@@ -46,8 +41,6 @@ export function isOverdue(
 ): boolean {
   if (status !== "open" || !dueDate) return false;
   const due = new Date(dueDate + "T00:00:00Z");
-  const t = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
+  const t = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   return due.getTime() < t.getTime();
 }

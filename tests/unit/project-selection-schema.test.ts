@@ -9,9 +9,7 @@ import {
 
 describe("projectSelectionSchema", () => {
   it("accepts the blank default selection", () => {
-    expect(projectSelectionSchema.safeParse(BLANK_SELECTION).success).toBe(
-      true,
-    );
+    expect(projectSelectionSchema.safeParse(BLANK_SELECTION).success).toBe(true);
   });
 
   it("rejects when budget shares don't sum to 100%", () => {

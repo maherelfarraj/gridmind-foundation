@@ -36,9 +36,7 @@ export function InviteVendorDialog({
   const [busy, setBusy] = useState(false);
 
   const fn = useServerFn(listRfqEligibleVendors);
-  const vendorsQuery = useSuspenseQuery(
-    rfqEligibleVendorsQueryOptions(fn, search.trim() || null),
-  );
+  const vendorsQuery = useSuspenseQuery(rfqEligibleVendorsQueryOptions(fn, search.trim() || null));
 
   const rows = useMemo(
     () => vendorsQuery.data.filter((v) => !alreadyInvited.has(v.id)),

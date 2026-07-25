@@ -115,8 +115,7 @@ function RevisionRow({
           {isCurrent && <Badge variant="outline">Current</Badge>}
         </div>
         <p className="text-xs text-muted-foreground">
-          {rev.issue_reason ?? "—"} · uploaded{" "}
-          {new Date(rev.created_at).toLocaleString()}
+          {rev.issue_reason ?? "—"} · uploaded {new Date(rev.created_at).toLocaleString()}
           {who && ` · ${who.full_name ?? who.email ?? "member"}`}
         </p>
         {rev.file_name && (
@@ -159,9 +158,7 @@ function TransitionDialog({
   const [target, setTarget] = useState<DrawingStatus | "">("");
   const transition = useTransitionDrawingStatus(drawingId, projectId);
   const signoffsFn = useServerFn(listDrawingSignoffs);
-  const { data: signoffs } = useSuspenseQuery(
-    drawingSignoffsQueryOptions(signoffsFn, drawingId),
-  );
+  const { data: signoffs } = useSuspenseQuery(drawingSignoffsQueryOptions(signoffsFn, drawingId));
   const options = TRANSITIONS[rev.status];
   const hasApprovedSignoff = signoffs.some((s) => s.status === "approved");
 
@@ -238,11 +235,7 @@ function TransitionDialog({
           <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={onConfirm}
-            disabled={!target || transition.isPending}
-          >
+          <Button type="button" onClick={onConfirm} disabled={!target || transition.isPending}>
             Apply
           </Button>
         </DialogFooter>

@@ -55,10 +55,7 @@ describe("computePayAppTotals", () => {
   });
 
   it("clamps retention pct outside 0..100", () => {
-    const t = computePayAppTotals(
-      [mkLine({ scheduled_amount: 100, this_period: 100 })],
-      200,
-    );
+    const t = computePayAppTotals([mkLine({ scheduled_amount: 100, this_period: 100 })], 200);
     expect(t.retention_amount).toBe(100);
     expect(t.net_amount).toBe(0);
   });
@@ -67,7 +64,9 @@ describe("computePayAppTotals", () => {
 describe("validateCertifyInput", () => {
   it("passes when all lines are valid", () => {
     expect(() =>
-      validateCertifyInput([mkLine({ scheduled_amount: 100, prev_certified: 40, this_period: 50 })]),
+      validateCertifyInput([
+        mkLine({ scheduled_amount: 100, prev_certified: 40, this_period: 50 }),
+      ]),
     ).not.toThrow();
   });
 

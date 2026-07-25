@@ -71,12 +71,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/_authenticated/settings/share-links")({
   head: () => ({
@@ -126,8 +121,8 @@ function ShareLinksPage() {
           Share links
         </h1>
         <p className="text-sm text-muted-foreground">
-          Tokenized, expiring, revocable read-only views for investors and lenders.
-          The URL is shown once at creation — save it before closing the dialog.
+          Tokenized, expiring, revocable read-only views for investors and lenders. The URL is shown
+          once at creation — save it before closing the dialog.
         </p>
       </header>
 
@@ -157,9 +152,7 @@ function ShareLinksPage() {
       ) : (listQuery.data ?? []).length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-10 text-center">
           <LinkIcon className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-          <h2 className="text-base font-semibold text-foreground">
-            No share links yet
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">No share links yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Create your first investor or lender view above.
           </p>
@@ -239,9 +232,7 @@ function LinksTable({ rows }: { rows: ShareLinkAdminRow[] }) {
               </TableCell>
               <TableCell>{r.access_count}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {r.last_accessed_at
-                  ? format(new Date(r.last_accessed_at), "PP p")
-                  : "—"}
+                {r.last_accessed_at ? format(new Date(r.last_accessed_at), "PP p") : "—"}
               </TableCell>
               <TableCell>{statusBadge(r.status)}</TableCell>
               <TableCell className="text-right">
@@ -278,8 +269,8 @@ function RevokeButton({ id, label }: { id: string; label: string }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke this share link?</AlertDialogTitle>
           <AlertDialogDescription>
-            "{label}" will stop working immediately. Anyone visiting the URL
-            will see a "Link revoked" page. This can't be undone.
+            "{label}" will stop working immediately. Anyone visiting the URL will see a "Link
+            revoked" page. This can't be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -481,9 +472,7 @@ function CreateLinkDialog() {
                                     field.onChange(next);
                                   }}
                                 />
-                                <span>
-                                  {p.code ? `${p.code} · ${p.name}` : p.name}
-                                </span>
+                                <span>{p.code ? `${p.code} · ${p.name}` : p.name}</span>
                               </label>
                             );
                           })
@@ -501,16 +490,13 @@ function CreateLinkDialog() {
                       <FormLabel>Sections</FormLabel>
                       <div className="grid grid-cols-2 gap-2">
                         {SHARE_SECTIONS.map((s) => {
-                          const disabled =
-                            s === "financials" && role !== "lender_viewer";
+                          const disabled = s === "financials" && role !== "lender_viewer";
                           const checked = sections.includes(s);
                           const label = (
                             <label
                               key={s}
                               className={`flex items-center gap-2 rounded border border-border px-2 py-1.5 text-sm ${
-                                disabled
-                                  ? "opacity-50"
-                                  : "hover:bg-muted/50"
+                                disabled ? "opacity-50" : "hover:bg-muted/50"
                               }`}
                             >
                               <Checkbox
@@ -568,11 +554,7 @@ function CreateLinkDialog() {
                   )}
                 />
                 <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setOpen(false)}
-                  >
+                  <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={createMut.isPending}>

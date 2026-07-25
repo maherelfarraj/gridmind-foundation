@@ -68,11 +68,7 @@ export function ScheduleToolbar({
           <Save size={14} aria-hidden />
           Create baseline
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onManageBaselines}
-        >
+        <Button size="sm" variant="outline" onClick={onManageBaselines}>
           <SlidersHorizontal size={14} aria-hidden />
           Manage
         </Button>
@@ -83,9 +79,7 @@ export function ScheduleToolbar({
           <Label className="text-xs text-muted-foreground">Baseline</Label>
           <Select
             value={selectedBaselineId ?? NONE}
-            onValueChange={(v) =>
-              onSelectBaseline(v === NONE ? null : v)
-            }
+            onValueChange={(v) => onSelectBaseline(v === NONE ? null : v)}
           >
             <SelectTrigger className="h-8 w-56">
               <SelectValue placeholder="—" />

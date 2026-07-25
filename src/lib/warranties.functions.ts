@@ -40,10 +40,7 @@ async function currentCompanyId(context: AuthContext): Promise<string> {
   return companyId as string;
 }
 
-async function hasAnyRole(
-  context: AuthContext,
-  roles: readonly string[],
-): Promise<boolean> {
+async function hasAnyRole(context: AuthContext, roles: readonly string[]): Promise<boolean> {
   const results = await Promise.all(
     roles.map((r) => context.supabase.rpc("has_company_role", { p_role: r as never })),
   );
@@ -244,10 +241,7 @@ export const deleteWarranty = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     await assertWriter(context);
-    const { error } = await context.supabase
-      .from("warranty_contracts")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("warranty_contracts").delete().eq("id", data.id);
     if (error) throw error;
     await audit(context, "warranty.delete", "warranty_contracts", data.id, {});
     return { ok: true };
@@ -291,9 +285,7 @@ export const signWarrantyDocumentUploadUrl = createServerFn({ method: "POST" })
 export const saveWarrantyDocumentPath = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) =>
-    z
-      .object({ warranty_id: z.string().uuid(), path: z.string().min(1) })
-      .parse(raw),
+    z.object({ warranty_id: z.string().uuid(), path: z.string().min(1) }).parse(raw),
   )
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
@@ -327,9 +319,7 @@ export const signWarrantyDocumentDownloadUrl = createServerFn({ method: "POST" }
 // ---- claims ----------------------------------------------------------------
 export const listClaims = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ warranty_id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ warranty_id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
@@ -627,9 +617,7 @@ export const listWarrantyVendors = createServerFn({ method: "GET" })
 
 export const listWarrantyEquipment = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ project_id: z.string().uuid() }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ project_id: z.string().uuid() }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase

@@ -102,13 +102,7 @@ function entityLink(row: InboxRow): string | null {
   }
 }
 
-function ApprovalRow({
-  row,
-  onOpen,
-}: {
-  row: InboxRow;
-  onOpen: (id: string) => void;
-}) {
+function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => void }) {
   const amount = formatAmount(row);
   return (
     <button
@@ -125,9 +119,7 @@ function ApprovalRow({
           </Badge>
         )}
         <span className="font-medium text-foreground">{row.title}</span>
-        {amount && (
-          <span className="text-sm text-muted-foreground">· {amount}</span>
-        )}
+        {amount && <span className="text-sm text-muted-foreground">· {amount}</span>}
         <div className="ml-auto flex items-center gap-2">{slaBadge(row)}</div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -136,9 +128,7 @@ function ApprovalRow({
           {row.step_role ? ` · ${row.step_role}` : ""}
         </span>
         {row.requester_name && <span>Requested by {row.requester_name}</span>}
-        <span>
-          {formatDistanceToNow(new Date(row.requested_at), { addSuffix: true })}
-        </span>
+        <span>{formatDistanceToNow(new Date(row.requested_at), { addSuffix: true })}</span>
         {row.approval_status !== "pending" && (
           <Badge variant="secondary" className="ml-auto">
             {row.approval_status}
@@ -149,13 +139,7 @@ function ApprovalRow({
   );
 }
 
-function ApprovalList({
-  tab,
-  onOpen,
-}: {
-  tab: Tab;
-  onOpen: (id: string) => void;
-}) {
+function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void }) {
   const listFn = useServerFn(listMyApprovals);
   const query = useQuery({
     queryKey: ["approvals", "list", tab],
@@ -245,17 +229,13 @@ function DecideDialog({
   });
 
   const disabled =
-    !approvalId ||
-    mutation.isPending ||
-    (decision === "rejected" && comment.trim().length === 0);
+    !approvalId || mutation.isPending || (decision === "rejected" && comment.trim().length === 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {decision === "approved" ? "Approve" : "Reject"} approval
-          </DialogTitle>
+          <DialogTitle>{decision === "approved" ? "Approve" : "Reject"} approval</DialogTitle>
           <DialogDescription>
             {decision === "rejected"
               ? "A comment is required when rejecting."
@@ -265,19 +245,11 @@ function DecideDialog({
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder={
-            decision === "rejected"
-              ? "Reason for rejection…"
-              : "Optional comment…"
-          }
+          placeholder={decision === "rejected" ? "Reason for rejection…" : "Optional comment…"}
           rows={4}
         />
         <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
-          >
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
             Cancel
           </Button>
           <Button
@@ -330,9 +302,7 @@ function ApprovalDetailDrawer({
         <SheetHeader>
           <SheetTitle>{detail?.title ?? "Approval"}</SheetTitle>
           <SheetDescription>
-            {detail
-              ? `${detail.entity_type} · ${detail.status}`
-              : "Loading…"}
+            {detail ? `${detail.entity_type} · ${detail.status}` : "Loading…"}
           </SheetDescription>
         </SheetHeader>
 
@@ -380,10 +350,7 @@ function ApprovalDetailDrawer({
                 )}
               </div>
               {link && (
-                <a
-                  href={link}
-                  className="mt-2 inline-block text-sm text-primary hover:underline"
-                >
+                <a href={link} className="mt-2 inline-block text-sm text-primary hover:underline">
                   Open {detail.entity_type} →
                 </a>
               )}
@@ -395,9 +362,7 @@ function ApprovalDetailDrawer({
               </h3>
               <ol className="space-y-3">
                 {detail.steps.map((step) => {
-                  const done = step.approvals.every(
-                    (a) => a.status !== "pending",
-                  );
+                  const done = step.approvals.every((a) => a.status !== "pending");
                   const current = step.step_order === detail.current_step;
                   return (
                     <li
@@ -410,15 +375,10 @@ function ApprovalDetailDrawer({
                             : "border-dashed border-border"
                       }`}
                     >
-                      <div className="mb-2 text-sm font-medium">
-                        Step {step.step_order}
-                      </div>
+                      <div className="mb-2 text-sm font-medium">Step {step.step_order}</div>
                       <ul className="space-y-1 text-sm">
                         {step.approvals.map((a) => (
-                          <li
-                            key={a.id}
-                            className="flex flex-wrap items-center gap-2"
-                          >
+                          <li key={a.id} className="flex flex-wrap items-center gap-2">
                             {a.status === "approved" ? (
                               <CheckCircle2 className="h-4 w-4 text-primary" />
                             ) : a.status === "rejected" ? (
@@ -440,9 +400,7 @@ function ApprovalDetailDrawer({
                               </span>
                             )}
                             {a.comment && (
-                              <p className="w-full text-xs text-muted-foreground">
-                                “{a.comment}”
-                              </p>
+                              <p className="w-full text-xs text-muted-foreground">“{a.comment}”</p>
                             )}
                           </li>
                         ))}
@@ -501,9 +459,7 @@ function ApprovalDetailDrawer({
                       })}
                     </span>
                     {a.actor_name && (
-                      <span className="text-muted-foreground">
-                        · {a.actor_name}
-                      </span>
+                      <span className="text-muted-foreground">· {a.actor_name}</span>
                     )}
                   </li>
                 ))}
@@ -531,9 +487,7 @@ function ApprovalsPage() {
   return (
     <div className="container mx-auto max-w-5xl space-y-6 p-6">
       <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Approvals
-        </h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">Approvals</h1>
         <p className="text-sm text-muted-foreground">
           Your queue of pending decisions, SLA-timed and fully audited.
         </p>
@@ -556,10 +510,7 @@ function ApprovalsPage() {
         </TabsContent>
       </Tabs>
 
-      <ApprovalDetailDrawer
-        instanceId={openInstance}
-        onClose={() => setOpenInstance(null)}
-      />
+      <ApprovalDetailDrawer instanceId={openInstance} onClose={() => setOpenInstance(null)} />
     </div>
   );
 }

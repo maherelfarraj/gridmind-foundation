@@ -144,15 +144,9 @@ function PortalProjectPage() {
           {feed.exposure.milestones ? (
             <TabsTrigger value="milestones">Milestones</TabsTrigger>
           ) : null}
-          {feed.exposure.photos ? (
-            <TabsTrigger value="photos">Photos</TabsTrigger>
-          ) : null}
-          {feed.exposure.approvals ? (
-            <TabsTrigger value="approvals">Approvals</TabsTrigger>
-          ) : null}
-          {feed.exposure.tickets ? (
-            <TabsTrigger value="tickets">Tickets</TabsTrigger>
-          ) : null}
+          {feed.exposure.photos ? <TabsTrigger value="photos">Photos</TabsTrigger> : null}
+          {feed.exposure.approvals ? <TabsTrigger value="approvals">Approvals</TabsTrigger> : null}
+          {feed.exposure.tickets ? <TabsTrigger value="tickets">Tickets</TabsTrigger> : null}
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -195,21 +189,15 @@ function OverviewTab({ feed }: { feed: PortalFeed }) {
         <div className="mt-2 space-y-1 text-sm">
           <div>
             <span className="text-muted-foreground">Name:</span>{" "}
-            <span className="text-foreground">
-              {feed.project.name ?? "—"}
-            </span>
+            <span className="text-foreground">{feed.project.name ?? "—"}</span>
           </div>
           <div>
             <span className="text-muted-foreground">Code:</span>{" "}
-            <span className="font-mono text-xs">
-              {feed.project.code ?? "—"}
-            </span>
+            <span className="font-mono text-xs">{feed.project.code ?? "—"}</span>
           </div>
           <div>
             <span className="text-muted-foreground">Phase:</span>{" "}
-            <span className="text-foreground">
-              {feed.project.phase ?? "—"}
-            </span>
+            <span className="text-foreground">{feed.project.phase ?? "—"}</span>
           </div>
         </div>
       </div>
@@ -261,12 +249,8 @@ function KpiTile({
           });
   return (
     <div className="rounded-md border border-border bg-muted/30 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-1 font-display text-lg font-semibold text-foreground">
-        {display}
-      </div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-1 font-display text-lg font-semibold text-foreground">{display}</div>
     </div>
   );
 }
@@ -298,23 +282,17 @@ function MilestonesTab({ feed }: { feed: PortalFeed }) {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             )}
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-foreground">
-                {m.phase}
-              </div>
+              <div className="text-sm font-medium text-foreground">{m.phase}</div>
               {m.notes ? (
-                <div className="truncate text-xs text-muted-foreground">
-                  {m.notes}
-                </div>
+                <div className="truncate text-xs text-muted-foreground">{m.notes}</div>
               ) : null}
             </div>
             <div className="text-right text-xs">
               <div className="text-muted-foreground">
-                Planned{" "}
-                {m.planned_date ? format(new Date(m.planned_date), "PP") : "—"}
+                Planned {m.planned_date ? format(new Date(m.planned_date), "PP") : "—"}
               </div>
               <div className="text-foreground">
-                Actual{" "}
-                {m.actual_date ? format(new Date(m.actual_date), "PP") : "—"}
+                Actual {m.actual_date ? format(new Date(m.actual_date), "PP") : "—"}
               </div>
             </div>
             <Badge variant="outline" className="ml-2">
@@ -342,12 +320,7 @@ function PhotosTab({ feed, projectId }: { feed: PortalFeed; projectId: string })
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
       {photos.map((p) => (
-        <PortalPhoto
-          key={p.id}
-          projectId={projectId}
-          path={p.storage_path}
-          caption={p.caption}
-        />
+        <PortalPhoto key={p.id} projectId={projectId} path={p.storage_path} caption={p.caption} />
       ))}
     </div>
   );
@@ -392,9 +365,7 @@ function PortalPhoto({
         )}
       </div>
       {caption ? (
-        <figcaption className="truncate p-2 text-xs text-muted-foreground">
-          {caption}
-        </figcaption>
+        <figcaption className="truncate p-2 text-xs text-muted-foreground">{caption}</figcaption>
       ) : null}
     </figure>
   );
@@ -454,14 +425,10 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
           >
             <ApprovalStatusIcon status={r.status} />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-foreground">
-                {r.title}
-              </div>
+              <div className="truncate text-sm font-medium text-foreground">{r.title}</div>
               <div className="text-xs text-muted-foreground">
                 {r.entity_type} · step {r.step_order}
-                {r.amount != null
-                  ? ` · $${r.amount.toLocaleString()}`
-                  : ""}
+                {r.amount != null ? ` · $${r.amount.toLocaleString()}` : ""}
               </div>
             </div>
             {r.sla_due_at ? (
@@ -492,9 +459,7 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Decide approval</DialogTitle>
-            <DialogDescription>
-              {active?.title}
-            </DialogDescription>
+            <DialogDescription>{active?.title}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
@@ -515,9 +480,7 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
             </div>
             <Textarea
               placeholder={
-                decision === "rejected"
-                  ? "Comment (required on reject)"
-                  : "Comment (optional)"
+                decision === "rejected" ? "Comment (required on reject)" : "Comment (optional)"
               }
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -529,10 +492,7 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
               Cancel
             </Button>
             <Button
-              disabled={
-                mut.isPending ||
-                (decision === "rejected" && comment.trim().length === 0)
-              }
+              disabled={mut.isPending || (decision === "rejected" && comment.trim().length === 0)}
               onClick={() => {
                 if (!active) return;
                 mut.mutate({
@@ -542,9 +502,7 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
                 });
               }}
             >
-              {mut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Submit
             </Button>
           </DialogFooter>
@@ -555,12 +513,9 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
 }
 
 function ApprovalStatusIcon({ status }: { status: string }) {
-  if (status === "approved")
-    return <CheckCircle2 className="h-4 w-4 text-primary" />;
-  if (status === "rejected")
-    return <XCircle className="h-4 w-4 text-destructive" />;
-  if (status === "pending")
-    return <AlertCircle className="h-4 w-4 text-accent-foreground" />;
+  if (status === "approved") return <CheckCircle2 className="h-4 w-4 text-primary" />;
+  if (status === "rejected") return <XCircle className="h-4 w-4 text-destructive" />;
+  if (status === "pending") return <AlertCircle className="h-4 w-4 text-accent-foreground" />;
   return <AlertCircle className="h-4 w-4 text-muted-foreground" />;
 }
 
@@ -625,10 +580,7 @@ function TicketsTab({ projectId }: { projectId: string }) {
       ) : (
         <ul className="space-y-2">
           {rows.map((t) => (
-            <li
-              key={t.id}
-              className="rounded-lg border border-border bg-card px-4 py-3"
-            >
+            <li key={t.id} className="rounded-lg border border-border bg-card px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                   {t.subject}
@@ -637,9 +589,7 @@ function TicketsTab({ projectId }: { projectId: string }) {
                 <TicketPriorityBadge priority={t.priority} />
               </div>
               {t.body ? (
-                <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                  {t.body}
-                </div>
+                <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.body}</div>
               ) : null}
               <div className="mt-1 text-[11px] text-muted-foreground">
                 Raised{" "}
@@ -656,22 +606,16 @@ function TicketsTab({ projectId }: { projectId: string }) {
         open={open}
         onOpenChange={(v) => {
           setOpen(v);
-          if (!v)
-            form.reset({ subject: "", body: "", priority: "normal" });
+          if (!v) form.reset({ subject: "", body: "", priority: "normal" });
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Raise ticket</DialogTitle>
-            <DialogDescription>
-              We'll notify your project team.
-            </DialogDescription>
+            <DialogDescription>We'll notify your project team.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((v) => mut.mutate(v))}
-              className="space-y-3"
-            >
+            <form onSubmit={form.handleSubmit((v) => mut.mutate(v))} className="space-y-3">
               <FormField
                 control={form.control}
                 name="subject"
@@ -704,10 +648,7 @@ function TicketsTab({ projectId }: { projectId: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -723,17 +664,11 @@ function TicketsTab({ projectId }: { projectId: string }) {
                 )}
               />
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={mut.isPending}>
-                  {mut.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
+                  {mut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Submit
                 </Button>
               </DialogFooter>
@@ -766,10 +701,5 @@ function TicketPriorityBadge({ priority }: { priority: string }) {
     normal: "bg-muted text-muted-foreground",
     low: "bg-muted text-muted-foreground",
   };
-  return (
-    <Badge className={map[priority] ?? "bg-muted text-muted-foreground"}>
-      {priority}
-    </Badge>
-  );
+  return <Badge className={map[priority] ?? "bg-muted text-muted-foreground"}>{priority}</Badge>;
 }
-

@@ -100,11 +100,8 @@ export function useCreateDrawing(projectId: string) {
   const fn = useServerFn(createDrawing);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: {
-      drawingNumber: string;
-      title: string;
-      discipline: DrawingDiscipline;
-    }) => fn({ data: { projectId, ...input } }),
+    mutationFn: (input: { drawingNumber: string; title: string; discipline: DrawingDiscipline }) =>
+      fn({ data: { projectId, ...input } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["drawings", projectId] });
       toast.success("Drawing created");
@@ -168,8 +165,7 @@ export function useRequestDrawingSignoff(drawingId: string) {
   const fn = useServerFn(requestDrawingSignoff);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { note?: string | null }) =>
-      fn({ data: { drawingId, ...input } }),
+    mutationFn: (input: { note?: string | null }) => fn({ data: { drawingId, ...input } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["drawing-signoffs", drawingId] });
       toast.success("Sign-off requested");

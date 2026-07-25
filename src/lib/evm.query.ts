@@ -1,10 +1,6 @@
 // P-076 — TanStack Query hooks for EVM.
 import { queryOptions } from "@tanstack/react-query";
-import {
-  getEvmAccess,
-  listEvmSnapshots,
-  type EvmSnapshotRow,
-} from "@/lib/evm.functions";
+import { getEvmAccess, listEvmSnapshots, type EvmSnapshotRow } from "@/lib/evm.functions";
 
 export function evmSnapshotsQueryOptions(projectId: string) {
   return queryOptions<EvmSnapshotRow[]>({

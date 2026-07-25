@@ -79,8 +79,7 @@ export function computePayAppTotals(
     const total = fromCents(totalCents);
     schedCents += toCents(scheduled);
     certCents += totalCents;
-    const pct =
-      scheduled > 0 ? Math.round((total / scheduled) * 10000) / 100 : 0;
+    const pct = scheduled > 0 ? Math.round((total / scheduled) * 10000) / 100 : 0;
     return {
       sov_line_no: raw.sov_line_no,
       description: raw.description,

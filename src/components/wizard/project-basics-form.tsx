@@ -17,17 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   makeProjectBasicsSchema,
@@ -51,14 +42,8 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ProjectBasicsForm({
-  archetype,
-  defaultValues,
-  onSubmit,
-  onBack,
-}: Props) {
-  const needsMwh =
-    archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
+export function ProjectBasicsForm({ archetype, defaultValues, onSubmit, onBack }: Props) {
+  const needsMwh = archetype === "standalone_bess" || archetype === "hybrid_pv_bess";
 
   const form = useForm<ProjectBasics>({
     resolver: zodResolver(makeProjectBasicsSchema(archetype)),
@@ -95,10 +80,7 @@ export function ProjectBasicsForm({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-6"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <Card className="flex flex-col gap-8 border-border bg-card p-6">
           {/* Identity */}
           <section className="flex flex-col gap-4">
@@ -110,10 +92,7 @@ export function ProjectBasicsForm({
                 <FormItem>
                   <FormLabel>Project name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Prairie Winds Solar"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Prairie Winds Solar" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -299,9 +278,7 @@ export function ProjectBasicsForm({
                     </Button>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>
-                  Map picker ships in a later batch
-                </TooltipContent>
+                <TooltipContent>Map picker ships in a later batch</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </section>
@@ -344,9 +321,7 @@ export function ProjectBasicsForm({
                           )}
                         >
                           <CalendarIcon size={16} aria-hidden />
-                          {field.value
-                            ? format(field.value, "PPP")
-                            : "Pick a date"}
+                          {field.value ? format(field.value, "PPP") : "Pick a date"}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>

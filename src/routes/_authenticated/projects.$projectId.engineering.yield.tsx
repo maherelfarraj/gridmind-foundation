@@ -6,34 +6,24 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  getMyYieldRoles,
-  listYieldScenarios,
-} from "@/lib/yield.functions";
-import {
-  yieldRolesQueryOptions,
-  yieldScenariosQueryOptions,
-} from "@/lib/yield-query";
+import { getMyYieldRoles, listYieldScenarios } from "@/lib/yield.functions";
+import { yieldRolesQueryOptions, yieldScenariosQueryOptions } from "@/lib/yield-query";
 import { YieldScenariosTable } from "@/components/engineering/yield-scenarios-table";
 import { YieldComparison } from "@/components/engineering/yield-comparison";
 import { YieldPvsystImport } from "@/components/engineering/yield-pvsyst-import";
 
-export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/engineering/yield",
-)({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/yield")({
   head: () => ({
     meta: [
       { title: "Yield scenarios — GridMind EPC" },
       {
         name: "description",
-        content:
-          "PVsyst and preliminary yield scenarios with side-by-side comparison.",
+        content: "PVsyst and preliminary yield scenarios with side-by-side comparison.",
       },
       { property: "og:title", content: "Yield scenarios — GridMind EPC" },
       {
         property: "og:description",
-        content:
-          "PVsyst and preliminary yield scenarios with side-by-side comparison.",
+        content: "PVsyst and preliminary yield scenarios with side-by-side comparison.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -80,39 +70,25 @@ function YieldPage() {
 function ScenariosTab({ projectId }: { projectId: string }) {
   const listFn = useServerFn(listYieldScenarios);
   const rolesFn = useServerFn(getMyYieldRoles);
-  const { data: scenarios } = useSuspenseQuery(
-    yieldScenariosQueryOptions(listFn, projectId),
-  );
-  const { data: roles } = useSuspenseQuery(
-    yieldRolesQueryOptions(rolesFn, projectId),
-  );
+  const { data: scenarios } = useSuspenseQuery(yieldScenariosQueryOptions(listFn, projectId));
+  const { data: roles } = useSuspenseQuery(yieldRolesQueryOptions(rolesFn, projectId));
   return (
-    <YieldScenariosTable
-      projectId={projectId}
-      scenarios={scenarios}
-      canWrite={roles.canWrite}
-    />
+    <YieldScenariosTable projectId={projectId} scenarios={scenarios} canWrite={roles.canWrite} />
   );
 }
 
 function ComparisonTab({ projectId }: { projectId: string }) {
   const listFn = useServerFn(listYieldScenarios);
-  const { data: scenarios } = useSuspenseQuery(
-    yieldScenariosQueryOptions(listFn, projectId),
-  );
+  const { data: scenarios } = useSuspenseQuery(yieldScenariosQueryOptions(listFn, projectId));
   return <YieldComparison scenarios={scenarios} />;
 }
 
 function ImportTab({ projectId }: { projectId: string }) {
   const rolesFn = useServerFn(getMyYieldRoles);
-  const { data: roles } = useSuspenseQuery(
-    yieldRolesQueryOptions(rolesFn, projectId),
-  );
+  const { data: roles } = useSuspenseQuery(yieldRolesQueryOptions(rolesFn, projectId));
   return <YieldPvsystImport projectId={projectId} canWrite={roles.canWrite} />;
 }
 
 function TableSkeleton() {
-  return (
-    <div className="h-64 animate-pulse rounded-md border border-border bg-muted/40" />
-  );
+  return <div className="h-64 animate-pulse rounded-md border border-border bg-muted/40" />;
 }

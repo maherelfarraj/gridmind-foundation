@@ -19,14 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  DRAWING_ALLOWED_EXTENSIONS,
-  DRAWING_MAX_BYTES,
-} from "@/lib/drawings.functions";
-import {
-  useGetRevisionUploadUrl,
-  useRegisterDrawingRevision,
-} from "@/lib/drawings-query";
+import { DRAWING_ALLOWED_EXTENSIONS, DRAWING_MAX_BYTES } from "@/lib/drawings.functions";
+import { useGetRevisionUploadUrl, useRegisterDrawingRevision } from "@/lib/drawings-query";
 
 const schema = z.object({
   revisionCode: z.string().trim().min(1).max(10),
@@ -37,9 +31,7 @@ type FormValues = z.infer<typeof schema>;
 function extAllowed(name: string): boolean {
   const idx = name.lastIndexOf(".");
   if (idx < 0) return false;
-  return (DRAWING_ALLOWED_EXTENSIONS as readonly string[]).includes(
-    name.slice(idx).toLowerCase(),
-  );
+  return (DRAWING_ALLOWED_EXTENSIONS as readonly string[]).includes(name.slice(idx).toLowerCase());
 }
 
 async function xhrPut(url: string, file: File, onProgress: (pct: number) => void) {
@@ -88,9 +80,7 @@ export function UploadRevisionDialog({ drawingId, projectId, disabled }: Props) 
     setSuggested(null);
     if (!f) return;
     if (!extAllowed(f.name)) {
-      setError(
-        `File type not allowed. Use: ${DRAWING_ALLOWED_EXTENSIONS.join(", ")}`,
-      );
+      setError(`File type not allowed. Use: ${DRAWING_ALLOWED_EXTENSIONS.join(", ")}`);
       return;
     }
     if (f.size > DRAWING_MAX_BYTES) {
@@ -180,8 +170,7 @@ export function UploadRevisionDialog({ drawingId, projectId, disabled }: Props) 
         <DialogHeader>
           <DialogTitle>Upload revision</DialogTitle>
           <DialogDescription>
-            Uploads land as draft in the drawings bucket. Revision codes must be unique per
-            drawing.
+            Uploads land as draft in the drawings bucket. Revision codes must be unique per drawing.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
@@ -203,11 +192,7 @@ export function UploadRevisionDialog({ drawingId, projectId, disabled }: Props) 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="revision-code">Revision code</Label>
-              <Input
-                id="revision-code"
-                placeholder="A"
-                {...form.register("revisionCode")}
-              />
+              <Input id="revision-code" placeholder="A" {...form.register("revisionCode")} />
               {suggested && (
                 <p className="text-xs text-muted-foreground">
                   Suggested: <span className="font-mono">{suggested}</span>
