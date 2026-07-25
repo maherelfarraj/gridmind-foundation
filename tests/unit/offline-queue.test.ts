@@ -35,13 +35,13 @@ import {
 } from "@/lib/offline/queue";
 
 async function resetIdb() {
+  await __resetDbForTests();
   await new Promise<void>((resolve, reject) => {
     const req = indexedDB.deleteDatabase("gridmind-field");
     req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);
     req.onblocked = () => resolve();
   });
-  __resetDbForTests();
 }
 
 describe("offline queue", () => {
