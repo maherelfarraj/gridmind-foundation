@@ -10,6 +10,7 @@ import {
   Eye,
   HardHat,
   Handshake,
+  FileDown,
   MailPlus,
   Package,
   PencilRuler,
