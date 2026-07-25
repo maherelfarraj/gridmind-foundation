@@ -144,17 +144,28 @@ export const listApiKeys = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("api_keys")
-      .select(SAFE_SELECT)
+      .select(`${SAFE_SELECT}, allowed_ips, hmac_secret`)
       .eq("company_id", companyId)
       .order("created_at", { ascending: false });
     if (error) throw error;
 
-    return ((data ?? []) as Array<Omit<ApiKeyRow, "status">>).map((row) => ({
-      ...row,
-      scopes: (row.scopes ?? []) as ApiKeyScope[],
-      status: statusOf(row),
-    }));
+    // hmac_secret is read only to derive a boolean — it is stripped here and
+    // never crosses the RPC boundary.
+    return ((data ?? []) as Array<Record<string, unknown>>).map((raw) => {
+      const { hmac_secret, ...row } = raw as { hmac_secret: string | null } & Omit<
+        ApiKeyRow,
+        "status" | "has_hmac"
+      >;
+      return {
+        ...row,
+        scopes: (row.scopes ?? []) as ApiKeyScope[],
+        allowed_ips: (row.allowed_ips ?? []) as string[],
+        has_hmac: !!hmac_secret,
+        status: statusOf(row),
+      };
+    });
   });
+
 
 // ---------- create ---------------------------------------------------------
 
