@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -32,6 +33,7 @@ import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esig
 import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
+import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
 import { Route as AuthenticatedSettingsPortalMembersRouteImport } from './routes/_authenticated/settings.portal-members'
@@ -194,6 +196,11 @@ const PortalIndexRoute = PortalIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PortalRoute,
 } as any)
+const ShareTokenRoute = ShareTokenRouteImport.update({
+  id: '/share/$token',
+  path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PoTokenRoute = PoTokenRouteImport.update({
   id: '/po/$token',
   path: '/po/$token',
@@ -276,6 +283,12 @@ const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
     path: '/settings/users',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsShareLinksRoute =
+  AuthenticatedSettingsShareLinksRouteImport.update({
+    id: '/settings/share-links',
+    path: '/settings/share-links',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsProfileRoute =
@@ -1076,6 +1089,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
@@ -1113,6 +1127,7 @@ export interface FileRoutesByFullPath {
   '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
@@ -1226,6 +1241,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
@@ -1256,6 +1272,7 @@ export interface FileRoutesByTo {
   '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
@@ -1370,6 +1387,7 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
+  '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
@@ -1407,6 +1425,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
@@ -1523,6 +1542,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/po/$token'
+    | '/share/$token'
     | '/portal/'
     | '/admin/tenants'
     | '/crm/pipeline'
@@ -1560,6 +1580,7 @@ export interface FileRouteTypes {
     | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
+    | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
@@ -1673,6 +1694,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/po/$token'
+    | '/share/$token'
     | '/portal'
     | '/crm/pipeline'
     | '/field/discipline-board'
@@ -1703,6 +1725,7 @@ export interface FileRouteTypes {
     | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
+    | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
@@ -1816,6 +1839,7 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/dashboard'
     | '/po/$token'
+    | '/share/$token'
     | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
@@ -1853,6 +1877,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/portal-members'
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
+    | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
     | '/api/cron/approval-escalations'
     | '/api/cron/pm-generate'
@@ -1963,6 +1988,7 @@ export interface RootRouteChildren {
   DesignSystemRoute: typeof DesignSystemRoute
   PortalRoute: typeof PortalRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
+  ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
@@ -2019,6 +2045,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/'
       preLoaderRoute: typeof PortalIndexRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/share/$token': {
+      id: '/share/$token'
+      path: '/share/$token'
+      fullPath: '/share/$token'
+      preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/po/$token': {
       id: '/po/$token'
@@ -2130,6 +2163,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/users'
       fullPath: '/settings/users'
       preLoaderRoute: typeof AuthenticatedSettingsUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/share-links': {
+      id: '/_authenticated/settings/share-links'
+      path: '/settings/share-links'
+      fullPath: '/settings/share-links'
+      preLoaderRoute: typeof AuthenticatedSettingsShareLinksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/profile': {
@@ -3490,6 +3530,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsPortalMembersRoute: typeof AuthenticatedSettingsPortalMembersRoute
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
+  AuthenticatedSettingsShareLinksRoute: typeof AuthenticatedSettingsShareLinksRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -3578,6 +3619,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsPortalMembersRoute,
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
+  AuthenticatedSettingsShareLinksRoute: AuthenticatedSettingsShareLinksRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
@@ -3644,6 +3686,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesignSystemRoute: DesignSystemRoute,
   PortalRoute: PortalRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
+  ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
