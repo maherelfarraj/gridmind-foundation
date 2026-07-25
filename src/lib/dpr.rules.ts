@@ -188,7 +188,10 @@ export function photoObjectPath(
   reportDate: string, // YYYY-MM-DD
   filename: string,
 ): string {
-  const safe = filename.replace(/[^\w.-]+/g, "_").slice(0, 100);
+  const safe = filename
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/\.{2,}/g, "_")
+    .slice(0, 100);
   const id =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
