@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      alarm_rules: {
+        Row: {
+          company_id: string
+          condition: Database["public"]["Enums"]["alarm_condition"]
+          created_at: string
+          created_by: string | null
+          dead_band: number
+          duration_seconds: number
+          enabled: boolean
+          escalation_route: Json
+          id: string
+          metric: string
+          name: string
+          project_id: string | null
+          severity: Database["public"]["Enums"]["alarm_severity"]
+          threshold: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          condition: Database["public"]["Enums"]["alarm_condition"]
+          created_at?: string
+          created_by?: string | null
+          dead_band?: number
+          duration_seconds?: number
+          enabled?: boolean
+          escalation_route?: Json
+          id?: string
+          metric: string
+          name: string
+          project_id?: string | null
+          severity?: Database["public"]["Enums"]["alarm_severity"]
+          threshold: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          condition?: Database["public"]["Enums"]["alarm_condition"]
+          created_at?: string
+          created_by?: string | null
+          dead_band?: number
+          duration_seconds?: number
+          enabled?: boolean
+          escalation_route?: Json
+          id?: string
+          metric?: string
+          name?: string
+          project_id?: string | null
+          severity?: Database["public"]["Enums"]["alarm_severity"]
+          threshold?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alarm_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alarm_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alarm_rules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           company_id: string
@@ -6582,6 +6658,102 @@ export type Database = {
           },
         ]
       }
+      scada_alarms: {
+        Row: {
+          acknowledge_note: string | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          cleared_at: string | null
+          company_id: string
+          created_at: string
+          escalation_level: number
+          id: string
+          message: string
+          project_id: string
+          raised_at: string
+          rule_id: string | null
+          scada_asset_id: string | null
+          severity: Database["public"]["Enums"]["alarm_severity"]
+          status: Database["public"]["Enums"]["alarm_status"]
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          acknowledge_note?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          cleared_at?: string | null
+          company_id: string
+          created_at?: string
+          escalation_level?: number
+          id?: string
+          message: string
+          project_id: string
+          raised_at?: string
+          rule_id?: string | null
+          scada_asset_id?: string | null
+          severity: Database["public"]["Enums"]["alarm_severity"]
+          status?: Database["public"]["Enums"]["alarm_status"]
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          acknowledge_note?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          cleared_at?: string | null
+          company_id?: string
+          created_at?: string
+          escalation_level?: number
+          id?: string
+          message?: string
+          project_id?: string
+          raised_at?: string
+          rule_id?: string | null
+          scada_asset_id?: string | null
+          severity?: Database["public"]["Enums"]["alarm_severity"]
+          status?: Database["public"]["Enums"]["alarm_status"]
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_alarms_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_alarms_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_alarms_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_alarms_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alarm_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_alarms_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scada_assets: {
         Row: {
           asset_key: string
@@ -8083,6 +8255,9 @@ export type Database = {
       }
     }
     Enums: {
+      alarm_condition: "gt" | "gte" | "lt" | "lte" | "eq" | "ne"
+      alarm_severity: "info" | "warning" | "major" | "critical"
+      alarm_status: "active" | "acknowledged" | "cleared"
       app_role:
         | "super_admin"
         | "company_admin"
@@ -8507,6 +8682,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alarm_condition: ["gt", "gte", "lt", "lte", "eq", "ne"],
+      alarm_severity: ["info", "warning", "major", "critical"],
+      alarm_status: ["active", "acknowledged", "cleared"],
       app_role: [
         "super_admin",
         "company_admin",
