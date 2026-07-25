@@ -67,11 +67,11 @@ export const approvalRuleInputSchema = z.object({
     .max(1e12)
     .nullable()
     .optional(),
-  threshold_currency: z.string().min(3).max(3).default("USD"),
+  threshold_currency: z.string().length(3),
   sla_hours: z.number().int().min(1).max(24 * 365),
   escalation_role: z.enum(APPROVAL_ROLES).nullable().optional(),
-  blocks_export: z.boolean().default(false),
-  is_active: z.boolean().default(true),
+  blocks_export: z.boolean(),
+  is_active: z.boolean(),
   steps: z.array(chainStepSchema).min(1),
 });
 export type ApprovalRuleInput = z.infer<typeof approvalRuleInputSchema>;
