@@ -64,6 +64,7 @@ import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/
 import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './routes/_authenticated/procurement.receipts.index'
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
+import { Route as AuthenticatedOmScadaIndexRouteImport } from './routes/_authenticated/om.scada.index'
 import { Route as AuthenticatedHseIncidentsIndexRouteImport } from './routes/_authenticated/hse.incidents.index'
 import { Route as AuthenticatedFieldTransmittalsIndexRouteImport } from './routes/_authenticated/field.transmittals.index'
 import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/_authenticated/field.submittals.index'
@@ -457,6 +458,12 @@ const AuthenticatedProcurementMatchesIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
+  } as any)
+const AuthenticatedOmScadaIndexRoute =
+  AuthenticatedOmScadaIndexRouteImport.update({
+    id: '/om/scada/',
+    path: '/om/scada/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHseIncidentsIndexRoute =
   AuthenticatedHseIncidentsIndexRouteImport.update({
@@ -1038,6 +1045,7 @@ export interface FileRoutesByFullPath {
   '/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
+  '/om/scada/': typeof AuthenticatedOmScadaIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -1164,6 +1172,7 @@ export interface FileRoutesByTo {
   '/field/submittals': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/field/transmittals': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/hse/incidents': typeof AuthenticatedHseIncidentsIndexRoute
+  '/om/scada': typeof AuthenticatedOmScadaIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -1299,6 +1308,7 @@ export interface FileRoutesById {
   '/_authenticated/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/_authenticated/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
   '/_authenticated/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
+  '/_authenticated/om/scada/': typeof AuthenticatedOmScadaIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/_authenticated/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -1435,6 +1445,7 @@ export interface FileRouteTypes {
     | '/field/submittals/'
     | '/field/transmittals/'
     | '/hse/incidents/'
+    | '/om/scada/'
     | '/procurement/matches/'
     | '/procurement/pos/'
     | '/procurement/receipts/'
@@ -1561,6 +1572,7 @@ export interface FileRouteTypes {
     | '/field/submittals'
     | '/field/transmittals'
     | '/hse/incidents'
+    | '/om/scada'
     | '/procurement/matches'
     | '/procurement/pos'
     | '/procurement/receipts'
@@ -1695,6 +1707,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/submittals/'
     | '/_authenticated/field/transmittals/'
     | '/_authenticated/hse/incidents/'
+    | '/_authenticated/om/scada/'
     | '/_authenticated/procurement/matches/'
     | '/_authenticated/procurement/pos/'
     | '/_authenticated/procurement/receipts/'
@@ -2139,6 +2152,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/matches/'
       preLoaderRoute: typeof AuthenticatedProcurementMatchesIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
+    }
+    '/_authenticated/om/scada/': {
+      id: '/_authenticated/om/scada/'
+      path: '/om/scada'
+      fullPath: '/om/scada/'
+      preLoaderRoute: typeof AuthenticatedOmScadaIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hse/incidents/': {
       id: '/_authenticated/hse/incidents/'
@@ -3172,6 +3192,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldSubmittalsIndexRoute: typeof AuthenticatedFieldSubmittalsIndexRoute
   AuthenticatedFieldTransmittalsIndexRoute: typeof AuthenticatedFieldTransmittalsIndexRoute
   AuthenticatedHseIncidentsIndexRoute: typeof AuthenticatedHseIncidentsIndexRoute
+  AuthenticatedOmScadaIndexRoute: typeof AuthenticatedOmScadaIndexRoute
   AuthenticatedQaqcInspectionsIndexRoute: typeof AuthenticatedQaqcInspectionsIndexRoute
   AuthenticatedQaqcNcrsIndexRoute: typeof AuthenticatedQaqcNcrsIndexRoute
   AuthenticatedQaqcPunchIndexRoute: typeof AuthenticatedQaqcPunchIndexRoute
@@ -3252,6 +3273,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldTransmittalsIndexRoute:
     AuthenticatedFieldTransmittalsIndexRoute,
   AuthenticatedHseIncidentsIndexRoute: AuthenticatedHseIncidentsIndexRoute,
+  AuthenticatedOmScadaIndexRoute: AuthenticatedOmScadaIndexRoute,
   AuthenticatedQaqcInspectionsIndexRoute:
     AuthenticatedQaqcInspectionsIndexRoute,
   AuthenticatedQaqcNcrsIndexRoute: AuthenticatedQaqcNcrsIndexRoute,
