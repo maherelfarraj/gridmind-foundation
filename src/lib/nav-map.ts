@@ -130,6 +130,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "admin", label: "Module access", url: "/settings/modules", icon: SlidersHorizontal },
       { moduleKey: "admin", label: "Procurement", url: "/settings/procurement", icon: Receipt },
       { moduleKey: "admin", label: "Approval rules", url: "/settings/approval-rules", icon: ShieldCheck },
+      { moduleKey: "admin", label: "Scheduled reports", url: "/settings/scheduled-reports", icon: CalendarClock },
       {
         moduleKey: "admin",
         label: "Permissions simulator",

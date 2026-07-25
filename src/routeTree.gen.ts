@@ -34,6 +34,7 @@ import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-gene
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
+import { Route as AuthenticatedSettingsScheduledReportsRouteImport } from './routes/_authenticated/settings.scheduled-reports'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
 import { Route as AuthenticatedSettingsProcurementRouteImport } from './routes/_authenticated/settings.procurement'
 import { Route as AuthenticatedSettingsPortalMembersRouteImport } from './routes/_authenticated/settings.portal-members'
@@ -290,6 +291,12 @@ const AuthenticatedSettingsShareLinksRoute =
   AuthenticatedSettingsShareLinksRouteImport.update({
     id: '/settings/share-links',
     path: '/settings/share-links',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsScheduledReportsRoute =
+  AuthenticatedSettingsScheduledReportsRouteImport.update({
+    id: '/settings/scheduled-reports',
+    path: '/settings/scheduled-reports',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsProfileRoute =
@@ -1135,6 +1142,7 @@ export interface FileRoutesByFullPath {
   '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1281,6 +1289,7 @@ export interface FileRoutesByTo {
   '/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1435,6 +1444,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/portal-members': typeof AuthenticatedSettingsPortalMembersRoute
   '/_authenticated/settings/procurement': typeof AuthenticatedSettingsProcurementRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/_authenticated/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1591,6 +1601,7 @@ export interface FileRouteTypes {
     | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
+    | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
@@ -1737,6 +1748,7 @@ export interface FileRouteTypes {
     | '/settings/portal-members'
     | '/settings/procurement'
     | '/settings/profile'
+    | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
     | '/api/cron/approval-escalations'
@@ -1890,6 +1902,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/portal-members'
     | '/_authenticated/settings/procurement'
     | '/_authenticated/settings/profile'
+    | '/_authenticated/settings/scheduled-reports'
     | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
     | '/api/cron/approval-escalations'
@@ -2183,6 +2196,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/share-links'
       fullPath: '/settings/share-links'
       preLoaderRoute: typeof AuthenticatedSettingsShareLinksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/scheduled-reports': {
+      id: '/_authenticated/settings/scheduled-reports'
+      path: '/settings/scheduled-reports'
+      fullPath: '/settings/scheduled-reports'
+      preLoaderRoute: typeof AuthenticatedSettingsScheduledReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/profile': {
@@ -3551,6 +3571,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsPortalMembersRoute: typeof AuthenticatedSettingsPortalMembersRoute
   AuthenticatedSettingsProcurementRoute: typeof AuthenticatedSettingsProcurementRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
+  AuthenticatedSettingsScheduledReportsRoute: typeof AuthenticatedSettingsScheduledReportsRoute
   AuthenticatedSettingsShareLinksRoute: typeof AuthenticatedSettingsShareLinksRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
@@ -3641,6 +3662,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsPortalMembersRoute,
   AuthenticatedSettingsProcurementRoute: AuthenticatedSettingsProcurementRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
+  AuthenticatedSettingsScheduledReportsRoute:
+    AuthenticatedSettingsScheduledReportsRoute,
   AuthenticatedSettingsShareLinksRoute: AuthenticatedSettingsShareLinksRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
