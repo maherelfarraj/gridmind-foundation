@@ -30,8 +30,6 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
-import { Route as ApiCronPmGenerateRouteImport } from './routes/api/cron/pm-generate'
-import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
 import { Route as AuthenticatedSettingsScheduledReportsRouteImport } from './routes/_authenticated/settings.scheduled-reports'
@@ -272,17 +270,6 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   path: '/api/webhooks/esign',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronPmGenerateRoute = ApiCronPmGenerateRouteImport.update({
-  id: '/api/cron/pm-generate',
-  path: '/api/cron/pm-generate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronApprovalEscalationsRoute =
-  ApiCronApprovalEscalationsRouteImport.update({
-    id: '/api/cron/approval-escalations',
-    path: '/api/cron/approval-escalations',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
@@ -1157,8 +1144,6 @@ export interface FileRoutesByFullPath {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
@@ -1306,8 +1291,6 @@ export interface FileRoutesByTo {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse': typeof AuthenticatedHseIndexRoute
@@ -1463,8 +1446,6 @@ export interface FileRoutesById {
   '/_authenticated/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/pm-generate': typeof ApiCronPmGenerateRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
@@ -1622,8 +1603,6 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse/'
@@ -1771,8 +1750,6 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse'
@@ -1927,8 +1904,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/scheduled-reports'
     | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/pm-generate'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/_authenticated/hse/'
@@ -2039,8 +2014,6 @@ export interface RootRouteChildren {
   PortalRoute: typeof PortalRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
-  ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
-  ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEventsRoute: typeof ApiPublicHooksEventsRoute
   ApiPublicHooksPingRoute: typeof ApiPublicHooksPingRoute
@@ -2194,20 +2167,6 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/esign'
       fullPath: '/api/webhooks/esign'
       preLoaderRoute: typeof ApiWebhooksEsignRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/pm-generate': {
-      id: '/api/cron/pm-generate'
-      path: '/api/cron/pm-generate'
-      fullPath: '/api/cron/pm-generate'
-      preLoaderRoute: typeof ApiCronPmGenerateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/approval-escalations': {
-      id: '/api/cron/approval-escalations'
-      path: '/api/cron/approval-escalations'
-      fullPath: '/api/cron/approval-escalations'
-      preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings/users': {
@@ -3772,8 +3731,6 @@ const rootRouteChildren: RootRouteChildren = {
   PortalRoute: PortalRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
-  ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
-  ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEventsRoute: ApiPublicHooksEventsRoute,
   ApiPublicHooksPingRoute: ApiPublicHooksPingRoute,
