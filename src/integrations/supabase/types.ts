@@ -5251,6 +5251,102 @@ export type Database = {
           },
         ]
       }
+      qaqc_inspections: {
+        Row: {
+          area: string
+          attachments: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          discipline: Database["public"]["Enums"]["qaqc_discipline"]
+          id: string
+          inspection_date: string
+          inspection_number: string
+          inspector_id: string | null
+          itp_reference: string | null
+          project_id: string
+          result: Database["public"]["Enums"]["qaqc_result"]
+          rework_notes: string | null
+          rework_required: boolean
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          area: string
+          attachments?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          discipline: Database["public"]["Enums"]["qaqc_discipline"]
+          id?: string
+          inspection_date: string
+          inspection_number: string
+          inspector_id?: string | null
+          itp_reference?: string | null
+          project_id: string
+          result?: Database["public"]["Enums"]["qaqc_result"]
+          rework_notes?: string | null
+          rework_required?: boolean
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          area?: string
+          attachments?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          discipline?: Database["public"]["Enums"]["qaqc_discipline"]
+          id?: string
+          inspection_date?: string
+          inspection_number?: string
+          inspector_id?: string | null
+          itp_reference?: string | null
+          project_id?: string
+          result?: Database["public"]["Enums"]["qaqc_result"]
+          rework_notes?: string | null
+          rework_required?: boolean
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qaqc_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_inspections_inspector_id_fkey"
+            columns: ["inspector_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qaqc_inspections_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -7014,6 +7110,8 @@ export type Database = {
         | "rejected"
         | "expired"
         | "superseded"
+      qaqc_discipline: "civil" | "mechanical" | "electrical"
+      qaqc_result: "pending" | "pass" | "fail" | "conditional"
       rfq_bid_status:
         | "invited"
         | "submitted"
@@ -7396,6 +7494,8 @@ export const Constants = {
         "expired",
         "superseded",
       ],
+      qaqc_discipline: ["civil", "mechanical", "electrical"],
+      qaqc_result: ["pending", "pass", "fail", "conditional"],
       rfq_bid_status: [
         "invited",
         "submitted",
