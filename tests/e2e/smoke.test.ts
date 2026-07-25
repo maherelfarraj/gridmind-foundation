@@ -216,6 +216,7 @@ describe.skipIf(!canRun)('P-133 e2e smoke: golden path', () => {
       .from('approval_instances')
       .insert({
         company_id: state.companyId!,
+        entity: 'project_phase_gate',
         entity_type: 'project_phase_gate',
         entity_id: state.devGateId!,
         rule_key: 'gate.transition',
