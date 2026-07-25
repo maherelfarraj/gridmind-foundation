@@ -43,6 +43,8 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
+import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
+import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
@@ -283,6 +285,18 @@ const AuthenticatedProcurementExpeditingRoute =
   AuthenticatedProcurementExpeditingRouteImport.update({
     id: '/procurement/expediting',
     path: '/procurement/expediting',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceInvoicesRoute =
+  AuthenticatedFinanceInvoicesRouteImport.update({
+    id: '/finance/invoices',
+    path: '/finance/invoices',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceDebitNotesRoute =
+  AuthenticatedFinanceDebitNotesRouteImport.update({
+    id: '/finance/debit-notes',
+    path: '/finance/debit-notes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFinanceContractsRoute =
@@ -620,6 +634,8 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
+  '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -705,6 +721,8 @@ export interface FileRoutesByTo {
   '/po/$token': typeof PoTokenRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
+  '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -786,6 +804,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
+  '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -874,6 +894,8 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/crm/pipeline'
     | '/finance/contracts'
+    | '/finance/debit-notes'
+    | '/finance/invoices'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -959,6 +981,8 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/crm/pipeline'
     | '/finance/contracts'
+    | '/finance/debit-notes'
+    | '/finance/invoices'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/scorecards'
@@ -1039,6 +1063,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/finance/contracts'
+    | '/_authenticated/finance/debit-notes'
+    | '/_authenticated/finance/invoices'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -1360,6 +1386,20 @@ declare module '@tanstack/react-router' {
       path: '/procurement/expediting'
       fullPath: '/procurement/expediting'
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/invoices': {
+      id: '/_authenticated/finance/invoices'
+      path: '/finance/invoices'
+      fullPath: '/finance/invoices'
+      preLoaderRoute: typeof AuthenticatedFinanceInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/debit-notes': {
+      id: '/_authenticated/finance/debit-notes'
+      path: '/finance/debit-notes'
+      fullPath: '/finance/debit-notes'
+      preLoaderRoute: typeof AuthenticatedFinanceDebitNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/contracts': {
@@ -2073,6 +2113,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
+  AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
+  AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2103,6 +2145,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
+  AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
+  AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedProcurementExpeditingRoute:
     AuthenticatedProcurementExpeditingRoute,
   AuthenticatedProcurementMatchesRoute:
