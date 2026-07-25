@@ -317,6 +317,15 @@ function MembersTable({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link
+                      to="/settings/portal-audit"
+                      search={{ membershipId: row.id, projectId }}
+                    >
+                      <Activity className="mr-1 h-3.5 w-3.5" />
+                      Activity
+                    </Link>
+                  </Button>
                   {row.status === "active" || row.status === "invited" ? (
                     <Button
                       variant="ghost"
