@@ -40,7 +40,7 @@ async function assertLockRole(context: AuthContext) {
 }
 
 async function currentCompanyId(context: AuthContext): Promise<string> {
-  const uid = context.userId;
+  const uid = context.user.id;
   const { data, error } = await context.supabase
     .from("profiles")
     .select("company_id")
@@ -127,7 +127,7 @@ export const lockExport = createServerFn({ method: "POST" })
         project_id: data.project_id,
         export_type: data.export_type,
         reason: data.reason,
-        locked_by: context.userId,
+        locked_by: context.user.id,
       } as never)
       .select("id")
       .single();
