@@ -193,6 +193,7 @@ export function captureError(error: unknown, context: CaptureContext = {}): Capt
     statusCode: normalized.statusCode,
     cause: normalized.cause,
     route,
+    path: route,
     requestId,
   };
 
