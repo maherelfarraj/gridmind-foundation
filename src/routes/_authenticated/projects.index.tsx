@@ -14,6 +14,7 @@ import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DataTablePagination } from "@/components/ui/data-table";
 import { EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
