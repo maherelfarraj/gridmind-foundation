@@ -106,6 +106,7 @@ export interface PrTestDefaults {
   primaryColor: string | null;
   accentColor: string | null;
   logoPath: string | null;
+  logoSignedUrl: string | null;
 }
 
 function toRow(r: any, capacityMwp: number | null): PrTestRow {
