@@ -1,8 +1,8 @@
 // P-075 — Budget KPI strip: per-currency current, committed, actual, variance.
 import { Banknote, Coins, Receipt, TrendingDown } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiGrid, KpiTile, type KpiStatus } from "@/components/ui/kpi-tile";
 import {
   formatMoney,
   totalsByCurrency,
@@ -14,6 +14,12 @@ import type { BudgetRow } from "@/lib/budget.functions";
 interface Props {
   budgets: BudgetRow[];
 }
+
+const BAND_STATUS: Record<ReturnType<typeof varianceBand>, KpiStatus> = {
+  ok: "neutral",
+  warning: "warning",
+  destructive: "bad",
+};
 
 export function BudgetKpiStrip({ budgets }: Props) {
   const totals = totalsByCurrency(
@@ -30,25 +36,12 @@ export function BudgetKpiStrip({ budgets }: Props) {
 
   if (totals.length === 0) {
     return (
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi icon={<Banknote size={16} aria-hidden />} label="Budget">
-          <span className="text-sm text-muted-foreground">No budgets yet</span>
-        </Kpi>
-        <Kpi icon={<Receipt size={16} aria-hidden />} label="Committed">
-          <span className="text-sm text-muted-foreground">—</span>
-        </Kpi>
-        <Kpi icon={<Coins size={16} aria-hidden />} label="Actual">
-          <span className="text-sm text-muted-foreground">—</span>
-        </Kpi>
-        <Kpi icon={<TrendingDown size={16} aria-hidden />} label="Variance">
-          <span className="text-sm text-muted-foreground">—</span>
-        </Kpi>
-      </div>
+      <EmptyState icon={Banknote} title="No budgets yet" compact />
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {totals.map((t) => (
         <CurrencyRow key={t.currency_code} t={t} />
       ))}
@@ -57,56 +50,22 @@ export function BudgetKpiStrip({ budgets }: Props) {
 }
 
 function CurrencyRow({ t }: { t: CurrencyTotals }) {
-  const band = varianceBand(t.variance, t.current);
-  const varianceClass =
-    band === "destructive"
-      ? "text-destructive"
-      : band === "warning"
-        ? "text-warning"
-        : "text-foreground";
+  const status = BAND_STATUS[varianceBand(t.variance, t.current)];
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <Kpi icon={<Banknote size={16} aria-hidden />} label={`Budget (${t.currency_code})`}>
-        <span className="text-2xl font-semibold text-foreground">
-          {formatMoney(t.current, t.currency_code)}
-        </span>
-      </Kpi>
-      <Kpi icon={<Receipt size={16} aria-hidden />} label="Committed">
-        <span className="text-2xl font-semibold text-foreground">
-          {formatMoney(t.committed, t.currency_code)}
-        </span>
-      </Kpi>
-      <Kpi icon={<Coins size={16} aria-hidden />} label="Actual">
-        <span className="text-2xl font-semibold text-foreground">
-          {formatMoney(t.actual, t.currency_code)}
-        </span>
-      </Kpi>
-      <Kpi icon={<TrendingDown size={16} aria-hidden />} label="Variance">
-        <span className={cn("text-2xl font-semibold", varianceClass)}>
-          {t.variance >= 0 ? "" : "-"}
-          {formatMoney(Math.abs(t.variance), t.currency_code)}
-        </span>
-      </Kpi>
-    </div>
-  );
-}
-
-function Kpi({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card className="flex flex-col gap-1 border-border bg-card p-3">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {icon}
-        <span>{label}</span>
-      </div>
-      {children}
-    </Card>
+    <KpiGrid label={`Budget KPIs (${t.currency_code})`}>
+      <KpiTile
+        icon={Banknote}
+        label={`Budget (${t.currency_code})`}
+        value={formatMoney(t.current, t.currency_code)}
+      />
+      <KpiTile icon={Receipt} label="Committed" value={formatMoney(t.committed, t.currency_code)} />
+      <KpiTile icon={Coins} label="Actual" value={formatMoney(t.actual, t.currency_code)} />
+      <KpiTile
+        icon={TrendingDown}
+        label="Variance"
+        status={status}
+        value={`${t.variance >= 0 ? "" : "-"}${formatMoney(Math.abs(t.variance), t.currency_code)}`}
+      />
+    </KpiGrid>
   );
 }
