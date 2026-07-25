@@ -369,7 +369,8 @@ export async function guardPublicHook(
         sigReason = 'signature_expired';
       } else {
         const expected = await hmacSha256Hex(secret, `${tsHeader}.${rawBody}`);
-        if (expected.length === sigHeader.length && timingSafeEqual(expected, sigHeader.toLowerCase())) {
+        const provided = sigHeader.toLowerCase().replace(/^sha256=/, '');
+        if (expected.length === provided.length && timingSafeEqual(expected, provided)) {
           sigOk = true;
         } else {
           sigReason = 'signature_mismatch';
