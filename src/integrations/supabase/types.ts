@@ -1232,6 +1232,106 @@ export type Database = {
         }
         Relationships: []
       }
+      debit_notes: {
+        Row: {
+          amount: number
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          id: string
+          invoice_id: string | null
+          issued_at: string | null
+          note_number: string
+          notes: string | null
+          project_id: string | null
+          reason: string
+          settled_at: string | null
+          status: Database["public"]["Enums"]["debit_note_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          id?: string
+          invoice_id?: string | null
+          issued_at?: string | null
+          note_number: string
+          notes?: string | null
+          project_id?: string | null
+          reason: string
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["debit_note_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          id?: string
+          invoice_id?: string | null
+          issued_at?: string | null
+          note_number?: string
+          notes?: string | null
+          project_id?: string | null
+          reason?: string
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["debit_note_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debit_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debit_notes_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debit_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debit_notes_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "debit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debit_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_markups: {
         Row: {
           annotation: Json
@@ -5562,6 +5662,7 @@ export type Database = {
         | "consulting"
         | "lease"
         | "other"
+      debit_note_status: "draft" | "issued" | "settled" | "cancelled"
       delivery_status: "pending" | "success" | "failed"
       document_category:
         | "drawing"
@@ -5878,6 +5979,7 @@ export const Constants = {
         "lease",
         "other",
       ],
+      debit_note_status: ["draft", "issued", "settled", "cancelled"],
       delivery_status: ["pending", "success", "failed"],
       document_category: [
         "drawing",
