@@ -128,7 +128,6 @@ import { Route as AuthenticatedFieldDprDprIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
-import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada/telemetry'
 import { Route as AuthenticatedProjectsProjectIdPlanningWbsRouteImport } from './routes/_authenticated/projects.$projectId.planning.wbs'
 import { Route as AuthenticatedProjectsProjectIdPlanningScheduleRouteImport } from './routes/_authenticated/projects.$projectId.planning.schedule'
 import { Route as AuthenticatedProjectsProjectIdPlanningRisksRouteImport } from './routes/_authenticated/projects.$projectId.planning.risks'
@@ -855,12 +854,6 @@ const AuthenticatedProjectsProjectIdEngineeringIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
-const ApiPublicHooksScadaTelemetryRoute =
-  ApiPublicHooksScadaTelemetryRouteImport.update({
-    id: '/api/public/hooks/scada/telemetry',
-    path: '/api/public/hooks/scada/telemetry',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedProjectsProjectIdPlanningWbsRoute =
   AuthenticatedProjectsProjectIdPlanningWbsRouteImport.update({
     id: '/wbs',
@@ -1231,7 +1224,6 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
-  '/api/public/hooks/scada/telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
@@ -1375,7 +1367,6 @@ export interface FileRoutesByTo {
   '/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
-  '/api/public/hooks/scada/telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
@@ -1533,7 +1524,6 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/_authenticated/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/_authenticated/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
-  '/api/public/hooks/scada/telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/_authenticated/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
@@ -1690,7 +1680,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/risks'
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
-    | '/api/public/hooks/scada/telemetry'
     | '/projects/$projectId/engineering/'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/finance/change-orders/$coId'
@@ -1834,7 +1823,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/risks'
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
-    | '/api/public/hooks/scada/telemetry'
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/finance/change-orders/$coId'
@@ -1991,7 +1979,6 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/planning/risks'
     | '/_authenticated/projects/$projectId/planning/schedule'
     | '/_authenticated/projects/$projectId/planning/wbs'
-    | '/api/public/hooks/scada/telemetry'
     | '/_authenticated/projects/$projectId/engineering/'
     | '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
     | '/_authenticated/projects/$projectId/finance/change-orders/$coId'
@@ -2018,7 +2005,6 @@ export interface RootRouteChildren {
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronPmGenerateRoute: typeof ApiCronPmGenerateRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
-  ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2855,13 +2841,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/engineering/'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
-    }
-    '/api/public/hooks/scada/telemetry': {
-      id: '/api/public/hooks/scada/telemetry'
-      path: '/api/public/hooks/scada/telemetry'
-      fullPath: '/api/public/hooks/scada/telemetry'
-      preLoaderRoute: typeof ApiPublicHooksScadaTelemetryRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/projects/$projectId/planning/wbs': {
       id: '/_authenticated/projects/$projectId/planning/wbs'
@@ -3735,7 +3714,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronPmGenerateRoute: ApiCronPmGenerateRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
-  ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
