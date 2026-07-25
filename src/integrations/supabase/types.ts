@@ -1246,6 +1246,92 @@ export type Database = {
           },
         ]
       }
+      evm_snapshots: {
+        Row: {
+          actual_cost: number
+          budget_at_completion: number
+          company_id: string
+          cpi: number | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          earned_value: number
+          estimate_at_completion: number | null
+          id: string
+          planned_value: number
+          project_id: string
+          snapshot_date: string
+          source: string
+          spi: number | null
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number
+          budget_at_completion?: number
+          company_id: string
+          cpi?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          earned_value?: number
+          estimate_at_completion?: number | null
+          id?: string
+          planned_value?: number
+          project_id: string
+          snapshot_date: string
+          source?: string
+          spi?: number | null
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number
+          budget_at_completion?: number
+          company_id?: string
+          cpi?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          earned_value?: number
+          estimate_at_completion?: number | null
+          id?: string
+          planned_value?: number
+          project_id?: string
+          snapshot_date?: string
+          source?: string
+          spi?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_snapshots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_snapshots_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "evm_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expediting_logs: {
         Row: {
           company_id: string
