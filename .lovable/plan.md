@@ -1,43 +1,26 @@
-Plan: send the first 18 user invites under the @gridmind.captial domain, mapping each to the correct system role using the provided reference, then verify and report back.
+## Status confirmed first
 
-## Mapped invites
-| Email alias | Job description | System role(s) |
-|---|---|---|
-| maher.elfarraj@gridmind.captial | Company owner, super administrator, final approver | super_admin, company_admin |
-| company.admin@gridmind.captial | Second company administrator / operational backup | company_admin |
-| project.manager@gridmind.captial | Project manager | project_admin |
-| engineering.manager@gridmind.captial | Head of engineering | engineering_admin |
-| procurement.manager@gridmind.captial | Head of procurement | procurement_admin |
-| construction.manager@gridmind.captial | Head of construction | construction_admin |
-| site.engineer@gridmind.captial | Site engineer | engineer |
-| site.foreman@gridmind.captial | Site foreman | foreman |
-| hse.manager@gridmind.captial | HSE department head | hse_admin |
-| finance.manager@gridmind.captial | Finance head | finance_admin |
-| legal.manager@gridmind.captial | Legal head | legal_admin |
-| operations.manager@gridmind.captial | O&M department head | om_admin |
-| scada.manager@gridmind.captial | SCADA department head | scada_admin |
-| billing.admin@gridmind.captial | Billing / subscription admin | billing_admin |
-| client.owner@gridmind.captial | Client project owner | client_viewer |
-| investor.viewer@gridmind.captial | Investor | investor_viewer |
-| lender.viewer@gridmind.captial | Bank / lender | lender_viewer |
-| audit.viewer@gridmind.captial | Read-only workflow tester | client_viewer |
+- `maher@next.jo` is signed up, attached to **GSI**, and holds **company_admin + super_admin**. No further bootstrap needed.
+- All 18 `@gridmind.captial` invites are still **pending** — none redeemed — so revoking them is clean.
 
-## Governance checks applied
-- Two active company_admin accounts: maher.elfarraj + company.admin.
-- External stakeholders (client, investor, lender, audit viewer) receive only viewer roles.
-- All department heads receive their *_admin role.
-- No administrative role is assigned based on title alone; each role matches the responsibilities in the description.
-- project_admin is scoped to the app’s project assignment logic.
+## Intent (per your answer)
 
-## Implementation steps
-1. Create the 18 user rows under the GSI tenant (`companies.id = 1ab0730f-d6fa-4678-b1b7-7f752c80aceb`) via the existing app invite mechanism (`sendInvite` server function / `invites` table + `user_roles` inserts).
-2. Assign the mapped roles in `public.user_roles`.
-3. Write an `admin.invite_batch` audit log row under GSI with the email list and assigned roles.
-4. Verify counts: `SELECT role, COUNT(*) FROM public.user_roles WHERE user_id IN (profiles of GSI users) GROUP BY role` should show the expected distribution.
-5. Report per-invite status: accepted/pending, role assigned, and any send errors.
+The 18 are a **demo roster**. GSI must contain only real people, so they move to **Sandbox**.
 
-## Verification
-- `public.profiles` shows 18 new GSI-associated rows.
-- `public.user_roles` shows the mapped roles.
-- `public.invites` shows the 18 sent invites with the correct `invited_by` and `company_id`.
-- Audit log contains `admin.invite_batch` with the batch metadata.
+## What I'll do
+
+1. **Revoke from GSI** — set all 18 pending GSI invites to `revoked`, write one audit row per invite plus a single `admin.invite_batch_revoked` summary row under GSI. Their tokens stop working immediately.
+2. **Recreate under Sandbox** — re-issue the same 18 email → role mappings against the Sandbox tenant using the app's `create_invite` path (the guarded server function), not raw SQL.
+3. **Handle the two roles the guard blocks** — `create_invite` refuses `super_admin`. Rather than routing around it, `maher.elfarraj@gridmind.captial` will be issued as `company_admin` in Sandbox. That still leaves two `company_admin`s in the demo tenant (maher.elfarraj + company.admin), satisfying the no-lockout rule. If you want a true `super_admin` in Sandbox, tell me and I'll surface it as an explicit request instead of doing it silently.
+4. **Report** — a table of all 18 with: old GSI status (revoked), new Sandbox invite ID, role, and redeem link.
+
+## Standing rule going forward
+
+No invites and no role rows inserted at SQL level. Every grant goes through `create_invite` / `grantRole`. If a guard blocks something, I stop and report the block to you rather than bypassing it. I'll save this as a project rule so it survives future sessions.
+
+## Technical notes
+
+- Revocation touches `public.invites.status` only; rows are kept for the audit trail rather than deleted.
+- Sandbox tenant: `04a05a8d-7972-4f80-b935-508793df9772`. GSI: `1ab0730f-d6fa-4678-b1b7-7f752c80eceb`.
+- Invites are created as the authenticated super_admin so `create_invite`'s company-admin check passes; the actor is recorded in `invited_by`.
+- No frontend changes — Settings → Users & roles already lists invites per tenant.
