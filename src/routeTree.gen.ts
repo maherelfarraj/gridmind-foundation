@@ -80,6 +80,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } fr
 import { Route as AuthenticatedProjectsProjectIdPlanningWbsRouteImport } from './routes/_authenticated/projects.$projectId.planning.wbs'
 import { Route as AuthenticatedProjectsProjectIdPlanningScheduleRouteImport } from './routes/_authenticated/projects.$projectId.planning.schedule'
 import { Route as AuthenticatedProjectsProjectIdPlanningRisksRouteImport } from './routes/_authenticated/projects.$projectId.planning.risks'
+import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance'
 import { Route as AuthenticatedProjectsProjectIdFinancePayApplicationsRouteImport } from './routes/_authenticated/projects.$projectId.finance.pay-applications'
 import { Route as AuthenticatedProjectsProjectIdFinanceEvmRouteImport } from './routes/_authenticated/projects.$projectId.finance.evm'
 import { Route as AuthenticatedProjectsProjectIdFinanceChangeOrdersRouteImport } from './routes/_authenticated/projects.$projectId.finance.change-orders'
@@ -93,6 +94,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport } 
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
+import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.index'
 import { Route as AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.pay-applications.$payAppId'
 import { Route as AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.change-orders.$coId'
@@ -510,6 +512,12 @@ const AuthenticatedProjectsProjectIdPlanningRisksRoute =
     path: '/risks',
     getParentRoute: () => AuthenticatedProjectsProjectIdPlanningRoute,
   } as any)
+const AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute =
+  AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteImport.update({
+    id: '/project-finance',
+    path: '/project-finance',
+    getParentRoute: () => AuthenticatedProjectsProjectIdFinanceRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdFinancePayApplicationsRoute =
   AuthenticatedProjectsProjectIdFinancePayApplicationsRouteImport.update({
     id: '/pay-applications',
@@ -587,6 +595,13 @@ const AuthenticatedProjectsProjectIdEngineeringBomRoute =
     id: '/bom',
     path: '/bom',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
+const AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute =
+  AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () =>
+      AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute,
   } as any)
 const AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute =
   AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport.update({
@@ -707,6 +722,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/finance/change-orders': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersRouteWithChildren
   '/projects/$projectId/finance/evm': typeof AuthenticatedProjectsProjectIdFinanceEvmRoute
   '/projects/$projectId/finance/pay-applications': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsRouteWithChildren
+  '/projects/$projectId/finance/project-finance': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteWithChildren
   '/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
@@ -715,6 +731,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/projects/$projectId/finance/project-finance/': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
 }
 export interface FileRoutesByTo {
@@ -795,6 +812,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/projects/$projectId/finance/project-finance': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
 }
 export interface FileRoutesById {
@@ -879,6 +897,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/finance/change-orders': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersRouteWithChildren
   '/_authenticated/projects/$projectId/finance/evm': typeof AuthenticatedProjectsProjectIdFinanceEvmRoute
   '/_authenticated/projects/$projectId/finance/pay-applications': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsRouteWithChildren
+  '/_authenticated/projects/$projectId/finance/project-finance': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteWithChildren
   '/_authenticated/projects/$projectId/planning/risks': typeof AuthenticatedProjectsProjectIdPlanningRisksRoute
   '/_authenticated/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/_authenticated/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
@@ -887,6 +906,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/_authenticated/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/_authenticated/projects/$projectId/finance/project-finance/': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
 }
 export interface FileRouteTypes {
@@ -970,6 +990,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/finance/change-orders'
     | '/projects/$projectId/finance/evm'
     | '/projects/$projectId/finance/pay-applications'
+    | '/projects/$projectId/finance/project-finance'
     | '/projects/$projectId/planning/risks'
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
@@ -978,6 +999,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/engineering/drawings/'
+    | '/projects/$projectId/finance/project-finance/'
     | '/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1058,6 +1080,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/engineering/drawings'
+    | '/projects/$projectId/finance/project-finance'
     | '/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
   id:
     | '__root__'
@@ -1141,6 +1164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/finance/change-orders'
     | '/_authenticated/projects/$projectId/finance/evm'
     | '/_authenticated/projects/$projectId/finance/pay-applications'
+    | '/_authenticated/projects/$projectId/finance/project-finance'
     | '/_authenticated/projects/$projectId/planning/risks'
     | '/_authenticated/projects/$projectId/planning/schedule'
     | '/_authenticated/projects/$projectId/planning/wbs'
@@ -1149,6 +1173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/finance/change-orders/$coId'
     | '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId'
     | '/_authenticated/projects/$projectId/engineering/drawings/'
+    | '/_authenticated/projects/$projectId/finance/project-finance/'
     | '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
   fileRoutesById: FileRoutesById
 }
@@ -1661,6 +1686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdPlanningRisksRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdPlanningRoute
     }
+    '/_authenticated/projects/$projectId/finance/project-finance': {
+      id: '/_authenticated/projects/$projectId/finance/project-finance'
+      path: '/project-finance'
+      fullPath: '/projects/$projectId/finance/project-finance'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdFinanceRoute
+    }
     '/_authenticated/projects/$projectId/finance/pay-applications': {
       id: '/_authenticated/projects/$projectId/finance/pay-applications'
       path: '/pay-applications'
@@ -1751,6 +1783,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/engineering/bom'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
+    '/_authenticated/projects/$projectId/finance/project-finance/': {
+      id: '/_authenticated/projects/$projectId/finance/project-finance/'
+      path: '/'
+      fullPath: '/projects/$projectId/finance/project-finance/'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute
     }
     '/_authenticated/projects/$projectId/engineering/drawings/': {
       id: '/_authenticated/projects/$projectId/engineering/drawings/'
@@ -2054,12 +2093,28 @@ const AuthenticatedProjectsProjectIdFinancePayApplicationsRouteWithChildren =
     AuthenticatedProjectsProjectIdFinancePayApplicationsRouteChildren,
   )
 
+interface AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteChildren {
+  AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
+}
+
+const AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteChildren: AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteChildren =
+  {
+    AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute:
+      AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute,
+  }
+
+const AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteWithChildren =
+  AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute._addFileChildren(
+    AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteChildren,
+  )
+
 interface AuthenticatedProjectsProjectIdFinanceRouteChildren {
   AuthenticatedProjectsProjectIdFinanceBudgetRoute: typeof AuthenticatedProjectsProjectIdFinanceBudgetRoute
   AuthenticatedProjectsProjectIdFinanceCashFlowRoute: typeof AuthenticatedProjectsProjectIdFinanceCashFlowRoute
   AuthenticatedProjectsProjectIdFinanceChangeOrdersRoute: typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersRouteWithChildren
   AuthenticatedProjectsProjectIdFinanceEvmRoute: typeof AuthenticatedProjectsProjectIdFinanceEvmRoute
   AuthenticatedProjectsProjectIdFinancePayApplicationsRoute: typeof AuthenticatedProjectsProjectIdFinancePayApplicationsRouteWithChildren
+  AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteWithChildren
 }
 
 const AuthenticatedProjectsProjectIdFinanceRouteChildren: AuthenticatedProjectsProjectIdFinanceRouteChildren =
@@ -2074,6 +2129,8 @@ const AuthenticatedProjectsProjectIdFinanceRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdFinanceEvmRoute,
     AuthenticatedProjectsProjectIdFinancePayApplicationsRoute:
       AuthenticatedProjectsProjectIdFinancePayApplicationsRouteWithChildren,
+    AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute:
+      AuthenticatedProjectsProjectIdFinanceProjectFinanceRouteWithChildren,
   }
 
 const AuthenticatedProjectsProjectIdFinanceRouteWithChildren =

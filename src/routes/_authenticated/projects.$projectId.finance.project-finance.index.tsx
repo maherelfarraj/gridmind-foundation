@@ -11,8 +11,8 @@ function RedirectToPpa() {
   const { projectId } = Route.useParams();
   return (
     <Navigate
-      to="/projects/$projectId/finance/project-finance/ppa"
-      params={{ projectId }}
+      to={"/projects/$projectId/finance/project-finance/ppa" as any}
+      params={{ projectId } as any}
       replace
     />
   );
