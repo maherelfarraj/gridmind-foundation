@@ -31,13 +31,24 @@ export const Route = createFileRoute("/api/public/hooks/echo")({
         });
         if (!guard.ok) return guard.response;
 
-        return Response.json({
-          echoed: true,
-          caller: guard.caller.kind,
-          companyId: guard.companyId,
-          keyId: guard.keyId,
-          bodyLen: guard.rawBody.length,
-        });
+        const headers: Record<string, string> = {};
+        if (guard.warnings.length > 0) {
+          headers["x-guard-warn"] = guard.warnings.join(",");
+          headers["x-guard-mode"] = guard.mode;
+        }
+        return Response.json(
+          {
+            echoed: true,
+            caller: guard.caller.kind,
+            companyId: guard.companyId,
+            keyId: guard.keyId,
+            bodyLen: guard.rawBody.length,
+            warnings: guard.warnings,
+            mode: guard.mode,
+          },
+          { headers },
+        );
+
       },
     },
   },

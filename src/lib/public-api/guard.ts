@@ -59,7 +59,13 @@ export interface GuardSuccess {
   rawBody: string;
   clientIp: string | null;
   caller: GuardCaller;
+  /** Warn-mode reasons that would have blocked under enforce=block.
+   *  Endpoints should surface these via an `x-guard-warn` response header. */
+  warnings: string[];
+  /** Current enforcement mode at guard evaluation time. */
+  mode: "warn" | "block";
 }
+
 
 export interface GuardFailure {
   ok: false;
@@ -223,7 +229,10 @@ function matchCronApikey(header: string | null): boolean {
 export async function guardPublicHook(request: Request, opts: GuardOptions): Promise<GuardResult> {
   const admin = createServiceRoleClient();
   const mode = enforceMode();
+  const warnings: string[] = [];
   const clientIp = request.headers.get("cf-connecting-ip");
+
+
 
   // ---- Stage 1: auth (always blocks) -------------------------------------
   const authHeader = request.headers.get("authorization") ?? "";
@@ -260,7 +269,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
         rawBody,
         clientIp,
         caller: { kind: "cron", companyId: null, keyId: null },
+        warnings,
+        mode,
       };
+
     }
     if (allowed !== true) {
       await auditGuardEvent(admin, {
@@ -285,7 +297,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       rawBody,
       clientIp,
       caller: { kind: "cron", companyId: null, keyId: null },
+      warnings,
+      mode,
     };
+
   }
 
   if (!bearer) {
@@ -350,7 +365,9 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       reason: "ip_not_allowed",
       metadata: { client_ip: clientIp },
     });
+    warnings.push("ip_not_allowed");
   }
+
 
   // ---- Stage 3: HMAC signature (warn/block) ------------------------------
   const rawBody = opts.rawBody ?? (await request.clone().text());
@@ -399,8 +416,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
         route: opts.route,
         reason: sigReason,
       });
+      warnings.push(sigReason);
     }
   }
+
 
   // ---- Stage 4: rate limit (always blocks) -------------------------------
   const capacity = opts.rateCapacity ?? 120;
@@ -430,7 +449,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       rawBody,
       clientIp,
       caller: { kind: "api_key", companyId: keyRow.company_id, keyId: keyRow.key_id },
+      warnings,
+      mode,
     };
+
   }
   if (allowed !== true) {
     await auditGuardEvent(admin, {
@@ -456,5 +478,8 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
     rawBody,
     clientIp,
     caller: { kind: "api_key", companyId: keyRow.company_id, keyId: keyRow.key_id },
+    warnings,
+    mode,
   };
 }
+
