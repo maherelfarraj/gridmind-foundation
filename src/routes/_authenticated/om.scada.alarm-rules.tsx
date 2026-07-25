@@ -216,9 +216,9 @@ function RuleSheet({
   submitting: boolean;
 }) {
   const form = useForm<AlarmRuleInput>({
-    resolver: zodResolver(alarmRuleInputSchema),
+    resolver: zodResolver(alarmRuleInputSchema) as never,
     values: editing
-      ? {
+      ? ({
           project_id: editing.project_id,
           name: editing.name,
           metric: editing.metric as AlarmRuleInput["metric"],
@@ -227,9 +227,9 @@ function RuleSheet({
           dead_band: Number(editing.dead_band),
           duration_seconds: editing.duration_seconds,
           severity: editing.severity,
-          escalation_route: editing.escalation_route ?? [],
+          escalation_route: (editing.escalation_route ?? []) as AlarmRuleInput["escalation_route"],
           enabled: editing.enabled,
-        }
+        } satisfies AlarmRuleInput)
       : DEFAULTS,
   });
   const routeArr = useFieldArray({ control: form.control, name: "escalation_route" });
