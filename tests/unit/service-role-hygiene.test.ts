@@ -38,10 +38,18 @@ function rel(p: string): string {
 
 const SERVICE_ALLOWED = (r: string) =>
   r.startsWith('routes/api/') ||
+  r === 'server.ts' ||
+  r === 'start.ts' ||
   r === 'integrations/supabase/server.ts' ||
   r === 'integrations/supabase/admin.ts' ||
   r === 'integrations/supabase/client.server.ts' ||
-  r.startsWith('lib/public-api/');
+  r.startsWith('lib/public-api/') ||
+  // Server-only modules: .functions.ts hosts createServerFn handlers, and
+  // .server.ts is import-guarded from the client bundle. Both are legitimate
+  // homes for the admin client when a handler needs privileged writes after
+  // auth checks.
+  /(^|\/)[^/]+\.functions\.ts$/.test(r) ||
+  /(^|\/)[^/]+\.server\.ts$/.test(r);
 
 const CLIENT_BUNDLED = (r: string) =>
   r.startsWith('components/') ||
