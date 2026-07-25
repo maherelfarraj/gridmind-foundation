@@ -13,6 +13,7 @@ import {
   HardHat,
   Handshake,
   FileDown,
+  BookOpen,
   Inbox,
   KeyRound,
   LifeBuoy,
@@ -147,6 +148,19 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/admin/tenants",
         icon: Shield,
         requiresSuperAdmin: true,
+      },
+    ],
+  },
+  {
+    label: "Help & Docs",
+    items: [
+      {
+        moduleKey: "admin",
+        label: "API docs",
+        url: "/docs/api",
+        icon: BookOpen,
+        alwaysVisible: true,
+        hideFromExternalViewers: true,
       },
     ],
   },
