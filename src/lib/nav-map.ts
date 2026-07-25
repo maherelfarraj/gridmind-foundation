@@ -16,6 +16,7 @@ import {
   Receipt,
   FileSignature,
   Gauge,
+  GraduationCap,
   Scale,
   Settings2,
   Shield,
