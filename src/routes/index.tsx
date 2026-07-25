@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -66,7 +65,6 @@ function LandingPage() {
           <Link to={signedIn ? "/dashboard" : "/login"}>
             {signedIn ? "Go to dashboard" : "Sign in"}
           </Link>
-
         </Button>
 
         <ul className="mt-12 flex flex-wrap items-center justify-center gap-2">

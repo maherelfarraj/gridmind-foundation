@@ -66,7 +66,6 @@ export interface GuardSuccess {
   mode: "warn" | "block";
 }
 
-
 export interface GuardFailure {
   ok: false;
   response: Response;
@@ -232,8 +231,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
   const warnings: string[] = [];
   const clientIp = request.headers.get("cf-connecting-ip");
 
-
-
   // ---- Stage 1: auth (always blocks) -------------------------------------
   const authHeader = request.headers.get("authorization") ?? "";
   const bearer = /^Bearer\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim();
@@ -272,7 +269,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
         warnings,
         mode,
       };
-
     }
     if (allowed !== true) {
       await auditGuardEvent(admin, {
@@ -300,7 +296,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       warnings,
       mode,
     };
-
   }
 
   if (!bearer) {
@@ -368,7 +363,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
     warnings.push("ip_not_allowed");
   }
 
-
   // ---- Stage 3: HMAC signature (warn/block) ------------------------------
   const rawBody = opts.rawBody ?? (await request.clone().text());
   if (opts.requireSignature || keyRow.hmac_secret) {
@@ -420,7 +414,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
     }
   }
 
-
   // ---- Stage 4: rate limit (always blocks) -------------------------------
   const capacity = opts.rateCapacity ?? 120;
   const refill = opts.rateRefillPerSec ?? 2;
@@ -452,7 +445,6 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
       warnings,
       mode,
     };
-
   }
   if (allowed !== true) {
     await auditGuardEvent(admin, {
@@ -482,4 +474,3 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
     mode,
   };
 }
-

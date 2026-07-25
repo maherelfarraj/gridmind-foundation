@@ -33,7 +33,6 @@ import {
 } from "@/lib/api-keys.functions";
 import { API_KEY_SCOPES, type ApiKeyScope } from "@/lib/public-api/scopes";
 
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,7 +154,6 @@ function ApiKeysPage() {
     setSecurityKey(k);
     setIpsDraft((k.allowed_ips ?? []).join("\n"));
   }
-
 
   const form = useForm<CreateForm>({
     resolver: zodResolver(createFormSchema),
@@ -311,7 +309,6 @@ function ApiKeysPage() {
                   <TableHead>Security</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
-
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -370,7 +367,6 @@ function ApiKeysPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-
                           disabled={k.status === "revoked"}
                           onClick={() => setRotateConfirm(k)}
                         >
@@ -521,7 +517,6 @@ function ApiKeysPage() {
                 .
               </p>
             )}
-
           </div>
           <DialogFooter>
             <Button onClick={() => setShowRaw(null)}>I have saved it</Button>
@@ -576,8 +571,8 @@ function ApiKeysPage() {
           <DialogHeader>
             <DialogTitle>Security — {securityKey?.name}</DialogTitle>
             <DialogDescription>
-              The public-API guard checks the IP allowlist and the HMAC signature on every request to
-              this key.
+              The public-API guard checks the IP allowlist and the HMAC signature on every request
+              to this key.
             </DialogDescription>
           </DialogHeader>
 

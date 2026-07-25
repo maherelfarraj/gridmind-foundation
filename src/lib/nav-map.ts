@@ -229,7 +229,12 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: LifeBuoy,
       },
       { moduleKey: "om_scada", label: "Monthly reports", url: "/om/reports", icon: FileDown },
-      { moduleKey: "portals", label: "Client & Investor Portals", url: "/settings/portal-members", icon: Users },
+      {
+        moduleKey: "portals",
+        label: "Client & Investor Portals",
+        url: "/settings/portal-members",
+        icon: Users,
+      },
       { moduleKey: "green_hydrogen", label: "Green H₂", url: "/projects", icon: Atom },
     ],
   },

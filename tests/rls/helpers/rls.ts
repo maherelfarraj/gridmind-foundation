@@ -29,7 +29,6 @@ export async function isSupabaseUp(): Promise<boolean> {
   }
 }
 
-
 export function serviceClient(): SupabaseClient<Database> {
   return createClient<Database>(URL, SERVICE, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -242,7 +241,6 @@ export async function setupFixtures(): Promise<Fixtures> {
     .select("id")
     .single();
   if (memErr || !membership) throw memErr ?? new Error("portal_membership insert failed");
-
 
   const A: Fixtures["A"] = {
     ...depsA,
