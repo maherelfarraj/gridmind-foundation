@@ -19,6 +19,17 @@ import {
   type QaqcAttachment,
   type QaqcDiscipline,
   type QaqcResult,
+  canPunchWrite,
+  canSignoff,
+  nextPunchNumber,
+  punchInput,
+  punchSignoffInput,
+  punchUpdateInput,
+  punchVoidInput,
+  PUNCH_CATEGORIES,
+  PUNCH_STATUSES,
+  type PunchCategory,
+  type PunchStatus,
 } from "@/lib/qaqc.rules";
 
 // ---------------------------------------------------------------------------
