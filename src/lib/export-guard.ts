@@ -1,35 +1,70 @@
-// Shared export lock check. Batch 12 ships `project_export_locks`; until
-// then we treat missing table (Postgres 42P01) as "unlocked" so exports
-// keep working in earlier environments.
+// P-113 — Real export lock gate. Backed by public.project_export_locks and the
+// approval engine (approval_rules.blocks_export). All export server fns and
+// client-side export triggers must call assertExportAllowed before generating.
+//
+// Signature is (supabase, projectId, exportType). Project-less exports (CRM
+// CSV, cross-project rollups) pass null and no-op.
 
-export interface ExportLockScope {
-  companyId: string;
-  projectId?: string | null;
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export type ExportType =
+  | "proposal_pdf"
+  | "proposal_pptx"
+  | "weekly_client_report"
+  | "om_report"
+  | "turnover_pack"
+  | "audit_pack"
+  | "csv";
+
+export interface ExportLockedError extends Error {
+  statusCode: 423;
+  code: "export_locked";
+  exportType: ExportType;
+}
+
+function isPgMessage(err: unknown, prefix: string): boolean {
+  if (!err || typeof err !== "object") return false;
+  const m = (err as { message?: unknown }).message;
+  return typeof m === "string" && m.startsWith(prefix);
 }
 
 export async function assertExportAllowed(
-  supabase: any,
-  scope: ExportLockScope,
+  supabase: SupabaseClient,
+  projectId: string | null | undefined,
+  exportType: ExportType,
 ): Promise<void> {
-  let query = supabase
-    .from("project_export_locks")
-    .select("id, reason, active")
-    .eq("company_id", scope.companyId)
-    .eq("active", true)
-    .limit(1);
+  // Project-less exports have no lock scope.
+  if (!projectId) return;
 
-  if (scope.projectId) query = query.eq("project_id", scope.projectId);
-
-  const { data, error } = await query;
-  if (error) {
-    // 42P01: table does not exist yet — graceful no-op until Batch 12.
-    if (error.code === "42P01") return;
-    throw error;
+  // Auto-release completed approval locks first (best-effort; ignore missing).
+  const sync = await supabase.rpc("sync_export_locks" as never, {
+    p_project_id: projectId,
+  } as never);
+  if (sync.error) {
+    const code = (sync.error as { code?: string }).code;
+    // 42P01 = table missing (pre-migration env) → treat as unlocked.
+    if (code === "42P01") return;
+    // Other RPC errors are non-fatal for the release step — the guard below
+    // is the source of truth.
   }
-  if (Array.isArray(data) && data.length > 0) {
-    const reason = data[0]?.reason ?? "an active export lock";
-    const err: any = new Error(`Export blocked: ${reason}`);
-    err.statusCode = 409;
+
+  const { error } = await supabase.rpc("assert_export_unlocked" as never, {
+    p_project_id: projectId,
+    p_export_type: exportType,
+  } as never);
+  if (!error) return;
+
+  const code = (error as { code?: string }).code;
+  if (code === "42P01" || code === "42883") return; // migration not applied yet
+
+  if (isPgMessage(error, "export_locked:")) {
+    const err = new Error(
+      "Export blocked: approval pending",
+    ) as ExportLockedError;
+    err.statusCode = 423;
+    err.code = "export_locked";
+    err.exportType = exportType;
     throw err;
   }
+  throw error;
 }
