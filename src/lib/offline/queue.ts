@@ -98,7 +98,7 @@ function classifyError(err: unknown): {
   const anyErr = err as any;
 
   // Fetch/network layer — always retry.
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return { transient: true, message: "offline" };
   }
   if (anyErr instanceof TypeError && /fetch|network/i.test(anyErr.message)) {
