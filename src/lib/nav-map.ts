@@ -70,6 +70,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "field_qaqc", label: "Mobilization", url: "/field/mobilization", icon: ClipboardCheck },
       { moduleKey: "field_qaqc", label: "Discipline board", url: "/field/discipline-board", icon: SlidersHorizontal },
       { moduleKey: "field_qaqc", label: "Daily reports", url: "/field/dpr", icon: ClipboardCheck },
+      { moduleKey: "field_qaqc", label: "Weekly report", url: "/field/reports", icon: FileDown },
       { moduleKey: "field_qaqc", label: "HSE", url: "/hse", icon: Shield },
       { moduleKey: "field_qaqc", label: "HSE incidents", url: "/hse/incidents", icon: AlertTriangle },
       { moduleKey: "field_qaqc", label: "HSE inspections", url: "/hse/inspections", icon: ClipboardCheck },
