@@ -69,6 +69,14 @@ async function audit(
 }
 
 // ---- types -----------------------------------------------------------------
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [k: string]: Json }
+  | Json[];
+
 export interface ConnectorRow {
   id: string;
   company_id: string;
@@ -80,7 +88,7 @@ export interface ConnectorRow {
   status: string;
   last_seen_at: string | null;
   last_error: string | null;
-  config: Record<string, unknown>;
+  config: Json;
   assets_count: number;
   updated_at: string;
 }
