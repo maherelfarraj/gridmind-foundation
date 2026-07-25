@@ -416,8 +416,10 @@ export async function guardPublicHook(request: Request, opts: GuardOptions): Pro
         route: opts.route,
         reason: sigReason,
       });
+      warnings.push(sigReason);
     }
   }
+
 
   // ---- Stage 4: rate limit (always blocks) -------------------------------
   const capacity = opts.rateCapacity ?? 120;
