@@ -181,6 +181,15 @@ function CommissioningBoard() {
               Performance tests
             </Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/projects/$projectId/commissioning/certificates"
+              params={{ projectId }}
+            >
+              <FileText size={14} aria-hidden />
+              Certificates
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
