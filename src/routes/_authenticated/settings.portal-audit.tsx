@@ -40,13 +40,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import {
+  DataTable,
+  RelativeTime,
+  type DataTableColumn,
+} from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+
 
 const DAYS_PRESETS = [
   { value: 1, label: "24h" },
