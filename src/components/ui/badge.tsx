@@ -14,6 +14,14 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
+        // POL-3 semantic status tones — consumed by StatusBadge, not ad-hoc.
+        soft: "border-transparent bg-primary/10 text-primary",
+        success: "border-transparent bg-success/10 text-success",
+        warning: "border-transparent bg-warning/15 text-warning",
+        danger: "border-transparent bg-destructive/10 text-destructive",
+        info: "border-transparent bg-info/10 text-info",
+        muted: "border-transparent bg-muted text-muted-foreground",
+        mutedOutline: "border-border bg-transparent text-muted-foreground",
       },
     },
     defaultVariants: {

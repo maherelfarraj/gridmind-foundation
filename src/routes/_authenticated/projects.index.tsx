@@ -14,6 +14,7 @@ import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DataTablePagination } from "@/components/ui/data-table";
 import { EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
@@ -273,37 +274,12 @@ function ProjectsPage() {
             ))}
           </div>
           {totalPages > 1 ? (
-            <footer className="flex items-center justify-between border-t border-border pt-4 text-sm">
-              <span className="text-muted-foreground">
-                Page {search.page} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={search.page <= 1}
-                  onClick={() =>
-                    navigate({
-                      search: (prev) => ({ ...prev, page: prev.page - 1 }),
-                    })
-                  }
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={search.page >= totalPages}
-                  onClick={() =>
-                    navigate({
-                      search: (prev) => ({ ...prev, page: prev.page + 1 }),
-                    })
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            </footer>
+            <DataTablePagination
+              page={search.page}
+              pageSize={pageSize}
+              total={total}
+              onPageChange={(page) => navigate({ search: (prev) => ({ ...prev, page }) })}
+            />
           ) : null}
         </>
       )}
@@ -422,32 +398,26 @@ function SkeletonGrid() {
 }
 
 function EmptyState({ filtersActive }: { filtersActive: boolean }) {
-  return (
-    <Card className="flex flex-col items-center gap-3 border-dashed p-12 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <FolderPlus size={22} aria-hidden />
-      </div>
-      {filtersActive ? (
-        <>
-          <p className="text-sm font-medium text-foreground">No projects match your filters</p>
-          <p className="text-xs text-muted-foreground">
-            Adjust or clear the filters above to see more results.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="text-sm font-medium text-foreground">
-            No projects yet — create your first project
-          </p>
-          <Button asChild size="sm">
-            <Link to="/projects/new" search={{ step: 1 }}>
-              <Plus size={16} aria-hidden />
-              New project
-            </Link>
-          </Button>
-        </>
-      )}
-    </Card>
+  return filtersActive ? (
+    <SharedEmptyState
+      icon={FolderPlus}
+      title="No projects match your filters"
+      description="Adjust or clear the filters above to see more results."
+    />
+  ) : (
+    <SharedEmptyState
+      icon={FolderPlus}
+      title="No projects yet"
+      description="Create your first project to start phase-gated delivery."
+      action={
+        <Button asChild size="sm">
+          <Link to="/projects/new" search={{ step: 1 }}>
+            <Plus size={16} aria-hidden />
+            New project
+          </Link>
+        </Button>
+      }
+    />
   );
 }
 

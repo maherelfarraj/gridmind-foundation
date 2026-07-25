@@ -1,4 +1,5 @@
-import { Badge } from "@/components/ui/badge";
+// POL-3: canonical StatusBadge map.
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { MatchStatus } from "@/lib/match-rules";
 
 const LABELS: Record<MatchStatus, string> = {
@@ -8,13 +9,6 @@ const LABELS: Record<MatchStatus, string> = {
   approved_with_variance: "Approved w/ variance",
 };
 
-const VARIANTS: Record<MatchStatus, "secondary" | "default" | "destructive" | "outline"> = {
-  pending: "secondary",
-  matched: "default",
-  variance_blocked: "destructive",
-  approved_with_variance: "outline",
-};
-
 export function MatchStatusBadge({ status }: { status: MatchStatus }) {
-  return <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>;
+  return <StatusBadge status={status} label={LABELS[status]} />;
 }

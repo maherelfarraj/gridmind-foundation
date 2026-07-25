@@ -86,7 +86,7 @@ export function KpiTile({
             ) : null}
           </div>
         )}
-        {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+        {hint ? <div className="mt-1 text-xs text-muted-foreground">{hint}</div> : null}
       </div>
     </Card>
   );

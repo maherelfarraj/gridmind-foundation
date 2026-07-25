@@ -1,13 +1,6 @@
-// P-068 — Expediting status badge.
-import { Badge } from "@/components/ui/badge";
+// P-068 — Expediting status badge. POL-3: canonical StatusBadge map.
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { ExpeditingStatus } from "@/lib/expediting-rules";
-
-const VARIANTS: Record<ExpeditingStatus, "default" | "secondary" | "outline" | "destructive"> = {
-  on_track: "outline",
-  at_risk: "secondary",
-  delayed: "destructive",
-  delivered: "default",
-};
 
 const LABELS: Record<ExpeditingStatus, string> = {
   on_track: "On track",
@@ -17,5 +10,5 @@ const LABELS: Record<ExpeditingStatus, string> = {
 };
 
 export function ExpeditingStatusBadge({ status }: { status: ExpeditingStatus }) {
-  return <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>;
+  return <StatusBadge status={status} label={LABELS[status]} />;
 }
