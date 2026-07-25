@@ -22,6 +22,16 @@ import {
 
 // ---------- shared types ---------------------------------------------------
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: JsonValue }
+  | JsonValue[];
+
+
+
 export type WebhookEndpointRow = {
   id: string;
   url: string;
@@ -43,7 +53,7 @@ export type WebhookDeliveryRow = {
   next_retry_at: string | null;
   delivered_at: string | null;
   created_at: string;
-  payload: Record<string, unknown> | null;
+  payload: JsonValue | null;
 };
 
 export type CreatedEndpointResult = {
