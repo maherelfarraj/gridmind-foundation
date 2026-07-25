@@ -488,7 +488,7 @@ export const getCommissioningTestForExecute = createServerFn({ method: "GET" })
           utility_witness_name: r.utility_witness_name,
           utility_witnessed_at: r.utility_witnessed_at,
           witness_file_path: r.witness_file_path,
-          result: (r.result ?? {}) as Record<string, unknown>,
+          result: (r.result ?? {}) as Record<string, any>,
           notes: r.notes,
           created_at: r.created_at,
           updated_at: r.updated_at,
