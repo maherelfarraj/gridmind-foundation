@@ -7138,6 +7138,106 @@ export type Database = {
           },
         ]
       }
+      service_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["ticket_category"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          priority: Database["public"]["Enums"]["work_order_priority"]
+          project_id: string
+          related_work_order_id: string | null
+          reported_by: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          ticket_number: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          project_id: string
+          related_work_order_id?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          ticket_number: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["work_order_priority"]
+          project_id?: string
+          related_work_order_id?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          ticket_number?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_tickets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_tickets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_tickets_related_work_order_id_fkey"
+            columns: ["related_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_tickets_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_photos: {
         Row: {
           area: string | null
@@ -7224,6 +7324,82 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_records: {
+        Row: {
+          breach_minutes: number
+          company_id: string
+          created_at: string
+          credit_amount: number | null
+          credit_pct: number
+          currency_code: string | null
+          id: string
+          resolution_breached: boolean
+          resolution_due_at: string
+          resolved_at: string | null
+          responded_at: string | null
+          response_breached: boolean
+          response_due_at: string
+          service_ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          breach_minutes?: number
+          company_id: string
+          created_at?: string
+          credit_amount?: number | null
+          credit_pct?: number
+          currency_code?: string | null
+          id?: string
+          resolution_breached?: boolean
+          resolution_due_at: string
+          resolved_at?: string | null
+          responded_at?: string | null
+          response_breached?: boolean
+          response_due_at: string
+          service_ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          breach_minutes?: number
+          company_id?: string
+          created_at?: string
+          credit_amount?: number | null
+          credit_pct?: number
+          currency_code?: string | null
+          id?: string
+          resolution_breached?: boolean
+          resolution_due_at?: string
+          resolved_at?: string | null
+          responded_at?: string | null
+          response_breached?: boolean
+          response_due_at?: string
+          service_ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_records_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "sla_records_service_ticket_id_fkey"
+            columns: ["service_ticket_id"]
+            isOneToOne: true
+            referencedRelation: "service_tickets"
             referencedColumns: ["id"]
           },
         ]
@@ -8944,6 +9120,18 @@ export type Database = {
         | "clarification"
         | "award_announcement"
         | "other"
+      ticket_category:
+        | "corrective"
+        | "inspection"
+        | "warranty"
+        | "monitoring"
+        | "other"
+      ticket_status:
+        | "open"
+        | "in_progress"
+        | "waiting_client"
+        | "resolved"
+        | "closed"
       transmittal_direction: "outgoing" | "incoming"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
       warranty_claim_status:
@@ -9425,6 +9613,20 @@ export const Constants = {
         "clarification",
         "award_announcement",
         "other",
+      ],
+      ticket_category: [
+        "corrective",
+        "inspection",
+        "warranty",
+        "monitoring",
+        "other",
+      ],
+      ticket_status: [
+        "open",
+        "in_progress",
+        "waiting_client",
+        "resolved",
+        "closed",
       ],
       transmittal_direction: ["outgoing", "incoming"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
