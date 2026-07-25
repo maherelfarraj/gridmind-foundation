@@ -1,43 +1,97 @@
-## P-112 — Approval Inbox + SLA Countdowns + Escalation Cron
+# P-113 — Project export locks (real gate)
 
-Ship the `/approvals` workspace that consumes the P-111 engine RPCs, plus a service-role-guarded cron endpoint for `escalate_overdue_approvals`.
+## Current state (verified)
 
-### Files
+- `approval_rules.blocks_export` already exists and is editable from the rules admin UI.
+- `approval_instances.metadata` is a free-form jsonb (`start_approval_instance` accepts `p_metadata`); callers do not yet stamp `project_id` in there consistently.
+- `src/lib/export-guard.ts` already exists as a **forward-compatible stub**: it queries a `project_export_locks(active, reason)` shape that does NOT match the P-113 schema, ignores 42P01, and takes `{ companyId, projectId }` (no `exportType`). All call sites use this shape.
+- `assertExportAllowed` is already wired in: proposal PDF/PPTX server fns + buttons, weekly report, O&M report, turnover pack (crm/opportunity list exports and proposal buttons). We only need to add the `exportType` argument and re-check each site.
+- No turnover-pack export **button** yet — server fn only. Same for weekly/O&M PDFs, which are triggered from their own dialogs.
+- Roles `company_admin`, `project_admin`, `finance_admin` all exist in the `app_role` enum.
 
-1. **`src/lib/approvals.inbox.functions.ts`** — new server fns (all `requireSupabaseAuth`, zod-validated, DTO-only):
-   - `listMyApprovals({ tab: "pending" | "decided" | "all" })` — joins `approvals` → `approval_instances`; Pending = `approver_id = auth.uid() AND status='pending'` ordered by `sla_due_at asc`; Decided-by-me = my rows with status in approved/rejected/skipped; All = `company_admin`-only fleet view. Enrich each row with instance metadata, requester profile display name, chain step (current + total), and `escalated_at` flag. Returns compact rows for the list.
-   - `getApprovalInstance({ instanceId })` — full chain (all approvals grouped by step with approver profile + decision timestamps), instance metadata, and `audit_logs` where `entity='approval_instances' AND entity_id=instanceId`, newest first.
-   - `getMyPendingCount()` — cheap count for the sidebar badge (refetch every 60 s).
-   - `decideApproval({ approvalId, decision, comment })` wraps the P-111 `decide_approval` RPC; enforce comment on reject server-side too.
+## Migration
 
-2. **`src/routes/_authenticated/approvals.tsx`** — inbox route:
-   - `ApprovalInbox` with shadcn `Tabs` — Pending / Decided by me / All (All hidden unless `has_company_role('company_admin')`, gated by `canManageApprovalRules`-style helper).
-   - Each row: entity-type `Badge`, title from `metadata.title` (fallback `${entity_type} ${slice(entity_id,0,8)}`), requester, "Step {n}/{total} — {role}", `Intl.NumberFormat` amount when present, SLA countdown badge with 3 tiers (muted / `bg-accent` / `bg-destructive`) computed with `date-fns/formatDistanceToNowStrict`, and "Escalated" badge when `metadata.escalated_at` is set. Company_admin All-tab pins escalated rows to the top.
-   - `ApprovalDetailDrawer` (shadcn `Sheet`) fetched via `getApprovalInstance`: chain stepper (done ✓ with approver + timestamp, current highlighted, future muted), entity deep-link renderer that maps entity_type→route (e.g. `/procurement/pos/$id`) and falls back to plain text when no route registered, full comment history, and audit trail.
-   - `DecideDialog` — comment textarea, Reject requires non-empty (`disabled` submit until then), optimistic remove from Pending via `queryClient.setQueryData` with rollback on error, `sonner` toasts, invalidates pending-count + inbox + `["approvals","instance",id]` on success.
-   - Skeleton / empty ("You're all caught up ☕") / error-with-retry on every panel.
+Create `supabase/migrations/0053_project_export_locks.sql` with the exact SQL from the spec:
 
-3. **`src/routes/api/cron/approval-escalations.ts`** — POST-only server route. Reads `process.env.CRON_APIKEY` inside handler, checks `apikey` header with `timingSafeEqual`, 401 otherwise. Loads `supabaseAdmin` via `await import("@/integrations/supabase/client.server")` and calls `.rpc("escalate_overdue_approvals")`. Returns `{ escalated: number }`. `// TODO(B13/P-123): wrap with guardPublicHook`.
+- `project_export_locks` table with `export_type` check, `approval_instance_id` FK, `locked_by`, `locked_at`, `unlocked_at`, standard timestamps.
+- Deferred FK on `project_id → projects(id)` via `do $$ ... $$` guard.
+- Partial unique index on `(project_id, export_type) WHERE unlocked_at IS NULL` (one active lock per type per project).
+- RLS: SELECT for members and non-external-viewers; INSERT/UPDATE gated to `company_admin | project_admin | finance_admin`.
+- GRANT SELECT, INSERT, UPDATE to `authenticated`; `set_updated_at` trigger.
+- SECURITY DEFINER functions: `is_export_locked(project_id, export_type)`, `assert_export_unlocked(...)`, `sync_export_locks(project_id)`. `is_export_locked` combines active manual locks + any pending/in_progress approval instance whose rule has `blocks_export = true` and whose `metadata->>'project_id'` matches. Fails closed when caller has no company.
+- Grants on all three functions to `authenticated`.
 
-4. **`src/lib/nav-map.ts`** — add `{ moduleKey: "workspace", label: "Approvals", url: "/approvals", icon: Inbox }` visible to all internal roles. External viewer roles (`client_viewer`, `investor_viewer`, `lender_viewer`) already route to `/portal`; the nav item guard filters them out here.
+## Rewrite the guard — `src/lib/export-guard.ts`
 
-5. **`src/components/app-sidebar.tsx`** — attach the live pending-count `Badge` next to the Approvals item using `getMyPendingCount` (60 s `refetchInterval`, `staleTime: 30_000`). Hide item when the user's only roles are the three external viewer roles.
+Replace the stub with a typed helper:
 
-6. **Secret** — generate `CRON_APIKEY` via `secrets--generate_secret` (32 chars). Not exposed to browser.
+```ts
+export type ExportType =
+  | "proposal_pdf" | "proposal_pptx" | "weekly_client_report"
+  | "om_report"   | "turnover_pack"  | "audit_pack" | "csv";
 
-### RLS / data access
+export async function assertExportAllowed(
+  supabase: SupabaseClient,
+  projectId: string | null,
+  exportType: ExportType,
+): Promise<void>
+```
 
-- All reads through `requireSupabaseAuth` → RLS already restricts `approvals` / `approval_instances` / `audit_logs` to company members. No new policies needed.
-- `escalate_overdue_approvals` remains callable only by `service_role` (grants set in P-111 migration); cron endpoint uses `supabaseAdmin`.
+- If `projectId == null` (e.g. CRM CSV, opportunity export) → no-op (no project scope to lock).
+- Otherwise: `await supabase.rpc('sync_export_locks', { p_project_id: projectId })` (best-effort; ignore error), then `await supabase.rpc('assert_export_unlocked', { p_project_id: projectId, p_export_type: exportType })`.
+- Map any `export_locked:*` error (Postgres `raise exception`) to a typed throw: `{ statusCode: 423, message: 'Export blocked: approval pending', exportType }`. Preserve 42P01 no-op for local dev.
 
-### Verification
+Also export a small client hook `useIsExportLocked(projectId, exportType)` (thin `useQuery` wrapper around `rpc('is_export_locked')`) and an `ExportLockBadge` component (`bg-accent`, lock icon, "Exports locked: <types>").
 
-- Typecheck (`bunx tsgo --noEmit`).
-- psql check: create synthetic pending approvals with varied `sla_due_at`, confirm ordering + overdue bucket; POST cron without apikey → 401, with apikey → escalates + writes `approval.escalated` audit rows.
-- Manual smoke via preview: pending badge updates after decide; reject-without-comment disabled; company_admin sees All tab; external viewer role sees no nav item.
+## Update every call site to pass `exportType`
 
-### Out of scope (deferred)
+Existing calls (all must be edited — signature change is breaking):
 
-- Real HMAC + IP allowlist on cron → B13/P-123.
-- Entity deep-link routes that don't yet exist stay plain text.
-- pg_cron schedule wiring lands with the guarded endpoint in B13.
+| File | exportType |
+| --- | --- |
+| `src/lib/proposal.functions.ts` (PDF export fn ~L1546) | `proposal_pdf` |
+| `src/lib/proposal.functions.ts` (PPTX export fn ~L1711) | `proposal_pptx` |
+| `src/components/proposals/ExportPdfButton.tsx` | `proposal_pdf` |
+| `src/components/proposals/ExportPptxButton.tsx` | `proposal_pptx` |
+| `src/lib/field-reports.functions.ts` (weekly ~L579) | `weekly_client_report` |
+| `src/lib/om-reports.functions.ts` (~L203) | `om_report` |
+| `src/lib/opportunity.functions.ts` (~L820) | `csv` (project-less → no-op) |
+| `src/lib/crm.functions.ts` (~L325) | `csv` (project-less → no-op) |
+| Turnover pack fn (in commissioning/turnover functions) | `turnover_pack` — locate + wire |
+
+Each call becomes `await assertExportAllowed(context.supabase, projectId ?? null, "<type>")`. Buttons pass `supabase` (browser client) with the same shape.
+
+## Manual lock server fns
+
+Add to a new `src/lib/export-locks.functions.ts`:
+
+- `listExportLocks({ project_id })` — SELECT active locks for badge/UI.
+- `lockExport({ project_id, export_type, reason })` — role check via `has_company_role('company_admin'|'project_admin'|'finance_admin')`, INSERT row, `writeAuditLog('export.locked', 'project_export_locks', id, { project_id, export_type, reason })`.
+- `unlockExport({ lock_id })` — same role gate, UPDATE `unlocked_at = now()`, audit `export.unlocked`.
+
+Zod schemas alongside. Idempotency: attempting to lock a type that is already active returns the existing lock (surface via unique index conflict).
+
+## UI wiring
+
+- **Every existing export button** (`ExportPdfButton`, `ExportPptxButton`, weekly-report dialog trigger, O&M report generator button, turnover compile button): use `useIsExportLocked(projectId, exportType)` to render disabled state with `<Lock>` icon + tooltip "Export blocked while approvals are pending". Keep server-side guard as the source of truth.
+- **`ExportLockBadge`** — mount on project header (find the shared project header/detail layout used by `/projects/$projectId`) via `listExportLocks`. Renders `bg-accent`, lock icon, comma-joined export types. Hides itself when array empty. Skip if no shared header exists — add to project overview page instead.
+- **Manual lock/unlock UI** — a small admin card on the project overview: "Export governance" listing active locks with an Unlock button (role-gated), and a "Lock exports" dialog (type + reason). Kept minimal; full admin surface can come later.
+
+## Stamp `project_id` in approval metadata
+
+For the auto-release path (approval → export unlock) to work, `metadata.project_id` must be set on any `blocks_export` instance. Update callers that start such approvals (proposal pricing, project phase gate, contract, change_order in current code) to include `project_id` in the metadata payload. This is a small edit at each `startApprovalInstance({ ... metadata: { project_id, ... } })` call — locate and update.
+
+## Verification (matches spec)
+
+1. Run migration → re-run → clean.
+2. Start a `blocks_export` proposal pricing approval with `metadata.project_id` set → PDF export throws 423 + button disabled + badge on header.
+3. Approve the instance → `sync_export_locks` fires on next export attempt → export succeeds.
+4. `lockExport` with reason → audit row `export.locked`; `unlockExport` → `export.unlocked`.
+5. Sign in as a `client_viewer` and query `project_export_locks` → 0 rows (RLS + `is_external_viewer` guard).
+6. `bunx tsgo --noEmit` clean.
+
+## Out of scope
+
+- No changes to the approval engine RPCs themselves.
+- No CSV export button badge wiring (project-less exports; guard is a no-op).
+- Full "audit_pack" export type is reserved; nothing consumes it yet.
