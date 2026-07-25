@@ -65,6 +65,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { moduleKey: "planning_budget", label: "Debit notes", url: "/finance/debit-notes", icon: Scale },
       { moduleKey: "field_qaqc", label: "Field, HSE & QA/QC", url: "/field", icon: HardHat },
       { moduleKey: "field_qaqc", label: "Mobilization", url: "/field/mobilization", icon: ClipboardCheck },
+      { moduleKey: "field_qaqc", label: "Discipline board", url: "/field/discipline-board", icon: SlidersHorizontal },
       {
         moduleKey: "commissioning",
         label: "Commission & Turnover",
