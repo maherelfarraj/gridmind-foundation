@@ -1,64 +1,70 @@
-# P-086 — DPR Capture (Mobile-First)
+## P-087 — Offline queue (IndexedDB + Background Sync)
 
-Ship the field-team's primary data-entry surface. All schema exists from P-083; storage policies for `photos` already cover the `{company}/…` prefix. **No migration needed.**
+Make the field flow (DPR, observations, photos) offline-first: buffer mutations in IndexedDB, upload photo blobs then their parent rows once online, dedupe by client idempotency key server-side, and surface a queue UI. Auth-only, RLS-scoped — no service-role usage.
 
-## Scope
+### Package + client store
 
-Three routes under `_authenticated/`:
-- `/field/dpr` — filterable list (project, date range, status, search)
-- `/field/dpr/new` — auto-creates a `draft` DPR then redirects to detail
-- `/field/dpr/$dprId` — 4-step wizard, submit, approve
+- `bun add idb`.
+- `src/lib/offline/db.ts` — thin `idb` wrapper opening DB `gridmind-field` v1 with stores:
+  - `mutations` (keyPath `clientIdempotencyKey`) — `{ clientIdempotencyKey, entity, action, payload, photoRefs, status: 'pending'|'syncing'|'synced'|'failed', attempts, error, createdAt, updatedAt }`. Indexes: `by_status`, `by_createdAt`.
+  - `photoBlobs` (keyPath `clientIdempotencyKey`) — `{ clientIdempotencyKey, blob, fileName, mimeType, meta }`.
+  - Typed helpers: `putMutation`, `patchMutation`, `listPending`, `listAll`, `deleteMutation`, `putBlob`, `getBlob`, `deleteBlob`, `clearSynced`.
 
-## Files
+### Queue engine
 
-**Rules / server**
-- `src/lib/dpr.rules.ts` — Zod schemas (dpr, manpower row, weather delay, quantity row, observation quick-add), `sumManpower(rows)`, `canEditDpr(status, roles, isCreator)`, `canApprove(roles)`, `deriveDisciplineFromWbs(item)`, `photoObjectPath(company, project, date, filename)`.
-- `src/lib/dpr.functions.ts` — `createServerFn` + `requireSupabaseAuth`:
-  - `listDprs({ projectId?, from?, to?, status?, search? })`
-  - `getDpr({ id })` → header + manpower + weather + photos + observations
-  - `upsertDprHeader({ id?, projectId, reportDate, shift, weather*, workSummary, constraints })` (idempotent on unique key → surfaces "duplicate date+shift" error via PG code 23505)
-  - `addManpowerRow`, `updateManpowerRow`, `deleteManpowerRow` (each recomputes totals on the DPR)
-  - `addWeatherDelay`, `deleteWeatherDelay`
-  - `addQuantityRow`, `deleteQuantityRow` (mutate `quantities` jsonb, derive discipline from WBS)
-  - `attachPhoto({ dprId?, observationId?, filePath, caption?, area? })`
-  - `createObservation({ dprId?, severity, description, area?, dueDate? })`
-  - `submitDpr({ id, acknowledgeNoPhotos? })` — blocks if a required section is empty; requires `acknowledgeNoPhotos=true` when zero photos
-  - `approveDpr({ id })` — role-gated
-  - Every mutation calls `write_audit_log` with the required action names (`dpr.create/update/submit/approve`, `observation.create`, `weather_delay.create`, `photo.attach`).
-- `src/lib/dpr-query.ts` — TanStack Query options (`dprListOptions`, `dprDetailOptions`, `wbsPickerOptions(projectId)`).
-- `src/lib/wbs-picker.functions.ts` — lightweight `listWbsForPicker({ projectId, q? })` returning `{ id, code, name, discipline, area, uom }` (reuses columns added in P-085).
+- `src/lib/offline/queue.ts`:
+  - `enqueueMutation({ entity, action, payload, photoRefs? })` — generates `crypto.randomUUID()` key, writes to `mutations` store, notifies subscribers, returns key immediately.
+  - `enqueuePhotoBlob(key, blob, fileName, mimeType, meta)` — parallel write to `photoBlobs`.
+  - `syncQueue()` — oldest-first over `pending`, marks `syncing`, per entry:
+    1. If `photoRefs` present, upload each blob to `photos` bucket via `supabase.storage` at the path from `meta.objectPath` (client-side, authed user, RLS enforced).
+    2. Dispatch to the target server fn (routed via `entity+action` map — imports `upsertDprHeader`, `addManpowerRow`, `addWeatherDelay`, `addQuantityRow`, `attachPhoto`, `createObservation`, `submitDpr`) passing `clientIdempotencyKey` alongside the original payload.
+    3. On success: mark `synced`, delete matching blob, bump `attempts`. On network / 5xx / offline: revert to `pending`, keep blob, `attempts++`. On 4xx / Zod: mark `failed` with server message; if `duplicate_dpr` unique-violation include `existingRoute` in the payload for the toast link.
+  - `subscribe(cb)` returns unsubscribe; counts helper `getCounts()` → `{pending, failed}`.
+- `src/lib/offline/dispatch.ts` — map of `entity.action` → server fn wrapper accepting `{ ...payload, clientIdempotencyKey }`.
 
-**UI (mobile-first: 360px baseline, sticky bottom bar, 44px touch targets, semantic tokens)**
-- `src/routes/_authenticated/field.dpr.index.tsx` — list with filters, skeleton, empty ("No daily reports yet — tap New Report"), error+retry, "no photos" chip for submitted DPRs missing photos, floating "New Report" CTA.
-- `src/routes/_authenticated/field.dpr.new.tsx` — project + date + shift picker; on submit calls `upsertDprHeader` then navigates to `/field/dpr/$dprId`.
-- `src/routes/_authenticated/field.dpr.$dprId.tsx` — stepper shell (steps in URL search `?step=1..4`), sticky bottom action bar (`Prev / Save draft / Next` on 1–3; `Submit` on 4 with photo-guard modal).
-- `src/components/dpr/step-manpower.tsx` — repeatable rows (trade select, contractor, headcount stepper ±, hours); denormalized totals shown live.
-- `src/components/dpr/step-weather.tsx` — summary + high/low °C + delay list (add sheet: type, times, lost hours, WBS picker, notes).
-- `src/components/dpr/step-quantities.tsx` — add-row bottom sheet with searchable WBS picker; discipline & UoM auto-fill; area editable.
-- `src/components/dpr/step-photos.tsx` — capture (`<input type=file capture="environment" accept="image/*" multiple>`), gallery grid, per-photo "Link to observation" quick-add sheet, per-DPR observation list.
-- `src/components/dpr/photo-guard-dialog.tsx` — amber SHOULD banner + explicit "Submit without photos" checkbox.
+### Sync triggers
 
-**Nav / tests**
-- Add "Daily reports" entry to `src/lib/nav-map.ts` (Field section, `ClipboardList` icon).
-- `tests/unit/dpr-rules.test.ts` — `sumManpower`, `canEditDpr`, `canApprove`, `photoObjectPath` (company UUID first), submit-guard branches.
+- `src/lib/offline/triggers.ts`:
+  - `window.addEventListener('online', syncQueue)`.
+  - `setInterval(syncQueue, 60_000)` while tab visible; pauses on `visibilitychange` hidden.
+  - Best-effort `navigator.serviceWorker.ready.then(sw => sw.sync.register('gridmind-field-sync'))` — guarded feature detect; graceful no-op when unsupported (iOS Safari). No new SW file is required for the fallback path; the online/interval triggers cover behavior.
+- Wired once from `src/routes/__root.tsx` inside a `useEffect` (client-only).
 
-## Behavior details
+### Server-side idempotency
 
-- **Autosave draft**: each step mutation writes immediately (no local draft state); optimistic totals update via `queryClient.setQueryData`.
-- **Photo upload**: uses browser Supabase client → `photos` bucket at `{companyId}/{projectId}/field/{reportDate}/{uuid}-{filename}`, then calls `attachPhoto`. Company-first path is required by existing `storage_company_id` policy.
-- **Submit guard**: server checks manpower rows > 0; if `site_photos` count = 0, requires `acknowledgeNoPhotos=true` else throws `photos_required_ack`. UI shows the amber banner + checkbox before enabling Submit.
-- **Approve**: visible only when `has_company_role('construction_admin' | 'company_admin')` AND status = `submitted`.
-- **Read-only after submit**: `canEditDpr` returns false; UI disables inputs & hides mutation buttons; server double-guards.
-- **Duplicate date+shift**: catch PG `23505` from `upsertDprHeader`, throw friendly `"A DPR already exists for this project on {date} ({shift} shift)"`; form surfaces inline on the `reportDate` field.
+- Extend `src/lib/dpr.rules.ts` schemas (`dprHeaderInput`, `manpowerRowInput`, `weatherDelayInput`, `quantityRowInput`, `attachPhotoInput`, `observationInput`, `submitDprInput`) with `clientIdempotencyKey: z.string().uuid().optional()`.
+- Add `src/lib/offline-mirror.ts` helper `recordMirror(context, { key, entity, action, projectId, payload, resultId? })`:
+  - When `key` provided, `select id, status, payload -> 'result' from offline_queue where user_id = auth.uid() and client_idempotency_key = key`.
+  - If `status = 'synced'`, return `{ hit: true, cached }` — server fn returns cached result without re-applying.
+  - Else `upsert (company_id, user_id, client_idempotency_key)` with `status='pending'`, then after primary write update to `status='synced', synced_at=now(), payload = jsonb_build_object('input', payload, 'result', row)`, call `write_audit_log('offline.sync','offline_queue', id, { entity, action })`.
+- Update each DPR/observation/photo `createServerFn` in `src/lib/dpr.functions.ts` to check the cache before work and record after. Cached hits short-circuit before any DB writes so retries produce zero duplicate rows.
+- Zero migration: reuses existing `offline_queue` table + `unique(company_id, user_id, client_idempotency_key)`. No new grants.
 
-## Verify
+### UI
 
-- `bunx tsgo --noEmit`
-- `bunx vitest run tests/unit/dpr-rules.test.ts`
-- Manual smoke via preview at 360px width: create today's DPR → 3 manpower rows → weather delay → 2 quantity rows → 0-photo submit shows guard → check the new row appears on `/field/discipline-board` after adding photos & approving.
+- `src/components/offline/offline-badge.tsx` — `wifi-off` icon when `navigator.onLine === false`; button chip beside it shows `pending` + `failed` counts (semantic tokens `warning` / `destructive`). Subscribed to queue store via a tiny `useOfflineQueue()` hook in `src/hooks/use-offline-queue.ts`.
+- Mount inside the authenticated AppShell header.
+- Route `src/routes/_authenticated/field.sync-status.tsx`:
+  - Reads local queue via `useOfflineQueue()`; groups by status; skeleton, empty state ("All caught up — nothing to sync"), error state, retry / discard actions per entry.
+  - Nav entry "Sync status" in `src/lib/nav-map.ts` under Field.
+- On any `duplicate_dpr` failure, `sonner` toast with a `Link` to the existing DPR (from `existingRoute` in entry payload).
 
-## Out of scope (later tickets)
+### Tests
 
-- Offline queue integration (P-087).
-- Server-side photo thumbnails / EXIF GPS extraction.
-- Bulk photo captioning.
+- `tests/unit/offline-queue.test.ts` — uses `fake-indexeddb/auto` (already needed for idb tests; add via `bun add -d fake-indexeddb`). Cases:
+  - enqueue writes with generated uuid key + `pending` status.
+  - `syncQueue` marks entries `synced` on success (stubbed dispatcher).
+  - Network failure keeps entry `pending`, increments `attempts`, retains blob.
+  - 4xx marks `failed` with message.
+  - Same key run twice hits dispatcher once (dedupe via mock server response echoing cached hit).
+
+### File map
+
+Create: `src/lib/offline/db.ts`, `src/lib/offline/queue.ts`, `src/lib/offline/dispatch.ts`, `src/lib/offline/triggers.ts`, `src/lib/offline-mirror.ts`, `src/hooks/use-offline-queue.ts`, `src/components/offline/offline-badge.tsx`, `src/routes/_authenticated/field.sync-status.tsx`, `tests/unit/offline-queue.test.ts`.
+Edit: `src/lib/dpr.rules.ts`, `src/lib/dpr.functions.ts`, `src/routes/__root.tsx`, `src/lib/nav-map.ts`, authenticated shell header component, `package.json` (idb + fake-indexeddb).
+
+### Notes / decisions
+
+- Photos upload from client (authed user, RLS) — no server-role. `photoObjectPath` from P-086 continues to produce the `{company_uuid}/…` path required by storage policy.
+- The mirror table is written under the caller's identity via `context.supabase` — RLS on `offline_queue` already scopes reads/writes per user.
+- Background Sync unsupported (Safari): online + interval + on-focus resync cover the gap; documented in `docs/` alongside the field module notes.

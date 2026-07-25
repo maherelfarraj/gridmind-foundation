@@ -22,6 +22,7 @@ import {
   weatherDelayInput,
   type DprStatus,
 } from "@/lib/dpr.rules";
+import { withIdempotency } from "@/lib/offline-mirror";
 
 // ---------------------------------------------------------------------------
 // types
@@ -427,78 +428,89 @@ export const upsertDprHeader = createServerFn({ method: "POST" })
     const project = await projectCompany(context, data.projectId);
     const roles = await currentRoles(context);
 
-    const patch = {
-      weather_summary: data.weatherSummary ?? null,
-      temperature_high_c: data.temperatureHighC ?? null,
-      temperature_low_c: data.temperatureLowC ?? null,
-      work_summary: data.workSummary ?? null,
-      constraints_notes: data.constraintsNotes ?? null,
-    } as any;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "upsert",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const patch = {
+          weather_summary: data.weatherSummary ?? null,
+          temperature_high_c: data.temperatureHighC ?? null,
+          temperature_low_c: data.temperatureLowC ?? null,
+          work_summary: data.workSummary ?? null,
+          constraints_notes: data.constraintsNotes ?? null,
+        } as any;
 
-    if (data.id) {
-      // update path
-      const existing = await loadDprOrThrow(context, data.id);
-      assertEditable(existing, roles, userId);
-      const { data: updated, error } = await context.supabase
-        .from("construction_daily_reports")
-        .update({
-          ...patch,
+        if (data.id) {
+          const existing = await loadDprOrThrow(context, data.id);
+          assertEditable(existing, roles, userId);
+          const { data: updated, error } = await context.supabase
+            .from("construction_daily_reports")
+            .update({
+              ...patch,
+              report_date: data.reportDate,
+              shift: data.shift,
+            } as any)
+            .eq("id", data.id)
+            .select("*")
+            .maybeSingle();
+          if (error) {
+            if ((error as any).code === "23505") {
+              httpError(
+                409,
+                "duplicate_dpr",
+                `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
+              );
+            }
+            throw error;
+          }
+          const row = updated as unknown as DprRow;
+          await audit(context, "dpr.update", "construction_daily_reports", row.id, {
+            project_id: row.project_id,
+            report_date: row.report_date,
+          });
+          return row;
+        }
+
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
           report_date: data.reportDate,
           shift: data.shift,
-        } as any)
-        .eq("id", data.id)
-        .select("*")
-        .maybeSingle();
-      if (error) {
-        if ((error as any).code === "23505") {
-          httpError(
-            409,
-            "duplicate_dpr",
-            `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
-          );
+          status: "draft" as DprStatus,
+          created_by: userId,
+          ...patch,
+        };
+        const { data: created, error } = await context.supabase
+          .from("construction_daily_reports")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) {
+          if ((error as any).code === "23505") {
+            httpError(
+              409,
+              "duplicate_dpr",
+              `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
+            );
+          }
+          throw error;
         }
-        throw error;
-      }
-      const row = updated as unknown as DprRow;
-      await audit(context, "dpr.update", "construction_daily_reports", row.id, {
-        project_id: row.project_id,
-        report_date: row.report_date,
-      });
-      return row;
-    }
-
-    // create path
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      report_date: data.reportDate,
-      shift: data.shift,
-      status: "draft" as DprStatus,
-      created_by: userId,
-      ...patch,
-    };
-    const { data: created, error } = await context.supabase
-      .from("construction_daily_reports")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) {
-      if ((error as any).code === "23505") {
-        httpError(
-          409,
-          "duplicate_dpr",
-          `A DPR already exists for this project on ${data.reportDate} (${data.shift} shift)`,
-        );
-      }
-      throw error;
-    }
-    const row = created as unknown as DprRow;
-    await audit(context, "dpr.create", "construction_daily_reports", row.id, {
-      project_id: row.project_id,
-      report_date: row.report_date,
-      shift: row.shift,
-    });
-    return row;
+        const row = created as unknown as DprRow;
+        await audit(context, "dpr.create", "construction_daily_reports", row.id, {
+          project_id: row.project_id,
+          report_date: row.report_date,
+          shift: row.shift,
+        });
+        return row;
+      },
+    );
   });
 
 // ---------------------------------------------------------------------------
@@ -513,28 +525,41 @@ export const addManpowerRow = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const insert = {
-      company_id: header.company_id,
-      dpr_id: data.dprId,
-      trade: data.trade,
-      contractor: data.contractor ?? null,
-      headcount: data.headcount,
-      hours: data.hours as any,
-      notes: data.notes ?? null,
-    };
-    const { data: row, error } = await context.supabase
-      .from("manpower_logs")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await recomputeTotals(context, data.dprId);
-    await audit(context, "dpr.update", "manpower_logs", (row as any).id, {
-      dpr_id: data.dprId,
-      trade: data.trade,
-      headcount: data.headcount,
-    });
-    return row as ManpowerRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "manpower",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: header.company_id,
+          dpr_id: data.dprId,
+          trade: data.trade,
+          contractor: data.contractor ?? null,
+          headcount: data.headcount,
+          hours: data.hours as any,
+          notes: data.notes ?? null,
+        };
+        const { data: row, error } = await context.supabase
+          .from("manpower_logs")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await recomputeTotals(context, data.dprId);
+        await audit(context, "dpr.update", "manpower_logs", (row as any).id, {
+          dpr_id: data.dprId,
+          trade: data.trade,
+          headcount: data.headcount,
+        });
+        return row as ManpowerRow;
+      },
+    );
   });
 
 const manpowerIdInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid() });
@@ -573,31 +598,44 @@ export const addWeatherDelay = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const insert = {
-      company_id: header.company_id,
-      project_id: header.project_id,
-      dpr_id: data.dprId,
-      delay_date: header.report_date,
-      delay_type: data.delayType,
-      start_time: data.startTime ?? null,
-      end_time: data.endTime ?? null,
-      lost_hours: data.lostHours as any,
-      wbs_item_id: data.wbsItemId ?? null,
-      impact_notes: data.impactNotes ?? null,
-      created_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("weather_delays")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "weather_delay.create", "weather_delays", (row as any).id, {
-      dpr_id: data.dprId,
-      delay_type: data.delayType,
-      lost_hours: data.lostHours,
-    });
-    return row as WeatherDelayRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "weather",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: header.company_id,
+          project_id: header.project_id,
+          dpr_id: data.dprId,
+          delay_date: header.report_date,
+          delay_type: data.delayType,
+          start_time: data.startTime ?? null,
+          end_time: data.endTime ?? null,
+          lost_hours: data.lostHours as any,
+          wbs_item_id: data.wbsItemId ?? null,
+          impact_notes: data.impactNotes ?? null,
+          created_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("weather_delays")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "weather_delay.create", "weather_delays", (row as any).id, {
+          dpr_id: data.dprId,
+          delay_type: data.delayType,
+          lost_hours: data.lostHours,
+        });
+        return row as WeatherDelayRow;
+      },
+    );
   });
 
 const weatherIdInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid() });
@@ -631,48 +669,60 @@ export const addQuantityRow = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "quantity",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const { data: wbs, error: wbsErr } = await context.supabase
+          .from("wbs_items")
+          .select("id, code, name, discipline, area, uom")
+          .eq("id", data.wbsItemId)
+          .maybeSingle();
+        if (wbsErr) throw wbsErr;
+        if (!wbs) httpError(404, "wbs_not_found");
 
-    const { data: wbs, error: wbsErr } = await context.supabase
-      .from("wbs_items")
-      .select("id, code, name, discipline, area, uom")
-      .eq("id", data.wbsItemId)
-      .maybeSingle();
-    if (wbsErr) throw wbsErr;
-    if (!wbs) httpError(404, "wbs_not_found");
-
-    const wbsRow = wbs as any;
-    const entry: QuantityEntry = {
-      id:
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      wbs_item_id: data.wbsItemId,
-      wbs_code: wbsRow.code ?? null,
-      wbs_name: wbsRow.name ?? null,
-      discipline: normalizeDiscipline(wbsRow.discipline),
-      area: data.area ?? wbsRow.area ?? null,
-      quantity: data.quantity,
-      uom: data.uom ?? wbsRow.uom ?? null,
-      notes: data.notes ?? null,
-      created_at: new Date().toISOString(),
-      created_by: userId,
-    };
-    const nextQty: QuantityEntry[] = Array.isArray(header.quantities)
-      ? [...(header.quantities as QuantityEntry[]), entry]
-      : [entry];
-    const { data: updated, error } = await context.supabase
-      .from("construction_daily_reports")
-      .update({ quantities: nextQty as any } as any)
-      .eq("id", data.dprId)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "dpr.update", "construction_daily_reports", data.dprId, {
-      op: "add_quantity",
-      wbs_item_id: data.wbsItemId,
-      quantity: data.quantity,
-    });
-    return updated as unknown as DprRow;
+        const wbsRow = wbs as any;
+        const entry: QuantityEntry = {
+          id:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          wbs_item_id: data.wbsItemId,
+          wbs_code: wbsRow.code ?? null,
+          wbs_name: wbsRow.name ?? null,
+          discipline: normalizeDiscipline(wbsRow.discipline),
+          area: data.area ?? wbsRow.area ?? null,
+          quantity: data.quantity,
+          uom: data.uom ?? wbsRow.uom ?? null,
+          notes: data.notes ?? null,
+          created_at: new Date().toISOString(),
+          created_by: userId,
+        };
+        const nextQty: QuantityEntry[] = Array.isArray(header.quantities)
+          ? [...(header.quantities as QuantityEntry[]), entry]
+          : [entry];
+        const { data: updated, error } = await context.supabase
+          .from("construction_daily_reports")
+          .update({ quantities: nextQty as any } as any)
+          .eq("id", data.dprId)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "dpr.update", "construction_daily_reports", data.dprId, {
+          op: "add_quantity",
+          wbs_item_id: data.wbsItemId,
+          quantity: data.quantity,
+        });
+        return updated as unknown as DprRow;
+      },
+    );
   });
 
 const qtyDeleteInput = z.object({
@@ -717,28 +767,41 @@ export const attachPhoto = createServerFn({ method: "POST" })
       const roles = await currentRoles(context);
       assertEditable(header, roles, userId);
     }
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      dpr_id: data.dprId ?? null,
-      observation_id: data.observationId ?? null,
-      file_path: data.filePath,
-      caption: data.caption ?? null,
-      discipline: data.discipline ?? null,
-      area: data.area ?? null,
-      uploaded_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("site_photos")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "photo.attach", "site_photos", (row as any).id, {
-      dpr_id: data.dprId ?? null,
-      observation_id: data.observationId ?? null,
-    });
-    return row as SitePhotoRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "photo",
+        action: "attach",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
+          dpr_id: data.dprId ?? null,
+          observation_id: data.observationId ?? null,
+          file_path: data.filePath,
+          caption: data.caption ?? null,
+          discipline: data.discipline ?? null,
+          area: data.area ?? null,
+          uploaded_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("site_photos")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "photo.attach", "site_photos", (row as any).id, {
+          dpr_id: data.dprId ?? null,
+          observation_id: data.observationId ?? null,
+        });
+        return row as SitePhotoRow;
+      },
+    );
   });
 
 const removePhotoInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid().nullable().optional() });
@@ -783,29 +846,42 @@ export const createObservation = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const userId = context.user!.id;
     const project = await projectCompany(context, data.projectId);
-    const insert = {
-      company_id: project.company_id,
-      project_id: data.projectId,
-      dpr_id: data.dprId ?? null,
-      discipline: data.discipline || "general",
-      area: data.area ?? null,
-      severity: data.severity,
-      status: "open",
-      description: data.description,
-      due_date: data.dueDate ?? null,
-      raised_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("field_observations")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "observation.create", "field_observations", (row as any).id, {
-      dpr_id: data.dprId ?? null,
-      severity: data.severity,
-    });
-    return row as ObservationRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "observation",
+        action: "create",
+        companyId: project.company_id,
+        projectId: data.projectId,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: project.company_id,
+          project_id: data.projectId,
+          dpr_id: data.dprId ?? null,
+          discipline: data.discipline || "general",
+          area: data.area ?? null,
+          severity: data.severity,
+          status: "open",
+          description: data.description,
+          due_date: data.dueDate ?? null,
+          raised_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("field_observations")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "observation.create", "field_observations", (row as any).id, {
+          dpr_id: data.dprId ?? null,
+          severity: data.severity,
+        });
+        return row as ObservationRow;
+      },
+    );
   });
 
 // ---------------------------------------------------------------------------
@@ -843,50 +919,62 @@ export const submitDpr = createServerFn({ method: "POST" })
     if (header.status !== "draft") httpError(409, "not_draft");
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "submit",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const [manpower, photos] = await Promise.all([
+          context.supabase
+            .from("manpower_logs")
+            .select("id", { count: "exact", head: true })
+            .eq("dpr_id", data.id),
+          context.supabase
+            .from("site_photos")
+            .select("id", { count: "exact", head: true })
+            .eq("dpr_id", data.id),
+        ]);
+        const reason = submitBlockedReason({
+          manpowerCount: manpower.count ?? 0,
+          photoCount: photos.count ?? 0,
+          acknowledgeNoPhotos: data.acknowledgeNoPhotos,
+        });
+        if (reason) {
+          httpError(
+            422,
+            reason,
+            reason === "manpower_required"
+              ? "Add at least one manpower row before submitting"
+              : "No photos attached — tick 'Submit without photos' to continue",
+          );
+        }
 
-    const [manpower, photos] = await Promise.all([
-      context.supabase
-        .from("manpower_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("dpr_id", data.id),
-      context.supabase
-        .from("site_photos")
-        .select("id", { count: "exact", head: true })
-        .eq("dpr_id", data.id),
-    ]);
-    const reason = submitBlockedReason({
-      manpowerCount: manpower.count ?? 0,
-      photoCount: photos.count ?? 0,
-      acknowledgeNoPhotos: data.acknowledgeNoPhotos,
-    });
-    if (reason) {
-      httpError(
-        422,
-        reason,
-        reason === "manpower_required"
-          ? "Add at least one manpower row before submitting"
-          : "No photos attached — tick 'Submit without photos' to continue",
-      );
-    }
-
-    const { data: updated, error } = await context.supabase
-      .from("construction_daily_reports")
-      .update({
-        status: "submitted" as DprStatus,
-        submitted_by: userId,
-        submitted_at: new Date().toISOString(),
-      } as any)
-      .eq("id", data.id)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "dpr.submit", "construction_daily_reports", data.id, {
-      project_id: header.project_id,
-      photos: photos.count ?? 0,
-      manpower_rows: manpower.count ?? 0,
-      no_photos_ack: data.acknowledgeNoPhotos,
-    });
-    return updated as unknown as DprRow;
+        const { data: updated, error } = await context.supabase
+          .from("construction_daily_reports")
+          .update({
+            status: "submitted" as DprStatus,
+            submitted_by: userId,
+            submitted_at: new Date().toISOString(),
+          } as any)
+          .eq("id", data.id)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "dpr.submit", "construction_daily_reports", data.id, {
+          project_id: header.project_id,
+          photos: photos.count ?? 0,
+          manpower_rows: manpower.count ?? 0,
+          no_photos_ack: data.acknowledgeNoPhotos,
+        });
+        return updated as unknown as DprRow;
+      },
+    );
   });
 
 const approveInput = z.object({ id: z.string().uuid() });
