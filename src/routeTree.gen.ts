@@ -95,6 +95,7 @@ import { Route as AuthenticatedProcurementReceiptsGrnIdRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
+import { Route as AuthenticatedOmScadaConnectorsRouteImport } from './routes/_authenticated/om.scada.connectors'
 import { Route as AuthenticatedHseIncidentsNewRouteImport } from './routes/_authenticated/hse.incidents.new'
 import { Route as AuthenticatedHseIncidentsIdRouteImport } from './routes/_authenticated/hse.incidents.$id'
 import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
@@ -641,6 +642,12 @@ const AuthenticatedProcurementMatchesMatchIdRoute =
     path: '/$matchId',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
   } as any)
+const AuthenticatedOmScadaConnectorsRoute =
+  AuthenticatedOmScadaConnectorsRouteImport.update({
+    id: '/om/scada/connectors',
+    path: '/om/scada/connectors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHseIncidentsNewRoute =
   AuthenticatedHseIncidentsNewRouteImport.update({
     id: '/hse/incidents/new',
@@ -992,6 +999,7 @@ export interface FileRoutesByFullPath {
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -1117,6 +1125,7 @@ export interface FileRoutesByTo {
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -1249,6 +1258,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/_authenticated/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/_authenticated/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/_authenticated/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -1383,6 +1393,7 @@ export interface FileRouteTypes {
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
+    | '/om/scada/connectors'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -1508,6 +1519,7 @@ export interface FileRouteTypes {
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
+    | '/om/scada/connectors'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -1639,6 +1651,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/contracts/$contractId'
     | '/_authenticated/hse/incidents/$id'
     | '/_authenticated/hse/incidents/new'
+    | '/_authenticated/om/scada/connectors'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
     | '/_authenticated/procurement/pos/$poId'
@@ -2329,6 +2342,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/matches/$matchId'
       preLoaderRoute: typeof AuthenticatedProcurementMatchesMatchIdRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
+    }
+    '/_authenticated/om/scada/connectors': {
+      id: '/_authenticated/om/scada/connectors'
+      path: '/om/scada/connectors'
+      fullPath: '/om/scada/connectors'
+      preLoaderRoute: typeof AuthenticatedOmScadaConnectorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hse/incidents/new': {
       id: '/_authenticated/hse/incidents/new'
@@ -3119,6 +3139,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldTransmittalsNewRoute: typeof AuthenticatedFieldTransmittalsNewRoute
   AuthenticatedHseIncidentsIdRoute: typeof AuthenticatedHseIncidentsIdRoute
   AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
+  AuthenticatedOmScadaConnectorsRoute: typeof AuthenticatedOmScadaConnectorsRoute
   AuthenticatedQaqcInspectionsIdRoute: typeof AuthenticatedQaqcInspectionsIdRoute
   AuthenticatedQaqcInspectionsNewRoute: typeof AuthenticatedQaqcInspectionsNewRoute
   AuthenticatedQaqcNcrsIdRoute: typeof AuthenticatedQaqcNcrsIdRoute
@@ -3195,6 +3216,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFieldTransmittalsNewRoute,
   AuthenticatedHseIncidentsIdRoute: AuthenticatedHseIncidentsIdRoute,
   AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
+  AuthenticatedOmScadaConnectorsRoute: AuthenticatedOmScadaConnectorsRoute,
   AuthenticatedQaqcInspectionsIdRoute: AuthenticatedQaqcInspectionsIdRoute,
   AuthenticatedQaqcInspectionsNewRoute: AuthenticatedQaqcInspectionsNewRoute,
   AuthenticatedQaqcNcrsIdRoute: AuthenticatedQaqcNcrsIdRoute,
