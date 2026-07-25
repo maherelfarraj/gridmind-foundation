@@ -30,10 +30,12 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
+import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/webhook-dispatch'
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
 import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
+import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
 import { Route as AuthenticatedSettingsScheduledReportsRouteImport } from './routes/_authenticated/settings.scheduled-reports'
@@ -275,6 +277,11 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
   path: '/api/webhooks/esign',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronWebhookDispatchRoute = ApiCronWebhookDispatchRouteImport.update({
+  id: '/api/cron/webhook-dispatch',
+  path: '/api/cron/webhook-dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronScheduledReportsRoute = ApiCronScheduledReportsRouteImport.update({
   id: '/api/cron/scheduled-reports',
   path: '/api/cron/scheduled-reports',
@@ -295,6 +302,12 @@ const ApiCronApprovalEscalationsRoute =
     id: '/api/cron/approval-escalations',
     path: '/api/cron/approval-escalations',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedSettingsWebhooksRoute =
+  AuthenticatedSettingsWebhooksRouteImport.update({
+    id: '/settings/webhooks',
+    path: '/settings/webhooks',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
@@ -1177,10 +1190,12 @@ export interface FileRoutesByFullPath {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
@@ -1329,10 +1344,12 @@ export interface FileRoutesByTo {
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/hse': typeof AuthenticatedHseIndexRoute
@@ -1489,10 +1506,12 @@ export interface FileRoutesById {
   '/_authenticated/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
+  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
@@ -1651,10 +1670,12 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
+    | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/webhook-dispatch'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse/'
@@ -1803,10 +1824,12 @@ export interface FileRouteTypes {
     | '/settings/scheduled-reports'
     | '/settings/share-links'
     | '/settings/users'
+    | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/webhook-dispatch'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/hse'
@@ -1962,10 +1985,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/scheduled-reports'
     | '/_authenticated/settings/share-links'
     | '/_authenticated/settings/users'
+    | '/_authenticated/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
+    | '/api/cron/webhook-dispatch'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/_authenticated/hse/'
@@ -2080,6 +2105,7 @@ export interface RootRouteChildren {
   ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
   ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
+  ApiCronWebhookDispatchRoute: typeof ApiCronWebhookDispatchRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEventsRoute: typeof ApiPublicHooksEventsRoute
   ApiPublicHooksPingRoute: typeof ApiPublicHooksPingRoute
@@ -2235,6 +2261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksEsignRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/webhook-dispatch': {
+      id: '/api/cron/webhook-dispatch'
+      path: '/api/cron/webhook-dispatch'
+      fullPath: '/api/cron/webhook-dispatch'
+      preLoaderRoute: typeof ApiCronWebhookDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/scheduled-reports': {
       id: '/api/cron/scheduled-reports'
       path: '/api/cron/scheduled-reports'
@@ -2262,6 +2295,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/cron/approval-escalations'
       preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings/webhooks': {
+      id: '/_authenticated/settings/webhooks'
+      path: '/settings/webhooks'
+      fullPath: '/settings/webhooks'
+      preLoaderRoute: typeof AuthenticatedSettingsWebhooksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/users': {
       id: '/_authenticated/settings/users'
@@ -3675,6 +3715,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsScheduledReportsRoute: typeof AuthenticatedSettingsScheduledReportsRoute
   AuthenticatedSettingsShareLinksRoute: typeof AuthenticatedSettingsShareLinksRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
+  AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
@@ -3768,6 +3809,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsScheduledReportsRoute,
   AuthenticatedSettingsShareLinksRoute: AuthenticatedSettingsShareLinksRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
+  AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
@@ -3838,6 +3880,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
   ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
+  ApiCronWebhookDispatchRoute: ApiCronWebhookDispatchRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEventsRoute: ApiPublicHooksEventsRoute,
   ApiPublicHooksPingRoute: ApiPublicHooksPingRoute,

@@ -9269,6 +9269,45 @@ export type Database = {
           },
         ]
       }
+      webhook_endpoint_secrets: {
+        Row: {
+          company_id: string
+          created_at: string
+          endpoint_id: string
+          secret: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          endpoint_id: string
+          secret: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          endpoint_id?: string
+          secret?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoint_secrets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_endpoint_secrets_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: true
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_endpoints: {
         Row: {
           company_id: string
@@ -9307,6 +9346,41 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      webhook_export_allowlist: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_export_allowlist_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       work_orders: {
         Row: {
