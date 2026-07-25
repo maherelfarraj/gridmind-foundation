@@ -25,12 +25,21 @@ export const Route = createFileRoute("/api/public/hooks/echo")({
 
         if (debug) {
           const raw = await request.clone().text();
-          return Response.json({
-            debug: true,
-            bodyLen: raw.length,
-            bodyBytes: Array.from(new TextEncoder().encode(raw)).slice(0, 40),
-            body: raw,
-          });
+          const ts = request.headers.get("x-timestamp") ?? "";
+          const sig = request.headers.get("x-signature") ?? "";
+          const bearer = /^Bearer\s+(.+)$/i.exec(request.headers.get("authorization") ?? "")?.[1] ?? "";
+          const { createServiceRoleClient } = await import("@/integrations/supabase/admin");
+          const admin = createServiceRoleClient();
+          const { data } = await admin.rpc("verify_api_key", { p_raw_key: bearer });
+          const row = (Array.isArray(data) ? data[0] : data) as { hmac_secret?: string } | undefined;
+          const secret = row?.hmac_secret ?? "";
+          const enc = new TextEncoder();
+          const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+          const s = await crypto.subtle.sign("HMAC", key, enc.encode(`${ts}.${raw}`));
+          const bytes = new Uint8Array(s);
+          let expected = "";
+          for (let i = 0; i < bytes.length; i++) expected += bytes[i].toString(16).padStart(2, "0");
+          return Response.json({ bodyLen: raw.length, ts, sig, expected, secretLen: secret.length, secretHead: secret.slice(0, 6) });
         }
 
         const guard = await guardPublicHook(request, {
