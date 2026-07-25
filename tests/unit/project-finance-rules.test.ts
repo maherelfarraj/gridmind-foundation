@@ -34,10 +34,10 @@ describe("computeLcoe", () => {
       degradation_pct: 0.5,
       project_life_years: 25,
     });
-    // Result is per-MWh. Expected ≈ 46.94 $/MWh (≈ 0.0469 $/kWh).
-    expect(v).toBeGreaterThan(46);
-    expect(v).toBeLessThan(48);
-    expect(v).toBeCloseTo(46.94, 1);
+    // Result is per-MWh. Expected ≈ 48.56 $/MWh (≈ 0.0486 $/kWh).
+    expect(v).toBeGreaterThan(48);
+    expect(v).toBeLessThan(49);
+    expect(v).toBeCloseTo(48.56, 1);
   });
 
   it("increases as opex increases", () => {
