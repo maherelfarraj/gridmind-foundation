@@ -69,7 +69,7 @@ function NewIncidentPage() {
   const [localOccurred, setLocalOccurred] = useState(nowLocal);
 
   const form = useForm<IncidentInput>({
-    resolver: zodResolver(incidentInput),
+    resolver: zodResolver(incidentInput) as any,
     defaultValues: {
       projectId: "",
       incidentType: "near_miss",
