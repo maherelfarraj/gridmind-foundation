@@ -598,31 +598,44 @@ export const addWeatherDelay = createServerFn({ method: "POST" })
     const header = await loadDprOrThrow(context, data.dprId);
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
-    const insert = {
-      company_id: header.company_id,
-      project_id: header.project_id,
-      dpr_id: data.dprId,
-      delay_date: header.report_date,
-      delay_type: data.delayType,
-      start_time: data.startTime ?? null,
-      end_time: data.endTime ?? null,
-      lost_hours: data.lostHours as any,
-      wbs_item_id: data.wbsItemId ?? null,
-      impact_notes: data.impactNotes ?? null,
-      created_by: userId,
-    };
-    const { data: row, error } = await context.supabase
-      .from("weather_delays")
-      .insert(insert as any)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "weather_delay.create", "weather_delays", (row as any).id, {
-      dpr_id: data.dprId,
-      delay_type: data.delayType,
-      lost_hours: data.lostHours,
-    });
-    return row as WeatherDelayRow;
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "weather",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const insert = {
+          company_id: header.company_id,
+          project_id: header.project_id,
+          dpr_id: data.dprId,
+          delay_date: header.report_date,
+          delay_type: data.delayType,
+          start_time: data.startTime ?? null,
+          end_time: data.endTime ?? null,
+          lost_hours: data.lostHours as any,
+          wbs_item_id: data.wbsItemId ?? null,
+          impact_notes: data.impactNotes ?? null,
+          created_by: userId,
+        };
+        const { data: row, error } = await context.supabase
+          .from("weather_delays")
+          .insert(insert as any)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "weather_delay.create", "weather_delays", (row as any).id, {
+          dpr_id: data.dprId,
+          delay_type: data.delayType,
+          lost_hours: data.lostHours,
+        });
+        return row as WeatherDelayRow;
+      },
+    );
   });
 
 const weatherIdInput = z.object({ id: z.string().uuid(), dprId: z.string().uuid() });
