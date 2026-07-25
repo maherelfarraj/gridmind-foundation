@@ -43,6 +43,7 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
+import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
@@ -70,6 +71,7 @@ import { Route as AuthenticatedProcurementReceiptsGrnIdRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
+import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
@@ -280,6 +282,12 @@ const AuthenticatedProcurementExpeditingRoute =
     path: '/procurement/expediting',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFinanceContractsRoute =
+  AuthenticatedFinanceContractsRouteImport.update({
+    id: '/finance/contracts',
+    path: '/finance/contracts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
@@ -442,6 +450,12 @@ const AuthenticatedProcurementMatchesMatchIdRoute =
     path: '/$matchId',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
   } as any)
+const AuthenticatedFinanceContractsContractIdRoute =
+  AuthenticatedFinanceContractsContractIdRouteImport.update({
+    id: '/$contractId',
+    path: '/$contractId',
+    getParentRoute: () => AuthenticatedFinanceContractsRoute,
+  } as any)
 const AuthenticatedCrmOpportunitiesOpportunityIdRoute =
   AuthenticatedCrmOpportunitiesOpportunityIdRouteImport.update({
     id: '/crm/opportunities/$opportunityId',
@@ -581,6 +595,7 @@ export interface FileRoutesByFullPath {
   '/po/$token': typeof PoTokenRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -605,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -661,6 +677,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
@@ -679,6 +696,7 @@ export interface FileRoutesByTo {
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -737,6 +755,7 @@ export interface FileRoutesById {
   '/po/$token': typeof PoTokenRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -761,6 +780,7 @@ export interface FileRoutesById {
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
+  '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -820,6 +840,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/admin/tenants'
     | '/crm/pipeline'
+    | '/finance/contracts'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -844,6 +865,7 @@ export interface FileRouteTypes {
     | '/proposals/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/finance/contracts/$contractId'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -900,6 +922,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/crm/pipeline'
+    | '/finance/contracts'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/scorecards'
@@ -918,6 +941,7 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
+    | '/finance/contracts/$contractId'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -975,6 +999,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
+    | '/_authenticated/finance/contracts'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -999,6 +1024,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
+    | '/_authenticated/finance/contracts/$contractId'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
     | '/_authenticated/procurement/pos/$poId'
@@ -1294,6 +1320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/finance/contracts': {
+      id: '/_authenticated/finance/contracts'
+      path: '/finance/contracts'
+      fullPath: '/finance/contracts'
+      preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm/pipeline': {
       id: '/_authenticated/crm/pipeline'
       path: '/crm/pipeline'
@@ -1482,6 +1515,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/matches/$matchId'
       preLoaderRoute: typeof AuthenticatedProcurementMatchesMatchIdRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
+    }
+    '/_authenticated/finance/contracts/$contractId': {
+      id: '/_authenticated/finance/contracts/$contractId'
+      path: '/$contractId'
+      fullPath: '/finance/contracts/$contractId'
+      preLoaderRoute: typeof AuthenticatedFinanceContractsContractIdRouteImport
+      parentRoute: typeof AuthenticatedFinanceContractsRoute
     }
     '/_authenticated/crm/opportunities/$opportunityId': {
       id: '/_authenticated/crm/opportunities/$opportunityId'
@@ -1672,6 +1712,21 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedFinanceContractsRouteChildren {
+  AuthenticatedFinanceContractsContractIdRoute: typeof AuthenticatedFinanceContractsContractIdRoute
+}
+
+const AuthenticatedFinanceContractsRouteChildren: AuthenticatedFinanceContractsRouteChildren =
+  {
+    AuthenticatedFinanceContractsContractIdRoute:
+      AuthenticatedFinanceContractsContractIdRoute,
+  }
+
+const AuthenticatedFinanceContractsRouteWithChildren =
+  AuthenticatedFinanceContractsRoute._addFileChildren(
+    AuthenticatedFinanceContractsRouteChildren,
+  )
 
 interface AuthenticatedProcurementMatchesRouteChildren {
   AuthenticatedProcurementMatchesMatchIdRoute: typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -1933,6 +1988,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
+  AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedProcurementExpeditingRoute: typeof AuthenticatedProcurementExpeditingRoute
   AuthenticatedProcurementMatchesRoute: typeof AuthenticatedProcurementMatchesRouteWithChildren
   AuthenticatedProcurementPosRoute: typeof AuthenticatedProcurementPosRouteWithChildren
@@ -1961,6 +2017,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
+  AuthenticatedFinanceContractsRoute:
+    AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedProcurementExpeditingRoute:
     AuthenticatedProcurementExpeditingRoute,
   AuthenticatedProcurementMatchesRoute:
