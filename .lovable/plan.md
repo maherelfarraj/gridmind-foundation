@@ -1,33 +1,43 @@
-## Goal
+Plan: send the first 18 user invites under the @gridmind.captial domain, mapping each to the correct system role using the provided reference, then verify and report back.
 
-Create the real GSI tenant, get `maher@next.jo` in as `company_admin` + `super_admin`, then send the first real invites from the app.
+## Mapped invites
+| Email alias | Job description | System role(s) |
+|---|---|---|
+| maher.elfarraj@gridmind.captial | Company owner, super administrator, final approver | super_admin, company_admin |
+| company.admin@gridmind.captial | Second company administrator / operational backup | company_admin |
+| project.manager@gridmind.captial | Project manager | project_admin |
+| engineering.manager@gridmind.captial | Head of engineering | engineering_admin |
+| procurement.manager@gridmind.captial | Head of procurement | procurement_admin |
+| construction.manager@gridmind.captial | Head of construction | construction_admin |
+| site.engineer@gridmind.captial | Site engineer | engineer |
+| site.foreman@gridmind.captial | Site foreman | foreman |
+| hse.manager@gridmind.captial | HSE department head | hse_admin |
+| finance.manager@gridmind.captial | Finance head | finance_admin |
+| legal.manager@gridmind.captial | Legal head | legal_admin |
+| operations.manager@gridmind.captial | O&M department head | om_admin |
+| scada.manager@gridmind.captial | SCADA department head | scada_admin |
+| billing.admin@gridmind.captial | Billing / subscription admin | billing_admin |
+| client.owner@gridmind.captial | Client project owner | client_viewer |
+| investor.viewer@gridmind.captial | Investor | investor_viewer |
+| lender.viewer@gridmind.captial | Bank / lender | lender_viewer |
+| audit.viewer@gridmind.captial | Read-only workflow tester | client_viewer |
 
-## The bootstrap catch (why the UI alone can't do it)
+## Governance checks applied
+- Two active company_admin accounts: maher.elfarraj + company.admin.
+- External stakeholders (client, investor, lender, audit viewer) receive only viewer roles.
+- All department heads receive their *_admin role.
+- No administrative role is assigned based on title alone; each role matches the responsibilities in the description.
+- project_admin is scoped to the app’s project assignment logic.
 
-Role grants go through `assert_can_grant_role`, which requires the caller to already be a `company_admin` of that company (and `super_admin` to grant `super_admin`). Right now the database has no real admin — only test/fixture tenants from the RLS and E2E suites. So the very first admin must be granted once at the database level; everything after that happens in the app.
+## Implementation steps
+1. Create the 18 user rows under the GSI tenant (`companies.id = 1ab0730f-d6fa-4678-b1b7-7f752c80aceb`) via the existing app invite mechanism (`sendInvite` server function / `invites` table + `user_roles` inserts).
+2. Assign the mapped roles in `public.user_roles`.
+3. Write an `admin.invite_batch` audit log row under GSI with the email list and assigned roles.
+4. Verify counts: `SELECT role, COUNT(*) FROM public.user_roles WHERE user_id IN (profiles of GSI users) GROUP BY role` should show the expected distribution.
+5. Report per-invite status: accepted/pending, role assigned, and any send errors.
 
-## Steps
-
-1. **You sign up** at `/signup` with `maher@next.jo` and confirm the email. Nothing else — do not create a project yet.
-2. **Create the GSI tenant + bootstrap the admin** (one migration, idempotent, matched by email):
-   - insert company `GSI` (slug `gsi`, plan tier — see question below),
-   - enable all module access rules for it,
-   - insert/repoint the `profiles` row for that auth user to the GSI company,
-   - insert `user_roles` rows: `company_admin` and `super_admin`,
-   - write an audit-log entry recording the bootstrap.
-   If the auth user isn't found, the migration raises a clear notice instead of failing.
-3. **Verify in the app**: sign in, confirm Settings → Users & roles shows you with both roles, the company switcher shows GSI, and the super-admin-only `/admin` area (tenants, health) is reachable.
-4. **Invite the first real users** from Settings → Users & roles (bulk invite dialog). Invites use `create_invite`, are hashed-token + expiring, and land on `/accept-invite`. Note: invite emails need email sending configured — if that isn't set up yet, the app still generates invite links you can send manually, and we can wire branded auth/invite email afterwards.
-5. **Optional cleanup**: the database currently holds ~100 leftover test tenants (`E2E …`, `P-131 Fixture …`, `P132 …`, `Demo EPC Co`). Recommend purging them so the real tenant list is clean — this is a destructive delete, done only if you say yes.
-
-## Technical notes
-
-- Roles stay exclusively in `public.user_roles` (never on `profiles`), scoped per company.
-- The bootstrap grant is a one-time migration; all subsequent grants/revokes go through the app's server functions, which call `assert_can_grant_role` first.
-- The existing last-company-admin guard prevents you from accidentally revoking your own admin later.
-
-## Need from you at implementation time
-
-- GSI plan tier: `enterprise` (unlocks Green H₂ + all modules) unless you say otherwise.
-- The list of first invitees: email + role for each.
-- Whether to purge the ~100 test tenants in the same pass.
+## Verification
+- `public.profiles` shows 18 new GSI-associated rows.
+- `public.user_roles` shows the mapped roles.
+- `public.invites` shows the 18 sent invites with the correct `invited_by` and `company_id`.
+- Audit log contains `admin.invite_batch` with the batch metadata.
