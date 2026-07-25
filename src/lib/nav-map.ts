@@ -54,6 +54,19 @@ export interface NavSection {
 
 export const NAV_SECTIONS: NavSection[] = [
   {
+    label: "Workspace",
+    items: [
+      {
+        moduleKey: "admin",
+        label: "Approvals",
+        url: "/approvals",
+        icon: Inbox,
+        alwaysVisible: true,
+        hideFromExternalViewers: true,
+      },
+    ],
+  },
+  {
     label: "Lifecycle",
     items: [
       { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm/pipeline", icon: Handshake },
