@@ -196,12 +196,9 @@ export const listMyApprovals = createServerFn({ method: "GET" })
     const rows: InboxRow[] = approvals.map((a) => {
       const inst = instancesById.get(a.instance_id);
       const metadata = (inst?.metadata ?? {}) as Json;
-      const escalated =
-        typeof metadata.escalated_at === "string" ? metadata.escalated_at : null;
-      const stepRole =
-        typeof metadata.step_role === "string" ? metadata.step_role : null;
-      const currency =
-        typeof metadata.currency === "string" ? metadata.currency : null;
+      const escalated = pickString(metadata, "escalated_at");
+      const stepRole = pickString(metadata, "step_role");
+      const currency = pickString(metadata, "currency");
       const title = deriveTitle(
         metadata,
         inst?.entity_type ?? "unknown",
