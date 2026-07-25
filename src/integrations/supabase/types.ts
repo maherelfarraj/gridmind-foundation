@@ -6726,6 +6726,61 @@ export type Database = {
           },
         ]
       }
+      scada_telemetry: {
+        Row: {
+          company_id: string
+          created_at: string
+          metric: string
+          project_id: string
+          quality: string
+          scada_asset_id: string
+          ts: string
+          value: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          metric: string
+          project_id: string
+          quality?: string
+          scada_asset_id: string
+          ts: string
+          value: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          metric?: string
+          project_id?: string
+          quality?: string
+          scada_asset_id?: string
+          ts?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_telemetry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schedule_tasks: {
         Row: {
           company_id: string
