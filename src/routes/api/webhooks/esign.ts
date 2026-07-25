@@ -1,13 +1,23 @@
-// P-049 — E-signature webhook.
-//
-// TODO(B13/P-126): move under /api/public/esign and wrap in guardPublicHook +
-// full provider signature verification (HMAC per provider). Until then a
-// shared-secret header check (ESIGN_WEBHOOK_SECRET, timing-safe) is the
-// minimal auth gate. Never expose service-role or Supabase secrets here; the
-// admin client is only loaded inside the handler after the caller is
-// verified.
+/**
+ * P-126 — Inbound e-signature webhook.
+ *
+ * Third-party callers verify via `verifyWebhook` in the provider adapter
+ * (HMAC-SHA256 over the raw body + timestamp, or manual dev token).
+ * IP allowlist + rate limit come from the shared inbound-guard. We NEVER
+ * call requireSupabaseAuth and NEVER read x-forwarded-for.
+ */
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { createServiceRoleClient } from "@/integrations/supabase/admin";
+import { auditGuardEvent } from "@/lib/public-api/guard";
+import {
+  enforceMode,
+  inboundGate,
+  jsonResponse,
+} from "@/lib/public-api/inbound-guard";
+import { verifyWebhook } from "@/lib/esign/provider";
+
+const ROUTE = "webhooks:esign";
 
 const payloadSchema = z.object({
   envelope_id: z.string().min(1),
@@ -15,50 +25,84 @@ const payloadSchema = z.object({
   provider_event_id: z.string().min(1).optional(),
 });
 
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return mismatch === 0;
-}
-
 export const Route = createFileRoute("/api/webhooks/esign")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.ESIGN_WEBHOOK_SECRET;
-        if (!expected) {
-          return new Response("webhook_not_configured", { status: 503 });
+        // Read raw body ONCE — verification must be over exact bytes.
+        const rawBody = await request.text();
+        const admin = createServiceRoleClient();
+        const mode = enforceMode();
+
+        // Provider verification (replaces guard stages 1 + 3).
+        const verify = await verifyWebhook(request, rawBody);
+        if (!verify.ok) {
+          if (verify.reason === "not_configured") {
+            return jsonResponse(503, {
+              error: "webhook_not_configured",
+              message: "ESIGN_WEBHOOK_SECRET missing",
+            });
+          }
+          if (mode === "block") {
+            await auditGuardEvent(admin, {
+              companyId: null,
+              action: "public_hook.signature_failed",
+              route: ROUTE,
+              reason: verify.reason,
+              metadata: { provider: verify.providerName },
+            });
+            return jsonResponse(401, {
+              error: verify.reason,
+              message: "invalid signature",
+            });
+          }
+          await auditGuardEvent(admin, {
+            companyId: null,
+            action: "public_hook.signature_failed",
+            route: ROUTE,
+            reason: verify.reason,
+            metadata: { provider: verify.providerName, enforce: "warn" },
+          });
         }
-        const provided = request.headers.get("x-esign-signature") ?? "";
-        if (!timingSafeEqual(provided, expected)) {
-          return new Response("unauthorized", { status: 401 });
-        }
+
+        // Stages 2 + 4.
+        const gate = await inboundGate(request, {
+          route: ROUTE,
+          allowlistEnv: "ESIGN_ALLOWED_IPS",
+          rateCapacity: 120,
+          rateRefillPerSec: 2,
+        });
+        if (gate.block) return gate.block;
 
         let json: unknown;
         try {
-          json = await request.json();
+          json = JSON.parse(rawBody);
         } catch {
-          return new Response("bad_json", { status: 400 });
+          return jsonResponse(400, { error: "invalid_payload", message: "bad json" });
         }
         const parsed = payloadSchema.safeParse(json);
         if (!parsed.success) {
-          return new Response("bad_payload", { status: 400 });
+          return jsonResponse(400, {
+            error: "invalid_payload",
+            message: parsed.error.message,
+          });
         }
         const { envelope_id, event, provider_event_id } = parsed.data;
 
-        // Load supabaseAdmin only inside the handler; resolve proposal by envelope.
-        const { createServiceRoleClient } = await import(
-          "@/integrations/supabase/server"
-        );
-        const admin = createServiceRoleClient();
         const { data: prop, error } = await admin
           .from("proposals")
-          .select("id")
+          .select("id, company_id")
           .eq("esign_envelope_id", envelope_id)
           .maybeSingle();
-        if (error) return new Response(error.message, { status: 500 });
-        if (!prop) return new Response("envelope_not_found", { status: 404 });
+        if (error) {
+          return jsonResponse(500, { error: "db_error", message: error.message });
+        }
+        if (!prop) {
+          return jsonResponse(404, {
+            error: "unknown_envelope",
+            message: "envelope not found",
+          });
+        }
 
         const { applyEsignEventInternal } = await import(
           "@/lib/proposal.functions"
@@ -66,15 +110,24 @@ export const Route = createFileRoute("/api/webhooks/esign")({
         try {
           await applyEsignEventInternal(
             admin,
-            (prop as any).id,
+            (prop as { id: string }).id,
             event,
             null,
             provider_event_id ?? null,
           );
-        } catch (err: any) {
-          return new Response(err?.message ?? "apply_failed", { status: 500 });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "apply_failed";
+          return jsonResponse(500, { error: "apply_failed", message });
         }
-        return Response.json({ ok: true });
+
+        await auditGuardEvent(admin, {
+          companyId: (prop as { company_id: string | null }).company_id ?? null,
+          action: "esign.webhook_received",
+          route: ROUTE,
+          metadata: { event, envelope_id, provider: verify.providerName },
+        });
+
+        return jsonResponse(200, { ok: true });
       },
     },
   },
