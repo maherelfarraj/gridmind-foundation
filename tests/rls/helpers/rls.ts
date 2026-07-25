@@ -203,8 +203,28 @@ export async function setupFixtures(): Promise<Fixtures> {
     seedTenant(svc, "b", rawB.userId, rawB.email),
   ]);
 
-  // Viewer: NO profile (so is_company_member returns false), plus a portal
-  // membership scoped to project B with curated exposure.
+  // Viewer must exist in public.profiles because portal_memberships.user_id
+  // FKs profiles(id). Attach the viewer profile to an ORPHAN company (no
+  // user_roles, no shared data with A/B) so is_company_member(A|B) still
+  // returns false — the invariant tests rely on. Poll auth until the row
+  // is visible before writing the profile.
+  for (let i = 0; i < 10; i++) {
+    const { data: got } = await svc.auth.admin.getUserById(rawViewer.userId);
+    if (got?.user) break;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  const orphanSlug = `p132-viewer-${crypto.randomUUID().slice(0, 8)}`;
+  const { data: orphanCo, error: orphanErr } = await svc
+    .from("companies")
+    .insert({ name: `P132 viewer-orphan`, slug: orphanSlug, plan_tier: "starter" })
+    .select("id")
+    .single();
+  if (orphanErr || !orphanCo) throw orphanErr ?? new Error("viewer-orphan company insert failed");
+  const { error: profErr } = await svc
+    .from("profiles")
+    .upsert({ id: rawViewer.userId, company_id: orphanCo.id, email: rawViewer.email });
+  if (profErr) throw profErr;
+
   const { data: membership, error: memErr } = await svc
     .from("portal_memberships")
     .insert({
@@ -220,6 +240,7 @@ export async function setupFixtures(): Promise<Fixtures> {
     .select("id")
     .single();
   if (memErr || !membership) throw memErr ?? new Error("portal_membership insert failed");
+
 
   const A: Fixtures["A"] = {
     ...depsA,
