@@ -133,6 +133,7 @@ function ProjectDetailLayout() {
           <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
             {project.status}
           </span>
+          <MobilizationHeaderChip projectId={projectId} />
         </div>
 
         <Card className="border-border bg-card p-5">
