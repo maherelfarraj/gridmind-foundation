@@ -817,10 +817,7 @@ export const buildKickoffPack = createServerFn({ method: "POST" })
     }
 
     const { assertExportAllowed } = await import("@/lib/export-guard");
-    await assertExportAllowed(context.supabase, {
-      companyId: o.company_id,
-      projectId: null,
-    });
+    await assertExportAllowed(context.supabase, null, "csv");
 
     // Related data
     const [{ data: contacts }, { data: proposals }, { data: tenders }] =
