@@ -576,10 +576,11 @@ export const logWeeklyReportExport = createServerFn({ method: "POST" })
     if (!roles.some((r) => EXPORT_ROLES.has(r))) {
       httpError(403, "forbidden");
     }
-    await assertExportAllowed(context.supabase, {
-      companyId: project.company_id,
-      projectId: data.projectId,
-    });
+    await assertExportAllowed(
+      context.supabase,
+      data.projectId,
+      "weekly_client_report",
+    );
     try {
       await context.supabase.rpc("write_audit_log", {
         p_action: "field.weekly_report_export",

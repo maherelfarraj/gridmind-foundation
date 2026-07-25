@@ -1,16 +1,23 @@
-// P-048 — Export proposal PPTX button (branded, native chart).
+// P-048 / P-113 — Export proposal PPTX button (branded, native chart).
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Presentation, Loader2 } from "lucide-react";
+import { Presentation, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import {
   buildProposalPptx,
   downloadBlob,
 } from "@/lib/exports/proposal-pptx";
 import { assertExportAllowed } from "@/lib/export-guard";
+import { useIsExportLocked } from "@/lib/export-locks.hooks";
 import {
   getProposalExportData,
   recordProposalExport,
@@ -27,7 +34,6 @@ interface ExportPptxButtonProps {
 
 export function ExportPptxButton({
   proposalId,
-  companyId,
   projectId,
   size = "sm",
   variant = "outline",
@@ -36,20 +42,17 @@ export function ExportPptxButton({
   const [pending, setPending] = useState(false);
   const getData = useServerFn(getProposalExportData);
   const record = useServerFn(recordProposalExport);
+  const lockQuery = useIsExportLocked(projectId ?? null, "proposal_pptx");
+  const locked = lockQuery.data === true;
 
   async function run() {
     if (pending) return;
     setPending(true);
     try {
       try {
-        await assertExportAllowed(supabase, {
-          companyId,
-          projectId: projectId ?? null,
-        });
+        await assertExportAllowed(supabase, projectId ?? null, "proposal_pptx");
       } catch (lockErr: any) {
-        toast.error("Exports locked by governance");
-        // eslint-disable-next-line no-console
-        console.debug("export locked", lockErr?.message);
+        toast.error(lockErr?.message ?? "Export blocked: approval pending");
         return;
       }
 
@@ -66,21 +69,37 @@ export function ExportPptxButton({
   }
 
   const isIcon = size === "icon";
-  return (
+  const disabled = pending || locked;
+  const btn = (
     <Button
       size={size}
       variant={variant}
       onClick={run}
-      disabled={pending}
+      disabled={disabled}
       aria-label={isIcon ? label : undefined}
-      title={isIcon ? label : undefined}
+      title={isIcon && !locked ? label : undefined}
     >
       {pending ? (
         <Loader2 size={14} className="animate-spin" aria-hidden />
+      ) : locked ? (
+        <Lock size={14} aria-hidden />
       ) : (
         <Presentation size={14} aria-hidden />
       )}
-      {!isIcon && (pending ? "Exporting…" : label)}
+      {!isIcon && (pending ? "Exporting…" : locked ? "Export locked" : label)}
     </Button>
+  );
+  if (!locked) return btn;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-block">{btn}</span>
+        </TooltipTrigger>
+        <TooltipContent>
+          Export blocked while approvals are pending
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

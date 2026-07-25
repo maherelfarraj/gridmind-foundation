@@ -200,10 +200,7 @@ export const generateOmReport = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
     await assertWriter(context);
-    await assertExportAllowed(context.supabase, {
-      companyId,
-      projectId: data.projectId,
-    });
+    await assertExportAllowed(context.supabase, data.projectId, "om_report");
 
     // ---- project + capacity ------------------------------------------------
     const { data: proj, error: pErr } = await context.supabase
