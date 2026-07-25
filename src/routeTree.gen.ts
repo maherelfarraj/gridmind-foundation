@@ -49,6 +49,7 @@ import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes
 import { Route as AuthenticatedOmWorkOrdersRouteImport } from './routes/_authenticated/om.work-orders'
 import { Route as AuthenticatedOmWarrantiesRouteImport } from './routes/_authenticated/om.warranties'
 import { Route as AuthenticatedOmServiceTicketsRouteImport } from './routes/_authenticated/om.service-tickets'
+import { Route as AuthenticatedOmReportsRouteImport } from './routes/_authenticated/om.reports'
 import { Route as AuthenticatedOmMaintenancePlansRouteImport } from './routes/_authenticated/om.maintenance-plans'
 import { Route as AuthenticatedHseTrainingRouteImport } from './routes/_authenticated/hse.training'
 import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authenticated/hse.inspections'
@@ -376,6 +377,11 @@ const AuthenticatedOmServiceTicketsRoute =
     path: '/om/service-tickets',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOmReportsRoute = AuthenticatedOmReportsRouteImport.update({
+  id: '/om/reports',
+  path: '/om/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOmMaintenancePlansRoute =
   AuthenticatedOmMaintenancePlansRouteImport.update({
     id: '/om/maintenance-plans',
@@ -1034,6 +1040,7 @@ export interface FileRoutesByFullPath {
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
   '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
+  '/om/reports': typeof AuthenticatedOmReportsRoute
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
@@ -1176,6 +1183,7 @@ export interface FileRoutesByTo {
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
   '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
+  '/om/reports': typeof AuthenticatedOmReportsRoute
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
@@ -1313,6 +1321,7 @@ export interface FileRoutesById {
   '/_authenticated/hse/inspections': typeof AuthenticatedHseInspectionsRoute
   '/_authenticated/hse/training': typeof AuthenticatedHseTrainingRoute
   '/_authenticated/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
+  '/_authenticated/om/reports': typeof AuthenticatedOmReportsRoute
   '/_authenticated/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/_authenticated/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/_authenticated/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
@@ -1458,6 +1467,7 @@ export interface FileRouteTypes {
     | '/hse/inspections'
     | '/hse/training'
     | '/om/maintenance-plans'
+    | '/om/reports'
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
@@ -1600,6 +1610,7 @@ export interface FileRouteTypes {
     | '/hse/inspections'
     | '/hse/training'
     | '/om/maintenance-plans'
+    | '/om/reports'
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
@@ -1736,6 +1747,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hse/inspections'
     | '/_authenticated/hse/training'
     | '/_authenticated/om/maintenance-plans'
+    | '/_authenticated/om/reports'
     | '/_authenticated/om/service-tickets'
     | '/_authenticated/om/warranties'
     | '/_authenticated/om/work-orders'
@@ -2150,6 +2162,13 @@ declare module '@tanstack/react-router' {
       path: '/om/service-tickets'
       fullPath: '/om/service-tickets'
       preLoaderRoute: typeof AuthenticatedOmServiceTicketsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/om/reports': {
+      id: '/_authenticated/om/reports'
+      path: '/om/reports'
+      fullPath: '/om/reports'
+      preLoaderRoute: typeof AuthenticatedOmReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/om/maintenance-plans': {
@@ -3309,6 +3328,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHseInspectionsRoute: typeof AuthenticatedHseInspectionsRoute
   AuthenticatedHseTrainingRoute: typeof AuthenticatedHseTrainingRoute
   AuthenticatedOmMaintenancePlansRoute: typeof AuthenticatedOmMaintenancePlansRoute
+  AuthenticatedOmReportsRoute: typeof AuthenticatedOmReportsRoute
   AuthenticatedOmServiceTicketsRoute: typeof AuthenticatedOmServiceTicketsRoute
   AuthenticatedOmWarrantiesRoute: typeof AuthenticatedOmWarrantiesRoute
   AuthenticatedOmWorkOrdersRoute: typeof AuthenticatedOmWorkOrdersRoute
@@ -3380,6 +3400,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHseInspectionsRoute: AuthenticatedHseInspectionsRoute,
   AuthenticatedHseTrainingRoute: AuthenticatedHseTrainingRoute,
   AuthenticatedOmMaintenancePlansRoute: AuthenticatedOmMaintenancePlansRoute,
+  AuthenticatedOmReportsRoute: AuthenticatedOmReportsRoute,
   AuthenticatedOmServiceTicketsRoute: AuthenticatedOmServiceTicketsRoute,
   AuthenticatedOmWarrantiesRoute: AuthenticatedOmWarrantiesRoute,
   AuthenticatedOmWorkOrdersRoute: AuthenticatedOmWorkOrdersRoute,
