@@ -7744,6 +7744,94 @@ export type Database = {
           },
         ]
       }
+      scheduled_reports: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          day_of_month: number | null
+          day_of_week: number | null
+          frequency: string
+          hour_utc: number
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          last_run_error: string | null
+          last_run_status: string | null
+          name: string
+          next_run_at: string | null
+          project_id: string | null
+          recipients: string[]
+          report_type: string
+          template_sections: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          day_of_month?: number | null
+          day_of_week?: number | null
+          frequency: string
+          hour_utc?: number
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          name: string
+          next_run_at?: string | null
+          project_id?: string | null
+          recipients?: string[]
+          report_type?: string
+          template_sections?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          day_of_month?: number | null
+          day_of_week?: number | null
+          frequency?: string
+          hour_utc?: number
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          name?: string
+          next_run_at?: string | null
+          project_id?: string | null
+          recipients?: string[]
+          report_type?: string
+          template_sections?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_tickets: {
         Row: {
           assigned_to: string | null
@@ -9376,6 +9464,16 @@ export type Database = {
       cancel_approval_instance: {
         Args: { p_instance_id: string }
         Returns: undefined
+      }
+      compute_next_run: {
+        Args: {
+          p_day_of_month: number
+          p_day_of_week: number
+          p_frequency: string
+          p_from?: string
+          p_hour_utc: number
+        }
+        Returns: string
       }
       consume_rate_limit: {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }

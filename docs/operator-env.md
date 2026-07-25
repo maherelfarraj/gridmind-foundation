@@ -24,6 +24,10 @@ GridMind EPC runs on Lovable Cloud. The Supabase pair is injected automatically 
 | `PUBLIC_HOOK_ENFORCE` | Lovable Cloud secret store (operator-supplied) | Server (`/api/public/*`) | Kill-switch flag for public webhook hardening. Values: `on` / `off`. | Wired in a later batch. |
 | `PUBLIC_HOOK_IP_ALLOWLIST` | Lovable Cloud secret store (operator-supplied) | Server (`/api/public/*`) | Comma-separated CIDR/IP list allowed to hit public webhook routes. | Wired in a later batch. |
 | `PUBLIC_HOOK_SIGNING_SECRET` | Lovable Cloud secret store (operator-supplied) | Server (`/api/public/*`) | HMAC signing secret for verifying inbound webhook payloads. | Wired in a later batch. |
+| `EMAILJS_SERVICE_ID` | Lovable Cloud secret store (operator-supplied) | Server (`sendScheduledReport`) | EmailJS service identifier used to deliver scheduled report PDFs. | Required for scheduled report delivery; missing → send returns `emailjs_not_configured`. |
+| `EMAILJS_TEMPLATE_ID` | Lovable Cloud secret store (operator-supplied) | Server (`sendScheduledReport`) | EmailJS template identifier. Template params: `to_email`, `report_name`, `period`, `attachment_base64`, `company_name`. | Required for scheduled report delivery. |
+| `EMAILJS_PUBLIC_KEY` | Lovable Cloud secret store (operator-supplied) | Server (`sendScheduledReport`) | EmailJS public (user) key. | Required for scheduled report delivery. |
+| `EMAILJS_PRIVATE_KEY` | Lovable Cloud secret store (operator-supplied) | Server (`sendScheduledReport`) | EmailJS private key for REST auth. | Required for scheduled report delivery. |
 
 ## Client selection cheat sheet
 
