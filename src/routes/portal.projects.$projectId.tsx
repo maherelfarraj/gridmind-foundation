@@ -13,6 +13,7 @@ import {
   Calendar,
   CheckCircle2,
   Image as ImageIcon,
+  Inbox,
   Loader2,
   MessageSquarePlus,
   ShieldAlert,
@@ -32,7 +33,10 @@ import {
 } from "@/lib/portal.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,7 +92,7 @@ function PortalProjectPage() {
 
   if (feedQ.isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
+      <div className="page-shell">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-32 w-full" />
       </div>
@@ -99,19 +103,21 @@ function PortalProjectPage() {
     const msg = (feedQ.error as Error).message || "";
     const denied = /forbidden|expired|revoked|access/i.test(msg);
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 p-10 text-center">
-        <ShieldAlert className="h-8 w-8 text-destructive" />
-        <h1 className="font-display text-xl font-semibold text-foreground">
-          {denied ? "Access expired or revoked" : "Could not load portal"}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {denied
-            ? "Your access to this project is no longer active. Contact your project sponsor."
-            : "Please retry in a moment."}
-        </p>
-        <Button variant="outline" onClick={() => navigate({ to: "/portal" })}>
-          Back to projects
-        </Button>
+      <div className="page-shell max-w-3xl">
+        <EmptyState
+          icon={ShieldAlert}
+          title={denied ? "Access expired or revoked" : "Could not load portal"}
+          description={
+            denied
+              ? "Your access to this project is no longer active. Contact your project sponsor."
+              : "Please retry in a moment."
+          }
+          action={
+            <Button variant="outline" onClick={() => navigate({ to: "/portal" })}>
+              Back to projects
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -120,23 +126,27 @@ function PortalProjectPage() {
   const projectName = feed.project.code
     ? `${feed.project.code} · ${feed.project.name ?? "Project"}`
     : (feed.project.name ?? "Project");
+  const projectDescription = [
+    feed.project.phase ? `Phase: ${feed.project.phase}` : null,
+    feed.project.status ?? null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            {projectName}
-          </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {feed.project.phase ? `Phase: ${feed.project.phase}` : null}
-            {feed.project.status ? ` · ${feed.project.status}` : null}
-          </p>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          Updated {formatDistanceToNow(new Date(feed.as_of), { addSuffix: true })}
-        </div>
-      </header>
+    <div className="page-shell">
+      <PageHeader
+        title={projectName}
+        description={
+          projectDescription ||
+          `Updated ${formatDistanceToNow(new Date(feed.as_of), { addSuffix: true })}`
+        }
+        actions={
+          <span className="text-xs text-muted-foreground">
+            Updated {formatDistanceToNow(new Date(feed.as_of), { addSuffix: true })}
+          </span>
+        }
+      />
 
       <Tabs defaultValue="overview">
         <TabsList>
@@ -184,7 +194,7 @@ function OverviewTab({ feed }: { feed: PortalFeed }) {
   const showKpis = feed.exposure.kpis && kpi;
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-lg border bg-card p-5">
         <h2 className="text-sm font-medium text-muted-foreground">Project</h2>
         <div className="mt-2 space-y-1 text-sm">
           <div>
@@ -203,8 +213,8 @@ function OverviewTab({ feed }: { feed: PortalFeed }) {
       </div>
 
       {showKpis ? (
-        <div className="rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <div className="space-y-3">
+          <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" /> KPIs
             {kpi.as_of_date ? (
               <span className="ml-auto text-[11px] text-muted-foreground">
@@ -212,47 +222,29 @@ function OverviewTab({ feed }: { feed: PortalFeed }) {
               </span>
             ) : null}
           </h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <KpiTile label="SPI" value={kpi.spi} format="ratio" />
-            <KpiTile label="CPI" value={kpi.cpi} format="ratio" />
-            <KpiTile label="EV" value={kpi.ev} format="money" />
-            <KpiTile label="EAC" value={kpi.eac} format="money" />
-          </div>
+          <KpiGrid columns={2}>
+            <KpiTile label="SPI" value={fmtKpi(kpi.spi, "ratio")} />
+            <KpiTile label="CPI" value={fmtKpi(kpi.cpi, "ratio")} />
+            <KpiTile label="EV" value={fmtKpi(kpi.ev, "money")} />
+            <KpiTile label="EAC" value={fmtKpi(kpi.eac, "money")} />
+          </KpiGrid>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
-          Nothing shared yet.
-        </div>
+        <EmptyState title="Nothing shared yet" compact />
       )}
     </div>
   );
 }
 
-function KpiTile({
-  label,
-  value,
-  format: fmt,
-}: {
-  label: string;
-  value: number | null | undefined;
-  format: "ratio" | "money";
-}) {
-  const display =
-    value == null
-      ? "—"
-      : fmt === "ratio"
-        ? value.toFixed(2)
-        : value.toLocaleString(undefined, {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-          });
-  return (
-    <div className="rounded-md border border-border bg-muted/30 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-1 font-display text-lg font-semibold text-foreground">{display}</div>
-    </div>
-  );
+function fmtKpi(value: number | null | undefined, format: "ratio" | "money"): string {
+  if (value == null) return "—";
+  return format === "ratio"
+    ? value.toFixed(2)
+    : value.toLocaleString(undefined, {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      });
 }
 
 // ---------------------------------------------------------------------------
@@ -260,12 +252,7 @@ function KpiTile({
 function MilestonesTab({ feed }: { feed: PortalFeed }) {
   const rows = feed.milestones ?? [];
   if (rows.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-        <Calendar className="mx-auto mb-2 h-5 w-5" />
-        Nothing shared yet.
-      </div>
-    );
+    return <EmptyState icon={Calendar} title="Nothing shared yet" />;
   }
   return (
     <ol className="space-y-2">
@@ -310,12 +297,7 @@ function MilestonesTab({ feed }: { feed: PortalFeed }) {
 function PhotosTab({ feed, projectId }: { feed: PortalFeed; projectId: string }) {
   const photos = feed.photos ?? [];
   if (photos.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-        <ImageIcon className="mx-auto mb-2 h-5 w-5" />
-        Nothing shared yet.
-      </div>
-    );
+    return <EmptyState icon={ImageIcon} title="Nothing shared yet" />;
   }
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -408,11 +390,7 @@ function ApprovalsTab({ projectId }: { projectId: string }) {
     return <Skeleton className="h-24 w-full" />;
   }
   if (pending.length === 0 && rows.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-        Nothing pending.
-      </div>
-    );
+    return <EmptyState icon={Inbox} title="Nothing pending" />;
   }
 
   return (
@@ -574,9 +552,7 @@ function TicketsTab({ projectId }: { projectId: string }) {
       {q.isLoading ? (
         <Skeleton className="h-24 w-full" />
       ) : rows.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No tickets yet.
-        </div>
+        <EmptyState icon={MessageSquarePlus} title="No tickets yet" />
       ) : (
         <ul className="space-y-2">
           {rows.map((t) => (
