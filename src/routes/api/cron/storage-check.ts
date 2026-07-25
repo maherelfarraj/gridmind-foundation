@@ -69,7 +69,8 @@ export const Route = createFileRoute("/api/cron/storage-check")({
         const admin = createServiceRoleClient();
         const failures: Failure[] = [];
 
-        const rpc = admin.rpc as unknown as LooseRpc;
+        const rpc: LooseRpc = (name, args) =>
+          (admin.rpc as unknown as LooseRpc).call(admin, name, args);
 
         // 1. Bucket existence + non-public (via SECURITY DEFINER helper — the
         //    Supabase JS client blocks non-standard schemas by default).
