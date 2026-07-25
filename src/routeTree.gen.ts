@@ -76,6 +76,7 @@ import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_aut
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
+import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
@@ -548,6 +549,11 @@ const AuthenticatedFieldDisciplineBoardRoute =
     path: '/field/discipline-board',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDocsApiRoute = AuthenticatedDocsApiRouteImport.update({
+  id: '/docs/api',
+  path: '/docs/api',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
@@ -1157,6 +1163,7 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/docs/api': typeof AuthenticatedDocsApiRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1318,6 +1325,7 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/docs/api': typeof AuthenticatedDocsApiRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1475,6 +1483,7 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
+  '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1640,6 +1649,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/admin/tenants'
     | '/crm/pipeline'
+    | '/docs/api'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
@@ -1801,6 +1811,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/crm/pipeline'
+    | '/docs/api'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
@@ -1957,6 +1968,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/crm/pipeline'
+    | '/_authenticated/docs/api'
     | '/_authenticated/field/discipline-board'
     | '/_authenticated/field/reports'
     | '/_authenticated/field/sync-status'
@@ -2594,6 +2606,13 @@ declare module '@tanstack/react-router' {
       path: '/field/discipline-board'
       fullPath: '/field/discipline-board'
       preLoaderRoute: typeof AuthenticatedFieldDisciplineBoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/docs/api': {
+      id: '/_authenticated/docs/api'
+      path: '/docs/api'
+      fullPath: '/docs/api'
+      preLoaderRoute: typeof AuthenticatedDocsApiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/crm/pipeline': {
@@ -3696,6 +3715,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
+  AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedFieldDisciplineBoardRoute: typeof AuthenticatedFieldDisciplineBoardRoute
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
@@ -3774,6 +3794,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
+  AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedFieldDisciplineBoardRoute:
     AuthenticatedFieldDisciplineBoardRoute,
   AuthenticatedFieldReportsRoute: AuthenticatedFieldReportsRoute,
