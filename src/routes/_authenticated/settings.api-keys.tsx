@@ -307,8 +307,10 @@ function ApiKeysPage() {
                   <TableHead>Scopes</TableHead>
                   <TableHead>Last used</TableHead>
                   <TableHead>Expires</TableHead>
+                  <TableHead>Security</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
