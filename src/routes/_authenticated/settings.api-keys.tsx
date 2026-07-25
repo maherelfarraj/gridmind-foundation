@@ -508,6 +508,19 @@ function ApiKeysPage() {
                 The previous secret is invalid immediately. Update any integrations using this key.
               </p>
             )}
+            {showRaw?.mode === "hmac" && (
+              <p className="text-xs text-muted-foreground">
+                Sign each request with HMAC-SHA256 over{" "}
+                <code className="font-mono">{`{timestamp}.{raw body}`}</code> and send it as{" "}
+                <code className="font-mono">x-gm-signature</code> with{" "}
+                <code className="font-mono">x-gm-timestamp</code> (300s replay window). See{" "}
+                <a className="underline" href="/docs/api" target="_blank" rel="noreferrer">
+                  API docs
+                </a>
+                .
+              </p>
+            )}
+
           </div>
           <DialogFooter>
             <Button onClick={() => setShowRaw(null)}>I have saved it</Button>
