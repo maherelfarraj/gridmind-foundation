@@ -123,7 +123,7 @@ export const listAlarmRules = createServerFn({ method: "GET" })
     if (data.project_id) q = q.eq("project_id", data.project_id);
     const { data: rows, error } = await q;
     if (error) throw error;
-    return (rows ?? []) as AlarmRuleRow[];
+    return (rows ?? []) as unknown as AlarmRuleRow[];
   });
 
 export const upsertAlarmRule = createServerFn({ method: "POST" })
@@ -157,7 +157,7 @@ export const upsertAlarmRule = createServerFn({ method: "POST" })
         .select("*")
         .single();
       if (error) throw error;
-      row = updated as AlarmRuleRow;
+      row = updated as unknown as AlarmRuleRow;
       await audit(context, "alarm_rule.updated", "alarm_rules", row.id, {
         name: row.name,
       });
@@ -168,7 +168,7 @@ export const upsertAlarmRule = createServerFn({ method: "POST" })
         .select("*")
         .single();
       if (error) throw error;
-      row = inserted as AlarmRuleRow;
+      row = inserted as unknown as AlarmRuleRow;
       await audit(context, "alarm_rule.created", "alarm_rules", row.id, {
         name: row.name,
       });
