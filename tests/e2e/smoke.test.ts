@@ -232,7 +232,7 @@ describe.skipIf(!canRun)('P-133 e2e smoke: golden path', () => {
 
     const { error: gateAdvErr } = await client
       .from('project_phase_gates')
-      .update({ status: 'passed' })
+      .update({ status: 'approved' })
       .eq('id', state.devGateId!);
     expect(gateAdvErr, gateAdvErr?.message).toBeNull();
 
