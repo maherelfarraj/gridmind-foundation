@@ -919,50 +919,62 @@ export const submitDpr = createServerFn({ method: "POST" })
     if (header.status !== "draft") httpError(409, "not_draft");
     const roles = await currentRoles(context);
     assertEditable(header, roles, userId);
+    return withIdempotency(
+      context,
+      {
+        key: data.clientIdempotencyKey,
+        entity: "dpr",
+        action: "submit",
+        companyId: header.company_id,
+        projectId: header.project_id,
+        input: data,
+      },
+      async () => {
+        const [manpower, photos] = await Promise.all([
+          context.supabase
+            .from("manpower_logs")
+            .select("id", { count: "exact", head: true })
+            .eq("dpr_id", data.id),
+          context.supabase
+            .from("site_photos")
+            .select("id", { count: "exact", head: true })
+            .eq("dpr_id", data.id),
+        ]);
+        const reason = submitBlockedReason({
+          manpowerCount: manpower.count ?? 0,
+          photoCount: photos.count ?? 0,
+          acknowledgeNoPhotos: data.acknowledgeNoPhotos,
+        });
+        if (reason) {
+          httpError(
+            422,
+            reason,
+            reason === "manpower_required"
+              ? "Add at least one manpower row before submitting"
+              : "No photos attached — tick 'Submit without photos' to continue",
+          );
+        }
 
-    const [manpower, photos] = await Promise.all([
-      context.supabase
-        .from("manpower_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("dpr_id", data.id),
-      context.supabase
-        .from("site_photos")
-        .select("id", { count: "exact", head: true })
-        .eq("dpr_id", data.id),
-    ]);
-    const reason = submitBlockedReason({
-      manpowerCount: manpower.count ?? 0,
-      photoCount: photos.count ?? 0,
-      acknowledgeNoPhotos: data.acknowledgeNoPhotos,
-    });
-    if (reason) {
-      httpError(
-        422,
-        reason,
-        reason === "manpower_required"
-          ? "Add at least one manpower row before submitting"
-          : "No photos attached — tick 'Submit without photos' to continue",
-      );
-    }
-
-    const { data: updated, error } = await context.supabase
-      .from("construction_daily_reports")
-      .update({
-        status: "submitted" as DprStatus,
-        submitted_by: userId,
-        submitted_at: new Date().toISOString(),
-      } as any)
-      .eq("id", data.id)
-      .select("*")
-      .maybeSingle();
-    if (error) throw error;
-    await audit(context, "dpr.submit", "construction_daily_reports", data.id, {
-      project_id: header.project_id,
-      photos: photos.count ?? 0,
-      manpower_rows: manpower.count ?? 0,
-      no_photos_ack: data.acknowledgeNoPhotos,
-    });
-    return updated as unknown as DprRow;
+        const { data: updated, error } = await context.supabase
+          .from("construction_daily_reports")
+          .update({
+            status: "submitted" as DprStatus,
+            submitted_by: userId,
+            submitted_at: new Date().toISOString(),
+          } as any)
+          .eq("id", data.id)
+          .select("*")
+          .maybeSingle();
+        if (error) throw error;
+        await audit(context, "dpr.submit", "construction_daily_reports", data.id, {
+          project_id: header.project_id,
+          photos: photos.count ?? 0,
+          manpower_rows: manpower.count ?? 0,
+          no_photos_ack: data.acknowledgeNoPhotos,
+        });
+        return updated as unknown as DprRow;
+      },
+    );
   });
 
 const approveInput = z.object({ id: z.string().uuid() });
