@@ -6,37 +6,31 @@ import {
   isContractualAction,
   planEventActions,
   ruleMatchesEvent,
-  type ActionRule,
+  type MatchableRule,
   type MatchableEvent,
 } from "@/lib/scada/action-rules";
 
 const event: MatchableEvent = {
-  id: "e1",
-  company_id: "c1",
   project_id: "p1",
   event_type: "trip",
   severity: "major",
   code: "INV-27",
   message: "Inverter 3 tripped on DC overvoltage",
   source: "scada",
-  asset_node_id: "a1",
+  asset_node_id: "3f1b1c9e-2f7a-4f9c-9b2a-0f1d5a6c7e88",
   payload: { inverter: "INV-03" },
 };
 
-function rule(overrides: Partial<ActionRule> = {}): ActionRule {
+function rule(overrides: Partial<MatchableRule> = {}): MatchableRule {
   return {
     id: "r1",
-    company_id: "c1",
     project_id: null,
-    name: "Trip → WO",
     event_type: "trip",
-    min_severity: "minor",
+    min_severity: "warning",
     match: {},
     action_type: "create_work_order",
     action_config: {},
     requires_approval: false,
-    approval_rule_key: "scada_event_action",
-    ai_assist: false,
     enabled: true,
     ...overrides,
   };
@@ -63,7 +57,7 @@ describe("ruleMatchesEvent", () => {
     expect(ruleMatchesEvent(rule({ match: { code_in: ["INV-99"] } }), event)).toBe(false);
     expect(ruleMatchesEvent(rule({ match: { message_contains: "overvoltage" } }), event)).toBe(true);
     expect(ruleMatchesEvent(rule({ match: { source_in: ["operator"] } }), event)).toBe(false);
-    expect(ruleMatchesEvent(rule({ match: { asset_node_ids: ["a1"] } }), event)).toBe(true);
+    expect(ruleMatchesEvent(rule({ match: { asset_node_ids: ["3f1b1c9e-2f7a-4f9c-9b2a-0f1d5a6c7e88"] } }), event)).toBe(true);
     expect(
       ruleMatchesEvent(rule({ match: { payload_equals: { inverter: "INV-03" } } }), event),
     ).toBe(true);
@@ -97,7 +91,7 @@ describe("governance floor", () => {
       event,
     );
     expect(plans).toHaveLength(2);
-    expect(plans[0]).toMatchObject({ ruleId: "r1", requiresApproval: false });
-    expect(plans[1]).toMatchObject({ ruleId: "r2", requiresApproval: true });
+    expect(plans[0]).toMatchObject({ rule_id: "r1", requires_approval: false });
+    expect(plans[1]).toMatchObject({ rule_id: "r2", requires_approval: true });
   });
 });
