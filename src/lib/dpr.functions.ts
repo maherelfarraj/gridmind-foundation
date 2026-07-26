@@ -783,7 +783,9 @@ export const attachPhoto = createServerFn({ method: "POST" })
           caption: data.caption ?? null,
           discipline: data.discipline ?? null,
           area: data.area ?? null,
+          media_type: data.mediaType,
           uploaded_by: userId,
+
         };
         const { data: row, error } = await context.supabase
           .from("site_photos")
