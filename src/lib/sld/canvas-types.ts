@@ -1,0 +1,91 @@
+// P-138 — Shared, browser-safe types for the SLD CAD canvas workspace.
+
+export const SHEET_SIZES = {
+  A0: { w: 1189, h: 841 },
+  A1: { w: 841, h: 594 },
+  A2: { w: 594, h: 420 },
+  A3: { w: 420, h: 297 },
+} as const;
+
+export type SheetSize = keyof typeof SHEET_SIZES;
+
+export const GRID_STEPS = [1, 5, 10] as const;
+export type GridMm = (typeof GRID_STEPS)[number];
+
+export const BORDER_LAYER_ID = "__border";
+
+export type SldLayer = {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  /** System layers (border/title block) cannot be renamed or deleted. */
+  system?: boolean;
+};
+
+export type SldCanvasObject = {
+  id: string;
+  symbol_type: string;
+  tag: string | null;
+  label: string | null;
+  x: number;
+  y: number;
+  rotation: 0 | 90 | 180 | 270;
+  mirrored: boolean;
+  layer_id: string;
+  properties: Record<string, unknown>;
+};
+
+export type SldConnection = {
+  id: string;
+  from_object_id: string;
+  from_port: string;
+  to_object_id: string;
+  to_port: string;
+  connection_type: string;
+  cable_number: string | null;
+};
+
+/** Persisted into sld_revisions.canvas jsonb. */
+export type SldCanvasMeta = {
+  layers: SldLayer[];
+  gridMm: GridMm;
+  snapEnabled: boolean;
+};
+
+export type CanvasTool = "select" | "pan" | "place";
+
+export const DEFAULT_LAYERS: SldLayer[] = [
+  { id: BORDER_LAYER_ID, name: "Sheet border", visible: true, locked: true, system: true },
+  { id: "default", name: "Equipment", visible: true, locked: false },
+];
+
+export function defaultCanvasMeta(): SldCanvasMeta {
+  return { layers: DEFAULT_LAYERS.map((l) => ({ ...l })), gridMm: 5, snapEnabled: true };
+}
+
+export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
+  const base = defaultCanvasMeta();
+  if (!raw || typeof raw !== "object") return base;
+  const obj = raw as Record<string, unknown>;
+  const layers = Array.isArray(obj.layers)
+    ? (obj.layers as unknown[])
+        .filter((l): l is Record<string, unknown> => Boolean(l) && typeof l === "object")
+        .map((l) => ({
+          id: String(l.id ?? "default"),
+          name: String(l.name ?? "Layer"),
+          visible: l.visible !== false,
+          locked: Boolean(l.locked),
+          system: Boolean(l.system),
+        }))
+    : [];
+  const withBorder = layers.some((l) => l.id === BORDER_LAYER_ID)
+    ? layers
+    : [base.layers[0], ...layers];
+  const grid = GRID_STEPS.includes(obj.gridMm as GridMm) ? (obj.gridMm as GridMm) : base.gridMm;
+  return {
+    layers: withBorder.length > 1 ? withBorder : base.layers,
+    gridMm: grid,
+    snapEnabled: obj.snapEnabled !== false,
+  };
+}
