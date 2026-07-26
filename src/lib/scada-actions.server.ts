@@ -718,3 +718,126 @@ export async function suggestEventAction(
     return null;
   }
 }
+
+// ---- admin/CRUD helpers ----------------------------------------------------
+import { createServiceRoleClient } from "@/integrations/supabase/server";
+
+export function privilegedDb(): Db {
+  return createServiceRoleClient() as unknown as Db;
+}
+
+export async function canManageRules(context: AuthContext): Promise<boolean> {
+  for (const role of ["om_admin", "scada_admin", "company_admin"] as const) {
+    const { data } = await context.supabase.rpc("has_company_role", { p_role: role as never });
+    if (data === true) return true;
+  }
+  return false;
+}
+
+export async function assertRuleWriter(context: AuthContext): Promise<void> {
+  if (!(await canManageRules(context))) {
+    throw Object.assign(new Error("forbidden_role"), { statusCode: 403 });
+  }
+}
+
+export interface ActionRuleRow {
+  id: string;
+  company_id: string;
+  project_id: string | null;
+  project_name: string | null;
+  name: string;
+  event_type: string;
+  min_severity: string;
+  match: Json;
+  action_type: EventActionType;
+  action_config: Json;
+  requires_approval: boolean;
+  approval_rule_key: string;
+  ai_assist: boolean;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function listRules(context: AuthContext): Promise<ActionRuleRow[]> {
+  const { data, error } = await context.supabase
+    .from("event_action_rules")
+    .select(
+      "id, company_id, project_id, name, event_type, min_severity, match, action_type, action_config, requires_approval, approval_rule_key, ai_assist, enabled, created_at, updated_at, project:projects(name)",
+    )
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    ...(r as unknown as ActionRuleRow),
+    project_name: (r.project as { name: string } | null)?.name ?? null,
+  }));
+}
+
+export interface ActionLogRow {
+  id: string;
+  project_id: string;
+  project_name: string | null;
+  rule_id: string | null;
+  rule_name: string | null;
+  scada_event_id: string | null;
+  event_message: string | null;
+  event_severity: string | null;
+  event_occurred_at: string | null;
+  action_type: EventActionType;
+  status: string;
+  approval_instance_id: string | null;
+  approval_status: string | null;
+  ai_suggestion: Json | null;
+  result_entity: string | null;
+  result_entity_id: string | null;
+  executed_at: string | null;
+  error: string | null;
+  created_at: string;
+}
+
+export async function listActionLogRows(
+  context: AuthContext,
+  limit = 100,
+): Promise<ActionLogRow[]> {
+  const { data, error } = await context.supabase
+    .from("event_action_log")
+    .select(
+      "id, project_id, rule_id, scada_event_id, action_type, status, approval_instance_id, ai_suggestion, result_entity, result_entity_id, executed_at, error, created_at, project:projects(name), rule:event_action_rules(name), event:scada_events(message, severity, occurred_at), instance:approval_instances(status)",
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return ((data ?? []) as Array<Record<string, unknown>>).map((r) => {
+    const event = r.event as { message: string; severity: string; occurred_at: string } | null;
+    return {
+      ...(r as unknown as ActionLogRow),
+      project_name: (r.project as { name: string } | null)?.name ?? null,
+      rule_name: (r.rule as { name: string } | null)?.name ?? null,
+      event_message: event?.message ?? null,
+      event_severity: event?.severity ?? null,
+      event_occurred_at: event?.occurred_at ?? null,
+      approval_status: (r.instance as { status: string } | null)?.status ?? null,
+    };
+  });
+}
+
+/** Manual re-evaluation of one event from the timeline / log view. */
+export async function evaluateEventById(
+  context: AuthContext,
+  eventId: string,
+): Promise<EvaluationResult> {
+  const companyId = await currentCompanyId(context);
+  const { data, error } = await context.supabase
+    .from("scada_events")
+    .select(
+      "id, company_id, project_id, event_type, severity, code, message, source, asset_node_id, payload",
+    )
+    .eq("id", eventId)
+    .maybeSingle();
+  if (error) throw error;
+  const event = data as EngineEvent | null;
+  if (!event || event.company_id !== companyId) {
+    throw Object.assign(new Error("event_not_found"), { statusCode: 404 });
+  }
+  return await evaluateEventActions({ db: privilegedDb(), auth: context }, event);
+}
