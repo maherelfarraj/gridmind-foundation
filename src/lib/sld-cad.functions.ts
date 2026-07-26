@@ -14,11 +14,11 @@ import {
   REMOVED_FLAG,
   type CadDrawing,
 } from "@/lib/sld-cad.server";
-import { normalizeCanvasMeta } from "@/lib/sld/canvas-types";
+import { normalizeCanvasMeta, type SldCanvasMeta } from "@/lib/sld/canvas-types";
 
 export type SldCadWorkspace = {
   drawing: CadDrawing & { project_name: string | null; project_code: string | null };
-  revision: { id: string; revision_code: string; status: string; canvas: Record<string, unknown> } | null;
+  revision: { id: string; revision_code: string; status: string; canvas: SldCanvasMeta } | null;
   objects: Array<{
     id: string;
     symbol_type: string;
@@ -29,7 +29,7 @@ export type SldCadWorkspace = {
     rotation: number;
     mirrored: boolean;
     layer_id: string;
-    properties: Record<string, unknown>;
+    properties: Record<string, string | number | boolean | null>;
   }>;
   connections: Array<{
     id: string;
@@ -103,7 +103,7 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
           x: Number(o.x),
           y: Number(o.y),
           rotation: Number(o.rotation),
-          properties: (o.properties ?? {}) as Record<string, unknown>,
+          properties: (o.properties ?? {}) as Record<string, string | number | boolean | null>,
         }));
       connections = ((connRows ?? []) as any[]).map((c) => ({ ...c }));
     }
