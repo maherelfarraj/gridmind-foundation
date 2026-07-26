@@ -8,6 +8,9 @@ import {
   type TaggableObject,
 } from "@/lib/sld/tagging";
 
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+export type JsonProps = Record<string, JsonValue>;
+
 /** Site metres → canvas mm (×10), deterministic and reversible. */
 export const METRES_TO_CANVAS = 10;
 
@@ -84,7 +87,7 @@ export interface GenObject {
   x: number;
   y: number;
   rotation: number;
-  properties: Record<string, unknown>;
+  properties: JsonProps;
 }
 
 export interface GenConnection {
@@ -95,7 +98,7 @@ export interface GenConnection {
   to_port: string;
   connection_type: "dc_string" | "cable" | "busbar";
   cable_number: string | null;
-  properties: Record<string, unknown>;
+  properties: JsonProps;
 }
 
 export interface GenWarning {
@@ -379,7 +382,7 @@ export function buildSldGraph(input: GenInput): GenGraph {
     fromPort: string,
     toPort: string,
     type: GenConnection["connection_type"],
-    properties: Record<string, unknown> = {},
+    properties: JsonProps = {},
   ) => {
     connections.push({
       key: `${from.key}->${to.key}`,

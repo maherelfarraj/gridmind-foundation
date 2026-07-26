@@ -150,7 +150,7 @@ export const generateSldFromLayout = createServerFn({ method: "POST" })
             x: o.x,
             y: o.y,
             rotation: o.rotation,
-            properties: { ...o.properties, generated_key: o.key },
+            properties: { ...o.properties, generated_key: o.key } as any,
           })),
         )
         .select("id, properties");
@@ -171,7 +171,7 @@ export const generateSldFromLayout = createServerFn({ method: "POST" })
           to_port: c.to_port,
           connection_type: c.connection_type,
           cable_number: c.cable_number,
-          properties: c.properties,
+          properties: c.properties as any,
         }))
         .filter((r) => r.from_object_id && r.to_object_id);
       if (connectionRows.length > 0) {
