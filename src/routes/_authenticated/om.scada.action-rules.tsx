@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -111,13 +111,13 @@ const DEFAULTS: FormValues = {
   enabled: true,
 };
 
-const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "neutral" | "info"> = {
-  executed: "success",
-  approved: "info",
-  pending_approval: "warning",
-  rejected: "danger",
-  failed: "danger",
-  skipped: "neutral",
+const STATUS_TONE: Record<string, StatusTone> = {
+  executed: "positive",
+  approved: "active",
+  pending_approval: "attention",
+  rejected: "critical",
+  failed: "critical",
+  skipped: "inactive",
 };
 
 function parseJsonField(value: string, label: string): Record<string, unknown> {
