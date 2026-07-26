@@ -175,6 +175,22 @@ const saveInput = z.object({
     ),
     gridMm: z.union([z.literal(1), z.literal(5), z.literal(10)]),
     snapEnabled: z.boolean(),
+    areas: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().trim().min(1).max(80),
+          code: z.string().regex(/^\d{1,2}$/).optional(),
+          bounds: z.object({
+            x: z.number(),
+            y: z.number(),
+            w: z.number(),
+            h: z.number(),
+          }),
+        }),
+      )
+      .max(50)
+      .default([]),
   }),
 });
 
