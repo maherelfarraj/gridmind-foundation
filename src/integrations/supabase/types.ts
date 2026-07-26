@@ -6709,6 +6709,84 @@ export type Database = {
           },
         ]
       }
+      pv_equipment_library: {
+        Row: {
+          category: Database["public"]["Enums"]["pv_equipment_category"]
+          certifications: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          datasheet_path: string | null
+          degradation: Json
+          dimensions: Json
+          docs: Json
+          electrical: Json
+          id: string
+          is_active: boolean
+          limits: Json
+          manufacturer: string
+          model: string
+          temp_coefficients: Json
+          updated_at: string
+          warranties: Json
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["pv_equipment_category"]
+          certifications?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          datasheet_path?: string | null
+          degradation?: Json
+          dimensions?: Json
+          docs?: Json
+          electrical?: Json
+          id?: string
+          is_active?: boolean
+          limits?: Json
+          manufacturer: string
+          model: string
+          temp_coefficients?: Json
+          updated_at?: string
+          warranties?: Json
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["pv_equipment_category"]
+          certifications?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          datasheet_path?: string | null
+          degradation?: Json
+          dimensions?: Json
+          docs?: Json
+          electrical?: Json
+          id?: string
+          is_active?: boolean
+          limits?: Json
+          manufacturer?: string
+          model?: string
+          temp_coefficients?: Json
+          updated_at?: string
+          warranties?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_equipment_library_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_equipment_library_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pv_site_configs: {
         Row: {
           albedo: number
@@ -10633,6 +10711,21 @@ export type Database = {
         | "superseded"
       punch_category: "A" | "B" | "C"
       punch_status: "open" | "ready_for_review" | "closed" | "void"
+      pv_equipment_category:
+        | "module"
+        | "inverter"
+        | "optimizer"
+        | "tracker"
+        | "structure"
+        | "transformer"
+        | "cable"
+        | "combiner_box"
+        | "switchgear"
+        | "bess"
+      pv_mounting_type:
+        | "fixed_tilt"
+        | "single_axis_tracker"
+        | "dual_axis_tracker"
       qaqc_discipline: "civil" | "mechanical" | "electrical"
       qaqc_result: "pending" | "pass" | "fail" | "conditional"
       rfq_bid_status:
@@ -11130,6 +11223,23 @@ export const Constants = {
       ],
       punch_category: ["A", "B", "C"],
       punch_status: ["open", "ready_for_review", "closed", "void"],
+      pv_equipment_category: [
+        "module",
+        "inverter",
+        "optimizer",
+        "tracker",
+        "structure",
+        "transformer",
+        "cable",
+        "combiner_box",
+        "switchgear",
+        "bess",
+      ],
+      pv_mounting_type: [
+        "fixed_tilt",
+        "single_axis_tracker",
+        "dual_axis_tracker",
+      ],
       qaqc_discipline: ["civil", "mechanical", "electrical"],
       qaqc_result: ["pending", "pass", "fail", "conditional"],
       rfq_bid_status: [
