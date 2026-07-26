@@ -477,6 +477,13 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
               <TabsContent value="revisions" className="mt-2">
                 <RevisionsPanel drawingId={data.drawing.id} canEdit={editable} />
               </TabsContent>
+              <TabsContent value="governance" className="mt-2">
+                <GovernancePanel
+                  drawingId={data.drawing.id}
+                  canEdit={Boolean((data as any).canWrite)}
+                />
+              </TabsContent>
+
             </Tabs>
             <PropertiesPanel editable={editable} />
             <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
