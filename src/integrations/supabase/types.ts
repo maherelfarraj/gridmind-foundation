@@ -1810,6 +1810,76 @@ export type Database = {
           },
         ]
       }
+      competency_records: {
+        Row: {
+          certificate_number: string | null
+          company_id: string
+          competency: string
+          created_at: string
+          employer: string | null
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          issued_date: string | null
+          project_id: string | null
+          updated_at: string
+          verified_by: string | null
+          worker_name: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          company_id: string
+          competency: string
+          created_at?: string
+          employer?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          issued_date?: string | null
+          project_id?: string | null
+          updated_at?: string
+          verified_by?: string | null
+          worker_name: string
+        }
+        Update: {
+          certificate_number?: string | null
+          company_id?: string
+          competency?: string
+          created_at?: string
+          employer?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          issued_date?: string | null
+          project_id?: string | null
+          updated_at?: string
+          verified_by?: string | null
+          worker_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competency_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_records_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       construction_daily_reports: {
         Row: {
           approved_at: string | null
@@ -3949,6 +4019,126 @@ export type Database = {
           },
         ]
       }
+      emergency_response: {
+        Row: {
+          casualties: number
+          company_id: string
+          created_at: string
+          event_type: string
+          id: string
+          kind: Database["public"]["Enums"]["emergency_kind"]
+          lessons_learned: string | null
+          occurred_at: string
+          project_id: string
+          report: string | null
+          response_time_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          casualties?: number
+          company_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          kind: Database["public"]["Enums"]["emergency_kind"]
+          lessons_learned?: string | null
+          occurred_at: string
+          project_id: string
+          report?: string | null
+          response_time_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          casualties?: number
+          company_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["emergency_kind"]
+          lessons_learned?: string | null
+          occurred_at?: string
+          project_id?: string
+          report?: string | null
+          response_time_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_response_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_response_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      environmental_monitoring: {
+        Row: {
+          company_id: string
+          created_at: string
+          exceedance: boolean
+          id: string
+          limit_value: number | null
+          location: string | null
+          measured_at: string
+          metric: string
+          project_id: string
+          uom: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          exceedance?: boolean
+          id?: string
+          limit_value?: number | null
+          location?: string | null
+          measured_at?: string
+          metric: string
+          project_id: string
+          uom: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          exceedance?: boolean
+          id?: string
+          limit_value?: number | null
+          location?: string | null
+          measured_at?: string
+          metric?: string
+          project_id?: string
+          uom?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "environmental_monitoring_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "environmental_monitoring_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_library: {
         Row: {
           category: string
@@ -5964,6 +6154,93 @@ export type Database = {
             columns: ["signed_off_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_safety_analyses: {
+        Row: {
+          approval_instance_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          jsa_number: string
+          project_id: string
+          risk_assessment_id: string | null
+          status: Database["public"]["Enums"]["ra_status"]
+          steps: Json
+          task: string
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jsa_number: string
+          project_id: string
+          risk_assessment_id?: string | null
+          status?: Database["public"]["Enums"]["ra_status"]
+          steps?: Json
+          task: string
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jsa_number?: string
+          project_id?: string
+          risk_assessment_id?: string | null
+          status?: Database["public"]["Enums"]["ra_status"]
+          steps?: Json
+          task?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_safety_analyses_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_safety_analyses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_safety_analyses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_safety_analyses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_safety_analyses_risk_assessment_id_fkey"
+            columns: ["risk_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "risk_assessments"
             referencedColumns: ["id"]
           },
         ]
@@ -11461,6 +11738,89 @@ export type Database = {
           },
         ]
       }
+      risk_assessments: {
+        Row: {
+          activity: string
+          approval_instance_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          hazards: Json
+          id: string
+          project_id: string
+          ra_number: string
+          review_date: string | null
+          status: Database["public"]["Enums"]["ra_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity: string
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          hazards?: Json
+          id?: string
+          project_id: string
+          ra_number: string
+          review_date?: string | null
+          status?: Database["public"]["Enums"]["ra_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity?: string
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          hazards?: Json
+          id?: string
+          project_id?: string
+          ra_number?: string
+          review_date?: string | null
+          status?: Database["public"]["Enums"]["ra_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_assessments_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string
@@ -11562,6 +11922,92 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_observations: {
+        Row: {
+          action_taken: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          obs_number: string
+          obs_type: Database["public"]["Enums"]["safety_obs_type"]
+          photo_path: string | null
+          project_id: string
+          raised_by: string | null
+          severity: Database["public"]["Enums"]["observation_severity"]
+          status: Database["public"]["Enums"]["observation_status"]
+          updated_at: string
+        }
+        Insert: {
+          action_taken?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          obs_number: string
+          obs_type: Database["public"]["Enums"]["safety_obs_type"]
+          photo_path?: string | null
+          project_id: string
+          raised_by?: string | null
+          severity?: Database["public"]["Enums"]["observation_severity"]
+          status?: Database["public"]["Enums"]["observation_status"]
+          updated_at?: string
+        }
+        Update: {
+          action_taken?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          obs_number?: string
+          obs_type?: Database["public"]["Enums"]["safety_obs_type"]
+          photo_path?: string | null
+          project_id?: string
+          raised_by?: string | null
+          severity?: Database["public"]["Enums"]["observation_severity"]
+          status?: Database["public"]["Enums"]["observation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_observations_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_observations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_observations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_observations_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -12708,6 +13154,73 @@ export type Database = {
           },
           {
             foreignKeyName: "site_acceptance_tests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_audit_checklists: {
+        Row: {
+          audit_date: string
+          auditor: string | null
+          company_id: string
+          created_at: string
+          findings_count: number
+          id: string
+          items: Json
+          project_id: string
+          score_pct: number | null
+          status: Database["public"]["Enums"]["audit_checklist_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audit_date: string
+          auditor?: string | null
+          company_id: string
+          created_at?: string
+          findings_count?: number
+          id?: string
+          items?: Json
+          project_id: string
+          score_pct?: number | null
+          status?: Database["public"]["Enums"]["audit_checklist_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audit_date?: string
+          auditor?: string | null
+          company_id?: string
+          created_at?: string
+          findings_count?: number
+          id?: string
+          items?: Json
+          project_id?: string
+          score_pct?: number | null
+          status?: Database["public"]["Enums"]["audit_checklist_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_audit_checklists_auditor_fkey"
+            columns: ["auditor"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_audit_checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_audit_checklists_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -15415,6 +15928,66 @@ export type Database = {
           },
         ]
       }
+      waste_tracking: {
+        Row: {
+          company_id: string
+          contractor: string | null
+          created_at: string
+          disposal_date: string
+          disposal_method: string | null
+          id: string
+          manifest_number: string | null
+          project_id: string
+          qty: number
+          uom: string
+          updated_at: string
+          waste_type: string
+        }
+        Insert: {
+          company_id: string
+          contractor?: string | null
+          created_at?: string
+          disposal_date: string
+          disposal_method?: string | null
+          id?: string
+          manifest_number?: string | null
+          project_id: string
+          qty: number
+          uom?: string
+          updated_at?: string
+          waste_type: string
+        }
+        Update: {
+          company_id?: string
+          contractor?: string | null
+          created_at?: string
+          disposal_date?: string
+          disposal_method?: string | null
+          id?: string
+          manifest_number?: string | null
+          project_id?: string
+          qty?: number
+          uom?: string
+          updated_at?: string
+          waste_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waste_tracking_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waste_tracking_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wbs_items: {
         Row: {
           area: string | null
@@ -16551,6 +17124,7 @@ export type Database = {
         | "battery_module"
         | "string"
         | "sensor"
+      audit_checklist_status: "scheduled" | "completed" | "closed"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
       change_order_status:
@@ -16673,6 +17247,7 @@ export type Database = {
         | "reactive_power"
         | "pf_correction"
         | "grid_code_checklist"
+      emergency_kind: "drill" | "actual"
       equipment_status: "active" | "inactive" | "spare" | "decommissioned"
       equipment_type:
         | "inverter"
@@ -16924,6 +17499,7 @@ export type Database = {
         | "dual_axis_tracker"
       qaqc_discipline: "civil" | "mechanical" | "electrical"
       qaqc_result: "pending" | "pass" | "fail" | "conditional"
+      ra_status: "draft" | "active" | "archived"
       recovery_plan_status: "draft" | "active" | "achieved" | "abandoned"
       reservation_status: "active" | "fulfilled" | "cancelled"
       rfq_bid_status:
@@ -16936,6 +17512,7 @@ export type Database = {
       rfq_status: "draft" | "issued" | "closed" | "awarded" | "cancelled"
       risk_status: "open" | "mitigating" | "realized" | "closed"
       rtv_status: "requested" | "approved" | "shipped" | "credited" | "closed"
+      safety_obs_type: "safe_act" | "unsafe_act" | "unsafe_condition"
       scada_asset_type:
         | "inverter"
         | "meter"
@@ -17223,6 +17800,7 @@ export const Constants = {
         "string",
         "sensor",
       ],
+      audit_checklist_status: ["scheduled", "completed", "closed"],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
       change_order_status: [
@@ -17358,6 +17936,7 @@ export const Constants = {
         "pf_correction",
         "grid_code_checklist",
       ],
+      emergency_kind: ["drill", "actual"],
       equipment_status: ["active", "inactive", "spare", "decommissioned"],
       equipment_type: [
         "inverter",
@@ -17637,6 +18216,7 @@ export const Constants = {
       ],
       qaqc_discipline: ["civil", "mechanical", "electrical"],
       qaqc_result: ["pending", "pass", "fail", "conditional"],
+      ra_status: ["draft", "active", "archived"],
       recovery_plan_status: ["draft", "active", "achieved", "abandoned"],
       reservation_status: ["active", "fulfilled", "cancelled"],
       rfq_bid_status: [
@@ -17650,6 +18230,7 @@ export const Constants = {
       rfq_status: ["draft", "issued", "closed", "awarded", "cancelled"],
       risk_status: ["open", "mitigating", "realized", "closed"],
       rtv_status: ["requested", "approved", "shipped", "credited", "closed"],
+      safety_obs_type: ["safe_act", "unsafe_act", "unsafe_condition"],
       scada_asset_type: [
         "inverter",
         "meter",
