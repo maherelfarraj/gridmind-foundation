@@ -180,3 +180,110 @@ describe("P-154 stringing engine", () => {
     expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
   });
 });
+
+describe("P-158 string sizing boundaries", () => {
+  // Cold-case module: Voc 52 V, −0.27 %/°C, site min −10 °C.
+  const COLD_MODULE = { ...MODULE, tempCoeffVocPctPerC: -0.27 };
+  const coldInput = (modulesInSeries: number) =>
+    baseInput({
+      module: COLD_MODULE,
+      site: { minTempC: -10, maxTempC: 70 },
+      modulesInSeries,
+      blocks: [{ blockId: null, label: "T1", centroid: { x: 0, y: 0 }, moduleCount: 560 }],
+    });
+
+  /** Cold Voc per module at −10 °C with a −0.27 %/°C coefficient. */
+  const coldVocPerModule = 52 * (1 + (-0.27 / 100) * (-10 - 25));
+  const maxPassing = Math.floor(1500 / coldVocPerModule);
+
+  it("(a) cold Voc above the inverter maximum invalidates and names the limit", () => {
+    const res = generateStringing(coldInput(maxPassing + 1));
+    expect(res.strings.every((s) => s.valid)).toBe(false);
+    const warn = res.warnings.find((w) => w.code === "voc_exceeds_inverter_max");
+    expect(warn?.message).toContain("1500 V");
+    expect(warn?.message).toContain(`reduce to ${maxPassing} modules in series`);
+  });
+
+  it("(a) the largest passing series count is itself valid", () => {
+    const res = generateStringing(coldInput(maxPassing));
+    expect(res.strings.every((s) => s.valid)).toBe(true);
+    expect(res.strings[0].vocAtMinTempV).toBeLessThanOrEqual(1500);
+    expect(res.warnings.some((w) => w.code === "voc_exceeds_inverter_max")).toBe(false);
+  });
+
+  it("(b) hot Vmp below the MPPT minimum invalidates with a warning", () => {
+    const res = generateStringing(coldInput(11));
+    const warn = res.warnings.find((w) => w.code === "vmp_below_mppt_min");
+    expect(warn?.message).toContain("below the MPPT minimum of 500 V");
+    expect(res.strings.every((s) => s.valid)).toBe(false);
+  });
+
+  it("(c) exact boundary — Voc == max_dc_v passes, one module over fails", () => {
+    // 30 modules of exactly 50 V cold Voc = 1500 V == inverter max.
+    const vocStc = 50 / (1 + (-0.27 / 100) * (-10 - 25));
+    const boundary = (n: number) =>
+      generateStringing(
+        coldInput(n).module
+          ? baseInput({
+              module: { ...COLD_MODULE, vocV: vocStc, vmpV: 43.4 },
+              site: { minTempC: -10, maxTempC: 70 },
+              modulesInSeries: n,
+              blocks: [{ blockId: null, label: "T1", centroid: { x: 0, y: 0 }, moduleCount: 620 }],
+            })
+          : baseInput(),
+      );
+    const atLimit = boundary(30);
+    expect(atLimit.strings[0].vocAtMinTempV).toBeCloseTo(1500, 2);
+    expect(atLimit.strings.every((s) => s.valid)).toBe(true);
+    const overLimit = boundary(31);
+    expect(overLimit.strings.every((s) => s.valid)).toBe(false);
+    expect(overLimit.warnings.some((w) => w.code === "voc_exceeds_inverter_max")).toBe(true);
+  });
+
+  it("(d) 13 strings over 2 MPPTs split 7/6 within the current limit", () => {
+    expect(balancedSplit(13, 2)).toEqual([7, 6]);
+    const res = generateStringing(
+      baseInput({
+        inverter: { ...INVERTER, mpptCount: 2, maxInputAPerMppt: 200 },
+        inverterStations: [{ label: "INV-01", centroid: { x: 100, y: 0 } }],
+        blocks: [{ blockId: null, label: "T1", centroid: { x: 0, y: 0 }, moduleCount: 26 * 13 }],
+      }),
+    );
+    expect(res.counts.strings).toBe(13);
+    expect(res.allocations).toHaveLength(2);
+    expect(res.allocations.map((a) => a.stringLabels.length)).toEqual([7, 6]);
+    for (const a of res.allocations) {
+      expect(a.mpptIndex).toBeLessThanOrEqual(2);
+      expect(a.currentA).toBeLessThanOrEqual(200);
+    }
+  });
+
+  it("(e) combiners fill sequentially and never exceed the input count", () => {
+    const res = generateStringing(
+      baseInput({
+        combiner: { id: null, inputs: 4 },
+        inverter: { ...INVERTER, mpptCount: 6, maxInputAPerMppt: 200 },
+        inverterStations: [{ label: "INV-01", centroid: { x: 100, y: 0 } }],
+        blocks: [{ blockId: null, label: "T1", centroid: { x: 0, y: 0 }, moduleCount: 26 * 10 }],
+      }),
+    );
+    expect(res.counts.strings).toBe(10);
+    const order = res.strings.map((s) => s.combinerLabel);
+    expect(order).toEqual([
+      "CB-01",
+      "CB-01",
+      "CB-01",
+      "CB-01",
+      "CB-02",
+      "CB-02",
+      "CB-02",
+      "CB-02",
+      "CB-03",
+      "CB-03",
+    ]);
+    for (const cb of new Set(order)) {
+      expect(order.filter((c) => c === cb).length).toBeLessThanOrEqual(4);
+    }
+    expect(res.warnings.some((w) => w.code === "combiner_inputs_exceeded")).toBe(false);
+  });
+});
