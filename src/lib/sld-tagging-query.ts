@@ -19,7 +19,9 @@ export function useRetagPreview(drawingId: string) {
   const fn = useServerFn(retagSldRevision);
   return useMutation({
     mutationFn: (vars: { force: boolean }) =>
-      (fn as any)({ data: { drawingId, force: vars.force, dryRun: true } }) as Promise<RetagPreview>,
+      (fn as any)({
+        data: { drawingId, force: vars.force, dryRun: true },
+      }) as Promise<RetagPreview>,
     onError: (err) => toast.error(tagErrorMessage(err)),
   });
 }
@@ -46,7 +48,8 @@ export function useSetObjectTag(drawingId: string) {
   const fn = useServerFn(setSldObjectTag);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (vars: { objectId: string; tag: string }) => (fn as any)({ data: { drawingId, ...vars } }),
+    mutationFn: (vars: { objectId: string; tag: string }) =>
+      (fn as any)({ data: { drawingId, ...vars } }),
     onSuccess: async () => {
       toast.success("Tag updated");
       await qc.invalidateQueries({ queryKey: ["sld-cad", drawingId] });

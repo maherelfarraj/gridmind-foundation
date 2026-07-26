@@ -28,10 +28,7 @@ export function ObjectsListPanel({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
 
-  const rows = useMemo(
-    () => objects.filter((o) => o.symbol_type !== MEASURE_SYMBOL),
-    [objects],
-  );
+  const rows = useMemo(() => objects.filter((o) => o.symbol_type !== MEASURE_SYMBOL), [objects]);
   const dupes = useMemo(() => duplicateTagIds(rows), [rows]);
 
   const commit = async (id: string) => {
@@ -42,8 +39,7 @@ export function ObjectsListPanel({
     }
     setObjectProps(id, { tag: next });
     setEditingId(null);
-    const isPersisted =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isPersisted = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     if (isPersisted) await setTag.mutateAsync({ objectId: id, tag: next });
   };
 

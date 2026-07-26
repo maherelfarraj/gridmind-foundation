@@ -108,7 +108,9 @@ describe("generateTags", () => {
       obj({ id: "b2", x: 220, y: 50 }),
       obj({ id: "out", x: 900, y: 900 }),
     ];
-    const tags = Object.fromEntries(generateTags(objects, symbols, areas).map((a) => [a.id, a.tag]));
+    const tags = Object.fromEntries(
+      generateTags(objects, symbols, areas).map((a) => [a.id, a.tag]),
+    );
     expect(tags).toEqual({
       p1: "INV-01-01",
       b1: "INV-02-01",

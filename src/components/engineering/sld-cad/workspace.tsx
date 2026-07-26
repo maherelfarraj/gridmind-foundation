@@ -386,7 +386,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
             <PropertiesPanel editable={editable} />
-          <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
+            <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
             <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
               <p>
                 {objects.length} objects · {layers.filter((l) => l.id !== BORDER_LAYER_ID).length}{" "}
