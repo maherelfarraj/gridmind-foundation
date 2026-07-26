@@ -15,7 +15,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isDevServerUp } from "../helpers/dev-server";
 import { envReady, login, service } from "./helpers/rpc";
-import { validateConnectivity, type ConnEdge, type ConnObject } from "@/lib/sld/connectivity";
+import { runValidation, type ConnEdge, type ConnObject } from "@/lib/sld/connectivity";
 
 const canRun = (await isDevServerUp()) && envReady();
 
