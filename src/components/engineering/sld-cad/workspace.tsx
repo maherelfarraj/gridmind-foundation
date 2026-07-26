@@ -43,7 +43,14 @@ import { useSymbolRegistry } from "@/lib/sld-symbols-query";
 import { initialProperties, mergeSymbolTypes } from "@/lib/sld/symbol-registry";
 import { generateTags } from "@/lib/sld/tagging";
 import { ValidationPanel } from "./validation-panel";
-import { useLiveValidation, useRunValidation } from "@/lib/sld-validation-query";
+import { CoordinationPanel } from "./coordination-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useLiveCoordination,
+  useLiveValidation,
+  useRunCoordination,
+  useRunValidation,
+} from "@/lib/sld-validation-query";
 import { sldConfigQueryOptions } from "@/lib/sld-query";
 import { getSldConfig } from "@/lib/sld.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -88,6 +95,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const save = useSaveSldCanvas(data.drawing.id, () => store.getState().markSaved());
   const validation = useLiveValidation(symbols, projectVoltagesKv);
   const runValidation = useRunValidation(data.drawing.id);
+  const coordination = useLiveCoordination();
+  const runCoordinationChecks = useRunCoordination(data.drawing.id);
 
   useEffect(() => {
     setIsCoarse(
@@ -408,14 +417,39 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
 
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
-            <ValidationPanel
-              issues={validation.issues}
-              errorCount={validation.error_count}
-              warningCount={validation.warning_count}
-              running={runValidation.isPending}
-              lastRunAt={(runValidation.data as any)?.ran_at ?? null}
-              onRun={() => runValidation.mutate()}
-            />
+            <Tabs defaultValue="validation">
+              <TabsList className="w-full">
+                <TabsTrigger value="validation" className="flex-1">
+                  Validation
+                </TabsTrigger>
+                <TabsTrigger value="coordination" className="flex-1">
+                  Coordination
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="validation" className="mt-2">
+                <ValidationPanel
+                  issues={validation.issues}
+                  errorCount={validation.error_count}
+                  warningCount={validation.warning_count}
+                  running={runValidation.isPending}
+                  lastRunAt={(runValidation.data as any)?.ran_at ?? null}
+                  onRun={() => runValidation.mutate()}
+                />
+              </TabsContent>
+              <TabsContent value="coordination" className="mt-2">
+                <CoordinationPanel
+                  issues={coordination.issues}
+                  errorCount={coordination.error_count}
+                  warningCount={coordination.warning_count}
+                  infoCount={coordination.info_count}
+                  protectionRows={coordination.protection_references.length}
+                  cableRows={coordination.cable_references.length}
+                  running={runCoordinationChecks.isPending}
+                  lastRunAt={(runCoordinationChecks.data as any)?.ran_at ?? null}
+                  onRun={() => runCoordinationChecks.mutate()}
+                />
+              </TabsContent>
+            </Tabs>
             <PropertiesPanel editable={editable} />
             <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
             <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">

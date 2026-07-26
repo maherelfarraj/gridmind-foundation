@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
+import { runSldCoordination } from "@/lib/sld-coordination.functions";
 import { validateSldRevision } from "@/lib/sld-validation.functions";
 import { useCanvasStore } from "@/lib/sld/canvas-store";
 import { MEASURE_SYMBOL } from "@/lib/sld/canvas-types";
@@ -14,7 +15,12 @@ import {
   type ConnSymbolMeta,
   type ValidationIssue,
 } from "@/lib/sld/connectivity";
+import { runCoordination } from "@/lib/sld/coordination";
 import type { SymbolTypeRecord } from "@/lib/sld/symbol-registry";
+
+function emptyCoordination() {
+  return runCoordination([], []);
+}
 
 export function toConnSymbols(symbols: SymbolTypeRecord[]): ConnSymbolMeta[] {
   return symbols.map((s) => ({
@@ -94,5 +100,62 @@ export function useRunValidation(drawingId: string) {
       await qc.invalidateQueries({ queryKey: ["sld-cad", drawingId] });
     },
     onError: (err) => toast.error(String((err as any)?.message ?? "Validation failed")),
+  });
+}
+
+/** P-143 — live coordination checks recomputed from local canvas state. */
+export function useLiveCoordination(delayMs = 500) {
+  const objects = useCanvasStore((s) => s.objects);
+  const connections = useCanvasStore((s) => s.connections);
+  const [result, setResult] = useState(() => emptyCoordination());
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setResult(
+        runCoordination(
+          objects
+            .filter((o) => o.symbol_type !== MEASURE_SYMBOL)
+            .map((o) => ({
+              id: o.id,
+              symbol_type: o.symbol_type,
+              tag: o.tag,
+              properties: o.properties,
+            })),
+          connections.map((c) => ({
+            id: c.id,
+            connection_type: c.connection_type,
+            cable_number: c.cable_number,
+            from_object_id: c.from_object_id,
+            from_port: c.from_port,
+            to_object_id: c.to_object_id,
+            to_port: c.to_port,
+            properties: c.properties ?? {},
+          })),
+        ),
+      );
+    }, delayMs);
+    return () => clearTimeout(handle);
+  }, [objects, connections, delayMs]);
+
+  return result;
+}
+
+/** Persists a coordination snapshot on the revision (audited). */
+export function useRunCoordination(drawingId: string) {
+  const fn = useServerFn(runSldCoordination);
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => (fn as any)({ data: { drawingId, dryRun: false } }),
+    onSuccess: async (res: any) => {
+      if (res.error_count > 0) {
+        toast.error(`Coordination: ${res.error_count} error(s), ${res.warning_count} warning(s)`);
+      } else {
+        toast.success(
+          `Coordination checks saved — ${res.warning_count} warning(s), ${res.info_count} info`,
+        );
+      }
+      await qc.invalidateQueries({ queryKey: ["sld-cad", drawingId] });
+    },
+    onError: (err) => toast.error(String((err as any)?.message ?? "Coordination run failed")),
   });
 }

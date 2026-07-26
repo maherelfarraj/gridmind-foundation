@@ -2,6 +2,7 @@
 // Kept out of the *.functions.ts module so server-fn splitting cannot drop them.
 import { isRemoved, type CadDrawing } from "./sld-cad.server";
 import type { ConnEdge, ConnObject, ConnSymbolMeta, ValidationSnapshot } from "./sld/connectivity";
+import type { CoordinationOptions } from "./sld/coordination";
 
 export type ValidationGraph = {
   revisionId: string;
@@ -131,4 +132,36 @@ export async function persistValidation(
     .update({ canvas: { ...graph.canvas, validation: snapshot } } as any)
     .eq("id", graph.revisionId);
   if (error) throw error;
+}
+
+/** Merges the coordination snapshot (P-143) into the revision canvas jsonb. */
+export async function persistCoordination(context: any, graph: ValidationGraph, snapshot: unknown) {
+  const { error } = await context.supabase
+    .from("sld_revisions")
+    .update({ canvas: { ...graph.canvas, coordination: snapshot } } as any)
+    .eq("id", graph.revisionId);
+  if (error) throw error;
+}
+
+/** Coordination bounds sourced from project_pv_config / project_bess_config (P-143). */
+export async function loadCoordinationOptions(
+  context: any,
+  projectId: string,
+): Promise<CoordinationOptions> {
+  const { data, error } = await context.supabase
+    .from("project_pv_config")
+    .select("dc_ac_ratio")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (error) throw error;
+
+  const target = Number((data as any)?.dc_ac_ratio);
+  if (Number.isFinite(target) && target > 0) {
+    // Configured design ratio widens the acceptable band symmetrically by 0.3.
+    return {
+      dcAcMin: Math.max(0.5, Number((target - 0.3).toFixed(2))),
+      dcAcMax: Number((target + 0.3).toFixed(2)),
+    };
+  }
+  return {};
 }
