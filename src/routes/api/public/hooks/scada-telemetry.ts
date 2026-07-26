@@ -154,6 +154,17 @@ export const Route = createFileRoute("/api/public/hooks/scada-telemetry")({
           },
         } as never);
 
+        // ---- P-173 event log (fire-and-forget) -----------------------------
+        try {
+          const { parseHookEvents, persistScadaEvents } = await import("@/lib/scada-events.server");
+          const events = parseHookEvents(json);
+          if (events.length > 0) {
+            await persistScadaEvents(admin as never, companyId, events);
+          }
+        } catch {
+          /* best-effort: events never fail telemetry ingest */
+        }
+
         // ---- P-105 downstream alarms (fire-and-forget) ---------------------
         try {
           const { evaluateAlarmRules } = await import("@/lib/alarms.server");
