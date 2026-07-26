@@ -16,7 +16,9 @@ import { toast } from "sonner";
 import { LayersPanel } from "./layers-panel";
 import { PropertiesPanel } from "./properties-panel";
 import { ShortcutsDialog } from "./shortcuts-dialog";
+import { OpsToolbar } from "./ops-toolbar";
 import { SldCanvas } from "./sld-canvas";
+import { CanvasStatusBar } from "./status-bar";
 import type { TitleBlockData } from "./title-block";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { useSaveSldCanvas } from "@/lib/sld-cad-query";
 import type { SldCadWorkspace } from "@/lib/sld-cad.functions";
 import { useCanvasStore } from "@/lib/sld/canvas-store";
+import type { SldConnection } from "@/lib/sld/canvas-types";
 import {
   BORDER_LAYER_ID,
   GRID_STEPS,
@@ -50,6 +53,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const layers = useCanvasStore((s) => s.layers);
   const dirty = useCanvasStore((s) => s.dirty);
   const removedIds = useCanvasStore((s) => s.removedIds);
+  const connections = useCanvasStore((s) => s.connections);
   const undoDepth = useCanvasStore((s) => s.undoStack.length);
   const redoDepth = useCanvasStore((s) => s.redoStack.length);
 
@@ -81,6 +85,10 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         properties: (o.properties ?? {}) as Record<string, unknown>,
       })),
       normalizeCanvasMeta(data.revision?.canvas),
+      data.connections.map((c) => ({
+        ...c,
+        connection_type: c.connection_type as SldConnection["connection_type"],
+      })),
     );
   }, [data, hydrate]);
 
@@ -108,6 +116,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
     save.mutate({
       objects: s.objects,
       removedIds: s.removedIds,
+      connections: s.connections,
+      removedConnectionIds: s.removedConnectionIds,
       canvas: { layers: s.layers, gridMm: s.gridMm, snapEnabled: s.snapEnabled },
     });
   }, [data.editable, save, store]);
@@ -133,6 +143,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         return;
       }
       if (e.key === "Escape") {
+        s.cancelConnection();
+        s.cancelMeasure();
         s.setPlacingType(null);
         s.clearSelection();
         return;
@@ -156,6 +168,12 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         s.duplicateSelection();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        if (e.shiftKey) s.ungroupSelection();
+        else s.groupSelection();
         return;
       }
       if (mod && e.key.toLowerCase() === "c") {
@@ -332,6 +350,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         </Card>
       ) : null}
 
+      <OpsToolbar editable={editable} />
+
       <div className="grid gap-3 lg:grid-cols-[190px_minmax(0,1fr)_240px]">
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
@@ -340,8 +360,11 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
           </CardContent>
         </Card>
 
-        <div className="h-[70vh] min-h-[420px]">
-          <SldCanvas editable={editable} titleBlock={titleBlock} onPlace={handlePlace} />
+        <div className="space-y-2">
+          <div className="h-[70vh] min-h-[420px]">
+            <SldCanvas editable={editable} titleBlock={titleBlock} onPlace={handlePlace} />
+          </div>
+          <CanvasStatusBar />
         </div>
 
         <Card className="hidden lg:block">
@@ -352,7 +375,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                 {objects.length} objects · {layers.filter((l) => l.id !== BORDER_LAYER_ID).length}{" "}
                 layers
               </p>
-              <p>{removedIds.length} pending removals</p>
+              <p>
+                {connections.length} connections · {removedIds.length} pending removals
+              </p>
             </div>
           </CardContent>
         </Card>
