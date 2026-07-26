@@ -82,9 +82,7 @@ export type CableAmpacityResults = {
   ok: boolean;
 };
 
-export function checkCableAmpacity(
-  rawInput: CableAmpacityInput,
-): CalcOutput<CableAmpacityResults> {
+export function checkCableAmpacity(rawInput: CableAmpacityInput): CalcOutput<CableAmpacityResults> {
   const input = cableAmpacityInputSchema.parse(rawInput);
   const warnings: CalcWarning[] = [];
 
@@ -152,7 +150,11 @@ export function checkCableAmpacity(
     },
     warnings,
     assumptionsEcho: [
-      assumption("base_table", "P-055 copper ampacity, single-core buried @ 30 °C", "IEC 60364-5-52 style"),
+      assumption(
+        "base_table",
+        "P-055 copper ampacity, single-core buried @ 30 °C",
+        "IEC 60364-5-52 style",
+      ),
       assumption("reference_ambient_c", 30, "GridMind base table"),
       assumption("material_factor", kMaterial, `Conductor ${input.material}`),
       assumption("installation_factor", kInstall, `Installation ${input.installation}`),

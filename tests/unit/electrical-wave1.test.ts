@@ -59,7 +59,9 @@ describe("radialLoadFlow", () => {
     };
     const { results, warnings } = radialLoadFlow(looped);
     expect(results.converged).toBe(false);
-    expect(warnings.some((w) => w.code === "loop_detected" && w.severity === "critical")).toBe(true);
+    expect(warnings.some((w) => w.code === "loop_detected" && w.severity === "critical")).toBe(
+      true,
+    );
   });
 
   it("flags disconnected buses as critical", () => {

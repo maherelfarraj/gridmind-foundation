@@ -436,7 +436,8 @@ export const saveEaStudy = createServerFn({ method: "POST" })
       if (error) throw error;
       study = row as unknown as EaStudyRow;
     } else {
-      if (!data.projectId) eaError(400, "project_required", "A project is required for a new study.");
+      if (!data.projectId)
+        eaError(400, "project_required", "A project is required for a new study.");
       const project = await loadProjectScope(context, data.projectId);
       if (!(await canWriteStudy(context, project.company_id))) {
         eaError(403, "forbidden", "You cannot author electrical studies.");

@@ -135,7 +135,11 @@ export function radialLoadFlow(rawInput: LoadFlowInput): CalcOutput<LoadFlowResu
 
   if (!byId.has(input.sourceBusId)) {
     warnings.push(
-      warn("source_bus_missing", "critical", `Source bus ${input.sourceBusId} is not in the bus list.`),
+      warn(
+        "source_bus_missing",
+        "critical",
+        `Source bus ${input.sourceBusId} is not in the bus list.`,
+      ),
     );
     return emptyResult(input, warnings);
   }
@@ -187,8 +191,7 @@ export function radialLoadFlow(rawInput: LoadFlowInput): CalcOutput<LoadFlowResu
       const v = voltage.get(busId) as Complex;
       // Three-phase apparent power per bus, VA.
       const s = cx(bus.pKw * 1000, bus.qKvar * 1000);
-      const loadCurrent =
-        cAbs(v) > 0 ? cConj(cDiv(s, cMul(cx(3, 0), v))) : cx(0, 0);
+      const loadCurrent = cAbs(v) > 0 ? cConj(cDiv(s, cMul(cx(3, 0), v))) : cx(0, 0);
       const downstream = accumulated.get(busId) ?? cx(0, 0);
       const total = cAdd(loadCurrent, downstream);
       accumulated.set(busId, total);

@@ -15,7 +15,9 @@ export const TRANSFORMER_LOADING_METHOD =
 export const transformerLoadingInputSchema = z.object({
   ratingKva: z.number().positive(),
   loads: z
-    .array(z.object({ label: z.string().default(""), pKw: z.number(), qKvar: z.number().default(0) }))
+    .array(
+      z.object({ label: z.string().default(""), pKw: z.number(), qKvar: z.number().default(0) }),
+    )
     .min(1),
   growthPct: z.number().min(0).max(200).default(0),
   /** Number of transformers in parallel; n-1 requires at least 2. */

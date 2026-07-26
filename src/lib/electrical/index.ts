@@ -9,11 +9,7 @@ import {
   CABLE_AMPACITY_METHOD,
 } from "./cable-ampacity";
 import { loadFlowInputSchema, radialLoadFlow, LOAD_FLOW_METHOD } from "./load-flow";
-import {
-  shortCircuitInputSchema,
-  shortCircuitStudy,
-  SHORT_CIRCUIT_METHOD,
-} from "./short-circuit";
+import { shortCircuitInputSchema, shortCircuitStudy, SHORT_CIRCUIT_METHOD } from "./short-circuit";
 import {
   transformerLoading,
   transformerLoadingInputSchema,

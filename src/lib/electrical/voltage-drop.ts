@@ -91,10 +91,18 @@ export function voltageDrop(rawInput: VoltageDropInput): CalcOutput<VoltageDropR
     assumptionsEcho: [
       assumption("resistivity_ohm_mm2_per_m", rho, `${input.material.toUpperCase()} at 20 °C`),
       assumption("reactance_ohm_per_m", input.reactanceOhmPerM, "LV multicore indicative value"),
-      assumption("phase_factor_k", input.phases === 3 ? "√3" : "2", `${input.phases}-phase circuit`),
+      assumption(
+        "phase_factor_k",
+        input.phases === 3 ? "√3" : "2",
+        `${input.phases}-phase circuit`,
+      ),
       assumption("power_factor", input.powerFactor, "Input sheet"),
       assumption("limit_pct", input.limitPct, "Configurable acceptance limit"),
-      assumption("conductor_temperature", "20 °C — no hot-conductor correction", "GridMind default"),
+      assumption(
+        "conductor_temperature",
+        "20 °C — no hot-conductor correction",
+        "GridMind default",
+      ),
     ],
   };
 }
