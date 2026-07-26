@@ -17,6 +17,7 @@ export type ExportType =
   | "sld_schedule"
   | "sld_drawing"
   | "sld_revision_diff"
+  | "ea_study_report"
   | "civil_geojson"
   | "civil_kml"
   | "csv";

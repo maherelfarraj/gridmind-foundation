@@ -163,6 +163,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringPvSimulationRouteImpo
 import { Route as AuthenticatedProjectsProjectIdEngineeringPvLayoutRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-layout'
 import { Route as AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRouteImport } from './routes/_authenticated/projects.$projectId.engineering.layout-optimization'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
+import { Route as AuthenticatedProjectsProjectIdEngineeringGridCodeRouteImport } from './routes/_authenticated/projects.$projectId.engineering.grid-code'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
@@ -174,6 +175,7 @@ import { Route as AuthenticatedProjectsProjectIdCommissioningHandoverRouteImport
 import { Route as AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.certificates'
 import { Route as AuthenticatedOmScadaPlantsProjectIdRouteImport } from './routes/_authenticated/om.scada.plants.$projectId'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
+import { Route as AuthenticatedProjectsProjectIdEngineeringStudiesIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.studies.index'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.index'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.ppa'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceLcoeRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.lcoe'
@@ -181,8 +183,10 @@ import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceFacilitiesR
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.dd'
 import { Route as AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.pay-applications.$payAppId'
 import { Route as AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.change-orders.$coId'
+import { Route as AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRouteImport } from './routes/_authenticated/projects.$projectId.engineering.studies.$studyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld-cad.$drawingId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.$drawingId'
+import { Route as AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRouteImport } from './routes/_authenticated/projects.$projectId.engineering.studies.$studyType.new'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
 
@@ -1079,6 +1083,12 @@ const AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute =
     path: '/ifc-release',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringGridCodeRoute =
+  AuthenticatedProjectsProjectIdEngineeringGridCodeRouteImport.update({
+    id: '/grid-code',
+    path: '/grid-code',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringDrawingsRoute =
   AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport.update({
     id: '/drawings',
@@ -1146,6 +1156,12 @@ const AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute =
     getParentRoute: () =>
       AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute =
+  AuthenticatedProjectsProjectIdEngineeringStudiesIndexRouteImport.update({
+    id: '/studies/',
+    path: '/studies/',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute =
   AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRouteImport.update({
     id: '/',
@@ -1199,6 +1215,12 @@ const AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute =
     getParentRoute: () =>
       AuthenticatedProjectsProjectIdFinanceChangeOrdersRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute =
+  AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRouteImport.update({
+    id: '/studies/$studyId',
+    path: '/studies/$studyId',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute =
   AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRouteImport.update({
     id: '/sld-cad/$drawingId',
@@ -1212,6 +1234,14 @@ const AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute =
     getParentRoute: () =>
       AuthenticatedProjectsProjectIdEngineeringDrawingsRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute =
+  AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRouteImport.update(
+    {
+      id: '/studies/$studyType/new',
+      path: '/studies/$studyType/new',
+      getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+    } as any,
+  )
 const AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute =
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport.update(
     {
@@ -1372,6 +1402,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
+  '/projects/$projectId/engineering/grid-code': typeof AuthenticatedProjectsProjectIdEngineeringGridCodeRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -1395,6 +1426,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
+  '/projects/$projectId/engineering/studies/$studyId': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1402,9 +1434,11 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/finance/project-finance/lcoe': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceLcoeRoute
   '/projects/$projectId/finance/project-finance/ppa': typeof AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRoute
   '/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/projects/$projectId/engineering/studies/': typeof AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute
   '/projects/$projectId/finance/project-finance/': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/projects/$projectId/commissioning/tests/$testId/execute': typeof AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute
   '/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
+  '/projects/$projectId/engineering/studies/$studyType/new': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1538,6 +1572,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
+  '/projects/$projectId/engineering/grid-code': typeof AuthenticatedProjectsProjectIdEngineeringGridCodeRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -1560,6 +1595,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
+  '/projects/$projectId/engineering/studies/$studyId': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1567,9 +1603,11 @@ export interface FileRoutesByTo {
   '/projects/$projectId/finance/project-finance/lcoe': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceLcoeRoute
   '/projects/$projectId/finance/project-finance/ppa': typeof AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/projects/$projectId/engineering/studies': typeof AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute
   '/projects/$projectId/finance/project-finance': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/projects/$projectId/commissioning/tests/$testId/execute': typeof AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute
   '/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
+  '/projects/$projectId/engineering/studies/$studyType/new': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1716,6 +1754,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
+  '/_authenticated/projects/$projectId/engineering/grid-code': typeof AuthenticatedProjectsProjectIdEngineeringGridCodeRoute
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/_authenticated/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -1739,6 +1778,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
+  '/_authenticated/projects/$projectId/engineering/studies/$studyId': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute
   '/_authenticated/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/_authenticated/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1746,9 +1786,11 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/finance/project-finance/lcoe': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceLcoeRoute
   '/_authenticated/projects/$projectId/finance/project-finance/ppa': typeof AuthenticatedProjectsProjectIdFinanceProjectFinancePpaRoute
   '/_authenticated/projects/$projectId/engineering/drawings/': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
+  '/_authenticated/projects/$projectId/engineering/studies/': typeof AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute
   '/_authenticated/projects/$projectId/finance/project-finance/': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRoute
   '/_authenticated/projects/$projectId/commissioning/tests/$testId/execute': typeof AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRoute
   '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRoute
+  '/_authenticated/projects/$projectId/engineering/studies/$studyType/new': typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1894,6 +1936,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
     | '/projects/$projectId/engineering/drawings'
+    | '/projects/$projectId/engineering/grid-code'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/layout-optimization'
     | '/projects/$projectId/engineering/pv-layout'
@@ -1917,6 +1960,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/sld-cad/$drawingId'
+    | '/projects/$projectId/engineering/studies/$studyId'
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/finance/project-finance/dd'
@@ -1924,9 +1968,11 @@ export interface FileRouteTypes {
     | '/projects/$projectId/finance/project-finance/lcoe'
     | '/projects/$projectId/finance/project-finance/ppa'
     | '/projects/$projectId/engineering/drawings/'
+    | '/projects/$projectId/engineering/studies/'
     | '/projects/$projectId/finance/project-finance/'
     | '/projects/$projectId/commissioning/tests/$testId/execute'
     | '/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
+    | '/projects/$projectId/engineering/studies/$studyType/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -2060,6 +2106,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
+    | '/projects/$projectId/engineering/grid-code'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/layout-optimization'
     | '/projects/$projectId/engineering/pv-layout'
@@ -2082,6 +2129,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/sld-cad/$drawingId'
+    | '/projects/$projectId/engineering/studies/$studyId'
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/finance/project-finance/dd'
@@ -2089,9 +2137,11 @@ export interface FileRouteTypes {
     | '/projects/$projectId/finance/project-finance/lcoe'
     | '/projects/$projectId/finance/project-finance/ppa'
     | '/projects/$projectId/engineering/drawings'
+    | '/projects/$projectId/engineering/studies'
     | '/projects/$projectId/finance/project-finance'
     | '/projects/$projectId/commissioning/tests/$testId/execute'
     | '/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
+    | '/projects/$projectId/engineering/studies/$studyType/new'
   id:
     | '__root__'
     | '/'
@@ -2237,6 +2287,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/civil-features'
     | '/_authenticated/projects/$projectId/engineering/drawings'
+    | '/_authenticated/projects/$projectId/engineering/grid-code'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
     | '/_authenticated/projects/$projectId/engineering/layout-optimization'
     | '/_authenticated/projects/$projectId/engineering/pv-layout'
@@ -2260,6 +2311,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/'
     | '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
     | '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId'
+    | '/_authenticated/projects/$projectId/engineering/studies/$studyId'
     | '/_authenticated/projects/$projectId/finance/change-orders/$coId'
     | '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId'
     | '/_authenticated/projects/$projectId/finance/project-finance/dd'
@@ -2267,9 +2319,11 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/finance/project-finance/lcoe'
     | '/_authenticated/projects/$projectId/finance/project-finance/ppa'
     | '/_authenticated/projects/$projectId/engineering/drawings/'
+    | '/_authenticated/projects/$projectId/engineering/studies/'
     | '/_authenticated/projects/$projectId/finance/project-finance/'
     | '/_authenticated/projects/$projectId/commissioning/tests/$testId/execute'
     | '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
+    | '/_authenticated/projects/$projectId/engineering/studies/$studyType/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -3375,6 +3429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/grid-code': {
+      id: '/_authenticated/projects/$projectId/engineering/grid-code'
+      path: '/grid-code'
+      fullPath: '/projects/$projectId/engineering/grid-code'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringGridCodeRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/drawings': {
       id: '/_authenticated/projects/$projectId/engineering/drawings'
       path: '/drawings'
@@ -3452,6 +3513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceRoute
     }
+    '/_authenticated/projects/$projectId/engineering/studies/': {
+      id: '/_authenticated/projects/$projectId/engineering/studies/'
+      path: '/studies'
+      fullPath: '/projects/$projectId/engineering/studies/'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesIndexRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/drawings/': {
       id: '/_authenticated/projects/$projectId/engineering/drawings/'
       path: '/'
@@ -3501,6 +3569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersRoute
     }
+    '/_authenticated/projects/$projectId/engineering/studies/$studyId': {
+      id: '/_authenticated/projects/$projectId/engineering/studies/$studyId'
+      path: '/studies/$studyId'
+      fullPath: '/projects/$projectId/engineering/studies/$studyId'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId': {
       id: '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId'
       path: '/sld-cad/$drawingId'
@@ -3514,6 +3589,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/engineering/drawings/$drawingId'
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRoute
+    }
+    '/_authenticated/projects/$projectId/engineering/studies/$studyType/new': {
+      id: '/_authenticated/projects/$projectId/engineering/studies/$studyType/new'
+      path: '/studies/$studyType/new'
+      fullPath: '/projects/$projectId/engineering/studies/$studyType/new'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
     '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate': {
       id: '/_authenticated/projects/$projectId/engineering/ifc-release/$releaseId/certificate'
@@ -3766,6 +3848,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringBomRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute: typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
+  AuthenticatedProjectsProjectIdEngineeringGridCodeRoute: typeof AuthenticatedProjectsProjectIdEngineeringGridCodeRoute
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute: typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute: typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -3779,6 +3862,9 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringYieldRoute: typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   AuthenticatedProjectsProjectIdEngineeringIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
+  AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute
+  AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute
+  AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute: typeof AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute
 }
 
 const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProjectsProjectIdEngineeringRouteChildren =
@@ -3789,6 +3875,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute,
     AuthenticatedProjectsProjectIdEngineeringDrawingsRoute:
       AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren,
+    AuthenticatedProjectsProjectIdEngineeringGridCodeRoute:
+      AuthenticatedProjectsProjectIdEngineeringGridCodeRoute,
     AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute:
       AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute:
@@ -3815,6 +3903,12 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringIndexRoute,
     AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute:
       AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute,
+    AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute:
+      AuthenticatedProjectsProjectIdEngineeringStudiesStudyIdRoute,
+    AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute:
+      AuthenticatedProjectsProjectIdEngineeringStudiesIndexRoute,
+    AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute:
+      AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRoute,
   }
 
 const AuthenticatedProjectsProjectIdEngineeringRouteWithChildren =
