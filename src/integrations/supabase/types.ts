@@ -8104,6 +8104,333 @@ export type Database = {
           },
         ]
       }
+      sld_connections: {
+        Row: {
+          cable_number: string | null
+          company_id: string
+          connection_type: string
+          created_at: string
+          created_by: string | null
+          from_object_id: string
+          from_port: string
+          id: string
+          properties: Json
+          revision_id: string
+          to_object_id: string
+          to_port: string
+          updated_at: string
+        }
+        Insert: {
+          cable_number?: string | null
+          company_id: string
+          connection_type?: string
+          created_at?: string
+          created_by?: string | null
+          from_object_id: string
+          from_port?: string
+          id?: string
+          properties?: Json
+          revision_id: string
+          to_object_id: string
+          to_port?: string
+          updated_at?: string
+        }
+        Update: {
+          cable_number?: string | null
+          company_id?: string
+          connection_type?: string
+          created_at?: string
+          created_by?: string | null
+          from_object_id?: string
+          from_port?: string
+          id?: string
+          properties?: Json
+          revision_id?: string
+          to_object_id?: string
+          to_port?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_connections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_connections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_connections_from_object_id_fkey"
+            columns: ["from_object_id"]
+            isOneToOne: false
+            referencedRelation: "sld_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_connections_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "sld_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_connections_to_object_id_fkey"
+            columns: ["to_object_id"]
+            isOneToOne: false
+            referencedRelation: "sld_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sld_drawings: {
+        Row: {
+          border_template: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          current_revision_id: string | null
+          drawing_number: string
+          drawing_register_id: string | null
+          id: string
+          locked: boolean
+          project_id: string
+          sheet_size: string
+          status: Database["public"]["Enums"]["sld_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          border_template?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          current_revision_id?: string | null
+          drawing_number: string
+          drawing_register_id?: string | null
+          id?: string
+          locked?: boolean
+          project_id: string
+          sheet_size?: string
+          status?: Database["public"]["Enums"]["sld_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          border_template?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          current_revision_id?: string | null
+          drawing_number?: string
+          drawing_register_id?: string | null
+          id?: string
+          locked?: boolean
+          project_id?: string
+          sheet_size?: string
+          status?: Database["public"]["Enums"]["sld_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_sld_current_revision"
+            columns: ["current_revision_id"]
+            isOneToOne: false
+            referencedRelation: "sld_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_drawings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_drawings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_drawings_drawing_register_id_fkey"
+            columns: ["drawing_register_id"]
+            isOneToOne: false
+            referencedRelation: "drawing_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_drawings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sld_objects: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          group_id: string | null
+          id: string
+          label: string | null
+          layer_id: string
+          mirrored: boolean
+          properties: Json
+          revision_id: string
+          rotation: number
+          symbol_type: string
+          tag: string | null
+          updated_at: string
+          x: number
+          y: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          group_id?: string | null
+          id?: string
+          label?: string | null
+          layer_id?: string
+          mirrored?: boolean
+          properties?: Json
+          revision_id: string
+          rotation?: number
+          symbol_type: string
+          tag?: string | null
+          updated_at?: string
+          x?: number
+          y?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          group_id?: string | null
+          id?: string
+          label?: string | null
+          layer_id?: string
+          mirrored?: boolean
+          properties?: Json
+          revision_id?: string
+          rotation?: number
+          symbol_type?: string
+          tag?: string | null
+          updated_at?: string
+          x?: number
+          y?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_objects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_objects_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "sld_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sld_revisions: {
+        Row: {
+          canvas: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          drawing_id: string
+          graph_hash: string | null
+          id: string
+          issue_reason: string | null
+          issued_at: string | null
+          issued_by: string | null
+          revision_code: string
+          status: Database["public"]["Enums"]["sld_status"]
+          updated_at: string
+        }
+        Insert: {
+          canvas?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          drawing_id: string
+          graph_hash?: string | null
+          id?: string
+          issue_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          revision_code: string
+          status?: Database["public"]["Enums"]["sld_status"]
+          updated_at?: string
+        }
+        Update: {
+          canvas?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          drawing_id?: string
+          graph_hash?: string | null
+          id?: string
+          issue_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          revision_code?: string
+          status?: Database["public"]["Enums"]["sld_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_revisions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_revisions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_revisions_drawing_id_fkey"
+            columns: ["drawing_id"]
+            isOneToOne: false
+            referencedRelation: "sld_drawings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_revisions_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spare_parts: {
         Row: {
           category: Database["public"]["Enums"]["material_category"]
@@ -9644,6 +9971,10 @@ export type Database = {
           policyname: string
         }[]
       }
+      next_sld_drawing_number: {
+        Args: { p_project_id: string }
+        Returns: string
+      }
       portal_assert_access: {
         Args: { p_project_id: string }
         Returns: {
@@ -9995,6 +10326,13 @@ export type Database = {
         | "completed"
         | "on_hold"
         | "cancelled"
+      sld_status:
+        | "draft"
+        | "under_review"
+        | "approved"
+        | "ifc"
+        | "as_built"
+        | "superseded"
       submittal_status:
         | "draft"
         | "submitted"
@@ -10488,6 +10826,14 @@ export const Constants = {
         "completed",
         "on_hold",
         "cancelled",
+      ],
+      sld_status: [
+        "draft",
+        "under_review",
+        "approved",
+        "ifc",
+        "as_built",
+        "superseded",
       ],
       submittal_status: [
         "draft",
