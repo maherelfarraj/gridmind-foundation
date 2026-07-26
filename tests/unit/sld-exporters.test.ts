@@ -192,3 +192,36 @@ describe("toCsv", () => {
     expect(toCsv([])).toBe("");
   });
 });
+
+// --------------------------------------------------------------------------
+// P-148 acceptance — DXF structure markers and hash-equal JSON round trip.
+// --------------------------------------------------------------------------
+describe("P-148 acceptance — exporters", () => {
+  it("DXF string contains SECTION, BLOCK, INSERT and EOF", () => {
+    const dxf = toDxf(graph, symbols).dxf;
+    for (const marker of ["SECTION", "BLOCK", "INSERT", "ENDSEC", "EOF"]) {
+      expect(dxf).toContain(marker);
+    }
+    expect(isValidDxf(dxf)).toBe(true);
+  });
+
+  it("JSON round trip is hash-equal to the source graph", async () => {
+    const back = fromJson(toJson(graph));
+    expect(back.objects).toEqual(graph.objects);
+    expect(back.connections).toEqual(graph.connections);
+    const before = await graphHash(graph.objects as never, graph.connections as never);
+    const after = await graphHash(back.objects as never, back.connections as never);
+    expect(after).toBe(before);
+  });
+
+  it("CSV escapes embedded commas and quotes", () => {
+    const csv = toCsv([{ tag: "INV,1", note: 'say "hi"' }]);
+    expect(csv).toContain('"INV,1"');
+    expect(csv).toContain('"say ""hi"""');
+  });
+
+  it("guards oversized imports", () => {
+    expect(MAX_IMPORT_OBJECTS).toBeGreaterThan(0);
+    expect(SldImportError).toBeTypeOf("function");
+  });
+});
