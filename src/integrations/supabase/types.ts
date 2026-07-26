@@ -9464,6 +9464,88 @@ export type Database = {
           },
         ]
       }
+      scada_kpi_daily: {
+        Row: {
+          actual_energy_kwh: number | null
+          availability_pct: number | null
+          company_id: string
+          computed_at: string
+          created_at: string
+          created_by: string | null
+          data_quality_pct: number | null
+          day: string
+          downtime_breakdown: Json
+          downtime_minutes: number
+          expected_energy_kwh: number | null
+          guarantee_check: Json
+          id: string
+          lost_energy_kwh: number | null
+          performance_ratio_pct: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_energy_kwh?: number | null
+          availability_pct?: number | null
+          company_id: string
+          computed_at?: string
+          created_at?: string
+          created_by?: string | null
+          data_quality_pct?: number | null
+          day: string
+          downtime_breakdown?: Json
+          downtime_minutes?: number
+          expected_energy_kwh?: number | null
+          guarantee_check?: Json
+          id?: string
+          lost_energy_kwh?: number | null
+          performance_ratio_pct?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_energy_kwh?: number | null
+          availability_pct?: number | null
+          company_id?: string
+          computed_at?: string
+          created_at?: string
+          created_by?: string | null
+          data_quality_pct?: number | null
+          day?: string
+          downtime_breakdown?: Json
+          downtime_minutes?: number
+          expected_energy_kwh?: number | null
+          guarantee_check?: Json
+          id?: string
+          lost_energy_kwh?: number | null
+          performance_ratio_pct?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_kpi_daily_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_kpi_daily_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_kpi_daily_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scada_tags: {
         Row: {
           alarm_high: number | null
