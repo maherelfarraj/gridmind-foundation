@@ -7037,6 +7037,206 @@ export type Database = {
           },
         ]
       }
+      pv_string_assignments: {
+        Row: {
+          combiner_assignment: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          dc_ac_ratio: number | null
+          dc_kwp_on_mppt: number | null
+          equipment_counts: Json
+          id: string
+          inverter_ac_kw: number | null
+          inverter_dc_kwp: number | null
+          inverter_id: string | null
+          inverter_station_label: string
+          layout_id: string
+          loading_pct: number | null
+          mppt_index: number
+          mv_feeder: Json
+          string_ids: string[]
+          transformer: Json
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          combiner_assignment?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          dc_ac_ratio?: number | null
+          dc_kwp_on_mppt?: number | null
+          equipment_counts?: Json
+          id?: string
+          inverter_ac_kw?: number | null
+          inverter_dc_kwp?: number | null
+          inverter_id?: string | null
+          inverter_station_label: string
+          layout_id: string
+          loading_pct?: number | null
+          mppt_index: number
+          mv_feeder?: Json
+          string_ids?: string[]
+          transformer?: Json
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          combiner_assignment?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          dc_ac_ratio?: number | null
+          dc_kwp_on_mppt?: number | null
+          equipment_counts?: Json
+          id?: string
+          inverter_ac_kw?: number | null
+          inverter_dc_kwp?: number | null
+          inverter_id?: string | null
+          inverter_station_label?: string
+          layout_id?: string
+          loading_pct?: number | null
+          mppt_index?: number
+          mv_feeder?: Json
+          string_ids?: string[]
+          transformer?: Json
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_string_assignments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_string_assignments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_string_assignments_inverter_id_fkey"
+            columns: ["inverter_id"]
+            isOneToOne: false
+            referencedRelation: "pv_equipment_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_string_assignments_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "pv_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_strings: {
+        Row: {
+          block_id: string | null
+          cable: Json
+          combiner_label: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          dc_power_kwp: number | null
+          id: string
+          inverter_station_label: string | null
+          layout_id: string
+          module_id: string | null
+          modules_in_series: number
+          mppt_index: number | null
+          string_label: string
+          updated_at: string
+          valid: boolean
+          vmp_at_max_temp_v: number | null
+          voc_at_min_temp_v: number | null
+          warnings: Json
+        }
+        Insert: {
+          block_id?: string | null
+          cable?: Json
+          combiner_label?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          dc_power_kwp?: number | null
+          id?: string
+          inverter_station_label?: string | null
+          layout_id: string
+          module_id?: string | null
+          modules_in_series: number
+          mppt_index?: number | null
+          string_label: string
+          updated_at?: string
+          valid?: boolean
+          vmp_at_max_temp_v?: number | null
+          voc_at_min_temp_v?: number | null
+          warnings?: Json
+        }
+        Update: {
+          block_id?: string | null
+          cable?: Json
+          combiner_label?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          dc_power_kwp?: number | null
+          id?: string
+          inverter_station_label?: string | null
+          layout_id?: string
+          module_id?: string | null
+          modules_in_series?: number
+          mppt_index?: number | null
+          string_label?: string
+          updated_at?: string
+          valid?: boolean
+          vmp_at_max_temp_v?: number | null
+          voc_at_min_temp_v?: number | null
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_strings_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "pv_layout_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_strings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_strings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_strings_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "pv_layouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_strings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "pv_equipment_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qaqc_inspections: {
         Row: {
           area: string
