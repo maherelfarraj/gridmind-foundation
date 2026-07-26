@@ -10507,6 +10507,31 @@ export type Database = {
         Args: { p_approval_id: string; p_comment?: string; p_decision: string }
         Returns: undefined
       }
+      decide_pv_layout_approval: {
+        Args: { p_layout_id: string }
+        Returns: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_number: string | null
+          name: string
+          params: Json
+          project_id: string
+          site_config_id: string | null
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pv_layouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       enforce_audit_log_retention: {
         Args: never
         Returns: {
@@ -10515,6 +10540,7 @@ export type Database = {
           entity: string
         }[]
       }
+      ensure_pv_layout_rule: { Args: { p_company_id: string }; Returns: string }
       escalate_overdue_approvals: { Args: never; Returns: number }
       get_po_by_share_token: {
         Args: { p_token: string }
@@ -10667,6 +10693,31 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      submit_pv_layout: {
+        Args: { p_layout_id: string }
+        Returns: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_number: string | null
+          name: string
+          params: Json
+          project_id: string
+          site_config_id: string | null
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pv_layouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       sync_export_locks: { Args: { p_project_id: string }; Returns: number }
       verify_api_key: {
         Args: { p_raw_key: string }
