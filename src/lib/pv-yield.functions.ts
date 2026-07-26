@@ -39,7 +39,9 @@ const inputSchema = z.object({
   mismatchPct: z.number().min(0).max(20),
   dcWiringLossPct: z.number().min(0).max(20),
   inverterEffCurve: z
-    .array(z.object({ loadFraction: z.number().min(0).max(1), effPct: z.number().min(50).max(100) }))
+    .array(
+      z.object({ loadFraction: z.number().min(0).max(1), effPct: z.number().min(50).max(100) }),
+    )
     .min(1)
     .max(32),
   transformerLossPct: z.number().min(0).max(10),

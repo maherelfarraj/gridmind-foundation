@@ -158,8 +158,7 @@ export function beamTranspositionFactor(latDeg: number, tiltDeg: number, month: 
   const num =
     Math.cos(phi - beta) * Math.cos(delta) * Math.sin(wsTilt) +
     wsTilt * Math.sin(delta) * Math.sin(phi - beta);
-  const den =
-    Math.cos(phi) * Math.cos(delta) * Math.sin(ws) + ws * Math.sin(delta) * Math.sin(phi);
+  const den = Math.cos(phi) * Math.cos(delta) * Math.sin(ws) + ws * Math.sin(delta) * Math.sin(phi);
   if (den <= 0) return 0;
   return Math.max(0, num / den);
 }
@@ -237,9 +236,7 @@ export function runYieldV2(input: YieldInput): YieldResult {
     const beta = input.tiltDeg * DEG;
     const value =
       ghi *
-      ((1 - df) * rb +
-        df * ((1 + Math.cos(beta)) / 2) +
-        albedo * ((1 - Math.cos(beta)) / 2)) *
+      ((1 - df) * rb + df * ((1 + Math.cos(beta)) / 2) + albedo * ((1 - Math.cos(beta)) / 2)) *
       trackerGain;
     poa.push(value);
   }
@@ -281,7 +278,8 @@ export function runYieldV2(input: YieldInput): YieldResult {
   const tempLoss: number[] = [];
   for (let m = 0; m < 12; m += 1) {
     const meanIrrW = (poa[m] * 1000) / (DAYS_IN_MONTH[m] * daylightHours);
-    const tcell = (input.monthlyAmbientTempC[m] ?? 25) + ((input.moduleNoctC - 20) / 800) * meanIrrW;
+    const tcell =
+      (input.monthlyAmbientTempC[m] ?? 25) + ((input.moduleNoctC - 20) / 800) * meanIrrW;
     cellTemp.push(tcell);
     tempLoss.push(Math.max(0, -input.modulePmaxPctPerC * (tcell - 25)));
   }
@@ -455,7 +453,11 @@ export function runYieldV2(input: YieldInput): YieldResult {
       formula: "E = E · plant_availability%/100",
       inputs: { plant_availability_pct: input.plantAvailabilityPct },
       input_sources: {
-        plant_availability_pct: src(S, "plant_availability_pct", "pv_site_configs.loss_assumptions"),
+        plant_availability_pct: src(
+          S,
+          "plant_availability_pct",
+          "pv_site_configs.loss_assumptions",
+        ),
       },
       lossPct: new Array(12).fill(100 - input.plantAvailabilityPct),
     },
@@ -472,7 +474,8 @@ export function runYieldV2(input: YieldInput): YieldResult {
     {
       step: "curtailment",
       label: "Grid export curtailment",
-      formula: "cap_month = P_grid_limit · days · daylight_hours · shape; loss% = max(0,(E−cap)/E)·100",
+      formula:
+        "cap_month = P_grid_limit · days · daylight_hours · shape; loss% = max(0,(E−cap)/E)·100",
       inputs: { grid_limit_kw: input.gridLimitKw ?? null, load_shape_factor: loadShape },
       input_sources: { grid_limit_kw: src(S, "grid_limit_kw", "pv_site_configs.grid_limits") },
       lossPct: curtailLoss,
@@ -537,7 +540,10 @@ export function runYieldV2(input: YieldInput): YieldResult {
   const cf = kwp > 0 ? (annual / (kwp * 8760)) * 100 : 0;
 
   if (pr > 95) {
-    warnings.push({ code: "pr_implausible", message: "Performance ratio above 95% — review inputs." });
+    warnings.push({
+      code: "pr_implausible",
+      message: "Performance ratio above 95% — review inputs.",
+    });
   }
 
   const sigma = input.interannualVariabilitySigmaPct ?? null;
