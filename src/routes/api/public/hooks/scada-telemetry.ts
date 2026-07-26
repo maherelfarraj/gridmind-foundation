@@ -132,6 +132,19 @@ export const Route = createFileRoute("/api/public/hooks/scada-telemetry")({
                 });
               }
             }
+            // P-177 — park the failed batch on the retry queue (best-effort).
+            try {
+              const { enqueueIngestionRetry } = await import("@/lib/scada-retry.server");
+              await enqueueIngestionRetry(admin, {
+                company_id: companyId,
+                project_id: batch[0]?.project_id ?? null,
+                payload_kind: "telemetry",
+                rows: batch,
+                error: error.message,
+              });
+            } catch {
+              /* best-effort: reliability never breaks ingestion */
+            }
             continue;
           }
           acceptedCount += batch.length;
