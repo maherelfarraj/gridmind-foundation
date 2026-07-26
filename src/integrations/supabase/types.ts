@@ -1130,6 +1130,86 @@ export type Database = {
           },
         ]
       }
+      civil_features: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          feature_ref: string
+          feature_type: Database["public"]["Enums"]["civil_feature_type"]
+          geometry: Json
+          id: string
+          name: string
+          project_id: string
+          properties: Json
+          revision_code: string
+          status: string
+          surface_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          feature_ref: string
+          feature_type: Database["public"]["Enums"]["civil_feature_type"]
+          geometry: Json
+          id?: string
+          name: string
+          project_id: string
+          properties?: Json
+          revision_code?: string
+          status?: string
+          surface_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          feature_ref?: string
+          feature_type?: Database["public"]["Enums"]["civil_feature_type"]
+          geometry?: Json
+          id?: string
+          name?: string
+          project_id?: string
+          properties?: Json
+          revision_code?: string
+          status?: string
+          surface_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civil_features_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "civil_features_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "civil_features_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "civil_features_surface_id_fkey"
+            columns: ["surface_id"]
+            isOneToOne: false
+            referencedRelation: "terrain_surfaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissioning_certificates: {
         Row: {
           certificate_number: string
@@ -1565,6 +1645,64 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contour_lines: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          elevation_m: number
+          geometry: Json
+          id: string
+          is_major: boolean
+          surface_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          elevation_m: number
+          geometry: Json
+          id?: string
+          is_major?: boolean
+          surface_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          elevation_m?: number
+          geometry?: Json
+          id?: string
+          is_major?: boolean
+          surface_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contour_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contour_lines_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contour_lines_surface_id_fkey"
+            columns: ["surface_id"]
+            isOneToOne: false
+            referencedRelation: "terrain_surfaces"
             referencedColumns: ["id"]
           },
         ]
@@ -9622,6 +9760,171 @@ export type Database = {
           },
         ]
       }
+      terrain_points: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          easting: number
+          elevation_m: number
+          grid_col: number | null
+          grid_row: number | null
+          id: string
+          northing: number
+          point_kind: string
+          surface_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          easting: number
+          elevation_m: number
+          grid_col?: number | null
+          grid_row?: number | null
+          id?: string
+          northing: number
+          point_kind?: string
+          surface_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          easting?: number
+          elevation_m?: number
+          grid_col?: number | null
+          grid_row?: number | null
+          id?: string
+          northing?: number
+          point_kind?: string
+          surface_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terrain_points_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terrain_points_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terrain_points_surface_id_fkey"
+            columns: ["surface_id"]
+            isOneToOne: false
+            referencedRelation: "terrain_surfaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terrain_surfaces: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          crs: string
+          grid_cols: number | null
+          grid_rows: number | null
+          grid_spacing_m: number
+          id: string
+          max_elevation_m: number | null
+          min_elevation_m: number | null
+          name: string
+          origin_easting: number | null
+          origin_northing: number | null
+          project_id: string
+          revision_code: string
+          source_document_id: string | null
+          source_notes: string | null
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          crs?: string
+          grid_cols?: number | null
+          grid_rows?: number | null
+          grid_spacing_m?: number
+          id?: string
+          max_elevation_m?: number | null
+          min_elevation_m?: number | null
+          name: string
+          origin_easting?: number | null
+          origin_northing?: number | null
+          project_id: string
+          revision_code?: string
+          source_document_id?: string | null
+          source_notes?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          crs?: string
+          grid_cols?: number | null
+          grid_rows?: number | null
+          grid_spacing_m?: number
+          id?: string
+          max_elevation_m?: number | null
+          min_elevation_m?: number | null
+          name?: string
+          origin_easting?: number | null
+          origin_northing?: number | null
+          project_id?: string
+          revision_code?: string
+          source_document_id?: string | null
+          source_notes?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terrain_surfaces_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terrain_surfaces_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terrain_surfaces_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terrain_surfaces_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       three_way_matches: {
         Row: {
           amount_variance: number | null
@@ -11140,6 +11443,19 @@ export type Database = {
         | "approved"
         | "rejected"
         | "incorporated"
+      civil_feature_type:
+        | "grading_zone"
+        | "flood_risk_zone"
+        | "drainage_path"
+        | "road_alignment"
+        | "trench_route"
+        | "equipment_platform"
+        | "fence_line"
+        | "gate"
+        | "laydown_area"
+        | "construction_compound"
+        | "crane_access"
+        | "emergency_access"
       commissioning_certificate_type:
         | "mechanical_completion"
         | "cod"
@@ -11638,6 +11954,20 @@ export const Constants = {
         "approved",
         "rejected",
         "incorporated",
+      ],
+      civil_feature_type: [
+        "grading_zone",
+        "flood_risk_zone",
+        "drainage_path",
+        "road_alignment",
+        "trench_route",
+        "equipment_platform",
+        "fence_line",
+        "gate",
+        "laydown_area",
+        "construction_compound",
+        "crane_access",
+        "emergency_access",
       ],
       commissioning_certificate_type: [
         "mechanical_completion",
