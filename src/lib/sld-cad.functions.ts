@@ -55,7 +55,7 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
     const [{ data: project }, canWrite] = await Promise.all([
       context.supabase
         .from("projects")
-        .select("name, project_code")
+        .select("name, code")
         .eq("id", drawing.project_id)
         .maybeSingle(),
       hasCadWriteRole(context, drawing.company_id),
@@ -121,7 +121,7 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
       drawing: {
         ...drawing,
         project_name: (project as any)?.name ?? null,
-        project_code: (project as any)?.project_code ?? null,
+        project_code: (project as any)?.code ?? null,
       },
       revision,
       objects,
