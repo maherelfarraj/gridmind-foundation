@@ -183,7 +183,11 @@ export function harmonicsWorksheet(input: HarmonicsInput): CalcOutput<HarmonicsR
     assumptionsEcho: [
       assumption("i1_source", "load current declared as the fundamental", "input sheet"),
       assumption("background_combination", "arithmetic addition (conservative)", "GridMind"),
-      assumption("limit_table", `${input.limits.length} rows, configurable`, "IEEE 519-style default"),
+      assumption(
+        "limit_table",
+        `${input.limits.length} rows, configurable`,
+        "IEEE 519-style default",
+      ),
       assumption("nominal_voltage_kv", input.nominalVoltageKv, "input sheet"),
     ],
   };

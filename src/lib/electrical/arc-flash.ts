@@ -123,7 +123,8 @@ export function arcFlashDataPrep(input: ArcFlashInput): CalcOutput<ArcFlashResul
       gaps.push({
         tag: eq.tag,
         field: "boltedFaultSource",
-        message: "Bolted fault current has no declared source — link it to the short-circuit study.",
+        message:
+          "Bolted fault current has no declared source — link it to the short-circuit study.",
       });
     }
     return {
@@ -157,12 +158,14 @@ export function arcFlashDataPrep(input: ArcFlashInput): CalcOutput<ArcFlashResul
       ),
     );
   }
-  const duplicates = input.equipment
-    .map((e) => e.tag)
-    .filter((t, i, arr) => arr.indexOf(t) !== i);
+  const duplicates = input.equipment.map((e) => e.tag).filter((t, i, arr) => arr.indexOf(t) !== i);
   if (duplicates.length > 0) {
     warnings.push(
-      warn("duplicate_equipment_tag", "warning", `Duplicate equipment tags: ${[...new Set(duplicates)].join(", ")}.`),
+      warn(
+        "duplicate_equipment_tag",
+        "warning",
+        `Duplicate equipment tags: ${[...new Set(duplicates)].join(", ")}.`,
+      ),
     );
   }
 

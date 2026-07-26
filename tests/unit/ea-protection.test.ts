@@ -1,7 +1,11 @@
 // P-168 — Unit coverage for the protection/harmonics/grounding/arc-flash worksheets.
 import { describe, expect, it } from "vitest";
 
-import { arcFlashDataPrep, arcFlashInputSchema, ARC_FLASH_DISCLAIMER } from "@/lib/electrical/arc-flash";
+import {
+  arcFlashDataPrep,
+  arcFlashInputSchema,
+  ARC_FLASH_DISCLAIMER,
+} from "@/lib/electrical/arc-flash";
 import { groundingInputSchema, groundingWorksheet } from "@/lib/electrical/grounding";
 import { harmonicsInputSchema, harmonicsWorksheet } from "@/lib/electrical/harmonics";
 import { CALCULATORS, isCalculatorStudyType } from "@/lib/electrical";
