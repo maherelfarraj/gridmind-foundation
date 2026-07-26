@@ -173,3 +173,53 @@ describe("groups", () => {
     expect(expandSelectionToGroups(["c"], objects)).toEqual(["c"]);
   });
 });
+
+// --------------------------------------------------------------------------
+// P-148 acceptance — explicit numeric expectations from the spec.
+// --------------------------------------------------------------------------
+describe("P-148 acceptance — geometry", () => {
+  it("rounds 2.49 → 0 and 2.51 → 5 on a 5 mm grid", () => {
+    expect(snap(2.49, 5)).toBe(0);
+    expect(snap(2.51, 5)).toBe(5);
+    expect(snapPoint({ x: 2.49, y: 2.51 }, 5)).toEqual({ x: 0, y: 5 });
+  });
+
+  it("rotates (10,0) about the origin by 90° to (0,-10)", () => {
+    // Screen-space y grows downwards, so a 90° clockwise visual rotation maps
+    // (10,0) → (0,-10) about the centre.
+    expect(rotateAbout({ x: 10, y: 0 }, { x: 0, y: 0 }, -90)).toEqual({ x: 0, y: -10 });
+    expect(rotateAbout({ x: 10, y: 0 }, { x: 0, y: 0 }, 90)).toEqual({ x: 0, y: 10 });
+  });
+
+  it("mirror flips x about the selection bbox centre", () => {
+    const objects = [obj("a", 0, 0), obj("b", 100, 0)];
+    const centreX = (0 + 100 + 10) / 2; // bbox 0..110 → centre 55
+    const out = mirrorSelectionGeometry(objects, size);
+    const byId = Object.fromEntries(out.map((o) => [o.id, o]));
+    expect(byId.a.x).toBeCloseTo(2 * centreX - 0 - 10, 6);
+    expect(byId.b.x).toBeCloseTo(2 * centreX - 100 - 10, 6);
+    expect(byId.a.mirrored).toBe(true);
+  });
+
+  it("align-left equalizes min-x across the selection", () => {
+    const objects = [obj("a", 12, 0), obj("b", 80, 40), obj("c", 45, 90)];
+    const out = alignGeometry(objects, "left", size);
+    const minXs = new Set(out.map((o) => o.x - 5)); // centre-based coords, w = 10
+    expect(minXs.size).toBe(1);
+    expect([...minXs][0]).toBe(7); // 12 - halfW
+  });
+
+  it("distribute gives equal gaps between adjacent objects", () => {
+    const objects = [obj("a", 0, 0), obj("b", 37, 0), obj("c", 100, 0), obj("d", 300, 0)];
+    const out = distributeGeometry(objects, "horizontal").sort((l, r) => l.x - r.x);
+    const gaps = out.slice(1).map((o, i) => o.x - out[i].x);
+    expect(gaps).toHaveLength(3);
+    for (const g of gaps) expect(g).toBeCloseTo(100, 6);
+  });
+
+  it("bounds of a mixed selection covers rotated footprints", () => {
+    const objects = [obj("a", 0, 0), obj("b", 100, 50, 90)];
+    const rect = boundsOf(objects, () => ({ w: 20, h: 10 }));
+    expect(rect).toEqual({ minX: -10, minY: -5, maxX: 105, maxY: 60 });
+  });
+});

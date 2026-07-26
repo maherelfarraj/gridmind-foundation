@@ -205,3 +205,54 @@ describe("planRetag", () => {
     expect(second.cables).toEqual([]);
   });
 });
+
+// --------------------------------------------------------------------------
+// P-148 acceptance — determinism under input shuffling.
+// --------------------------------------------------------------------------
+describe("P-148 acceptance — tagging determinism", () => {
+  const graph: TaggableObject[] = [
+    obj({ id: "i1", x: 100, y: 100 }),
+    obj({ id: "i2", x: 400, y: 100 }),
+    obj({ id: "i3", x: 100, y: 400 }),
+    obj({ id: "t1", symbol_type: "transformer", x: 700, y: 100 }),
+    obj({ id: "t2", symbol_type: "transformer", x: 700, y: 500 }),
+  ];
+
+  it("produces identical tags regardless of input array order", () => {
+    const expected = new Map(generateTags(graph, symbols).map((a) => [a.id, a.tag]));
+    const orders = [
+      [...graph].reverse(),
+      [graph[3], graph[0], graph[4], graph[2], graph[1]],
+      [graph[2], graph[4], graph[1], graph[3], graph[0]],
+    ];
+    for (const shuffled of orders) {
+      const got = new Map(generateTags(shuffled, symbols).map((a) => [a.id, a.tag]));
+      expect(got).toEqual(expected);
+    }
+  });
+
+  it("every generated tag matches the canonical regex", () => {
+    for (const a of generateTags(graph, symbols)) expect(isValidTag(a.tag)).toBe(true);
+  });
+
+  it("is idempotent without force and renumbers a gapped graph with force", () => {
+    const applied = graph.map((o) => ({
+      ...o,
+      tag: generateTags(graph, symbols).find((a) => a.id === o.id)!.tag,
+    }));
+    // Already canonical → no assignments, with or without force.
+    expect(generateTags(applied, symbols)).toEqual([]);
+    expect(generateTags(applied, symbols, [], { force: true })).toEqual([]);
+
+    // Gapped/out-of-order sequences are preserved without force …
+    const gapped = applied.map((o, i) => ({
+      ...o,
+      tag: o.tag!.replace(/\d{2}$/, i === 0 ? "07" : o.tag!.slice(-2)),
+    }));
+    expect(generateTags(gapped, symbols)).toEqual([]);
+    // … and collapsed back to 01..n with force.
+    const forced = generateTags(gapped, symbols, [], { force: true });
+    expect(forced.length).toBeGreaterThan(0);
+    for (const a of forced) expect(isValidTag(a.tag)).toBe(true);
+  });
+});

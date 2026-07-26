@@ -159,3 +159,43 @@ describe("markup geometry", () => {
     expect(head[0]).toEqual({ x: 10, y: 0 });
   });
 });
+
+// --------------------------------------------------------------------------
+// P-148 acceptance — hash stability vs key order, sensitivity to any change.
+// --------------------------------------------------------------------------
+describe("P-148 acceptance — graphHash", () => {
+  const objects = [
+    obj({ id: "1", tag: "INV-01-01", x: 10, y: 20, properties: { a: 1, b: 2 } }),
+    obj({ id: "2", tag: "TR-01-01", x: 90, y: 20, properties: { z: "s" } }),
+  ];
+  const conns = [conn({ id: "c1", from_object_id: "1", to_object_id: "2" })];
+
+  it("is stable when property key order differs", async () => {
+    const reordered = objects.map((o) => ({
+      ...o,
+      properties: Object.fromEntries(Object.entries(o.properties ?? {}).reverse()),
+    }));
+    expect(await graphHash(reordered, conns)).toBe(await graphHash(objects, conns));
+  });
+
+  it("changes when any coordinate, tag or property changes", async () => {
+    const base = await graphHash(objects, conns);
+    const moved = [{ ...objects[0], x: 11 }, objects[1]];
+    const retagged = [{ ...objects[0], tag: "INV-01-09" }, objects[1]];
+    const reprop = [{ ...objects[0], properties: { a: 1, b: 3 } }, objects[1]];
+    for (const variant of [moved, retagged, reprop]) {
+      expect(await graphHash(variant, conns)).not.toBe(base);
+    }
+    expect(await graphHash(objects, [])).not.toBe(base);
+  });
+
+  it("detects moved, added, removed and property-changed in one diff", async () => {
+    const after = [{ ...objects[0], x: 200 }, obj({ id: "3", tag: "GRD-01-01" })];
+    const d = diffGraphs(objects, conns, after, []);
+    const totals = diffTotals(d);
+    expect(d.moved.map((m) => m.id)).toContain("1");
+    expect(totals.added).toBeGreaterThan(0);
+    expect(totals.removed).toBeGreaterThan(0);
+    expect(LINEAGE_KEY).toBe("__lineage_id");
+  });
+});
