@@ -75,6 +75,7 @@ export type CanvasState = {
   gridMm: GridMm;
   snapEnabled: boolean;
   layers: SldLayer[];
+  areas: TagArea[];
   objects: SldCanvasObject[];
   connections: SldConnection[];
   selection: string[];
@@ -290,6 +291,7 @@ export const initialCanvasState: CanvasState = {
   gridMm: meta.gridMm,
   snapEnabled: meta.snapEnabled,
   layers: meta.layers,
+  areas: meta.areas,
   objects: [],
   connections: [],
   selection: [],
@@ -352,6 +354,7 @@ export const createCanvasStore = () =>
           objects,
           connections,
           layers: m.layers,
+          areas: m.areas ?? [],
           gridMm: m.gridMm,
           snapEnabled: m.snapEnabled,
           selection: [],
