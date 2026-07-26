@@ -157,6 +157,11 @@ export function GanttView({
                           {t.name}
                         </button>
                       </PopoverTrigger>
+                      {highlightCriticalPath && t.is_critical && (
+                        <Badge variant="destructive" className="ml-2 text-[10px]">
+                          CP
+                        </Badge>
+                      )}
                       <PopoverContent align="start" className="p-3">
                         <TaskInlineEditor
                           task={t}
