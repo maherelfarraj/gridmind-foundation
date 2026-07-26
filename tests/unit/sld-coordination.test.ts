@@ -165,7 +165,8 @@ describe("checkInverterTransformer / checkTransformerLoading", () => {
     const missing = checkInverterTransformer(objects, [edge("c1", "t1", "i1")]).find(
       (i) => i.code === "transformer_rating_missing",
     );
-    expect(missing?.values?.["Suggested nameplate"]).toBe("630 kVA");
+    // 500 kW ÷ pf 0.95 ÷ 80% target = 658 kVA → next IEC size.
+    expect(missing?.values?.["Suggested nameplate"]).toBe("800 kVA");
   });
 
   it("flags an LV winding mismatch against the inverter AC voltage", () => {
@@ -245,7 +246,7 @@ describe("reference tables for P-144", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].standardMm2).toBeGreaterThan(95);
     expect(rows[0].verify).toBe(true);
-    expect(issues[0].message).toContain("verify cable size — reference only".toLowerCase().slice(0, 5));
+    expect(issues[0].message).toContain("Verify cable size — reference only");
   });
 });
 
