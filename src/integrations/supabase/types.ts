@@ -2513,6 +2513,210 @@ export type Database = {
           },
         ]
       }
+      ea_studies: {
+        Row: {
+          approval_instance_id: string | null
+          approved_at: string | null
+          assumptions: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          input_sheet: Json
+          method: string
+          project_id: string
+          results: Json
+          reviewer_id: string | null
+          revision: number
+          standards_ref: string[]
+          status: Database["public"]["Enums"]["ea_study_status"]
+          study_number: string
+          study_type: Database["public"]["Enums"]["ea_study_type"]
+          submitted_at: string | null
+          title: string
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          assumptions?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input_sheet?: Json
+          method?: string
+          project_id: string
+          results?: Json
+          reviewer_id?: string | null
+          revision?: number
+          standards_ref?: string[]
+          status?: Database["public"]["Enums"]["ea_study_status"]
+          study_number: string
+          study_type: Database["public"]["Enums"]["ea_study_type"]
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          assumptions?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input_sheet?: Json
+          method?: string
+          project_id?: string
+          results?: Json
+          reviewer_id?: string | null
+          revision?: number
+          standards_ref?: string[]
+          status?: Database["public"]["Enums"]["ea_study_status"]
+          study_number?: string
+          study_type?: Database["public"]["Enums"]["ea_study_type"]
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_studies_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_studies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_studies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_studies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_studies_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ea_study_revisions: {
+        Row: {
+          approval_instance_id: string | null
+          assumptions: Json
+          change_summary: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          input_sheet: Json
+          method: string
+          results: Json
+          reviewer_id: string | null
+          revision: number
+          standards_ref: string[]
+          status: Database["public"]["Enums"]["ea_study_status"]
+          study_id: string
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          assumptions?: Json
+          change_summary?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input_sheet?: Json
+          method?: string
+          results?: Json
+          reviewer_id?: string | null
+          revision: number
+          standards_ref?: string[]
+          status?: Database["public"]["Enums"]["ea_study_status"]
+          study_id: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          approval_instance_id?: string | null
+          assumptions?: Json
+          change_summary?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input_sheet?: Json
+          method?: string
+          results?: Json
+          reviewer_id?: string | null
+          revision?: number
+          standards_ref?: string[]
+          status?: Database["public"]["Enums"]["ea_study_status"]
+          study_id?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_study_revisions_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_study_revisions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_study_revisions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_study_revisions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_study_revisions_study_id_fkey"
+            columns: ["study_id"]
+            isOneToOne: false
+            referencedRelation: "ea_studies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_library: {
         Row: {
           category: string
@@ -11633,6 +11837,26 @@ export type Database = {
         | "survey"
         | "general"
       drawing_status: "draft" | "IFD" | "IFC" | "as_built" | "superseded"
+      ea_study_status: "draft" | "under_review" | "approved"
+      ea_study_type:
+        | "load_flow"
+        | "short_circuit"
+        | "cable_ampacity"
+        | "voltage_drop"
+        | "transformer_loading"
+        | "motor_starting"
+        | "protection_schedule"
+        | "harmonics"
+        | "grounding"
+        | "arc_flash"
+        | "dc_system"
+        | "aux_ac"
+        | "ups_battery"
+        | "generator_sizing"
+        | "capacitor_bank"
+        | "reactive_power"
+        | "pf_correction"
+        | "grid_code_checklist"
       equipment_status: "active" | "inactive" | "spare" | "decommissioned"
       equipment_type:
         | "inverter"
@@ -12162,6 +12386,27 @@ export const Constants = {
         "general",
       ],
       drawing_status: ["draft", "IFD", "IFC", "as_built", "superseded"],
+      ea_study_status: ["draft", "under_review", "approved"],
+      ea_study_type: [
+        "load_flow",
+        "short_circuit",
+        "cable_ampacity",
+        "voltage_drop",
+        "transformer_loading",
+        "motor_starting",
+        "protection_schedule",
+        "harmonics",
+        "grounding",
+        "arc_flash",
+        "dc_system",
+        "aux_ac",
+        "ups_battery",
+        "generator_sizing",
+        "capacitor_bank",
+        "reactive_power",
+        "pf_correction",
+        "grid_code_checklist",
+      ],
       equipment_status: ["active", "inactive", "spare", "decommissioned"],
       equipment_type: [
         "inverter",
