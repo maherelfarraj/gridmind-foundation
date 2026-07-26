@@ -203,22 +203,23 @@ describe("P-148 acceptance — geometry", () => {
 
   it("align-left equalizes min-x across the selection", () => {
     const objects = [obj("a", 12, 0), obj("b", 80, 40), obj("c", 45, 90)];
-    const out = alignGeometry(objects, size, "left");
-    const xs = new Set(out.map((o) => o.x));
-    expect(xs.size).toBe(1);
-    expect([...xs][0]).toBe(12);
+    const out = alignGeometry(objects, "left", size);
+    const minXs = new Set(out.map((o) => o.x - 5)); // centre-based coords, w = 10
+    expect(minXs.size).toBe(1);
+    expect([...minXs][0]).toBe(7); // 12 - halfW
   });
 
   it("distribute gives equal gaps between adjacent objects", () => {
     const objects = [obj("a", 0, 0), obj("b", 37, 0), obj("c", 100, 0), obj("d", 300, 0)];
-    const out = distributeGeometry(objects, size, "horizontal").sort((l, r) => l.x - r.x);
+    const out = distributeGeometry(objects, "horizontal").sort((l, r) => l.x - r.x);
     const gaps = out.slice(1).map((o, i) => o.x - out[i].x);
-    for (const g of gaps) expect(g).toBeCloseTo(gaps[0], 6);
+    expect(gaps).toHaveLength(3);
+    for (const g of gaps) expect(g).toBeCloseTo(100, 6);
   });
 
   it("bounds of a mixed selection covers rotated footprints", () => {
     const objects = [obj("a", 0, 0), obj("b", 100, 50, 90)];
     const rect = boundsOf(objects, () => ({ w: 20, h: 10 }));
-    expect(rect).toEqual({ minX: 0, minY: 0, maxX: 110, maxY: 70 });
+    expect(rect).toEqual({ minX: -10, minY: -5, maxX: 105, maxY: 60 });
   });
 });
