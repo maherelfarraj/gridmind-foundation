@@ -1,5 +1,6 @@
 // P-038 / POL-5 — Overview tab: lender-ready KPI strip + key facts + team.
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -185,7 +186,7 @@ function Fact({
   className,
 }: {
   label: string;
-  value: React.ReactNode;
+  value: ReactNode;
   className?: string;
 }) {
   return (
