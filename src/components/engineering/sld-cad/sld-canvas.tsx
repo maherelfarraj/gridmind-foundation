@@ -267,6 +267,7 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
     [dragDelta, draggedIds],
   );
   const livePositions = useMemo(() => objects.map(shifted), [objects, shifted]);
+  const dupeTagIds = useMemo(() => duplicateTagIds(objects), [objects]);
 
   return (
     <div
