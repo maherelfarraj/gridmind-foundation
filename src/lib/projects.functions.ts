@@ -900,6 +900,11 @@ export const getProject = createServerFn({ method: "GET" })
         done_by: it?.done_by ?? null,
         done_at: it?.done_at ?? null,
         done_by_name: it?.done_by ? (namesById[it.done_by] ?? null) : null,
+        owner_id: it?.owner_id ?? null,
+        owner_name: it?.owner_id ? (namesById[it.owner_id] ?? null) : null,
+        due_date: it?.due_date ?? null,
+        evidence_label: it?.evidence_label ?? null,
+        evidence_url: it?.evidence_url ?? null,
       }));
       const approvalInfo =
         g.approval_instance_id && myApprovals[g.approval_instance_id]
