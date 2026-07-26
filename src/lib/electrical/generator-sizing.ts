@@ -93,7 +93,9 @@ export function sizeGenerator(rawInput: GeneratorSizingInput): CalcOutput<Genera
   const surgeKva = Math.max(designKva, designKva - motorRunningKva + startingKva);
 
   const dipFor = (genKva: number) =>
-    genKva > 0 ? (100 * (startingKva * ALTERNATOR_XD_PU)) / (genKva + startingKva * ALTERNATOR_XD_PU) : 100;
+    genKva > 0
+      ? (100 * (startingKva * ALTERNATOR_XD_PU)) / (genKva + startingKva * ALTERNATOR_XD_PU)
+      : 100;
 
   const selectedKva =
     GENSET_STANDARD_KVA.find((k) => k >= designKva && dipFor(k) <= input.voltageDipLimitPct) ??

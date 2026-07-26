@@ -149,7 +149,11 @@ export function auxAcCalc(rawInput: AuxAcInput): CalcOutput<AuxAcResults> {
     },
     warnings,
     assumptionsEcho: [
-      assumption("demandFactor", input.demandFactor, "Input sheet — intermittent load demand factor"),
+      assumption(
+        "demandFactor",
+        input.demandFactor,
+        "Input sheet — intermittent load demand factor",
+      ),
       assumption("growthPct", input.growthPct, "Input sheet — spare capacity allowance"),
       assumption(
         "targetLoadingPct",

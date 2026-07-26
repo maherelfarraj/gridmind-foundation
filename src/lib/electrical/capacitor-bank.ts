@@ -41,9 +41,7 @@ export type CapacitorBankResults = {
 
 const tanPhi = (pf: number) => Math.tan(Math.acos(pf));
 
-export function sizeCapacitorBank(
-  rawInput: CapacitorBankInput,
-): CalcOutput<CapacitorBankResults> {
+export function sizeCapacitorBank(rawInput: CapacitorBankInput): CalcOutput<CapacitorBankResults> {
   const input = capacitorBankInputSchema.parse(rawInput);
   const warnings: CalcWarning[] = [];
 
@@ -63,8 +61,7 @@ export function sizeCapacitorBank(
   }
 
   const stepKvar = requiredKvar / input.steps;
-  const stepCurrentA =
-    requiredKvar > 0 ? stepKvar / (Math.sqrt(3) * input.voltageKv) : 0;
+  const stepCurrentA = requiredKvar > 0 ? stepKvar / (Math.sqrt(3) * input.voltageKv) : 0;
   const totalCurrentA = stepCurrentA * input.steps;
 
   let resonanceOrder: number | null = null;
@@ -128,7 +125,11 @@ export function sizeCapacitorBank(
     },
     warnings,
     assumptionsEcho: [
-      assumption("pfTarget", input.pfTarget, "Input sheet — contractual/utility power-factor target"),
+      assumption(
+        "pfTarget",
+        input.pfTarget,
+        "Input sheet — contractual/utility power-factor target",
+      ),
       assumption("steps", input.steps, "Input sheet — number of switching steps"),
       assumption(
         "screenedHarmonics",
