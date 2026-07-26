@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 import { getSldCadWorkspace, saveSldObjects, type SldCadWorkspace } from "@/lib/sld-cad.functions";
-import type { SldCanvasMeta, SldCanvasObject } from "@/lib/sld/canvas-types";
+import type { SldCanvasMeta, SldCanvasObject, SldConnection } from "@/lib/sld/canvas-types";
 
 export function sldCadWorkspaceQueryOptions(
   fn: (args: { data: { drawingId: string } }) => Promise<SldCadWorkspace>,
@@ -28,6 +28,8 @@ export function useSaveSldCanvas(drawingId: string, onSaved?: () => void) {
     mutationFn: (vars: {
       objects: SldCanvasObject[];
       removedIds: string[];
+      connections: SldConnection[];
+      removedConnectionIds: string[];
       canvas: SldCanvasMeta;
     }) => (saveFn as any)({ data: { drawingId, ...vars } }),
     onSuccess: async (res: any) => {
