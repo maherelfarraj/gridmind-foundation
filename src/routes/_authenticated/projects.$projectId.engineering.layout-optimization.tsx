@@ -85,7 +85,7 @@ function LayoutOptimizationPage() {
   const approvalFn = useServerFn(getOptimizationApproval);
 
   const runsQuery = useQuery(optimizationRunsQueryOptions(listFn, projectId));
-  const runs = runsQuery.data?.runs ?? [];
+  const runs = useMemo(() => runsQuery.data?.runs ?? [], [runsQuery.data]);
   const canWrite = runsQuery.data?.canWrite ?? false;
 
   const [scenario, setScenario] = useState<LayoutScenarioType>("balanced");
