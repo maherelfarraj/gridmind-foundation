@@ -222,12 +222,7 @@ export function formatMm(value: number): string {
  */
 export function orthogonalRoute(from: Pt, to: Pt, preferHorizontal?: boolean): Pt[] {
   if (from.x === to.x || from.y === to.y) return [from, to];
-  const horizontalFirst =
-    preferHorizontal ?? Math.abs(to.x - from.x) >= Math.abs(to.y - from.y) === false
-      ? preferHorizontal !== undefined
-        ? preferHorizontal
-        : false
-      : true;
+  const horizontalFirst = preferHorizontal ?? Math.abs(to.x - from.x) >= Math.abs(to.y - from.y);
   const elbow = horizontalFirst ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
   return [from, elbow, to];
 }
