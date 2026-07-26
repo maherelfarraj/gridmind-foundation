@@ -233,21 +233,34 @@ export async function computeAnalytics(
   }
 
   // ppa_terms guarantees (graceful when the table or row is absent)
-  let terms: {
+  interface PpaRow {
     availability_target_pct: number | null;
     annual_energy_mwh: number | null;
-  } | null = null;
+  }
+  let terms: PpaRow | null = null;
   const ppaRes = await context.supabase
     .from("ppa_terms")
     .select("availability_target_pct, annual_energy_mwh")
     .eq("project_id", projectId)
     .maybeSingle();
   if (!ppaRes.error || isMissingRelation(ppaRes.error)) {
-    terms = (ppaRes.data ?? null) as typeof terms;
+    terms = (ppaRes.data as PpaRow | null) ?? null;
   }
   const contractPr = num(
     yieldRes.error ? null : (yieldRes.data as { contract_pr?: number } | null)?.contract_pr,
   );
+  const guaranteedPrPct = contractPr != null ? contractPr * 100 : null;
+
+  const guaranteeTerms: PpaGuaranteeTerms | null =
+    terms != null
+      ? {
+          availability_target_pct: terms.availability_target_pct,
+          annual_energy_mwh: terms.annual_energy_mwh,
+          guaranteed_pr_pct: guaranteedPrPct,
+        }
+      : guaranteedPrPct != null
+        ? { guaranteed_pr_pct: guaranteedPrPct }
+        : null;
 
   const guarantee = compareToGuarantee(
     {
@@ -256,12 +269,9 @@ export async function computeAnalytics(
       energyKwh: actualEnergyKwh,
       energyPeriodFraction: 1 / 365,
     },
-    terms
-      ? { ...terms, guaranteed_pr_pct: contractPr != null ? contractPr * 100 : null }
-      : contractPr != null
-        ? { guaranteed_pr_pct: contractPr * 100 }
-        : null,
+    guaranteeTerms,
   );
+
 
   // Per-asset performance: share the project baseline across producing assets.
   const producing = assets.filter((a) => perAsset.has(a.id));
