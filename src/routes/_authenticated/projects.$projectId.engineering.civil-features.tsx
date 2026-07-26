@@ -249,21 +249,26 @@ function CivilFeatureEditorPage() {
     onError: (message) => toast.error(message),
   });
 
-  const importMutation = useCivilMutation<Record<string, unknown>, { imported: number }>(importFn as never, {
-    onSuccess: (res) => {
-      toast.success(`${res.imported} feature(s) imported as drafts`);
-      setPendingImport(null);
-      void invalidate();
+  const importMutation = useCivilMutation<Record<string, unknown>, { imported: number }>(
+    importFn as never,
+    {
+      onSuccess: (res) => {
+        toast.success(`${res.imported} feature(s) imported as drafts`);
+        setPendingImport(null);
+        void invalidate();
+      },
+      onError: (message) => toast.error(message),
     },
-    onError: (message) => toast.error(message),
-  });
+  );
 
   /* ------------------------------ drawing ----------------------------- */
   const finishDraft = useCallback(() => {
     if (!activeTool) return;
     const kind = geometryKindFor(activeTool) ?? "line";
     if (draft.length < minVertices(kind)) {
-      toast.error(`A ${CIVIL_TYPE_SPECS[activeTool].label} needs at least ${minVertices(kind)} point(s).`);
+      toast.error(
+        `A ${CIVIL_TYPE_SPECS[activeTool].label} needs at least ${minVertices(kind)} point(s).`,
+      );
       return;
     }
     const geometry = geometryFromVertices(kind, draft);
@@ -332,7 +337,12 @@ function CivilFeatureEditorPage() {
       .map((row) => {
         const type = pendingImport.mapping[row.kind] || "";
         if (!isCivilFeatureType(type)) return null;
-        return { name: row.name.slice(0, 120), featureType: type, geometry: row.geometry, properties: {} };
+        return {
+          name: row.name.slice(0, 120),
+          featureType: type,
+          geometry: row.geometry,
+          properties: {},
+        };
       })
       .filter(Boolean) as Array<{
       name: string;
@@ -389,7 +399,12 @@ function CivilFeatureEditorPage() {
                 ev.target.value = "";
               }}
             />
-            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={!canWrite}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileRef.current?.click()}
+              disabled={!canWrite}
+            >
               <Upload className="mr-2 size-4" /> Import
             </Button>
             <Button variant="outline" size="sm" onClick={() => void runExport("geojson")}>
@@ -431,7 +446,9 @@ function CivilFeatureEditorPage() {
                         style={{ backgroundColor: `var(${spec.cssVar})` }}
                       />
                       <span className="truncate">{spec.label}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">{spec.kind[0].toUpperCase()}</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {spec.kind[0].toUpperCase()}
+                      </span>
                     </Button>
                   ))}
                 </div>
@@ -463,7 +480,10 @@ function CivilFeatureEditorPage() {
               <div className="space-y-1 border-t border-border pt-3">
                 <h3 className="mb-2 text-sm font-medium text-foreground">Layers</h3>
                 {CIVIL_TYPE_LIST.map((spec) => (
-                  <label key={spec.type} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <label
+                    key={spec.type}
+                    className="flex items-center gap-2 text-xs text-muted-foreground"
+                  >
                     <Checkbox
                       checked={visibleTypes.has(spec.type)}
                       onCheckedChange={(checked) =>
@@ -541,7 +561,9 @@ function CivilFeatureEditorPage() {
               }}
               editable={Boolean(selected) && canWrite && !selectedLocked}
               onVertexMove={(part, index, position) =>
-                setEditGeometry((prev) => (prev ? replaceVertex(prev, part, index, position) : prev))
+                setEditGeometry((prev) =>
+                  prev ? replaceVertex(prev, part, index, position) : prev,
+                )
               }
               snapEnabled={snapEnabled}
               snapStep={snapStep}
@@ -562,7 +584,8 @@ function CivilFeatureEditorPage() {
                     <div>
                       <p className="font-mono text-sm text-foreground">{selected.feature_ref}</p>
                       <p className="text-xs text-muted-foreground">
-                        {selectedSpec?.label ?? selected.feature_type} · rev {selected.revision_code}
+                        {selectedSpec?.label ?? selected.feature_type} · rev{" "}
+                        {selected.revision_code}
                       </p>
                     </div>
                     <StatusBadge status={selected.status} />
@@ -695,7 +718,10 @@ function CivilFeatureEditorPage() {
       )}
 
       {/* ------------- import kind-mapping dialog ------------- */}
-      <Dialog open={Boolean(pendingImport)} onOpenChange={(open) => !open && setPendingImport(null)}>
+      <Dialog
+        open={Boolean(pendingImport)}
+        onOpenChange={(open) => !open && setPendingImport(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Map imported kinds</DialogTitle>
@@ -715,7 +741,10 @@ function CivilFeatureEditorPage() {
                   onValueChange={(value) =>
                     setPendingImport((prev) =>
                       prev
-                        ? { ...prev, mapping: { ...prev.mapping, [kind]: value as CivilFeatureType } }
+                        ? {
+                            ...prev,
+                            mapping: { ...prev.mapping, [kind]: value as CivilFeatureType },
+                          }
                         : prev,
                     )
                   }

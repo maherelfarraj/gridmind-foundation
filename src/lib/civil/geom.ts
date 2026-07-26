@@ -10,9 +10,7 @@ export type GeoJsonGeometry = {
 };
 
 function isVertex(v: unknown): v is Vertex {
-  return (
-    Array.isArray(v) && v.length >= 2 && typeof v[0] === "number" && typeof v[1] === "number"
-  );
+  return Array.isArray(v) && v.length >= 2 && typeof v[0] === "number" && typeof v[1] === "number";
 }
 
 function asRing(v: unknown): Ring | null {

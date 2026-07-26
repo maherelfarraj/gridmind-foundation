@@ -13,9 +13,9 @@ export type CivilFeatureRow = {
   feature_ref: string;
   name: string;
   feature_type: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   geometry: { type: string; coordinates: any };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   properties: Record<string, any>;
   status: string;
   revision_code: string;
@@ -28,7 +28,15 @@ export const CIVIL_FEATURE_COLUMNS =
 export async function loadSurface(
   context: AuthContext,
   surfaceId: string,
-): Promise<{ id: string; company_id: string; project_id: string; grid_spacing_m: number; name: string; revision_code: string; analysis: Record<string, unknown> }> {
+): Promise<{
+  id: string;
+  company_id: string;
+  project_id: string;
+  grid_spacing_m: number;
+  name: string;
+  revision_code: string;
+  analysis: Record<string, unknown>;
+}> {
   const { data, error } = await context.supabase
     .from("terrain_surfaces")
     .select("id, company_id, project_id, grid_spacing_m, name, revision_code, analysis")
@@ -113,11 +121,12 @@ export async function loadLayoutBlocks(
     .eq("project_id", projectId)
     .order("created_at", { ascending: false })
     .limit(1);
-  if (layoutId) query = context.supabase
-    .from("pv_layouts")
-    .select("id, name, status, params")
-    .eq("id", layoutId)
-    .limit(1);
+  if (layoutId)
+    query = context.supabase
+      .from("pv_layouts")
+      .select("id, name, status, params")
+      .eq("id", layoutId)
+      .limit(1);
 
   const { data: layouts, error } = await query;
   if (error) throw error;
@@ -243,7 +252,11 @@ export async function projectAnchor(
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw error;
-  const row = (data ?? {}) as { name?: string; latitude?: number | null; longitude?: number | null };
+  const row = (data ?? {}) as {
+    name?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  };
   return {
     lon: Number.isFinite(Number(row.longitude)) ? Number(row.longitude) : 0,
     lat: Number.isFinite(Number(row.latitude)) ? Number(row.latitude) : 0,

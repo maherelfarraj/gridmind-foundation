@@ -3,7 +3,11 @@
 // tokens only; never raw hex.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CIVIL_TYPE_SPECS, type CivilFeatureType, type GeometryKind } from "@/lib/civil/feature-types";
+import {
+  CIVIL_TYPE_SPECS,
+  type CivilFeatureType,
+  type GeometryKind,
+} from "@/lib/civil/feature-types";
 import { geometryVertexLists, ringBBox, type GeoJsonGeometry, type Vertex } from "@/lib/civil/geom";
 import { cn } from "@/lib/utils";
 

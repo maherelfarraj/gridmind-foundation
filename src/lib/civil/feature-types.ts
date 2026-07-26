@@ -55,7 +55,13 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
     kind: "polygon",
     cssVar: "--civil-grading",
     fields: [
-      { key: "design_elevation_m", label: "Design elevation", kind: "number", unit: "m", step: 0.01 },
+      {
+        key: "design_elevation_m",
+        label: "Design elevation",
+        kind: "number",
+        unit: "m",
+        step: 0.01,
+      },
       { key: "design_slope_pct", label: "Design slope", kind: "number", unit: "%", step: 0.1 },
       {
         key: "design_slope_direction_deg",
@@ -89,7 +95,13 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
     kind: "polygon",
     cssVar: "--civil-platform",
     fields: [
-      { key: "design_elevation_m", label: "Design elevation", kind: "number", unit: "m", step: 0.01 },
+      {
+        key: "design_elevation_m",
+        label: "Design elevation",
+        kind: "number",
+        unit: "m",
+        step: 0.01,
+      },
       {
         key: "bearing_capacity_kpa",
         label: "Bearing capacity",
@@ -144,7 +156,14 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
         kind: "select",
         options: ["gravel", "asphalt", "concrete", "graded_earth"],
       },
-      { key: "design_speed_kph", label: "Design speed", kind: "number", unit: "km/h", min: 0, step: 5 },
+      {
+        key: "design_speed_kph",
+        label: "Design speed",
+        kind: "number",
+        unit: "km/h",
+        min: 0,
+        step: 5,
+      },
     ],
   },
   trench_route: {
@@ -185,7 +204,14 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
     cssVar: "--civil-crane",
     fields: [
       width(),
-      { key: "max_axle_load_t", label: "Max axle load", kind: "number", unit: "t", min: 0, step: 0.5 },
+      {
+        key: "max_axle_load_t",
+        label: "Max axle load",
+        kind: "number",
+        unit: "t",
+        min: 0,
+        step: 0.5,
+      },
     ],
   },
   emergency_access: {
@@ -195,7 +221,14 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
     cssVar: "--civil-emergency",
     fields: [
       width(),
-      { key: "turning_radius_m", label: "Turning radius", kind: "number", unit: "m", min: 0, step: 0.5 },
+      {
+        key: "turning_radius_m",
+        label: "Turning radius",
+        kind: "number",
+        unit: "m",
+        min: 0,
+        step: 0.5,
+      },
     ],
   },
   gate: {
@@ -206,14 +239,17 @@ export const CIVIL_TYPE_SPECS: Record<CivilFeatureType, CivilTypeSpec> = {
     fields: [
       width(),
       { key: "swing", label: "Swing", kind: "select", options: ["inward", "outward", "sliding"] },
-      { key: "access_control", label: "Access control", kind: "select", options: ["manual", "keypad", "card", "guarded"] },
+      {
+        key: "access_control",
+        label: "Access control",
+        kind: "select",
+        options: ["manual", "keypad", "card", "guarded"],
+      },
     ],
   },
 };
 
-export const CIVIL_TYPE_LIST: CivilTypeSpec[] = CIVIL_FEATURE_TYPES.map(
-  (t) => CIVIL_TYPE_SPECS[t],
-);
+export const CIVIL_TYPE_LIST: CivilTypeSpec[] = CIVIL_FEATURE_TYPES.map((t) => CIVIL_TYPE_SPECS[t]);
 
 export function geometryKindFor(type: string): GeometryKind | null {
   const spec = CIVIL_TYPE_SPECS[type as CivilFeatureType];
