@@ -22,7 +22,9 @@ import {
   weatherDelayInput,
   type DprStatus,
 } from "@/lib/dpr.rules";
+import { gpsRejectionReason } from "@/lib/field-exec.rules";
 import { withIdempotency } from "@/lib/offline-mirror";
+
 
 // ---------------------------------------------------------------------------
 // types
