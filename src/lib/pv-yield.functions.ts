@@ -4,7 +4,13 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { canWritePvLayout, httpError } from "@/lib/pv-layout.server";
-import { auditPvSimulation, latestApprovalStatus, loadSimulation } from "@/lib/pv-yield.server";
+import {
+  approvalDetail,
+  auditPvSimulation,
+  buildSimulationPrefill,
+  latestApprovalStatus,
+  loadSimulation,
+} from "@/lib/pv-yield.server";
 import {
   runYieldV2,
   YIELD_CALC_VERSION,
@@ -205,7 +211,7 @@ export const setSimulationBaseline = createServerFn({ method: "POST" })
 
     await context.supabase
       .from("pv_simulations")
-      .update({ is_baseline: false } as never)
+      .update({ is_baseline: false, status: "superseded" } as never)
       .eq("project_id", sim.project_id)
       .eq("is_baseline", true);
 
@@ -215,9 +221,27 @@ export const setSimulationBaseline = createServerFn({ method: "POST" })
       .eq("id", sim.id);
     if (error) throw error;
 
-    await auditPvSimulation(context, "pv_simulation.baseline_set", sim.id, {
+    await auditPvSimulation(context, "pv_simulation.baselined", sim.id, {
       project_id: sim.project_id,
     });
 
     return { simulationId: sim.id, isBaseline: true };
+  });
+
+/** Server-prefilled input sheet: site config + approved layout + P-154 aggregates. */
+export const getPvSimulationPrefill = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    return buildSimulationPrefill(context, data.projectId);
+  });
+
+/** Latest approval instance for a simulation (approver step + SLA age source). */
+export const getPvSimulationApproval = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ simulationId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    return { instance: await approvalDetail(context, data.simulationId) };
   });
