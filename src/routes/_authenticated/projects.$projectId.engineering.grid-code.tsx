@@ -110,11 +110,14 @@ function GridCodePage() {
 
   const template = templates.find((t) => t.id === templateId) ?? null;
   const items = useMemo<GridCodeItem[]>(
-    () => ((template?.items ?? []) as unknown as GridCodeItem[]) ?? [],
+    () => (template?.items as unknown as GridCodeItem[] | null) ?? [],
     [template],
   );
-  const responses = useMemo(
-    () => (checklist.data?.responses ?? []).filter((r) => r.template_id === templateId),
+  const responses = useMemo<GridCodeResponseRow[]>(
+    () =>
+      ((checklist.data?.responses ?? []) as unknown as GridCodeResponseRow[]).filter(
+        (r) => r.template_id === templateId,
+      ),
     [checklist.data, templateId],
   );
 
