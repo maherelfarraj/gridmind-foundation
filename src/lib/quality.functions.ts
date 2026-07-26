@@ -460,7 +460,7 @@ export const listTestRecords = createServerFn({ method: "GET" })
     ] as const;
     const [welding, torque, cable, thermographic, relay, transformer] = await Promise.all(
       tables.map((t) =>
-        listQaRows<Record<string, unknown>>(context.supabase, t, "project_id", data.projectId),
+        listQaRows(context.supabase, t, "project_id", data.projectId),
       ),
     );
     return { welding, torque, cable, thermographic, relay, transformer };

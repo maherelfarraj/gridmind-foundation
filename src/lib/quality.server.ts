@@ -1,5 +1,6 @@
 // P-183 — Server-only helpers for the quality expansion. Kept out of
 // *.functions.ts so the serverFn split transform can't drop siblings.
+import type { Json } from "@/integrations/supabase/types";
 import type { Client } from "@/lib/cwp.server";
 import { audit, httpError } from "@/lib/cwp.server";
 import {
@@ -104,7 +105,9 @@ export async function insertTestRecord<T>(
   return data as T;
 }
 
-export async function listQaRows<T>(
+export type QaRow = Record<string, Json>;
+
+export async function listQaRows<T extends QaRow = QaRow>(
   client: Client,
   table: string,
   companyScopedColumn: "project_id" | "company_id",
