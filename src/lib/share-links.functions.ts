@@ -380,27 +380,13 @@ export const resolveShareLink = createServerFn({ method: "POST" })
     const ipHeader = req.headers.get("cf-connecting-ip") ?? "";
     const ip = ipHeader.split(",")[0]?.trim() || "unknown";
 
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const isNewKey =
-      publishableKey.startsWith("sb_publishable_") || publishableKey.startsWith("sb_secret_");
-    const supabasePublic = createClient(supabaseUrl, publishableKey, {
-      auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-      global: {
-        fetch: (input, init) => {
-          const headers = new Headers(init?.headers);
-          if (isNewKey && headers.get("Authorization") === `Bearer ${publishableKey}`) {
-            headers.delete("Authorization");
-          }
-          headers.set("apikey", publishableKey);
-          return fetch(input, { ...init, headers });
-        },
-      },
-    });
+    // Both RPCs below are server-only (EXECUTE revoked from anon/authenticated)
+    // and are SECURITY DEFINER with their own token validation, so they are
+    // invoked with the service-role client from this server function.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     try {
-      await supabasePublic.rpc("consume_rate_limit", {
+      await supabaseAdmin.rpc("consume_rate_limit", {
         p_key: `share:${ip}`,
         p_capacity: 30,
         p_refill_per_sec: 0.5,
@@ -409,9 +395,10 @@ export const resolveShareLink = createServerFn({ method: "POST" })
       /* fail-open */
     }
 
-    const { data: rpcData, error } = await supabasePublic.rpc("resolve_share_link", {
+    const { data: rpcData, error } = await supabaseAdmin.rpc("resolve_share_link", {
       p_token_hash: data.tokenHash.toLowerCase(),
     });
+
     if (error) {
       // Don't leak details.
       return { ok: false, reason: "invalid" };

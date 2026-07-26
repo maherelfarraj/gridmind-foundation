@@ -644,12 +644,15 @@ export const extractContractClauses = createServerFn({ method: "POST" })
       if (!c) httpError(404, "contract_not_found");
 
       // Rate-limit: 10 extractions per hour per company.
+      // consume_rate_limit is server-only (EXECUTE revoked from anon/authenticated).
       const key = `ai:contract_extract:${(c as any).company_id}`;
-      const { data: allowed, error: rlErr } = await context.supabase.rpc("consume_rate_limit", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: allowed, error: rlErr } = await supabaseAdmin.rpc("consume_rate_limit", {
         p_key: key,
         p_capacity: 10,
         p_refill_per_sec: 10 / 3600,
       });
+
       if (rlErr) throw rlErr;
       if (allowed === false) {
         httpError(429, "rate_limited", "Too many AI extractions — try again later.");
