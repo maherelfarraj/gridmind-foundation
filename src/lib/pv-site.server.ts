@@ -128,7 +128,9 @@ export function normalizeWeatherMeta(raw: any): PvWeatherMeta {
       target_dc_kwp: num(meta.targets?.target_dc_kwp),
       target_ac_kwp: num(meta.targets?.target_ac_kwp),
       mounting_type:
-        meta.targets?.mounting_type === "single_axis_tracker" ? "single_axis_tracker" : "fixed_tilt",
+        meta.targets?.mounting_type === "single_axis_tracker"
+          ? "single_axis_tracker"
+          : "fixed_tilt",
       tilt_deg: num(meta.targets?.tilt_deg),
       azimuth_deg: num(meta.targets?.azimuth_deg),
       axis_azimuth_deg: num(meta.targets?.axis_azimuth_deg),

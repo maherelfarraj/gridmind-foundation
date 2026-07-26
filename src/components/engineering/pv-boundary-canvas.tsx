@@ -277,7 +277,12 @@ export function PvBoundaryCanvas({
           {/* boundary */}
           {boundaryPts.length > 1 ? (
             <polygon
-              points={boundaryPts.map((p) => { const s = toScreen(p); return `${s.x},${s.y}`; }).join(" ")}
+              points={boundaryPts
+                .map((p) => {
+                  const s = toScreen(p);
+                  return `${s.x},${s.y}`;
+                })
+                .join(" ")}
               className="fill-primary/10 stroke-primary"
               strokeWidth="2"
             />
@@ -288,7 +293,12 @@ export function PvBoundaryCanvas({
             e.pts.length > 1 ? (
               <polygon
                 key={e.id}
-                points={e.pts.map((p) => { const s = toScreen(p); return `${s.x},${s.y}`; }).join(" ")}
+                points={e.pts
+                  .map((p) => {
+                    const s = toScreen(p);
+                    return `${s.x},${s.y}`;
+                  })
+                  .join(" ")}
                 className={cn(
                   "fill-destructive/20 stroke-destructive",
                   e.id === activeExclusionId && "fill-destructive/30",

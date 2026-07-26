@@ -40,10 +40,7 @@ import {
   type PvWeatherMeta,
   type PvWeatherSource,
 } from "@/lib/pv-site.schemas";
-import {
-  getPvSiteWriteAccess,
-  listPvSiteConfigs,
-} from "@/lib/pv-site.functions";
+import { getPvSiteWriteAccess, listPvSiteConfigs } from "@/lib/pv-site.functions";
 import {
   pvSiteConfigsQueryOptions,
   pvSiteWriteAccessQueryOptions,
@@ -152,14 +149,14 @@ function PvSitePage() {
     setDraft(rowToDraft(next));
   }, [listQuery.isSuccess, configs, selectedId]);
 
-
   const save = useSavePvSiteConfig(projectId);
   const activate = useActivatePvSiteConfig(projectId);
 
   const anchor = { lat: draft.latitude, lon: draft.longitude };
   const grossM2 = polygonAreaM2(ringToLocal(draft.boundary, anchor));
   const exclusionM2 = draft.exclusions.reduce(
-    (sum, e) => sum + polygonAreaM2(ringToLocal((e.polygon.coordinates?.[0] ?? []) as Ring, anchor)),
+    (sum, e) =>
+      sum + polygonAreaM2(ringToLocal((e.polygon.coordinates?.[0] ?? []) as Ring, anchor)),
     0,
   );
   const usableHa = m2ToHectares(Math.max(grossM2 - exclusionM2, 0));
@@ -264,9 +261,7 @@ function PvSitePage() {
             </Button>
             <Button
               onClick={() => selected && activate.mutate(selected.id)}
-              disabled={
-                readOnly || !selected || selected.status === "active" || activate.isPending
-              }
+              disabled={readOnly || !selected || selected.status === "active" || activate.isPending}
             >
               <CheckCircle2 className="mr-2 h-4 w-4" /> Activate
             </Button>
@@ -310,7 +305,6 @@ function PvSitePage() {
               setSelectedId(null);
               setDraft({ ...rowToDraft(null), name: `Scenario ${configs.length + 1}` });
             }}
-
           >
             New scenario
           </Button>
