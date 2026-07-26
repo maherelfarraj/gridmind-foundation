@@ -346,9 +346,8 @@ export function validateConnectivity(
 
   for (const t of objects) {
     if (!TRANSFORMER_TYPES.has(t.symbol_type)) continue;
-    const kva = prop(t, "rating_kva") ?? prop(t, "rating_mva") ?? null;
     const ratingKva = prop(t, "rating_kva") ?? (prop(t, "rating_mva") ?? 0) * 1000;
-    if (!kva || ratingKva <= 0) continue;
+    if (ratingKva <= 0) continue;
     const downstream = reachableFrom(graph, t.id, (id) => {
       const obj = graph.objects.get(id);
       return Boolean(
