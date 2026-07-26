@@ -242,6 +242,13 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       {
         moduleKey: "om_scada",
+        label: "Automation rules",
+        url: "/om/scada/action-rules",
+        icon: SlidersHorizontal,
+      },
+
+      {
+        moduleKey: "om_scada",
         label: "Performance analytics",
         url: "/om/scada/analytics",
         icon: Gauge,
