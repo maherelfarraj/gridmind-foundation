@@ -2,6 +2,13 @@
 // Kept out of *.functions.ts so tests can import without server-fn transforms.
 import { z } from "zod";
 
+import {
+  modbusProtocolSchema,
+  mqttProtocolSchema,
+  opcuaProtocolSchema,
+  scheduleSchema,
+} from "@/lib/scada/connector-config";
+
 // Env-var NAME shape. Uppercase letters/digits/underscores, starts with a
 // letter, 3–64 chars. Prevents leaking a real token in place of a name.
 export const CREDENTIALS_REF_REGEX = /^[A-Z][A-Z0-9_]{2,63}$/;
@@ -76,6 +83,12 @@ export type EquipmentType = (typeof EQUIPMENT_TYPES)[number];
 // masquerading as a credential slips through.
 const baseCfg = z.object({
   credentials_ref: credentialsRefSchema.optional(),
+  // P-172 — additive per-protocol mapping + scheduled-pull blocks. Stored in
+  // scada_connectors.config jsonb; never contains credential values.
+  mqtt: mqttProtocolSchema.optional(),
+  opcua: opcuaProtocolSchema.optional(),
+  modbus: modbusProtocolSchema.optional(),
+  schedule: scheduleSchema.optional(),
 });
 
 const modbusCfg = baseCfg
