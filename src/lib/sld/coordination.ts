@@ -451,7 +451,8 @@ export function transformerLoads(graph: ConnGraph): TransformerLoad[] {
       transformer: t,
       inverters,
       loadKw: round(loadKw, 3),
-      nameplateKva: propOf(t, "rated_kva", "rating_kva") ?? (propOf(t, "rating_mva") ?? 0) * 1000 || null,
+      nameplateKva:
+        propOf(t, "rated_kva", "rating_kva") ?? ((propOf(t, "rating_mva") ?? 0) * 1000 || null),
     });
   }
   return out;
@@ -543,8 +544,7 @@ export function checkInverterTransformer(
       for (const inv of inverters) {
         const invKv =
           propOf(inv, "ac_voltage_kv", "voltage_kv") ??
-          (propOf(inv, "ac_voltage_v") ?? 0) / 1000 ||
-          null;
+          ((propOf(inv, "ac_voltage_v") ?? 0) / 1000 || null);
         if (invKv === null || invKv <= 0) continue;
         if (Math.abs(invKv - lvKv) / Math.max(invKv, lvKv) > 0.05) {
           issues.push(
@@ -770,7 +770,7 @@ export function cableReferences(
     const currentA = edgePropOf(edge, "current_a", "load_a");
     const lengthM = edgePropOf(edge, "length_m");
     const voltageV =
-      edgePropOf(edge, "voltage_v") ?? (edgePropOf(edge, "voltage_kv") ?? 0) * 1000 || null;
+      edgePropOf(edge, "voltage_v") ?? ((edgePropOf(edge, "voltage_kv") ?? 0) * 1000 || null);
     const declaredMm2 = edgePropOf(edge, "size_mm2", "conductor_mm2");
     const from = byId.get(edge.from_object_id);
     const to = byId.get(edge.to_object_id);
