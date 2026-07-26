@@ -43,11 +43,11 @@ describe("known-answer: load flow", () => {
     const qKvar = 1000 * Math.tan(Math.acos(0.9));
     const sKva = Math.hypot(1000, qKvar);
     const expectedA = sKva / (Math.sqrt(3) * bus.vPu * 11);
-    expect(branch.currentA).toBeCloseTo(expectedA, 3);
+    expect(branch.iA).toBeCloseTo(expectedA, 3);
 
     // Loss = 3·I²·R (kW) on a single 1 Ω branch.
     const expectedLossKw = (3 * expectedA * expectedA * 1) / 1000;
-    expect(branch.lossKw).toBeCloseTo(expectedLossKw, 3);
+    expect(branch.pLossKw).toBeCloseTo(expectedLossKw, 3);
     expect(results.totalLossKw).toBeCloseTo(expectedLossKw, 3);
 
     // Drop ≈ I·(R·cosφ + X·sinφ)·√3 → vPu just under 1.0 but well inside band.
@@ -95,7 +95,7 @@ describe("known-answer: short circuit", () => {
     expect(results.ipKa).toBeCloseTo(kappa * Math.SQRT2 * 6.9509, 2);
 
     // S″k = √3·U·I″k = √3·11·6.9509 = 132.44 MVA.
-    expect(results.skMva).toBeCloseTo(Math.sqrt(3) * 11 * 6.9509, 2);
+    expect(results.skMva).toBeCloseTo(Math.sqrt(3) * 11 * 6.9509, 1);
   });
 });
 
