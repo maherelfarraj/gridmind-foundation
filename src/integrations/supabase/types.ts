@@ -2095,6 +2095,7 @@ export type Database = {
           id: string
           locked: boolean
           project_id: string
+          tags: string[]
           title: string
           updated_at: string
         }
@@ -2109,6 +2110,7 @@ export type Database = {
           id?: string
           locked?: boolean
           project_id: string
+          tags?: string[]
           title: string
           updated_at?: string
         }
@@ -2123,6 +2125,7 @@ export type Database = {
           id?: string
           locked?: boolean
           project_id?: string
+          tags?: string[]
           title?: string
           updated_at?: string
         }
@@ -2164,8 +2167,9 @@ export type Database = {
           created_by: string | null
           due_date: string | null
           id: string
+          metadata: Json
           project_id: string
-          revision_id: string
+          revision_id: string | null
           round_no: number
           status: string
           updated_at: string
@@ -2176,8 +2180,9 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
+          metadata?: Json
           project_id: string
-          revision_id: string
+          revision_id?: string | null
           round_no: number
           status?: string
           updated_at?: string
@@ -2188,8 +2193,9 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
+          metadata?: Json
           project_id?: string
-          revision_id?: string
+          revision_id?: string | null
           round_no?: number
           status?: string
           updated_at?: string
