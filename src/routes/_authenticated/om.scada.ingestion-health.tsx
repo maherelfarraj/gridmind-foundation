@@ -23,6 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getIngestionHealth } from "@/lib/scada-ingestion.functions";
 import { getConnectorErrorRates } from "@/lib/scada-import.functions";
+import { getIngestionQueue, replayIngestionDeadLetters } from "@/lib/scada-retry.functions";
 import { toggleScadaConnector } from "@/lib/scada.functions";
 import { toast } from "sonner";
 import type { IngestionHealth } from "@/lib/scada/ingestion";
