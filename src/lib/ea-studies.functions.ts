@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { runCalculator, summariseWarnings } from "@/lib/ea-calc.server";
 import {
   auditStudy,
   canWriteStudy,
@@ -39,7 +40,7 @@ const assumptionSchema = z.object({
 
 const warningSchema = z.object({
   code: z.string().trim().min(1).max(80),
-  severity: z.enum(["info", "warning", "error"]),
+  severity: z.enum(["info", "warning", "error", "critical"]),
   message: z.string().trim().min(1).max(500),
 });
 
@@ -63,6 +64,23 @@ const updateInput = z.object({
   warnings: z.array(warningSchema).max(200).optional(),
   standardsRef: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
 });
+
+const saveInput = z
+  .object({
+    studyId: z.string().uuid().nullable().default(null),
+    projectId: z.string().uuid().nullable().default(null),
+    studyType: studyTypeSchema,
+    title: z.string().trim().min(2).max(160).nullable().default(null),
+    inputSheet: z.unknown(),
+    standardsRef: z.array(z.string().trim().min(1).max(120)).max(20).nullable().default(null),
+  })
+  .transform((v) => ({
+    ...v,
+    studyId: v.studyId ?? undefined,
+    projectId: v.projectId ?? undefined,
+    title: v.title ?? undefined,
+    standardsRef: v.standardsRef ?? undefined,
+  }));
 
 const studyIdInput = z.object({ studyId: z.string().uuid() });
 
@@ -366,4 +384,109 @@ export const listEaStudyRevisions = createServerFn({ method: "POST" })
       .order("revision", { ascending: false });
     if (error) throw error;
     return { revisions: rows ?? [], disclaimer: EA_DISCLAIMER };
+  });
+
+/**
+ * P-166 — Runs a wave-1 calculator and persists the result on a DRAFT study.
+ * The input sheet is validated against the calculator's own zod schema, the
+ * METHOD string is stored verbatim, and warnings/assumptions travel with the
+ * result so a reviewer can reproduce the run.
+ */
+export const saveEaStudy = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => saveInput.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+
+    const run = runCalculator(data.studyType, data.inputSheet);
+    const spec = EA_STUDY_SPECS[data.studyType];
+
+    let study: EaStudyRow;
+    if (data.studyId) {
+      study = await loadStudy(context, data.studyId);
+      if (!(await canWriteStudy(context, study.company_id))) {
+        eaError(403, "forbidden", "You cannot edit electrical studies.");
+      }
+      if (study.study_type !== data.studyType) {
+        eaError(409, "study_type_mismatch", "The study type cannot change after creation.");
+      }
+      if (!isEditable(study.status)) {
+        eaError(
+          409,
+          "ea_study_immutable",
+          study.status === "approved"
+            ? "Approved studies change only via a new revision."
+            : "Study is under review; recall it before recalculating.",
+        );
+      }
+      const { data: row, error } = await context.supabase
+        .from(EA_TABLE)
+        .update({
+          title: data.title ?? study.title,
+          input_sheet: data.inputSheet as never,
+          assumptions: run.assumptions as never,
+          method: run.method,
+          results: run.results as never,
+          warnings: run.warnings as never,
+          standards_ref: data.standardsRef ?? study.standards_ref,
+        } as never)
+        .eq("id", study.id)
+        .select(EA_STUDY_COLUMNS)
+        .single();
+      if (error) throw error;
+      study = row as unknown as EaStudyRow;
+    } else {
+      if (!data.projectId)
+        eaError(400, "project_required", "A project is required for a new study.");
+      const project = await loadProjectScope(context, data.projectId);
+      if (!(await canWriteStudy(context, project.company_id))) {
+        eaError(403, "forbidden", "You cannot author electrical studies.");
+      }
+      const base = {
+        company_id: project.company_id,
+        project_id: project.id,
+        title: data.title ?? spec.label,
+        study_type: data.studyType,
+        revision: 0,
+        status: "draft" as const,
+        input_sheet: data.inputSheet,
+        assumptions: run.assumptions,
+        method: run.method,
+        results: run.results,
+        warnings: run.warnings,
+        standards_ref: data.standardsRef ?? spec.defaultStandards,
+        created_by: context.user.id,
+      };
+      let created: EaStudyRow | null = null;
+      for (let attempt = 0; attempt < 2 && !created; attempt += 1) {
+        const studyNumber = await reserveStudyNumber(context, project.company_id);
+        const { data: row, error } = await context.supabase
+          .from(EA_TABLE)
+          .insert({ ...base, study_number: studyNumber } as never)
+          .select(EA_STUDY_COLUMNS)
+          .single();
+        if (error) {
+          if (isUniqueViolation(error) && attempt === 0) continue;
+          throw error;
+        }
+        created = row as unknown as EaStudyRow;
+      }
+      if (!created) eaError(409, "study_number_conflict", "Could not allocate a study number.");
+      study = created;
+    }
+
+    await auditStudy(context, "ea.study_calculated", study.id, {
+      study_number: study.study_number,
+      study_type: study.study_type,
+      revision: study.revision,
+      warning_counts: summariseWarnings(run.warnings),
+    });
+
+    return {
+      study,
+      method: run.method,
+      warnings: run.warnings,
+      assumptions: run.assumptions,
+      disclaimer: EA_DISCLAIMER,
+    };
   });
