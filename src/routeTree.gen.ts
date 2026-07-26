@@ -133,6 +133,7 @@ import { Route as AuthenticatedOmScadaIngestionHealthRouteImport } from './route
 import { Route as AuthenticatedOmScadaImportRouteImport } from './routes/_authenticated/om.scada.import'
 import { Route as AuthenticatedOmScadaEventsRouteImport } from './routes/_authenticated/om.scada.events'
 import { Route as AuthenticatedOmScadaConnectorsRouteImport } from './routes/_authenticated/om.scada.connectors'
+import { Route as AuthenticatedOmScadaAnalyticsRouteImport } from './routes/_authenticated/om.scada.analytics'
 import { Route as AuthenticatedOmScadaAlarmsRouteImport } from './routes/_authenticated/om.scada.alarms'
 import { Route as AuthenticatedOmScadaAlarmRulesRouteImport } from './routes/_authenticated/om.scada.alarm-rules'
 import { Route as AuthenticatedOmScadaAlarmConsoleRouteImport } from './routes/_authenticated/om.scada.alarm-console'
@@ -906,6 +907,12 @@ const AuthenticatedOmScadaConnectorsRoute =
     path: '/om/scada/connectors',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOmScadaAnalyticsRoute =
+  AuthenticatedOmScadaAnalyticsRouteImport.update({
+    id: '/om/scada/analytics',
+    path: '/om/scada/analytics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOmScadaAlarmsRoute =
   AuthenticatedOmScadaAlarmsRouteImport.update({
     id: '/om/scada/alarms',
@@ -1382,6 +1389,7 @@ export interface FileRoutesByFullPath {
   '/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
+  '/om/scada/analytics': typeof AuthenticatedOmScadaAnalyticsRoute
   '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/om/scada/events': typeof AuthenticatedOmScadaEventsRoute
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
@@ -1559,6 +1567,7 @@ export interface FileRoutesByTo {
   '/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
+  '/om/scada/analytics': typeof AuthenticatedOmScadaAnalyticsRoute
   '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/om/scada/events': typeof AuthenticatedOmScadaEventsRoute
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
@@ -1744,6 +1753,7 @@ export interface FileRoutesById {
   '/_authenticated/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/_authenticated/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/_authenticated/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
+  '/_authenticated/om/scada/analytics': typeof AuthenticatedOmScadaAnalyticsRoute
   '/_authenticated/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/_authenticated/om/scada/events': typeof AuthenticatedOmScadaEventsRoute
   '/_authenticated/om/scada/import': typeof AuthenticatedOmScadaImportRoute
@@ -1931,6 +1941,7 @@ export interface FileRouteTypes {
     | '/om/scada/alarm-console'
     | '/om/scada/alarm-rules'
     | '/om/scada/alarms'
+    | '/om/scada/analytics'
     | '/om/scada/connectors'
     | '/om/scada/events'
     | '/om/scada/import'
@@ -2108,6 +2119,7 @@ export interface FileRouteTypes {
     | '/om/scada/alarm-console'
     | '/om/scada/alarm-rules'
     | '/om/scada/alarms'
+    | '/om/scada/analytics'
     | '/om/scada/connectors'
     | '/om/scada/events'
     | '/om/scada/import'
@@ -2292,6 +2304,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/scada/alarm-console'
     | '/_authenticated/om/scada/alarm-rules'
     | '/_authenticated/om/scada/alarms'
+    | '/_authenticated/om/scada/analytics'
     | '/_authenticated/om/scada/connectors'
     | '/_authenticated/om/scada/events'
     | '/_authenticated/om/scada/import'
@@ -3284,6 +3297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOmScadaConnectorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/om/scada/analytics': {
+      id: '/_authenticated/om/scada/analytics'
+      path: '/om/scada/analytics'
+      fullPath: '/om/scada/analytics'
+      preLoaderRoute: typeof AuthenticatedOmScadaAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/om/scada/alarms': {
       id: '/_authenticated/om/scada/alarms'
       path: '/om/scada/alarms'
@@ -4232,6 +4252,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOmScadaAlarmConsoleRoute: typeof AuthenticatedOmScadaAlarmConsoleRoute
   AuthenticatedOmScadaAlarmRulesRoute: typeof AuthenticatedOmScadaAlarmRulesRoute
   AuthenticatedOmScadaAlarmsRoute: typeof AuthenticatedOmScadaAlarmsRoute
+  AuthenticatedOmScadaAnalyticsRoute: typeof AuthenticatedOmScadaAnalyticsRoute
   AuthenticatedOmScadaConnectorsRoute: typeof AuthenticatedOmScadaConnectorsRoute
   AuthenticatedOmScadaEventsRoute: typeof AuthenticatedOmScadaEventsRoute
   AuthenticatedOmScadaImportRoute: typeof AuthenticatedOmScadaImportRoute
@@ -4338,6 +4359,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOmScadaAlarmConsoleRoute: AuthenticatedOmScadaAlarmConsoleRoute,
   AuthenticatedOmScadaAlarmRulesRoute: AuthenticatedOmScadaAlarmRulesRoute,
   AuthenticatedOmScadaAlarmsRoute: AuthenticatedOmScadaAlarmsRoute,
+  AuthenticatedOmScadaAnalyticsRoute: AuthenticatedOmScadaAnalyticsRoute,
   AuthenticatedOmScadaConnectorsRoute: AuthenticatedOmScadaConnectorsRoute,
   AuthenticatedOmScadaEventsRoute: AuthenticatedOmScadaEventsRoute,
   AuthenticatedOmScadaImportRoute: AuthenticatedOmScadaImportRoute,
