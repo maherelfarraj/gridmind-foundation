@@ -25,6 +25,8 @@ import { duplicateTagIds } from "@/lib/sld/tagging";
 
 type Props = {
   editable: boolean;
+  /** P-142 — object id → worst validation severity, drives the halo markers. */
+  issueSeverity?: Map<string, "error" | "warning">;
   titleBlock: TitleBlockData;
   onPlace: (point: Pt, symbolType?: string) => void;
 };
@@ -42,7 +44,7 @@ const CONNECTION_STROKE: Record<
   signal: { className: "stroke-muted-foreground", width: 0.5, dash: "0.8 1.2" },
 };
 
-export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
+export function SldCanvas({ editable, titleBlock, onPlace, issueSeverity }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const spaceRef = useRef(false);
@@ -363,6 +365,7 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
             }
 
             const def = symbolDef(obj.symbol_type);
+            const severity = issueSeverity?.get(obj.id);
             return (
               <g
                 key={obj.id}
@@ -373,6 +376,22 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
                   isLayerLocked(layers, obj.layer_id) ? "cursor-not-allowed" : "cursor-move"
                 }
               >
+                {severity ? (
+                  <rect
+                    x={-def.w / 2 - 2.5}
+                    y={-def.h / 2 - 2.5}
+                    width={def.w + 5}
+                    height={def.h + 5}
+                    rx={2}
+                    className={
+                      severity === "error"
+                        ? "pointer-events-none fill-destructive/10 stroke-destructive"
+                        : "pointer-events-none fill-warning/10 stroke-warning"
+                    }
+                    strokeWidth={0.6}
+                    strokeDasharray="2 1.5"
+                  />
+                ) : null}
                 <rect
                   x={-def.w / 2}
                   y={-def.h / 2}

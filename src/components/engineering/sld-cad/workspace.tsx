@@ -42,6 +42,12 @@ import { SymbolPalette } from "./symbol-palette";
 import { useSymbolRegistry } from "@/lib/sld-symbols-query";
 import { initialProperties, mergeSymbolTypes } from "@/lib/sld/symbol-registry";
 import { generateTags } from "@/lib/sld/tagging";
+import { ValidationPanel } from "./validation-panel";
+import { useLiveValidation, useRunValidation } from "@/lib/sld-validation-query";
+import { sldConfigQueryOptions } from "@/lib/sld-query";
+import { getSldConfig } from "@/lib/sld.functions";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 
 export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -60,6 +66,16 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const undoDepth = useCanvasStore((s) => s.undoStack.length);
   const redoDepth = useCanvasStore((s) => s.redoStack.length);
 
+  const sldConfigFn = useServerFn(getSldConfig);
+  const sldConfig = useQuery(sldConfigQueryOptions(sldConfigFn as any, data.drawing.project_id));
+  const projectVoltagesKv = useMemo(
+    () =>
+      ((sldConfig.data as any)?.config?.voltage_levels ?? [])
+        .map((v: any) => Number(v?.kv))
+        .filter((v: number) => Number.isFinite(v) && v > 0),
+    [sldConfig.data],
+  );
+
   const registry = useSymbolRegistry();
   const symbols = useMemo(
     () => mergeSymbolTypes(registry.data?.symbols ?? []),
@@ -70,6 +86,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   }, [symbols]);
 
   const save = useSaveSldCanvas(data.drawing.id, () => store.getState().markSaved());
+  const validation = useLiveValidation(symbols, projectVoltagesKv);
+  const runValidation = useRunValidation(data.drawing.id);
 
   useEffect(() => {
     setIsCoarse(
@@ -378,13 +396,26 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
 
         <div className="space-y-2">
           <div className="h-[70vh] min-h-[420px]">
-            <SldCanvas editable={editable} titleBlock={titleBlock} onPlace={handlePlace} />
+            <SldCanvas
+              editable={editable}
+              titleBlock={titleBlock}
+              onPlace={handlePlace}
+              issueSeverity={validation.severityByObject}
+            />
           </div>
           <CanvasStatusBar />
         </div>
 
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
+            <ValidationPanel
+              issues={validation.issues}
+              errorCount={validation.error_count}
+              warningCount={validation.warning_count}
+              running={runValidation.isPending}
+              lastRunAt={(runValidation.data as any)?.ran_at ?? null}
+              onRun={() => runValidation.mutate()}
+            />
             <PropertiesPanel editable={editable} />
             <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
             <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
