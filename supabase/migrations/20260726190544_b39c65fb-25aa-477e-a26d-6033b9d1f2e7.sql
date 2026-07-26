@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.scada_assets_hierarchy_guard() FROM PUBLIC, anon, authenticated;
