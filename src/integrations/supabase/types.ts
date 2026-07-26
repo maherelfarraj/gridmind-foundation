@@ -6787,6 +6787,166 @@ export type Database = {
           },
         ]
       }
+      pv_layout_blocks: {
+        Row: {
+          block_type: Database["public"]["Enums"]["pv_layout_block_type"]
+          company_id: string
+          created_at: string
+          dc_kwp: number
+          equipment_id: string | null
+          geometry: Json
+          id: string
+          label: string | null
+          layout_id: string
+          module_count: number
+          module_rows: number | null
+          modules_per_row: number | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          block_type: Database["public"]["Enums"]["pv_layout_block_type"]
+          company_id: string
+          created_at?: string
+          dc_kwp?: number
+          equipment_id?: string | null
+          geometry: Json
+          id?: string
+          label?: string | null
+          layout_id: string
+          module_count?: number
+          module_rows?: number | null
+          modules_per_row?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          block_type?: Database["public"]["Enums"]["pv_layout_block_type"]
+          company_id?: string
+          created_at?: string
+          dc_kwp?: number
+          equipment_id?: string | null
+          geometry?: Json
+          id?: string
+          label?: string | null
+          layout_id?: string
+          module_count?: number
+          module_rows?: number | null
+          modules_per_row?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_layout_blocks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layout_blocks_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "pv_equipment_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layout_blocks_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "pv_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_layouts: {
+        Row: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_number: string | null
+          name: string
+          params: Json
+          project_id: string
+          site_config_id: string | null
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_number?: string | null
+          name: string
+          params?: Json
+          project_id: string
+          site_config_id?: string | null
+          status?: string
+          totals?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approval_instance_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_number?: string | null
+          name?: string
+          params?: Json
+          project_id?: string
+          site_config_id?: string | null
+          status?: string
+          totals?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_layouts_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layouts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layouts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_layouts_site_config_id_fkey"
+            columns: ["site_config_id"]
+            isOneToOne: false
+            referencedRelation: "pv_site_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pv_site_configs: {
         Row: {
           albedo: number
@@ -10311,6 +10471,38 @@ export type Database = {
         }
         Returns: string
       }
+      create_pv_layout: {
+        Args: {
+          p_blocks: Json
+          p_name: string
+          p_params: Json
+          p_project_id: string
+          p_site_config_id: string
+          p_totals: Json
+        }
+        Returns: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_number: string | null
+          name: string
+          params: Json
+          project_id: string
+          site_config_id: string | null
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pv_layouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decide_approval: {
         Args: { p_approval_id: string; p_comment?: string; p_decision: string }
         Returns: undefined
@@ -10435,6 +10627,35 @@ export type Database = {
       }
       redeem_invite: { Args: { p_token: string }; Returns: string }
       resolve_share_link: { Args: { p_token_hash: string }; Returns: Json }
+      save_pv_layout_blocks: {
+        Args: { p_blocks: Json; p_layout_id: string; p_totals?: Json }
+        Returns: number
+      }
+      set_pv_layout_status: {
+        Args: { p_layout_id: string; p_status: string }
+        Returns: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_number: string | null
+          name: string
+          params: Json
+          project_id: string
+          site_config_id: string | null
+          status: string
+          totals: Json
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pv_layouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       start_approval_instance: {
         Args: {
           p_amount?: number
@@ -10722,6 +10943,17 @@ export type Database = {
         | "combiner_box"
         | "switchgear"
         | "bess"
+      pv_layout_block_type:
+        | "array_table"
+        | "setback"
+        | "access_road"
+        | "internal_road"
+        | "equipment_pad"
+        | "inverter_station"
+        | "transformer_station"
+        | "substation_zone"
+        | "drainage_corridor"
+        | "cable_corridor"
       pv_mounting_type:
         | "fixed_tilt"
         | "single_axis_tracker"
@@ -11234,6 +11466,18 @@ export const Constants = {
         "combiner_box",
         "switchgear",
         "bess",
+      ],
+      pv_layout_block_type: [
+        "array_table",
+        "setback",
+        "access_road",
+        "internal_road",
+        "equipment_pad",
+        "inverter_station",
+        "transformer_station",
+        "substation_zone",
+        "drainage_corridor",
+        "cable_corridor",
       ],
       pv_mounting_type: [
         "fixed_tilt",
