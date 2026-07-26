@@ -36,15 +36,31 @@ export type SldCanvasObject = {
   properties: Record<string, unknown>;
 };
 
+export const CONNECTION_TYPES = ["cable", "busbar", "dc_string", "earth", "signal"] as const;
+export type ConnectionType = (typeof CONNECTION_TYPES)[number];
+
+export const CONNECTION_LABELS: Record<ConnectionType, string> = {
+  cable: "Cable",
+  busbar: "Busbar",
+  dc_string: "DC string",
+  earth: "Earth",
+  signal: "Signal",
+};
+
 export type SldConnection = {
   id: string;
   from_object_id: string;
   from_port: string;
   to_object_id: string;
   to_port: string;
-  connection_type: string;
+  connection_type: ConnectionType;
   cable_number: string | null;
+  properties?: Record<string, unknown>;
 };
+
+/** P-140 — dimension annotations live as objects on the measurement layer. */
+export const MEASURE_SYMBOL = "__dimension";
+export const MEASURE_LAYER_ID = "__measure";
 
 /** Persisted into sld_revisions.canvas jsonb. */
 export type SldCanvasMeta = {
@@ -53,11 +69,12 @@ export type SldCanvasMeta = {
   snapEnabled: boolean;
 };
 
-export type CanvasTool = "select" | "pan" | "place";
+export type CanvasTool = "select" | "pan" | "place" | "connect" | "measure";
 
 export const DEFAULT_LAYERS: SldLayer[] = [
   { id: BORDER_LAYER_ID, name: "Sheet border", visible: true, locked: true, system: true },
   { id: "default", name: "Equipment", visible: true, locked: false },
+  { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false },
 ];
 
 export function defaultCanvasMeta(): SldCanvasMeta {
