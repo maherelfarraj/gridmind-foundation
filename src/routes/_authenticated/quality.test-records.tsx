@@ -132,26 +132,28 @@ function TestRecordsPage() {
     [calibrations.data, toolTag],
   );
 
-  const mutate = <T,>(fn: (v: T) => Promise<unknown>, message: string) =>
-    useMutation({
-      mutationFn: fn,
-      onSuccess: () => {
-        toast.success(message);
-        setTag("");
-        invalidate();
-      },
-      onError: (e) => toast.error(errorMessage(e)),
-    });
+  const recordMutation = (fn: () => Promise<unknown>, message: string) => ({
+    mutationFn: fn,
+    onSuccess: () => {
+      toast.success(message);
+      setTag("");
+      invalidate();
+    },
+    onError: (e: unknown) => toast.error(errorMessage(e)),
+  });
 
   const weldFn = useServerFn(createWeldingRecord);
-  const addWeld = mutate(
+  const addWeld = useMutation(
+    recordMutation(
     () =>
       weldFn({ data: { projectId: activeProject, welderName: tag.trim(), weldDate: date } }),
     "Weld record saved",
+    ),
   );
 
   const torqueFn = useServerFn(createTorqueRecord);
-  const addTorque = mutate(
+  const addTorque = useMutation(
+    recordMutation(
     () =>
       torqueFn({
         data: {
@@ -164,10 +166,12 @@ function TestRecordsPage() {
         },
       }),
     "Torque record saved",
+    ),
   );
 
   const cableFn = useServerFn(createCableTest);
-  const addCable = mutate(
+  const addCable = useMutation(
+    recordMutation(
     () =>
       cableFn({
         data: {
@@ -179,19 +183,23 @@ function TestRecordsPage() {
         },
       }),
     "Cable test saved",
+    ),
   );
 
   const thermoFn = useServerFn(createThermographicInspection);
-  const addThermo = mutate(
+  const addThermo = useMutation(
+    recordMutation(
     () =>
       thermoFn({
         data: { projectId: activeProject, equipmentTag: tag.trim(), inspectionDate: date },
       }),
     "Thermographic inspection saved",
+    ),
   );
 
   const relayFn = useServerFn(createRelayTest);
-  const addRelay = mutate(
+  const addRelay = useMutation(
+    recordMutation(
     () =>
       relayFn({
         data: {
@@ -203,10 +211,12 @@ function TestRecordsPage() {
         },
       }),
     "Relay test saved",
+    ),
   );
 
   const trafoFn = useServerFn(createTransformerTest);
-  const addTrafo = mutate(
+  const addTrafo = useMutation(
+    recordMutation(
     () =>
       trafoFn({
         data: {
@@ -218,6 +228,7 @@ function TestRecordsPage() {
         },
       }),
     "Transformer test saved",
+    ),
   );
 
   const newCalFn = useServerFn(createCalibration);
@@ -299,7 +310,7 @@ function TestRecordsPage() {
                 <div className="grid gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
                   {tagField("Welder", "A. Haddad")}
                   {dateField}
-                  <Button onClick={() => addWeld.mutate(undefined as never)} disabled={!tag.trim()}>
+                  <Button onClick={() => addWeld.mutate()} disabled={!tag.trim()}>
                     <Plus className="mr-1 size-4" /> Save
                   </Button>
                 </div>
@@ -366,7 +377,7 @@ function TestRecordsPage() {
                       </Select>
                     </div>
                     <Button
-                      onClick={() => addTorque.mutate(undefined as never)}
+                      onClick={() => addTorque.mutate()}
                       disabled={!tag.trim() || !boltRef.trim()}
                     >
                       <Plus className="mr-1 size-4" /> Save
@@ -424,7 +435,7 @@ function TestRecordsPage() {
                   </div>
                   {dateField}
                   <Button
-                    onClick={() => addCable.mutate(undefined as never)}
+                    onClick={() => addCable.mutate()}
                     disabled={!tag.trim()}
                   >
                     <Plus className="mr-1 size-4" /> Save
@@ -460,7 +471,7 @@ function TestRecordsPage() {
                   {tagField("Equipment tag", "SWG-01")}
                   {dateField}
                   <Button
-                    onClick={() => addThermo.mutate(undefined as never)}
+                    onClick={() => addThermo.mutate()}
                     disabled={!tag.trim()}
                   >
                     <Plus className="mr-1 size-4" /> Save
@@ -511,7 +522,7 @@ function TestRecordsPage() {
                   </div>
                   {dateField}
                   <Button
-                    onClick={() => addRelay.mutate(undefined as never)}
+                    onClick={() => addRelay.mutate()}
                     disabled={!tag.trim()}
                   >
                     <Plus className="mr-1 size-4" /> Save
@@ -562,7 +573,7 @@ function TestRecordsPage() {
                   </div>
                   {dateField}
                   <Button
-                    onClick={() => addTrafo.mutate(undefined as never)}
+                    onClick={() => addTrafo.mutate()}
                     disabled={!tag.trim()}
                   >
                     <Plus className="mr-1 size-4" /> Save
