@@ -108,11 +108,15 @@ describe("P-154 stringing engine", () => {
 
   it("warns instead of silently dropping strings when MPPT capacity is exceeded", () => {
     const res = generateStringing(
-      baseInput({ inverterStations: [{ label: "INV-01", centroid: { x: 100, y: 0 } }] }),
+      baseInput({
+        inverter: { ...INVERTER, mpptCount: 4 },
+        inverterStations: [{ label: "INV-01", centroid: { x: 100, y: 0 } }],
+      }),
     );
     const warn = res.warnings.find((w) => w.code === "mppt_capacity_exceeded");
     expect(warn).toBeDefined();
     expect(warn?.refs).toContain("INV-01");
+    expect(res.counts.strings).toBe(8);
   });
 
   it("assigns combiners by input count and reports DC/AC ratio and loading", () => {
