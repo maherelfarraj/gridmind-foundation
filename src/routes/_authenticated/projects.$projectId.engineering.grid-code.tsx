@@ -78,6 +78,16 @@ const STATUS_LABEL: Record<GridCodeResponseStatus, string> = {
 
 const NONE = "__none__";
 
+type GridCodeResponseRow = {
+  id: string;
+  template_id: string;
+  item_index: number;
+  status: GridCodeResponseStatus;
+  evidence: string | null;
+  comment: string | null;
+  study_id: string | null;
+};
+
 function GridCodePage() {
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
