@@ -190,10 +190,7 @@ describe("P-148 acceptance — graphHash", () => {
   });
 
   it("detects moved, added, removed and property-changed in one diff", async () => {
-    const after = [
-      { ...objects[0], x: 200 },
-      obj({ id: "3", tag: "GRD-01-01" }),
-    ];
+    const after = [{ ...objects[0], x: 200 }, obj({ id: "3", tag: "GRD-01-01" })];
     const d = diffGraphs(objects, conns, after, []);
     const totals = diffTotals(d);
     expect(d.moved.map((m) => m.id)).toContain("1");
