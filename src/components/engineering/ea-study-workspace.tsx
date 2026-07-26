@@ -60,7 +60,7 @@ import {
   resultSections,
   sortWarnings,
 } from "@/lib/ea/present";
-import { EA_DISCLAIMER, EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_STUDY_SPECS } from "@/lib/ea/study-types";
 import {
   createEaStudyRevision,
   getEaStudy,
