@@ -100,6 +100,8 @@ export const attachPhotoInput = z.object({
   caption: z.string().trim().max(500).nullable().optional(),
   area: z.string().trim().max(120).nullable().optional(),
   discipline: z.string().trim().max(60).nullable().optional(),
+  mediaType: z.enum(["photo", "video"]).default("photo"),
+
   clientIdempotencyKey: idem,
 });
 
