@@ -2,9 +2,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  arrangeBlocks,
+  checkCompliance,
   corridorPolygon,
   dcCapacityKwp,
   gcrFromPitch,
+  generateAlternatives,
   gridFill,
   insetRing,
   makeTable,
@@ -334,5 +337,173 @@ describe("dcCapacityKwp", () => {
     expect(dcCapacityKwp(100, 56, 580)).toBeCloseTo(3248, 6);
     expect(dcCapacityKwp(0, 56, 580)).toBe(0);
     expect(dcCapacityKwp(10, 10, 0)).toBe(0);
+  });
+});
+
+describe("P-153 arrangement, compliance and alternatives", () => {
+  const square = [
+    { x: 0, y: 0 },
+    { x: 300, y: 0 },
+    { x: 300, y: 300 },
+    { x: 0, y: 300 },
+  ];
+  const table = makeTable({
+    module: { lengthMm: 2278, widthMm: 1134 },
+    orientation: "portrait",
+    modulesAcross: 28,
+    modulesUp: 2,
+    tiltDeg: 25,
+  });
+
+  const base = {
+    boundary: square,
+    table,
+    moduleWp: 580,
+    pitchM: pitchFromGcr(table.collectorWidthM, 0.35),
+    setbackM: 10,
+    azimuthDeg: 0,
+    roadEveryNRows: 4,
+    roadWidthM: 6,
+  };
+
+  it("places tables, roads and pads deterministically", () => {
+    const a = arrangeBlocks(base);
+    const b = arrangeBlocks(base);
+    expect(a.metrics.tableCount).toBeGreaterThan(0);
+    expect(a.metrics.roadCount).toBeGreaterThan(0);
+    expect(JSON.stringify(a.blocks)).toEqual(JSON.stringify(b.blocks));
+    expect(a.metrics.dcKwp).toBeCloseTo((a.metrics.moduleCount * 580) / 1000, 3);
+  });
+
+  it("reports no_terrain_data instead of guessing a slope", () => {
+    const { compliance, blocks } = arrangeBlocks(base);
+    const slope = compliance.checks.find((c) => c.id === "slope")!;
+    expect(slope.status).toBe("warn");
+    expect(slope.findings[0].code).toBe("no_terrain_data");
+    expect(blocks.every((b) => b.slopePct === undefined)).toBe(true);
+  });
+
+  it("flags slope limits when terrain samples exist", () => {
+    const terrain = {
+      slopeLimitPct: 1,
+      samples: [
+        { x: 0, y: 0, elevationM: 0 },
+        { x: 300, y: 300, elevationM: 120 },
+      ],
+    };
+    const { compliance } = arrangeBlocks({ ...base, terrainRef: terrain });
+    const slope = compliance.checks.find((c) => c.id === "slope")!;
+    expect(slope.findings.some((f) => f.code === "slope_limit_exceeded")).toBe(true);
+  });
+
+  it("names both blocks in a collision and coordinates in violations", () => {
+    const overlap = [
+      {
+        key: "a",
+        type: "array_table" as const,
+        label: "T01-01",
+        polygon: square,
+        moduleCount: 0,
+        dcKwp: 0,
+      },
+      {
+        key: "b",
+        type: "array_table" as const,
+        label: "T01-02",
+        polygon: square,
+        moduleCount: 0,
+        dcKwp: 0,
+      },
+    ];
+    const report = checkCompliance({
+      blocks: overlap,
+      boundary: square,
+      buildable: square,
+      exclusionZones: [],
+      metrics: {
+        tableCount: 2,
+        moduleCount: 0,
+        dcKwp: 0,
+        achievedGcr: 0,
+        usedAreaM2: 0,
+        buildableAreaM2: 1,
+        boundaryAreaM2: 1,
+        roadCount: 0,
+        padCount: 0,
+      },
+    });
+    const collision = report.checks.find((c) => c.id === "collisions")!;
+    expect(collision.status).toBe("fail");
+    expect(collision.findings[0].blocks).toEqual(["T01-01", "T01-02"]);
+    expect(collision.findings[0].coordinates).toHaveLength(2);
+  });
+
+  it("detects exclusion-zone conflicts with coordinates", () => {
+    const zone = [
+      { x: 20, y: 20 },
+      { x: 280, y: 20 },
+      { x: 280, y: 280 },
+      { x: 20, y: 280 },
+    ];
+    const { compliance } = arrangeBlocks({ ...base, exclusionZones: [] });
+    expect(compliance.checks.find((c) => c.id === "exclusions")!.status).toBe("pass");
+    const report = checkCompliance({
+      blocks: [
+        {
+          key: "a",
+          type: "array_table",
+          label: "T01-01",
+          polygon: square,
+          moduleCount: 0,
+          dcKwp: 0,
+        },
+      ],
+      boundary: square,
+      buildable: square,
+      exclusionZones: [zone],
+      metrics: {
+        tableCount: 1,
+        moduleCount: 0,
+        dcKwp: 0,
+        achievedGcr: 0,
+        usedAreaM2: 0,
+        buildableAreaM2: 1,
+        boundaryAreaM2: 1,
+        roadCount: 0,
+        padCount: 0,
+      },
+    });
+    const ex = report.checks.find((c) => c.id === "exclusions")!;
+    expect(ex.status).toBe("fail");
+    expect(ex.findings[0].coordinates).toHaveLength(1);
+  });
+
+  it("generates up to three alternatives with distinct GCR and correct capacity", () => {
+    const alts = generateAlternatives(
+      { boundary: square, exclusionZones: [], latitude: 31.9 },
+      {
+        module: { lengthMm: 2278, widthMm: 1134 },
+        moduleWp: 580,
+        orientation: "portrait",
+        modulesAcross: 28,
+        modulesUp: 2,
+        tiltDeg: 25,
+        azimuthDeg: 180,
+        gcr: 0.35,
+        setbackM: 10,
+        roadEveryNRows: 6,
+        roadWidthM: 6,
+        tracker: false,
+      },
+    );
+    expect(alts).toHaveLength(3);
+    expect(alts.map((a) => a.name)).toEqual(["Option A", "Option B", "Option C"]);
+    expect(new Set(alts.map((a) => a.params.gcr)).size).toBe(3);
+    for (const alt of alts) {
+      expect(alt.result.metrics.dcKwp).toBeCloseTo(
+        (alt.result.metrics.moduleCount * 580) / 1000,
+        3,
+      );
+    }
   });
 });
