@@ -85,7 +85,10 @@ export const DEFAULT_LAYERS: SldLayer[] = [
 export function normalizeAreas(raw: unknown): TagArea[] {
   if (!Array.isArray(raw)) return [];
   return (raw as unknown[])
-    .filter((a): a is Record<string, any> => Boolean(a) && typeof a === "object" && Boolean(a.bounds))
+    .filter(
+      (a): a is Record<string, any> =>
+        Boolean(a) && typeof a === "object" && Boolean((a as Record<string, unknown>).bounds),
+    )
     .map((a, i) => ({
       id: String(a.id ?? i + 1),
       name: String(a.name ?? `Area ${i + 1}`),
