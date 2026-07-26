@@ -173,6 +173,7 @@ import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceFacilitiesR
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.dd'
 import { Route as AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.pay-applications.$payAppId'
 import { Route as AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRouteImport } from './routes/_authenticated/projects.$projectId.finance.change-orders.$coId'
+import { Route as AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld-cad.$drawingId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings.$drawingId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
@@ -1140,6 +1141,12 @@ const AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute =
     getParentRoute: () =>
       AuthenticatedProjectsProjectIdFinanceChangeOrdersRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute =
+  AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRouteImport.update({
+    id: '/sld-cad/$drawingId',
+    path: '/sld-cad/$drawingId',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute =
   AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRouteImport.update({
     id: '/$drawingId',
@@ -1321,6 +1328,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
+  '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1477,6 +1485,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
+  '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
   '/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1647,6 +1656,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
+  '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
   '/_authenticated/projects/$projectId/finance/change-orders/$coId': typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRoute
   '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId': typeof AuthenticatedProjectsProjectIdFinancePayApplicationsPayAppIdRoute
   '/_authenticated/projects/$projectId/finance/project-finance/dd': typeof AuthenticatedProjectsProjectIdFinanceProjectFinanceDdRoute
@@ -1816,6 +1826,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/engineering/'
     | '/projects/$projectId/engineering/drawings/$drawingId'
+    | '/projects/$projectId/engineering/sld-cad/$drawingId'
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/finance/project-finance/dd'
@@ -1972,6 +1983,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/engineering/drawings/$drawingId'
+    | '/projects/$projectId/engineering/sld-cad/$drawingId'
     | '/projects/$projectId/finance/change-orders/$coId'
     | '/projects/$projectId/finance/pay-applications/$payAppId'
     | '/projects/$projectId/finance/project-finance/dd'
@@ -2141,6 +2153,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/planning/wbs'
     | '/_authenticated/projects/$projectId/engineering/'
     | '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
+    | '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId'
     | '/_authenticated/projects/$projectId/finance/change-orders/$coId'
     | '/_authenticated/projects/$projectId/finance/pay-applications/$payAppId'
     | '/_authenticated/projects/$projectId/finance/project-finance/dd'
@@ -3326,6 +3339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersCoIdRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdFinanceChangeOrdersRoute
     }
+    '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId': {
+      id: '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId'
+      path: '/sld-cad/$drawingId'
+      fullPath: '/projects/$projectId/engineering/sld-cad/$drawingId'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': {
       id: '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
       path: '/$drawingId'
@@ -3590,6 +3610,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringUploadsRoute: typeof AuthenticatedProjectsProjectIdEngineeringUploadsRoute
   AuthenticatedProjectsProjectIdEngineeringYieldRoute: typeof AuthenticatedProjectsProjectIdEngineeringYieldRoute
   AuthenticatedProjectsProjectIdEngineeringIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
+  AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
 }
 
 const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProjectsProjectIdEngineeringRouteChildren =
@@ -3612,6 +3633,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringYieldRoute,
     AuthenticatedProjectsProjectIdEngineeringIndexRoute:
       AuthenticatedProjectsProjectIdEngineeringIndexRoute,
+    AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute:
+      AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute,
   }
 
 const AuthenticatedProjectsProjectIdEngineeringRouteWithChildren =
