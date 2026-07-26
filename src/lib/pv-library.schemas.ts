@@ -181,8 +181,8 @@ export interface PvEquipmentRow {
   model: string;
   datasheet_path: string | null;
   certifications: PvCertification[];
-  warranties: Record<string, unknown>;
-  degradation: Record<string, unknown>;
+  warranties: Record<string, any>;
+  degradation: Record<string, any>;
   electrical: Record<string, number | null>;
   temp_coefficients: Record<string, number | null>;
   dimensions: Record<string, number | null>;
