@@ -934,10 +934,14 @@ export const getPoByShareToken = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ token: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PublicPoView> => {
     // No requireSupabaseAuth — this is intentionally public.
-    // The SECURITY DEFINER RPC enforces token + expiry server-side.
-    const { data: rows, error } = await context.supabase.rpc("get_po_by_share_token", {
+    // The SECURITY DEFINER RPC enforces token + expiry server-side, and it is
+    // only reachable through this server function (EXECUTE revoked from
+    // anon/authenticated), so it runs with the service-role client here.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("get_po_by_share_token", {
       p_token: data.token,
     });
+
     if (error) throw error;
     const row = (rows as any[] | null)?.[0];
     if (!row) httpError(410, "share_link_expired", "This link is no longer valid.");
