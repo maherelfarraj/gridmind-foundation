@@ -289,6 +289,7 @@ function SchedulePage() {
           canWrite={canWrite}
           compare={showCompare}
           baselineSnapshot={snapshot}
+          highlightCriticalPath={showCp}
           saving={updateTaskMut.isPending || deleteTaskMut.isPending}
           onSaveTask={(id: string, patch: TaskEditPatch) => updateTaskMut.mutate({ id, patch })}
           onDeleteTask={(id: string) => deleteTaskMut.mutate(id)}
