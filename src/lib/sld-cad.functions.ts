@@ -145,10 +145,22 @@ const canvasObjectSchema = z.object({
   properties: z.record(z.string(), z.unknown()).default({}),
 });
 
+const canvasConnectionSchema = z.object({
+  id: z.string().min(1),
+  from_object_id: z.string().min(1),
+  from_port: z.string().trim().min(1).max(40),
+  to_object_id: z.string().min(1),
+  to_port: z.string().trim().min(1).max(40),
+  connection_type: z.enum(["cable", "busbar", "dc_string", "earth", "signal"]),
+  cable_number: z.string().trim().max(80).nullable().default(null),
+});
+
 const saveInput = z.object({
   drawingId: z.string().uuid(),
   objects: z.array(canvasObjectSchema).max(2000),
   removedIds: z.array(z.string().uuid()).max(2000).default([]),
+  connections: z.array(canvasConnectionSchema).max(4000).default([]),
+  removedConnectionIds: z.array(z.string().uuid()).max(2000).default([]),
   canvas: z.object({
     layers: z.array(
       z.object({
@@ -222,6 +234,8 @@ export const saveSldObjects = createServerFn({ method: "POST" })
       }));
     const updates = data.objects.filter((o) => isUuid(o.id));
 
+    const idMap = new Map<string, string>();
+    const insertedClientIds = data.objects.filter((o) => !isUuid(o.id)).map((o) => o.id);
     let created = 0;
     if (inserts.length > 0) {
       const { data: rows, error } = await context.supabase
@@ -229,7 +243,11 @@ export const saveSldObjects = createServerFn({ method: "POST" })
         .insert(inserts as any)
         .select("id");
       if (error) throw error;
-      created = (rows ?? []).length;
+      const ids = ((rows ?? []) as any[]).map((r) => r.id as string);
+      created = ids.length;
+      insertedClientIds.forEach((clientId, i) => {
+        if (ids[i]) idMap.set(clientId, ids[i]);
+      });
     }
     for (const o of updates) {
       const { error } = await context.supabase
@@ -270,6 +288,72 @@ export const saveSldObjects = createServerFn({ method: "POST" })
       removed += 1;
     }
 
+    // --- P-140 connectors -------------------------------------------------
+    const resolveObjectId = (id: string) => (isUuid(id) ? id : (idMap.get(id) ?? null));
+
+    const connectionInserts = data.connections
+      .filter((c) => !isUuid(c.id))
+      .map((c) => ({
+        company_id: drawing.company_id,
+        revision_id: revisionId,
+        from_object_id: resolveObjectId(c.from_object_id),
+        from_port: c.from_port,
+        to_object_id: resolveObjectId(c.to_object_id),
+        to_port: c.to_port,
+        connection_type: c.connection_type,
+        cable_number: c.cable_number,
+        created_by: context.user.id,
+      }))
+      .filter((c) => c.from_object_id && c.to_object_id && c.from_object_id !== c.to_object_id);
+
+    let connectionsCreated = 0;
+    if (connectionInserts.length > 0) {
+      const { data: rows, error } = await context.supabase
+        .from("sld_connections")
+        .insert(connectionInserts as any)
+        .select("id");
+      if (error) throw error;
+      connectionsCreated = (rows ?? []).length;
+    }
+
+    let connectionsUpdated = 0;
+    for (const c of data.connections.filter((x) => isUuid(x.id))) {
+      const { error } = await context.supabase
+        .from("sld_connections")
+        .update({
+          from_port: c.from_port,
+          to_port: c.to_port,
+          connection_type: c.connection_type,
+          cable_number: c.cable_number,
+        } as any)
+        .eq("id", c.id)
+        .eq("revision_id", revisionId);
+      if (error) throw error;
+      connectionsUpdated += 1;
+    }
+
+    let connectionsRemoved = 0;
+    if (data.removedConnectionIds.length > 0) {
+      const { error } = await context.supabase
+        .from("sld_connections")
+        .delete()
+        .in("id", data.removedConnectionIds)
+        .eq("revision_id", revisionId);
+      if (error) throw error;
+      connectionsRemoved = data.removedConnectionIds.length;
+    }
+
+    await cadAudit(context, "sld.objects_modified", drawing.id, {
+      project_id: drawing.project_id,
+      drawing_number: drawing.drawing_number,
+      revision_id: revisionId,
+      object_count: data.objects.length,
+      connection_count: data.connections.length,
+      connections_created: connectionsCreated,
+      connections_updated: connectionsUpdated,
+      connections_removed: connectionsRemoved,
+    });
+
     await cadAudit(context, "sld.canvas_saved", drawing.id, {
       project_id: drawing.project_id,
       drawing_number: drawing.drawing_number,
@@ -288,6 +372,9 @@ export const saveSldObjects = createServerFn({ method: "POST" })
       created,
       updated: updates.length,
       removed,
+      connections_created: connectionsCreated,
+      connections_updated: connectionsUpdated,
+      connections_removed: connectionsRemoved,
     };
   });
 
