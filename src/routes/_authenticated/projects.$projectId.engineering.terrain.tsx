@@ -3,9 +3,10 @@ import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Mountain, Trash2, Upload } from "lucide-react";
+import { AlertTriangle, Download, Mountain, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,11 @@ import {
   type TerrainCursor,
   type TerrainLayers,
 } from "@/components/engineering/terrain-canvas";
-import { getTerrainSurface, getTerrainWriteAccess, listTerrainSurfaces } from "@/lib/terrain.functions";
+import {
+  getTerrainSurface,
+  getTerrainWriteAccess,
+  listTerrainSurfaces,
+} from "@/lib/terrain.functions";
 import {
   parseServerError,
   terrainSurfaceQueryOptions,
@@ -145,8 +150,8 @@ function TerrainPage() {
                   <Row label="Source">{surface.source_type}</Row>
                   <Row label="CRS">{surface.crs}</Row>
                   <Row label="Grid">
-                    {surface.grid_rows ?? "—"}×{surface.grid_cols ?? "—"} @{" "}
-                    {surface.grid_spacing_m} m
+                    {surface.grid_rows ?? "—"}×{surface.grid_cols ?? "—"} @ {surface.grid_spacing_m}{" "}
+                    m
                   </Row>
                   <Row label="Elevation">
                     {surface.min_elevation_m?.toFixed(1) ?? "—"}–
@@ -288,6 +293,7 @@ function ImportCard({ projectId }: { projectId: string }) {
   const [crs, setCrs] = useState("EPSG:4326");
   const [interval, setInterval] = useState(1);
   const [notes, setNotes] = useState("");
+  const [parseError, setParseError] = useState<{ code: string; message: string } | null>(null);
   const importer = useImportTerrainSurface(projectId);
 
   function downloadSample() {
@@ -304,6 +310,26 @@ function ImportCard({ projectId }: { projectId: string }) {
     <Card>
       <CardContent className="space-y-3 pt-6">
         <p className="text-sm font-medium">Import surface</p>
+        {parseError ? (
+          <Alert variant="destructive" role="alert">
+            <AlertTriangle className="size-4" />
+            <AlertTitle className="flex items-center justify-between gap-2">
+              <span>Import failed — nothing was saved</span>
+              <button
+                type="button"
+                aria-label="Dismiss error"
+                className="text-current opacity-70 hover:opacity-100"
+                onClick={() => setParseError(null)}
+              >
+                <X className="size-4" />
+              </button>
+            </AlertTitle>
+            <AlertDescription>
+              {parseError.message}
+              <span className="mt-1 block text-xs opacity-80">Code: {parseError.code}</span>
+            </AlertDescription>
+          </Alert>
+        ) : null}
         <div className="space-y-1.5">
           <Label htmlFor="terrain-file">Source file (.csv, .asc, .txt, .dem)</Label>
           <Input
@@ -381,6 +407,7 @@ function ImportCard({ projectId }: { projectId: string }) {
           disabled={!file || !name.trim() || importer.isPending}
           onClick={() => {
             if (!file) return;
+            setParseError(null);
             importer.mutate(
               {
                 projectId,
@@ -393,11 +420,16 @@ function ImportCard({ projectId }: { projectId: string }) {
               },
               {
                 onSuccess: () => {
+                  setParseError(null);
                   setFile(null);
                   setNotes("");
                   if (fileRef.current) fileRef.current.value = "";
                 },
-                onError: (err) => toast.error(parseServerError(err).message),
+                onError: (err) => {
+                  const parsed = parseServerError(err);
+                  setParseError({ code: parsed.code, message: parsed.message });
+                  toast.error(parsed.message);
+                },
               },
             );
           }}
