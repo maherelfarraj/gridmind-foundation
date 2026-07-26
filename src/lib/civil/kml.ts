@@ -120,8 +120,8 @@ export function mapGeometryCoordinates(
 }
 
 export function geometryToLocal(geometry: GeoJsonGeometry, anchor: LngLat): GeoJsonGeometry {
-  return mapGeometryCoordinates(geometry, ([lng, lat]) => {
-    const p = toLocalMeters({ lng, lat }, anchor);
+  return mapGeometryCoordinates(geometry, ([lon, lat]) => {
+    const p = toLocalMeters({ lon, lat }, anchor);
     return [p.x, p.y];
   });
 }
@@ -129,7 +129,7 @@ export function geometryToLocal(geometry: GeoJsonGeometry, anchor: LngLat): GeoJ
 export function geometryToLngLat(geometry: GeoJsonGeometry, anchor: LngLat): GeoJsonGeometry {
   return mapGeometryCoordinates(geometry, ([x, y]) => {
     const p = toLngLat({ x, y }, anchor);
-    return [p.lng, p.lat];
+    return [p.lon, p.lat];
   });
 }
 
@@ -142,7 +142,7 @@ function escapeXml(value: string): string {
 }
 
 function coordString(coords: Vertex[]): string {
-  return coords.map(([lng, lat]) => `${lng.toFixed(8)},${lat.toFixed(8)},0`).join(" ");
+  return coords.map(([lon, lat]) => `${lon.toFixed(8)},${lat.toFixed(8)},0`).join(" ");
 }
 
 /**
