@@ -155,6 +155,76 @@ export const toggleGateChecklistItem = createServerFn({ method: "POST" })
   });
 
 // ---------------------------------------------------------------------------
+// POL-5 — updateGateChecklistItemMeta: owner / due date / evidence slot.
+// ---------------------------------------------------------------------------
+const metaInput = z.object({
+  gate_id: z.string().uuid(),
+  key: z.string().min(1),
+  owner_id: z.string().uuid().nullable().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
+    .nullable()
+    .optional(),
+  evidence_label: z.string().trim().max(160).nullable().optional(),
+  evidence_url: z.string().trim().max(600).nullable().optional(),
+});
+
+export const updateGateChecklistItemMeta = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => metaInput.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    await assertGateAdmin(context);
+
+    const { data: gate, error: gErr } = await context.supabase
+      .from("project_phase_gates")
+      .select("id, project_id, company_id, phase, status, checklist")
+      .eq("id", data.gate_id)
+      .maybeSingle();
+    if (gErr) throw gErr;
+    if (!gate) httpError(404, "gate_not_found");
+    if (gate.status === "approved") httpError(409, "gate_locked");
+
+    const items: any[] = Array.isArray(gate.checklist) ? gate.checklist : [];
+    let found = false;
+    const nextList = items.map((it: any) => {
+      if (String(it?.key) !== data.key) return it;
+      found = true;
+      const next = { ...it };
+      if (data.owner_id !== undefined) next.owner_id = data.owner_id;
+      if (data.due_date !== undefined) next.due_date = data.due_date;
+      if (data.evidence_label !== undefined) next.evidence_label = data.evidence_label || null;
+      if (data.evidence_url !== undefined) next.evidence_url = data.evidence_url || null;
+      return next;
+    });
+    if (!found) httpError(404, "checklist_item_not_found");
+
+    const { error: upErr } = await context.supabase
+      .from("project_phase_gates")
+      .update({ checklist: nextList })
+      .eq("id", gate.id);
+    if (upErr) throw upErr;
+
+    const { error: auErr } = await context.supabase.rpc("write_audit_log", {
+      p_action: "gate.checklist_item_updated",
+      p_entity: "project_phase_gates",
+      p_entity_id: gate.id,
+      p_metadata: {
+        project_id: gate.project_id,
+        phase: gate.phase,
+        key: data.key,
+        owner_id: data.owner_id ?? null,
+        due_date: data.due_date ?? null,
+        evidence_label: data.evidence_label ?? null,
+      },
+    });
+    if (auErr) throw auErr;
+
+    return { ok: true };
+  });
+
+// ---------------------------------------------------------------------------
 // requestGateTransition
 // ---------------------------------------------------------------------------
 const requestInput = z.object({ gate_id: z.string().uuid() });
