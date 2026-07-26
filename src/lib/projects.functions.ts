@@ -718,6 +718,12 @@ export type GateChecklistItem = {
   done_by?: string | null;
   done_at?: string | null;
   done_by_name?: string | null;
+  /** POL-5 — operational metadata. */
+  owner_id?: string | null;
+  owner_name?: string | null;
+  due_date?: string | null;
+  evidence_label?: string | null;
+  evidence_url?: string | null;
 };
 
 export type ProjectDetailGate = {
@@ -828,11 +834,14 @@ export const getProject = createServerFn({ method: "GET" })
 
     const gateRows = (gatesRes.data ?? []) as any[];
 
-    // Collect done_by ids to resolve names
+    // Collect done_by / owner ids to resolve names
     const stampIds = new Set<string>();
     for (const g of gateRows) {
       const items = Array.isArray(g.checklist) ? g.checklist : [];
-      for (const it of items) if (it?.done_by) stampIds.add(it.done_by);
+      for (const it of items) {
+        if (it?.done_by) stampIds.add(it.done_by);
+        if (it?.owner_id) stampIds.add(it.owner_id);
+      }
     }
 
     const namesById: Record<string, string | null> = {};
@@ -891,6 +900,11 @@ export const getProject = createServerFn({ method: "GET" })
         done_by: it?.done_by ?? null,
         done_at: it?.done_at ?? null,
         done_by_name: it?.done_by ? (namesById[it.done_by] ?? null) : null,
+        owner_id: it?.owner_id ?? null,
+        owner_name: it?.owner_id ? (namesById[it.owner_id] ?? null) : null,
+        due_date: it?.due_date ?? null,
+        evidence_label: it?.evidence_label ?? null,
+        evidence_url: it?.evidence_url ?? null,
       }));
       const approvalInfo =
         g.approval_instance_id && myApprovals[g.approval_instance_id]
