@@ -439,6 +439,10 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                 <TabsTrigger value="revisions" className="flex-1">
                   Revisions
                 </TabsTrigger>
+                <TabsTrigger value="governance" className="flex-1">
+                  Governance
+                </TabsTrigger>
+
               </TabsList>
               <TabsContent value="validation" className="mt-2">
                 <ValidationPanel
