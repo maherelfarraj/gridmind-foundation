@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
 
@@ -18,7 +18,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useActiveCompany } from "@/components/company-switcher";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getIngestionHealth } from "@/lib/scada-ingestion.functions";
+import { getConnectorErrorRates } from "@/lib/scada-import.functions";
+import { toggleScadaConnector } from "@/lib/scada.functions";
+import { toast } from "sonner";
 import type { IngestionHealth } from "@/lib/scada/ingestion";
 
 export const Route = createFileRoute("/_authenticated/om/scada/ingestion-health")({
@@ -54,6 +60,19 @@ function runVariant(status: string): "default" | "secondary" | "destructive" {
   return "secondary";
 }
 
+function freshnessBadge(lagSeconds: number | null) {
+  if (lagSeconds == null) return { label: "no data", variant: "secondary" as const };
+  if (lagSeconds < 300) return { label: formatLag(lagSeconds), variant: "default" as const };
+  if (lagSeconds < 900) return { label: formatLag(lagSeconds), variant: "secondary" as const };
+  return { label: formatLag(lagSeconds), variant: "destructive" as const };
+}
+
+function formatLag(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+  return `${Math.round(seconds / 3600)}h`;
+}
+
 function relative(iso: string | null): string {
   if (!iso) return "—";
   return `${formatDistanceToNow(new Date(iso))} ago`;
@@ -66,7 +85,27 @@ function IngestionHealthPage() {
     queryKey: ["scada", "ingestion-health", activeCompanyId],
     queryFn: () => healthFn({ data: { companyId: activeCompanyId! } }),
     enabled: Boolean(activeCompanyId),
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
+  });
+
+  const extrasFn = useServerFn(getConnectorErrorRates);
+  const extras = useQuery({
+    queryKey: ["scada", "ingestion-extras", activeCompanyId],
+    queryFn: () => extrasFn({ data: { companyId: activeCompanyId! } }),
+    enabled: Boolean(activeCompanyId),
+    refetchInterval: 30_000,
+  });
+
+  const qc = useQueryClient();
+  const toggleFn = useServerFn(toggleScadaConnector);
+  const toggleMut = useMutation({
+    mutationFn: (vars: { id: string; enabled: boolean }) => toggleFn({ data: vars }),
+    onSuccess: (_d, vars) => {
+      toast.success(vars.enabled ? "Connector enabled" : "Connector disabled");
+      qc.invalidateQueries({ queryKey: ["scada", "ingestion-health", activeCompanyId] });
+      qc.invalidateQueries({ queryKey: ["scada", "connectors", activeCompanyId] });
+    },
+    onError: () => toast.error("Toggle failed"),
   });
 
   const kpis = query.data?.kpis;
@@ -97,6 +136,16 @@ function IngestionHealthPage() {
       <Card>
         <CardHeader>
           <CardTitle>Connector status</CardTitle>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button size="sm" variant="outline" disabled>
+                  Replay dead letters
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Wired with the P-177 retry queue.</TooltipContent>
+          </Tooltip>
         </CardHeader>
         <CardContent>
           {query.isLoading ? (
@@ -113,8 +162,11 @@ function IngestionHealthPage() {
                   <TableHead>Connector</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Health</TableHead>
+                  <TableHead>Lag</TableHead>
+                  <TableHead>Error rate</TableHead>
                   <TableHead>Last data</TableHead>
                   <TableHead>Mappings</TableHead>
+                  <TableHead>Enabled</TableHead>
                   <TableHead>Reason</TableHead>
                 </TableRow>
               </TableHeader>
@@ -126,8 +178,40 @@ function IngestionHealthPage() {
                     <TableCell>
                       <Badge variant={healthVariant(c.health)}>{c.health}</Badge>
                     </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const badge = freshnessBadge(
+                          extras.data?.lagSeconds?.[c.connector_id] ?? null,
+                        );
+                        return <Badge variant={badge.variant}>{badge.label}</Badge>;
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const rate = extras.data?.rates?.[c.connector_id] ?? null;
+                        if (rate != null) return `${(rate * 100).toFixed(1)}%`;
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-muted-foreground">—</span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Available once the ingestion retry queue ships with P-177.
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>{relative(c.last_seen_at)}</TableCell>
                     <TableCell>{c.mappings_count}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={c.enabled}
+                        onCheckedChange={(checked) =>
+                          toggleMut.mutate({ id: c.connector_id, enabled: checked })
+                        }
+                      />
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{c.reason}</TableCell>
                   </TableRow>
                 ))}
