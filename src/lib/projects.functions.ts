@@ -718,6 +718,12 @@ export type GateChecklistItem = {
   done_by?: string | null;
   done_at?: string | null;
   done_by_name?: string | null;
+  /** POL-5 — operational metadata. */
+  owner_id?: string | null;
+  owner_name?: string | null;
+  due_date?: string | null;
+  evidence_label?: string | null;
+  evidence_url?: string | null;
 };
 
 export type ProjectDetailGate = {
@@ -828,11 +834,14 @@ export const getProject = createServerFn({ method: "GET" })
 
     const gateRows = (gatesRes.data ?? []) as any[];
 
-    // Collect done_by ids to resolve names
+    // Collect done_by / owner ids to resolve names
     const stampIds = new Set<string>();
     for (const g of gateRows) {
       const items = Array.isArray(g.checklist) ? g.checklist : [];
-      for (const it of items) if (it?.done_by) stampIds.add(it.done_by);
+      for (const it of items) {
+        if (it?.done_by) stampIds.add(it.done_by);
+        if (it?.owner_id) stampIds.add(it.owner_id);
+      }
     }
 
     const namesById: Record<string, string | null> = {};
