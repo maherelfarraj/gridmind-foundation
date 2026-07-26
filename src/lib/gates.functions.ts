@@ -121,6 +121,7 @@ export const toggleGateChecklistItem = createServerFn({ method: "POST" })
       if (String(it?.key) !== data.key) return it;
       found = true;
       return {
+        ...it,
         key: it.key,
         label: it.label,
         required: it.required !== false,
