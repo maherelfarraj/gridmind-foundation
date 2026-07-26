@@ -89,7 +89,14 @@ export function parseKml(text: string, parser?: DomParserLike): KmlPlacemark[] {
               ) ?? "",
             )
           : [];
-      const rings = [ringOf(outer), ...inners.map((i) => ringOf(i))].filter((r) => r.length >= 3);
+      const closeRing = (r: Vertex[]): Vertex[] => {
+        const first = r[0];
+        const last = r[r.length - 1];
+        return first[0] === last[0] && first[1] === last[1] ? r : [...r, [first[0], first[1]]];
+      };
+      const rings = [ringOf(outer), ...inners.map((i) => ringOf(i))]
+        .filter((r) => r.length >= 3)
+        .map(closeRing);
       if (rings.length) {
         out.push({ name, description, geometry: { type: "Polygon", coordinates: rings } });
       }
