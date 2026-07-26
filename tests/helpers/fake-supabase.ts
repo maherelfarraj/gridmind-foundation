@@ -19,6 +19,8 @@ export interface FakeSupabaseOptions {
   rpc?: Record<string, (args: Row) => unknown>;
   /** Called for every insert/upsert to mint an id when the row has none. */
   newId?: () => string;
+  /** Return a message to make a given table+operation fail (simulated DB error). */
+  failOn?: (table: string, op: string) => string | null;
 }
 
 let counter = 0;
@@ -40,6 +42,7 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
     private readonly db: Tables,
     private readonly table: string,
     private readonly newId: () => string,
+    private readonly failOn?: (table: string, op: string) => string | null,
   ) {}
 
   private rows(): Row[] {
@@ -148,6 +151,8 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
   }
 
   private run(): { data: unknown; error: { message: string; code?: string } | null } {
+    const forced = this.failOn?.(this.table, this.op) ?? null;
+    if (forced) return { data: null, error: { message: forced } };
     const list = Array.isArray(this.payload) ? this.payload : [this.payload];
     let result: Row[] = [];
 
@@ -224,7 +229,7 @@ export function createFakeSupabase(seed: Tables = {}, options: FakeSupabaseOptio
 
   const client: FakeSupabase = {
     db,
-    from: (table: string) => new Query(db, table, newId),
+    from: (table: string) => new Query(db, table, newId, options.failOn),
     rpc: async (name: string, args: Row = {}) => {
       rpcCalls.push({ name, args });
       const handler = options.rpc?.[name];
