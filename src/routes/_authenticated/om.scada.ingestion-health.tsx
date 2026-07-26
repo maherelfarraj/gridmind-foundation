@@ -21,7 +21,7 @@ import { useActiveCompany } from "@/components/company-switcher";
 import { getIngestionHealth } from "@/lib/scada-ingestion.functions";
 import type { IngestionHealth } from "@/lib/scada/ingestion";
 
-export const Route = createFileRoute("/_authenticated/om/scada/health")({
+export const Route = createFileRoute("/_authenticated/om/scada/ingestion-health")({
   head: () => ({
     meta: [
       { title: "SCADA ingestion health · GridMind EPC" },

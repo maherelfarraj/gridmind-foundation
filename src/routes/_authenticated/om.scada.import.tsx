@@ -185,7 +185,7 @@ function ScadaImportPage() {
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(projects.data?.projects ?? []).map((p: { id: string; name: string }) => (
+                  {(projects.data ?? []).map((p: { id: string; name: string }) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>

@@ -129,6 +129,7 @@ import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_a
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedOmScadaMappingsRouteImport } from './routes/_authenticated/om.scada.mappings'
+import { Route as AuthenticatedOmScadaImportRouteImport } from './routes/_authenticated/om.scada.import'
 import { Route as AuthenticatedOmScadaHealthRouteImport } from './routes/_authenticated/om.scada.health'
 import { Route as AuthenticatedOmScadaConnectorsRouteImport } from './routes/_authenticated/om.scada.connectors'
 import { Route as AuthenticatedOmScadaAlarmsRouteImport } from './routes/_authenticated/om.scada.alarms'
@@ -879,6 +880,12 @@ const AuthenticatedOmScadaMappingsRoute =
     path: '/om/scada/mappings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOmScadaImportRoute =
+  AuthenticatedOmScadaImportRouteImport.update({
+    id: '/om/scada/import',
+    path: '/om/scada/import',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOmScadaHealthRoute =
   AuthenticatedOmScadaHealthRouteImport.update({
     id: '/om/scada/health',
@@ -1362,6 +1369,7 @@ export interface FileRoutesByFullPath {
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
   '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/om/scada/health': typeof AuthenticatedOmScadaHealthRoute
+  '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -1536,6 +1544,7 @@ export interface FileRoutesByTo {
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
   '/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/om/scada/health': typeof AuthenticatedOmScadaHealthRoute
+  '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -1718,6 +1727,7 @@ export interface FileRoutesById {
   '/_authenticated/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
   '/_authenticated/om/scada/connectors': typeof AuthenticatedOmScadaConnectorsRoute
   '/_authenticated/om/scada/health': typeof AuthenticatedOmScadaHealthRoute
+  '/_authenticated/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/_authenticated/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -1902,6 +1912,7 @@ export interface FileRouteTypes {
     | '/om/scada/alarms'
     | '/om/scada/connectors'
     | '/om/scada/health'
+    | '/om/scada/import'
     | '/om/scada/mappings'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -2076,6 +2087,7 @@ export interface FileRouteTypes {
     | '/om/scada/alarms'
     | '/om/scada/connectors'
     | '/om/scada/health'
+    | '/om/scada/import'
     | '/om/scada/mappings'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -2257,6 +2269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/scada/alarms'
     | '/_authenticated/om/scada/connectors'
     | '/_authenticated/om/scada/health'
+    | '/_authenticated/om/scada/import'
     | '/_authenticated/om/scada/mappings'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
@@ -3217,6 +3230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOmScadaMappingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/om/scada/import': {
+      id: '/_authenticated/om/scada/import'
+      path: '/om/scada/import'
+      fullPath: '/om/scada/import'
+      preLoaderRoute: typeof AuthenticatedOmScadaImportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/om/scada/health': {
       id: '/_authenticated/om/scada/health'
       path: '/om/scada/health'
@@ -4173,6 +4193,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOmScadaAlarmsRoute: typeof AuthenticatedOmScadaAlarmsRoute
   AuthenticatedOmScadaConnectorsRoute: typeof AuthenticatedOmScadaConnectorsRoute
   AuthenticatedOmScadaHealthRoute: typeof AuthenticatedOmScadaHealthRoute
+  AuthenticatedOmScadaImportRoute: typeof AuthenticatedOmScadaImportRoute
   AuthenticatedOmScadaMappingsRoute: typeof AuthenticatedOmScadaMappingsRoute
   AuthenticatedQaqcInspectionsIdRoute: typeof AuthenticatedQaqcInspectionsIdRoute
   AuthenticatedQaqcInspectionsNewRoute: typeof AuthenticatedQaqcInspectionsNewRoute
@@ -4276,6 +4297,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOmScadaAlarmsRoute: AuthenticatedOmScadaAlarmsRoute,
   AuthenticatedOmScadaConnectorsRoute: AuthenticatedOmScadaConnectorsRoute,
   AuthenticatedOmScadaHealthRoute: AuthenticatedOmScadaHealthRoute,
+  AuthenticatedOmScadaImportRoute: AuthenticatedOmScadaImportRoute,
   AuthenticatedOmScadaMappingsRoute: AuthenticatedOmScadaMappingsRoute,
   AuthenticatedQaqcInspectionsIdRoute: AuthenticatedQaqcInspectionsIdRoute,
   AuthenticatedQaqcInspectionsNewRoute: AuthenticatedQaqcInspectionsNewRoute,
