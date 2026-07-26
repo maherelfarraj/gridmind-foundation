@@ -73,7 +73,7 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
         name: `SLD E2E project ${suffix}`,
         code: `SLDE2E-${suffix.toUpperCase()}`,
         archetype: "utility_pv",
-        phase: "engineering",
+        phase: "development",
         status: "active",
         created_by: state.userId,
       })
