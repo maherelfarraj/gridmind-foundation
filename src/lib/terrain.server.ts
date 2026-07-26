@@ -102,7 +102,7 @@ export async function rollbackSurface(context: AuthContext, surfaceId: string): 
 export async function insertInChunks<T>(
   rows: T[],
   size: number,
-  insert: (chunk: T[]) => Promise<{ error: unknown }>,
+  insert: (chunk: T[]) => PromiseLike<{ error: unknown }>,
 ): Promise<void> {
   for (let i = 0; i < rows.length; i += size) {
     const { error } = await insert(rows.slice(i, i + size));
