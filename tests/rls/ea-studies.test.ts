@@ -178,7 +178,9 @@ describe.skipIf(!up)("P-170 electrical analysis — cross-tenant RLS", () => {
 
   const denyRead = (table: string, actor: () => Actor, filter: () => Record<string, string>) =>
     it(`${table}: no rows leak`, async () => {
-      let q = actor().client.from(table as never).select("id");
+      let q = actor()
+        .client.from(table as never)
+        .select("id");
       for (const [k, v] of Object.entries(filter())) q = q.eq(k, v);
       const { data, error } = await q;
       // Either an explicit permission error or, more usually, zero rows.

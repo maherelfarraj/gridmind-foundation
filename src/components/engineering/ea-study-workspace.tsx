@@ -322,8 +322,6 @@ export function EaStudyWorkspace({
 
       <EaValidationNotice />
 
-
-
       {approval ? (
         <Card>
           <CardContent className="flex flex-wrap items-center gap-3 py-3 text-sm">
