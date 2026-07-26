@@ -135,11 +135,7 @@ export async function persistValidation(
 }
 
 /** Merges the coordination snapshot (P-143) into the revision canvas jsonb. */
-export async function persistCoordination(
-  context: any,
-  graph: ValidationGraph,
-  snapshot: unknown,
-) {
+export async function persistCoordination(context: any, graph: ValidationGraph, snapshot: unknown) {
   const { error } = await context.supabase
     .from("sld_revisions")
     .update({ canvas: { ...graph.canvas, coordination: snapshot } } as any)

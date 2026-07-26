@@ -16,8 +16,7 @@ import {
 } from "./connectivity";
 
 /** Every coordination result carries this disclaimer — studies land in Batch 19. */
-export const COORDINATION_DISCLAIMER =
-  "preliminary — verify with project studies (Batch 19)";
+export const COORDINATION_DISCLAIMER = "preliminary — verify with project studies (Batch 19)";
 
 export type CoordinationCheckId =
   | "string_inverter"
@@ -116,12 +115,7 @@ const DEFAULTS = {
 
 const INVERTER_TYPES = new Set(["inverter", "pcs"]);
 const TRANSFORMER_TYPES = new Set(["transformer", "aux_transformer"]);
-const PROTECTION_TYPES = new Set([
-  "circuit_breaker",
-  "fuse",
-  "protection_relay",
-  "disconnector",
-]);
+const PROTECTION_TYPES = new Set(["circuit_breaker", "fuse", "protection_relay", "disconnector"]);
 const BESS_TYPES = new Set(["bess_rack", "battery_container"]);
 const NON_POWER = new Set(["earth", "signal"]);
 
@@ -185,7 +179,9 @@ export function inverterKw(obj: ConnObject): number | null {
 function pvKwpFor(graph: ConnGraph, inverterId: string): { kwp: number; sources: string[] } {
   const reached = reachableFrom(graph, inverterId, (id) => {
     const o = graph.objects.get(id);
-    return Boolean(o && (INVERTER_TYPES.has(o.symbol_type) || TRANSFORMER_TYPES.has(o.symbol_type)));
+    return Boolean(
+      o && (INVERTER_TYPES.has(o.symbol_type) || TRANSFORMER_TYPES.has(o.symbol_type)),
+    );
   });
   let kwp = 0;
   const sources: string[] = [];
@@ -287,8 +283,7 @@ export function checkStringInverter(
         "String Vmp at max temp": `${round(result.stringVmpHot)} V`,
         "Max modules allowed": String(result.maxModulesForVocMax),
       };
-      const formula =
-        "Voc(cold) = Voc_stc × (1 + coeff/100 × (Tmin − 25)) × modules_in_series";
+      const formula = "Voc(cold) = Voc_stc × (1 + coeff/100 × (Tmin − 25)) × modules_in_series";
 
       if (result.reason === "voc_exceeds_inverter_max") {
         issues.push(
@@ -482,7 +477,7 @@ export function checkInverterTransformer(
     if (nameplateKva && nameplateKva > 0) {
       const loadingPct = (sizing.loadKva / nameplateKva) * 100;
       const values = {
-        "Loading": `${loadingPct.toFixed(1)} %`,
+        Loading: `${loadingPct.toFixed(1)} %`,
         "Load kVA": String(round(sizing.loadKva, 1)),
         "Nameplate kVA": String(nameplateKva),
         "Suggested nameplate": `${sizing.nameplateKva} kVA`,
@@ -645,10 +640,17 @@ export function checkBess(
         );
       } else {
         issues.push(
-          issue("bess", "info", "bess_duration_ok", [bess.id], `${label(bess)} duration ${duration.toFixed(2)} h.`, {
-            values,
-            formula,
-          }),
+          issue(
+            "bess",
+            "info",
+            "bess_duration_ok",
+            [bess.id],
+            `${label(bess)} duration ${duration.toFixed(2)} h.`,
+            {
+              values,
+              formula,
+            },
+          ),
         );
       }
     }
@@ -689,7 +691,9 @@ export function checkBess(
       );
     }
 
-    const hasEms = neighbours.some((o) => o.symbol_type === "ems" || o.symbol_type === "scada_gateway");
+    const hasEms = neighbours.some(
+      (o) => o.symbol_type === "ems" || o.symbol_type === "scada_gateway",
+    );
     if (!hasEms) {
       issues.push(
         issue(

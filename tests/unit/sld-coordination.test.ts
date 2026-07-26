@@ -64,7 +64,9 @@ describe("checkStringInverter", () => {
     const issues = checkStringInverter(objects, [edge("c1", "s1", "i1", "dc_string")]);
     const err = issues.find((i) => i.code === "voc_exceeds_inverter_max");
     expect(err?.severity).toBe("error");
-    expect(Number(err?.values?.["String Voc at min temp"]?.replace(" V", ""))).toBeGreaterThan(1500);
+    expect(Number(err?.values?.["String Voc at min temp"]?.replace(" V", ""))).toBeGreaterThan(
+      1500,
+    );
     expect(err?.note).toBe(COORDINATION_DISCLAIMER);
   });
 
@@ -191,13 +193,18 @@ describe("checkInverterTransformer / checkTransformerLoading", () => {
 
 describe("checkBess", () => {
   it("warns when a battery container has no PCS", () => {
-    const issues = checkBess([obj("b1", "battery_container", { energy_kwh: 2000, power_kw: 1000 })], []);
+    const issues = checkBess(
+      [obj("b1", "battery_container", { energy_kwh: 2000, power_kw: 1000 })],
+      [],
+    );
     expect(issues.find((i) => i.code === "bess_no_pcs")?.severity).toBe("warning");
   });
 
   it("flags implausible durations and accepts sane ones", () => {
     const short = checkBess([obj("b1", "bess_rack", { energy_kwh: 100, power_kw: 1000 })], []);
-    expect(short.find((i) => i.code === "bess_duration_implausible")?.values?.Duration).toBe("0.10 h");
+    expect(short.find((i) => i.code === "bess_duration_implausible")?.values?.Duration).toBe(
+      "0.10 h",
+    );
 
     const ok = checkBess([obj("b2", "bess_rack", { energy_kwh: 2000, power_kw: 1000 })], []);
     expect(ok.find((i) => i.code === "bess_duration_ok")?.severity).toBe("info");
@@ -258,9 +265,7 @@ describe("runCoordination", () => {
     ];
     const result = runCoordination(objects, [edge("c1", "s1", "i1", "dc_string")]);
     expect(result.note).toBe(COORDINATION_DISCLAIMER);
-    expect(result.issue_count).toBe(
-      result.error_count + result.warning_count + result.info_count,
-    );
+    expect(result.issue_count).toBe(result.error_count + result.warning_count + result.info_count);
     expect(result.issues.every((i) => i.note === COORDINATION_DISCLAIMER)).toBe(true);
   });
 

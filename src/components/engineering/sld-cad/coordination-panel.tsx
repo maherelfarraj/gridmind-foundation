@@ -25,8 +25,10 @@ const CHECK_ORDER: CoordinationCheckId[] = [
 ];
 
 function SeverityIcon({ severity }: { severity: CoordinationIssue["severity"] }) {
-  if (severity === "error") return <CircleAlert className="mt-0.5 size-3.5 shrink-0 text-destructive" />;
-  if (severity === "warning") return <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning" />;
+  if (severity === "error")
+    return <CircleAlert className="mt-0.5 size-3.5 shrink-0 text-destructive" />;
+  if (severity === "warning")
+    return <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning" />;
   return <Info className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />;
 }
 
