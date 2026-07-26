@@ -203,10 +203,7 @@ describe("P-178 engine routing (mocked RPC)", () => {
     ]);
     const auth = authFor(client);
 
-    const result = await evaluateEventActions(
-      { db: client as unknown as Db, auth },
-      engineEvent,
-    );
+    const result = await evaluateEventActions({ db: client as unknown as Db, auth }, engineEvent);
 
     expect(result.pendingApproval).toBe(1);
     expect(result.executed).toBe(0);
@@ -220,7 +217,11 @@ describe("P-178 engine routing (mocked RPC)", () => {
   it("(c) approved decision executes; rejected decision creates nothing", async () => {
     // Approved
     const okClient = fake([
-      dbRule({ id: "r2", action_type: "warranty_claim", action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" } }),
+      dbRule({
+        id: "r2",
+        action_type: "warranty_claim",
+        action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" },
+      }),
     ]);
     okClient.db.event_action_log.push({
       id: "log-1",
@@ -246,7 +247,11 @@ describe("P-178 engine routing (mocked RPC)", () => {
 
     // Rejected
     const noClient = fake([
-      dbRule({ id: "r2", action_type: "warranty_claim", action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" } }),
+      dbRule({
+        id: "r2",
+        action_type: "warranty_claim",
+        action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" },
+      }),
     ]);
     noClient.db.event_action_log.push({
       id: "log-1",
@@ -273,7 +278,11 @@ describe("P-178 engine routing (mocked RPC)", () => {
 
   it("(b′) execution is blocked without a genuinely approved instance", async () => {
     const client = fake([
-      dbRule({ id: "r2", action_type: "warranty_claim", action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" } }),
+      dbRule({
+        id: "r2",
+        action_type: "warranty_claim",
+        action_config: { warranty_id: "8f3a1c22-6d5e-4a1b-9c77-2b0f4e6a1d33" },
+      }),
     ]);
     client.db.event_action_log.push({
       id: "log-1",
@@ -321,9 +330,7 @@ describe("P-178 engine routing (mocked RPC)", () => {
       ),
     );
 
-    const client = fake([
-      dbRule({ id: "r2", action_type: "warranty_claim", ai_assist: true }),
-    ]);
+    const client = fake([dbRule({ id: "r2", action_type: "warranty_claim", ai_assist: true })]);
     const auth = authFor(client);
     await evaluateEventActions({ db: client as unknown as Db, auth }, engineEvent);
 

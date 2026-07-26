@@ -168,7 +168,11 @@ describe.skipIf(!up)("P-178 Batch 20 RLS isolation", () => {
     const svc = serviceClient();
     for (const table of [...BATCH20_TABLES].reverse()) {
       const ids = seeded[table] ?? [];
-      if (ids.length) await svc.from(table as never).delete().in("id", ids);
+      if (ids.length)
+        await svc
+          .from(table as never)
+          .delete()
+          .in("id", ids);
     }
     for (const u of [tech, omAdmin]) {
       if (u) await svc.auth.admin.deleteUser(u.userId).catch(() => undefined);

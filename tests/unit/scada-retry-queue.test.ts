@@ -87,9 +87,7 @@ describe("P-178 retry queue processing", () => {
   });
 
   it("only picks up rows that are due", async () => {
-    const c = client([
-      queueRow({ id: "q-future", next_retry_at: "2026-04-01T13:00:00.000Z" }),
-    ]);
+    const c = client([queueRow({ id: "q-future", next_retry_at: "2026-04-01T13:00:00.000Z" })]);
     const summary = await processIngestionRetries(c, NOW);
     expect(summary.processed).toBe(0);
     expect(c.db.scada_telemetry).toHaveLength(0);

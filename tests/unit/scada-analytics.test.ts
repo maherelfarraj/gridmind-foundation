@@ -98,9 +98,10 @@ describe("availabilityPct", () => {
 
   it("excludes grid outage from numerator and denominator when configured", () => {
     // 1440 min period, 240 downtime of which 120 is grid
-    expect(
-      availabilityPct(1440, 240, { excludeGrid: true, gridOutageMinutes: 120 }),
-    ).toBeCloseTo(100 * (1 - 120 / 1320), 3);
+    expect(availabilityPct(1440, 240, { excludeGrid: true, gridOutageMinutes: 120 })).toBeCloseTo(
+      100 * (1 - 120 / 1320),
+      3,
+    );
   });
 
   it("is null-safe for a zero period", () => {
@@ -123,7 +124,11 @@ describe("performanceRatio", () => {
 
 describe("dataQuality", () => {
   it("reports missing samples and quality percentage", () => {
-    const flags = [...Array(200).fill("good"), ...Array(10).fill("suspect"), ...Array(5).fill("bad")];
+    const flags = [
+      ...Array(200).fill("good"),
+      ...Array(10).fill("suspect"),
+      ...Array(5).fill("bad"),
+    ];
     const dq = dataQuality(1440, 5, flags);
     expect(dq.expectedSamples).toBe(288);
     expect(dq.receivedSamples).toBe(215);
@@ -157,10 +162,8 @@ describe("dataQuality", () => {
 describe("compareToGuarantee", () => {
   it("returns no_guarantee when terms are absent", () => {
     expect(
-      compareToGuarantee(
-        { availabilityPct: 99, performanceRatioPct: 80, energyKwh: 1000 },
-        null,
-      ).status,
+      compareToGuarantee({ availabilityPct: 99, performanceRatioPct: 80, energyKwh: 1000 }, null)
+        .status,
     ).toBe("no_guarantee");
   });
 
@@ -176,7 +179,12 @@ describe("compareToGuarantee", () => {
 
   it("pro-rates annual energy guarantees by the period fraction", () => {
     const res = compareToGuarantee(
-      { availabilityPct: null, performanceRatioPct: null, energyKwh: 300_000, energyPeriodFraction: 1 / 365 },
+      {
+        availabilityPct: null,
+        performanceRatioPct: null,
+        energyKwh: 300_000,
+        energyPeriodFraction: 1 / 365,
+      },
       { annual_energy_mwh: 109_500 },
     );
     const energy = res.checks.find((c) => c.metric === "energy")!;
@@ -222,9 +230,7 @@ describe("P-178 lost energy", () => {
     expected_power_kw: 400,
   }));
   // 2 h equipment fault, 10:00 → 12:00, fully inside the daylight curve.
-  const down = [
-    { start: DAY + 10 * 3_600_000, end: DAY + 12 * 3_600_000 },
-  ];
+  const down = [{ start: DAY + 10 * 3_600_000, end: DAY + 12 * 3_600_000 }];
 
   it("integrates expected power over the down window (exact kWh)", () => {
     // 400 kW × 2 h = 800 kWh
@@ -249,13 +255,12 @@ describe("P-178 availability", () => {
 
   it("grid-exclusion variant removes grid minutes from both terms", () => {
     // 432 down of which 432 is grid → 100% contractual availability.
-    expect(
-      availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 432 }),
-    ).toBe(100);
+    expect(availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 432 })).toBe(100);
     // Half grid: (432−216)/(43200−216) = 0.502...%
-    expect(
-      availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 216 }),
-    ).toBeCloseTo(99.497, 2);
+    expect(availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 216 })).toBeCloseTo(
+      99.497,
+      2,
+    );
   });
 
   it("returns null for a non-positive period", () => {
@@ -282,7 +287,11 @@ describe("P-178 data quality", () => {
 
   it("reports the correct missing % for a 1 h gap", () => {
     const received = 288 - 12; // one hour of 5-min samples missing
-    const q = dataQuality(PERIOD, POLL, Array.from({ length: received }, () => "good"));
+    const q = dataQuality(
+      PERIOD,
+      POLL,
+      Array.from({ length: received }, () => "good"),
+    );
     expect(q.expectedSamples).toBe(288);
     expect(q.receivedSamples).toBe(received);
     expect(q.missingSamples).toBe(12);
@@ -301,7 +310,7 @@ describe("P-178 data quality", () => {
   }
 
   it("flags redundant sensors diverging 3% for 25 h", () => {
-    const q = dataQuality(PERIOD, POLL, ["good"], [pair(26, 3)]) // 26 hourly samples = 25 h span;
+    const q = dataQuality(PERIOD, POLL, ["good"], [pair(26, 3)]); // 26 hourly samples = 25 h span;
     expect(q.driftFlags).toHaveLength(1);
     expect(q.driftFlags[0].label).toBe("poa_irradiance");
     expect(q.driftFlags[0].maxDivergencePct).toBeGreaterThan(2);

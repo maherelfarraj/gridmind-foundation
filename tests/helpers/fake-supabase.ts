@@ -26,7 +26,10 @@ export interface FakeSupabaseOptions {
 let counter = 0;
 const defaultId = () => `id-${++counter}`;
 
-class Query implements PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }> {
+class Query implements PromiseLike<{
+  data: unknown;
+  error: { message: string; code?: string } | null;
+}> {
   private filters: Filter[] = [];
   private op: "select" | "insert" | "update" | "delete" | "upsert" = "select";
   private payload: Row | Row[] = {};
@@ -71,7 +74,10 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
   upsert(payload: Row | Row[], opts?: { onConflict?: string; ignoreDuplicates?: boolean }) {
     this.op = "upsert";
     this.payload = payload;
-    this.conflictKeys = (opts?.onConflict ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    this.conflictKeys = (opts?.onConflict ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     this.ignoreDuplicates = opts?.ignoreDuplicates ?? false;
     return this;
   }
@@ -93,7 +99,10 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
   }
   not(col: string, op: string, val: string) {
     if (op === "in") {
-      const list = val.replace(/^\(|\)$/g, "").split(",").map((s) => s.trim());
+      const list = val
+        .replace(/^\(|\)$/g, "")
+        .split(",")
+        .map((s) => s.trim());
       this.filters.push((r) => !list.includes(String(r[col])));
     } else {
       this.filters.push((r) => r[col] !== val);
@@ -101,7 +110,9 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
     return this;
   }
   like(col: string, pattern: string) {
-    const re = new RegExp(`^${pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/%/g, ".*")}$`);
+    const re = new RegExp(
+      `^${pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/%/g, ".*")}$`,
+    );
     this.filters.push((r) => re.test(String(r[col] ?? "")));
     return this;
   }
@@ -194,7 +205,8 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
     }
 
     if (this.mode === "single") {
-      if (result.length !== 1) return { data: null, error: { message: "no rows", code: "PGRST116" } };
+      if (result.length !== 1)
+        return { data: null, error: { message: "no rows", code: "PGRST116" } };
       return { data: result[0], error: null };
     }
     if (this.mode === "maybe") return { data: result[0] ?? null, error: null };
@@ -203,7 +215,10 @@ class Query implements PromiseLike<{ data: unknown; error: { message: string; co
 
   then<T1 = unknown, T2 = never>(
     onfulfilled?:
-      | ((value: { data: unknown; error: { message: string; code?: string } | null }) => T1 | PromiseLike<T1>)
+      | ((value: {
+          data: unknown;
+          error: { message: string; code?: string } | null;
+        }) => T1 | PromiseLike<T1>)
       | null,
     onrejected?: ((reason: unknown) => T2 | PromiseLike<T2>) | null,
   ): PromiseLike<T1 | T2> {

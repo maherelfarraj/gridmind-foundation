@@ -33,12 +33,7 @@ function ev(
 
 describe("P-178 downtime classification precedence", () => {
   it("maintenance wins over an overlapping trip", () => {
-    const out = classifyDowntime(
-      [ev("maintenance", 2, 6), ev("trip", 3, 5)],
-      [],
-      [],
-      window,
-    );
+    const out = classifyDowntime([ev("maintenance", 2, 6), ev("trip", 3, 5)], [], [], window);
     expect(out.byClass.maintenance).toBe(240);
     expect(out.byClass.equipment_fault).toBe(0);
     expect(out.totalMinutes).toBe(240);
@@ -87,7 +82,7 @@ describe("P-178 downtime invariant on randomized fixtures", () => {
   // Deterministic LCG so failures are reproducible.
   function rng(seed: number) {
     let s = seed >>> 0;
-    return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 0x100000000);
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 0x100000000;
   }
 
   const TYPES = [
