@@ -127,11 +127,6 @@ export function AppSidebar() {
     [enabledModuleKeys, isOnlyExternalViewer, isSuperAdmin, projectId, visibleModules],
   );
 
-  const isActive = useCallback(
-    (url: string) => pathname === url || pathname.startsWith(`${url}/`),
-    [pathname],
-  );
-
   const groups = useMemo(
     () =>
       NAV_GROUPS.map((g) => ({
@@ -141,12 +136,29 @@ export function AppSidebar() {
     [isItemVisible],
   );
 
+  // Longest matching destination wins so a parent index (/om/scada) doesn't
+  // stay highlighted alongside its child (/om/scada/alarms).
+  const activeUrl = useMemo(() => {
+    let best: string | null = null;
+    for (const { items } of groups) {
+      for (const item of items) {
+        const url = resolveUrl(item.url, projectId);
+        const matches = pathname === url || pathname.startsWith(`${url}/`);
+        if (matches && (best === null || url.length > best.length)) best = url;
+      }
+    }
+    return best;
+  }, [groups, pathname, projectId]);
+
+  const isActive = useCallback((url: string) => url === activeUrl, [activeUrl]);
+
   const activeGroupKey = useMemo(() => {
     for (const { group, items } of groups) {
-      if (items.some((i) => isActive(resolveUrl(i.url, projectId)))) return group.key;
+      if (items.some((i) => resolveUrl(i.url, projectId) === activeUrl)) return group.key;
     }
     return null;
-  }, [groups, isActive, projectId]);
+  }, [groups, activeUrl, projectId]);
+
 
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
