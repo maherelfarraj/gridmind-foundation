@@ -145,7 +145,7 @@ export interface MpptAllocation {
   inverterDcKwp: number;
   dcAcRatio: number;
   loadingPct: number;
-  combinerAssignment: Record<string, string[]> & { inputs_per_combiner?: number };
+  combinerAssignment: Record<string, string[] | number>;
   warnings: StringWarning[];
 }
 
@@ -399,7 +399,12 @@ export function generateStringing(input: StringingInput): StringingResult {
       const combinerLabel = `CB-${pad(combinerIndex + 1, 2)}`;
       const combinerPoint = combinerAnchors[combinerIndex % combinerAnchors.length].centroid;
 
-      const lengthM = routeLengthM(block.centroid, combinerPoint, slot.station.centroid, routingFactor);
+      const lengthM = routeLengthM(
+        block.centroid,
+        combinerPoint,
+        slot.station.centroid,
+        routingFactor,
+      );
       const current = module.impA;
       const drop = voltageDropV(lengthM, current, dcCable);
       const dropPct = sizing.stringVmpHot > 0 ? (drop / sizing.stringVmpHot) * 100 : 0;
@@ -534,10 +539,7 @@ export function generateStringing(input: StringingInput): StringingResult {
     const lengthM = round(
       group.reduce((sum, st) => sum + distance(st.centroid, anchor), 0) * routingFactor,
     );
-    const feederKw = group.reduce(
-      (sum, st) => sum + (inverterDcKwpTotals.get(st.label) ?? 0),
-      0,
-    );
+    const feederKw = group.reduce((sum, st) => sum + (inverterDcKwpTotals.get(st.label) ?? 0), 0);
     const acKw = Math.min(feederKw, group.length * inverter.acKw);
     const currentA = round(mvKv > 0 ? acKw / (Math.sqrt(3) * mvKv) : 0, 2);
     const rating = feederRatingA ?? mv.ampacityA ?? 400;
@@ -589,8 +591,14 @@ export function generateStringing(input: StringingInput): StringingResult {
     combiners: strings.length > 0 ? combinerCount : 0,
     inverters: inverterStations.length,
     transformers: transformer ? Math.max(1, feeders.length) : 0,
-    dc_cable_m: round(strings.reduce((s, st) => s + st.cable.lengthM, 0), 1),
-    mv_cable_m: round(feeders.reduce((s, fd) => s + fd.lengthM, 0), 1),
+    dc_cable_m: round(
+      strings.reduce((s, st) => s + st.cable.lengthM, 0),
+      1,
+    ),
+    mv_cable_m: round(
+      feeders.reduce((s, fd) => s + fd.lengthM, 0),
+      1,
+    ),
   };
 
   const dcKwp = round(strings.reduce((s, st) => s + st.dcPowerKwp, 0));
