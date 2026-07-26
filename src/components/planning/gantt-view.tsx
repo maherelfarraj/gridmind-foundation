@@ -262,6 +262,9 @@ export function GanttView({
                     className={cn(
                       "absolute top-3 flex h-4 items-center rounded-sm text-[10px] font-medium text-primary-foreground shadow-sm",
                       color,
+                      highlightCriticalPath &&
+                        t.is_critical &&
+                        "bg-destructive ring-2 ring-destructive",
                     )}
                     style={{
                       left: `${leftPct}%`,
