@@ -112,13 +112,14 @@ export function proposeDrainagePaths(
   for (let i = 0; i < flow.accumulation.length; i++) {
     if (flow.accumulation[i] >= threshold) candidates.push(i);
   }
-  candidates.sort((a, b) => flow.accumulation[b] - flow.accumulation[a]);
+  // Ascending accumulation walks channel HEADS first, so each path runs head →
+  // outlet and later tributaries stop where they merge into an existing path.
+  candidates.sort((a, b) => flow.accumulation[a] - flow.accumulation[b] || a - b);
 
   const used = new Set<number>();
   const proposals: DrainageProposal[] = [];
 
   for (const start of candidates) {
-    if (proposals.length >= maxPaths) break;
     if (used.has(start)) continue;
     const coords: Vertex[] = [];
     let peak = 0;
@@ -140,7 +141,7 @@ export function proposeDrainagePaths(
     const length = lineLength(coords);
     if (length < minLength) continue;
     proposals.push({
-      proposal_ref: `DR-${String(proposals.length + 1).padStart(2, "0")}`,
+      proposal_ref: "",
       coordinates: coords,
       accumulation_cells: Math.round(peak),
       catchment_m2: roundTo(peak * cellArea, 2),
@@ -148,7 +149,11 @@ export function proposeDrainagePaths(
     });
   }
 
-  return proposals;
+  // Rank by contributing catchment and keep the most significant channels.
+  return proposals
+    .sort((a, b) => b.catchment_m2 - a.catchment_m2 || b.length_m - a.length_m)
+    .slice(0, maxPaths)
+    .map((p, idx) => ({ ...p, proposal_ref: `DR-${String(idx + 1).padStart(2, "0")}` }));
 }
 
 export function proposalToGeoJson(proposal: DrainageProposal) {
