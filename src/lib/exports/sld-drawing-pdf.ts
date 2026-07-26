@@ -56,8 +56,8 @@ export async function buildDrawingPdf(args: {
   const dataUrl = await blobToDataUrl(png);
   const image = await loadImage(dataUrl);
 
-  const maxW = doc.internal.pageSize.getWidth() - mm(PAGE.marginX) * 2;
-  const maxH = doc.internal.pageSize.getHeight() - y - mm(PAGE.marginBottom ?? 20);
+  const maxW = doc.internal.pageSize.getWidth() - mm(PAGE.margin) * 2;
+  const maxH = doc.internal.pageSize.getHeight() - y - mm(PAGE.margin);
   const ratio = image.height / image.width || 0.7;
   let w = maxW;
   let h = w * ratio;
@@ -65,7 +65,7 @@ export async function buildDrawingPdf(args: {
     h = maxH;
     w = h / ratio;
   }
-  doc.addImage(dataUrl, "PNG", mm(PAGE.marginX), y, w, h);
+  doc.addImage(dataUrl, "PNG", mm(PAGE.margin), y, w, h);
   drawFooters(doc, theme);
   return doc.output("blob");
 }
