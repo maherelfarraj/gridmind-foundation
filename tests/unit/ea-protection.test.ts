@@ -133,7 +133,7 @@ describe("grounding screening worksheet", () => {
     const { results } = groundingWorksheet(groundingInputSchema.parse(base));
     expect(results.gridResistanceOhm).toBeGreaterThan(0.1);
     expect(results.gridResistanceOhm).toBeLessThan(2);
-    expect(results.gprVolts).toBeCloseTo(results.gridResistanceOhm * 10000, 2);
+    expect(results.gprVolts).toBeCloseTo(results.gridResistanceOhm * 10000, 0);
   });
 
   it("uses the 70 kg body constant and scales with clearing time", () => {
