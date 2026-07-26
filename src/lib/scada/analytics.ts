@@ -40,7 +40,8 @@ export const FORMULAS = {
   availability: "availability % = 100 × (1 − downtime_minutes ÷ period_minutes)",
   availabilityExclGrid:
     "contractual availability % = 100 × (1 − (downtime − grid_outage) ÷ (period − grid_outage))",
-  performanceRatio: "PR % = actual_kWh ÷ (irradiance_kWh/m² × nameplate_kW ÷ 1000) × 100",
+  performanceRatio:
+    "PR % = actual_kWh ÷ (irradiance_kWh/m² × nameplate_kW ÷ G_STC) × 100, with G_STC = 1 kW/m² (use Wh/m² ÷ 1000 to convert)",
   dataQuality: "data quality % = 100 × good_samples ÷ expected_samples",
   guarantee: "margin % = actual − guaranteed (percentage-point delta); breach when margin < 0",
 } as const;
@@ -310,10 +311,16 @@ export function availabilityPct(
 /**
  * performanceRatio — IEC 61724 style PR.
  *
- *   PR % = actual_kWh ÷ (irradiance_kWh/m² × nameplate_kW ÷ 1000) × 100
+ *   reference_kWh = irradiance_kWh/m² × nameplate_kW ÷ G_STC, G_STC = 1 kW/m²
+ *   PR %          = actual_kWh ÷ reference_kWh × 100
+ *
+ * Irradiance must be supplied in kWh/m² (Wh/m² ÷ 1000).
  *
  * Returns null when irradiance or nameplate is missing/zero (never fabricates).
  */
+/** Standard test-condition irradiance, kW/m². */
+export const G_STC_KW_M2 = 1;
+
 export function performanceRatio(
   actualKwh: number | null | undefined,
   irradianceKwhM2: number | null | undefined,
@@ -323,7 +330,7 @@ export function performanceRatio(
   if (!Number.isFinite(actualKwh) || !Number.isFinite(irradianceKwhM2) || !Number.isFinite(nameplateKw))
     return null;
   if (irradianceKwhM2 <= 0 || nameplateKw <= 0) return null;
-  const reference = (irradianceKwhM2 * nameplateKw) / 1000;
+  const reference = (irradianceKwhM2 * nameplateKw) / G_STC_KW_M2;
   if (reference <= 0) return null;
   return Number(((actualKwh / reference) * 100).toFixed(3));
 }
