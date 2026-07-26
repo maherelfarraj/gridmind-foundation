@@ -67,7 +67,7 @@ export const getProjectOverviewKpis = createServerFn({ method: "GET" })
         .select("name, end_date, is_milestone, status")
         .eq("project_id", proj.id)
         .eq("is_milestone", true)
-        .neq("status", "complete")
+        .neq("status", "completed")
         .order("end_date", { ascending: true })
         .limit(1),
     ]);
