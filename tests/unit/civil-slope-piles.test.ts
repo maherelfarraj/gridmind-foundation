@@ -146,7 +146,9 @@ describe("tracker slope tolerance", () => {
       ],
       10,
     );
-    expect(results[0].status).toBe("pass");
+    // 12% against a 15% block override sits in the 80%-of-tolerance warn band
+    expect(results[0].status).toBe("warn");
+    expect(results[0].status).not.toBe("fail");
     expect(results[0].tolerance_pct).toBe(15);
     expect(results[1].status).toBe("no_data");
     expect(summary.no_data).toBe(1);

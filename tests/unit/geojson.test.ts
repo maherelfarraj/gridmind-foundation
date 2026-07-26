@@ -249,9 +249,10 @@ describe("weighted scoring invariants", () => {
   });
 
   it("keeps EPC cost monotone in each cost driver", () => {
-    const base = epcCostUsd(1000, 5000, 2000, DEFAULT_UNIT_COSTS);
-    expect(epcCostUsd(1100, 5000, 2000, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
-    expect(epcCostUsd(1000, 6000, 2000, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
-    expect(epcCostUsd(1000, 5000, 2500, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
+    const base = epcCostUsd(1000, 5000, 2000, 800, DEFAULT_UNIT_COSTS);
+    expect(epcCostUsd(1100, 5000, 2000, 800, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
+    expect(epcCostUsd(1000, 6000, 2000, 800, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
+    expect(epcCostUsd(1000, 5000, 2500, 800, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
+    expect(epcCostUsd(1000, 5000, 2000, 900, DEFAULT_UNIT_COSTS)).toBeGreaterThan(base);
   });
 });
