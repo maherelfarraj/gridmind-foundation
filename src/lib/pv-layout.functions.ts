@@ -15,6 +15,7 @@ import {
   canWritePvLayout,
   httpError,
   mapLayoutRpcError,
+  reloadLayout,
   toBlockRow,
   toLayoutRow,
 } from "@/lib/pv-layout.server";
@@ -121,7 +122,6 @@ export const saveLayoutBlocks = createServerFn({ method: "POST" })
     return layout;
   });
 
-
 /** Draft <-> under_review only; approval transitions land with P-153. */
 export const setPvLayoutStatus = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -142,4 +142,37 @@ export const setPvLayoutStatus = createServerFn({ method: "POST" })
       status: data.status,
     });
     return layout;
+  });
+
+/** Opens a P-111 approval instance (rule `pv_layout_approval`) for the layout. */
+export const submitPvLayout = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ layoutId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<PvLayoutRow> => {
+    requireSupabaseAuth(context);
+    if (!(await canWritePvLayout(context))) httpError(403, "forbidden");
+
+    const { data: row, error } = await context.supabase.rpc("submit_pv_layout", {
+      p_layout_id: data.layoutId,
+    } as any);
+    if (error) mapLayoutRpcError(error as any);
+    return toLayoutRow(Array.isArray(row) ? row[0] : row);
+  });
+
+/**
+ * Engine callback: applies the approval instance decision. On approve the
+ * layout is locked and every sibling option on the project is superseded.
+ */
+export const decidePvLayoutApproval = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ layoutId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<PvLayoutRow> => {
+    requireSupabaseAuth(context);
+    if (!(await canWritePvLayout(context))) httpError(403, "forbidden");
+
+    const { data: row, error } = await context.supabase.rpc("decide_pv_layout_approval", {
+      p_layout_id: data.layoutId,
+    } as any);
+    if (error) mapLayoutRpcError(error as any);
+    return toLayoutRow(Array.isArray(row) ? row[0] : row);
   });
