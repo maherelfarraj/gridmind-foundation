@@ -161,6 +161,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport } 
 import { Route as AuthenticatedProjectsProjectIdEngineeringPvSiteRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-site'
 import { Route as AuthenticatedProjectsProjectIdEngineeringPvSimulationRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-simulation'
 import { Route as AuthenticatedProjectsProjectIdEngineeringPvLayoutRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-layout'
+import { Route as AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRouteImport } from './routes/_authenticated/projects.$projectId.engineering.layout-optimization'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
@@ -1064,6 +1065,14 @@ const AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute =
     path: '/pv-layout',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute =
+  AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRouteImport.update(
+    {
+      id: '/layout-optimization',
+      path: '/layout-optimization',
+      getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+    } as any,
+  )
 const AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute =
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport.update({
     id: '/ifc-release',
@@ -1364,6 +1373,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
   '/projects/$projectId/engineering/pv-simulation': typeof AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute
   '/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
@@ -1529,6 +1539,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
   '/projects/$projectId/engineering/pv-simulation': typeof AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute
   '/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
@@ -1706,6 +1717,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/_authenticated/projects/$projectId/engineering/layout-optimization': typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   '/_authenticated/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
   '/_authenticated/projects/$projectId/engineering/pv-simulation': typeof AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute
   '/_authenticated/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
@@ -1883,6 +1895,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/civil-features'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/ifc-release'
+    | '/projects/$projectId/engineering/layout-optimization'
     | '/projects/$projectId/engineering/pv-layout'
     | '/projects/$projectId/engineering/pv-simulation'
     | '/projects/$projectId/engineering/pv-site'
@@ -2048,6 +2061,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
     | '/projects/$projectId/engineering/ifc-release'
+    | '/projects/$projectId/engineering/layout-optimization'
     | '/projects/$projectId/engineering/pv-layout'
     | '/projects/$projectId/engineering/pv-simulation'
     | '/projects/$projectId/engineering/pv-site'
@@ -2224,6 +2238,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/civil-features'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
+    | '/_authenticated/projects/$projectId/engineering/layout-optimization'
     | '/_authenticated/projects/$projectId/engineering/pv-layout'
     | '/_authenticated/projects/$projectId/engineering/pv-simulation'
     | '/_authenticated/projects/$projectId/engineering/pv-site'
@@ -3346,6 +3361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/layout-optimization': {
+      id: '/_authenticated/projects/$projectId/engineering/layout-optimization'
+      path: '/layout-optimization'
+      fullPath: '/projects/$projectId/engineering/layout-optimization'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/ifc-release': {
       id: '/_authenticated/projects/$projectId/engineering/ifc-release'
       path: '/ifc-release'
@@ -3745,6 +3767,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute: typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute: typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute: typeof AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute
   AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
   AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute
   AuthenticatedProjectsProjectIdEngineeringPvSiteRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
@@ -3768,6 +3791,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute:
       AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren,
+    AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute:
+      AuthenticatedProjectsProjectIdEngineeringLayoutOptimizationRoute,
     AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute:
       AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute,
     AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute:

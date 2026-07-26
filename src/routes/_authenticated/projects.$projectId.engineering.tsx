@@ -15,6 +15,7 @@ const SUB_TABS = [
   { to: "yield" as const, label: "Yield" },
   { to: "terrain" as const, label: "Terrain" },
   { to: "civil-features" as const, label: "Civil features" },
+  { to: "layout-optimization" as const, label: "Optimization" },
 
   { to: "bom" as const, label: "BOM" },
   { to: "uploads" as const, label: "Site data uploads" },
