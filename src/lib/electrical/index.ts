@@ -20,7 +20,10 @@ import {
   PF_CORRECTION_METHOD,
   REACTIVE_POWER_METHOD,
 } from "./capacitor-bank";
+import { arcFlashDataPrep, arcFlashInputSchema, ARC_FLASH_METHOD } from "./arc-flash";
 import { dcSystemCalc, dcSystemInputSchema, DC_SYSTEM_METHOD } from "./dc-system";
+import { groundingInputSchema, groundingWorksheet, GROUNDING_METHOD } from "./grounding";
+import { harmonicsInputSchema, harmonicsWorksheet, HARMONICS_METHOD } from "./harmonics";
 import {
   generatorSizingInputSchema,
   sizeGenerator,
@@ -48,6 +51,9 @@ export * from "./generator-sizing";
 export * from "./capacitor-bank";
 export * from "./dc-system";
 export * from "./aux-ac";
+export * from "./harmonics";
+export * from "./grounding";
+export * from "./arc-flash";
 
 export type Calculator = {
   studyType: string;
@@ -136,15 +142,39 @@ export const WAVE2_CALCULATORS = {
   },
 } satisfies Record<string, Calculator>;
 
+/** Wave 3 worksheets (P-168): harmonics, grounding screening and arc-flash data prep. */
+export const WAVE3_CALCULATORS = {
+  harmonics: {
+    studyType: "harmonics",
+    method: HARMONICS_METHOD,
+    inputSchema: harmonicsInputSchema,
+    compute: (input: unknown) => harmonicsWorksheet(harmonicsInputSchema.parse(input)),
+  },
+  grounding: {
+    studyType: "grounding",
+    method: GROUNDING_METHOD,
+    inputSchema: groundingInputSchema,
+    compute: (input: unknown) => groundingWorksheet(groundingInputSchema.parse(input)),
+  },
+  arc_flash: {
+    studyType: "arc_flash",
+    method: ARC_FLASH_METHOD,
+    inputSchema: arcFlashInputSchema,
+    compute: (input: unknown) => arcFlashDataPrep(arcFlashInputSchema.parse(input)),
+  },
+} satisfies Record<string, Calculator>;
+
 /** Every wired calculator — the single source of truth for the EA record bridge. */
-export const CALCULATORS = { ...WAVE1_CALCULATORS, ...WAVE2_CALCULATORS };
+export const CALCULATORS = { ...WAVE1_CALCULATORS, ...WAVE2_CALCULATORS, ...WAVE3_CALCULATORS };
 
 export type Wave1StudyType = keyof typeof WAVE1_CALCULATORS;
 export type Wave2StudyType = keyof typeof WAVE2_CALCULATORS;
+export type Wave3StudyType = keyof typeof WAVE3_CALCULATORS;
 export type CalculatorStudyType = keyof typeof CALCULATORS;
 
 export const WAVE1_STUDY_TYPES = Object.keys(WAVE1_CALCULATORS) as Wave1StudyType[];
 export const WAVE2_STUDY_TYPES = Object.keys(WAVE2_CALCULATORS) as Wave2StudyType[];
+export const WAVE3_STUDY_TYPES = Object.keys(WAVE3_CALCULATORS) as Wave3StudyType[];
 export const CALCULATOR_STUDY_TYPES = Object.keys(CALCULATORS) as CalculatorStudyType[];
 
 export function isWave1StudyType(value: string): value is Wave1StudyType {
