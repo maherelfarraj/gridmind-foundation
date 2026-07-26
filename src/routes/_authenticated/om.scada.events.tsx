@@ -273,7 +273,6 @@ function EventTimelinePage() {
                       ) : (
                         (e.node_name ?? e.node_tag ?? e.project_name ?? "—")
                       )}
-
                     </p>
                   </li>
                 ))}
