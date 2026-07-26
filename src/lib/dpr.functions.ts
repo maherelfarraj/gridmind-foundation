@@ -22,6 +22,7 @@ import {
   weatherDelayInput,
   type DprStatus,
 } from "@/lib/dpr.rules";
+import { gpsRejectionReason } from "@/lib/field-exec.rules";
 import { withIdempotency } from "@/lib/offline-mirror";
 
 // ---------------------------------------------------------------------------
@@ -105,6 +106,8 @@ export interface SitePhotoRow {
   discipline: string | null;
   area: string | null;
   taken_at: string;
+  media_type?: "photo" | "video" | null;
+
   uploaded_by: string | null;
   created_at: string;
 }
@@ -783,6 +786,7 @@ export const attachPhoto = createServerFn({ method: "POST" })
           caption: data.caption ?? null,
           discipline: data.discipline ?? null,
           area: data.area ?? null,
+          media_type: data.mediaType,
           uploaded_by: userId,
         };
         const { data: row, error } = await context.supabase
@@ -949,13 +953,34 @@ export const submitDpr = createServerFn({ method: "POST" })
           );
         }
 
+        // P-181 — mobile submits must carry a fresh, in-range GPS fix. Client
+        // coordinates are stored as evidence only, never trusted for logic.
+        const gpsReason = gpsRejectionReason(
+          {
+            source: data.source,
+            latitude: data.latitude ?? null,
+            longitude: data.longitude ?? null,
+            gpsCapturedAt: data.gpsCapturedAt ?? null,
+          },
+          Date.now(),
+        );
+        if (gpsReason) httpError(422, "gps_required", gpsReason);
+
         const { data: updated, error } = await context.supabase
           .from("construction_daily_reports")
           .update({
             status: "submitted" as DprStatus,
             submitted_by: userId,
             submitted_at: new Date().toISOString(),
+            ...(data.source === "mobile"
+              ? {
+                  latitude: data.latitude,
+                  longitude: data.longitude,
+                  gps_captured_at: data.gpsCapturedAt,
+                }
+              : {}),
           } as any)
+
           .eq("id", data.id)
           .select("*")
           .maybeSingle();

@@ -100,6 +100,8 @@ export const attachPhotoInput = z.object({
   caption: z.string().trim().max(500).nullable().optional(),
   area: z.string().trim().max(120).nullable().optional(),
   discipline: z.string().trim().max(60).nullable().optional(),
+  mediaType: z.enum(["photo", "video"]).default("photo"),
+
   clientIdempotencyKey: idem,
 });
 
@@ -121,6 +123,11 @@ export const observationInput = z.object({
 export const submitDprInput = z.object({
   id: z.string().uuid(),
   acknowledgeNoPhotos: z.boolean().default(false),
+  /** P-181 — mobile submissions must carry a fresh GPS fix. */
+  source: z.enum(["web", "mobile"]).default("web"),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  gpsCapturedAt: z.string().datetime().nullable().optional(),
   clientIdempotencyKey: idem,
 });
 

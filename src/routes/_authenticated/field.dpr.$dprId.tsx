@@ -7,6 +7,7 @@ import { z } from "zod";
 import {
   AlertTriangle,
   ArrowLeft,
+  Boxes,
   Camera,
   CheckCircle2,
   ChevronLeft,
@@ -14,12 +15,15 @@ import {
   CloudRain,
   Package,
   Send,
+  Truck,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { PhotoGuardDialog } from "@/components/dpr/photo-guard-dialog";
+import { StepEquipment } from "@/components/dpr/step-equipment";
 import { StepManpower } from "@/components/dpr/step-manpower";
+import { StepMaterials } from "@/components/dpr/step-materials";
 import { StepPhotos } from "@/components/dpr/step-photos";
 import { StepQuantities } from "@/components/dpr/step-quantities";
 import { StepWeather } from "@/components/dpr/step-weather";
@@ -31,7 +35,7 @@ import { dprDetailQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { approveDpr, submitDpr } from "@/lib/dpr.functions";
 
 const searchSchema = z.object({
-  step: z.coerce.number().int().min(1).max(4).default(1),
+  step: z.coerce.number().int().min(1).max(6).default(1),
 });
 
 export const Route = createFileRoute("/_authenticated/field/dpr/$dprId")({
@@ -62,7 +66,38 @@ const STEPS = [
   { id: 2, label: "Weather", icon: CloudRain },
   { id: 3, label: "Quantities", icon: Package },
   { id: 4, label: "Photos", icon: Camera },
+  { id: 5, label: "Equipment", icon: Truck },
+  { id: 6, label: "Materials", icon: Boxes },
 ] as const;
+
+const LAST_STEP = 6;
+
+/** Coarse mobile detection — decides whether a GPS fix is mandatory. */
+function isMobileClient(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+/** Best-effort fresh GPS fix; resolves null when unavailable. */
+async function captureGps(): Promise<{
+  latitude: number;
+  longitude: number;
+  gpsCapturedAt: string;
+} | null> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) return null;
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        resolve({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          gpsCapturedAt: new Date(pos.timestamp).toISOString(),
+        }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
+    );
+  });
+}
 
 function DprDetailPage() {
   const { dprId } = Route.useParams();
@@ -80,7 +115,20 @@ function DprDetailPage() {
     qc.invalidateQueries({ queryKey: dprDetailQueryOptions(dprId).queryKey });
 
   const submitMut = useMutation({
-    mutationFn: () => submit({ data: { id: dprId, acknowledgeNoPhotos: ack } }),
+    mutationFn: async () => {
+      const mobile = isMobileClient();
+      const gps = mobile ? await captureGps() : null;
+      return submit({
+        data: {
+          id: dprId,
+          acknowledgeNoPhotos: ack,
+          source: mobile ? "mobile" : "web",
+          latitude: gps?.latitude ?? null,
+          longitude: gps?.longitude ?? null,
+          gpsCapturedAt: gps?.gpsCapturedAt ?? null,
+        },
+      });
+    },
     onSuccess: () => {
       toast.success("DPR submitted");
       setGuardOpen(false);
@@ -133,7 +181,7 @@ function DprDetailPage() {
     navigate({
       to: "/field/dpr/$dprId",
       params: { dprId },
-      search: { step: Math.min(4, Math.max(1, n)) },
+      search: { step: Math.min(LAST_STEP, Math.max(1, n)) },
     });
 
   return (
@@ -177,7 +225,7 @@ function DprDetailPage() {
 
       <Card>
         <CardContent className="p-2">
-          <nav className="grid grid-cols-4 gap-1">
+          <nav className="grid grid-cols-6 gap-1">
             {STEPS.map((s) => {
               const active = s.id === step;
               return (
@@ -211,6 +259,8 @@ function DprDetailPage() {
           readOnly={readOnly}
         />
       )}
+      {step === 5 && <StepEquipment header={header} readOnly={readOnly} />}
+      {step === 6 && <StepMaterials header={header} readOnly={readOnly} />}
 
       {/* sticky bottom action bar */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur">
@@ -225,7 +275,7 @@ function DprDetailPage() {
             <ChevronLeft className="mr-1 h-4 w-4" aria-hidden />
             Prev
           </Button>
-          {step < 4 ? (
+          {step < LAST_STEP ? (
             <Button type="button" className="h-12 flex-1" onClick={() => goStep(step + 1)}>
               Next
               <ChevronRight className="ml-1 h-4 w-4" aria-hidden />

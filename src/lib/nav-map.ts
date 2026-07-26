@@ -434,6 +434,18 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/field/discipline-board",
         icon: SlidersHorizontal,
       },
+      {
+        moduleKey: "field_qaqc",
+        label: "Work fronts",
+        url: "/field/work-fronts",
+        icon: HardHat,
+      },
+      {
+        moduleKey: "field_qaqc",
+        label: "Deliveries",
+        url: "/field/deliveries",
+        icon: Truck,
+      },
       { moduleKey: "field_qaqc", label: "Weekly report", url: "/field/reports", icon: FileDown },
       { moduleKey: "field_qaqc", label: "HSE", url: "/hse", icon: Shield },
       {

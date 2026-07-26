@@ -76,9 +76,11 @@ import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authe
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
+import { Route as AuthenticatedFieldWorkFrontsRouteImport } from './routes/_authenticated/field.work-fronts'
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
+import { Route as AuthenticatedFieldDeliveriesRouteImport } from './routes/_authenticated/field.deliveries'
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
@@ -575,6 +577,12 @@ const AuthenticatedFinanceContractsRoute =
     path: '/finance/contracts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFieldWorkFrontsRoute =
+  AuthenticatedFieldWorkFrontsRouteImport.update({
+    id: '/field/work-fronts',
+    path: '/field/work-fronts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFieldSyncStatusRoute =
   AuthenticatedFieldSyncStatusRouteImport.update({
     id: '/field/sync-status',
@@ -591,6 +599,12 @@ const AuthenticatedFieldDisciplineBoardRoute =
   AuthenticatedFieldDisciplineBoardRouteImport.update({
     id: '/field/discipline-board',
     path: '/field/discipline-board',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldDeliveriesRoute =
+  AuthenticatedFieldDeliveriesRouteImport.update({
+    id: '/field/deliveries',
+    path: '/field/deliveries',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEngineeringPvLibraryRoute =
@@ -1367,9 +1381,11 @@ export interface FileRoutesByFullPath {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1557,9 +1573,11 @@ export interface FileRoutesByTo {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1743,9 +1761,11 @@ export interface FileRoutesById {
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/_authenticated/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/_authenticated/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1937,9 +1957,11 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/field/deliveries'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
+    | '/field/work-fronts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2127,9 +2149,11 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/field/deliveries'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
+    | '/field/work-fronts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2312,9 +2336,11 @@ export interface FileRouteTypes {
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/engineering/pv-library'
+    | '/_authenticated/field/deliveries'
     | '/_authenticated/field/discipline-board'
     | '/_authenticated/field/reports'
     | '/_authenticated/field/sync-status'
+    | '/_authenticated/field/work-fronts'
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
@@ -2976,6 +3002,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/field/work-fronts': {
+      id: '/_authenticated/field/work-fronts'
+      path: '/field/work-fronts'
+      fullPath: '/field/work-fronts'
+      preLoaderRoute: typeof AuthenticatedFieldWorkFrontsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/field/sync-status': {
       id: '/_authenticated/field/sync-status'
       path: '/field/sync-status'
@@ -2995,6 +3028,13 @@ declare module '@tanstack/react-router' {
       path: '/field/discipline-board'
       fullPath: '/field/discipline-board'
       preLoaderRoute: typeof AuthenticatedFieldDisciplineBoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/deliveries': {
+      id: '/_authenticated/field/deliveries'
+      path: '/field/deliveries'
+      fullPath: '/field/deliveries'
+      preLoaderRoute: typeof AuthenticatedFieldDeliveriesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/engineering/pv-library': {
@@ -4320,9 +4360,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
+  AuthenticatedFieldDeliveriesRoute: typeof AuthenticatedFieldDeliveriesRoute
   AuthenticatedFieldDisciplineBoardRoute: typeof AuthenticatedFieldDisciplineBoardRoute
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
+  AuthenticatedFieldWorkFrontsRoute: typeof AuthenticatedFieldWorkFrontsRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
@@ -4416,10 +4458,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedEngineeringPvLibraryRoute:
     AuthenticatedEngineeringPvLibraryRoute,
+  AuthenticatedFieldDeliveriesRoute: AuthenticatedFieldDeliveriesRoute,
   AuthenticatedFieldDisciplineBoardRoute:
     AuthenticatedFieldDisciplineBoardRoute,
   AuthenticatedFieldReportsRoute: AuthenticatedFieldReportsRoute,
   AuthenticatedFieldSyncStatusRoute: AuthenticatedFieldSyncStatusRoute,
+  AuthenticatedFieldWorkFrontsRoute: AuthenticatedFieldWorkFrontsRoute,
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
