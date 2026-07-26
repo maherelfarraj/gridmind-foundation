@@ -409,7 +409,10 @@ function VisibleRoutesCard({
                   <div className="text-xs font-medium text-muted-foreground">{section.label}</div>
                   <ul className="mt-1 space-y-1">
                     {items.map((item) => (
-                      <li key={item.url} className="flex items-center gap-2 text-sm">
+                      <li
+                        key={`nav:${section.label}:${item.url}:${item.label}`}
+                        className="flex items-center gap-2 text-sm"
+                      >
                         <item.icon className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-foreground">{item.label}</span>
                         <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
