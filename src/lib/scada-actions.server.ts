@@ -188,7 +188,10 @@ export async function evaluateEventActions(
     }
 
     // Operational action with requires_approval = false: execute immediately.
-    await db.from("event_action_log").update({ status: "approved" } as never).eq("id", log.id);
+    await db
+      .from("event_action_log")
+      .update({ status: "approved" } as never)
+      .eq("id", log.id);
     const outcome = await executeEventAction(db, log.id, auth?.user?.id ?? null);
     if (outcome.status === "executed") result.executed += 1;
     else result.failed += 1;
@@ -277,7 +280,12 @@ export async function executeEventAction(
     .eq("id", logId)
     .maybeSingle();
   if (error || !data) {
-    return { status: "failed", result_entity: null, result_entity_id: null, error: "log_not_found" };
+    return {
+      status: "failed",
+      result_entity: null,
+      result_entity_id: null,
+      error: "log_not_found",
+    };
   }
   const log = data as LogRow;
 
@@ -332,7 +340,14 @@ export async function executeEventAction(
     : null;
 
   try {
-    const outcome = await performAction(db, log, config, event, rule?.name ?? "SCADA rule", actorId);
+    const outcome = await performAction(
+      db,
+      log,
+      config,
+      event,
+      rule?.name ?? "SCADA rule",
+      actorId,
+    );
     await db
       .from("event_action_log")
       .update({
@@ -642,7 +657,10 @@ export async function settleEventActionsForInstance(
   for (const row of rows) {
     if (row.status === "executed" || row.status === "rejected") continue;
     if (inst.status === "approved") {
-      await db.from("event_action_log").update({ status: "approved" } as never).eq("id", row.id);
+      await db
+        .from("event_action_log")
+        .update({ status: "approved" } as never)
+        .eq("id", row.id);
       await executeEventAction(db, row.id, actorId);
       settled += 1;
     } else if (inst.status === "rejected" || inst.status === "cancelled") {
@@ -678,7 +696,7 @@ export async function suggestEventAction(
           {
             role: "system",
             content:
-              "You advise renewable-plant O&M engineers. You never approve or execute actions; you only recommend. Reply with strict JSON: {\"recommended\":boolean,\"confidence\":number,\"rationale\":string,\"suggested_priority\":\"low\"|\"medium\"|\"high\"|\"urgent\"}.",
+              'You advise renewable-plant O&M engineers. You never approve or execute actions; you only recommend. Reply with strict JSON: {"recommended":boolean,"confidence":number,"rationale":string,"suggested_priority":"low"|"medium"|"high"|"urgent"}.',
           },
           {
             role: "user",
@@ -847,10 +865,7 @@ export async function evaluateEventById(
  * settle any event-action row bound to that approval's instance. Reads the
  * instance status back from the database — the caller's claim is irrelevant.
  */
-export async function settleAfterDecision(
-  context: AuthContext,
-  approvalId: string,
-): Promise<void> {
+export async function settleAfterDecision(context: AuthContext, approvalId: string): Promise<void> {
   try {
     const { data } = await context.supabase
       .from("approvals")

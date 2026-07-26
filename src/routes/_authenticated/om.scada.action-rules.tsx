@@ -389,10 +389,7 @@ function ActionRulesPage() {
             <SheetTitle>{editing ? "Edit action rule" : "New action rule"}</SheetTitle>
           </SheetHeader>
           <Form {...form}>
-            <form
-              className="mt-6 space-y-5"
-              onSubmit={form.handleSubmit((v) => saveMut.mutate(v))}
-            >
+            <form className="mt-6 space-y-5" onSubmit={form.handleSubmit((v) => saveMut.mutate(v))}>
               <FormField
                 control={form.control}
                 name="name"
@@ -658,7 +655,9 @@ function ActionLogPanel({
                 tone={STATUS_TONE[row.status] ?? "neutral"}
               />
               <span className="font-medium">{ACTION_LABELS[row.action_type]}</span>
-              <span className="text-sm text-muted-foreground">{row.rule_name ?? "rule removed"}</span>
+              <span className="text-sm text-muted-foreground">
+                {row.rule_name ?? "rule removed"}
+              </span>
               {isContractualAction(row.action_type) ? (
                 <Badge variant="outline" className="gap-1">
                   <ShieldCheck className="h-3 w-3" />

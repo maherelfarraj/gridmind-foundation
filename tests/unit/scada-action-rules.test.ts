@@ -55,9 +55,16 @@ describe("ruleMatchesEvent", () => {
   it("applies match filters", () => {
     expect(ruleMatchesEvent(rule({ match: { code_in: ["INV-27"] } }), event)).toBe(true);
     expect(ruleMatchesEvent(rule({ match: { code_in: ["INV-99"] } }), event)).toBe(false);
-    expect(ruleMatchesEvent(rule({ match: { message_contains: "overvoltage" } }), event)).toBe(true);
+    expect(ruleMatchesEvent(rule({ match: { message_contains: "overvoltage" } }), event)).toBe(
+      true,
+    );
     expect(ruleMatchesEvent(rule({ match: { source_in: ["operator"] } }), event)).toBe(false);
-    expect(ruleMatchesEvent(rule({ match: { asset_node_ids: ["3f1b1c9e-2f7a-4f9c-9b2a-0f1d5a6c7e88"] } }), event)).toBe(true);
+    expect(
+      ruleMatchesEvent(
+        rule({ match: { asset_node_ids: ["3f1b1c9e-2f7a-4f9c-9b2a-0f1d5a6c7e88"] } }),
+        event,
+      ),
+    ).toBe(true);
     expect(
       ruleMatchesEvent(rule({ match: { payload_equals: { inverter: "INV-03" } } }), event),
     ).toBe(true);
