@@ -181,7 +181,10 @@ export function initialProperties(record: SymbolTypeRecord): SymbolPropertyValue
   return { ...(record.default_properties ?? {}) };
 }
 
-export function coercePropertyValue(field: SymbolPropertyField, raw: unknown): unknown {
+export function coercePropertyValue(
+  field: SymbolPropertyField,
+  raw: unknown,
+): string | number | boolean | null {
   if (field.type === "number") {
     if (raw === "" || raw === null || raw === undefined) return null;
     const n = Number(raw);
