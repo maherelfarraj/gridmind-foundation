@@ -19,7 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listControlsProjects } from "@/lib/controls.functions";
 import { errorMessage } from "@/lib/dpr-query";
 import { createWasteRecord, listWasteRecords } from "@/lib/hse-ext.functions";
@@ -151,7 +158,13 @@ function WastePage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="w-qty">Quantity</Label>
-              <Input id="w-qty" type="number" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
+              <Input
+                id="w-qty"
+                type="number"
+                min={0}
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="w-uom">Unit</Label>

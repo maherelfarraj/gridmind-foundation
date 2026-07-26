@@ -20,7 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listControlsProjects } from "@/lib/controls.functions";
 import { errorMessage } from "@/lib/dpr-query";
 import { createEnvironmentalReading, listEnvironmentalReadings } from "@/lib/hse-ext.functions";
@@ -32,7 +39,8 @@ export const Route = createFileRoute("/_authenticated/hse/environmental")({
       { title: "Environmental monitoring — GridMind EPC" },
       {
         name: "description",
-        content: "Noise, dust, water, soil and emissions readings with automatic exceedance flagging.",
+        content:
+          "Noise, dust, water, soil and emissions readings with automatic exceedance flagging.",
       },
       { property: "og:title", content: "Environmental monitoring — GridMind EPC" },
       {

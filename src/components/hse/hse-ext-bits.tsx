@@ -46,8 +46,7 @@ export function ExpiryBadge({ expiry }: { expiry: string | null | undefined }) {
       : state === "expiring"
         ? "bg-warning/15 text-warning-foreground border-warning/30"
         : "bg-success/15 text-success border-success/30";
-  const text =
-    state === "expired" ? `Expired ${Math.abs(days ?? 0)}d ago` : `${days}d`;
+  const text = state === "expired" ? `Expired ${Math.abs(days ?? 0)}d ago` : `${days}d`;
   return (
     <Badge variant="outline" className={cn("tabular-nums", cls)}>
       {text}
@@ -119,16 +118,10 @@ export function HseRegister({
       </CardHeader>
       <CardContent className="space-y-4">
         <DataTableToolbar
-          search={
-            <DataTableSearch value={search} onChange={onSearchChange} placeholder="Search" />
-          }
+          search={<DataTableSearch value={search} onChange={onSearchChange} placeholder="Search" />}
           filters={
             <div className="w-full sm:w-64">
-              <ProjectSelect
-                projects={projects}
-                value={projectId}
-                onChange={onProjectChange}
-              />
+              <ProjectSelect projects={projects} value={projectId} onChange={onProjectChange} />
             </div>
           }
           actions={actions}

@@ -25,13 +25,7 @@ export const EMERGENCY_EVENT_TYPES = [
   "other",
 ] as const;
 
-export const ENV_METRICS = [
-  "noise_db",
-  "dust_pm25",
-  "water_quality",
-  "soil",
-  "emissions",
-] as const;
+export const ENV_METRICS = ["noise_db", "dust_pm25", "water_quality", "soil", "emissions"] as const;
 export type EnvMetric = (typeof ENV_METRICS)[number];
 
 export const WASTE_TYPES = ["general", "hazardous", "recyclable", "construction"] as const;

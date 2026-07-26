@@ -20,7 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listControlsProjects } from "@/lib/controls.functions";
 import { errorMessage } from "@/lib/dpr-query";
 import {
@@ -169,7 +176,9 @@ function AuditsPage() {
                   placeholder="Item"
                   value={it.item}
                   onChange={(e) =>
-                    setItems((p) => p.map((x, idx) => (idx === i ? { ...x, item: e.target.value } : x)))
+                    setItems((p) =>
+                      p.map((x, idx) => (idx === i ? { ...x, item: e.target.value } : x)),
+                    )
                   }
                 />
                 <Button
@@ -197,7 +206,8 @@ function AuditsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold">
-              Runner — {openRow.title} ({draftScore.scorePct ?? "—"}%, {draftScore.findingsCount} findings)
+              Runner — {openRow.title} ({draftScore.scorePct ?? "—"}%, {draftScore.findingsCount}{" "}
+              findings)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

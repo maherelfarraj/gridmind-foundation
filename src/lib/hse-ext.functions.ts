@@ -538,7 +538,8 @@ export const getHseExtDashboard = createServerFn({ method: "GET" })
     const in30 = new Date(now.getTime() + 30 * 86_400_000).toISOString().slice(0, 10);
     const today = now.toISOString().slice(0, 10);
 
-    const scoped = <T>(q: T): T => (pid ? (q as never as { eq: Function }).eq("project_id", pid) : q);
+    const scoped = <T>(q: T): T =>
+      pid ? (q as never as { eq: Function }).eq("project_id", pid) : q;
 
     const [obs, comp, env, waste, audits, drills] = await Promise.all([
       scoped(

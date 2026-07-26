@@ -19,7 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listControlsProjects } from "@/lib/controls.functions";
 import { errorMessage } from "@/lib/dpr-query";
 import {
@@ -180,12 +187,19 @@ function JsaPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Steps</Label>
-                <Button size="sm" variant="outline" onClick={() => setSteps((p) => [...p, emptyStep()])}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSteps((p) => [...p, emptyStep()])}
+                >
                   <Plus size={14} aria-hidden /> Add step
                 </Button>
               </div>
               {steps.map((s, i) => (
-                <div key={i} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_2fr_2fr_1fr_auto]">
+                <div
+                  key={i}
+                  className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_2fr_2fr_1fr_auto]"
+                >
                   <Input
                     aria-label="Step"
                     placeholder="Step"

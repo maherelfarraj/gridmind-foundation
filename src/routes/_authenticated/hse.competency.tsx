@@ -12,7 +12,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { listControlsProjects } from "@/lib/controls.functions";
 import { errorMessage } from "@/lib/dpr-query";
@@ -155,15 +162,27 @@ function CompetencyPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="c-worker">Worker</Label>
-              <Input id="c-worker" value={workerName} onChange={(e) => setWorkerName(e.target.value)} />
+              <Input
+                id="c-worker"
+                value={workerName}
+                onChange={(e) => setWorkerName(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="c-employer">Employer</Label>
-              <Input id="c-employer" value={employer} onChange={(e) => setEmployer(e.target.value)} />
+              <Input
+                id="c-employer"
+                value={employer}
+                onChange={(e) => setEmployer(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="c-comp">Competency</Label>
-              <Input id="c-comp" value={competency} onChange={(e) => setCompetency(e.target.value)} />
+              <Input
+                id="c-comp"
+                value={competency}
+                onChange={(e) => setCompetency(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="c-cert">Certificate no.</Label>
@@ -205,7 +224,8 @@ function CompetencyPage() {
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              <Paperclip size={14} aria-hidden /> {filePath ? "Certificate attached" : "Attach certificate"}
+              <Paperclip size={14} aria-hidden />{" "}
+              {filePath ? "Certificate attached" : "Attach certificate"}
             </Button>
             <Button
               size="sm"
