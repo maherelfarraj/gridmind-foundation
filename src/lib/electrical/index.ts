@@ -41,6 +41,7 @@ import { sizeUpsBattery, upsBatteryInputSchema, UPS_BATTERY_METHOD } from "./ups
 import { voltageDrop, voltageDropInputSchema, VOLTAGE_DROP_METHOD } from "./voltage-drop";
 
 export * from "./types";
+export * from "./disclaimer";
 export * from "./load-flow";
 export * from "./short-circuit";
 export * from "./cable-ampacity";
