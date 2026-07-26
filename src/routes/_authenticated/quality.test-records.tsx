@@ -68,19 +68,30 @@ export const Route = createFileRoute("/_authenticated/quality/test-records")({
 });
 
 type Row = Record<string, unknown>;
-type CalRow = { instrument_tag: string; instrument: string; cal_date: string; next_due: string | null };
+type CalRow = {
+  instrument_tag: string;
+  instrument: string;
+  cal_date: string;
+  next_due: string | null;
+};
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-function RowList({ rows, primary, secondary }: { rows: Row[]; primary: string; secondary: string }) {
+function RowList({
+  rows,
+  primary,
+  secondary,
+}: {
+  rows: Row[];
+  primary: string;
+  secondary: string;
+}) {
   return (
     <ul className="divide-y divide-border">
       {rows.map((r) => (
         <li key={String(r.id)} className="flex flex-wrap items-center gap-3 py-3">
           <span className="font-medium text-foreground">{String(r[primary] ?? "")}</span>
-          <span className="min-w-0 flex-1 text-muted-foreground">
-            {String(r[secondary] ?? "")}
-          </span>
+          <span className="min-w-0 flex-1 text-muted-foreground">{String(r[secondary] ?? "")}</span>
           <ResultBadge result={(r.result as TestResultStatus) ?? "pending"} />
         </li>
       ))}
@@ -116,8 +127,7 @@ function TestRecordsPage() {
   const key = ["test-records", activeProject] as const;
   const records = useQuery({
     queryKey: key,
-    queryFn: () =>
-      listFn({ data: { projectId: activeProject } }) as Promise<Record<string, Row[]>>,
+    queryFn: () => listFn({ data: { projectId: activeProject } }) as Promise<Record<string, Row[]>>,
     enabled: Boolean(activeProject),
   });
   const invalidate = () => void qc.invalidateQueries({ queryKey: key });
@@ -145,89 +155,88 @@ function TestRecordsPage() {
   const weldFn = useServerFn(createWeldingRecord);
   const addWeld = useMutation(
     recordMutation(
-    () =>
-      weldFn({ data: { projectId: activeProject, welderName: tag.trim(), weldDate: date } }),
-    "Weld record saved",
+      () => weldFn({ data: { projectId: activeProject, welderName: tag.trim(), weldDate: date } }),
+      "Weld record saved",
     ),
   );
 
   const torqueFn = useServerFn(createTorqueRecord);
   const addTorque = useMutation(
     recordMutation(
-    () =>
-      torqueFn({
-        data: {
-          projectId: activeProject,
-          equipmentTag: tag.trim(),
-          boltRef: boltRef.trim(),
-          targetTorqueNm: Number(targetTorque || 0),
-          toolTag: toolTag === "none" ? null : toolTag,
-          torqueDate: date,
-        },
-      }),
-    "Torque record saved",
+      () =>
+        torqueFn({
+          data: {
+            projectId: activeProject,
+            equipmentTag: tag.trim(),
+            boltRef: boltRef.trim(),
+            targetTorqueNm: Number(targetTorque || 0),
+            toolTag: toolTag === "none" ? null : toolTag,
+            torqueDate: date,
+          },
+        }),
+      "Torque record saved",
     ),
   );
 
   const cableFn = useServerFn(createCableTest);
   const addCable = useMutation(
     recordMutation(
-    () =>
-      cableFn({
-        data: {
-          projectId: activeProject,
-          cableTag: tag.trim(),
-          testType: cableType as never,
-          values: {},
-          testDate: date,
-        },
-      }),
-    "Cable test saved",
+      () =>
+        cableFn({
+          data: {
+            projectId: activeProject,
+            cableTag: tag.trim(),
+            testType: cableType as never,
+            values: {},
+            testDate: date,
+          },
+        }),
+      "Cable test saved",
     ),
   );
 
   const thermoFn = useServerFn(createThermographicInspection);
   const addThermo = useMutation(
     recordMutation(
-    () =>
-      thermoFn({
-        data: { projectId: activeProject, equipmentTag: tag.trim(), inspectionDate: date },
-      }),
-    "Thermographic inspection saved",
+      () =>
+        thermoFn({
+          data: { projectId: activeProject, equipmentTag: tag.trim(), inspectionDate: date },
+        }),
+      "Thermographic inspection saved",
     ),
   );
 
   const relayFn = useServerFn(createRelayTest);
   const addRelay = useMutation(
     recordMutation(
-    () =>
-      relayFn({
-        data: {
-          projectId: activeProject,
-          relayTag: tag.trim(),
-          testType: relayType as never,
-          settings: {},
-          testDate: date,
-        },
-      }),
-    "Relay test saved",
+      () =>
+        relayFn({
+          data: {
+            projectId: activeProject,
+            relayTag: tag.trim(),
+            testType: relayType as never,
+            settings: {},
+            testDate: date,
+          },
+        }),
+      "Relay test saved",
     ),
   );
 
   const trafoFn = useServerFn(createTransformerTest);
   const addTrafo = useMutation(
     recordMutation(
-    () =>
-      trafoFn({
-        data: {
-          projectId: activeProject,
-          transformerTag: tag.trim(),
-          testType: trafoType as never,
-          values: {},
-          testDate: date,
-        },
-      }),
-    "Transformer test saved",
+      () =>
+        trafoFn({
+          data: {
+            projectId: activeProject,
+            transformerTag: tag.trim(),
+            testType: trafoType as never,
+            values: {},
+            testDate: date,
+          },
+        }),
+      "Transformer test saved",
     ),
   );
 
@@ -268,12 +277,7 @@ function TestRecordsPage() {
   const dateField = (
     <div className="space-y-1">
       <Label htmlFor="record-date">Date</Label>
-      <Input
-        id="record-date"
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
+      <Input id="record-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
     </div>
   );
 
@@ -434,10 +438,7 @@ function TestRecordsPage() {
                     </Select>
                   </div>
                   {dateField}
-                  <Button
-                    onClick={() => addCable.mutate()}
-                    disabled={!tag.trim()}
-                  >
+                  <Button onClick={() => addCable.mutate()} disabled={!tag.trim()}>
                     <Plus className="mr-1 size-4" /> Save
                   </Button>
                 </div>
@@ -470,10 +471,7 @@ function TestRecordsPage() {
                 <div className="grid gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
                   {tagField("Equipment tag", "SWG-01")}
                   {dateField}
-                  <Button
-                    onClick={() => addThermo.mutate()}
-                    disabled={!tag.trim()}
-                  >
+                  <Button onClick={() => addThermo.mutate()} disabled={!tag.trim()}>
                     <Plus className="mr-1 size-4" /> Save
                   </Button>
                 </div>
@@ -521,10 +519,7 @@ function TestRecordsPage() {
                     </Select>
                   </div>
                   {dateField}
-                  <Button
-                    onClick={() => addRelay.mutate()}
-                    disabled={!tag.trim()}
-                  >
+                  <Button onClick={() => addRelay.mutate()} disabled={!tag.trim()}>
                     <Plus className="mr-1 size-4" /> Save
                   </Button>
                 </div>
@@ -572,10 +567,7 @@ function TestRecordsPage() {
                     </Select>
                   </div>
                   {dateField}
-                  <Button
-                    onClick={() => addTrafo.mutate()}
-                    disabled={!tag.trim()}
-                  >
+                  <Button onClick={() => addTrafo.mutate()} disabled={!tag.trim()}>
                     <Plus className="mr-1 size-4" /> Save
                   </Button>
                 </div>
