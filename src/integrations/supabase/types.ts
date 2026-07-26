@@ -9104,6 +9104,7 @@ export type Database = {
           acknowledge_note: string | null
           acknowledged_at: string | null
           acknowledged_by: string | null
+          assigned_to: string | null
           cleared_at: string | null
           company_id: string
           created_at: string
@@ -9112,6 +9113,9 @@ export type Database = {
           message: string
           project_id: string
           raised_at: string
+          rca_notes: string | null
+          rca_status: string
+          root_cause: string | null
           rule_id: string | null
           scada_asset_id: string | null
           severity: Database["public"]["Enums"]["alarm_severity"]
@@ -9123,6 +9127,7 @@ export type Database = {
           acknowledge_note?: string | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_to?: string | null
           cleared_at?: string | null
           company_id: string
           created_at?: string
@@ -9131,6 +9136,9 @@ export type Database = {
           message: string
           project_id: string
           raised_at?: string
+          rca_notes?: string | null
+          rca_status?: string
+          root_cause?: string | null
           rule_id?: string | null
           scada_asset_id?: string | null
           severity: Database["public"]["Enums"]["alarm_severity"]
@@ -9142,6 +9150,7 @@ export type Database = {
           acknowledge_note?: string | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_to?: string | null
           cleared_at?: string | null
           company_id?: string
           created_at?: string
@@ -9150,6 +9159,9 @@ export type Database = {
           message?: string
           project_id?: string
           raised_at?: string
+          rca_notes?: string | null
+          rca_status?: string
+          root_cause?: string | null
           rule_id?: string | null
           scada_asset_id?: string | null
           severity?: Database["public"]["Enums"]["alarm_severity"]
@@ -9161,6 +9173,13 @@ export type Database = {
           {
             foreignKeyName: "scada_alarms_acknowledged_by_fkey"
             columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_alarms_assigned_to_fkey"
+            columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
