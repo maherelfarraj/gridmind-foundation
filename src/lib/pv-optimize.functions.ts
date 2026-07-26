@@ -12,7 +12,6 @@ import {
   nextRunRef,
   OPTIMIZATION_ENTITY,
   OPTIMIZATION_RULE_KEY,
-  type OptimizationRunRow,
 } from "@/lib/pv-optimize.server";
 import { ringArea, type AlternativeParams } from "@/lib/pv/layout";
 import {
@@ -60,7 +59,7 @@ const runSchema = z.object({
 export const listLayoutOptimizationRuns = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }): Promise<{ runs: OptimizationRunRow[]; canWrite: boolean }> => {
+  .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase
       .from("layout_optimization_runs")
@@ -69,7 +68,7 @@ export const listLayoutOptimizationRuns = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw error;
     return {
-      runs: (rows ?? []) as unknown as OptimizationRunRow[],
+      runs: (rows ?? []) as unknown as Record<string, never>[],
       canWrite: await canWritePvLayout(context),
     };
   });
