@@ -73,7 +73,7 @@ export function ConnectorProtocolEditor({
 }) {
   const editor = protocolEditorFor(connector.connector_type);
   const baseConfig = useMemo(
-    () => ((connector.config ?? {}) as Record<string, unknown>) ?? {},
+    () => (connector.config ?? {}) as Record<string, unknown>,
     [connector.config],
   );
 

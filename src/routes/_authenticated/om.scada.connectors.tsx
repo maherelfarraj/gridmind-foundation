@@ -29,6 +29,8 @@ import {
   type ConnectorRow,
 } from "@/lib/scada.functions";
 import { ScadaConnectorWizard } from "@/components/om/scada-connector-wizard";
+import { ConnectorProtocolEditor } from "@/components/om/connector-protocol-editor";
+import { countMappingRows, protocolEditorFor } from "@/lib/scada/connector-config";
 
 export const Route = createFileRoute("/_authenticated/om/scada/connectors")({
   head: () => ({
@@ -60,6 +62,7 @@ function statusVariant(status: string): "default" | "secondary" | "destructive" 
 function ScadaConnectorsPage() {
   const { activeCompanyId } = useActiveCompany();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [editing, setEditing] = useState<ConnectorRow | null>(null);
   const qc = useQueryClient();
   const listFn = useServerFn(listScadaConnectors);
   const query = useQuery({
@@ -176,7 +179,9 @@ function ScadaConnectorsPage() {
                   <TableHead>Project</TableHead>
                   <TableHead>Enabled</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Mappings</TableHead>
                   <TableHead>Last seen</TableHead>
+                  <TableHead className="text-right">Configure</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -199,9 +204,21 @@ function ScadaConnectorsPage() {
                       <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
+                      {protocolEditorFor(r.connector_type) ? countMappingRows(r.config) : "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {r.last_seen_at
                         ? formatDistanceToNow(new Date(r.last_seen_at), { addSuffix: true })
                         : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {protocolEditorFor(r.connector_type) ? (
+                        <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
+                          Mapping
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -210,6 +227,18 @@ function ScadaConnectorsPage() {
           )}
         </CardContent>
       </Card>
+
+      {activeCompanyId && editing && (
+        <ConnectorProtocolEditor
+          key={editing.id}
+          connector={editing}
+          companyId={activeCompanyId}
+          open
+          onOpenChange={(v) => {
+            if (!v) setEditing(null);
+          }}
+        />
+      )}
 
       {activeCompanyId && (
         <ScadaConnectorWizard
