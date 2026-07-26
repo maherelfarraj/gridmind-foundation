@@ -46,6 +46,7 @@ import { ValidationPanel } from "./validation-panel";
 import { CoordinationPanel } from "./coordination-panel";
 import { SchedulesPanel } from "./schedules-panel";
 import { RevisionsPanel } from "./revisions-panel";
+import { ExportPanel } from "./export-panel";
 import { GovernancePanel } from "./governance-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -443,6 +444,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                 <TabsTrigger value="governance" className="flex-1">
                   Governance
                 </TabsTrigger>
+                <TabsTrigger value="export" className="flex-1">
+                  Export
+                </TabsTrigger>
 
               </TabsList>
               <TabsContent value="validation" className="mt-2">
@@ -484,7 +488,13 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                   canEdit={Boolean((data as any).canWrite)}
                 />
               </TabsContent>
-
+              <TabsContent value="export" className="mt-2">
+                <ExportPanel
+                  drawingId={data.drawing.id}
+                  projectId={data.drawing.project_id}
+                  canEdit={editable}
+                />
+              </TabsContent>
             </Tabs>
             <PropertiesPanel editable={editable} />
             <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
