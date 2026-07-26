@@ -7,11 +7,7 @@ import {
   nearestPortHit,
   PASTE_OFFSET_MM,
 } from "@/lib/sld/canvas-store";
-import {
-  defaultCanvasMeta,
-  MEASURE_SYMBOL,
-  type SldCanvasObject,
-} from "@/lib/sld/canvas-types";
+import { defaultCanvasMeta, MEASURE_SYMBOL, type SldCanvasObject } from "@/lib/sld/canvas-types";
 import { GROUP_KEY } from "@/lib/sld/geometry";
 
 const object = (id: string, x: number, y: number, layer = "default"): SldCanvasObject => ({

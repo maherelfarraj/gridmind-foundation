@@ -137,7 +137,8 @@ export const getProjectOverviewKpis = createServerFn({ method: "GET" })
       budget,
       open_rfis: (rfisRes.data ?? []).length,
       open_risks: risks.length,
-      top_risk_score: risks.length === 0 ? null : Math.max(...risks.map((r) => Number(r.score ?? 0))),
+      top_risk_score:
+        risks.length === 0 ? null : Math.max(...risks.map((r) => Number(r.score ?? 0))),
       next_milestone: nextTask
         ? { name: nextTask.name, date: nextTask.end_date, kind: "task" }
         : nextGate

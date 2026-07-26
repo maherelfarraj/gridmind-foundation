@@ -30,14 +30,16 @@ type Props = {
 
 const PORT_TOLERANCE_MM = 4;
 
-const CONNECTION_STROKE: Record<ConnectionType, { className: string; width: number; dash?: string }> =
-  {
-    cable: { className: "stroke-foreground", width: 0.6 },
-    busbar: { className: "stroke-foreground", width: 2 },
-    dc_string: { className: "stroke-primary", width: 0.7, dash: "3 1.6" },
-    earth: { className: "stroke-success", width: 0.7, dash: "1.6 1.2" },
-    signal: { className: "stroke-muted-foreground", width: 0.5, dash: "0.8 1.2" },
-  };
+const CONNECTION_STROKE: Record<
+  ConnectionType,
+  { className: string; width: number; dash?: string }
+> = {
+  cable: { className: "stroke-foreground", width: 0.6 },
+  busbar: { className: "stroke-foreground", width: 2 },
+  dc_string: { className: "stroke-primary", width: 0.7, dash: "3 1.6" },
+  earth: { className: "stroke-success", width: 0.7, dash: "1.6 1.2" },
+  signal: { className: "stroke-muted-foreground", width: 0.5, dash: "0.8 1.2" },
+};
 
 export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);

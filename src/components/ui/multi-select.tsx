@@ -46,10 +46,7 @@ export function MultiSelect({
   "aria-label"?: string;
 }) {
   const [open, setOpen] = React.useState(false);
-  const byValue = React.useMemo(
-    () => new Map(options.map((o) => [o.value, o.label])),
-    [options],
-  );
+  const byValue = React.useMemo(() => new Map(options.map((o) => [o.value, o.label])), [options]);
 
   const toggle = (v: string) =>
     onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v]);

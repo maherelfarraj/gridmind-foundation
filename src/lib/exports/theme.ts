@@ -82,7 +82,10 @@ export function hexToRgb(hex: string | null | undefined, fallback = DEFAULT_PRIM
 }
 
 export function rgbToHex([r, g, b]: Rgb): string {
-  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  const h = (n: number) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, "0");
   return `${h(r)}${h(g)}${h(b)}`;
 }
 
@@ -317,7 +320,12 @@ export function drawFooters(doc: jsPDF, theme: ExportTheme): void {
     doc.setTextColor(NEUTRAL.muted[0], NEUTRAL.muted[1], NEUTRAL.muted[2]);
     doc.setDrawColor(NEUTRAL.line[0], NEUTRAL.line[1], NEUTRAL.line[2]);
     doc.setLineWidth(0.5);
-    doc.line(PAGE.margin, pageH - PAGE.footerBaseline - 10, pageW - PAGE.margin, pageH - PAGE.footerBaseline - 10);
+    doc.line(
+      PAGE.margin,
+      pageH - PAGE.footerBaseline - 10,
+      pageW - PAGE.margin,
+      pageH - PAGE.footerBaseline - 10,
+    );
     if (theme.footerLeft) doc.text(theme.footerLeft, PAGE.margin, pageH - PAGE.footerBaseline);
     if (theme.footerCenter) {
       doc.text(theme.footerCenter, pageW / 2, pageH - PAGE.footerBaseline, { align: "center" });

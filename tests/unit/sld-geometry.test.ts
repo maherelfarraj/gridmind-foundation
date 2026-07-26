@@ -117,10 +117,7 @@ describe("align + distribute", () => {
   });
 
   it("distributes evenly between the extremes", () => {
-    const out = distributeGeometry(
-      [obj("a", 0, 0), obj("b", 5, 0), obj("c", 30, 0)],
-      "horizontal",
-    );
+    const out = distributeGeometry([obj("a", 0, 0), obj("b", 5, 0), obj("c", 30, 0)], "horizontal");
     expect(out.map((o) => o.x)).toEqual([0, 15, 30]);
   });
 });

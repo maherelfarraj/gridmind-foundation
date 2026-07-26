@@ -96,11 +96,7 @@ export type CanvasState = {
 };
 
 export type CanvasActions = {
-  hydrate: (
-    objects: SldCanvasObject[],
-    meta: SldCanvasMeta,
-    connections?: SldConnection[],
-  ) => void;
+  hydrate: (objects: SldCanvasObject[], meta: SldCanvasMeta, connections?: SldConnection[]) => void;
   setZoom: (zoom: number) => void;
   zoomAt: (factor: number, cursor: Point) => void;
   setPan: (pan: Point) => void;
@@ -393,11 +389,7 @@ export const createCanvasStore = () =>
 
       commitMarquee: (rect, additive) => {
         const s = get();
-        const hits = marqueeHits(
-          selectableObjects(s) as any,
-          rect,
-          footprint as any,
-        );
+        const hits = marqueeHits(selectableObjects(s) as any, rect, footprint as any);
         get().select(hits, additive);
         set({ marquee: null });
       },
@@ -441,7 +433,9 @@ export const createCanvasStore = () =>
         const ids = activeSelection(get()).map((o) => o.id);
         if (ids.length === 0) return;
         commit("move", (s) => ({
-          objects: s.objects.map((o) => (ids.includes(o.id) ? { ...o, x: o.x + dx, y: o.y + dy } : o)),
+          objects: s.objects.map((o) =>
+            ids.includes(o.id) ? { ...o, x: o.x + dx, y: o.y + dy } : o,
+          ),
         }));
       },
 

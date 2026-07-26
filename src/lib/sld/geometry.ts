@@ -68,7 +68,7 @@ export function rotateAbout(point: Pt, center: Pt, deg: number): Pt {
 }
 
 export function normalizeRotation(deg: number): 0 | 90 | 180 | 270 {
-  const n = ((Math.round(deg / 90) * 90) % 360 + 360) % 360;
+  const n = (((Math.round(deg / 90) * 90) % 360) + 360) % 360;
   return n as 0 | 90 | 180 | 270;
 }
 
