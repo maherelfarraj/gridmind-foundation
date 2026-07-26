@@ -3,7 +3,7 @@ import type { ElevationGrid } from "@/lib/terrain/grid";
 import { sampleElevation } from "@/lib/terrain/grid";
 import { slopeAt, type SlopeGrid } from "@/lib/terrain/slope";
 
-import { roundTo } from "@/lib/civil/geom";
+import { pointInGeometry, polygonRings, ringBBox, roundTo } from "@/lib/civil/geom";
 
 export type PilePosition = {
   pile_ref: string;
@@ -124,4 +124,47 @@ export function buildPileSchedule(
       exceeding: rows.filter((r) => r.exceeds_max).length,
     },
   };
+}
+
+/**
+ * Derive pile positions from a PV layout block polygon (blocks are read-only
+ * inputs). Rows run east-west; piles are placed at a fixed spacing along each
+ * row, inset half a spacing from the block edge.
+ */
+export function pilePositionsFromBlock(
+  block: {
+    block_id: string;
+    label?: string | null;
+    geometry: { type: string; coordinates: unknown };
+    module_rows?: number | null;
+  },
+  options: { pile_spacing_m?: number; max_piles_per_block?: number } = {},
+): PilePosition[] {
+  const rings = polygonRings(block.geometry);
+  const bbox = ringBBox(rings);
+  if (!bbox) return [];
+  const spacing = Math.max(1, options.pile_spacing_m ?? 6);
+  const maxPiles = options.max_piles_per_block ?? 400;
+  const rows = Math.max(1, Math.round(block.module_rows ?? 1));
+  const width = bbox.maxX - bbox.minX;
+  const height = bbox.maxY - bbox.minY;
+  const perRow = Math.max(2, Math.floor(width / spacing) + 1);
+  const out: PilePosition[] = [];
+
+  for (let r = 0; r < rows; r++) {
+    const n = rows === 1 ? bbox.minY + height / 2 : bbox.minY + (height * (r + 0.5)) / rows;
+    for (let p = 0; p < perRow; p++) {
+      if (out.length >= maxPiles) return out;
+      const e = perRow === 1 ? bbox.minX + width / 2 : bbox.minX + (width * p) / (perRow - 1);
+      if (!pointInGeometry(e, n, block.geometry)) continue;
+      out.push({
+        pile_ref: `${block.label ?? block.block_id.slice(0, 8)}-R${r + 1}-P${p + 1}`,
+        easting: roundTo(e, 3),
+        northing: roundTo(n, 3),
+        row_ref: `R${r + 1}`,
+        block_ref: block.label ?? block.block_id,
+      });
+    }
+  }
+  return out;
 }
