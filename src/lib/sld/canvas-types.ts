@@ -65,6 +65,27 @@ export type SldConnection = {
 export const MEASURE_SYMBOL = "__dimension";
 export const MEASURE_LAYER_ID = "__measure";
 
+/** P-145 — revision clouds, notes and arrows live on a dedicated top layer. */
+export const MARKUP_LAYER_ID = "__markup";
+
+export const MARKUP_KINDS = ["cloud", "note", "arrow"] as const;
+export type MarkupKind = (typeof MARKUP_KINDS)[number];
+
+export type SldMarkup = {
+  id: string;
+  kind: MarkupKind;
+  /** mm-space geometry: cloud/arrow use a polyline, notes use a single point. */
+  points: { x: number; y: number }[];
+  note: string;
+  author_id: string | null;
+  author_name: string | null;
+  status: "open" | "resolved";
+  linked_object_ids: string[];
+  created_at: string;
+  resolved_by: string | null;
+  resolved_at: string | null;
+};
+
 /** Persisted into sld_revisions.canvas jsonb. */
 export type SldCanvasMeta = {
   layers: SldLayer[];
@@ -72,6 +93,8 @@ export type SldCanvasMeta = {
   snapEnabled: boolean;
   /** P-141 — tagging zones; objects inside a bounds inherit its 2-digit area code. */
   areas: TagArea[];
+  /** P-145 — revision clouds and review notes (never exported to DXF model space). */
+  markups: SldMarkup[];
 };
 
 export type CanvasTool = "select" | "pan" | "place" | "connect" | "measure";
@@ -80,6 +103,7 @@ export const DEFAULT_LAYERS: SldLayer[] = [
   { id: BORDER_LAYER_ID, name: "Sheet border", visible: true, locked: true, system: true },
   { id: "default", name: "Equipment", visible: true, locked: false },
   { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false, system: true },
+  { id: MARKUP_LAYER_ID, name: "Markups", visible: true, locked: false, system: true },
 ];
 
 export function normalizeAreas(raw: unknown): TagArea[] {
@@ -102,8 +126,39 @@ export function normalizeAreas(raw: unknown): TagArea[] {
     }));
 }
 
+export function normalizeMarkups(raw: unknown): SldMarkup[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as unknown[])
+    .filter((m): m is Record<string, any> => Boolean(m) && typeof m === "object")
+    .map((m, i) => ({
+      id: String(m.id ?? `mk-${i + 1}`),
+      kind: (MARKUP_KINDS as readonly string[]).includes(m.kind) ? (m.kind as MarkupKind) : "cloud",
+      points: Array.isArray(m.points)
+        ? m.points
+            .filter((p: any) => p && typeof p === "object")
+            .map((p: any) => ({ x: Number(p.x) || 0, y: Number(p.y) || 0 }))
+        : [],
+      note: typeof m.note === "string" ? m.note : "",
+      author_id: m.author_id ? String(m.author_id) : null,
+      author_name: m.author_name ? String(m.author_name) : null,
+      status: m.status === "resolved" ? "resolved" : "open",
+      linked_object_ids: Array.isArray(m.linked_object_ids)
+        ? m.linked_object_ids.map((id: unknown) => String(id))
+        : [],
+      created_at: typeof m.created_at === "string" ? m.created_at : new Date(0).toISOString(),
+      resolved_by: m.resolved_by ? String(m.resolved_by) : null,
+      resolved_at: m.resolved_at ? String(m.resolved_at) : null,
+    }));
+}
+
 export function defaultCanvasMeta(): SldCanvasMeta {
-  return { layers: DEFAULT_LAYERS.map((l) => ({ ...l })), gridMm: 5, snapEnabled: true, areas: [] };
+  return {
+    layers: DEFAULT_LAYERS.map((l) => ({ ...l })),
+    gridMm: 5,
+    snapEnabled: true,
+    areas: [],
+    markups: [],
+  };
 }
 
 export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
@@ -126,12 +181,26 @@ export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
     : [base.layers[0], ...layers];
   const withMeasure = withBorder.some((l) => l.id === MEASURE_LAYER_ID)
     ? withBorder
-    : [...withBorder, { ...base.layers[base.layers.length - 1] }];
+    : [
+        ...withBorder,
+        { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false, system: true },
+      ];
+  // The markup layer is always last so clouds and notes render on top.
+  const withMarkup = withMeasure.some((l) => l.id === MARKUP_LAYER_ID)
+    ? [
+        ...withMeasure.filter((l) => l.id !== MARKUP_LAYER_ID),
+        withMeasure.find((l) => l.id === MARKUP_LAYER_ID)!,
+      ]
+    : [
+        ...withMeasure,
+        { id: MARKUP_LAYER_ID, name: "Markups", visible: true, locked: false, system: true },
+      ];
   const grid = GRID_STEPS.includes(obj.gridMm as GridMm) ? (obj.gridMm as GridMm) : base.gridMm;
   return {
-    layers: withMeasure.length > 1 ? withMeasure : base.layers,
+    layers: withMarkup.length > 2 ? withMarkup : base.layers,
     gridMm: grid,
     snapEnabled: obj.snapEnabled !== false,
     areas: normalizeAreas(obj.areas),
+    markups: normalizeMarkups(obj.markups),
   };
 }

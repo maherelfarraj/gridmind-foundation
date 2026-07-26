@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { SheetBorder, type TitleBlockData } from "./title-block";
 import { CanvasGlyph } from "./symbol-glyph";
+import { MarkupLayer } from "./markup-layer";
 import { SYMBOL_DRAG_MIME } from "./symbol-palette";
 import {
   connectionEndpoints,
@@ -68,6 +69,7 @@ export function SldCanvas({ editable, titleBlock, onPlace, issueSeverity }: Prop
   const snapIndicator = useCanvasStore((s) => s.snapIndicator);
   const pending = useCanvasStore((s) => s.pendingConnection);
   const measurement = useCanvasStore((s) => s.measurement);
+  const markups = useCanvasStore((s) => s.markups);
   const marquee = useCanvasStore((s) => s.marquee);
   const store = useCanvasStore;
 
@@ -491,6 +493,9 @@ export function SldCanvas({ editable, titleBlock, onPlace, issueSeverity }: Prop
               live
             />
           ) : null}
+
+          {/* P-145 — markup layer sits above the model, never exported to DXF. */}
+          <MarkupLayer markups={markups} />
 
           {marquee ? <MarqueeRect rect={marquee} /> : null}
 
