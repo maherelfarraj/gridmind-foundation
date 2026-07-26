@@ -394,11 +394,34 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
                 <text
                   y={def.h / 2 + 3.4}
                   textAnchor="middle"
-                  className="pointer-events-none fill-foreground"
+                  className={
+                    dupeTagIds.has(obj.id)
+                      ? "pointer-events-none fill-destructive"
+                      : "pointer-events-none fill-foreground"
+                  }
                   style={{ fontSize: 3.2 }}
                 >
                   {obj.tag ?? def.label}
                 </text>
+                {dupeTagIds.has(obj.id) ? (
+                  <g className="pointer-events-none">
+                    <circle
+                      cx={def.w / 2 + 2}
+                      cy={-def.h / 2 - 2}
+                      r={2.4}
+                      className="fill-destructive"
+                    />
+                    <text
+                      x={def.w / 2 + 2}
+                      y={-def.h / 2 - 1.1}
+                      textAnchor="middle"
+                      className="fill-destructive-foreground"
+                      style={{ fontSize: 3 }}
+                    >
+                      !
+                    </text>
+                  </g>
+                ) : null}
                 {def.ports.map((p) => {
                   const hot =
                     hoverPort?.objectId === obj.id && hoverPort.port === p.id && tool === "connect";
