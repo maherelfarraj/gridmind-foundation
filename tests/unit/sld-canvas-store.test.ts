@@ -37,9 +37,15 @@ describe("zoom", () => {
   it("keeps the cursor as focal point", () => {
     const state = { zoom: 1, pan: { x: 0, y: 0 } };
     const cursor = { x: 300, y: 200 };
-    const before = { x: (cursor.x - state.pan.x) / state.zoom, y: (cursor.y - state.pan.y) / state.zoom };
+    const before = {
+      x: (cursor.x - state.pan.x) / state.zoom,
+      y: (cursor.y - state.pan.y) / state.zoom,
+    };
     const next = zoomAroundCursor(state, 2, cursor);
-    const after = { x: (cursor.x - next.pan.x) / next.zoom, y: (cursor.y - next.pan.y) / next.zoom };
+    const after = {
+      x: (cursor.x - next.pan.x) / next.zoom,
+      y: (cursor.y - next.pan.y) / next.zoom,
+    };
     expect(after.x).toBeCloseTo(before.x, 6);
     expect(after.y).toBeCloseTo(before.y, 6);
   });

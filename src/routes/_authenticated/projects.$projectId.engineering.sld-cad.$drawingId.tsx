@@ -17,12 +17,14 @@ export const Route = createFileRoute(
       { title: "SLD CAD workspace — GridMind EPC" },
       {
         name: "description",
-        content: "Design single-line diagrams on a snap-to-grid CAD canvas with layers and revisions.",
+        content:
+          "Design single-line diagrams on a snap-to-grid CAD canvas with layers and revisions.",
       },
       { property: "og:title", content: "SLD CAD workspace — GridMind EPC" },
       {
         property: "og:description",
-        content: "Design single-line diagrams on a snap-to-grid CAD canvas with layers and revisions.",
+        content:
+          "Design single-line diagrams on a snap-to-grid CAD canvas with layers and revisions.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

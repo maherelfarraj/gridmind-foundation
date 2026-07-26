@@ -104,10 +104,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const fit = useCallback(() => {
     const el = document.querySelector('[aria-label="SLD canvas"]');
     const rect = el?.getBoundingClientRect();
-    store.getState().fitToContent(
-      { width: rect?.width ?? 800, height: rect?.height ?? 600 },
-      { x: 841, y: 594 },
-    );
+    store
+      .getState()
+      .fitToContent({ width: rect?.width ?? 800, height: rect?.height ?? 600 }, { x: 841, y: 594 });
   }, [store]);
 
   // Keyboard shortcuts.
@@ -118,7 +117,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       const s = store.getState();
       const mod = e.ctrlKey || e.metaKey;
 
-      if (e.key === "?" ) {
+      if (e.key === "?") {
         setShortcutsOpen(true);
         return;
       }
@@ -228,13 +227,23 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
           {dirty ? <Badge variant="secondary">Unsaved</Badge> : null}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" aria-label="Zoom out" onClick={() => store.getState().setZoom(zoom / 1.2)}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Zoom out"
+            onClick={() => store.getState().setZoom(zoom / 1.2)}
+          >
             <ZoomOut className="size-4" />
           </Button>
           <span className="w-14 text-center text-xs tabular-nums text-muted-foreground">
             {Math.round(zoom * 100)}%
           </span>
-          <Button variant="outline" size="icon" aria-label="Zoom in" onClick={() => store.getState().setZoom(zoom * 1.2)}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Zoom in"
+            onClick={() => store.getState().setZoom(zoom * 1.2)}
+          >
             <ZoomIn className="size-4" />
           </Button>
           <Button variant="outline" size="icon" aria-label="Fit to content" onClick={fit}>
@@ -284,7 +293,12 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
           >
             <Redo2 className="size-4" />
           </Button>
-          <Button variant="outline" size="icon" aria-label="Shortcuts" onClick={() => setShortcutsOpen(true)}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Shortcuts"
+            onClick={() => setShortcutsOpen(true)}
+          >
             <Keyboard className="size-4" />
           </Button>
           <Button onClick={doSave} disabled={!editable || save.isPending}>
@@ -327,7 +341,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {placingType ? "Click the sheet to place." : "Pick a symbol, then click the sheet."}
+                  {placingType
+                    ? "Click the sheet to place."
+                    : "Pick a symbol, then click the sheet."}
                 </p>
               </div>
             ) : null}

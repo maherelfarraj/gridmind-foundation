@@ -75,7 +75,13 @@ export function LayersPanel({ editable }: { editable: boolean }) {
             onChange={(e) => setNewName(e.target.value)}
             className="h-8"
           />
-          <Button type="submit" size="icon" variant="secondary" className="size-8" aria-label="Add layer">
+          <Button
+            type="submit"
+            size="icon"
+            variant="secondary"
+            className="size-8"
+            aria-label="Add layer"
+          >
             <Plus className="size-4" />
           </Button>
         </form>

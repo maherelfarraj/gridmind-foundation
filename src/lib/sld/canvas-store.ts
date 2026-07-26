@@ -253,8 +253,7 @@ export const createCanvasStore = () =>
       setGridMm: (gridMm) => set({ gridMm, dirty: true }),
       toggleSnap: () => set({ snapEnabled: !get().snapEnabled, dirty: true }),
       setTool: (tool) => set({ tool, placingType: tool === "place" ? get().placingType : null }),
-      setPlacingType: (placingType) =>
-        set({ placingType, tool: placingType ? "place" : "select" }),
+      setPlacingType: (placingType) => set({ placingType, tool: placingType ? "place" : "select" }),
       setSnapIndicator: (snapIndicator) => set({ snapIndicator }),
 
       select: (ids, additive) => {
@@ -263,7 +262,9 @@ export const createCanvasStore = () =>
           const o = objects.find((x) => x.id === id);
           return o ? !isLayerLocked(layers, o.layer_id) : false;
         });
-        set({ selection: additive ? Array.from(new Set([...get().selection, ...allowed])) : allowed });
+        set({
+          selection: additive ? Array.from(new Set([...get().selection, ...allowed])) : allowed,
+        });
       },
       clearSelection: () => set({ selection: [] }),
 
@@ -281,9 +282,7 @@ export const createCanvasStore = () =>
         })),
       toggleLayerLocked: (id) =>
         commit("layers", (s) => ({
-          layers: s.layers.map((l) =>
-            l.id === id && !l.system ? { ...l, locked: !l.locked } : l,
-          ),
+          layers: s.layers.map((l) => (l.id === id && !l.system ? { ...l, locked: !l.locked } : l)),
         })),
 
       placeObject: (obj) => {
@@ -309,7 +308,7 @@ export const createCanvasStore = () =>
         commit("property", (s) => ({
           objects: s.objects.map((o) =>
             s.selection.includes(o.id) && !isLayerLocked(s.layers, o.layer_id)
-              ? { ...o, rotation: (((o.rotation + 90) % 360) as 0 | 90 | 180 | 270) }
+              ? { ...o, rotation: ((o.rotation + 90) % 360) as 0 | 90 | 180 | 270 }
               : o,
           ),
         })),
@@ -343,7 +342,9 @@ export const createCanvasStore = () =>
 
       copySelection: () => {
         const s = get();
-        set({ clipboard: s.objects.filter((o) => s.selection.includes(o.id)).map((o) => ({ ...o })) });
+        set({
+          clipboard: s.objects.filter((o) => s.selection.includes(o.id)).map((o) => ({ ...o })),
+        });
       },
 
       paste: () => {
@@ -366,7 +367,13 @@ export const createCanvasStore = () =>
         const s = get();
         const clones = s.objects
           .filter((o) => s.selection.includes(o.id) && !isLayerLocked(s.layers, o.layer_id))
-          .map((o) => ({ ...o, id: newId(), tag: null, x: o.x + s.gridMm * 2, y: o.y + s.gridMm * 2 }));
+          .map((o) => ({
+            ...o,
+            id: newId(),
+            tag: null,
+            x: o.x + s.gridMm * 2,
+            y: o.y + s.gridMm * 2,
+          }));
         if (clones.length === 0) return;
         commit("paste", (st) => ({
           objects: [...st.objects, ...clones],

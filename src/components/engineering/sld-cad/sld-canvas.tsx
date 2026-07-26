@@ -2,12 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SheetBorder, type TitleBlockData } from "./title-block";
-import {
-  isLayerLocked,
-  nearestPort,
-  snapValue,
-  useCanvasStore,
-} from "@/lib/sld/canvas-store";
+import { isLayerLocked, nearestPort, snapValue, useCanvasStore } from "@/lib/sld/canvas-store";
 import type { SldCanvasObject } from "@/lib/sld/canvas-types";
 import { symbolDef } from "@/lib/sld/symbols";
 
@@ -43,7 +38,10 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
       const rect = ref.current?.getBoundingClientRect();
       if (!rect) return { x: 0, y: 0 };
       const s = store.getState();
-      return { x: (clientX - rect.left - s.pan.x) / s.zoom, y: (clientY - rect.top - s.pan.y) / s.zoom };
+      return {
+        x: (clientX - rect.left - s.pan.x) / s.zoom,
+        y: (clientY - rect.top - s.pan.y) / s.zoom,
+      };
     },
     [store],
   );
@@ -69,9 +67,7 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
-      store
-        .getState()
-        .zoomAt(factor, { x: e.clientX - rect.left, y: e.clientY - rect.top });
+      store.getState().zoomAt(factor, { x: e.clientX - rect.left, y: e.clientY - rect.top });
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
@@ -165,7 +161,10 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
   const gridId = `sld-grid-${gridMm}`;
 
   return (
-    <div ref={wrapRef} className="relative h-full w-full overflow-hidden rounded-lg border border-border bg-background">
+    <div
+      ref={wrapRef}
+      className="relative h-full w-full overflow-hidden rounded-lg border border-border bg-background"
+    >
       <svg
         ref={ref}
         role="application"
@@ -208,7 +207,9 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
                 data-object-id={obj.id}
                 transform={`translate(${obj.x + dx} ${obj.y + dy}) rotate(${obj.rotation}) scale(${obj.mirrored ? -1 : 1} 1)`}
                 onPointerDown={(e) => onObjectPointerDown(e, obj)}
-                className={isLayerLocked(layers, obj.layer_id) ? "cursor-not-allowed" : "cursor-move"}
+                className={
+                  isLayerLocked(layers, obj.layer_id) ? "cursor-not-allowed" : "cursor-move"
+                }
               >
                 <rect
                   x={-def.w / 2}
@@ -232,13 +233,7 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
                   {obj.tag ?? def.label}
                 </text>
                 {def.ports.map((p) => (
-                  <circle
-                    key={p.id}
-                    cx={p.x}
-                    cy={p.y}
-                    r={0.9}
-                    className="fill-muted-foreground"
-                  />
+                  <circle key={p.id} cx={p.x} cy={p.y} r={0.9} className="fill-muted-foreground" />
                 ))}
               </g>
             );
