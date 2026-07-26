@@ -85,6 +85,23 @@ function SchedulePage() {
   const [selectedBaselineId, setSelectedBaselineId] = useState<string | null>(null);
   const [compare, setCompare] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
+  const [showCp, setShowCp] = useState(false);
+
+  const controlsAccessFn = useServerFn(getControlsAccess);
+  const controlsAccess = useQuery({
+    queryKey: ["controls-access"],
+    queryFn: () => controlsAccessFn(),
+  });
+  const recomputeCpFn = useServerFn(recomputeCriticalPath);
+  const recomputeCpMut = useMutation({
+    mutationFn: () => recomputeCpFn({ data: { projectId } }),
+    onSuccess: (r) => {
+      toast.success(`Critical path recomputed — ${r.criticalCount} task(s) flagged`);
+      setShowCp(true);
+      void queryClient.invalidateQueries({ queryKey: ["schedule", "tasks", projectId] });
+    },
+    onError: (e) => toast.error(scheduleErrorMessage(e)),
+  });
 
   // Auto-select the latest locked baseline once loaded.
   const effectiveBaselineId = useMemo(() => {
