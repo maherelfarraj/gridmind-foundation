@@ -76,8 +76,16 @@ import { Route as AuthenticatedOmWarrantiesRouteImport } from './routes/_authent
 import { Route as AuthenticatedOmServiceTicketsRouteImport } from './routes/_authenticated/om.service-tickets'
 import { Route as AuthenticatedOmReportsRouteImport } from './routes/_authenticated/om.reports'
 import { Route as AuthenticatedOmMaintenancePlansRouteImport } from './routes/_authenticated/om.maintenance-plans'
+import { Route as AuthenticatedHseWasteRouteImport } from './routes/_authenticated/hse.waste'
 import { Route as AuthenticatedHseTrainingRouteImport } from './routes/_authenticated/hse.training'
+import { Route as AuthenticatedHseRiskAssessmentsRouteImport } from './routes/_authenticated/hse.risk-assessments'
+import { Route as AuthenticatedHseObservationsRouteImport } from './routes/_authenticated/hse.observations'
+import { Route as AuthenticatedHseJsaRouteImport } from './routes/_authenticated/hse.jsa'
 import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authenticated/hse.inspections'
+import { Route as AuthenticatedHseEnvironmentalRouteImport } from './routes/_authenticated/hse.environmental'
+import { Route as AuthenticatedHseEmergencyRouteImport } from './routes/_authenticated/hse.emergency'
+import { Route as AuthenticatedHseCompetencyRouteImport } from './routes/_authenticated/hse.competency'
+import { Route as AuthenticatedHseAuditsRouteImport } from './routes/_authenticated/hse.audits'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
@@ -580,18 +588,63 @@ const AuthenticatedOmMaintenancePlansRoute =
     path: '/om/maintenance-plans',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseWasteRoute = AuthenticatedHseWasteRouteImport.update({
+  id: '/hse/waste',
+  path: '/hse/waste',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHseTrainingRoute =
   AuthenticatedHseTrainingRouteImport.update({
     id: '/hse/training',
     path: '/hse/training',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseRiskAssessmentsRoute =
+  AuthenticatedHseRiskAssessmentsRouteImport.update({
+    id: '/hse/risk-assessments',
+    path: '/hse/risk-assessments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseObservationsRoute =
+  AuthenticatedHseObservationsRouteImport.update({
+    id: '/hse/observations',
+    path: '/hse/observations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseJsaRoute = AuthenticatedHseJsaRouteImport.update({
+  id: '/hse/jsa',
+  path: '/hse/jsa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHseInspectionsRoute =
   AuthenticatedHseInspectionsRouteImport.update({
     id: '/hse/inspections',
     path: '/hse/inspections',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHseEnvironmentalRoute =
+  AuthenticatedHseEnvironmentalRouteImport.update({
+    id: '/hse/environmental',
+    path: '/hse/environmental',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseEmergencyRoute =
+  AuthenticatedHseEmergencyRouteImport.update({
+    id: '/hse/emergency',
+    path: '/hse/emergency',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseCompetencyRoute =
+  AuthenticatedHseCompetencyRouteImport.update({
+    id: '/hse/competency',
+    path: '/hse/competency',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHseAuditsRoute = AuthenticatedHseAuditsRouteImport.update({
+  id: '/hse/audits',
+  path: '/hse/audits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFinanceInvoicesRoute =
   AuthenticatedFinanceInvoicesRouteImport.update({
     id: '/finance/invoices',
@@ -1422,8 +1475,16 @@ export interface FileRoutesByFullPath {
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/hse/audits': typeof AuthenticatedHseAuditsRoute
+  '/hse/competency': typeof AuthenticatedHseCompetencyRoute
+  '/hse/emergency': typeof AuthenticatedHseEmergencyRoute
+  '/hse/environmental': typeof AuthenticatedHseEnvironmentalRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/hse/jsa': typeof AuthenticatedHseJsaRoute
+  '/hse/observations': typeof AuthenticatedHseObservationsRoute
+  '/hse/risk-assessments': typeof AuthenticatedHseRiskAssessmentsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/hse/waste': typeof AuthenticatedHseWasteRoute
   '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/om/reports': typeof AuthenticatedOmReportsRoute
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
@@ -1619,8 +1680,16 @@ export interface FileRoutesByTo {
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/hse/audits': typeof AuthenticatedHseAuditsRoute
+  '/hse/competency': typeof AuthenticatedHseCompetencyRoute
+  '/hse/emergency': typeof AuthenticatedHseEmergencyRoute
+  '/hse/environmental': typeof AuthenticatedHseEnvironmentalRoute
   '/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/hse/jsa': typeof AuthenticatedHseJsaRoute
+  '/hse/observations': typeof AuthenticatedHseObservationsRoute
+  '/hse/risk-assessments': typeof AuthenticatedHseRiskAssessmentsRoute
   '/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/hse/waste': typeof AuthenticatedHseWasteRoute
   '/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/om/reports': typeof AuthenticatedOmReportsRoute
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
@@ -1812,8 +1881,16 @@ export interface FileRoutesById {
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
+  '/_authenticated/hse/audits': typeof AuthenticatedHseAuditsRoute
+  '/_authenticated/hse/competency': typeof AuthenticatedHseCompetencyRoute
+  '/_authenticated/hse/emergency': typeof AuthenticatedHseEmergencyRoute
+  '/_authenticated/hse/environmental': typeof AuthenticatedHseEnvironmentalRoute
   '/_authenticated/hse/inspections': typeof AuthenticatedHseInspectionsRoute
+  '/_authenticated/hse/jsa': typeof AuthenticatedHseJsaRoute
+  '/_authenticated/hse/observations': typeof AuthenticatedHseObservationsRoute
+  '/_authenticated/hse/risk-assessments': typeof AuthenticatedHseRiskAssessmentsRoute
   '/_authenticated/hse/training': typeof AuthenticatedHseTrainingRoute
+  '/_authenticated/hse/waste': typeof AuthenticatedHseWasteRoute
   '/_authenticated/om/maintenance-plans': typeof AuthenticatedOmMaintenancePlansRoute
   '/_authenticated/om/reports': typeof AuthenticatedOmReportsRoute
   '/_authenticated/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
@@ -2013,8 +2090,16 @@ export interface FileRouteTypes {
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
+    | '/hse/audits'
+    | '/hse/competency'
+    | '/hse/emergency'
+    | '/hse/environmental'
     | '/hse/inspections'
+    | '/hse/jsa'
+    | '/hse/observations'
+    | '/hse/risk-assessments'
     | '/hse/training'
+    | '/hse/waste'
     | '/om/maintenance-plans'
     | '/om/reports'
     | '/om/service-tickets'
@@ -2210,8 +2295,16 @@ export interface FileRouteTypes {
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
+    | '/hse/audits'
+    | '/hse/competency'
+    | '/hse/emergency'
+    | '/hse/environmental'
     | '/hse/inspections'
+    | '/hse/jsa'
+    | '/hse/observations'
+    | '/hse/risk-assessments'
     | '/hse/training'
+    | '/hse/waste'
     | '/om/maintenance-plans'
     | '/om/reports'
     | '/om/service-tickets'
@@ -2402,8 +2495,16 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
+    | '/_authenticated/hse/audits'
+    | '/_authenticated/hse/competency'
+    | '/_authenticated/hse/emergency'
+    | '/_authenticated/hse/environmental'
     | '/_authenticated/hse/inspections'
+    | '/_authenticated/hse/jsa'
+    | '/_authenticated/hse/observations'
+    | '/_authenticated/hse/risk-assessments'
     | '/_authenticated/hse/training'
+    | '/_authenticated/hse/waste'
     | '/_authenticated/om/maintenance-plans'
     | '/_authenticated/om/reports'
     | '/_authenticated/om/service-tickets'
@@ -3065,6 +3166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOmMaintenancePlansRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hse/waste': {
+      id: '/_authenticated/hse/waste'
+      path: '/hse/waste'
+      fullPath: '/hse/waste'
+      preLoaderRoute: typeof AuthenticatedHseWasteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hse/training': {
       id: '/_authenticated/hse/training'
       path: '/hse/training'
@@ -3072,11 +3180,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHseTrainingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hse/risk-assessments': {
+      id: '/_authenticated/hse/risk-assessments'
+      path: '/hse/risk-assessments'
+      fullPath: '/hse/risk-assessments'
+      preLoaderRoute: typeof AuthenticatedHseRiskAssessmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/observations': {
+      id: '/_authenticated/hse/observations'
+      path: '/hse/observations'
+      fullPath: '/hse/observations'
+      preLoaderRoute: typeof AuthenticatedHseObservationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/jsa': {
+      id: '/_authenticated/hse/jsa'
+      path: '/hse/jsa'
+      fullPath: '/hse/jsa'
+      preLoaderRoute: typeof AuthenticatedHseJsaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hse/inspections': {
       id: '/_authenticated/hse/inspections'
       path: '/hse/inspections'
       fullPath: '/hse/inspections'
       preLoaderRoute: typeof AuthenticatedHseInspectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/environmental': {
+      id: '/_authenticated/hse/environmental'
+      path: '/hse/environmental'
+      fullPath: '/hse/environmental'
+      preLoaderRoute: typeof AuthenticatedHseEnvironmentalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/emergency': {
+      id: '/_authenticated/hse/emergency'
+      path: '/hse/emergency'
+      fullPath: '/hse/emergency'
+      preLoaderRoute: typeof AuthenticatedHseEmergencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/competency': {
+      id: '/_authenticated/hse/competency'
+      path: '/hse/competency'
+      fullPath: '/hse/competency'
+      preLoaderRoute: typeof AuthenticatedHseCompetencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hse/audits': {
+      id: '/_authenticated/hse/audits'
+      path: '/hse/audits'
+      fullPath: '/hse/audits'
+      preLoaderRoute: typeof AuthenticatedHseAuditsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/invoices': {
@@ -4466,8 +4623,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
+  AuthenticatedHseAuditsRoute: typeof AuthenticatedHseAuditsRoute
+  AuthenticatedHseCompetencyRoute: typeof AuthenticatedHseCompetencyRoute
+  AuthenticatedHseEmergencyRoute: typeof AuthenticatedHseEmergencyRoute
+  AuthenticatedHseEnvironmentalRoute: typeof AuthenticatedHseEnvironmentalRoute
   AuthenticatedHseInspectionsRoute: typeof AuthenticatedHseInspectionsRoute
+  AuthenticatedHseJsaRoute: typeof AuthenticatedHseJsaRoute
+  AuthenticatedHseObservationsRoute: typeof AuthenticatedHseObservationsRoute
+  AuthenticatedHseRiskAssessmentsRoute: typeof AuthenticatedHseRiskAssessmentsRoute
   AuthenticatedHseTrainingRoute: typeof AuthenticatedHseTrainingRoute
+  AuthenticatedHseWasteRoute: typeof AuthenticatedHseWasteRoute
   AuthenticatedOmMaintenancePlansRoute: typeof AuthenticatedOmMaintenancePlansRoute
   AuthenticatedOmReportsRoute: typeof AuthenticatedOmReportsRoute
   AuthenticatedOmServiceTicketsRoute: typeof AuthenticatedOmServiceTicketsRoute
@@ -4571,8 +4736,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
+  AuthenticatedHseAuditsRoute: AuthenticatedHseAuditsRoute,
+  AuthenticatedHseCompetencyRoute: AuthenticatedHseCompetencyRoute,
+  AuthenticatedHseEmergencyRoute: AuthenticatedHseEmergencyRoute,
+  AuthenticatedHseEnvironmentalRoute: AuthenticatedHseEnvironmentalRoute,
   AuthenticatedHseInspectionsRoute: AuthenticatedHseInspectionsRoute,
+  AuthenticatedHseJsaRoute: AuthenticatedHseJsaRoute,
+  AuthenticatedHseObservationsRoute: AuthenticatedHseObservationsRoute,
+  AuthenticatedHseRiskAssessmentsRoute: AuthenticatedHseRiskAssessmentsRoute,
   AuthenticatedHseTrainingRoute: AuthenticatedHseTrainingRoute,
+  AuthenticatedHseWasteRoute: AuthenticatedHseWasteRoute,
   AuthenticatedOmMaintenancePlansRoute: AuthenticatedOmMaintenancePlansRoute,
   AuthenticatedOmReportsRoute: AuthenticatedOmReportsRoute,
   AuthenticatedOmServiceTicketsRoute: AuthenticatedOmServiceTicketsRoute,

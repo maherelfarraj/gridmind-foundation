@@ -6,8 +6,12 @@ import {
   AlertTriangle,
   CalendarClock,
   ClipboardCheck,
+  Eye,
   GraduationCap,
   Inbox,
+  Leaf,
+  Recycle,
+  Siren,
   Plus,
   ShieldAlert,
   TrendingUp,
@@ -30,6 +34,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { errorMessage, hseDashboardQueryOptions, hseProjectsQueryOptions } from "@/lib/hse-query";
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
+import { useServerFn } from "@tanstack/react-start";
+import { getHseExtDashboard } from "@/lib/hse-ext.functions";
 
 export const Route = createFileRoute("/_authenticated/hse/")({
   head: () => ({
@@ -56,6 +62,12 @@ function HseDashboardPage() {
   const projectsQuery = useQuery(hseProjectsQueryOptions());
   const [projectId, setProjectId] = useState<string>("");
   const dashQuery = useQuery(hseDashboardQueryOptions(projectId || null));
+  const extFn = useServerFn(getHseExtDashboard);
+  const extQuery = useQuery({
+    queryKey: ["hse-ext-dashboard", projectId || null],
+    queryFn: () => extFn({ data: { projectId: projectId || undefined } }),
+  });
+  const ext = extQuery.data;
   const data = dashQuery.data;
 
   const trirLabel = useMemo(() => {
@@ -159,6 +171,54 @@ function HseDashboardPage() {
             label="Certs ≤ 30d"
             value={data ? data.trainingExpiring.toString() : "—"}
             isLoading={dashQuery.isLoading}
+          />
+          <KpiTile
+            icon={Eye}
+            label="Open unsafe observations"
+            value={ext ? ext.openUnsafeObservations.toString() : "—"}
+            hint="Unsafe acts and conditions not yet closed"
+            isLoading={extQuery.isLoading}
+          />
+          <KpiTile
+            icon={GraduationCap}
+            label="Competencies ≤ 30d"
+            value={ext ? ext.competenciesExpiring.toString() : "—"}
+            isLoading={extQuery.isLoading}
+          />
+          <KpiTile
+            icon={Leaf}
+            label="Env exceedances MTD"
+            value={ext ? ext.envExceedancesThisMonth.toString() : "—"}
+            isLoading={extQuery.isLoading}
+          />
+          <KpiTile
+            icon={Recycle}
+            label="Waste (kg)"
+            value={ext ? Math.round(ext.wasteTotalKg).toString() : "—"}
+            hint={
+              ext && Object.keys(ext.wasteByType).length > 0
+                ? Object.entries(ext.wasteByType)
+                    .map(([t, kg]) => `${t}: ${Math.round(kg)}`)
+                    .join(" · ")
+                : undefined
+            }
+            isLoading={extQuery.isLoading}
+          />
+          <KpiTile
+            icon={ClipboardCheck}
+            label="Last audit score"
+            value={ext && ext.lastAuditScore != null ? `${ext.lastAuditScore}%` : "—"}
+            isLoading={extQuery.isLoading}
+          />
+          <KpiTile
+            icon={Siren}
+            label="Drill response avg"
+            value={
+              ext && ext.drillResponseAvgMinutes != null
+                ? `${ext.drillResponseAvgMinutes} min`
+                : "—"
+            }
+            isLoading={extQuery.isLoading}
           />
         </KpiGrid>
 
