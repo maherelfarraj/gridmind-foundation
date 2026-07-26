@@ -85,7 +85,7 @@ function IngestionHealthPage() {
         <KpiTile
           label="Healthy"
           value={`${kpis?.healthy ?? 0} / ${kpis?.connectors ?? 0}`}
-          tone={(kpis?.down ?? 0) > 0 ? "critical" : undefined}
+          status={(kpis?.down ?? 0) > 0 ? "bad" : "good"}
         />
         <KpiTile label="Rows (24h)" value={(kpis?.rowsLast24h ?? 0).toLocaleString()} />
         <KpiTile
