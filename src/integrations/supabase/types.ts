@@ -987,6 +987,130 @@ export type Database = {
           },
         ]
       }
+      cable_test_results: {
+        Row: {
+          cable_tag: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          project_id: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          test_date: string
+          test_type: string
+          updated_at: string
+          values: Json
+        }
+        Insert: {
+          cable_tag: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date: string
+          test_type: string
+          updated_at?: string
+          values?: Json
+        }
+        Update: {
+          cable_tag?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date?: string
+          test_type?: string
+          updated_at?: string
+          values?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cable_test_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cable_test_results_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cable_test_results_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calibration_records: {
+        Row: {
+          cal_date: string
+          calibrated_by: string | null
+          certificate_path: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instrument: string
+          instrument_tag: string
+          next_due: string | null
+          result: Database["public"]["Enums"]["test_result_status"]
+          updated_at: string
+        }
+        Insert: {
+          cal_date: string
+          calibrated_by?: string | null
+          certificate_path?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instrument: string
+          instrument_tag: string
+          next_due?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+        }
+        Update: {
+          cal_date?: string
+          calibrated_by?: string | null
+          certificate_path?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instrument?: string
+          instrument_tag?: string
+          next_due?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calibration_records_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_flows: {
         Row: {
           amount: number
@@ -1370,6 +1494,70 @@ export type Database = {
           },
           {
             foreignKeyName: "commissioning_certificates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commissioning_dossiers: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          dossier_number: string
+          id: string
+          issued_at: string | null
+          project_id: string
+          sections: Json
+          status: Database["public"]["Enums"]["dossier_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          dossier_number: string
+          id?: string
+          issued_at?: string | null
+          project_id: string
+          sections?: Json
+          status?: Database["public"]["Enums"]["dossier_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          dossier_number?: string
+          id?: string
+          issued_at?: string | null
+          project_id?: string
+          sections?: Json
+          status?: Database["public"]["Enums"]["dossier_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissioning_dossiers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_dossiers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissioning_dossiers_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -4179,6 +4367,86 @@ export type Database = {
           },
         ]
       }
+      factory_acceptance_tests: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_tag: string
+          fat_number: string
+          id: string
+          location: string | null
+          project_id: string
+          punch_items: Json
+          purchase_order_id: string | null
+          report_path: string | null
+          result: Database["public"]["Enums"]["test_result_status"]
+          test_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag: string
+          fat_number: string
+          id?: string
+          location?: string | null
+          project_id: string
+          punch_items?: Json
+          purchase_order_id?: string | null
+          report_path?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag?: string
+          fat_number?: string
+          id?: string
+          location?: string | null
+          project_id?: string
+          punch_items?: Json
+          purchase_order_id?: string | null
+          report_path?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factory_acceptance_tests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factory_acceptance_tests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factory_acceptance_tests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factory_acceptance_tests_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_observations: {
         Row: {
           action_required: string | null
@@ -5064,6 +5332,103 @@ export type Database = {
           },
         ]
       }
+      inspection_test_plans: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          cwp_id: string | null
+          discipline: string
+          id: string
+          itp_number: string
+          project_id: string
+          revision: string
+          status: Database["public"]["Enums"]["itp_status"]
+          title: string
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          cwp_id?: string | null
+          discipline?: string
+          id?: string
+          itp_number: string
+          project_id: string
+          revision?: string
+          status?: Database["public"]["Enums"]["itp_status"]
+          title: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          cwp_id?: string | null
+          discipline?: string
+          id?: string
+          itp_number?: string
+          project_id?: string
+          revision?: string
+          status?: Database["public"]["Enums"]["itp_status"]
+          title?: string
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_test_plans_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_test_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_test_plans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_test_plans_cwp_id_fkey"
+            columns: ["cwp_id"]
+            isOneToOne: false
+            referencedRelation: "construction_work_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_test_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_test_plans_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_share_links: {
         Row: {
           access_count: number
@@ -5290,6 +5655,76 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      itp_steps: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          itp_id: string
+          point_type: Database["public"]["Enums"]["itp_point_type"]
+          reference_doc: string | null
+          seq: number
+          signed_off_at: string | null
+          signed_off_by: string | null
+          signoff_role: string | null
+          status: Database["public"]["Enums"]["itp_step_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          itp_id: string
+          point_type?: Database["public"]["Enums"]["itp_point_type"]
+          reference_doc?: string | null
+          seq: number
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signoff_role?: string | null
+          status?: Database["public"]["Enums"]["itp_step_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          itp_id?: string
+          point_type?: Database["public"]["Enums"]["itp_point_type"]
+          reference_doc?: string | null
+          seq?: number
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signoff_role?: string | null
+          status?: Database["public"]["Enums"]["itp_step_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itp_steps_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "itp_steps_itp_id_fkey"
+            columns: ["itp_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_test_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "itp_steps_signed_off_by_fkey"
+            columns: ["signed_off_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -5830,6 +6265,99 @@ export type Database = {
             columns: ["recorded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_inspection_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          inspection_date: string | null
+          inspector: string | null
+          material: string
+          mir_number: string
+          notes: string | null
+          project_id: string
+          purchase_order_id: string | null
+          qty: number | null
+          result: Database["public"]["Enums"]["test_result_status"]
+          status: Database["public"]["Enums"]["mir_status"]
+          uom: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inspection_date?: string | null
+          inspector?: string | null
+          material: string
+          mir_number: string
+          notes?: string | null
+          project_id: string
+          purchase_order_id?: string | null
+          qty?: number | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          status?: Database["public"]["Enums"]["mir_status"]
+          uom?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inspection_date?: string | null
+          inspector?: string | null
+          material?: string
+          mir_number?: string
+          notes?: string | null
+          project_id?: string
+          purchase_order_id?: string | null
+          qty?: number | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          status?: Database["public"]["Enums"]["mir_status"]
+          uom?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_inspection_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_inspection_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_inspection_requests_inspector_fkey"
+            columns: ["inspector"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_inspection_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_inspection_requests_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -9899,6 +10427,70 @@ export type Database = {
           },
         ]
       }
+      relay_testing: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          project_id: string
+          relay_tag: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          settings: Json
+          test_date: string
+          test_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id: string
+          relay_tag: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          settings?: Json
+          test_date: string
+          test_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id?: string
+          relay_tag?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          settings?: Json
+          test_date?: string
+          test_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relay_testing_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relay_testing_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relay_testing_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfis: {
         Row: {
           answer: string | null
@@ -11292,6 +11884,80 @@ export type Database = {
             columns: ["reported_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_acceptance_tests: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_tag: string
+          fat_id: string | null
+          id: string
+          project_id: string
+          report_path: string | null
+          result: Database["public"]["Enums"]["test_result_status"]
+          sat_number: string
+          test_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag: string
+          fat_id?: string | null
+          id?: string
+          project_id: string
+          report_path?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          sat_number: string
+          test_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag?: string
+          fat_id?: string | null
+          id?: string
+          project_id?: string
+          report_path?: string | null
+          result?: Database["public"]["Enums"]["test_result_status"]
+          sat_number?: string
+          test_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_acceptance_tests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_acceptance_tests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_acceptance_tests_fat_id_fkey"
+            columns: ["fat_id"]
+            isOneToOne: false
+            referencedRelation: "factory_acceptance_tests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_acceptance_tests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -12772,6 +13438,152 @@ export type Database = {
           },
         ]
       }
+      test_certificates: {
+        Row: {
+          cert_number: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          entity_id: string | null
+          entity_type: string
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          issue_date: string | null
+          issued_by: string | null
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cert_number: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          issued_by?: string | null
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cert_number?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          issued_by?: string | null
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_certificates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_certificates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_certificates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thermographic_inspections: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          delta_t_c: number | null
+          equipment_tag: string
+          finding: string | null
+          id: string
+          image_path: string | null
+          inspection_date: string
+          location: string | null
+          max_temp_c: number | null
+          project_id: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          delta_t_c?: number | null
+          equipment_tag: string
+          finding?: string | null
+          id?: string
+          image_path?: string | null
+          inspection_date: string
+          location?: string | null
+          max_temp_c?: number | null
+          project_id: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          delta_t_c?: number | null
+          equipment_tag?: string
+          finding?: string | null
+          id?: string
+          image_path?: string | null
+          inspection_date?: string
+          location?: string | null
+          max_temp_c?: number | null
+          project_id?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thermographic_inspections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thermographic_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thermographic_inspections_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       three_way_matches: {
         Row: {
           amount_variance: number | null
@@ -13021,6 +13833,140 @@ export type Database = {
           },
           {
             foreignKeyName: "toolbox_talks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      torque_records: {
+        Row: {
+          actual_torque_nm: number | null
+          bolt_ref: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_tag: string
+          id: string
+          project_id: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          target_torque_nm: number
+          tool_tag: string | null
+          torque_date: string
+          updated_at: string
+        }
+        Insert: {
+          actual_torque_nm?: number | null
+          bolt_ref: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag: string
+          id?: string
+          project_id: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          target_torque_nm: number
+          tool_tag?: string | null
+          torque_date: string
+          updated_at?: string
+        }
+        Update: {
+          actual_torque_nm?: number | null
+          bolt_ref?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_tag?: string
+          id?: string
+          project_id?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          target_torque_nm?: number
+          tool_tag?: string | null
+          torque_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "torque_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "torque_records_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "torque_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transformer_test_results: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          project_id: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          test_date: string
+          test_type: string
+          transformer_tag: string
+          updated_at: string
+          values: Json
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date: string
+          test_type: string
+          transformer_tag: string
+          updated_at?: string
+          values?: Json
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          project_id?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          test_date?: string
+          test_type?: string
+          transformer_tag?: string
+          updated_at?: string
+          values?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transformer_test_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transformer_test_results_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transformer_test_results_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -13930,6 +14876,79 @@ export type Database = {
           },
         ]
       }
+      welding_records: {
+        Row: {
+          area: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          ndt_method: string | null
+          project_id: string
+          result: Database["public"]["Enums"]["test_result_status"]
+          updated_at: string
+          weld_date: string
+          weld_number: string
+          welder_cert: string | null
+          welder_name: string
+          wps_ref: string | null
+        }
+        Insert: {
+          area?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ndt_method?: string | null
+          project_id: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+          weld_date: string
+          weld_number: string
+          welder_cert?: string | null
+          welder_name: string
+          wps_ref?: string | null
+        }
+        Update: {
+          area?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ndt_method?: string | null
+          project_id?: string
+          result?: Database["public"]["Enums"]["test_result_status"]
+          updated_at?: string
+          weld_date?: string
+          weld_number?: string
+          welder_cert?: string | null
+          welder_name?: string
+          wps_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welding_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welding_records_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welding_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_fronts: {
         Row: {
           area: string | null
@@ -14268,6 +15287,10 @@ export type Database = {
       }
       assert_export_unlocked: {
         Args: { p_export_type: string; p_project_id: string }
+        Returns: undefined
+      }
+      assert_no_open_hold_point: {
+        Args: { p_cwp_id: string }
         Returns: undefined
       }
       cancel_approval_instance: {
@@ -14709,6 +15732,7 @@ export type Database = {
         | "correspondence"
         | "contract_doc"
         | "other"
+      dossier_status: "compiling" | "complete" | "issued"
       dpr_status: "draft" | "submitted" | "approved"
       drawing_discipline:
         | "civil"
@@ -14819,6 +15843,15 @@ export type Database = {
         | "paid"
         | "disputed"
         | "cancelled"
+      itp_point_type: "hold" | "witness" | "review" | "surveillance"
+      itp_status:
+        | "draft"
+        | "submitted"
+        | "approved"
+        | "active"
+        | "superseded"
+        | "cancelled"
+      itp_step_status: "pending" | "signed_off" | "waived" | "failed"
       layout_scenario_type:
         | "max_capacity"
         | "min_grading"
@@ -14852,6 +15885,12 @@ export type Database = {
         | "steel"
         | "concrete"
         | "other"
+      mir_status:
+        | "requested"
+        | "scheduled"
+        | "inspected"
+        | "accepted"
+        | "rejected"
       mobilization_category:
         | "cabins_facilities"
         | "fencing_security"
@@ -15047,6 +16086,7 @@ export type Database = {
         | "clarification"
         | "award_announcement"
         | "other"
+      test_result_status: "pending" | "pass" | "fail" | "conditional"
       ticket_category:
         | "corrective"
         | "inspection"
@@ -15362,6 +16402,7 @@ export const Constants = {
         "contract_doc",
         "other",
       ],
+      dossier_status: ["compiling", "complete", "issued"],
       dpr_status: ["draft", "submitted", "approved"],
       drawing_discipline: [
         "civil",
@@ -15483,6 +16524,16 @@ export const Constants = {
         "disputed",
         "cancelled",
       ],
+      itp_point_type: ["hold", "witness", "review", "surveillance"],
+      itp_status: [
+        "draft",
+        "submitted",
+        "approved",
+        "active",
+        "superseded",
+        "cancelled",
+      ],
+      itp_step_status: ["pending", "signed_off", "waived", "failed"],
       layout_scenario_type: [
         "max_capacity",
         "min_grading",
@@ -15519,6 +16570,13 @@ export const Constants = {
         "steel",
         "concrete",
         "other",
+      ],
+      mir_status: [
+        "requested",
+        "scheduled",
+        "inspected",
+        "accepted",
+        "rejected",
       ],
       mobilization_category: [
         "cabins_facilities",
@@ -15737,6 +16795,7 @@ export const Constants = {
         "award_announcement",
         "other",
       ],
+      test_result_status: ["pending", "pass", "fail", "conditional"],
       ticket_category: [
         "corrective",
         "inspection",
