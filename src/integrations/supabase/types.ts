@@ -2375,6 +2375,71 @@ export type Database = {
           },
         ]
       }
+      equipment_library: {
+        Row: {
+          category: string
+          certifications: string[]
+          company_id: string
+          country_of_origin: string | null
+          created_at: string
+          created_by: string | null
+          datasheet_url: string | null
+          id: string
+          is_active: boolean
+          manufacturer: string
+          model: string
+          notes: string | null
+          series: string | null
+          specs: Json
+          updated_at: string
+          warranty_years: number | null
+        }
+        Insert: {
+          category: string
+          certifications?: string[]
+          company_id: string
+          country_of_origin?: string | null
+          created_at?: string
+          created_by?: string | null
+          datasheet_url?: string | null
+          id?: string
+          is_active?: boolean
+          manufacturer: string
+          model: string
+          notes?: string | null
+          series?: string | null
+          specs?: Json
+          updated_at?: string
+          warranty_years?: number | null
+        }
+        Update: {
+          category?: string
+          certifications?: string[]
+          company_id?: string
+          country_of_origin?: string | null
+          created_at?: string
+          created_by?: string | null
+          datasheet_url?: string | null
+          id?: string
+          is_active?: boolean
+          manufacturer?: string
+          model?: string
+          notes?: string | null
+          series?: string | null
+          specs?: Json
+          updated_at?: string
+          warranty_years?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_library_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_registry: {
         Row: {
           commissioning_date: string | null
@@ -6640,6 +6705,96 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_site_configs: {
+        Row: {
+          albedo: number
+          altitude_m: number | null
+          approved_at: string | null
+          approved_by: string | null
+          boundary: Json
+          company_id: string
+          created_at: string
+          created_by: string | null
+          exclusions: Json
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          project_id: string
+          status: string
+          terrain_azimuth_deg: number | null
+          terrain_slope_pct: number | null
+          timezone: string | null
+          updated_at: string
+          usable_area_ha: number | null
+          weather_meta: Json
+          weather_source: string
+        }
+        Insert: {
+          albedo?: number
+          altitude_m?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary?: Json
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          exclusions?: Json
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          project_id: string
+          status?: string
+          terrain_azimuth_deg?: number | null
+          terrain_slope_pct?: number | null
+          timezone?: string | null
+          updated_at?: string
+          usable_area_ha?: number | null
+          weather_meta?: Json
+          weather_source?: string
+        }
+        Update: {
+          albedo?: number
+          altitude_m?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          boundary?: Json
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          exclusions?: Json
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          project_id?: string
+          status?: string
+          terrain_azimuth_deg?: number | null
+          terrain_slope_pct?: number | null
+          timezone?: string | null
+          updated_at?: string
+          usable_area_ha?: number | null
+          weather_meta?: Json
+          weather_source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_site_configs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_site_configs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
