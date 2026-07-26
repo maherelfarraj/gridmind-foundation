@@ -393,3 +393,80 @@ export async function importHistorian(
     unmapped_columns: Array.from(unmapped).slice(0, 50),
   };
 }
+
+// -------------------------------------- P-172 health extras: lag + error rate --
+
+export interface ConnectorErrorRates {
+  /** false until migration 0073 (P-177) creates ingestion_retry_queue. */
+  retryQueueAvailable: boolean;
+  /** connector_id -> failed/total batch ratio, or null when unknown. */
+  rates: Record<string, number | null>;
+  /** connector_id -> seconds since the newest telemetry row on its project. */
+  lagSeconds: Record<string, number | null>;
+}
+
+export async function getConnectorErrorRate(
+  context: AuthContext,
+  companyId: string,
+): Promise<ConnectorErrorRates> {
+  const { data: connectorRows, error: cErr } = await context.supabase
+    .from("scada_connectors")
+    .select("id, project_id")
+    .eq("company_id", companyId);
+  if (cErr) throw cErr;
+  const connectors = (connectorRows ?? []) as { id: string; project_id: string }[];
+
+  // --- lag: newest telemetry timestamp per project --------------------------
+  const lagSeconds: Record<string, number | null> = {};
+  const now = Date.now();
+  const projectIds = Array.from(new Set(connectors.map((c) => c.project_id)));
+  const newestByProject = new Map<string, string>();
+  await Promise.all(
+    projectIds.map(async (projectId) => {
+      const { data, error } = await context.supabase
+        .from("scada_telemetry")
+        .select("ts")
+        .eq("company_id", companyId)
+        .eq("project_id", projectId)
+        .order("ts", { ascending: false })
+        .limit(1);
+      if (error) return;
+      const ts = (data ?? [])[0] as { ts: string } | undefined;
+      if (ts?.ts) newestByProject.set(projectId, ts.ts);
+    }),
+  );
+  for (const c of connectors) {
+    const newest = newestByProject.get(c.project_id);
+    lagSeconds[c.id] = newest ? Math.max(0, Math.round((now - Date.parse(newest)) / 1000)) : null;
+  }
+
+  // --- error rate: P-177 retry queue, 42P01-safe ----------------------------
+  const rates: Record<string, number | null> = {};
+  for (const c of connectors) rates[c.id] = null;
+
+  let retryQueueAvailable = true;
+  try {
+    const { data, error } = await context.supabase
+      .from("ingestion_retry_queue" as never)
+      .select("connector_id, status")
+      .eq("company_id", companyId)
+      .limit(5000);
+    if (error) {
+      retryQueueAvailable = (error as { code?: string }).code !== "42P01";
+    } else {
+      const totals = new Map<string, { failed: number; total: number }>();
+      for (const row of (data ?? []) as { connector_id: string | null; status: string }[]) {
+        if (!row.connector_id) continue;
+        const acc = totals.get(row.connector_id) ?? { failed: 0, total: 0 };
+        acc.total += 1;
+        if (row.status === "failed" || row.status === "dead") acc.failed += 1;
+        totals.set(row.connector_id, acc);
+      }
+      for (const [id, acc] of totals) rates[id] = acc.total > 0 ? acc.failed / acc.total : null;
+    }
+  } catch {
+    retryQueueAvailable = false;
+  }
+
+  return { retryQueueAvailable, rates, lagSeconds };
+}
