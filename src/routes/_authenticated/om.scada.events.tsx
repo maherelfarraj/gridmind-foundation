@@ -101,6 +101,35 @@ function EventTimelinePage() {
   const events: TimelineEvent[] = pages.flatMap((p) => p.events);
   const nodes = pages[0]?.nodes ?? [];
 
+  // Operator-facing re-evaluation trigger (O&M / SCADA admins only).
+  const rolesFn = useServerFn(getCurrentUserRoles);
+  const rolesQuery = useQuery({
+    queryKey: ["me", "roles"],
+    queryFn: () => rolesFn(),
+    staleTime: 60_000,
+  });
+  const roles = (rolesQuery.data ?? []).map((r) => r.role as string);
+  const canReevaluate = roles.some((r) => r === "om_admin" || r === "scada_admin");
+
+  const evaluateFn = useServerFn(evaluateEvent);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function reevaluate(eventId: string) {
+    setBusyId(eventId);
+    try {
+      const res = await evaluateFn({ data: { eventId } });
+      toast.success("Actions re-evaluated", {
+        description: `${res.matched} matched · ${res.created} created · ${res.pendingApproval} pending approval`,
+      });
+    } catch (err) {
+      toast.error("Re-evaluation failed", {
+        description: err instanceof Error ? err.message : "Unexpected error",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="page-shell">
       <PageHeader
