@@ -96,7 +96,7 @@ function SchedulePage() {
   const recomputeCpMut = useMutation({
     mutationFn: () => recomputeCpFn({ data: { projectId } }),
     onSuccess: (r) => {
-      toast.success(`Critical path recomputed — ${r.criticalCount} task(s) flagged`);
+      toast.success(`Critical path recomputed — ${r.criticalIds.length} task(s) flagged`);
       setShowCp(true);
       void queryClient.invalidateQueries({ queryKey: ["schedule", "tasks", projectId] });
     },
