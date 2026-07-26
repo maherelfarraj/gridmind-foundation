@@ -189,15 +189,24 @@ export async function buildSimulationPrefill(
     const rows = (assignments.data ?? []) as Array<Record<string, any>>;
     if (rows.length > 0) {
       const stations = new Map<string, number>();
-      for (const row of rows) stations.set(row.inverter_station_label, Number(row.inverter_ac_kw ?? 0));
+      for (const row of rows)
+        stations.set(row.inverter_station_label, Number(row.inverter_ac_kw ?? 0));
       const acTotal = [...stations.values()].reduce((a, b) => a + b, 0);
       if (acTotal > 0) inverterAcKw = acTotal;
-      loadingPct = Math.round((rows.reduce((a, r) => a + Number(r.loading_pct ?? 0), 0) / rows.length) * 100) / 100;
-      dcAcRatio = Math.round((rows.reduce((a, r) => a + Number(r.dc_ac_ratio ?? 0), 0) / rows.length) * 1000) / 1000;
+      loadingPct =
+        Math.round((rows.reduce((a, r) => a + Number(r.loading_pct ?? 0), 0) / rows.length) * 100) /
+        100;
+      dcAcRatio =
+        Math.round(
+          (rows.reduce((a, r) => a + Number(r.dc_ac_ratio ?? 0), 0) / rows.length) * 1000,
+        ) / 1000;
     }
   }
 
-  const bess = (bessRes.data ?? null) as { energy_mwh: number | null; power_mw: number | null } | null;
+  const bess = (bessRes.data ?? null) as {
+    energy_mwh: number | null;
+    power_mw: number | null;
+  } | null;
 
   return {
     siteConfig: {

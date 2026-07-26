@@ -115,7 +115,13 @@ export function waterfallData(chain: LossStepRow[]) {
   for (const step of chain.slice(1)) {
     const after = step.energy_kwh;
     const drop = running - after;
-    rows.push({ name: step.label, base: after, delta: Math.max(0, drop), kind: "loss", loss: drop });
+    rows.push({
+      name: step.label,
+      base: after,
+      delta: Math.max(0, drop),
+      kind: "loss",
+      loss: drop,
+    });
     running = after;
   }
   rows.push({ name: "Net", base: 0, delta: running, kind: "net", loss: 0 });

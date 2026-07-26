@@ -241,9 +241,7 @@ function PvSimulationPage() {
   function onSubmit(v: FormValues) {
     if (!pf) return;
     const sigma = v.sigmaPct.trim() === "" ? null : Number(v.sigmaPct);
-    const overrides = (Object.keys(base) as Array<keyof FormValues>).filter((k) =>
-      isOverridden(k),
-    );
+    const overrides = (Object.keys(base) as Array<keyof FormValues>).filter((k) => isOverridden(k));
     run.mutate({
       projectId,
       layoutId: pf.layout.id,
@@ -344,8 +342,8 @@ function PvSimulationPage() {
                   <div>
                     <p className="text-muted-foreground">Stringing (P-154)</p>
                     <p className="font-medium">
-                      {pf?.stringing.stringCount ?? 0} strings ·{" "}
-                      {pf?.stringing.dcAcRatio ?? "—"} DC/AC
+                      {pf?.stringing.stringCount ?? 0} strings · {pf?.stringing.dcAcRatio ?? "—"}{" "}
+                      DC/AC
                     </p>
                   </div>
                 </div>
@@ -380,10 +378,7 @@ function PvSimulationPage() {
                     <div className="space-y-1.5">
                       <div className="flex items-baseline justify-between gap-2">
                         <Label className="text-xs">Mounting</Label>
-                        <SourceTag
-                          source={sources.tracker}
-                          overridden={isOverridden("tracker")}
-                        />
+                        <SourceTag source={sources.tracker} overridden={isOverridden("tracker")} />
                       </div>
                       <Select
                         value={values.tracker}
@@ -556,10 +551,7 @@ function PvSimulationPage() {
               <>
                 <div className="flex flex-wrap items-center gap-2">
                   <Label className="text-xs">Simulation</Label>
-                  <Select
-                    value={selected?.id ?? ""}
-                    onValueChange={(v) => setSelectedId(v)}
-                  >
+                  <Select value={selected?.id ?? ""} onValueChange={(v) => setSelectedId(v)}>
                     <SelectTrigger className="w-80">
                       <SelectValue />
                     </SelectTrigger>
