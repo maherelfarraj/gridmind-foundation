@@ -61,6 +61,7 @@ import {
   sortWarnings,
 } from "@/lib/ea/present";
 import { EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_VALIDATION_DISCLAIMER } from "@/lib/electrical/disclaimer";
 import {
   createEaStudyRevision,
   getEaStudy,
