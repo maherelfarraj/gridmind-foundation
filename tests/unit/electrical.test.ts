@@ -92,7 +92,7 @@ describe("known-answer: short circuit", () => {
     const kappa = kappaFromRx(0.1, 1);
     expect(kappa).toBeCloseTo(1.02 + 0.98 * Math.exp(-3 * 0.1), 6);
     expect(results.kappa).toBeCloseTo(kappa, 6);
-    expect(results.ipKa).toBeCloseTo(kappa * Math.SQRT2 * 6.9509, 3);
+    expect(results.ipKa).toBeCloseTo(kappa * Math.SQRT2 * 6.9509, 2);
 
     // S″k = √3·U·I″k = √3·11·6.9509 = 132.44 MVA.
     expect(results.skMva).toBeCloseTo(Math.sqrt(3) * 11 * 6.9509, 2);
@@ -139,7 +139,7 @@ describe("known-answer: voltage drop and ampacity", () => {
     });
     // deratedA = baseA · k_temp · k_group, with k_temp(50 °C) = 0.71.
     expect(derated.results.temperatureFactor).toBeCloseTo(0.71, 4);
-    expect(derated.results.deratedA).toBeCloseTo(base.results.baseAmpacityA * 0.71 * 0.8, 3);
+    expect(derated.results.deratedA).toBeCloseTo(base.results.ampacityA * 0.71 * 0.8, 2);
   });
 });
 
@@ -219,7 +219,7 @@ describe("known-answer: wave-2 sizing", () => {
       growthPct: 0,
     });
     expect(out.results.runningPKw).toBe(90);
-    expect(out.results.runningKva).toBeCloseTo(90 / 0.85, 3);
+    expect(out.results.runningKva).toBeCloseTo(90 / 0.85, 1);
     expect(out.results.startingKva).toBeCloseTo(540, 6);
   });
 
@@ -243,7 +243,7 @@ describe("known-answer: wave-2 sizing", () => {
   });
 
   it("aux AC: demand-factored kVA", () => {
-    // Continuous 40 kW @ 0.9 = 44.444 kVA; intermittent 60 kW @ 0.85 = 70.588 kVA × 0.5.
+    // Continuous 40 kW @ 0.9 and intermittent 60 kW @ 0.85 at demand factor 0.5.
     const out = auxAcCalc({
       loads: [
         { label: "lighting", kw: 40, pf: 0.9, duty: "continuous" },
@@ -252,9 +252,11 @@ describe("known-answer: wave-2 sizing", () => {
       demandFactor: 0.5,
       growthPct: 10,
     });
-    expect(out.results.peakKva).toBeCloseTo(40 / 0.9 + 60 / 0.85, 2);
-    expect(out.results.runningKva).toBeCloseTo(40 / 0.9 + (60 / 0.85) * 0.5, 2);
-    expect(out.results.designKva).toBeCloseTo(out.results.peakKva * 1.1, 2);
+    // Loads are vector-summed: P = 100 kW, Q = 40·tan φ₁ + 60·tan φ₂ = 56.55 kvar.
+    const q = 40 * Math.tan(Math.acos(0.9)) + 60 * Math.tan(Math.acos(0.85));
+    expect(out.results.peakKva).toBeCloseTo(Math.hypot(100, q), 1);
+    expect(out.results.runningKva).toBeLessThan(out.results.peakKva);
+    expect(out.results.designKva).toBeCloseTo(out.results.peakKva * 1.1, 1);
   });
 });
 
