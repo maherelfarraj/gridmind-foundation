@@ -470,6 +470,16 @@ export const NAV_GROUPS: NavGroup[] = [
       { moduleKey: "field_qaqc", label: "QA/QC heatmap", url: "/qaqc/heatmap", icon: Grid3x3 },
       { moduleKey: "field_qaqc", label: "Punch list", url: "/qaqc/punch", icon: Flag },
       { moduleKey: "field_qaqc", label: "NCRs", url: "/qaqc/ncrs", icon: AlertTriangle },
+      { moduleKey: "field_qaqc", label: "ITPs", url: "/quality/itp", icon: ClipboardCheck },
+      { moduleKey: "field_qaqc", label: "MIRs", url: "/quality/mir", icon: ClipboardList },
+      { moduleKey: "field_qaqc", label: "FAT / SAT", url: "/quality/fat-sat", icon: BadgeCheck },
+      {
+        moduleKey: "field_qaqc",
+        label: "Test records",
+        url: "/quality/test-records",
+        icon: Gauge,
+      },
+      { moduleKey: "field_qaqc", label: "Dossiers", url: "/quality/dossiers", icon: FileDown },
       {
         moduleKey: "field_qaqc",
         label: "Submittals",
