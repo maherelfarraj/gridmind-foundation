@@ -30,17 +30,7 @@ export function parseHookEvents(json: unknown): HookEvent[] {
  */
 export async function persistScadaEvents(
   admin: {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (
-          c: string,
-          v: string,
-        ) => {
-          in: (c: string, v: string[]) => Promise<{ data: unknown[] | null; error: unknown }>;
-        };
-      };
-      upsert: (rows: unknown, opts: unknown) => Promise<{ error: unknown }>;
-    };
+    from: (t: string) => any;
   },
   companyId: string,
   events: HookEvent[],
@@ -50,25 +40,44 @@ export async function persistScadaEvents(
   const keys = Array.from(new Set(events.map((e) => e.asset_key)));
   const lookup = await admin
     .from("scada_assets")
-    .select("id, asset_key, project_id, company_id, asset_node_id")
+    .select("id, asset_key, project_id")
     .eq("company_id", companyId)
     .in("asset_key", keys);
   if (lookup.error) return { accepted: 0, rejected: events.length };
 
-  const map = new Map<string, EventAssetLookup>();
-  for (const row of (lookup.data ?? []) as Array<{
+  const assets = (lookup.data ?? []) as Array<{
     id: string;
     asset_key: string;
     project_id: string | null;
-    asset_node_id?: string | null;
-  }>) {
+  }>;
+
+  // The P-171 tree links back via asset_nodes.scada_asset_id — resolve the node
+  // for each asset so events land on the hierarchy when one exists.
+  const nodeByAsset = new Map<string, string>();
+  if (assets.length > 0) {
+    const nodes = await admin
+      .from("asset_nodes")
+      .select("id, scada_asset_id")
+      .eq("company_id", companyId)
+      .in(
+        "scada_asset_id",
+        assets.map((a) => a.id),
+      );
+    for (const n of (nodes?.data ?? []) as Array<{ id: string; scada_asset_id: string | null }>) {
+      if (n.scada_asset_id) nodeByAsset.set(n.scada_asset_id, n.id);
+    }
+  }
+
+  const map = new Map<string, EventAssetLookup>();
+  for (const row of assets) {
     if (!row.project_id) continue;
     map.set(row.asset_key, {
       scada_asset_id: row.id,
       project_id: row.project_id,
-      asset_node_id: row.asset_node_id ?? null,
+      asset_node_id: nodeByAsset.get(row.id) ?? null,
     });
   }
+
 
   const { rows, rejected } = buildEventRows(companyId, events, map);
   let accepted = 0;
