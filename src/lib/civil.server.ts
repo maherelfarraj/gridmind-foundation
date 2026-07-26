@@ -146,7 +146,7 @@ export async function writeAuditLog(
     await context.supabase.rpc("write_audit_log", {
       p_action: action,
       p_entity: entity,
-      p_entity_id: entityId,
+      p_entity_id: entityId ?? undefined,
       p_metadata: metadata as any,
     });
   } catch {
