@@ -1,7 +1,8 @@
 // P-153 — PV layout workspace: automatic arrangement, compliance and alternatives.
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useMemo, useState } from "react";
 
 import { PvLayoutCanvas } from "@/components/engineering/pv-layout-canvas";
@@ -38,6 +39,7 @@ import {
   type ComplianceFinding,
   type LayoutAlternative,
 } from "@/lib/pv/layout";
+import { generateSldFromLayout } from "@/lib/pv-sld.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/pv-layout")({
@@ -162,6 +164,38 @@ function PvLayoutPage() {
 
   const current = alternatives[activeOption] ?? null;
   const selectedBlock = current?.result.blocks.find((b) => b.key === selectedKey) ?? null;
+
+  const generateSldFn = useServerFn(generateSldFromLayout);
+  const navigate = useNavigate();
+  const generateSld = useMutation({
+    mutationFn: (layoutId: string) => generateSldFn({ data: { layoutId } }),
+    onSuccess: (result) => {
+      const diff = result.diff;
+      const summary = diff
+        ? ` — ${diff.added.length} added, ${diff.removed.length} removed, ${diff.unchanged} unchanged`
+        : "";
+      if (!result.persisted) {
+        toast.warning(result.note ?? "Preview only", {
+          description: `${result.counts.objects} objects and ${result.counts.connections} connections were generated but not saved.`,
+        });
+        return;
+      }
+      toast.success(`SLD generated${summary}`, {
+        description: `${result.counts.objects} objects, ${result.counts.connections} connections${
+          result.warnings.length > 0 ? `, ${result.warnings.length} warning(s)` : ""
+        }.`,
+        action: {
+          label: "Open drawing",
+          onClick: () =>
+            navigate({
+              to: "/projects/$projectId/engineering/sld-cad/$drawingId",
+              params: { projectId, drawingId: result.drawingId as string },
+            }),
+        },
+      });
+    },
+    onError: (error: Error) => toast.error(error.message || "Could not generate the SLD."),
+  });
 
   const createLayout = useCreatePvLayout(projectId);
   const submitLayout = useSubmitPvLayout(projectId);
@@ -469,6 +503,15 @@ function PvLayoutPage() {
                               disabled={submitLayout.isPending}
                             >
                               Submit for approval
+                            </Button>
+                          ) : null}
+                          {canWrite && row.status === "approved" ? (
+                            <Button
+                              size="sm"
+                              onClick={() => generateSld.mutate(row.id)}
+                              disabled={generateSld.isPending}
+                            >
+                              Generate SLD
                             </Button>
                           ) : null}
                           {canWrite && row.status === "under_review" ? (
