@@ -355,6 +355,20 @@ export async function importHistorian(
     });
     if (error) {
       errorText = error.message;
+      // P-177 — failed historian batches go to the retry queue.
+      try {
+        const { enqueueIngestionRetry } = await import("@/lib/scada-retry.server");
+        await enqueueIngestionRetry(context.supabase, {
+          company_id: companyId,
+          project_id: args.project_id,
+          connector_id: args.connector_id ?? null,
+          payload_kind: "telemetry",
+          rows: batch,
+          error: error.message,
+        });
+      } catch {
+        /* best-effort */
+      }
       continue;
     }
     accepted += batch.length;

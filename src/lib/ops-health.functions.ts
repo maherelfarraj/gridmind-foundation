@@ -40,6 +40,7 @@ const CRON_ACTIONS: Array<{ key: string; label: string }> = [
   { key: "cron.scheduled_reports", label: "Scheduled reports" },
   { key: "cron.audit_retention", label: "Audit retention" },
   { key: "cron.webhook_dispatch", label: "Webhook dispatch" },
+  { key: "cron.ingestion_retry", label: "Ingestion retry" },
 ];
 
 const SIG_FAIL_REASONS = new Set([

@@ -4366,6 +4366,153 @@ export type Database = {
           },
         ]
       }
+      ingestion_dead_letter: {
+        Row: {
+          attempts: number
+          company_id: string
+          connector_id: string | null
+          created_at: string
+          failed_at: string
+          final_error: string
+          first_error: string | null
+          id: string
+          payload: Json
+          payload_kind: string
+          project_id: string | null
+          replayed_at: string | null
+          replayed_by: string | null
+        }
+        Insert: {
+          attempts: number
+          company_id: string
+          connector_id?: string | null
+          created_at?: string
+          failed_at?: string
+          final_error: string
+          first_error?: string | null
+          id?: string
+          payload: Json
+          payload_kind?: string
+          project_id?: string | null
+          replayed_at?: string | null
+          replayed_by?: string | null
+        }
+        Update: {
+          attempts?: number
+          company_id?: string
+          connector_id?: string | null
+          created_at?: string
+          failed_at?: string
+          final_error?: string
+          first_error?: string | null
+          id?: string
+          payload?: Json
+          payload_kind?: string
+          project_id?: string | null
+          replayed_at?: string | null
+          replayed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_dead_letter_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_dead_letter_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "scada_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_dead_letter_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_dead_letter_replayed_by_fkey"
+            columns: ["replayed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_retry_queue: {
+        Row: {
+          attempts: number
+          company_id: string
+          connector_id: string | null
+          created_at: string
+          error: string
+          id: string
+          max_attempts: number
+          next_retry_at: string
+          payload: Json
+          payload_kind: string
+          project_id: string | null
+          status: Database["public"]["Enums"]["ingestion_queue_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          company_id: string
+          connector_id?: string | null
+          created_at?: string
+          error: string
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string
+          payload: Json
+          payload_kind?: string
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["ingestion_queue_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          company_id?: string
+          connector_id?: string | null
+          created_at?: string
+          error?: string
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json
+          payload_kind?: string
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["ingestion_queue_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_retry_queue_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_retry_queue_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "scada_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_retry_queue_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ingestion_runs: {
         Row: {
           company_id: string
@@ -13280,6 +13427,7 @@ export type Database = {
         | "environmental"
         | "security"
       hse_inspection_status: "scheduled" | "completed" | "closed"
+      ingestion_queue_status: "pending" | "processing" | "retried" | "dead"
       ingestion_run_status: "running" | "success" | "partial" | "failed"
       ingestion_trigger: "manual" | "scheduled" | "push" | "import"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
@@ -13887,6 +14035,7 @@ export const Constants = {
         "security",
       ],
       hse_inspection_status: ["scheduled", "completed", "closed"],
+      ingestion_queue_status: ["pending", "processing", "retried", "dead"],
       ingestion_run_status: ["running", "success", "partial", "failed"],
       ingestion_trigger: ["manual", "scheduled", "push", "import"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
