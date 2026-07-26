@@ -74,7 +74,7 @@ export type CanvasTool = "select" | "pan" | "place" | "connect" | "measure";
 export const DEFAULT_LAYERS: SldLayer[] = [
   { id: BORDER_LAYER_ID, name: "Sheet border", visible: true, locked: true, system: true },
   { id: "default", name: "Equipment", visible: true, locked: false },
-  { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false },
+  { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false, system: true },
 ];
 
 export function defaultCanvasMeta(): SldCanvasMeta {
@@ -99,9 +99,12 @@ export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
   const withBorder = layers.some((l) => l.id === BORDER_LAYER_ID)
     ? layers
     : [base.layers[0], ...layers];
+  const withMeasure = withBorder.some((l) => l.id === MEASURE_LAYER_ID)
+    ? withBorder
+    : [...withBorder, { ...base.layers[base.layers.length - 1] }];
   const grid = GRID_STEPS.includes(obj.gridMm as GridMm) ? (obj.gridMm as GridMm) : base.gridMm;
   return {
-    layers: withBorder.length > 1 ? withBorder : base.layers,
+    layers: withMeasure.length > 1 ? withMeasure : base.layers,
     gridMm: grid,
     snapEnabled: obj.snapEnabled !== false,
   };
