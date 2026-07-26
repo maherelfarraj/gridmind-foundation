@@ -13,6 +13,7 @@ const SUB_TABS = [
   { to: "pv-site" as const, label: "Site config" },
   { to: "pv-layout" as const, label: "PV layout" },
   { to: "yield" as const, label: "Yield" },
+  { to: "terrain" as const, label: "Terrain" },
 
   { to: "bom" as const, label: "BOM" },
   { to: "uploads" as const, label: "Site data uploads" },
@@ -55,6 +56,7 @@ function SubTabLink({
     | "pv-site"
     | "pv-layout"
     | "yield"
+    | "terrain"
     | "bom";
 
   label: string;
