@@ -223,8 +223,8 @@ export async function loadAlarmConsole(
     .eq("company_id", companyId)
     .order("raised_at", { ascending: false })
     .limit(filters.limit);
-  if (filters.status) q = q.eq("status", filters.status);
-  if (filters.severity) q = q.eq("severity", filters.severity);
+  if (filters.status) q = q.eq("status", filters.status as never);
+  if (filters.severity) q = q.eq("severity", filters.severity as never);
   if (filters.projectId) q = q.eq("project_id", filters.projectId);
   const { data, error } = await q;
   if (error) throw error;
