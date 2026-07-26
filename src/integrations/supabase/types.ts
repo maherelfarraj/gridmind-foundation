@@ -11118,6 +11118,17 @@ export type Database = {
         Args: { p_instance_id: string }
         Returns: undefined
       }
+      civil_geometry_kind: {
+        Args: { p_type: Database["public"]["Enums"]["civil_feature_type"] }
+        Returns: string
+      }
+      civil_geometry_matches: {
+        Args: {
+          p_geometry: Json
+          p_type: Database["public"]["Enums"]["civil_feature_type"]
+        }
+        Returns: boolean
+      }
       compute_next_run: {
         Args: {
           p_day_of_month: number
