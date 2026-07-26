@@ -4,6 +4,7 @@
  */
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { writeAuditLog } from "@/lib/civil.server";
+import { evaluateEventsSafely, type EngineEvent } from "@/lib/scada-actions.server";
 import { assertIngestionWriter, currentCompanyId, httpError } from "@/lib/scada-ingestion.server";
 import {
   buildEventRows,
@@ -87,6 +88,25 @@ export async function persistScadaEvents(
       .upsert(batch, { onConflict: "project_id,dedupe_key", ignoreDuplicates: true });
     if (!error) accepted += batch.length;
   }
+
+  // P-176 — evaluate SCADA→O&M action rules for the events we just stored.
+  // Fire-and-forget: never fails ingestion, idempotent on (rule, event).
+  if (accepted > 0) {
+    const keys = rows
+      .map((r) => (r as { dedupe_key?: string | null }).dedupe_key)
+      .filter((k): k is string => typeof k === "string" && k.length > 0);
+    if (keys.length > 0) {
+      const stored = await admin
+        .from("scada_events")
+        .select(
+          "id, company_id, project_id, event_type, severity, code, message, source, asset_node_id, payload",
+        )
+        .eq("company_id", companyId)
+        .in("dedupe_key", keys);
+      await evaluateEventsSafely((stored?.data ?? []) as EngineEvent[]);
+    }
+  }
+
   return { accepted, rejected: rejected.length };
 }
 
@@ -117,6 +137,25 @@ export async function logOperatorEvent(context: AuthContext, input: OperatorEven
   if (error) httpError(400, "event_insert_failed", error.message);
 
   const id = (data as { id: string } | null)?.id ?? null;
+  if (id) {
+    await evaluateEventsSafely(
+      [
+        {
+          id,
+          company_id: companyId,
+          project_id: input.projectId,
+          event_type: input.eventType,
+          severity: input.severity,
+          code: input.code ?? null,
+          message: input.message,
+          source: "operator",
+          asset_node_id: input.assetNodeId ?? null,
+          payload: capped.payload,
+        },
+      ],
+      context,
+    );
+  }
   await writeAuditLog(context, "scada.event_log", "scada_events", id, {
     event_type: input.eventType,
     code: input.code ?? null,

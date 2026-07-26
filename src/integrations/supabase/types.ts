@@ -3299,6 +3299,185 @@ export type Database = {
           },
         ]
       }
+      event_action_log: {
+        Row: {
+          action_type: Database["public"]["Enums"]["event_action_type"]
+          ai_suggestion: Json | null
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          error: string | null
+          executed_at: string | null
+          executed_by: string | null
+          id: string
+          project_id: string
+          result_entity: string | null
+          result_entity_id: string | null
+          rule_id: string | null
+          scada_event_id: string | null
+          status: Database["public"]["Enums"]["event_action_status"]
+          updated_at: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["event_action_type"]
+          ai_suggestion?: Json | null
+          approval_instance_id?: string | null
+          company_id: string
+          created_at?: string
+          error?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          id?: string
+          project_id: string
+          result_entity?: string | null
+          result_entity_id?: string | null
+          rule_id?: string | null
+          scada_event_id?: string | null
+          status?: Database["public"]["Enums"]["event_action_status"]
+          updated_at?: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["event_action_type"]
+          ai_suggestion?: Json | null
+          approval_instance_id?: string | null
+          company_id?: string
+          created_at?: string
+          error?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          id?: string
+          project_id?: string
+          result_entity?: string | null
+          result_entity_id?: string | null
+          rule_id?: string | null
+          scada_event_id?: string | null
+          status?: Database["public"]["Enums"]["event_action_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_action_log_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_log_executed_by_fkey"
+            columns: ["executed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_log_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_log_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "event_action_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_log_scada_event_id_fkey"
+            columns: ["scada_event_id"]
+            isOneToOne: false
+            referencedRelation: "scada_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_action_rules: {
+        Row: {
+          action_config: Json
+          action_type: Database["public"]["Enums"]["event_action_type"]
+          ai_assist: boolean
+          approval_rule_key: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          event_type: Database["public"]["Enums"]["scada_event_type"]
+          id: string
+          match: Json
+          min_severity: Database["public"]["Enums"]["alarm_severity"]
+          name: string
+          project_id: string | null
+          requires_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: Database["public"]["Enums"]["event_action_type"]
+          ai_assist?: boolean
+          approval_rule_key?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          event_type: Database["public"]["Enums"]["scada_event_type"]
+          id?: string
+          match?: Json
+          min_severity?: Database["public"]["Enums"]["alarm_severity"]
+          name: string
+          project_id?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: Database["public"]["Enums"]["event_action_type"]
+          ai_assist?: boolean
+          approval_rule_key?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          event_type?: Database["public"]["Enums"]["scada_event_type"]
+          id?: string
+          match?: Json
+          min_severity?: Database["public"]["Enums"]["alarm_severity"]
+          name?: string
+          project_id?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_action_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_action_rules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evm_snapshots: {
         Row: {
           actual_cost: number
@@ -13061,6 +13240,23 @@ export type Database = {
         | "pcs"
         | "switchgear"
         | "other"
+      event_action_status:
+        | "pending_approval"
+        | "approved"
+        | "executed"
+        | "rejected"
+        | "failed"
+        | "skipped"
+      event_action_type:
+        | "create_incident"
+        | "create_work_order"
+        | "assign_technician"
+        | "spare_parts_request"
+        | "warranty_claim"
+        | "hse_escalation"
+        | "client_notification"
+        | "lender_report_exception"
+        | "performance_ld_assessment"
       expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
       facility_type:
         | "term_loan"
@@ -13645,6 +13841,25 @@ export const Constants = {
         "pcs",
         "switchgear",
         "other",
+      ],
+      event_action_status: [
+        "pending_approval",
+        "approved",
+        "executed",
+        "rejected",
+        "failed",
+        "skipped",
+      ],
+      event_action_type: [
+        "create_incident",
+        "create_work_order",
+        "assign_technician",
+        "spare_parts_request",
+        "warranty_claim",
+        "hse_escalation",
+        "client_notification",
+        "lender_report_exception",
+        "performance_ld_assessment",
       ],
       expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
       facility_type: [

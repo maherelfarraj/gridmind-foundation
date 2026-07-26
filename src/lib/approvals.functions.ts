@@ -15,6 +15,7 @@ import {
   startApprovalSchema,
   toggleRuleSchema,
 } from "@/lib/approvals.rules";
+import { settleAfterDecision } from "@/lib/scada-actions.server";
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
@@ -273,6 +274,8 @@ export const decideApproval = createServerFn({ method: "POST" })
       p_comment: data.comment ?? undefined,
     });
     if (error) throw error;
+    // P-176 — settle any SCADA event action bound to this approval instance.
+    await settleAfterDecision(context, data.approval_id);
     return { ok: true };
   });
 
