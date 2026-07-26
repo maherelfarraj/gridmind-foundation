@@ -490,3 +490,13 @@ export const saveEaStudy = createServerFn({ method: "POST" })
       disclaimer: EA_DISCLAIMER,
     };
   });
+
+/** Whether the caller may create or edit studies and grid-code records on this project. */
+export const getEaWriteAccess = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ canWrite: boolean }> => {
+    requireSupabaseAuth(context);
+    const project = await loadProjectScope(context, data.projectId);
+    return { canWrite: await canWriteStudy(context, project.company_id) };
+  });
