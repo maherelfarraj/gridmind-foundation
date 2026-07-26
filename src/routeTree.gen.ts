@@ -55,6 +55,8 @@ import { Route as AuthenticatedSettingsApprovalRulesRouteImport } from './routes
 import { Route as AuthenticatedSettingsApiKeysRouteImport } from './routes/_authenticated/settings.api-keys'
 import { Route as AuthenticatedQualityMirRouteImport } from './routes/_authenticated/quality.mir'
 import { Route as AuthenticatedQualityItpRouteImport } from './routes/_authenticated/quality.itp'
+import { Route as AuthenticatedQualityFatSatRouteImport } from './routes/_authenticated/quality.fat-sat'
+import { Route as AuthenticatedQualityDossiersRouteImport } from './routes/_authenticated/quality.dossiers'
 import { Route as AuthenticatedQaqcHeatmapRouteImport } from './routes/_authenticated/qaqc.heatmap'
 import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_authenticated/proposals.$proposalId'
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
@@ -452,6 +454,18 @@ const AuthenticatedQualityItpRoute = AuthenticatedQualityItpRouteImport.update({
   path: '/quality/itp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQualityFatSatRoute =
+  AuthenticatedQualityFatSatRouteImport.update({
+    id: '/quality/fat-sat',
+    path: '/quality/fat-sat',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQualityDossiersRoute =
+  AuthenticatedQualityDossiersRouteImport.update({
+    id: '/quality/dossiers',
+    path: '/quality/dossiers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQaqcHeatmapRoute =
   AuthenticatedQaqcHeatmapRouteImport.update({
     id: '/qaqc/heatmap',
@@ -1421,6 +1435,8 @@ export interface FileRoutesByFullPath {
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/quality/dossiers': typeof AuthenticatedQualityDossiersRoute
+  '/quality/fat-sat': typeof AuthenticatedQualityFatSatRoute
   '/quality/itp': typeof AuthenticatedQualityItpRoute
   '/quality/mir': typeof AuthenticatedQualityMirRoute
   '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
@@ -1609,6 +1625,8 @@ export interface FileRoutesByTo {
   '/projects/new': typeof AuthenticatedProjectsNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/quality/dossiers': typeof AuthenticatedQualityDossiersRoute
+  '/quality/fat-sat': typeof AuthenticatedQualityFatSatRoute
   '/quality/itp': typeof AuthenticatedQualityItpRoute
   '/quality/mir': typeof AuthenticatedQualityMirRoute
   '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
@@ -1805,6 +1823,8 @@ export interface FileRoutesById {
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
   '/_authenticated/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/_authenticated/qaqc/heatmap': typeof AuthenticatedQaqcHeatmapRoute
+  '/_authenticated/quality/dossiers': typeof AuthenticatedQualityDossiersRoute
+  '/_authenticated/quality/fat-sat': typeof AuthenticatedQualityFatSatRoute
   '/_authenticated/quality/itp': typeof AuthenticatedQualityItpRoute
   '/_authenticated/quality/mir': typeof AuthenticatedQualityMirRoute
   '/_authenticated/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
@@ -2003,6 +2023,8 @@ export interface FileRouteTypes {
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/qaqc/heatmap'
+    | '/quality/dossiers'
+    | '/quality/fat-sat'
     | '/quality/itp'
     | '/quality/mir'
     | '/settings/api-keys'
@@ -2191,6 +2213,8 @@ export interface FileRouteTypes {
     | '/projects/new'
     | '/proposals/$proposalId'
     | '/qaqc/heatmap'
+    | '/quality/dossiers'
+    | '/quality/fat-sat'
     | '/quality/itp'
     | '/quality/mir'
     | '/settings/api-keys'
@@ -2386,6 +2410,8 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/new'
     | '/_authenticated/proposals/$proposalId'
     | '/_authenticated/qaqc/heatmap'
+    | '/_authenticated/quality/dossiers'
+    | '/_authenticated/quality/fat-sat'
     | '/_authenticated/quality/itp'
     | '/_authenticated/quality/mir'
     | '/_authenticated/settings/api-keys'
@@ -2877,6 +2903,20 @@ declare module '@tanstack/react-router' {
       path: '/quality/itp'
       fullPath: '/quality/itp'
       preLoaderRoute: typeof AuthenticatedQualityItpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/quality/fat-sat': {
+      id: '/_authenticated/quality/fat-sat'
+      path: '/quality/fat-sat'
+      fullPath: '/quality/fat-sat'
+      preLoaderRoute: typeof AuthenticatedQualityFatSatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/quality/dossiers': {
+      id: '/_authenticated/quality/dossiers'
+      path: '/quality/dossiers'
+      fullPath: '/quality/dossiers'
+      preLoaderRoute: typeof AuthenticatedQualityDossiersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/heatmap': {
@@ -4426,6 +4466,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
   AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
   AuthenticatedQaqcHeatmapRoute: typeof AuthenticatedQaqcHeatmapRoute
+  AuthenticatedQualityDossiersRoute: typeof AuthenticatedQualityDossiersRoute
+  AuthenticatedQualityFatSatRoute: typeof AuthenticatedQualityFatSatRoute
   AuthenticatedQualityItpRoute: typeof AuthenticatedQualityItpRoute
   AuthenticatedQualityMirRoute: typeof AuthenticatedQualityMirRoute
   AuthenticatedSettingsApiKeysRoute: typeof AuthenticatedSettingsApiKeysRoute
@@ -4538,6 +4580,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsNewRoute: AuthenticatedProjectsNewRoute,
   AuthenticatedProposalsProposalIdRoute: AuthenticatedProposalsProposalIdRoute,
   AuthenticatedQaqcHeatmapRoute: AuthenticatedQaqcHeatmapRoute,
+  AuthenticatedQualityDossiersRoute: AuthenticatedQualityDossiersRoute,
+  AuthenticatedQualityFatSatRoute: AuthenticatedQualityFatSatRoute,
   AuthenticatedQualityItpRoute: AuthenticatedQualityItpRoute,
   AuthenticatedQualityMirRoute: AuthenticatedQualityMirRoute,
   AuthenticatedSettingsApiKeysRoute: AuthenticatedSettingsApiKeysRoute,
