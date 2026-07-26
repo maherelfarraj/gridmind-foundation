@@ -180,7 +180,10 @@ const saveInput = z.object({
         z.object({
           id: z.string().min(1),
           name: z.string().trim().min(1).max(80),
-          code: z.string().regex(/^\d{1,2}$/).optional(),
+          code: z
+            .string()
+            .regex(/^\d{1,2}$/)
+            .optional(),
           bounds: z.object({
             x: z.number(),
             y: z.number(),
@@ -190,6 +193,28 @@ const saveInput = z.object({
         }),
       )
       .max(50)
+      .default([]),
+    // P-145 — markup layer payload (clouds, notes, arrows).
+    markups: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(80),
+          kind: z.enum(["cloud", "note", "arrow"]),
+          points: z
+            .array(z.object({ x: z.number().finite(), y: z.number().finite() }))
+            .max(200)
+            .default([]),
+          note: z.string().max(2000).default(""),
+          author_id: z.string().uuid().nullable().default(null),
+          author_name: z.string().max(200).nullable().default(null),
+          status: z.enum(["open", "resolved"]),
+          linked_object_ids: z.array(z.string().min(1).max(80)).max(200).default([]),
+          created_at: z.string().max(40),
+          resolved_by: z.string().uuid().nullable().default(null),
+          resolved_at: z.string().max(40).nullable().default(null),
+        }),
+      )
+      .max(200)
       .default([]),
   }),
 });

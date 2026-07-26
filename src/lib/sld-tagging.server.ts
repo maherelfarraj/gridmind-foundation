@@ -49,7 +49,8 @@ export function parseAreas(canvas: unknown): TagArea[] {
 
 /** Loads the graph the tagging engine operates on for the drawing's current revision. */
 export async function loadRetagGraph(context: any, drawing: CadDrawing): Promise<RetagGraph> {
-  if (!drawing.current_revision_id) cadHttpError(404, "revision_not_found", "No revision to retag.");
+  if (!drawing.current_revision_id)
+    cadHttpError(404, "revision_not_found", "No revision to retag.");
   const revisionId = drawing.current_revision_id as string;
 
   const { data: revision, error: revErr } = await context.supabase

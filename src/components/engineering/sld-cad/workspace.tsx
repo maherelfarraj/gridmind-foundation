@@ -45,6 +45,7 @@ import { generateTags } from "@/lib/sld/tagging";
 import { ValidationPanel } from "./validation-panel";
 import { CoordinationPanel } from "./coordination-panel";
 import { SchedulesPanel } from "./schedules-panel";
+import { RevisionsPanel } from "./revisions-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLiveCoordination,
@@ -149,7 +150,13 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       removedIds: s.removedIds,
       connections: s.connections,
       removedConnectionIds: s.removedConnectionIds,
-      canvas: { layers: s.layers, gridMm: s.gridMm, snapEnabled: s.snapEnabled, areas: s.areas },
+      canvas: {
+        layers: s.layers,
+        gridMm: s.gridMm,
+        snapEnabled: s.snapEnabled,
+        areas: s.areas,
+        markups: s.markups,
+      },
     });
   }, [data.editable, save, store]);
 
@@ -429,6 +436,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                 <TabsTrigger value="schedules" className="flex-1">
                   Schedules
                 </TabsTrigger>
+                <TabsTrigger value="revisions" className="flex-1">
+                  Revisions
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="validation" className="mt-2">
                 <ValidationPanel
@@ -459,6 +469,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                   projectId={data.drawing.project_id}
                   canEdit={editable}
                 />
+              </TabsContent>
+              <TabsContent value="revisions" className="mt-2">
+                <RevisionsPanel drawingId={data.drawing.id} canEdit={editable} />
               </TabsContent>
             </Tabs>
             <PropertiesPanel editable={editable} />

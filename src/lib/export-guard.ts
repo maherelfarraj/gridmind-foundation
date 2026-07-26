@@ -15,6 +15,7 @@ export type ExportType =
   | "turnover_pack"
   | "audit_pack"
   | "sld_schedule"
+  | "sld_revision_diff"
   | "csv";
 
 export interface ExportLockedError extends Error {

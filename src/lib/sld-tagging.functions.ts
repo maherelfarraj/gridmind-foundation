@@ -3,12 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import {
-  cadAudit,
-  cadHttpError,
-  hasCadWriteRole,
-  loadCadDrawing,
-} from "@/lib/sld-cad.server";
+import { cadAudit, cadHttpError, hasCadWriteRole, loadCadDrawing } from "@/lib/sld-cad.server";
 import { assertRetaggable, loadRetagGraph } from "@/lib/sld-tagging.server";
 import { isValidTag, planRetag, type RetagPlan } from "@/lib/sld/tagging";
 

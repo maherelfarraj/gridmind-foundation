@@ -234,7 +234,8 @@ export function buildBoq(
   const rows = [
     ...[...counts.values()].sort(
       (a, b) =>
-        a.symbol_type.localeCompare(b.symbol_type) || (a.rating ?? "").localeCompare(b.rating ?? ""),
+        a.symbol_type.localeCompare(b.symbol_type) ||
+        (a.rating ?? "").localeCompare(b.rating ?? ""),
     ),
     ...[...cables.values()].sort((a, b) => (a.rating ?? "").localeCompare(b.rating ?? "")),
   ];

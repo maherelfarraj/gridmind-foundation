@@ -13,6 +13,7 @@ import {
   type SldCanvasObject,
   type SldConnection,
   type SldLayer,
+  type SldMarkup,
 } from "./canvas-types";
 import {
   alignGeometry,
@@ -77,6 +78,7 @@ export type CanvasState = {
   snapEnabled: boolean;
   layers: SldLayer[];
   areas: TagArea[];
+  markups: SldMarkup[];
   objects: SldCanvasObject[];
   connections: SldConnection[];
   selection: string[];
@@ -149,6 +151,10 @@ export type CanvasActions = {
   undo: () => void;
   redo: () => void;
   markSaved: () => void;
+  /** P-145 — markup layer (clouds, notes, arrows). */
+  addMarkup: (markup: SldMarkup) => void;
+  updateMarkup: (id: string, patch: Partial<SldMarkup>) => void;
+  removeMarkup: (id: string) => void;
 };
 
 export type CanvasStore = CanvasState & CanvasActions;
@@ -298,6 +304,7 @@ export const initialCanvasState: CanvasState = {
   snapEnabled: meta.snapEnabled,
   layers: meta.layers,
   areas: meta.areas,
+  markups: [],
   objects: [],
   connections: [],
   selection: [],
@@ -361,6 +368,7 @@ export const createCanvasStore = () =>
           connections,
           layers: m.layers,
           areas: m.areas ?? [],
+          markups: m.markups ?? [],
           gridMm: m.gridMm,
           snapEnabled: m.snapEnabled,
           selection: [],
@@ -725,6 +733,15 @@ export const createCanvasStore = () =>
       },
 
       markSaved: () => set({ dirty: false, removedIds: [], removedConnectionIds: [] }),
+
+      addMarkup: (markup) => set((s) => ({ markups: [...s.markups, markup], dirty: true })),
+      updateMarkup: (id, patch) =>
+        set((s) => ({
+          markups: s.markups.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+          dirty: true,
+        })),
+      removeMarkup: (id) =>
+        set((s) => ({ markups: s.markups.filter((m) => m.id !== id), dirty: true })),
     };
   });
 
