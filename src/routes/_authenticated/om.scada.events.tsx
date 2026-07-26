@@ -177,6 +177,32 @@ function EventTimelinePage() {
                       aria-hidden
                     />
                     <div className="flex flex-wrap items-center gap-2">
+                      {canReevaluate ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="order-last ml-auto size-7"
+                              aria-label="Event actions"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              disabled={busyId === e.id}
+                              onSelect={(ev) => {
+                                ev.preventDefault();
+                                void reevaluate(e.id);
+                              }}
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Re-evaluate actions
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
                       {typeBadge(e.event_type)}
                       <Badge variant="outline">{e.severity}</Badge>
                       <span className="text-xs text-muted-foreground">
