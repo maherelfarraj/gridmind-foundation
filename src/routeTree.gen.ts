@@ -35,6 +35,7 @@ import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/we
 import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/storage-check'
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
 import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
+import { Route as ApiCronIngestionRetryRouteImport } from './routes/api/cron/ingestion-retry'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
@@ -325,6 +326,11 @@ const ApiCronScheduledReportsRoute = ApiCronScheduledReportsRouteImport.update({
 const ApiCronPmWorkOrdersRoute = ApiCronPmWorkOrdersRouteImport.update({
   id: '/api/cron/pm-work-orders',
   path: '/api/cron/pm-work-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronIngestionRetryRoute = ApiCronIngestionRetryRouteImport.update({
+  id: '/api/cron/ingestion-retry',
+  path: '/api/cron/ingestion-retry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronAuditRetentionRoute = ApiCronAuditRetentionRouteImport.update({
@@ -1372,6 +1378,7 @@ export interface FileRoutesByFullPath {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
@@ -1551,6 +1558,7 @@ export interface FileRoutesByTo {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
@@ -1738,6 +1746,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
@@ -1927,6 +1936,7 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
@@ -2106,6 +2116,7 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
@@ -2292,6 +2303,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
@@ -2428,6 +2440,7 @@ export interface RootRouteChildren {
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
+  ApiCronIngestionRetryRoute: typeof ApiCronIngestionRetryRoute
   ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
   ApiCronStorageCheckRoute: typeof ApiCronStorageCheckRoute
@@ -2622,6 +2635,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/pm-work-orders'
       fullPath: '/api/cron/pm-work-orders'
       preLoaderRoute: typeof ApiCronPmWorkOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/ingestion-retry': {
+      id: '/api/cron/ingestion-retry'
+      path: '/api/cron/ingestion-retry'
+      fullPath: '/api/cron/ingestion-retry'
+      preLoaderRoute: typeof ApiCronIngestionRetryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/audit-retention': {
@@ -4438,6 +4458,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
+  ApiCronIngestionRetryRoute: ApiCronIngestionRetryRoute,
   ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
   ApiCronStorageCheckRoute: ApiCronStorageCheckRoute,
