@@ -17,7 +17,6 @@ export function SymbolGlyph({
       height={size}
       aria-hidden="true"
       className={className}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: sanitizeSvgBody(svg) }}
     />
   );
@@ -29,7 +28,6 @@ export function CanvasGlyph({ svg, w, h }: { svg: string; w: number; h: number }
     <g
       transform={`translate(${-w / 2} ${-h / 2}) scale(${w / 40} ${h / 40})`}
       className="pointer-events-none"
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: sanitizeSvgBody(svg) }}
     />
   );
