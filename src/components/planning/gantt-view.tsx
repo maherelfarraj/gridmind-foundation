@@ -33,6 +33,7 @@ interface Props {
   compare: boolean;
   baselineSnapshot: BaselineSnapshotEntry[] | null;
   saving?: boolean;
+  highlightCriticalPath?: boolean;
   onSaveTask: (id: string, patch: TaskEditPatch) => void;
   onDeleteTask: (id: string) => void;
 }
