@@ -239,8 +239,8 @@ describe("flow", () => {
     const flow = computeFlow(grid);
     const total = flow.accumulation.reduce((a, b) => a + b, 0);
     expect(total).toBeGreaterThan(9);
-    // bottom row (row 0 is originN) — the lowest row holds the outlets
-    const lowest = [0, 1, 2].map((c) => flow.accumulation[0 * 3 + c]);
+    // values[2] is the lowest row, so it collects the accumulated flow
+    const lowest = [0, 1, 2].map((c) => flow.accumulation[2 * 3 + c]);
     expect(Math.max(...lowest)).toBeGreaterThan(1);
   });
 
@@ -250,7 +250,7 @@ describe("flow", () => {
     const values: number[][] = [];
     for (let r = 0; r < rows; r++) {
       const row: number[] = [];
-      for (let c = 0; c < cols; c++) row.push(r * 0.5 + Math.abs(c - 3.5) * 0.3);
+      for (let c = 0; c < cols; c++) row.push((rows - r) * 0.5 + Math.abs(c - 3.5) * 0.3);
       values.push(row);
     }
     const grid = gridFrom(values, 5);
