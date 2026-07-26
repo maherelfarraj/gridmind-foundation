@@ -32,7 +32,10 @@ import {
   type GridMm,
   type SheetSize,
 } from "@/lib/sld/canvas-types";
-import { SYMBOL_DEFS } from "@/lib/sld/symbols";
+import { setSymbolRegistry } from "@/lib/sld/symbols";
+import { SymbolPalette } from "./symbol-palette";
+import { useSymbolRegistry } from "@/lib/sld-symbols-query";
+import { initialProperties, mergeSymbolTypes, nextTag } from "@/lib/sld/symbol-registry";
 
 export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -50,6 +53,15 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const placingType = useCanvasStore((s) => s.placingType);
   const undoDepth = useCanvasStore((s) => s.undoStack.length);
   const redoDepth = useCanvasStore((s) => s.redoStack.length);
+
+  const registry = useSymbolRegistry();
+  const symbols = useMemo(
+    () => mergeSymbolTypes(registry.data?.symbols ?? []),
+    [registry.data?.symbols],
+  );
+  useEffect(() => {
+    setSymbolRegistry(symbols);
+  }, [symbols]);
 
   const save = useSaveSldCanvas(data.drawing.id, () => store.getState().markSaved());
 
@@ -181,28 +193,30 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   }, [doSave, editable, fit, store]);
 
   const handlePlace = useCallback(
-    (point: { x: number; y: number }) => {
+    (point: { x: number; y: number }, symbolType?: string) => {
       const s = store.getState();
-      if (!s.placingType) return;
+      const type = symbolType ?? s.placingType;
+      if (!type) return;
       const layer = s.layers.find((l) => !l.system && !l.locked && l.visible);
       if (!layer) {
         toast.error("Unlock a layer before placing symbols.");
         return;
       }
+      const record = symbols.find((sym) => sym.type_key === type);
       s.placeObject({
         id: `tmp-${Math.random().toString(36).slice(2)}`,
-        symbol_type: s.placingType,
-        tag: null,
-        label: null,
+        symbol_type: type,
+        tag: record ? nextTag(record.tag_prefix, s.objects.map((o) => o.tag)) : null,
+        label: record?.display_name ?? null,
         x: point.x,
         y: point.y,
         rotation: 0,
         mirrored: false,
         layer_id: layer.id,
-        properties: {},
+        properties: record ? initialProperties(record) : {},
       });
     },
-    [store],
+    [store, symbols],
   );
 
   const lockedBanner = !data.canWrite
@@ -317,36 +331,11 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       <div className="grid gap-3 lg:grid-cols-[190px_minmax(0,1fr)_240px]">
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
-            {editable ? (
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Symbols
-                </p>
-                <div className="grid grid-cols-2 gap-1">
-                  {Object.values(SYMBOL_DEFS).map((def) => (
-                    <button
-                      key={def.type}
-                      type="button"
-                      onClick={() =>
-                        store.getState().setPlacingType(placingType === def.type ? null : def.type)
-                      }
-                      className={
-                        placingType === def.type
-                          ? "rounded-md border border-primary bg-primary/10 px-2 py-1.5 text-xs"
-                          : "rounded-md border border-border bg-card px-2 py-1.5 text-xs hover:border-primary"
-                      }
-                    >
-                      {def.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {placingType
-                    ? "Click the sheet to place."
-                    : "Pick a symbol, then click the sheet."}
-                </p>
-              </div>
-            ) : null}
+            <SymbolPalette
+              symbols={symbols}
+              loading={registry.isLoading}
+              editable={editable}
+            />
             <LayersPanel editable={editable} />
           </CardContent>
         </Card>
