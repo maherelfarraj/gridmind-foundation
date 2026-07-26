@@ -198,17 +198,18 @@ function EventTimelinePage() {
                     <p className="mt-1 text-sm text-foreground">{e.message}</p>
                     <p className="text-xs text-muted-foreground">
                       {e.code ? <span className="font-mono">{e.code} · </span> : null}
-                      {e.asset_node_id ? (
+                      {e.project_id ? (
                         <Link
-                          to="/om/scada/assets/$nodeId"
-                          params={{ nodeId: e.asset_node_id }}
+                          to="/om/scada/plants/$projectId"
+                          params={{ projectId: e.project_id }}
                           className="underline underline-offset-2"
                         >
-                          {e.node_name ?? e.node_tag ?? "Asset node"}
+                          {e.node_name ?? e.node_tag ?? e.project_name ?? "Asset node"}
                         </Link>
                       ) : (
-                        (e.project_name ?? "—")
+                        (e.node_name ?? e.node_tag ?? e.project_name ?? "—")
                       )}
+
                     </p>
                   </li>
                 ))}
