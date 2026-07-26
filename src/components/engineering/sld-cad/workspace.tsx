@@ -88,6 +88,8 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   }, [symbols]);
 
   const save = useSaveSldCanvas(data.drawing.id, () => store.getState().markSaved());
+  const validation = useLiveValidation(symbols, projectVoltagesKv);
+  const runValidation = useRunValidation(data.drawing.id);
 
   useEffect(() => {
     setIsCoarse(
