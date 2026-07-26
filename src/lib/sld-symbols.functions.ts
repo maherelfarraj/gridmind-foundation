@@ -12,7 +12,11 @@ import {
   symbolAudit,
   symbolHttpError,
 } from "@/lib/sld-symbols.server";
-import { SYMBOL_CATEGORIES, type SymbolTypeRecord } from "@/lib/sld/symbol-registry";
+import {
+  SYMBOL_CATEGORIES,
+  type SymbolPropertyValue,
+  type SymbolTypeRecord,
+} from "@/lib/sld/symbol-registry";
 
 const SELECT_COLS =
   "id, company_id, type_key, display_name, category, svg_body, ports, property_schema, default_properties, tag_prefix, sort_order";
@@ -41,7 +45,7 @@ export const listSymbolTypes = createServerFn({ method: "GET" })
         ...r,
         ports: (r.ports ?? []) as SymbolTypeRecord["ports"],
         property_schema: (r.property_schema ?? []) as SymbolTypeRecord["property_schema"],
-        default_properties: (r.default_properties ?? {}) as Record<string, unknown>,
+        default_properties: (r.default_properties ?? {}) as SymbolPropertyValue,
       })) as SymbolTypeRecord[],
       canManage,
       companyId,
@@ -79,7 +83,9 @@ const upsertSchema = z.object({
   svg_body: z.string().trim().min(1).max(20000),
   ports: z.array(portSchema).max(24).default([]),
   property_schema: z.array(fieldSchema).max(40).default([]),
-  default_properties: z.record(z.string(), z.unknown()).default({}),
+  default_properties: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .default({}),
   tag_prefix: z
     .string()
     .trim()

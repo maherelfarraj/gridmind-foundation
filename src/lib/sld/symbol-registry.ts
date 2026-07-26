@@ -53,6 +53,8 @@ export type SymbolPortSpec = {
   side?: "left" | "right" | "top" | "bottom";
 };
 
+export type SymbolPropertyValue = Record<string, string | number | boolean | null>;
+
 export type SymbolTypeRecord = {
   id: string;
   company_id: string | null;
@@ -62,7 +64,7 @@ export type SymbolTypeRecord = {
   svg_body: string;
   ports: SymbolPortSpec[];
   property_schema: SymbolPropertyField[];
-  default_properties: Record<string, unknown>;
+  default_properties: SymbolPropertyValue;
   tag_prefix: string;
   sort_order: number;
 };
@@ -175,7 +177,7 @@ export function nextTag(prefix: string, existingTags: Array<string | null>): str
 }
 
 /** Values a newly placed object starts with, from the registry defaults. */
-export function initialProperties(record: SymbolTypeRecord): Record<string, unknown> {
+export function initialProperties(record: SymbolTypeRecord): SymbolPropertyValue {
   return { ...(record.default_properties ?? {}) };
 }
 
