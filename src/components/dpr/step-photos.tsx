@@ -30,6 +30,7 @@ import {
   type SitePhotoRow,
 } from "@/lib/dpr.functions";
 import { OBSERVATION_SEVERITIES, photoObjectPath, type ObservationSeverity } from "@/lib/dpr.rules";
+import { mediaTypeForFile } from "@/lib/field-exec.rules";
 
 interface Props {
   header: DprRow;
@@ -81,6 +82,7 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
         const { error } = await supabase.storage
           .from("photos")
           .upload(path, file, { contentType: file.type || "image/jpeg" });
+        const mediaType = mediaTypeForFile(file.type);
         if (error) throw error;
         await attach({
           data: {
@@ -91,10 +93,11 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
             caption: null,
             area: null,
             discipline: null,
+            mediaType,
           },
         });
       }
-      toast.success("Photos uploaded");
+      toast.success("Media uploaded");
       invalidate();
     } catch (e) {
       toast.error(errorMessage(e));
@@ -190,12 +193,22 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
                   >
                     <div className="aspect-square w-full bg-muted">
                       {url ? (
-                        <img
-                          src={url}
-                          alt={p.caption ?? "Site photo"}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
+                        p.media_type === "video" ? (
+                          <video
+                            src={url}
+                            className="h-full w-full object-cover"
+                            controls
+                            preload="metadata"
+                            aria-label={p.caption ?? "Site video"}
+                          />
+                        ) : (
+                          <img
+                            src={url}
+                            alt={p.caption ?? "Site photo"}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        )
                       ) : (
                         <div className="grid h-full w-full place-items-center text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -251,7 +264,7 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
                 ) : (
                   <ImagePlus className="mr-2 h-4 w-4" aria-hidden />
                 )}
-                Add photos
+                Add photos / video
               </Button>
               <Button
                 type="button"
@@ -269,7 +282,7 @@ export function StepPhotos({ header, photos, observations, readOnly }: Props) {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 capture="environment"
                 multiple
                 className="hidden"
