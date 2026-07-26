@@ -215,6 +215,18 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/om/scada/connectors",
         icon: Radio,
       },
+      {
+        moduleKey: "om_scada",
+        label: "Tag mappings",
+        url: "/om/scada/mappings",
+        icon: SlidersHorizontal,
+      },
+      {
+        moduleKey: "om_scada",
+        label: "Ingestion health",
+        url: "/om/scada/health",
+        icon: Gauge,
+      },
       { moduleKey: "om_scada", label: "Alarms", url: "/om/scada/alarms", icon: AlertTriangle },
       {
         moduleKey: "om_scada",
