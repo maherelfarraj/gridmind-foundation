@@ -32,6 +32,7 @@ import {
   type Rect,
 } from "./geometry";
 import { portPosition, symbolDef } from "./symbols";
+import type { TagArea } from "./tagging";
 
 export const MAX_HISTORY = 100;
 export const MIN_ZOOM = 0.1;
