@@ -21,6 +21,7 @@ import {
   type Rect,
 } from "@/lib/sld/geometry";
 import { symbolDef } from "@/lib/sld/symbols";
+import { duplicateTagIds } from "@/lib/sld/tagging";
 
 type Props = {
   editable: boolean;
