@@ -108,7 +108,7 @@ export function AppSidebar() {
                     const Icon = item.icon;
                     const showBadge = item.url === "/approvals" && pendingCount > 0;
                     return (
-                      <SidebarMenuItem key={item.url}>
+                      <SidebarMenuItem key={`nav:${section.label}:${item.url}:${item.label}`}>
                         <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
                           {/* TODO: swap to <Link to="..."> once each leaf route lands (Batches 08+). */}
                           <a href={item.url} className="flex items-center gap-2">

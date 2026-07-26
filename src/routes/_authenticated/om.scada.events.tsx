@@ -1,15 +1,22 @@
 // P-174 — SCADA event timeline: cursor-paginated vertical log of record.
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, formatDistanceToNow } from "date-fns";
-import { Activity, AlertTriangle, History } from "lucide-react";
+import { Activity, AlertTriangle, History, MoreHorizontal, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { evaluateEvent } from "@/lib/scada-actions.functions";
 import { getScadaEventTimeline } from "@/lib/scada-timeline.functions";
 import type { TimelineEvent } from "@/lib/scada-timeline.server";
+import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { SCADA_EVENT_SEVERITIES, SCADA_EVENT_TYPES } from "@/lib/scada/events";
 
 export const Route = createFileRoute("/_authenticated/om/scada/events")({
@@ -91,6 +100,35 @@ function EventTimelinePage() {
   const pages = query.data?.pages ?? [];
   const events: TimelineEvent[] = pages.flatMap((p) => p.events);
   const nodes = pages[0]?.nodes ?? [];
+
+  // Operator-facing re-evaluation trigger (O&M / SCADA admins only).
+  const rolesFn = useServerFn(getCurrentUserRoles);
+  const rolesQuery = useQuery({
+    queryKey: ["me", "roles"],
+    queryFn: () => rolesFn(),
+    staleTime: 60_000,
+  });
+  const roles = (rolesQuery.data ?? []).map((r) => r.role as string);
+  const canReevaluate = roles.some((r) => r === "om_admin" || r === "scada_admin");
+
+  const evaluateFn = useServerFn(evaluateEvent);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function reevaluate(eventId: string) {
+    setBusyId(eventId);
+    try {
+      const res = await evaluateFn({ data: { eventId } });
+      toast.success("Actions re-evaluated", {
+        description: `${res.matched} matched · ${res.created} created · ${res.pendingApproval} pending approval`,
+      });
+    } catch (err) {
+      toast.error("Re-evaluation failed", {
+        description: err instanceof Error ? err.message : "Unexpected error",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <div className="page-shell">
@@ -177,6 +215,32 @@ function EventTimelinePage() {
                       aria-hidden
                     />
                     <div className="flex flex-wrap items-center gap-2">
+                      {canReevaluate ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="order-last ml-auto size-7"
+                              aria-label="Event actions"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              disabled={busyId === e.id}
+                              onSelect={(ev) => {
+                                ev.preventDefault();
+                                void reevaluate(e.id);
+                              }}
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Re-evaluate actions
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
                       {typeBadge(e.event_type)}
                       <Badge variant="outline">{e.severity}</Badge>
                       <span className="text-xs text-muted-foreground">
@@ -209,7 +273,6 @@ function EventTimelinePage() {
                       ) : (
                         (e.node_name ?? e.node_tag ?? e.project_name ?? "—")
                       )}
-
                     </p>
                   </li>
                 ))}
