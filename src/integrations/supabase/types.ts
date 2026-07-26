@@ -6947,6 +6947,169 @@ export type Database = {
           },
         ]
       }
+      pv_simulation_results: {
+        Row: {
+          annual: Json
+          calc_version: number
+          company_id: string
+          computed_at: string
+          created_at: string
+          engine_id: string
+          id: string
+          loss_chain: Json
+          monthly: Json
+          p_scenarios: Json
+          simulation_id: string
+          updated_at: string
+        }
+        Insert: {
+          annual?: Json
+          calc_version?: number
+          company_id: string
+          computed_at?: string
+          created_at?: string
+          engine_id?: string
+          id?: string
+          loss_chain?: Json
+          monthly?: Json
+          p_scenarios?: Json
+          simulation_id: string
+          updated_at?: string
+        }
+        Update: {
+          annual?: Json
+          calc_version?: number
+          company_id?: string
+          computed_at?: string
+          created_at?: string
+          engine_id?: string
+          id?: string
+          loss_chain?: Json
+          monthly?: Json
+          p_scenarios?: Json
+          simulation_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_simulation_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulation_results_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "pv_simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_simulations: {
+        Row: {
+          approval_instance_id: string | null
+          calc_version: number
+          company_id: string
+          computed_at: string | null
+          created_at: string
+          created_by: string | null
+          engine_id: string
+          id: string
+          input_sources: Json
+          inputs: Json
+          is_baseline: boolean
+          layout_id: string | null
+          name: string
+          project_id: string
+          site_config_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          calc_version?: number
+          company_id: string
+          computed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          engine_id?: string
+          id?: string
+          input_sources?: Json
+          inputs?: Json
+          is_baseline?: boolean
+          layout_id?: string | null
+          name: string
+          project_id: string
+          site_config_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          calc_version?: number
+          company_id?: string
+          computed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          engine_id?: string
+          id?: string
+          input_sources?: Json
+          inputs?: Json
+          is_baseline?: boolean
+          layout_id?: string | null
+          name?: string
+          project_id?: string
+          site_config_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_simulations_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulations_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "pv_layouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_simulations_site_config_id_fkey"
+            columns: ["site_config_id"]
+            isOneToOne: false
+            referencedRelation: "pv_site_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pv_site_configs: {
         Row: {
           albedo: number
@@ -10741,6 +10904,10 @@ export type Database = {
         }[]
       }
       ensure_pv_layout_rule: { Args: { p_company_id: string }; Returns: string }
+      ensure_pv_simulation_rule: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
       escalate_overdue_approvals: { Args: never; Returns: number }
       get_po_by_share_token: {
         Args: { p_token: string }
