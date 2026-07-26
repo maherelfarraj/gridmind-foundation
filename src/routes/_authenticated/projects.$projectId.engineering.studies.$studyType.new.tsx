@@ -48,7 +48,5 @@ function NewStudyPage() {
     );
   }
 
-  return (
-    <EaStudyWorkspace projectId={projectId} studyType={studyType as CalculatorStudyType} />
-  );
+  return <EaStudyWorkspace projectId={projectId} studyType={studyType as CalculatorStudyType} />;
 }

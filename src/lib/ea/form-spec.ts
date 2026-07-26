@@ -266,13 +266,16 @@ export function coerceValues(
     if (field.kind === "list") {
       const items = Array.isArray(raw) ? raw : [];
       out[field.name] =
-        field.itemKind === "number" ? items.map((v) => toNumber(v)).filter(isNum) : items.map(String);
+        field.itemKind === "number"
+          ? items.map((v) => toNumber(v)).filter(isNum)
+          : items.map(String);
       continue;
     }
     if (field.kind === "number" || field.kind === "integer") {
       const n = toNumber(raw);
       if (n === null) {
-        if (!field.optional && field.defaultValue !== undefined) out[field.name] = field.defaultValue;
+        if (!field.optional && field.defaultValue !== undefined)
+          out[field.name] = field.defaultValue;
         continue;
       }
       out[field.name] = n;

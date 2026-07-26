@@ -127,9 +127,9 @@ export function EaStudyWorkspace({
   const [title, setTitle] = useState("");
   const [assumptions, setAssumptions] = useState<Assumption[]>([]);
   const [results, setResults] = useState<unknown>(null);
-  const [warnings, setWarnings] = useState<Array<{ code: string; severity: string; message: string }>>(
-    [],
-  );
+  const [warnings, setWarnings] = useState<
+    Array<{ code: string; severity: string; message: string }>
+  >([]);
   const [revisionsOpen, setRevisionsOpen] = useState(false);
   const [reviseOpen, setReviseOpen] = useState(false);
   const [changeSummary, setChangeSummary] = useState("");
@@ -285,7 +285,9 @@ export function EaStudyWorkspace({
   return (
     <div className="space-y-5">
       <PageHeader
-        title={study ? `${study.study_number} — ${study.title}` : `New ${spec.label.toLowerCase()} study`}
+        title={
+          study ? `${study.study_number} — ${study.title}` : `New ${spec.label.toLowerCase()} study`
+        }
         description={spec.summary}
         actions={
           <div className="flex flex-wrap items-center gap-2">

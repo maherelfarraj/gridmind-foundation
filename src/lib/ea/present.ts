@@ -53,7 +53,10 @@ export function resultSections(results: unknown): ResultSections {
     if (value && typeof value === "object") {
       for (const [sub, subValue] of Object.entries(value as Record<string, unknown>)) {
         if (subValue && typeof subValue === "object") continue;
-        scalars.push({ label: `${labelFor(key)} — ${labelFor(sub)}`, value: formatValue(subValue) });
+        scalars.push({
+          label: `${labelFor(key)} — ${labelFor(sub)}`,
+          value: formatValue(subValue),
+        });
       }
       continue;
     }

@@ -133,9 +133,7 @@ function GridCodePage() {
 
   const progress = gridCodeProgress(
     items.length,
-    items.map(
-      (_item, index) => responses.find((r) => r.item_index === index)?.status ?? "open",
-    ),
+    items.map((_item, index) => responses.find((r) => r.item_index === index)?.status ?? "open"),
   );
 
   const saveResponse = useMutation({
@@ -158,12 +156,7 @@ function GridCodePage() {
   });
 
   const saveTemplate = useMutation({
-    mutationFn: (input: {
-      market: string;
-      name: string;
-      version: string;
-      items: GridCodeItem[];
-    }) =>
+    mutationFn: (input: { market: string; name: string; version: string; items: GridCodeItem[] }) =>
       saveTemplateFn({
         data: { projectId, templateId: templateId ?? undefined, isActive: true, ...input },
       }),
@@ -438,12 +431,7 @@ function TemplateEditor({
   onOpenChange: (open: boolean) => void;
   initial: { market: string; name: string; version: string; items: GridCodeItem[] } | null;
   pending: boolean;
-  onSave: (value: {
-    market: string;
-    name: string;
-    version: string;
-    items: GridCodeItem[];
-  }) => void;
+  onSave: (value: { market: string; name: string; version: string; items: GridCodeItem[] }) => void;
 }) {
   const [market, setMarket] = useState(initial?.market ?? "Jordan NEPCO");
   const [name, setName] = useState(initial?.name ?? "NEPCO interconnection starter");

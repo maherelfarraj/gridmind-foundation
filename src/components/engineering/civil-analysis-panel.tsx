@@ -18,7 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   confirmDrainageProposals,
   exportCivilCoordinateSchedule,
@@ -43,12 +50,7 @@ type Props = {
 const M3 = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 const M2 = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 
-export function CivilAnalysisPanel({
-  projectId,
-  surfaceId,
-  canWrite,
-  onProposalsChange,
-}: Props) {
+export function CivilAnalysisPanel({ projectId, surfaceId, canWrite, onProposalsChange }: Props) {
   const qc = useQueryClient();
   const listFn = useServerFn(listCivilFeatures);
   const cutFillFn = useServerFn(runCutFillAnalysis);
@@ -269,7 +271,11 @@ export function CivilAnalysisPanel({
                   tone="attention"
                   label={`${slope.summary.warning} warn`}
                 />
-                <StatusBadge status="failed" tone="critical" label={`${slope.summary.failing} fail`} />
+                <StatusBadge
+                  status="failed"
+                  tone="critical"
+                  label={`${slope.summary.failing} fail`}
+                />
               </div>
               <div className="max-h-64 overflow-auto rounded-md border border-border">
                 <Table>

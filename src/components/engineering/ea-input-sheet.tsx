@@ -105,15 +105,7 @@ function ScalarField({
   );
 }
 
-function GridField({
-  field,
-  form,
-  disabled,
-}: {
-  field: EaField;
-  form: Form;
-  disabled: boolean;
-}) {
+function GridField({ field, form, disabled }: { field: EaField; form: Form; disabled: boolean }) {
   const columns = field.columns ?? [];
   const { fields, append, remove } = useFieldArray({
     control: form.control,
