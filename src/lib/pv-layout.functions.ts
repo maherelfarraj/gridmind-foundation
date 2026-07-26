@@ -106,20 +106,21 @@ export const saveLayoutBlocks = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     if (!(await canWritePvLayout(context))) httpError(403, "forbidden");
 
-    const { data: row, error } = await context.supabase.rpc("save_pv_layout_blocks", {
+    const { error } = await context.supabase.rpc("save_pv_layout_blocks", {
       p_layout_id: data.layoutId,
       p_blocks: data.blocks as any,
       p_totals: (data.totals ?? null) as any,
     } as any);
     if (error) mapLayoutRpcError(error as any);
 
-    const layout = toLayoutRow(row as any);
+    const layout = await reloadLayout(context, data.layoutId);
     await auditPvLayout(context, "pv_layout.blocks_saved", layout.id, {
       project_id: layout.project_id,
       block_count: data.blocks.length,
     });
     return layout;
   });
+
 
 /** Draft <-> under_review only; approval transitions land with P-153. */
 export const setPvLayoutStatus = createServerFn({ method: "POST" })
