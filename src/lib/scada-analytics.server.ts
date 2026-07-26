@@ -17,6 +17,7 @@ import {
   type AssetPerformanceRow,
   type DowntimeClass,
   type ExpectedPowerSample,
+  type PpaGuaranteeTerms,
   type GuaranteeResult,
 } from "@/lib/scada/analytics";
 
