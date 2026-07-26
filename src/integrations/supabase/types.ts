@@ -8431,6 +8431,62 @@ export type Database = {
           },
         ]
       }
+      sld_symbol_types: {
+        Row: {
+          category: string
+          company_id: string | null
+          created_at: string
+          default_properties: Json
+          display_name: string
+          id: string
+          ports: Json
+          property_schema: Json
+          sort_order: number
+          svg_body: string
+          tag_prefix: string
+          type_key: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id?: string | null
+          created_at?: string
+          default_properties?: Json
+          display_name: string
+          id?: string
+          ports?: Json
+          property_schema?: Json
+          sort_order?: number
+          svg_body: string
+          tag_prefix: string
+          type_key: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          default_properties?: Json
+          display_name?: string
+          id?: string
+          ports?: Json
+          property_schema?: Json
+          sort_order?: number
+          svg_body?: string
+          tag_prefix?: string
+          type_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_symbol_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spare_parts: {
         Row: {
           category: Database["public"]["Enums"]["material_category"]
