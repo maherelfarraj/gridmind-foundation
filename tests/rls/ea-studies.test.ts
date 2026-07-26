@@ -127,7 +127,7 @@ describe.skipIf(!up)("P-170 electrical analysis — cross-tenant RLS", () => {
       .insert({
         company_id: state.a.companyId,
         project_id: state.a.projectId,
-        device_tag: `P170-RLY-${crypto.randomUUID().slice(0, 4)}`,
+        tag: `P170-RLY-${crypto.randomUUID().slice(0, 4)}`,
         device_type: "relay",
       })
       .select("id")
@@ -137,16 +137,30 @@ describe.skipIf(!up)("P-170 electrical analysis — cross-tenant RLS", () => {
 
     const { error: relayErr } = await svc.from("ea_relay_settings").insert({
       company_id: state.a.companyId,
+      project_id: state.a.projectId,
       device_id: device.id,
       function_code: "50",
-      pickup_value: 1.2,
+      pickup: 1.2,
     });
     if (relayErr) throw relayErr;
+
+    const { data: tpl, error: tplErr } = await svc
+      .from("ea_grid_code_templates")
+      .insert({
+        company_id: state.a.companyId,
+        market: `P170-${crypto.randomUUID().slice(0, 6)}`,
+        name: "P170 grid code",
+        items: [{ code: "P170-GC-1", requirement: "Probe requirement" }],
+      })
+      .select("id")
+      .single();
+    if (tplErr || !tpl) throw tplErr ?? new Error("template insert failed");
 
     const { error: gcErr } = await svc.from("ea_grid_code_responses").insert({
       company_id: state.a.companyId,
       project_id: state.a.projectId,
-      requirement_code: "P170-GC-1",
+      template_id: tpl.id,
+      item_index: 0,
       status: "open",
     });
     if (gcErr) throw gcErr;
