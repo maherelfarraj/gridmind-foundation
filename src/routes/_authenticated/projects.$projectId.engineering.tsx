@@ -10,7 +10,9 @@ const SUB_TABS = [
   { to: "rfis" as const, label: "RFIs" },
   { to: "ifc-release" as const, label: "IFC release" },
   { to: "sld" as const, label: "SLD" },
+  { to: "pv-site" as const, label: "Site config" },
   { to: "yield" as const, label: "Yield" },
+
   { to: "bom" as const, label: "BOM" },
   { to: "uploads" as const, label: "Site data uploads" },
 ];
@@ -41,7 +43,18 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads" | "drawings" | "reviews" | "rfis" | "ifc-release" | "sld" | "yield" | "bom";
+  to:
+    | ""
+    | "uploads"
+    | "drawings"
+    | "reviews"
+    | "rfis"
+    | "ifc-release"
+    | "sld"
+    | "pv-site"
+    | "yield"
+    | "bom";
+
   label: string;
   projectId: string;
 }) {

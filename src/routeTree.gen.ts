@@ -157,6 +157,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringUploadsRouteImport } 
 import { Route as AuthenticatedProjectsProjectIdEngineeringSldRouteImport } from './routes/_authenticated/projects.$projectId.engineering.sld'
 import { Route as AuthenticatedProjectsProjectIdEngineeringRfisRouteImport } from './routes/_authenticated/projects.$projectId.engineering.rfis'
 import { Route as AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.reviews'
+import { Route as AuthenticatedProjectsProjectIdEngineeringPvSiteRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-site'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
@@ -1035,6 +1036,12 @@ const AuthenticatedProjectsProjectIdEngineeringReviewsRoute =
     path: '/reviews',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringPvSiteRoute =
+  AuthenticatedProjectsProjectIdEngineeringPvSiteRouteImport.update({
+    id: '/pv-site',
+    path: '/pv-site',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute =
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport.update({
     id: '/ifc-release',
@@ -1328,6 +1335,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
   '/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
@@ -1488,6 +1496,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
   '/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
   '/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
@@ -1660,6 +1669,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  '/_authenticated/projects/$projectId/engineering/pv-site': typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
   '/_authenticated/projects/$projectId/engineering/reviews': typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
   '/_authenticated/projects/$projectId/engineering/rfis': typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   '/_authenticated/projects/$projectId/engineering/sld': typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
@@ -1832,6 +1842,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/ifc-release'
+    | '/projects/$projectId/engineering/pv-site'
     | '/projects/$projectId/engineering/reviews'
     | '/projects/$projectId/engineering/rfis'
     | '/projects/$projectId/engineering/sld'
@@ -1992,6 +2003,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/ifc-release'
+    | '/projects/$projectId/engineering/pv-site'
     | '/projects/$projectId/engineering/reviews'
     | '/projects/$projectId/engineering/rfis'
     | '/projects/$projectId/engineering/sld'
@@ -2163,6 +2175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
+    | '/_authenticated/projects/$projectId/engineering/pv-site'
     | '/_authenticated/projects/$projectId/engineering/reviews'
     | '/_authenticated/projects/$projectId/engineering/rfis'
     | '/_authenticated/projects/$projectId/engineering/sld'
@@ -3253,6 +3266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringReviewsRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/pv-site': {
+      id: '/_authenticated/projects/$projectId/engineering/pv-site'
+      path: '/pv-site'
+      fullPath: '/projects/$projectId/engineering/pv-site'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/ifc-release': {
       id: '/_authenticated/projects/$projectId/engineering/ifc-release'
       path: '/ifc-release'
@@ -3644,6 +3664,7 @@ interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringBomRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute: typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
+  AuthenticatedProjectsProjectIdEngineeringPvSiteRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvSiteRoute
   AuthenticatedProjectsProjectIdEngineeringReviewsRoute: typeof AuthenticatedProjectsProjectIdEngineeringReviewsRoute
   AuthenticatedProjectsProjectIdEngineeringRfisRoute: typeof AuthenticatedProjectsProjectIdEngineeringRfisRoute
   AuthenticatedProjectsProjectIdEngineeringSldRoute: typeof AuthenticatedProjectsProjectIdEngineeringSldRoute
@@ -3661,6 +3682,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
       AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute:
       AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren,
+    AuthenticatedProjectsProjectIdEngineeringPvSiteRoute:
+      AuthenticatedProjectsProjectIdEngineeringPvSiteRoute,
     AuthenticatedProjectsProjectIdEngineeringReviewsRoute:
       AuthenticatedProjectsProjectIdEngineeringReviewsRoute,
     AuthenticatedProjectsProjectIdEngineeringRfisRoute:

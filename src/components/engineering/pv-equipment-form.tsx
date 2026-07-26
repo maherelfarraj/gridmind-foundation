@@ -315,7 +315,10 @@ export function PvEquipmentFormDrawer({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Valid until</Label>
-                  <Input type="date" {...form.register(`certifications.${i}.valid_until` as const)} />
+                  <Input
+                    type="date"
+                    {...form.register(`certifications.${i}.valid_until` as const)}
+                  />
                 </div>
                 <Button type="button" variant="ghost" size="icon" onClick={() => certs.remove(i)}>
                   <Trash2 className="h-4 w-4" />
