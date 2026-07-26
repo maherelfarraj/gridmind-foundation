@@ -75,7 +75,7 @@ export async function listAssignableMembers(context: AuthContext): Promise<Assig
     .from("user_roles")
     .select("user_id, role")
     .eq("company_id", companyId)
-    .in("role", ASSIGNABLE_ROLES as unknown as string[]);
+    .in("role", [...ASSIGNABLE_ROLES]);
   if (roleErr) throw roleErr;
 
   const byUser = new Map<string, string[]>();
