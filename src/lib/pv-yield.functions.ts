@@ -205,7 +205,7 @@ export const setSimulationBaseline = createServerFn({ method: "POST" })
 
     await context.supabase
       .from("pv_simulations")
-      .update({ is_baseline: false } as never)
+      .update({ is_baseline: false, status: "superseded" } as never)
       .eq("project_id", sim.project_id)
       .eq("is_baseline", true);
 
