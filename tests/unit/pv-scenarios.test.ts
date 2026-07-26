@@ -58,9 +58,12 @@ describe("P-158 P-scenarios", () => {
 
     it(`σ = ${fraction} uses the exact z-factors 0.675 / 1.282 / 2.326`, () => {
       const p = runYieldV2({ ...base, interannualVariabilitySigmaPct: sigmaPct }).p_scenarios;
-      expect(p.p75_kwh!).toBeCloseTo(p.p50_kwh * (1 - Z.p75 * fraction), 3);
-      expect(p.p90_kwh!).toBeCloseTo(p.p50_kwh * (1 - Z.p90 * fraction), 3);
-      expect(p.p99_kwh!).toBeCloseTo(p.p50_kwh * (1 - Z.p99 * fraction), 3);
+      // The engine rounds persisted energies to 3 decimals, so compare the
+      // implied z-factor rather than raw kWh magnitudes.
+      const z = (v: number) => (1 - v / p.p50_kwh) / fraction;
+      expect(z(p.p75_kwh!)).toBeCloseTo(Z.p75, 9);
+      expect(z(p.p90_kwh!)).toBeCloseTo(Z.p90, 9);
+      expect(z(p.p99_kwh!)).toBeCloseTo(Z.p99, 9);
       expect(p.formula).toContain("0.675");
       expect(p.formula).toContain("1.282");
       expect(p.formula).toContain("2.326");
