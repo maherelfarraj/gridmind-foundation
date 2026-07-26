@@ -15,6 +15,7 @@ import {
   storeExportArtifact,
   SLD_EXPORT_FORMATS,
 } from "@/lib/sld-export.server";
+import { loadBranding } from "@/lib/sld-schedules.server";
 import { fromJson, SldImportError } from "@/lib/sld/exporters";
 
 const exportInput = z.object({
@@ -69,6 +70,7 @@ export const exportSldDrawing = createServerFn({ method: "POST" })
       warnings: payload.warnings,
       storage_path: stored.storage_path,
       revision_id: bundle.revisionId,
+      branding: data.format === "pdf" ? await loadBranding(context, drawing.company_id) : null,
       drawing: {
         drawing_number: drawing.drawing_number,
         title: drawing.title,
