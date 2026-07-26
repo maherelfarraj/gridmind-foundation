@@ -9017,11 +9017,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           equipment_id: string | null
+          hierarchy_path: string | null
           id: string
           metadata: Json
           name: string
+          parent_asset_id: string | null
           project_id: string
           site_label: string | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
@@ -9031,11 +9034,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           equipment_id?: string | null
+          hierarchy_path?: string | null
           id?: string
           metadata?: Json
           name: string
+          parent_asset_id?: string | null
           project_id: string
           site_label?: string | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -9045,11 +9051,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           equipment_id?: string | null
+          hierarchy_path?: string | null
           id?: string
           metadata?: Json
           name?: string
+          parent_asset_id?: string | null
           project_id?: string
           site_label?: string | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: [
@@ -9072,6 +9081,13 @@ export type Database = {
             columns: ["equipment_id"]
             isOneToOne: false
             referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_assets_parent_asset_id_fkey"
+            columns: ["parent_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
             referencedColumns: ["id"]
           },
           {
@@ -9149,6 +9165,131 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scada_tags: {
+        Row: {
+          alarm_high: number | null
+          alarm_low: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          data_type: string
+          deadband: number
+          description: string | null
+          frozen_after_samples: number
+          id: string
+          is_active: boolean
+          max_value: number | null
+          metric: string | null
+          min_value: number | null
+          name: string
+          project_id: string
+          quality_rules: Json
+          sample_interval_s: number
+          scada_asset_id: string | null
+          scale_factor: number
+          scale_offset: number
+          source_address: string | null
+          source_system: string
+          stale_after_s: number
+          tag_key: string
+          unit: string
+          updated_at: string
+          warn_high: number | null
+          warn_low: number | null
+        }
+        Insert: {
+          alarm_high?: number | null
+          alarm_low?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          data_type?: string
+          deadband?: number
+          description?: string | null
+          frozen_after_samples?: number
+          id?: string
+          is_active?: boolean
+          max_value?: number | null
+          metric?: string | null
+          min_value?: number | null
+          name: string
+          project_id: string
+          quality_rules?: Json
+          sample_interval_s?: number
+          scada_asset_id?: string | null
+          scale_factor?: number
+          scale_offset?: number
+          source_address?: string | null
+          source_system?: string
+          stale_after_s?: number
+          tag_key: string
+          unit?: string
+          updated_at?: string
+          warn_high?: number | null
+          warn_low?: number | null
+        }
+        Update: {
+          alarm_high?: number | null
+          alarm_low?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_type?: string
+          deadband?: number
+          description?: string | null
+          frozen_after_samples?: number
+          id?: string
+          is_active?: boolean
+          max_value?: number | null
+          metric?: string | null
+          min_value?: number | null
+          name?: string
+          project_id?: string
+          quality_rules?: Json
+          sample_interval_s?: number
+          scada_asset_id?: string | null
+          scale_factor?: number
+          scale_offset?: number
+          source_address?: string | null
+          source_system?: string
+          stale_after_s?: number
+          tag_key?: string
+          unit?: string
+          updated_at?: string
+          warn_high?: number | null
+          warn_low?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_tags_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_tags_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_tags_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_tags_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
             referencedColumns: ["id"]
           },
         ]
