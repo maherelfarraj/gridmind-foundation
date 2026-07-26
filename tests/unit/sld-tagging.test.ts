@@ -235,12 +235,24 @@ describe("P-148 acceptance — tagging determinism", () => {
     for (const a of generateTags(graph, symbols)) expect(isValidTag(a.tag)).toBe(true);
   });
 
-  it("is idempotent without force and renumbers with force", () => {
+  it("is idempotent without force and renumbers a gapped graph with force", () => {
     const applied = graph.map((o) => ({
       ...o,
       tag: generateTags(graph, symbols).find((a) => a.id === o.id)!.tag,
     }));
+    // Already canonical → no assignments, with or without force.
     expect(generateTags(applied, symbols)).toEqual([]);
-    expect(generateTags(applied, symbols, { force: true }).length).toBe(applied.length);
+    expect(generateTags(applied, symbols, [], { force: true })).toEqual([]);
+
+    // Gapped/out-of-order sequences are preserved without force …
+    const gapped = applied.map((o, i) => ({
+      ...o,
+      tag: o.tag!.replace(/\d{2}$/, i === 0 ? "07" : o.tag!.slice(-2)),
+    }));
+    expect(generateTags(gapped, symbols)).toEqual([]);
+    // … and collapsed back to 01..n with force.
+    const forced = generateTags(gapped, symbols, [], { force: true });
+    expect(forced.length).toBeGreaterThan(0);
+    for (const a of forced) expect(isValidTag(a.tag)).toBe(true);
   });
 });
