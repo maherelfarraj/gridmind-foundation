@@ -8281,6 +8281,67 @@ export type Database = {
           },
         ]
       }
+      sld_export_artifacts: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_size_bytes: number | null
+          format: string
+          id: string
+          revision_id: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_size_bytes?: number | null
+          format: string
+          id?: string
+          revision_id: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_size_bytes?: number | null
+          format?: string
+          id?: string
+          revision_id?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_export_artifacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_export_artifacts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_export_artifacts_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "sld_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sld_objects: {
         Row: {
           company_id: string
