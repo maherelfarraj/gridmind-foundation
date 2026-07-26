@@ -7,7 +7,7 @@ export const IEC_60228_SIZES_MM2 = [
 export type CableSizeMm2 = (typeof IEC_60228_SIZES_MM2)[number];
 
 // Indicative copper ampacity (A) — single-core PVC in ground, ambient 30 °C.
-const AMPACITY_A: Record<number, number> = {
+export const AMPACITY_A: Record<number, number> = {
   1.5: 22,
   2.5: 30,
   4: 40,
@@ -30,7 +30,9 @@ const AMPACITY_A: Record<number, number> = {
 };
 
 // Copper resistivity at 20 °C, Ω·mm²/m.
-const RHO_CU = 0.0175;
+export const RHO_CU = 0.0175;
+// Aluminium resistivity at 20 °C, Ω·mm²/m (P-166 extension).
+export const RHO_AL = 0.0282;
 
 export interface CableSizingInput {
   loadA: number;
