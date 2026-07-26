@@ -124,3 +124,15 @@ export async function auditPvLayout(
     // Auditing must never break the caller's write.
   }
 }
+
+/** Re-reads a layout row after an RPC that does not return the row itself. */
+export async function reloadLayout(context: AuthContext, layoutId: string): Promise<PvLayoutRow> {
+  const { data, error } = await context.supabase
+    .from("pv_layouts")
+    .select("*")
+    .eq("id", layoutId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) httpError(404, "not_found", "Layout not found.");
+  return toLayoutRow(data as any);
+}

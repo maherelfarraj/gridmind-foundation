@@ -11,6 +11,7 @@ const SUB_TABS = [
   { to: "ifc-release" as const, label: "IFC release" },
   { to: "sld" as const, label: "SLD" },
   { to: "pv-site" as const, label: "Site config" },
+  { to: "pv-layout" as const, label: "PV layout" },
   { to: "yield" as const, label: "Yield" },
 
   { to: "bom" as const, label: "BOM" },
@@ -52,6 +53,7 @@ function SubTabLink({
     | "ifc-release"
     | "sld"
     | "pv-site"
+    | "pv-layout"
     | "yield"
     | "bom";
 
