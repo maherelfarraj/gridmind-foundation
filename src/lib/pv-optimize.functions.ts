@@ -168,9 +168,7 @@ export const runLayoutOptimization = createServerFn({ method: "POST" })
 export const chooseOptimizationCandidate = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ runId: z.string().uuid(), candidateIndex: z.number().int().min(0) })
-      .parse(input),
+    z.object({ runId: z.string().uuid(), candidateIndex: z.number().int().min(0) }).parse(input),
   )
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
@@ -270,7 +268,8 @@ export const applyOptimizationScenario = createServerFn({ method: "POST" })
 
     const results = run.results as unknown as OptimizationResults | null;
     const candidate = results?.candidates.find((c) => c.index === run.chosen_candidate);
-    if (!candidate) httpError(409, "candidate_missing", "The chosen candidate is no longer stored.");
+    if (!candidate)
+      httpError(409, "candidate_missing", "The chosen candidate is no longer stored.");
 
     const ctx = await buildOptimizationContext(context, run.project_id, run.surface_id);
     const rebuilt = evaluateCandidate(

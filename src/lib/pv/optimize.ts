@@ -304,7 +304,10 @@ export function epcCostUsd(
   const wp = dcKwp * 1000;
   const equipment = wp * (costs.moduleUsdPerWp + costs.structureUsdPerWp + costs.bosUsdPerWp);
   return round2(
-    equipment + grading * costs.gradingUsdPerM3 + cable * costs.cableUsdPerM + road * costs.roadUsdPerM,
+    equipment +
+      grading * costs.gradingUsdPerM3 +
+      cable * costs.cableUsdPerM +
+      road * costs.roadUsdPerM,
   );
 }
 
@@ -317,11 +320,7 @@ export function energyYieldMwh(dcKwp: number, gcr: number, ref: YieldReference):
 }
 
 /** Min–max normalization; a single candidate always scores 1 on every metric. */
-export function normalizeMetric(
-  values: number[],
-  value: number,
-  higherIsBetter: boolean,
-): number {
+export function normalizeMetric(values: number[], value: number, higherIsBetter: boolean): number {
   const min = Math.min(...values);
   const max = Math.max(...values);
   if (!Number.isFinite(min) || !Number.isFinite(max) || max - min < 1e-9) return 1;

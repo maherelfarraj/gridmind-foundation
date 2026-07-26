@@ -28,10 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getOptimizationApproval,
-  listLayoutOptimizationRuns,
-} from "@/lib/pv-optimize.functions";
+import { getOptimizationApproval, listLayoutOptimizationRuns } from "@/lib/pv-optimize.functions";
 import {
   optimizationApprovalQueryOptions,
   optimizationRunsQueryOptions,
@@ -308,10 +305,7 @@ function LayoutOptimizationPage() {
                     <TableRow
                       key={run.id}
                       onClick={() => setSelectedRunId(run.id)}
-                      className={cn(
-                        "cursor-pointer",
-                        selectedRun?.id === run.id && "bg-muted/50",
-                      )}
+                      className={cn("cursor-pointer", selectedRun?.id === run.id && "bg-muted/50")}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
@@ -436,17 +430,14 @@ function LayoutOptimizationPage() {
                     Submit for approval
                   </Button>
                   <Button
-                    disabled={
-                      !canWrite || approvalStatus !== "approved" || applyMutation.isPending
-                    }
+                    disabled={!canWrite || approvalStatus !== "approved" || applyMutation.isPending}
                     onClick={() => applyMutation.mutate(selectedRun.id)}
                   >
                     Apply chosen scenario
                   </Button>
                   <span className="text-xs text-muted-foreground">
-                    Approval:{" "}
-                    {approvalStatus ?? "not submitted"} — the layout writer stays locked until the
-                    approval engine says yes.
+                    Approval: {approvalStatus ?? "not submitted"} — the layout writer stays locked
+                    until the approval engine says yes.
                   </span>
                 </div>
               </>

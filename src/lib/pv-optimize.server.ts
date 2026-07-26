@@ -188,7 +188,9 @@ export async function buildOptimizationContext(
       .eq("surface_id", resolvedSurface)
       .limit(MAX_TERRAIN_SAMPLES);
     if (pointsError) throw pointsError;
-    terrainSamples = ((points ?? []) as { easting: number; northing: number; elevation_m: number }[])
+    terrainSamples = (
+      (points ?? []) as { easting: number; northing: number; elevation_m: number }[]
+    )
       .map((p) => ({ x: p.easting, y: p.northing, elevationM: p.elevation_m }))
       .sort((a, b) => a.x - b.x || a.y - b.y);
     if (terrainSamples.length > 0) sources.terrain = "terrain_points";
@@ -218,8 +220,7 @@ export async function buildOptimizationContext(
       boundary: ringToLocal(ring, anchor),
       exclusionZones: exclusions,
       latitude: anchor.lat,
-      terrainRef:
-        terrainSamples.length > 0 ? { samples: terrainSamples, slopeLimitPct: 8 } : null,
+      terrainRef: terrainSamples.length > 0 ? { samples: terrainSamples, slopeLimitPct: 8 } : null,
       equipmentPads: [
         { label: "Inverter station", widthM: 12, depthM: 6, count: 2, type: "inverter_station" },
         { label: "Transformer pad", widthM: 8, depthM: 6, count: 1 },
