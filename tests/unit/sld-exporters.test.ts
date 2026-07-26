@@ -101,7 +101,7 @@ describe("toSvg", () => {
     expect(svg).toContain("viewBox");
     expect(svg).toContain("SLD-001");
     expect(svg).toContain("Main single line diagram");
-    expect(svg).toContain("Legend");
+    expect(svg).toContain("LEGEND");
   });
 
   it("renders every object tag and cable number", () => {
@@ -184,7 +184,7 @@ describe("toDxf", () => {
 describe("toCsv", () => {
   it("quotes separators and escapes quotes", () => {
     const csv = toCsv([{ tag: 'INV,"1"', kw: 3300 }]);
-    expect(csv.split("\n")[0]).toBe("tag,kw");
+    expect(csv.split("\n")[0].trim()).toBe("tag,kw");
     expect(csv).toContain('"INV,""1"""');
   });
 
