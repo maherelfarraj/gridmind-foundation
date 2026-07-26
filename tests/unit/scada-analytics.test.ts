@@ -301,7 +301,7 @@ describe("P-178 data quality", () => {
   }
 
   it("flags redundant sensors diverging 3% for 25 h", () => {
-    const q = dataQuality(PERIOD, POLL, ["good"], [pair(25, 3)]);
+    const q = dataQuality(PERIOD, POLL, ["good"], [pair(26, 3)]) // 26 hourly samples = 25 h span;
     expect(q.driftFlags).toHaveLength(1);
     expect(q.driftFlags[0].label).toBe("poa_irradiance");
     expect(q.driftFlags[0].maxDivergencePct).toBeGreaterThan(2);
