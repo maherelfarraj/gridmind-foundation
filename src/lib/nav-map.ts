@@ -240,6 +240,13 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/om/scada/alarm-rules",
         icon: SlidersHorizontal,
       },
+      {
+        moduleKey: "om_scada",
+        label: "Performance analytics",
+        url: "/om/scada/analytics",
+        icon: Gauge,
+      },
+
       { moduleKey: "om_scada", label: "Work orders", url: "/om/work-orders", icon: Wrench },
       {
         moduleKey: "om_scada",
