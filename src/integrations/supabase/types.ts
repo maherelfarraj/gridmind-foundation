@@ -5916,6 +5916,86 @@ export type Database = {
           },
         ]
       }
+      method_statements: {
+        Row: {
+          activity: string
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          file_path: string | null
+          id: string
+          ms_number: string
+          project_id: string
+          revision: string
+          status: Database["public"]["Enums"]["gov_doc_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          ms_number: string
+          project_id: string
+          revision?: string
+          status?: Database["public"]["Enums"]["gov_doc_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          ms_number?: string
+          project_id?: string
+          revision?: string
+          status?: Database["public"]["Enums"]["gov_doc_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_statements_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_statements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_statements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_statements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobilization_checklists: {
         Row: {
           company_id: string
@@ -6679,6 +6759,115 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permits_to_work: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          isolations: Json
+          isolations_confirmed: boolean
+          issued_by: string | null
+          location: string
+          permit_type: Database["public"]["Enums"]["ptw_type"]
+          project_id: string
+          ptw_number: string
+          requested_by: string | null
+          status: Database["public"]["Enums"]["ptw_status"]
+          updated_at: string
+          valid_from: string
+          valid_to: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          isolations?: Json
+          isolations_confirmed?: boolean
+          issued_by?: string | null
+          location: string
+          permit_type: Database["public"]["Enums"]["ptw_type"]
+          project_id: string
+          ptw_number: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["ptw_status"]
+          updated_at?: string
+          valid_from: string
+          valid_to: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          isolations?: Json
+          isolations_confirmed?: boolean
+          issued_by?: string | null
+          location?: string
+          permit_type?: Database["public"]["Enums"]["ptw_type"]
+          project_id?: string
+          ptw_number?: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["ptw_status"]
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permits_to_work_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permits_to_work_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permits_to_work_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permits_to_work_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permits_to_work_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permits_to_work_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -11107,6 +11296,86 @@ export type Database = {
           },
         ]
       }
+      site_instructions: {
+        Row: {
+          acknowledged_at: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          cwp_id: string | null
+          due_date: string | null
+          id: string
+          instruction: string
+          issued_to: string
+          project_id: string
+          si_number: string
+          status: Database["public"]["Enums"]["si_status"]
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          cwp_id?: string | null
+          due_date?: string | null
+          id?: string
+          instruction: string
+          issued_to: string
+          project_id: string
+          si_number: string
+          status?: Database["public"]["Enums"]["si_status"]
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          cwp_id?: string | null
+          due_date?: string | null
+          id?: string
+          instruction?: string
+          issued_to?: string
+          project_id?: string
+          si_number?: string
+          status?: Database["public"]["Enums"]["si_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_instructions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_instructions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_instructions_cwp_id_fkey"
+            columns: ["cwp_id"]
+            isOneToOne: false
+            referencedRelation: "construction_work_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_instructions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_photos: {
         Row: {
           area: string | null
@@ -12165,6 +12434,109 @@ export type Database = {
           },
         ]
       }
+      technical_queries: {
+        Row: {
+          answered_at: string | null
+          answered_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          project_id: string
+          question: string
+          raised_by: string | null
+          response: string | null
+          rfi_id: string | null
+          status: Database["public"]["Enums"]["tq_status"]
+          subject: string
+          tq_number: string
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          answered_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id: string
+          question: string
+          raised_by?: string | null
+          response?: string | null
+          rfi_id?: string | null
+          status?: Database["public"]["Enums"]["tq_status"]
+          subject: string
+          tq_number: string
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          answered_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string
+          question?: string
+          raised_by?: string | null
+          response?: string | null
+          rfi_id?: string | null
+          status?: Database["public"]["Enums"]["tq_status"]
+          subject?: string
+          tq_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technical_queries_answered_by_fkey"
+            columns: ["answered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technical_queries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technical_queries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technical_queries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technical_queries_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technical_queries_rfi_id_fkey"
+            columns: ["rfi_id"]
+            isOneToOne: false
+            referencedRelation: "rfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -12521,6 +12893,137 @@ export type Database = {
             columns: ["po_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      toolbox_talk_attendance: {
+        Row: {
+          attended: boolean
+          company_id: string
+          created_at: string
+          employer: string | null
+          id: string
+          signature_path: string | null
+          talk_id: string
+          trade: string | null
+          updated_at: string
+          worker_name: string
+        }
+        Insert: {
+          attended?: boolean
+          company_id: string
+          created_at?: string
+          employer?: string | null
+          id?: string
+          signature_path?: string | null
+          talk_id: string
+          trade?: string | null
+          updated_at?: string
+          worker_name: string
+        }
+        Update: {
+          attended?: boolean
+          company_id?: string
+          created_at?: string
+          employer?: string | null
+          id?: string
+          signature_path?: string | null
+          talk_id?: string
+          trade?: string | null
+          updated_at?: string
+          worker_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolbox_talk_attendance_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_talk_attendance_talk_id_fkey"
+            columns: ["talk_id"]
+            isOneToOne: false
+            referencedRelation: "toolbox_talks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      toolbox_talks: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          presenter: string | null
+          project_id: string
+          status: Database["public"]["Enums"]["tbt_status"]
+          talk_date: string
+          tbt_number: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          presenter?: string | null
+          project_id: string
+          status?: Database["public"]["Enums"]["tbt_status"]
+          talk_date: string
+          tbt_number: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          presenter?: string | null
+          project_id?: string
+          status?: Database["public"]["Enums"]["tbt_status"]
+          talk_date?: string
+          tbt_number?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolbox_talks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_talks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_talks_presenter_fkey"
+            columns: ["presenter"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_talks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -14281,6 +14784,13 @@ export type Database = {
         | "partially_delivered"
         | "rejected"
       field_equipment_status: "on_site" | "standby" | "off_hired" | "breakdown"
+      gov_doc_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "superseded"
       grn_status: "draft" | "confirmed" | "has_defects" | "closed"
       hse_incident_severity:
         | "minor"
@@ -14419,6 +14929,21 @@ export type Database = {
         | "rejected"
         | "expired"
         | "superseded"
+      ptw_status:
+        | "requested"
+        | "active"
+        | "suspended"
+        | "closed"
+        | "expired"
+        | "cancelled"
+      ptw_type:
+        | "hot_work"
+        | "confined_space"
+        | "working_at_height"
+        | "electrical"
+        | "excavation"
+        | "lifting"
+        | "general"
       punch_category: "A" | "B" | "C"
       punch_status: "open" | "ready_for_review" | "closed" | "void"
       pv_equipment_category:
@@ -14490,6 +15015,7 @@ export type Database = {
         | "completed"
         | "on_hold"
         | "cancelled"
+      si_status: "issued" | "acknowledged" | "completed" | "cancelled"
       sld_status:
         | "draft"
         | "under_review"
@@ -14511,6 +15037,7 @@ export type Database = {
         | "modbus"
         | "historian_csv"
         | "vendor_api"
+      tbt_status: "scheduled" | "held" | "cancelled"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -14532,6 +15059,7 @@ export type Database = {
         | "waiting_client"
         | "resolved"
         | "closed"
+      tq_status: "draft" | "submitted" | "answered" | "closed" | "void"
       transmittal_direction: "outgoing" | "incoming"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
       warranty_claim_status:
@@ -14916,6 +15444,14 @@ export const Constants = {
         "rejected",
       ],
       field_equipment_status: ["on_site", "standby", "off_hired", "breakdown"],
+      gov_doc_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "superseded",
+      ],
       grn_status: ["draft", "confirmed", "has_defects", "closed"],
       hse_incident_severity: [
         "minor",
@@ -15069,6 +15605,23 @@ export const Constants = {
         "expired",
         "superseded",
       ],
+      ptw_status: [
+        "requested",
+        "active",
+        "suspended",
+        "closed",
+        "expired",
+        "cancelled",
+      ],
+      ptw_type: [
+        "hot_work",
+        "confined_space",
+        "working_at_height",
+        "electrical",
+        "excavation",
+        "lifting",
+        "general",
+      ],
       punch_category: ["A", "B", "C"],
       punch_status: ["open", "ready_for_review", "closed", "void"],
       pv_equipment_category: [
@@ -15148,6 +15701,7 @@ export const Constants = {
         "on_hold",
         "cancelled",
       ],
+      si_status: ["issued", "acknowledged", "completed", "cancelled"],
       sld_status: [
         "draft",
         "under_review",
@@ -15172,6 +15726,7 @@ export const Constants = {
         "historian_csv",
         "vendor_api",
       ],
+      tbt_status: ["scheduled", "held", "cancelled"],
       tender_event_type: [
         "pre_bid_meeting",
         "site_visit",
@@ -15196,6 +15751,7 @@ export const Constants = {
         "resolved",
         "closed",
       ],
+      tq_status: ["draft", "submitted", "answered", "closed", "void"],
       transmittal_direction: ["outgoing", "incoming"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
       warranty_claim_status: [
