@@ -17,6 +17,8 @@ export type ExportType =
   | "sld_schedule"
   | "sld_drawing"
   | "sld_revision_diff"
+  | "civil_geojson"
+  | "civil_kml"
   | "csv";
 
 export interface ExportLockedError extends Error {

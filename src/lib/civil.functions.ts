@@ -5,6 +5,12 @@ import { z } from "zod";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { assertExportAllowed } from "@/lib/export-guard";
 import {
+  assertFeatureEditable,
+  assertGeometryKind,
+  bumpRevision,
+  projectAnchor,
+  reserveCivilRefs,
+  suggestCivilRef,
   CIVIL_FEATURE_COLUMNS,
   loadCivilFeature,
   loadLayoutBlocks,
@@ -35,7 +41,10 @@ import {
   coordinateScheduleToCsv,
   type CoordinateScheduleRow,
 } from "@/lib/civil/schedule";
-import { canWriteTerrain, httpError } from "@/lib/terrain.server";
+import { CIVIL_FEATURE_TYPES, CIVIL_STATUSES } from "@/lib/civil/feature-types";
+import { buildKml, geometryToLngLat } from "@/lib/civil/kml";
+import { buildFeatureCollection } from "@/lib/geojson";
+import { assertProjectVisible, canWriteTerrain, httpError } from "@/lib/terrain.server";
 import { sampleElevation } from "@/lib/terrain/grid";
 
 export type { CivilFeatureRow };
@@ -43,9 +52,7 @@ export type { CivilFeatureRow };
 export const listCivilFeatures = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ projectId: z.string().uuid(), surfaceId: z.string().uuid().nullish() })
-      .parse(input),
+    z.object({ projectId: z.string().uuid(), surfaceId: z.string().uuid().nullish() }).parse(input),
   )
   .handler(async ({ data, context }): Promise<CivilFeatureRow[]> => {
     requireSupabaseAuth(context);
@@ -63,17 +70,19 @@ export const listCivilFeatures = createServerFn({ method: "GET" })
 export const runCutFillAnalysis = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ featureId: z.string().uuid(), surfaceId: z.string().uuid().nullish() })
-      .parse(input),
+    z.object({ featureId: z.string().uuid(), surfaceId: z.string().uuid().nullish() }).parse(input),
   )
   .handler(
     async ({
       data,
       context,
-    }): Promise<{ feature: CivilFeatureRow; analysis: CutFillResult & { computed_at: string } }> => {
+    }): Promise<{
+      feature: CivilFeatureRow;
+      analysis: CutFillResult & { computed_at: string };
+    }> => {
       requireSupabaseAuth(context);
-      if (!(await canWriteTerrain(context))) httpError(403, "forbidden", "Engineering role required.");
+      if (!(await canWriteTerrain(context)))
+        httpError(403, "forbidden", "Engineering role required.");
 
       const feature = await loadCivilFeature(context, data.featureId);
       if (feature.feature_type !== "grading_zone") {
@@ -146,7 +155,8 @@ export const runSlopeToleranceCheck = createServerFn({ method: "POST" })
       layoutName: string | null;
     }> => {
       requireSupabaseAuth(context);
-      if (!(await canWriteTerrain(context))) httpError(403, "forbidden", "Engineering role required.");
+      if (!(await canWriteTerrain(context)))
+        httpError(403, "forbidden", "Engineering role required.");
 
       const surface = await loadSurface(context, data.surfaceId);
       const grid = await loadSurfaceGrid(context, surface.id, surface.grid_spacing_m);
@@ -309,7 +319,8 @@ export const confirmDrainageProposals = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ created: number; features: CivilFeatureRow[] }> => {
     requireSupabaseAuth(context);
-    if (!(await canWriteTerrain(context))) httpError(403, "forbidden", "Engineering role required.");
+    if (!(await canWriteTerrain(context)))
+      httpError(403, "forbidden", "Engineering role required.");
 
     const surface = await loadSurface(context, data.surfaceId);
     let seq = await nextFeatureRef(context, data.projectId, "DRN");
@@ -399,18 +410,317 @@ export const exportCivilCoordinateSchedule = createServerFn({ method: "POST" })
         sampler,
       );
 
-      await writeAuditLog(
-        context,
-        "export.civil_coordinate_schedule",
-        "civil_features",
-        null,
-        { project_id: data.projectId, features: list.length, vertices: rows.length },
-      );
+      await writeAuditLog(context, "export.civil_coordinate_schedule", "civil_features", null, {
+        project_id: data.projectId,
+        features: list.length,
+        vertices: rows.length,
+      });
 
       return {
         csv: coordinateScheduleToCsv(rows),
         fileName: `civil-coordinate-schedule-${data.projectId.slice(0, 8)}.csv`,
         rows,
       };
+    },
+  );
+
+/* ---------------------------------------------------------------------------
+ * P-162 — Civil feature editor mutations and IO
+ * ------------------------------------------------------------------------ */
+
+const geometrySchema = z.object({
+  type: z.string().min(1),
+  coordinates: z.unknown(),
+});
+
+const featureTypeSchema = z.enum(CIVIL_FEATURE_TYPES);
+
+const saveSchema = z.object({
+  id: z.string().uuid().nullish(),
+  projectId: z.string().uuid(),
+  surfaceId: z.string().uuid().nullish(),
+  featureType: featureTypeSchema,
+  name: z.string().trim().min(1).max(120),
+  featureRef: z
+    .string()
+    .trim()
+    .regex(/^CVL-\d{4,}$/)
+    .nullish(),
+  geometry: geometrySchema,
+  properties: z.record(z.string(), z.unknown()).default({}),
+  status: z.enum(CIVIL_STATUSES).default("draft"),
+});
+
+export const suggestCivilFeatureRef = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ featureRef: string }> => {
+    requireSupabaseAuth(context);
+    return { featureRef: await suggestCivilRef(context, data.projectId) };
+  });
+
+export const saveCivilFeature = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => saveSchema.parse(input))
+  .handler(async ({ data, context }): Promise<CivilFeatureRow> => {
+    requireSupabaseAuth(context);
+    if (!(await canWriteTerrain(context)))
+      httpError(403, "forbidden", "Engineering role required to edit civil features.");
+
+    // Never trust the client: the geometry kind must match the feature type.
+    assertGeometryKind(data.featureType, data.geometry as never);
+
+    if (data.id) {
+      const existing = await loadCivilFeature(context, data.id);
+      assertFeatureEditable(existing);
+      const { data: row, error } = await context.supabase
+        .from("civil_features")
+        .update({
+          name: data.name,
+          feature_type: data.featureType,
+          surface_id: data.surfaceId ?? null,
+          geometry: data.geometry as never,
+          properties: data.properties as never,
+          status: data.status,
+        })
+        .eq("id", data.id)
+        .select(CIVIL_FEATURE_COLUMNS)
+        .maybeSingle();
+      if (error) throw error;
+      if (!row) httpError(404, "feature_not_found", "Civil feature not found.");
+      await writeAuditLog(context, "civil.feature_saved", "civil_features", data.id, {
+        feature_ref: (row as never as CivilFeatureRow).feature_ref,
+        feature_type: data.featureType,
+        status: data.status,
+        mode: "update",
+      });
+      return row as unknown as CivilFeatureRow;
+    }
+
+    const project = await assertProjectVisible(context, data.projectId);
+    const featureRef = data.featureRef ?? (await suggestCivilRef(context, data.projectId));
+    const { data: row, error } = await context.supabase
+      .from("civil_features")
+      .insert({
+        company_id: project.company_id,
+        project_id: data.projectId,
+        surface_id: data.surfaceId ?? null,
+        feature_ref: featureRef,
+        name: data.name,
+        feature_type: data.featureType,
+        geometry: data.geometry as never,
+        properties: data.properties as never,
+        status: data.status,
+      } as never)
+      .select(CIVIL_FEATURE_COLUMNS)
+      .maybeSingle();
+    if (error) {
+      if ((error as { code?: string }).code === "23505") {
+        httpError(409, "duplicate_feature_ref", `${featureRef} already exists on this project.`);
+      }
+      throw error;
+    }
+    const created = row as unknown as CivilFeatureRow;
+    await writeAuditLog(context, "civil.feature_saved", "civil_features", created.id, {
+      feature_ref: created.feature_ref,
+      feature_type: data.featureType,
+      status: data.status,
+      mode: "create",
+    });
+    return created;
+  });
+
+export const deleteCivilFeature = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ deleted: true }> => {
+    requireSupabaseAuth(context);
+    if (!(await canWriteTerrain(context)))
+      httpError(403, "forbidden", "Engineering role required to delete civil features.");
+    const existing = await loadCivilFeature(context, data.id);
+    assertFeatureEditable(existing);
+    const { error } = await context.supabase.from("civil_features").delete().eq("id", data.id);
+    if (error) throw error;
+    await writeAuditLog(context, "civil.feature_deleted", "civil_features", data.id, {
+      feature_ref: existing.feature_ref,
+      feature_type: existing.feature_type,
+      revision_code: existing.revision_code,
+    });
+    return { deleted: true };
+  });
+
+/** Unfreeze an approved feature by cutting the next revision (A → B → …). */
+export const reviseCivilFeature = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<CivilFeatureRow> => {
+    requireSupabaseAuth(context);
+    if (!(await canWriteTerrain(context)))
+      httpError(403, "forbidden", "Engineering role required to revise civil features.");
+    const existing = await loadCivilFeature(context, data.id);
+    const revision = bumpRevision(existing.revision_code);
+    const { data: row, error } = await context.supabase
+      .from("civil_features")
+      .update({ status: "draft", revision_code: revision })
+      .eq("id", data.id)
+      .select(CIVIL_FEATURE_COLUMNS)
+      .maybeSingle();
+    if (error) throw error;
+    await writeAuditLog(context, "civil.feature_saved", "civil_features", data.id, {
+      feature_ref: existing.feature_ref,
+      mode: "revision",
+      from_revision: existing.revision_code,
+      revision_code: revision,
+    });
+    return row as unknown as CivilFeatureRow;
+  });
+
+export const importCivilFeatures = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        projectId: z.string().uuid(),
+        surfaceId: z.string().uuid().nullish(),
+        source: z.enum(["geojson", "kml"]),
+        features: z
+          .array(
+            z.object({
+              name: z.string().trim().min(1).max(120),
+              featureType: featureTypeSchema,
+              geometry: geometrySchema,
+              properties: z.record(z.string(), z.unknown()).default({}),
+            }),
+          )
+          .min(1)
+          .max(500),
+      })
+      .parse(input),
+  )
+  .handler(
+    async ({ data, context }): Promise<{ imported: number; features: CivilFeatureRow[] }> => {
+      requireSupabaseAuth(context);
+      if (!(await canWriteTerrain(context)))
+        httpError(403, "forbidden", "Engineering role required to import civil features.");
+
+      for (const f of data.features) assertGeometryKind(f.featureType, f.geometry as never);
+
+      const project = await assertProjectVisible(context, data.projectId);
+      const refs = await reserveCivilRefs(context, data.projectId, data.features.length);
+      const rows = data.features.map((f, i) => ({
+        company_id: project.company_id,
+        project_id: data.projectId,
+        surface_id: data.surfaceId ?? null,
+        feature_ref: refs[i],
+        name: f.name,
+        feature_type: f.featureType,
+        geometry: f.geometry,
+        properties: { ...f.properties, imported_from: data.source, imported_at: nowIso() },
+        // Imports always land as drafts for engineering review.
+        status: "draft",
+      }));
+      const { data: inserted, error } = await context.supabase
+        .from("civil_features")
+        .insert(rows as never)
+        .select(CIVIL_FEATURE_COLUMNS);
+      if (error) throw error;
+      await writeAuditLog(context, "civil.features_imported", "civil_features", null, {
+        project_id: data.projectId,
+        source: data.source,
+        count: rows.length,
+      });
+      return {
+        imported: rows.length,
+        features: (inserted ?? []) as unknown as CivilFeatureRow[],
+      };
+    },
+  );
+
+export const exportCivilFeatures = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        projectId: z.string().uuid(),
+        format: z.enum(["geojson", "kml"]),
+        featureTypes: z.array(featureTypeSchema).nullish(),
+      })
+      .parse(input),
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ fileName: string; mimeType: string; content: string; count: number }> => {
+      requireSupabaseAuth(context);
+      await assertExportAllowed(
+        context.supabase as never,
+        data.projectId,
+        data.format === "kml" ? "civil_kml" : "civil_geojson",
+      );
+
+      let query = context.supabase
+        .from("civil_features")
+        .select(CIVIL_FEATURE_COLUMNS)
+        .eq("project_id", data.projectId)
+        .order("feature_ref", { ascending: true })
+        .limit(2000);
+      if (data.featureTypes && data.featureTypes.length) {
+        query = query.in("feature_type", data.featureTypes as never);
+      }
+      const { data: rows, error } = await query;
+      if (error) throw error;
+      const features = (rows ?? []) as unknown as CivilFeatureRow[];
+      if (features.length === 0)
+        httpError(400, "nothing_to_export", "No civil features to export.");
+
+      const anchor = await projectAnchor(context, data.projectId);
+      let content: string;
+      let fileName: string;
+      let mimeType: string;
+
+      if (data.format === "geojson") {
+        content = JSON.stringify(
+          buildFeatureCollection(
+            features.map((f) => ({
+              geometry: f.geometry as never,
+              properties: {
+                ...f.properties,
+                kind: f.feature_type,
+                feature_ref: f.feature_ref,
+                name: f.name,
+                status: f.status,
+                revision_code: f.revision_code,
+              },
+            })),
+          ),
+          null,
+          2,
+        );
+        fileName = `civil-features-${data.projectId.slice(0, 8)}.geojson`;
+        mimeType = "application/geo+json";
+      } else {
+        content = buildKml(
+          features.map((f) => ({
+            feature_ref: f.feature_ref,
+            name: f.name,
+            feature_type: f.feature_type,
+            status: f.status,
+            revision_code: f.revision_code,
+            geometry: geometryToLngLat(f.geometry as never, { lon: anchor.lon, lat: anchor.lat }),
+            properties: f.properties,
+          })),
+          { documentName: `${anchor.name} — civil features` },
+        );
+        fileName = `civil-features-${data.projectId.slice(0, 8)}.kml`;
+        mimeType = "application/vnd.google-earth.kml+xml";
+      }
+
+      await writeAuditLog(context, "export.civil_features", "civil_features", null, {
+        project_id: data.projectId,
+        format: data.format,
+        count: features.length,
+      });
+      return { fileName, mimeType, content, count: features.length };
     },
   );
