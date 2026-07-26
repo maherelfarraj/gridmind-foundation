@@ -1,3 +1,4 @@
+// Simplified engineering estimates — not validated against commercial analysis software; qualified-engineer review required.
 // P-170 — Validation honesty.
 //
 // GridMind's electrical modules are small, verifiable calculators, not a
