@@ -76,7 +76,12 @@ export function SchedulesPanel({ drawingId, projectId, canEdit }: SchedulesPanel
           ) : null}
         </div>
         {canEdit ? (
-          <Button size="sm" variant="outline" disabled={generate.isPending} onClick={() => generate.mutate()}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={generate.isPending}
+            onClick={() => generate.mutate()}
+          >
             {generate.isPending ? (
               <Loader2 size={14} className="animate-spin" aria-hidden />
             ) : (
@@ -106,9 +111,7 @@ export function SchedulesPanel({ drawingId, projectId, canEdit }: SchedulesPanel
               schedule={schedule}
               locked={Boolean(locked)}
               exporting={exportSchedule.isPending}
-              onExport={(format) =>
-                exportSchedule.mutate({ scheduleId: schedule.id, format })
-              }
+              onExport={(format) => exportSchedule.mutate({ scheduleId: schedule.id, format })}
             />
           );
         })

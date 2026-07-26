@@ -16,8 +16,18 @@ import {
 
 const SYMBOLS: ScheduleSymbolMeta[] = [
   { type_key: "inverter", display_name: "Inverter", category: "conversion", svg_body: "<rect/>" },
-  { type_key: "transformer", display_name: "Transformer", category: "conversion", svg_body: "<g/>" },
-  { type_key: "circuit_breaker", display_name: "Circuit breaker", category: "protection", svg_body: "<path/>" },
+  {
+    type_key: "transformer",
+    display_name: "Transformer",
+    category: "conversion",
+    svg_body: "<g/>",
+  },
+  {
+    type_key: "circuit_breaker",
+    display_name: "Circuit breaker",
+    category: "protection",
+    svg_body: "<path/>",
+  },
   { type_key: "pv_string", display_name: "PV string", category: "generation", svg_body: "<line/>" },
 ];
 
@@ -67,8 +77,22 @@ const OBJECTS: ConnObject[] = [
 ];
 
 const CONNECTIONS: ConnEdge[] = [
-  edge("c1", "i0", "t1", "cable", { size_mm2: 240, voltage_kv: 0.69, length_m: 120, cores: 3 }, "CBL-01-01"),
-  edge("c2", "t1", "cb1", "cable", { size_mm2: 95, voltage_kv: 33, length_m: 80, cores: 3 }, "CBL-01-02"),
+  edge(
+    "c1",
+    "i0",
+    "t1",
+    "cable",
+    { size_mm2: 240, voltage_kv: 0.69, length_m: 120, cores: 3 },
+    "CBL-01-01",
+  ),
+  edge(
+    "c2",
+    "t1",
+    "cb1",
+    "cable",
+    { size_mm2: 95, voltage_kv: 33, length_m: 80, cores: 3 },
+    "CBL-01-02",
+  ),
   edge("c3", "s1", "i0", "dc_string", { size_mm2: 6, voltage_kv: 1.5, length_m: 45 }, "CBL-02-01"),
   edge("c4", "cb1", "t1", "earth", { length_m: 10 }),
 ];

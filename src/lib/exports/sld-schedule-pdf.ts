@@ -57,5 +57,8 @@ export function downloadSchedulePdf(
   filename: string,
   args: Parameters<typeof buildSchedulePdf>[0],
 ): void {
-  downloadBlob(filename || `${slugify(args.drawing.drawing_number)}-schedule.pdf`, buildSchedulePdf(args));
+  downloadBlob(
+    filename || `${slugify(args.drawing.drawing_number)}-schedule.pdf`,
+    buildSchedulePdf(args),
+  );
 }
