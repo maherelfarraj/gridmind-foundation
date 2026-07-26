@@ -8,7 +8,7 @@ import {
   snapValue,
   useCanvasStore,
 } from "@/lib/sld/canvas-store";
-import { SHEET_SIZES, type SldCanvasObject } from "@/lib/sld/canvas-types";
+import type { SldCanvasObject } from "@/lib/sld/canvas-types";
 import { symbolDef } from "@/lib/sld/symbols";
 
 type Props = {
@@ -32,14 +32,11 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
   const snapEnabled = useCanvasStore((s) => s.snapEnabled);
   const layers = useCanvasStore((s) => s.layers);
   const objects = useCanvasStore((s) => s.objects);
-  const connections = useCanvasStore((s) => s.connections ?? []) as unknown as never[];
   const selection = useCanvasStore((s) => s.selection);
   const tool = useCanvasStore((s) => s.tool);
   const placingType = useCanvasStore((s) => s.placingType);
   const snapIndicator = useCanvasStore((s) => s.snapIndicator);
   const store = useCanvasStore;
-
-  const sheet = SHEET_SIZES[titleBlock.sheet_size] ?? SHEET_SIZES.A1;
 
   const toSheet = useCallback(
     (clientX: number, clientY: number) => {
@@ -274,14 +271,6 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
             </g>
           ) : null}
         </g>
-        <rect
-          x={0}
-          y={0}
-          width={sheet.w * 0}
-          height={0}
-          className="fill-none"
-          aria-hidden
-        />
       </svg>
       {objects.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
