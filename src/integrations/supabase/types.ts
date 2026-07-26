@@ -9829,6 +9829,7 @@ export type Database = {
       }
       terrain_surfaces: {
         Row: {
+          analysis: Json
           company_id: string
           created_at: string
           created_by: string | null
@@ -9851,6 +9852,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          analysis?: Json
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -9873,6 +9875,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          analysis?: Json
           company_id?: string
           created_at?: string
           created_by?: string | null

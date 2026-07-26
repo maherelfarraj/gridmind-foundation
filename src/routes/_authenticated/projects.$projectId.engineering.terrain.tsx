@@ -28,7 +28,13 @@ import {
   TerrainCanvas,
   type TerrainCursor,
   type TerrainLayers,
+  type TerrainOverlay,
 } from "@/components/engineering/terrain-canvas";
+import { CivilAnalysisPanel } from "@/components/engineering/civil-analysis-panel";
+import { civilFeaturesQueryOptions } from "@/lib/civil-query";
+import { listCivilFeatures } from "@/lib/civil.functions";
+import { geometryVertexLists } from "@/lib/civil/geom";
+import type { DrainageProposal } from "@/lib/civil/flow";
 import {
   getTerrainSurface,
   getTerrainWriteAccess,
@@ -88,6 +94,39 @@ function TerrainPage() {
   });
   const [contourInterval, setContourInterval] = useState(1);
   const [cursor, setCursor] = useState<TerrainCursor | null>(null);
+  const [showCivil, setShowCivil] = useState(true);
+  const [proposals, setProposals] = useState<DrainageProposal[]>([]);
+
+  const civilFn = useServerFn(listCivilFeatures);
+  const civilFeatures = useQuery(civilFeaturesQueryOptions(civilFn as never, projectId));
+
+  const overlays = useMemo<TerrainOverlay[]>(() => {
+    if (!showCivil) return [];
+    const fromFeatures: TerrainOverlay[] = (civilFeatures.data ?? [])
+      .filter((f) =>
+        ["flood_risk_zone", "drainage_path", "grading_zone"].includes(f.feature_type),
+      )
+      .map((f) => ({
+        id: f.id,
+        kind:
+          f.feature_type === "flood_risk_zone"
+            ? ("flood" as const)
+            : f.feature_type === "drainage_path"
+              ? ("drainage" as const)
+              : ("grading" as const),
+        parts: geometryVertexLists(f.geometry),
+        closed: f.feature_type !== "drainage_path",
+        label: f.feature_ref,
+      }));
+    const fromProposals: TerrainOverlay[] = proposals.map((p) => ({
+      id: `proposal-${p.proposal_ref}`,
+      kind: "proposal" as const,
+      parts: [p.coordinates],
+      closed: false,
+      label: p.proposal_ref,
+    }));
+    return [...fromFeatures, ...fromProposals];
+  }, [civilFeatures.data, proposals, showCivil]);
 
   const deleteSurface = useDeleteTerrainSurface(projectId);
 
@@ -196,6 +235,12 @@ function TerrainPage() {
                 onChange={(v) => setLayers((l) => ({ ...l, slope: v }))}
               />
               <LayerToggle
+                id="layer-civil"
+                label="Flood & drainage overlays"
+                checked={showCivil}
+                onChange={setShowCivil}
+              />
+              <LayerToggle
                 id="layer-points"
                 label="Survey points"
                 checked={layers.points}
@@ -219,6 +264,13 @@ function TerrainPage() {
           </Card>
 
           {canWrite ? <ImportCard projectId={projectId} /> : null}
+
+          <CivilAnalysisPanel
+            projectId={projectId}
+            surfaceId={activeId}
+            canWrite={canWrite}
+            onProposalsChange={setProposals}
+          />
         </div>
 
         <Card>
@@ -239,6 +291,7 @@ function TerrainPage() {
                   contourInterval={contourInterval}
                   layers={layers}
                   contours={contourInterval === 1 ? contours : undefined}
+                  overlays={overlays}
                   onCursorChange={setCursor}
                 />
                 <div className="mt-2 text-xs text-muted-foreground">
