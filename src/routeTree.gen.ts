@@ -137,6 +137,7 @@ import { Route as AuthenticatedOmScadaAnalyticsRouteImport } from './routes/_aut
 import { Route as AuthenticatedOmScadaAlarmsRouteImport } from './routes/_authenticated/om.scada.alarms'
 import { Route as AuthenticatedOmScadaAlarmRulesRouteImport } from './routes/_authenticated/om.scada.alarm-rules'
 import { Route as AuthenticatedOmScadaAlarmConsoleRouteImport } from './routes/_authenticated/om.scada.alarm-console'
+import { Route as AuthenticatedOmScadaActionRulesRouteImport } from './routes/_authenticated/om.scada.action-rules'
 import { Route as AuthenticatedHseIncidentsNewRouteImport } from './routes/_authenticated/hse.incidents.new'
 import { Route as AuthenticatedHseIncidentsIdRouteImport } from './routes/_authenticated/hse.incidents.$id'
 import { Route as AuthenticatedFinanceContractsContractIdRouteImport } from './routes/_authenticated/finance.contracts.$contractId'
@@ -931,6 +932,12 @@ const AuthenticatedOmScadaAlarmConsoleRoute =
     path: '/om/scada/alarm-console',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOmScadaActionRulesRoute =
+  AuthenticatedOmScadaActionRulesRouteImport.update({
+    id: '/om/scada/action-rules',
+    path: '/om/scada/action-rules',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHseIncidentsNewRoute =
   AuthenticatedHseIncidentsNewRouteImport.update({
     id: '/hse/incidents/new',
@@ -1386,6 +1393,7 @@ export interface FileRoutesByFullPath {
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/om/scada/action-rules': typeof AuthenticatedOmScadaActionRulesRoute
   '/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
@@ -1564,6 +1572,7 @@ export interface FileRoutesByTo {
   '/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/om/scada/action-rules': typeof AuthenticatedOmScadaActionRulesRoute
   '/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
@@ -1750,6 +1759,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/contracts/$contractId': typeof AuthenticatedFinanceContractsContractIdRoute
   '/_authenticated/hse/incidents/$id': typeof AuthenticatedHseIncidentsIdRoute
   '/_authenticated/hse/incidents/new': typeof AuthenticatedHseIncidentsNewRoute
+  '/_authenticated/om/scada/action-rules': typeof AuthenticatedOmScadaActionRulesRoute
   '/_authenticated/om/scada/alarm-console': typeof AuthenticatedOmScadaAlarmConsoleRoute
   '/_authenticated/om/scada/alarm-rules': typeof AuthenticatedOmScadaAlarmRulesRoute
   '/_authenticated/om/scada/alarms': typeof AuthenticatedOmScadaAlarmsRoute
@@ -1938,6 +1948,7 @@ export interface FileRouteTypes {
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
+    | '/om/scada/action-rules'
     | '/om/scada/alarm-console'
     | '/om/scada/alarm-rules'
     | '/om/scada/alarms'
@@ -2116,6 +2127,7 @@ export interface FileRouteTypes {
     | '/finance/contracts/$contractId'
     | '/hse/incidents/$id'
     | '/hse/incidents/new'
+    | '/om/scada/action-rules'
     | '/om/scada/alarm-console'
     | '/om/scada/alarm-rules'
     | '/om/scada/alarms'
@@ -2301,6 +2313,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/contracts/$contractId'
     | '/_authenticated/hse/incidents/$id'
     | '/_authenticated/hse/incidents/new'
+    | '/_authenticated/om/scada/action-rules'
     | '/_authenticated/om/scada/alarm-console'
     | '/_authenticated/om/scada/alarm-rules'
     | '/_authenticated/om/scada/alarms'
@@ -3325,6 +3338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOmScadaAlarmConsoleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/om/scada/action-rules': {
+      id: '/_authenticated/om/scada/action-rules'
+      path: '/om/scada/action-rules'
+      fullPath: '/om/scada/action-rules'
+      preLoaderRoute: typeof AuthenticatedOmScadaActionRulesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hse/incidents/new': {
       id: '/_authenticated/hse/incidents/new'
       path: '/hse/incidents/new'
@@ -4249,6 +4269,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldTransmittalsNewRoute: typeof AuthenticatedFieldTransmittalsNewRoute
   AuthenticatedHseIncidentsIdRoute: typeof AuthenticatedHseIncidentsIdRoute
   AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
+  AuthenticatedOmScadaActionRulesRoute: typeof AuthenticatedOmScadaActionRulesRoute
   AuthenticatedOmScadaAlarmConsoleRoute: typeof AuthenticatedOmScadaAlarmConsoleRoute
   AuthenticatedOmScadaAlarmRulesRoute: typeof AuthenticatedOmScadaAlarmRulesRoute
   AuthenticatedOmScadaAlarmsRoute: typeof AuthenticatedOmScadaAlarmsRoute
@@ -4356,6 +4377,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFieldTransmittalsNewRoute,
   AuthenticatedHseIncidentsIdRoute: AuthenticatedHseIncidentsIdRoute,
   AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
+  AuthenticatedOmScadaActionRulesRoute: AuthenticatedOmScadaActionRulesRoute,
   AuthenticatedOmScadaAlarmConsoleRoute: AuthenticatedOmScadaAlarmConsoleRoute,
   AuthenticatedOmScadaAlarmRulesRoute: AuthenticatedOmScadaAlarmRulesRoute,
   AuthenticatedOmScadaAlarmsRoute: AuthenticatedOmScadaAlarmsRoute,
