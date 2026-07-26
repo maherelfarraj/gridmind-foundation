@@ -23,6 +23,9 @@ import {
   insertWithNumber,
   startRecoveryApproval,
 } from "@/lib/cwp.server";
+import { isForwardCwpTransition } from "@/lib/quality.rules";
+import { assertNoOpenHoldPoint } from "@/lib/quality.server";
+
 
 export const listWorkPackages = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
@@ -91,6 +94,27 @@ export const updateWorkPackage = createServerFn({ method: "POST" })
     if (data.weight !== undefined) patch.weight = data.weight;
     if (data.progressPct !== undefined) patch.progress_pct = data.progressPct;
     if (Object.keys(patch).length === 0) httpError(400, "empty_patch");
+    // P-183 — forward progress is blocked while ITP hold points are unsigned.
+    if (data.status !== undefined || data.progressPct !== undefined) {
+      const { data: current, error: currentError } = await context.supabase
+        .from("construction_work_packages")
+        .select("id,status,progress_pct")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (currentError) throw currentError;
+      const before = current as { status: string; progress_pct: number | null } | null;
+      if (
+        isForwardCwpTransition({
+          fromStatus: before?.status ?? null,
+          toStatus: data.status ?? null,
+          fromProgress: before?.progress_pct ?? 0,
+          toProgress: data.progressPct ?? null,
+        })
+      ) {
+        await assertNoOpenHoldPoint(context.supabase, data.id);
+      }
+    }
+
     const { data: row, error } = await context.supabase
       .from("construction_work_packages")
       .update(patch as never)
