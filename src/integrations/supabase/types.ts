@@ -4187,6 +4187,98 @@ export type Database = {
           },
         ]
       }
+      ingestion_runs: {
+        Row: {
+          company_id: string
+          connector_id: string | null
+          created_at: string
+          created_by: string | null
+          details: Json
+          duration_ms: number | null
+          error_text: string | null
+          finished_at: string | null
+          id: string
+          project_id: string | null
+          rows_accepted: number
+          rows_received: number
+          rows_rejected: number
+          source_label: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["ingestion_run_status"]
+          trigger: Database["public"]["Enums"]["ingestion_trigger"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          connector_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          details?: Json
+          duration_ms?: number | null
+          error_text?: string | null
+          finished_at?: string | null
+          id?: string
+          project_id?: string | null
+          rows_accepted?: number
+          rows_received?: number
+          rows_rejected?: number
+          source_label?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["ingestion_run_status"]
+          trigger?: Database["public"]["Enums"]["ingestion_trigger"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          connector_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          details?: Json
+          duration_ms?: number | null
+          error_text?: string | null
+          finished_at?: string | null
+          id?: string
+          project_id?: string | null
+          rows_accepted?: number
+          rows_received?: number
+          rows_rejected?: number
+          source_label?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["ingestion_run_status"]
+          trigger?: Database["public"]["Enums"]["ingestion_trigger"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_runs_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "scada_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_share_links: {
         Row: {
           access_count: number
@@ -10676,6 +10768,102 @@ export type Database = {
           },
         ]
       }
+      tag_mappings: {
+        Row: {
+          byte_order: string
+          company_id: string
+          connector_id: string | null
+          created_at: string
+          created_by: string | null
+          data_type: string
+          enabled: boolean
+          id: string
+          poll_interval_s: number
+          project_id: string
+          protocol: Database["public"]["Enums"]["tag_mapping_protocol"]
+          scaling_factor: number
+          scaling_offset: number
+          source_address: string
+          source_details: Json
+          tag_dictionary_id: string
+          updated_at: string
+        }
+        Insert: {
+          byte_order?: string
+          company_id: string
+          connector_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_type?: string
+          enabled?: boolean
+          id?: string
+          poll_interval_s?: number
+          project_id: string
+          protocol: Database["public"]["Enums"]["tag_mapping_protocol"]
+          scaling_factor?: number
+          scaling_offset?: number
+          source_address: string
+          source_details?: Json
+          tag_dictionary_id: string
+          updated_at?: string
+        }
+        Update: {
+          byte_order?: string
+          company_id?: string
+          connector_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_type?: string
+          enabled?: boolean
+          id?: string
+          poll_interval_s?: number
+          project_id?: string
+          protocol?: Database["public"]["Enums"]["tag_mapping_protocol"]
+          scaling_factor?: number
+          scaling_offset?: number
+          source_address?: string
+          source_details?: Json
+          tag_dictionary_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_mappings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_mappings_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "scada_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_mappings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_mappings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_mappings_tag_dictionary_id_fkey"
+            columns: ["tag_dictionary_id"]
+            isOneToOne: false
+            referencedRelation: "tag_dictionary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -12585,6 +12773,8 @@ export type Database = {
         | "environmental"
         | "security"
       hse_inspection_status: "scheduled" | "completed" | "closed"
+      ingestion_run_status: "running" | "success" | "partial" | "failed"
+      ingestion_trigger: "manual" | "scheduled" | "push" | "import"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       invoice_direction: "receivable" | "payable"
       invoice_status:
@@ -12779,6 +12969,12 @@ export type Database = {
         | "approved_as_noted"
         | "revise_resubmit"
         | "rejected"
+      tag_mapping_protocol:
+        | "mqtt"
+        | "opcua"
+        | "modbus"
+        | "historian_csv"
+        | "vendor_api"
       tender_event_type:
         | "pre_bid_meeting"
         | "site_visit"
@@ -13155,6 +13351,8 @@ export const Constants = {
         "security",
       ],
       hse_inspection_status: ["scheduled", "completed", "closed"],
+      ingestion_run_status: ["running", "success", "partial", "failed"],
+      ingestion_trigger: ["manual", "scheduled", "push", "import"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       invoice_direction: ["receivable", "payable"],
       invoice_status: [
@@ -13370,6 +13568,13 @@ export const Constants = {
         "approved_as_noted",
         "revise_resubmit",
         "rejected",
+      ],
+      tag_mapping_protocol: [
+        "mqtt",
+        "opcua",
+        "modbus",
+        "historian_csv",
+        "vendor_api",
       ],
       tender_event_type: [
         "pre_bid_meeting",
