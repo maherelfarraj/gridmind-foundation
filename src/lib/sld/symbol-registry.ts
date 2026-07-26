@@ -131,7 +131,8 @@ export function mergeSymbolTypes(records: SymbolTypeRecord[]): SymbolTypeRecord[
   const byKey = new Map<string, SymbolTypeRecord>();
   for (const r of records) {
     const current = byKey.get(r.type_key);
-    if (!current || (current.company_id === null && r.company_id !== null)) byKey.set(r.type_key, r);
+    if (!current || (current.company_id === null && r.company_id !== null))
+      byKey.set(r.type_key, r);
   }
   return [...byKey.values()].sort(
     (a, b) => a.sort_order - b.sort_order || a.display_name.localeCompare(b.display_name),

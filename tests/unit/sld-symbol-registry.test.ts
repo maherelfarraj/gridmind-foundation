@@ -84,7 +84,16 @@ describe("parseSymbolRecord", () => {
 
 describe("palette filtering and grouping", () => {
   it("matches name, key, tag prefix and category", () => {
-    const list = [rec(), rec({ id: "2", type_key: "busbar", display_name: "Busbar", category: "cable_bus", tag_prefix: "BB" })];
+    const list = [
+      rec(),
+      rec({
+        id: "2",
+        type_key: "busbar",
+        display_name: "Busbar",
+        category: "cable_bus",
+        tag_prefix: "BB",
+      }),
+    ];
     expect(filterSymbols(list, "inv").map((r) => r.type_key)).toEqual(["inverter"]);
     expect(filterSymbols(list, "BB").map((r) => r.type_key)).toEqual(["busbar"]);
     expect(filterSymbols(list, "").length).toBe(2);

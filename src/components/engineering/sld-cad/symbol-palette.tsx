@@ -6,11 +6,7 @@ import { SymbolGlyph } from "./symbol-glyph";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCanvasStore } from "@/lib/sld/canvas-store";
-import {
-  filterSymbols,
-  groupByCategory,
-  type SymbolTypeRecord,
-} from "@/lib/sld/symbol-registry";
+import { filterSymbols, groupByCategory, type SymbolTypeRecord } from "@/lib/sld/symbol-registry";
 
 export const SYMBOL_DRAG_MIME = "application/x-gridmind-sld-symbol";
 

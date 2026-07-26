@@ -205,7 +205,12 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       s.placeObject({
         id: `tmp-${Math.random().toString(36).slice(2)}`,
         symbol_type: type,
-        tag: record ? nextTag(record.tag_prefix, s.objects.map((o) => o.tag)) : null,
+        tag: record
+          ? nextTag(
+              record.tag_prefix,
+              s.objects.map((o) => o.tag),
+            )
+          : null,
         label: record?.display_name ?? null,
         x: point.x,
         y: point.y,
@@ -330,11 +335,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       <div className="grid gap-3 lg:grid-cols-[190px_minmax(0,1fr)_240px]">
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
-            <SymbolPalette
-              symbols={symbols}
-              loading={registry.isLoading}
-              editable={editable}
-            />
+            <SymbolPalette symbols={symbols} loading={registry.isLoading} editable={editable} />
             <LayersPanel editable={editable} />
           </CardContent>
         </Card>

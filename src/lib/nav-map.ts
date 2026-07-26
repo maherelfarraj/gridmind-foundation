@@ -16,6 +16,7 @@ import {
   BookOpen,
   Inbox,
   KeyRound,
+  Shapes,
   LifeBuoy,
   MailPlus,
   Package,
