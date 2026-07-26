@@ -117,7 +117,9 @@ function PosIndex() {
       id: "total",
       header: "Total",
       numeric: true,
-      cell: (r) => <span className="font-medium">{formatMoney(r.total_amount, r.currency_code)}</span>,
+      cell: (r) => (
+        <span className="font-medium">{formatMoney(r.total_amount, r.currency_code)}</span>
+      ),
     },
     {
       id: "created",

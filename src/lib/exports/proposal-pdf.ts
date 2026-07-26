@@ -157,8 +157,7 @@ export async function buildProposalPdf(
       { label: "Capacity", value: dcMw > 0 ? `${fmtNum(dcMw, 2)} MW` : "—" },
       {
         label: "P50 annual yield",
-        value:
-          yieldResult?.p50_kwh != null ? `${fmtNum(yieldResult.p50_kwh / 1000, 0)} MWh` : "—",
+        value: yieldResult?.p50_kwh != null ? `${fmtNum(yieldResult.p50_kwh / 1000, 0)} MWh` : "—",
       },
       { label: "Total price", value: fmtMoney(proposal.total, currency) },
     ],

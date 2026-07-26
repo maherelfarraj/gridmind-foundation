@@ -50,11 +50,19 @@ export function DataTableToolbar({
         className,
       )}
     >
-      {search ? <div className="w-full sm:max-w-xs">{search}</div> : <div className="hidden sm:block" />}
+      {search ? (
+        <div className="w-full sm:max-w-xs">{search}</div>
+      ) : (
+        <div className="hidden sm:block" />
+      )}
       {filters ? (
-        <div className="flex flex-wrap items-center gap-2 sm:flex-1 sm:justify-center">{filters}</div>
+        <div className="flex flex-wrap items-center gap-2 sm:flex-1 sm:justify-center">
+          {filters}
+        </div>
       ) : null}
-      {actions ? <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div> : null}
+      {actions ? (
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
+      ) : null}
     </div>
   );
 }

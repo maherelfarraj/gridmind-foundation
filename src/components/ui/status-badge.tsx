@@ -138,7 +138,10 @@ export const STATUS_TONES: Record<string, StatusTone> = {
 };
 
 export function normalizeStatus(status: string): string {
-  return status.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return status
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
 }
 
 /** Resolve any raw status string to its canonical tone. */

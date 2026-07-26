@@ -50,11 +50,22 @@ function OverviewTab() {
     <div className="flex flex-col gap-6">
       {/* KPI strip */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <KpiTile label="Capacity" value={capacity} hint={project.offtaker || undefined} icon={Zap} />
+        <KpiTile
+          label="Capacity"
+          value={capacity}
+          hint={project.offtaker || undefined}
+          icon={Zap}
+        />
         <KpiTile
           label="Target COD"
           value={cod}
-          hint={days == null ? undefined : days >= 0 ? `${formatNumber(days, {})} days to go` : `${formatNumber(Math.abs(days), {})} days overdue`}
+          hint={
+            days == null
+              ? undefined
+              : days >= 0
+                ? `${formatNumber(days, {})} days to go`
+                : `${formatNumber(Math.abs(days), {})} days overdue`
+          }
           icon={CalendarClock}
           isLoading={isLoading}
           status={days != null && days < 0 ? "bad" : "neutral"}
@@ -100,7 +111,13 @@ function OverviewTab() {
           }
           icon={AlertTriangle}
           isLoading={isLoading}
-          status={(kpis?.top_risk_score ?? 0) >= 15 ? "bad" : (kpis?.open_risks ?? 0) > 0 ? "warning" : "good"}
+          status={
+            (kpis?.top_risk_score ?? 0) >= 15
+              ? "bad"
+              : (kpis?.open_risks ?? 0) > 0
+                ? "warning"
+                : "good"
+          }
         />
         <KpiTile
           label="Open RFIs"
