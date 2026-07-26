@@ -86,7 +86,7 @@ async function candidateRules(db: Db, event: EngineEvent): Promise<MatchableRule
     )
     .eq("company_id", event.company_id)
     .eq("enabled", true)
-    .eq("event_type", event.event_type);
+    .eq("event_type", event.event_type as never);
   if (error) throw error;
   return (data ?? []) as unknown as MatchableRule[];
 }
@@ -469,7 +469,9 @@ async function performAction(
         actorId,
         [{ part_id: row.id, part_number: row.part_number, name: row.name, qty, reserved: true }],
       );
-      return { entity: "spare_parts", entityId: row.id, ...{}, ...(woResult ? {} : {}) };
+      // The WO carries the parts line; the log points at the reserved part.
+      void woResult;
+      return { entity: "spare_parts", entityId: row.id };
     }
 
     case "warranty_claim": {
