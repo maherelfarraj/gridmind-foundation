@@ -124,7 +124,7 @@ export const generateProtectionSchedule = createServerFn({ method: "POST" })
       companyId: project.company_id,
       projectId: data.projectId,
       studyId: data.studyId,
-      userId: context.userId ?? null,
+      userId: context.user.id,
     });
 
     const mode: "sld" | "manual" = available && rows.length > 0 ? "sld" : "manual";
@@ -217,7 +217,7 @@ export const saveProtectionDevice = createServerFn({ method: "POST" })
 
     const { data: inserted, error } = await context.supabase
       .from(PROTECTION_TABLE)
-      .insert({ ...payload, source: "manual", created_by: context.userId ?? null } as never)
+      .insert({ ...payload, source: "manual", created_by: context.user.id } as never)
       .select(PROTECTION_COLUMNS)
       .single();
     if (error) throw error;
@@ -225,7 +225,7 @@ export const saveProtectionDevice = createServerFn({ method: "POST" })
       context,
       "ea.protection_device_created",
       PROTECTION_TABLE,
-      (inserted as { id: string }).id,
+      (inserted as unknown as { id: string }).id,
       { tag: data.tag, source: "manual" },
     );
     return { device: inserted };
@@ -301,10 +301,10 @@ export const saveRelaySettingsRevision = createServerFn({ method: "POST" })
           delay_s: r.delayS,
           unit: r.unit,
           settings: r.settings,
-          set_by: context.userId ?? null,
+          set_by: context.user.id,
           set_at: now,
           notes: r.notes ?? (data.changeNote || null),
-          created_by: context.userId ?? null,
+          created_by: context.user.id,
         })) as never,
       )
       .select(RELAY_COLUMNS);
@@ -388,7 +388,7 @@ export const saveGridCodeTemplate = createServerFn({ method: "POST" })
     }
     const { data: inserted, error } = await context.supabase
       .from(GC_TEMPLATE_TABLE)
-      .insert({ ...payload, created_by: context.userId ?? null } as never)
+      .insert({ ...payload, created_by: context.user.id } as never)
       .select(GC_TEMPLATE_COLUMNS)
       .single();
     if (error) throw error;
@@ -396,7 +396,7 @@ export const saveGridCodeTemplate = createServerFn({ method: "POST" })
       context,
       "ea.grid_code_template_created",
       GC_TEMPLATE_TABLE,
-      (inserted as { id: string }).id,
+      (inserted as unknown as { id: string }).id,
       { market: data.market, version: data.version, items: data.items.length },
     );
     return { template: inserted };
@@ -424,7 +424,7 @@ export const saveGridCodeResponse = createServerFn({ method: "POST" })
           status: data.status,
           evidence: data.evidence,
           comment: data.comment,
-          responded_by: context.userId ?? null,
+          responded_by: context.user.id,
         } as never,
         { onConflict: "template_id,project_id,item_index" },
       )
@@ -435,7 +435,7 @@ export const saveGridCodeResponse = createServerFn({ method: "POST" })
       context,
       "ea.grid_code_response_saved",
       GC_RESPONSE_TABLE,
-      (saved as { id: string }).id,
+      (saved as unknown as { id: string }).id,
       { item_index: data.itemIndex, status: data.status },
     );
     return { response: saved };
