@@ -78,7 +78,6 @@ export async function persistScadaEvents(
     });
   }
 
-
   const { rows, rejected } = buildEventRows(companyId, events, map);
   let accepted = 0;
   for (let i = 0; i < rows.length; i += EVENT_CHUNK) {
