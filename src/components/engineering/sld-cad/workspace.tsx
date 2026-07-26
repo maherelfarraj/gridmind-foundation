@@ -50,7 +50,6 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const layers = useCanvasStore((s) => s.layers);
   const dirty = useCanvasStore((s) => s.dirty);
   const removedIds = useCanvasStore((s) => s.removedIds);
-  const placingType = useCanvasStore((s) => s.placingType);
   const undoDepth = useCanvasStore((s) => s.undoStack.length);
   const redoDepth = useCanvasStore((s) => s.redoStack.length);
 
