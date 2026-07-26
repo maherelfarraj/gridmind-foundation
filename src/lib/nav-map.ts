@@ -574,7 +574,9 @@ export const NAV_GROUPS: NavGroup[] = [
     key: "green_h2",
     label: "Green H₂",
     icon: Atom,
-    items: [{ moduleKey: "green_hydrogen", label: "Green H₂ projects", url: "/projects", icon: Atom }],
+    items: [
+      { moduleKey: "green_hydrogen", label: "Green H₂ projects", url: "/projects", icon: Atom },
+    ],
   },
   {
     key: "administration",
@@ -617,7 +619,12 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/settings/scheduled-reports",
         icon: CalendarClock,
       },
-      { moduleKey: "admin", label: "Procurement settings", url: "/settings/procurement", icon: Receipt },
+      {
+        moduleKey: "admin",
+        label: "Procurement settings",
+        url: "/settings/procurement",
+        icon: Receipt,
+      },
       {
         moduleKey: "engineering",
         label: "SLD symbol registry",

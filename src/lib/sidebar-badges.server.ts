@@ -12,10 +12,7 @@ export async function sidebarCompanyId(context: AuthContext): Promise<string | n
   return (data as { company_id: string | null } | null)?.company_id ?? null;
 }
 
-export async function criticalAlarmCount(
-  context: AuthContext,
-  companyId: string,
-): Promise<number> {
+export async function criticalAlarmCount(context: AuthContext, companyId: string): Promise<number> {
   const { count, error } = await context.supabase
     .from("scada_alarms")
     .select("id", { count: "exact", head: true })

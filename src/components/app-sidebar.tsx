@@ -27,11 +27,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { DEV_SESSION_CONTEXT, getVisibleModules } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
@@ -158,7 +154,6 @@ export function AppSidebar() {
     }
     return null;
   }, [groups, activeUrl, projectId]);
-
 
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
@@ -288,8 +283,7 @@ export function AppSidebar() {
                           {items.map((item) => {
                             const url = resolveUrl(item.url, projectId);
                             const Icon = item.icon;
-                            const itemCount =
-                              item.url === "/approvals" ? badgeCounts.approvals : 0;
+                            const itemCount = item.url === "/approvals" ? badgeCounts.approvals : 0;
                             return (
                               <SidebarMenuSubItem key={`nav:${group.key}:${url}:${item.label}`}>
                                 <SidebarMenuSubButton asChild isActive={isActive(url)}>
