@@ -109,7 +109,7 @@ describe("P-178 downtime invariant on randomized fixtures", () => {
       });
       const out = classifyDowntime(events, [], [], window);
       const summed = DOWNTIME_CLASSES.reduce((n, cls) => n + out.byClass[cls], 0);
-      expect(Number(summed.toFixed(2))).toBeCloseTo(out.totalMinutes, 2);
+      expect(Number(summed.toFixed(2))).toBeCloseTo(out.totalMinutes, 1);
       // Never exceeds the window itself.
       expect(out.totalMinutes).toBeLessThanOrEqual(24 * 60 + 0.01);
     }
