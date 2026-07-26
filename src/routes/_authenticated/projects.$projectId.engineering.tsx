@@ -60,6 +60,7 @@ function SubTabLink({
     | "yield"
     | "terrain"
     | "civil-features"
+    | "layout-optimization"
     | "bom";
 
   label: string;
