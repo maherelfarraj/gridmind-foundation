@@ -1,6 +1,6 @@
 // P-150 — PV equipment detail drawer: specs, certifications, warranty, files.
 import { useRef } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, FileUp, Pencil, Power, Trash2 } from "lucide-react";
 
@@ -15,7 +15,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useQuery } from "@tanstack/react-query";
 import {
   DEGRADATION_FIELDS,
   DIMENSION_FIELDS,
@@ -318,6 +317,4 @@ export function PvEquipmentDetailDrawer({
   );
 }
 
-// Keeps the suspense import referenced for consistency with sibling drawers.
 export type { PvEquipmentRow };
-void useSuspenseQuery;
