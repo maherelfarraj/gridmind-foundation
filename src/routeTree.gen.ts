@@ -76,6 +76,7 @@ import { Route as AuthenticatedHseInspectionsRouteImport } from './routes/_authe
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
+import { Route as AuthenticatedFieldWorkFrontsRouteImport } from './routes/_authenticated/field.work-fronts'
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
@@ -573,6 +574,12 @@ const AuthenticatedFinanceContractsRoute =
   AuthenticatedFinanceContractsRouteImport.update({
     id: '/finance/contracts',
     path: '/finance/contracts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFieldWorkFrontsRoute =
+  AuthenticatedFieldWorkFrontsRouteImport.update({
+    id: '/field/work-fronts',
+    path: '/field/work-fronts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldSyncStatusRoute =
@@ -1370,6 +1377,7 @@ export interface FileRoutesByFullPath {
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1560,6 +1568,7 @@ export interface FileRoutesByTo {
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1746,6 +1755,7 @@ export interface FileRoutesById {
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
+  '/_authenticated/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1940,6 +1950,7 @@ export interface FileRouteTypes {
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
+    | '/field/work-fronts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2130,6 +2141,7 @@ export interface FileRouteTypes {
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
+    | '/field/work-fronts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2315,6 +2327,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/discipline-board'
     | '/_authenticated/field/reports'
     | '/_authenticated/field/sync-status'
+    | '/_authenticated/field/work-fronts'
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
@@ -2974,6 +2987,13 @@ declare module '@tanstack/react-router' {
       path: '/finance/contracts'
       fullPath: '/finance/contracts'
       preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field/work-fronts': {
+      id: '/_authenticated/field/work-fronts'
+      path: '/field/work-fronts'
+      fullPath: '/field/work-fronts'
+      preLoaderRoute: typeof AuthenticatedFieldWorkFrontsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/sync-status': {
@@ -4323,6 +4343,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldDisciplineBoardRoute: typeof AuthenticatedFieldDisciplineBoardRoute
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
+  AuthenticatedFieldWorkFrontsRoute: typeof AuthenticatedFieldWorkFrontsRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
@@ -4420,6 +4441,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFieldDisciplineBoardRoute,
   AuthenticatedFieldReportsRoute: AuthenticatedFieldReportsRoute,
   AuthenticatedFieldSyncStatusRoute: AuthenticatedFieldSyncStatusRoute,
+  AuthenticatedFieldWorkFrontsRoute: AuthenticatedFieldWorkFrontsRoute,
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
