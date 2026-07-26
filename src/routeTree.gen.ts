@@ -163,6 +163,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringPvSimulationRouteImpo
 import { Route as AuthenticatedProjectsProjectIdEngineeringPvLayoutRouteImport } from './routes/_authenticated/projects.$projectId.engineering.pv-layout'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release'
 import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport } from './routes/_authenticated/projects.$projectId.engineering.drawings'
+import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTurnoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.turnover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningPunchRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.punch'
@@ -1075,6 +1076,12 @@ const AuthenticatedProjectsProjectIdEngineeringDrawingsRoute =
     path: '/drawings',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute =
+  AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport.update({
+    id: '/civil-features',
+    path: '/civil-features',
+    getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdEngineeringBomRoute =
   AuthenticatedProjectsProjectIdEngineeringBomRouteImport.update({
     id: '/bom',
@@ -1354,6 +1361,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
+  '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -1519,6 +1527,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
+  '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
   '/projects/$projectId/engineering/pv-simulation': typeof AuthenticatedProjectsProjectIdEngineeringPvSimulationRoute
@@ -1694,6 +1703,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/_authenticated/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
+  '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   '/_authenticated/projects/$projectId/engineering/drawings': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/ifc-release': typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   '/_authenticated/projects/$projectId/engineering/pv-layout': typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -1870,6 +1880,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/engineering/bom'
+    | '/projects/$projectId/engineering/civil-features'
     | '/projects/$projectId/engineering/drawings'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/pv-layout'
@@ -2035,6 +2046,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/engineering/bom'
+    | '/projects/$projectId/engineering/civil-features'
     | '/projects/$projectId/engineering/ifc-release'
     | '/projects/$projectId/engineering/pv-layout'
     | '/projects/$projectId/engineering/pv-simulation'
@@ -2209,6 +2221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/commissioning/punch'
     | '/_authenticated/projects/$projectId/commissioning/turnover'
     | '/_authenticated/projects/$projectId/engineering/bom'
+    | '/_authenticated/projects/$projectId/engineering/civil-features'
     | '/_authenticated/projects/$projectId/engineering/drawings'
     | '/_authenticated/projects/$projectId/engineering/ifc-release'
     | '/_authenticated/projects/$projectId/engineering/pv-layout'
@@ -3347,6 +3360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/engineering/civil-features': {
+      id: '/_authenticated/projects/$projectId/engineering/civil-features'
+      path: '/civil-features'
+      fullPath: '/projects/$projectId/engineering/civil-features'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
+    }
     '/_authenticated/projects/$projectId/engineering/bom': {
       id: '/_authenticated/projects/$projectId/engineering/bom'
       path: '/bom'
@@ -3722,6 +3742,7 @@ const AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren =
 
 interface AuthenticatedProjectsProjectIdEngineeringRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringBomRoute: typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
+  AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute: typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute: typeof AuthenticatedProjectsProjectIdEngineeringIfcReleaseRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute: typeof AuthenticatedProjectsProjectIdEngineeringPvLayoutRoute
@@ -3741,6 +3762,8 @@ const AuthenticatedProjectsProjectIdEngineeringRouteChildren: AuthenticatedProje
   {
     AuthenticatedProjectsProjectIdEngineeringBomRoute:
       AuthenticatedProjectsProjectIdEngineeringBomRoute,
+    AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute:
+      AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute,
     AuthenticatedProjectsProjectIdEngineeringDrawingsRoute:
       AuthenticatedProjectsProjectIdEngineeringDrawingsRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringIfcReleaseRoute:
