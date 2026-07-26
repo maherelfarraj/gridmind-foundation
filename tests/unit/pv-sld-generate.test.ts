@@ -1,12 +1,7 @@
 // P-155 — Unit tests for automatic SLD generation from an approved PV layout.
 import { describe, expect, it } from "vitest";
 
-import {
-  METRES_TO_CANVAS,
-  buildSldGraph,
-  diffTagSets,
-  type GenInput,
-} from "@/lib/pv/sld-generate";
+import { METRES_TO_CANVAS, buildSldGraph, diffTagSets, type GenInput } from "@/lib/pv/sld-generate";
 
 const SYMBOLS = [
   { type_key: "pv_string", tag_prefix: "STR" },
@@ -127,7 +122,9 @@ describe("P-155 SLD generation from layout", () => {
   });
 
   it("gives duplicate tags a deterministic suffix and a warning", () => {
-    const g = buildSldGraph(input({ symbolTypes: SYMBOLS.map((s) => ({ ...s, tag_prefix: "EQ" })) }));
+    const g = buildSldGraph(
+      input({ symbolTypes: SYMBOLS.map((s) => ({ ...s, tag_prefix: "EQ" })) }),
+    );
     const tags = g.objects.map((o) => o.tag);
     expect(new Set(tags).size).toBe(tags.length);
     // Same prefix for every symbol still yields unique sequential tags.
