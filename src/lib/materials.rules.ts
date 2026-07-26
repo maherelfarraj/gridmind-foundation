@@ -112,10 +112,7 @@ export function requiresCustomsStatus(status: ShipmentStatus): boolean {
 }
 
 /** A damaged record disposed as 'return' seeds exactly one RTV. */
-export function shouldSeedRtv(
-  disposition: DamageDisposition,
-  existingRtvCount: number,
-): boolean {
+export function shouldSeedRtv(disposition: DamageDisposition, existingRtvCount: number): boolean {
   return disposition === "return" && existingRtvCount === 0;
 }
 
