@@ -10,6 +10,8 @@ const SUB_TABS = [
   { to: "rfis" as const, label: "RFIs" },
   { to: "ifc-release" as const, label: "IFC release" },
   { to: "sld" as const, label: "SLD" },
+  { to: "studies" as const, label: "Studies" },
+  { to: "grid-code" as const, label: "Grid code" },
   { to: "pv-site" as const, label: "Site config" },
   { to: "pv-layout" as const, label: "PV layout" },
   { to: "yield" as const, label: "Yield" },
@@ -55,6 +57,8 @@ function SubTabLink({
     | "rfis"
     | "ifc-release"
     | "sld"
+    | "studies"
+    | "grid-code"
     | "pv-site"
     | "pv-layout"
     | "yield"

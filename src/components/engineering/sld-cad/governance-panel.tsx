@@ -50,7 +50,9 @@ export function GovernancePanel({ drawingId, canEdit }: Props) {
 
       <div className="flex flex-wrap gap-2 text-xs">
         <Badge variant={guards.hasValidation ? "secondary" : "outline"}>
-          {guards.hasValidation ? `Validated ${formatDate(guards.validationRanAt)}` : "Not validated"}
+          {guards.hasValidation
+            ? `Validated ${formatDate(guards.validationRanAt)}`
+            : "Not validated"}
         </Badge>
         <Badge variant={guards.errorCount > 0 ? "destructive" : "secondary"}>
           {guards.errorCount} errors

@@ -103,9 +103,7 @@ function TerrainPage() {
   const overlays = useMemo<TerrainOverlay[]>(() => {
     if (!showCivil) return [];
     const fromFeatures: TerrainOverlay[] = (civilFeatures.data ?? [])
-      .filter((f) =>
-        ["flood_risk_zone", "drainage_path", "grading_zone"].includes(f.feature_type),
-      )
+      .filter((f) => ["flood_risk_zone", "drainage_path", "grading_zone"].includes(f.feature_type))
       .map((f) => ({
         id: f.id,
         kind:
