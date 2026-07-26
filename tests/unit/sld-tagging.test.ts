@@ -205,3 +205,42 @@ describe("planRetag", () => {
     expect(second.cables).toEqual([]);
   });
 });
+
+// --------------------------------------------------------------------------
+// P-148 acceptance — determinism under input shuffling.
+// --------------------------------------------------------------------------
+describe("P-148 acceptance — tagging determinism", () => {
+  const graph: TaggableObject[] = [
+    obj({ id: "i1", x: 100, y: 100 }),
+    obj({ id: "i2", x: 400, y: 100 }),
+    obj({ id: "i3", x: 100, y: 400 }),
+    obj({ id: "t1", symbol_type: "transformer", x: 700, y: 100 }),
+    obj({ id: "t2", symbol_type: "transformer", x: 700, y: 500 }),
+  ];
+
+  it("produces identical tags regardless of input array order", () => {
+    const expected = new Map(generateTags(graph, symbols).map((a) => [a.id, a.tag]));
+    const orders = [
+      [...graph].reverse(),
+      [graph[3], graph[0], graph[4], graph[2], graph[1]],
+      [graph[2], graph[4], graph[1], graph[3], graph[0]],
+    ];
+    for (const shuffled of orders) {
+      const got = new Map(generateTags(shuffled, symbols).map((a) => [a.id, a.tag]));
+      expect(got).toEqual(expected);
+    }
+  });
+
+  it("every generated tag matches the canonical regex", () => {
+    for (const a of generateTags(graph, symbols)) expect(isValidTag(a.tag)).toBe(true);
+  });
+
+  it("is idempotent without force and renumbers with force", () => {
+    const applied = graph.map((o) => ({
+      ...o,
+      tag: generateTags(graph, symbols).find((a) => a.id === o.id)!.tag,
+    }));
+    expect(generateTags(applied, symbols)).toEqual([]);
+    expect(generateTags(applied, symbols, { force: true }).length).toBe(applied.length);
+  });
+});
