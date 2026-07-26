@@ -48,10 +48,11 @@ export function looksLikePlaintextSecret(value: string): boolean {
   return SECRET_SHAPES.some((r) => r.test(value.trim()));
 }
 
-const safeText = (max: number) =>
+const safeText = (max: number, min = 0, minMsg?: string) =>
   z
     .string()
     .trim()
+    .min(min, minMsg)
     .max(max)
     .refine(
       (v) => !looksLikePlaintextSecret(v),
@@ -71,15 +72,15 @@ export const scheduleSchema = z
   .strict();
 export type ConnectorSchedule = z.infer<typeof scheduleSchema>;
 
-const tagRef = safeText(120).min(1, "Tag is required");
-const metricRef = safeText(80).min(1, "Metric is required");
+const tagRef = safeText(120, 1, "Tag is required");
+const metricRef = safeText(80, 1, "Metric is required");
 
 // -------------------------------------------------------------------- MQTT --
 
 export const mqttMappingRowSchema = z
   .object({
     tag: tagRef,
-    json_path: safeText(256).min(1, "JSON path is required"),
+    json_path: safeText(256, 1, "JSON path is required"),
     metric: metricRef,
   })
   .strict();
@@ -87,9 +88,9 @@ export type MqttMappingRow = z.infer<typeof mqttMappingRowSchema>;
 
 export const mqttProtocolSchema = z
   .object({
-    broker_host: safeText(255).min(1, "Broker host is required"),
+    broker_host: safeText(255, 1, "Broker host is required"),
     broker_port: z.coerce.number().int().min(1).max(65535).default(8883),
-    topic_template: safeText(512).min(1, "Topic template is required"),
+    topic_template: safeText(512, 1, "Topic template is required"),
     qos: z.coerce.number().int().min(0).max(2).default(1),
     payload_mappings: z.array(mqttMappingRowSchema).max(500).default([]),
   })
@@ -100,7 +101,7 @@ export const mqttProtocolSchema = z
 export const opcuaMappingRowSchema = z
   .object({
     tag: tagRef,
-    node_id: safeText(512).min(1, "NodeId is required"),
+    node_id: safeText(512, 1, "NodeId is required"),
     metric: metricRef,
   })
   .strict();
@@ -108,7 +109,7 @@ export type OpcuaMappingRow = z.infer<typeof opcuaMappingRowSchema>;
 
 export const opcuaProtocolSchema = z
   .object({
-    endpoint_url: safeText(512).min(1, "Endpoint URL is required"),
+    endpoint_url: safeText(512, 1, "Endpoint URL is required"),
     namespace: z.coerce.number().int().min(0).max(65535).default(2),
     node_mappings: z.array(opcuaMappingRowSchema).max(500).default([]),
   })
@@ -189,9 +190,9 @@ export function resolveTopicTemplate(
 
 /** Count mapping rows configured on a connector config object. */
 export function countMappingRows(config: unknown): number {
-  const parsed = protocolBlockSchema.partial().safeParse(config ?? {});
+  const parsed = protocolBlockSchema.safeParse(config ?? {});
   if (!parsed.success) return 0;
-  const c = parsed.data;
+  const c: ProtocolBlock = parsed.data;
   return (
     (c.mqtt?.payload_mappings?.length ?? 0) +
     (c.opcua?.node_mappings?.length ?? 0) +
