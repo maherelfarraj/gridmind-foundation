@@ -214,65 +214,65 @@ function AnalyticsPage() {
         <>
           <KpiGrid columns={4}>
             <KpiTile
-              label={
-                <>
-                  Availability
-                  <Formula text={FORMULAS.availability} />
-                </>
-              }
+              label="Availability"
               value={pct(availabilityValue)}
               icon={Gauge}
-              hint={`${d.downtimeMinutes.toFixed(0)} downtime minutes`}
+              hint={
+                <>
+                  {d.downtimeMinutes.toFixed(0)} downtime minutes
+                  <Formula text={excludeGrid ? FORMULAS.availabilityExclGrid : FORMULAS.availability} />
+                </>
+              }
               status={
-                availabilityValue == null ? undefined : availabilityValue >= 97 ? "good" : "warn"
+                availabilityValue == null ? "neutral" : availabilityValue >= 97 ? "good" : "warning"
               }
             />
             <KpiTile
-              label={
-                <>
-                  Performance ratio
-                  <Formula text={FORMULAS.performanceRatio} />
-                </>
-              }
+              label="Performance ratio"
               value={pct(d.performanceRatioPct)}
               icon={Activity}
               hint={
-                d.performanceRatioPct == null
-                  ? "No irradiance or nameplate data"
-                  : `${d.irradianceKwhM2?.toFixed(2) ?? "—"} kWh/m²`
+                <>
+                  {d.performanceRatioPct == null
+                    ? "No irradiance or nameplate data"
+                    : `${d.irradianceKwhM2?.toFixed(2) ?? "—"} kWh/m²`}
+                  <Formula text={FORMULAS.performanceRatio} />
+                </>
               }
             />
             <KpiTile
-              label={
-                <>
-                  Lost energy
-                  <Formula text={FORMULAS.lostEnergy} />
-                </>
-              }
+              label="Lost energy"
               value={`${d.lostEnergyKwh.toFixed(1)} kWh`}
               icon={Zap}
               hint={
-                d.actualEnergyKwh != null ? `${d.actualEnergyKwh.toFixed(1)} kWh produced` : undefined
+                <>
+                  {d.actualEnergyKwh != null
+                    ? `${d.actualEnergyKwh.toFixed(1)} kWh produced`
+                    : "No energy telemetry"}
+                  <Formula text={FORMULAS.lostEnergy} />
+                </>
               }
             />
             <KpiTile
-              label={
+              label="Data quality"
+              value={pct(d.dataQuality.qualityPct)}
+              icon={ShieldCheck}
+              hint={
                 <>
-                  Data quality
+                  {pct(d.dataQuality.missingPct)} missing · {d.dataQuality.driftFlags.length} drift
+                  flag(s)
                   <Formula text={FORMULAS.dataQuality} />
                 </>
               }
-              value={pct(d.dataQuality.qualityPct)}
-              icon={ShieldCheck}
-              hint={`${pct(d.dataQuality.missingPct)} missing · ${d.dataQuality.driftFlags.length} drift flag(s)`}
               status={
                 d.dataQuality.qualityPct == null
-                  ? undefined
+                  ? "neutral"
                   : d.dataQuality.qualityPct >= 95
                     ? "good"
-                    : "warn"
+                    : "warning"
               }
             />
+
           </KpiGrid>
 
           {d.dataQuality.driftFlags.length > 0 ? (
