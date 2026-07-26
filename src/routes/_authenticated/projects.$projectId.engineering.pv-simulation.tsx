@@ -12,7 +12,6 @@ import { z } from "zod";
 import {
   PvSimulationCompare,
   PvSimulationResults,
-  resultOf,
   type SimulationRecord,
 } from "@/components/engineering/pv-simulation-results";
 import { Badge } from "@/components/ui/badge";
@@ -698,5 +697,3 @@ function PvSimulationPage() {
     </div>
   );
 }
-
-export { resultOf };
