@@ -17,6 +17,16 @@ import { cn } from "@/lib/utils";
 
 export type TerrainLayers = { contours: boolean; slope: boolean; points: boolean };
 
+/** P-161 — civil overlays drawn above the terrain layers. */
+export type TerrainOverlay = {
+  id: string;
+  kind: "flood" | "drainage" | "grading" | "proposal";
+  /** one or more vertex lists in world coordinates */
+  parts: [number, number][][];
+  closed: boolean;
+  label?: string | null;
+};
+
 export type TerrainCursor = {
   easting: number;
   northing: number;
@@ -31,6 +41,7 @@ type Props = {
   layers: TerrainLayers;
   /** Persisted contours from the server; when absent they are drawn from the grid. */
   contours?: ContourLine[];
+  overlays?: TerrainOverlay[];
   onCursorChange?: (cursor: TerrainCursor | null) => void;
   className?: string;
 };
@@ -56,6 +67,7 @@ export function TerrainCanvas({
   contourInterval,
   layers,
   contours,
+  overlays,
   onCursorChange,
   className,
 }: Props) {
@@ -170,6 +182,45 @@ export function TerrainCanvas({
       ctx.globalAlpha = 1;
     }
 
+    if (overlays?.length) {
+      const floodColor = token("--info", "oklch(0.6 0.12 235)");
+      const drainageColor = token("--primary", "oklch(0.38 0.08 252)");
+      const gradingColor = token("--warning", "oklch(0.75 0.13 75)");
+      const proposalColor = token("--accent-foreground", "oklch(0.45 0.1 200)");
+      for (const overlay of overlays) {
+        const color =
+          overlay.kind === "flood"
+            ? floodColor
+            : overlay.kind === "drainage"
+              ? drainageColor
+              : overlay.kind === "grading"
+                ? gradingColor
+                : proposalColor;
+        for (const part of overlay.parts) {
+          if (part.length < 2) continue;
+          ctx.beginPath();
+          part.forEach(([e, n], i) => {
+            const [x, y] = world.toScreen(e, n);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          if (overlay.closed) {
+            ctx.closePath();
+            ctx.globalAlpha = 0.18;
+            ctx.fillStyle = color;
+            ctx.fill();
+          }
+          ctx.globalAlpha = 0.95;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = overlay.kind === "proposal" ? 2.5 : 2;
+          ctx.setLineDash(overlay.kind === "proposal" ? [6, 4] : []);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
     if (layers.points) {
       ctx.fillStyle = pointColor;
       for (let r = 0; r < grid.rows; r++) {
@@ -185,7 +236,7 @@ export function TerrainCanvas({
       }
       ctx.globalAlpha = 1;
     }
-  }, [drawnContours, grid, layers, maxSlope, size, slope, world]);
+  }, [drawnContours, grid, layers, maxSlope, overlays, size, slope, world]);
 
   useEffect(() => {
     draw();
