@@ -16,7 +16,9 @@ import { toast } from "sonner";
 import { LayersPanel } from "./layers-panel";
 import { PropertiesPanel } from "./properties-panel";
 import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ObjectsListPanel } from "./objects-list-panel";
 import { OpsToolbar } from "./ops-toolbar";
+import { TagsMenu } from "./tags-menu";
 import { SldCanvas } from "./sld-canvas";
 import { CanvasStatusBar } from "./status-bar";
 import type { TitleBlockData } from "./title-block";
@@ -350,7 +352,10 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         </Card>
       ) : null}
 
-      <OpsToolbar editable={editable} />
+      <div className="flex flex-wrap items-center gap-2">
+        <OpsToolbar editable={editable} />
+        <TagsMenu drawingId={data.drawing.id} editable={editable} symbols={symbols} />
+      </div>
 
       <div className="grid gap-3 lg:grid-cols-[190px_minmax(0,1fr)_240px]">
         <Card className="hidden lg:block">
@@ -370,6 +375,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         <Card className="hidden lg:block">
           <CardContent className="space-y-4 p-3">
             <PropertiesPanel editable={editable} />
+          <ObjectsListPanel drawingId={data.drawing.id} editable={editable} />
             <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
               <p>
                 {objects.length} objects · {layers.filter((l) => l.id !== BORDER_LAYER_ID).length}{" "}

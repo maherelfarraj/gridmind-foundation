@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { useCanvasStore } from "@/lib/sld/canvas-store";
 import { formatMm } from "@/lib/sld/geometry";
+import { DuplicateTagWarning } from "./tags-menu";
 
 function copy(text: string) {
   if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -52,6 +53,7 @@ export function CanvasStatusBar() {
       ) : selection.length > 1 ? (
         <span>{selection.length} selected</span>
       ) : null}
+      <DuplicateTagWarning />
       {measurement ? (
         <span className="text-foreground">
           Δ {formatMm(measurement.distance)} (dx {formatMm(measurement.dx)}, dy{" "}
