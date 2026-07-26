@@ -114,7 +114,11 @@ describe("connectivity — validators", () => {
   });
 
   it("does not flag monitoring or earthing equipment as disconnected", () => {
-    const issues = runValidation([obj("w1", "weather_station"), obj("e1", "earthing")], [], symbols);
+    const issues = runValidation(
+      [obj("w1", "weather_station"), obj("e1", "earthing")],
+      [],
+      symbols,
+    );
     expect(issues.filter((i) => i.code === "disconnected_equipment")).toHaveLength(0);
   });
 

@@ -238,9 +238,7 @@ export function validateConnectivity(
   // --- open_circuit ------------------------------------------------------
   const isSink = (id: string) => {
     const obj = graph.objects.get(id);
-    return Boolean(
-      obj && (SINK_TYPES.has(obj.symbol_type) || categoryOf(obj, symbols) === "grid"),
-    );
+    return Boolean(obj && (SINK_TYPES.has(obj.symbol_type) || categoryOf(obj, symbols) === "grid"));
   };
   for (const o of objects) {
     const isSource = SOURCE_TYPES.has(o.symbol_type) || categoryOf(o, symbols) === "generation";
@@ -307,7 +305,10 @@ export function validateConnectivity(
     if (NON_POWER_CONNECTIONS.has(e.connection_type)) continue;
     const a = graph.objects.get(e.from_object_id);
     const b = graph.objects.get(e.to_object_id);
-    if (TRANSFORMER_TYPES.has(a?.symbol_type ?? "") || TRANSFORMER_TYPES.has(b?.symbol_type ?? "")) {
+    if (
+      TRANSFORMER_TYPES.has(a?.symbol_type ?? "") ||
+      TRANSFORMER_TYPES.has(b?.symbol_type ?? "")
+    ) {
       continue; // a transformer legitimately sits between two voltage levels
     }
     const va = voltagesOf(a);
@@ -422,9 +423,7 @@ export function summarizeIssues(
 }
 
 /** Ids carrying at least one issue of each severity — drives the canvas halos. */
-export function issueSeverityByObject(
-  issues: ValidationIssue[],
-): Map<string, IssueSeverity> {
+export function issueSeverityByObject(issues: ValidationIssue[]): Map<string, IssueSeverity> {
   const out = new Map<string, IssueSeverity>();
   for (const issue of issues) {
     for (const id of issue.objectIds) {

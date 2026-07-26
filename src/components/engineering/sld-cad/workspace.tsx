@@ -67,9 +67,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const redoDepth = useCanvasStore((s) => s.redoStack.length);
 
   const sldConfigFn = useServerFn(getSldConfig);
-  const sldConfig = useQuery(
-    sldConfigQueryOptions(sldConfigFn as any, data.drawing.project_id),
-  );
+  const sldConfig = useQuery(sldConfigQueryOptions(sldConfigFn as any, data.drawing.project_id));
   const projectVoltagesKv = useMemo(
     () =>
       ((sldConfig.data as any)?.config?.voltage_levels ?? [])

@@ -5,11 +5,7 @@ import { z } from "zod";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { cadAudit, cadHttpError, loadCadDrawing } from "@/lib/sld-cad.server";
 import { loadValidationGraph, persistValidation } from "@/lib/sld-validation.server";
-import {
-  runValidation,
-  summarizeIssues,
-  type ValidationSnapshot,
-} from "@/lib/sld/connectivity";
+import { runValidation, summarizeIssues, type ValidationSnapshot } from "@/lib/sld/connectivity";
 
 const validateInput = z.object({
   drawingId: z.string().uuid(),
