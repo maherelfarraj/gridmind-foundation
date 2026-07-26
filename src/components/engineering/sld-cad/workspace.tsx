@@ -1,0 +1,375 @@
+// P-138 — SLD CAD workspace shell: toolbar, palette, canvas, docks, shortcuts.
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Grid2x2,
+  Keyboard,
+  Magnet,
+  Maximize,
+  Redo2,
+  Save,
+  Undo2,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { LayersPanel } from "./layers-panel";
+import { PropertiesPanel } from "./properties-panel";
+import { ShortcutsDialog } from "./shortcuts-dialog";
+import { SldCanvas } from "./sld-canvas";
+import type { TitleBlockData } from "./title-block";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useSaveSldCanvas } from "@/lib/sld-cad-query";
+import type { SldCadWorkspace } from "@/lib/sld-cad.functions";
+import { useCanvasStore } from "@/lib/sld/canvas-store";
+import {
+  BORDER_LAYER_ID,
+  GRID_STEPS,
+  normalizeCanvasMeta,
+  type GridMm,
+  type SheetSize,
+} from "@/lib/sld/canvas-types";
+import { SYMBOL_DEFS } from "@/lib/sld/symbols";
+
+export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [isCoarse, setIsCoarse] = useState(false);
+
+  const store = useCanvasStore;
+  const hydrate = useCanvasStore((s) => s.hydrate);
+  const zoom = useCanvasStore((s) => s.zoom);
+  const gridMm = useCanvasStore((s) => s.gridMm);
+  const snapEnabled = useCanvasStore((s) => s.snapEnabled);
+  const objects = useCanvasStore((s) => s.objects);
+  const layers = useCanvasStore((s) => s.layers);
+  const dirty = useCanvasStore((s) => s.dirty);
+  const removedIds = useCanvasStore((s) => s.removedIds);
+  const placingType = useCanvasStore((s) => s.placingType);
+  const undoDepth = useCanvasStore((s) => s.undoStack.length);
+  const redoDepth = useCanvasStore((s) => s.redoStack.length);
+
+  const save = useSaveSldCanvas(data.drawing.id, () => store.getState().markSaved());
+
+  useEffect(() => {
+    setIsCoarse(
+      typeof window !== "undefined" &&
+        window.matchMedia("(pointer: coarse), (max-width: 767px)").matches,
+    );
+  }, []);
+
+  const editable = data.editable && !isCoarse;
+
+  useEffect(() => {
+    hydrate(
+      data.objects.map((o) => ({
+        ...o,
+        rotation: o.rotation as 0 | 90 | 180 | 270,
+        properties: (o.properties ?? {}) as Record<string, unknown>,
+      })),
+      normalizeCanvasMeta(data.revision?.canvas),
+    );
+  }, [data, hydrate]);
+
+  const titleBlock: TitleBlockData = useMemo(
+    () => ({
+      drawing_number: data.drawing.drawing_number,
+      title: data.drawing.title,
+      revision_code: data.revision?.revision_code ?? null,
+      status: data.drawing.status,
+      project_name: data.drawing.project_name,
+      drawn_by: data.drawnBy,
+      date: new Date().toISOString().slice(0, 10),
+      sheet_size: (data.drawing.sheet_size as SheetSize) ?? "A1",
+      border_template: data.drawing.border_template,
+    }),
+    [data],
+  );
+
+  const doSave = useCallback(() => {
+    const s = store.getState();
+    if (!data.editable) {
+      toast.error("This drawing is locked or read-only.");
+      return;
+    }
+    save.mutate({
+      objects: s.objects,
+      removedIds: s.removedIds,
+      canvas: { layers: s.layers, gridMm: s.gridMm, snapEnabled: s.snapEnabled },
+    });
+  }, [data.editable, save, store]);
+
+  const fit = useCallback(() => {
+    const el = document.querySelector('[aria-label="SLD canvas"]');
+    const rect = el?.getBoundingClientRect();
+    store
+      .getState()
+      .fitToContent({ width: rect?.width ?? 800, height: rect?.height ?? 600 }, { x: 841, y: 594 });
+  }, [store]);
+
+  // Keyboard shortcuts.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      const s = store.getState();
+      const mod = e.ctrlKey || e.metaKey;
+
+      if (e.key === "?") {
+        setShortcutsOpen(true);
+        return;
+      }
+      if (e.key === "Escape") {
+        s.setPlacingType(null);
+        s.clearSelection();
+        return;
+      }
+      if (e.key.toLowerCase() === "f" && !mod) {
+        fit();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) s.redo();
+        else s.undo();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        doSave();
+        return;
+      }
+      if (!editable) return;
+      if (mod && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        s.duplicateSelection();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "c") {
+        s.copySelection();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "v") {
+        s.paste();
+        return;
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        s.deleteSelection();
+        return;
+      }
+      if (e.key.toLowerCase() === "r") {
+        s.rotateSelection();
+        return;
+      }
+      if (e.key.toLowerCase() === "m") {
+        s.mirrorSelection();
+        return;
+      }
+      if (e.key.startsWith("Arrow")) {
+        e.preventDefault();
+        const step = s.gridMm * (e.shiftKey ? 10 : 1);
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        if (dx || dy) s.moveSelection(dx, dy);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [doSave, editable, fit, store]);
+
+  const handlePlace = useCallback(
+    (point: { x: number; y: number }) => {
+      const s = store.getState();
+      if (!s.placingType) return;
+      const layer = s.layers.find((l) => !l.system && !l.locked && l.visible);
+      if (!layer) {
+        toast.error("Unlock a layer before placing symbols.");
+        return;
+      }
+      s.placeObject({
+        id: `tmp-${Math.random().toString(36).slice(2)}`,
+        symbol_type: s.placingType,
+        tag: null,
+        label: null,
+        x: point.x,
+        y: point.y,
+        rotation: 0,
+        mirrored: false,
+        layer_id: layer.id,
+        properties: {},
+      });
+    },
+    [store],
+  );
+
+  const lockedBanner = !data.canWrite
+    ? "You have read-only access to this drawing."
+    : data.drawing.locked
+      ? "This drawing is locked — saving is blocked until it is unlocked."
+      : ["ifc", "as_built", "superseded"].includes(data.drawing.status)
+        ? `Status "${data.drawing.status.replace(/_/g, " ")}" is read-only — create a new revision to edit.`
+        : isCoarse
+          ? "Viewer mode on small screens — pinch to zoom. Open on a desktop to edit."
+          : null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="mr-auto flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold">
+            {data.drawing.drawing_number} · {data.drawing.title}
+          </h2>
+          <StatusBadge status={data.drawing.status} />
+          <Badge variant="outline">Rev {data.revision?.revision_code ?? "—"}</Badge>
+          {dirty ? <Badge variant="secondary">Unsaved</Badge> : null}
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Zoom out"
+            onClick={() => store.getState().setZoom(zoom / 1.2)}
+          >
+            <ZoomOut className="size-4" />
+          </Button>
+          <span className="w-14 text-center text-xs tabular-nums text-muted-foreground">
+            {Math.round(zoom * 100)}%
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Zoom in"
+            onClick={() => store.getState().setZoom(zoom * 1.2)}
+          >
+            <ZoomIn className="size-4" />
+          </Button>
+          <Button variant="outline" size="icon" aria-label="Fit to content" onClick={fit}>
+            <Maximize className="size-4" />
+          </Button>
+          <Button
+            variant={snapEnabled ? "default" : "outline"}
+            size="icon"
+            aria-label="Toggle snap"
+            onClick={() => store.getState().toggleSnap()}
+          >
+            <Magnet className="size-4" />
+          </Button>
+          <div className="flex items-center gap-1 rounded-md border border-border px-2 py-1">
+            <Grid2x2 className="size-4 text-muted-foreground" />
+            {GRID_STEPS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                aria-label={`Grid ${g} mm`}
+                onClick={() => store.getState().setGridMm(g as GridMm)}
+                className={
+                  g === gridMm
+                    ? "rounded px-1.5 text-xs font-semibold text-primary"
+                    : "rounded px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                }
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Undo"
+            disabled={undoDepth === 0}
+            onClick={() => store.getState().undo()}
+          >
+            <Undo2 className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Redo"
+            disabled={redoDepth === 0}
+            onClick={() => store.getState().redo()}
+          >
+            <Redo2 className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Shortcuts"
+            onClick={() => setShortcutsOpen(true)}
+          >
+            <Keyboard className="size-4" />
+          </Button>
+          <Button onClick={doSave} disabled={!editable || save.isPending}>
+            <Save className="mr-2 size-4" />
+            {save.isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
+      </div>
+
+      {lockedBanner ? (
+        <Card>
+          <CardContent className="py-2 text-sm text-muted-foreground">{lockedBanner}</CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid gap-3 lg:grid-cols-[190px_minmax(0,1fr)_240px]">
+        <Card className="hidden lg:block">
+          <CardContent className="space-y-4 p-3">
+            {editable ? (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Symbols
+                </p>
+                <div className="grid grid-cols-2 gap-1">
+                  {Object.values(SYMBOL_DEFS).map((def) => (
+                    <button
+                      key={def.type}
+                      type="button"
+                      onClick={() =>
+                        store.getState().setPlacingType(placingType === def.type ? null : def.type)
+                      }
+                      className={
+                        placingType === def.type
+                          ? "rounded-md border border-primary bg-primary/10 px-2 py-1.5 text-xs"
+                          : "rounded-md border border-border bg-card px-2 py-1.5 text-xs hover:border-primary"
+                      }
+                    >
+                      {def.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {placingType
+                    ? "Click the sheet to place."
+                    : "Pick a symbol, then click the sheet."}
+                </p>
+              </div>
+            ) : null}
+            <LayersPanel editable={editable} />
+          </CardContent>
+        </Card>
+
+        <div className="h-[70vh] min-h-[420px]">
+          <SldCanvas editable={editable} titleBlock={titleBlock} onPlace={handlePlace} />
+        </div>
+
+        <Card className="hidden lg:block">
+          <CardContent className="space-y-4 p-3">
+            <PropertiesPanel editable={editable} />
+            <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+              <p>
+                {objects.length} objects · {layers.filter((l) => l.id !== BORDER_LAYER_ID).length}{" "}
+                layers
+              </p>
+              <p>{removedIds.length} pending removals</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+    </div>
+  );
+}
