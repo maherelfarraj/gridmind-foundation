@@ -3,7 +3,18 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, Clock, ListChecks, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  ListChecks,
+  Loader2,
+  Paperclip,
+  Pencil,
+  ShieldCheck,
+  User2,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,6 +28,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -24,6 +37,7 @@ import {
   decideGateTransition,
   requestGateTransition,
   toggleGateChecklistItem,
+  updateGateChecklistItemMeta,
 } from "@/lib/gates.functions";
 import { gateHistoryQueryOptions } from "@/lib/gates-query";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
@@ -97,7 +111,15 @@ function GatesTab() {
         {gates.length === 0 ? (
           <Card className="p-6 text-sm text-muted-foreground">No gates configured.</Card>
         ) : (
-          gates.map((g) => <GateCard key={g.id} gate={g} projectId={projectId} canEdit={canEdit} />)
+          gates.map((g) => (
+            <GateCard
+              key={g.id}
+              gate={g}
+              projectId={projectId}
+              canEdit={canEdit}
+              members={project.members}
+            />
+          ))
         )}
       </div>
 
@@ -162,10 +184,12 @@ function GateCard({
   gate,
   projectId,
   canEdit,
+  members,
 }: {
   gate: ProjectDetailGate;
   projectId: string;
   canEdit: boolean;
+  members: ProjectDetail["members"];
 }) {
   const qc = useQueryClient();
   const router = useRouter();
@@ -240,6 +264,9 @@ function GateCard({
   });
 
   const requiredDone = gate.checklist.filter((i) => i.required).every((i) => i.done);
+  const doneCount = gate.checklist.filter((i) => i.done).length;
+  const readinessPct =
+    gate.checklist.length === 0 ? 0 : Math.round((doneCount / gate.checklist.length) * 100);
   const canRequest = canEdit && gate.status === "open" && requiredDone && gate.checklist.length > 0;
   const canDecide =
     gate.status === "in_review" &&
@@ -257,14 +284,34 @@ function GateCard({
             {gate.phase}
           </span>
         </div>
-        <span
-          className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium capitalize ${
-            GATE_STATUS_STYLES[gate.status] ?? "bg-muted text-muted-foreground"
-          }`}
-        >
-          {gate.status.replace("_", " ")}
-        </span>
+        <div className="flex items-center gap-2">
+          {gate.checklist.length > 0 ? (
+            <span className="inline-flex items-center rounded-md border border-border bg-secondary/40 px-2 py-0.5 text-xs font-medium text-foreground">
+              {readinessPct}% ready · {doneCount}/{gate.checklist.length}
+            </span>
+          ) : null}
+          <span
+            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium capitalize ${
+              GATE_STATUS_STYLES[gate.status] ?? "bg-muted text-muted-foreground"
+            }`}
+          >
+            {gate.status.replace("_", " ")}
+          </span>
+        </div>
       </div>
+
+      {gate.checklist.length > 0 ? (
+        <div
+          className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={readinessPct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${gate.name} readiness`}
+        >
+          <div className="h-full rounded-full bg-primary" style={{ width: `${readinessPct}%` }} />
+        </div>
+      ) : null}
 
       {gate.checklist.length === 0 ? (
         <p className="text-sm text-muted-foreground">No checklist items.</p>
@@ -275,6 +322,10 @@ function GateCard({
               <ChecklistRow
                 key={it.key}
                 item={it}
+                gateId={gate.id}
+                projectId={projectId}
+                members={members}
+                canEdit={canEdit && gate.status !== "approved"}
                 disabled={itemsDisabled || toggle.isPending}
                 onToggle={(v) => toggle.mutate({ key: it.key, done: v })}
                 lockReason={
@@ -378,14 +429,26 @@ function ChecklistRow({
   disabled,
   onToggle,
   lockReason,
+  gateId,
+  projectId,
+  members,
+  canEdit,
 }: {
   item: GateChecklistItem;
   disabled: boolean;
   onToggle: (v: boolean) => void;
   lockReason: string | null;
+  gateId: string;
+  projectId: string;
+  members: ProjectDetail["members"];
+  canEdit: boolean;
 }) {
+  const [metaOpen, setMetaOpen] = useState(false);
+  const overdue =
+    !item.done && !!item.due_date && new Date(`${item.due_date}T23:59:59`).getTime() < Date.now();
+
   const row = (
-    <li className="flex items-start gap-3">
+    <li className="flex items-start gap-3 rounded-md py-1">
       <Checkbox
         checked={item.done}
         disabled={disabled}
@@ -393,17 +456,80 @@ function ChecklistRow({
         className="mt-0.5"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-foreground">
-          {item.label}
-          {item.required ? <span className="ml-1 text-xs text-muted-foreground">*</span> : null}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm text-foreground">
+            {item.label}
+            {item.required ? <span className="ml-1 text-xs text-muted-foreground">*</span> : null}
+          </p>
+          {canEdit ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={() => setMetaOpen(true)}
+            >
+              <Pencil size={12} aria-hidden />
+              Details
+            </Button>
+          ) : null}
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <User2 size={11} aria-hidden />
+            {item.owner_name ?? "Unassigned"}
+          </span>
+          <span
+            className={
+              overdue
+                ? "inline-flex items-center gap-1 rounded-md bg-destructive/10 px-1.5 py-0.5 font-medium text-destructive"
+                : "inline-flex items-center gap-1"
+            }
+          >
+            <CalendarDays size={11} aria-hidden />
+            {item.due_date ? `Due ${item.due_date}` : "No due date"}
+          </span>
+          {item.evidence_url ? (
+            item.evidence_url.startsWith("http") ? (
+              <a
+                href={item.evidence_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline"
+              >
+                <Paperclip size={11} aria-hidden />
+                {item.evidence_label || "Evidence"}
+              </a>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <Paperclip size={11} aria-hidden />
+                {item.evidence_label || item.evidence_url}
+              </span>
+            )
+          ) : (
+            <span className="inline-flex items-center gap-1 italic">
+              <Paperclip size={11} aria-hidden />
+              Evidence slot empty
+            </span>
+          )}
+        </div>
         {item.done && item.done_at ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             {item.done_by_name ?? "member"} ·{" "}
             {formatDistanceToNow(new Date(item.done_at), { addSuffix: true })}
           </p>
         ) : null}
       </div>
+      {canEdit ? (
+        <ChecklistMetaDialog
+          open={metaOpen}
+          onOpenChange={setMetaOpen}
+          item={item}
+          gateId={gateId}
+          projectId={projectId}
+          members={members}
+        />
+      ) : null}
     </li>
   );
   if (lockReason && disabled) {
@@ -417,4 +543,113 @@ function ChecklistRow({
     );
   }
   return row;
+}
+
+function ChecklistMetaDialog({
+  open,
+  onOpenChange,
+  item,
+  gateId,
+  projectId,
+  members,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  item: GateChecklistItem;
+  gateId: string;
+  projectId: string;
+  members: ProjectDetail["members"];
+}) {
+  const qc = useQueryClient();
+  const router = useRouter();
+  const [ownerId, setOwnerId] = useState(item.owner_id ?? "");
+  const [dueDate, setDueDate] = useState(item.due_date ?? "");
+  const [label, setLabel] = useState(item.evidence_label ?? "");
+  const [url, setUrl] = useState(item.evidence_url ?? "");
+
+  const save = useMutation({
+    mutationFn: () =>
+      updateGateChecklistItemMeta({
+        data: {
+          gate_id: gateId,
+          key: item.key,
+          owner_id: ownerId ? ownerId : null,
+          due_date: dueDate ? dueDate : null,
+          evidence_label: label.trim() || null,
+          evidence_url: url.trim() || null,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Checklist item updated");
+      qc.invalidateQueries({ queryKey: ["project-detail", projectId] });
+      qc.invalidateQueries({ queryKey: ["gate-history", projectId] });
+      router.invalidate();
+      onOpenChange(false);
+    },
+    onError: (err) => toast.error((err as Error).message || "Update failed"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{item.label}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`owner-${item.key}`}>Owner</Label>
+            <select
+              id={`owner-${item.key}`}
+              value={ownerId}
+              onChange={(e) => setOwnerId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            >
+              <option value="">Unassigned</option>
+              {members.map((m) => (
+                <option key={m.user_id} value={m.user_id}>
+                  {m.full_name ?? m.email ?? m.user_id.slice(0, 8)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`due-${item.key}`}>Due date</Label>
+            <Input
+              id={`due-${item.key}`}
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`evlabel-${item.key}`}>Evidence label</Label>
+            <Input
+              id={`evlabel-${item.key}`}
+              value={label}
+              placeholder="e.g. NEPCO application ref 2026-0142"
+              onChange={(e) => setLabel(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`evurl-${item.key}`}>Evidence link or storage path</Label>
+            <Input
+              id={`evurl-${item.key}`}
+              value={url}
+              placeholder="https://… or documents/…"
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            {save.isPending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
