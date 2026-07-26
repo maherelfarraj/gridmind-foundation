@@ -43,7 +43,18 @@ function SubTabLink({
   label,
   projectId,
 }: {
-  to: "" | "uploads" | "drawings" | "reviews" | "rfis" | "ifc-release" | "sld" | "yield" | "bom";
+  to:
+    | ""
+    | "uploads"
+    | "drawings"
+    | "reviews"
+    | "rfis"
+    | "ifc-release"
+    | "sld"
+    | "pv-site"
+    | "yield"
+    | "bom";
+
   label: string;
   projectId: string;
 }) {
