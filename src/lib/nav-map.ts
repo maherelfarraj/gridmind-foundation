@@ -270,6 +270,12 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/settings/scheduled-reports",
         icon: CalendarClock,
       },
+      {
+        moduleKey: "engineering",
+        label: "SLD symbol registry",
+        url: "/settings/sld-symbols",
+        icon: Shapes,
+      },
       { moduleKey: "admin", label: "API keys", url: "/settings/api-keys", icon: KeyRound },
       { moduleKey: "admin", label: "Webhooks", url: "/settings/webhooks", icon: Radio },
       {
