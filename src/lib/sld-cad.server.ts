@@ -30,6 +30,7 @@ export type CadDrawing = {
   border_template: string;
   locked: boolean;
   current_revision_id: string | null;
+  created_by?: string | null;
   updated_at: string;
 };
 

@@ -18,7 +18,7 @@ import { normalizeCanvasMeta } from "@/lib/sld/canvas-types";
 
 export type SldCadWorkspace = {
   drawing: CadDrawing & { project_name: string | null; project_code: string | null };
-  revision: { id: string; revision_code: string; status: string; canvas: unknown } | null;
+  revision: { id: string; revision_code: string; status: string; canvas: Record<string, unknown> } | null;
   objects: Array<{
     id: string;
     symbol_type: string;
@@ -111,7 +111,7 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
     const { data: profile } = await context.supabase
       .from("profiles")
       .select("full_name")
-      .eq("id", drawing.created_by ?? context.user.id)
+      .eq("id", context.user.id)
       .maybeSingle();
 
     const editable =
