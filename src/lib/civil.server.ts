@@ -15,7 +15,8 @@ export type CivilFeatureRow = {
   feature_type: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   geometry: { type: string; coordinates: any };
-  properties: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  properties: Record<string, any>;
   status: string;
   revision_code: string;
   created_at: string;
