@@ -1,4 +1,7 @@
 // P-138 — Shared, browser-safe types for the SLD CAD canvas workspace.
+import type { TagArea } from "./tagging";
+
+export type { TagArea };
 
 export const SHEET_SIZES = {
   A0: { w: 1189, h: 841 },
@@ -67,6 +70,8 @@ export type SldCanvasMeta = {
   layers: SldLayer[];
   gridMm: GridMm;
   snapEnabled: boolean;
+  /** P-141 — tagging zones; objects inside a bounds inherit its 2-digit area code. */
+  areas: TagArea[];
 };
 
 export type CanvasTool = "select" | "pan" | "place" | "connect" | "measure";
@@ -77,8 +82,25 @@ export const DEFAULT_LAYERS: SldLayer[] = [
   { id: MEASURE_LAYER_ID, name: "Dimensions", visible: true, locked: false, system: true },
 ];
 
+export function normalizeAreas(raw: unknown): TagArea[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as unknown[])
+    .filter((a): a is Record<string, any> => Boolean(a) && typeof a === "object" && Boolean(a.bounds))
+    .map((a, i) => ({
+      id: String(a.id ?? i + 1),
+      name: String(a.name ?? `Area ${i + 1}`),
+      code: a.code ? String(a.code) : undefined,
+      bounds: {
+        x: Number(a.bounds.x) || 0,
+        y: Number(a.bounds.y) || 0,
+        w: Number(a.bounds.w) || 0,
+        h: Number(a.bounds.h) || 0,
+      },
+    }));
+}
+
 export function defaultCanvasMeta(): SldCanvasMeta {
-  return { layers: DEFAULT_LAYERS.map((l) => ({ ...l })), gridMm: 5, snapEnabled: true };
+  return { layers: DEFAULT_LAYERS.map((l) => ({ ...l })), gridMm: 5, snapEnabled: true, areas: [] };
 }
 
 export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
@@ -107,5 +129,6 @@ export function normalizeCanvasMeta(raw: unknown): SldCanvasMeta {
     layers: withMeasure.length > 1 ? withMeasure : base.layers,
     gridMm: grid,
     snapEnabled: obj.snapEnabled !== false,
+    areas: normalizeAreas(obj.areas),
   };
 }
