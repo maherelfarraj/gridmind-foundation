@@ -40,7 +40,8 @@ import {
 import { setSymbolRegistry } from "@/lib/sld/symbols";
 import { SymbolPalette } from "./symbol-palette";
 import { useSymbolRegistry } from "@/lib/sld-symbols-query";
-import { initialProperties, mergeSymbolTypes, nextTag } from "@/lib/sld/symbol-registry";
+import { initialProperties, mergeSymbolTypes } from "@/lib/sld/symbol-registry";
+import { generateTags } from "@/lib/sld/tagging";
 
 export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -226,10 +227,20 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
         id: `tmp-${Math.random().toString(36).slice(2)}`,
         symbol_type: type,
         tag: record
-          ? nextTag(
-              record.tag_prefix,
-              s.objects.map((o) => o.tag),
-            )
+          ? (generateTags(
+              [
+                ...s.objects.map((o) => ({
+                  id: o.id,
+                  symbol_type: o.symbol_type,
+                  tag: o.tag,
+                  x: o.x,
+                  y: o.y,
+                })),
+                { id: "__new", symbol_type: type, tag: null, x: point.x, y: point.y },
+              ],
+              symbols.map((sym) => ({ type_key: sym.type_key, tag_prefix: sym.tag_prefix })),
+              s.areas,
+            ).find((a) => a.id === "__new")?.tag ?? null)
           : null,
         label: record?.display_name ?? null,
         x: point.x,
