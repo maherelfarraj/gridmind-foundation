@@ -184,3 +184,76 @@ export function roundTo(value: number, decimals: number): number {
   const f = 10 ** decimals;
   return Math.round(value * f) / f;
 }
+
+/** Build a GeoJSON geometry of the given kind from a sketch of vertices. */
+export function geometryFromVertices(
+  kind: "polygon" | "line" | "point",
+  vertices: Ring,
+): GeoJsonGeometry | null {
+  const pts = vertices.map(([x, y]) => [roundTo(x, 3), roundTo(y, 3)] as Vertex);
+  if (kind === "point") {
+    if (pts.length < 1) return null;
+    return { type: "Point", coordinates: pts[0] as unknown as number[] } as GeoJsonGeometry;
+  }
+  if (kind === "line") {
+    if (pts.length < 2) return null;
+    return { type: "LineString", coordinates: pts as unknown as number[][] } as GeoJsonGeometry;
+  }
+  if (pts.length < 3) return null;
+  const ring = [...pts];
+  const [fx, fy] = ring[0];
+  const [lx, ly] = ring[ring.length - 1];
+  if (fx !== lx || fy !== ly) ring.push([fx, fy]);
+  return { type: "Polygon", coordinates: [ring] as unknown as number[][][] } as GeoJsonGeometry;
+}
+
+/** Replace one vertex inside a geometry (vertex-drag editing). */
+export function replaceVertex(
+  geometry: GeoJsonGeometry,
+  partIndex: number,
+  vertexIndex: number,
+  position: Vertex,
+): GeoJsonGeometry {
+  const parts = geometryVertexLists(geometry).map((ring) => ring.map((v) => [...v] as Vertex));
+  const ring = parts[partIndex];
+  if (!ring || !ring[vertexIndex]) return geometry;
+  const next: Vertex = [roundTo(position[0], 3), roundTo(position[1], 3)];
+  ring[vertexIndex] = next;
+  const isClosed =
+    geometry.type === "Polygon" &&
+    ring.length > 1 &&
+    (vertexIndex === 0 || vertexIndex === ring.length - 1);
+  if (isClosed) {
+    ring[0] = next;
+    ring[ring.length - 1] = next;
+  }
+  if (geometry.type === "Point") {
+    return { type: "Point", coordinates: next as unknown as number[] } as GeoJsonGeometry;
+  }
+  if (geometry.type === "LineString") {
+    return { type: "LineString", coordinates: ring as unknown as number[][] } as GeoJsonGeometry;
+  }
+  if (geometry.type === "Polygon") {
+    return { type: "Polygon", coordinates: parts as unknown as number[][][] } as GeoJsonGeometry;
+  }
+  return geometry;
+}
+
+/** Measurement readout for the sketch or a saved feature. */
+export function measureGeometry(
+  kind: "polygon" | "line" | "point",
+  vertices: Ring,
+): { lengthM: number; areaM2: number; perimeterM: number } {
+  if (kind === "point" || vertices.length < 2) {
+    return { lengthM: 0, areaM2: 0, perimeterM: 0 };
+  }
+  if (kind === "line") {
+    return { lengthM: roundTo(lineLength(vertices), 2), areaM2: 0, perimeterM: 0 };
+  }
+  const closed = [...vertices, vertices[0]];
+  return {
+    lengthM: 0,
+    areaM2: roundTo(Math.abs(ringArea(vertices)), 2),
+    perimeterM: roundTo(lineLength(closed), 2),
+  };
+}
