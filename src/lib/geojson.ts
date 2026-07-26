@@ -37,6 +37,20 @@ function isPositionArray(value: unknown, depth: number): boolean {
   );
 }
 
+/** A LinearRing needs >= 4 positions and an identical first/last position. */
+export function isClosedRing(value: unknown): boolean {
+  if (!isPositionArray(value, 1)) return false;
+  const ring = value as Vertex[];
+  if (ring.length < 4) return false;
+  const [fx, fy] = ring[0];
+  const [lx, ly] = ring[ring.length - 1];
+  return Number(fx) === Number(lx) && Number(fy) === Number(ly);
+}
+
+function isRingArray(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0 && value.every(isClosedRing);
+}
+
 export function isValidGeometry(value: unknown): value is GeoJsonGeometry {
   if (!value || typeof value !== "object") return false;
   const geom = value as { type?: unknown; coordinates?: unknown };
@@ -48,10 +62,15 @@ export function isValidGeometry(value: unknown): value is GeoJsonGeometry {
     case "LineString":
       return isPositionArray(geom.coordinates, 1);
     case "MultiLineString":
-    case "Polygon":
       return isPositionArray(geom.coordinates, 2);
+    case "Polygon":
+      return isRingArray(geom.coordinates);
     case "MultiPolygon":
-      return isPositionArray(geom.coordinates, 3);
+      return (
+        Array.isArray(geom.coordinates) &&
+        geom.coordinates.length > 0 &&
+        geom.coordinates.every(isRingArray)
+      );
     default:
       return false;
   }
