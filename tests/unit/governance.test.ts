@@ -81,10 +81,7 @@ describe("evaluatePtwValidity", () => {
   });
 
   it("does not sweep closed or cancelled permits", () => {
-    const v = evaluatePtwValidity(
-      { ...base, status: "closed", validTo: iso(NOW - HOUR) },
-      NOW,
-    );
+    const v = evaluatePtwValidity({ ...base, status: "closed", validTo: iso(NOW - HOUR) }, NOW);
     expect(v.needsExpirySweep).toBe(false);
     expect(v.effectiveStatus).toBe("closed");
   });
