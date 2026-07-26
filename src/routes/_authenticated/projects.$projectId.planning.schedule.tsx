@@ -38,6 +38,10 @@ import { ScheduleKpiStrip } from "@/components/planning/schedule-kpi-strip";
 import { ScheduleToolbar } from "@/components/planning/schedule-toolbar";
 import { BaselineManager } from "@/components/planning/baseline-manager";
 import type { TaskEditPatch } from "@/components/planning/task-inline-editor";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { getControlsAccess, recomputeCriticalPath } from "@/lib/controls.functions";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/schedule")({
   head: () => ({
@@ -231,6 +235,28 @@ function SchedulePage() {
           creatingBaseline={createBaselineMut.isPending}
           lockingBaseline={lockBaselineMut.isPending}
         />
+        />
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="cp-toggle"
+              checked={showCp}
+              onCheckedChange={setShowCp}
+              aria-label="Highlight critical path"
+            />
+            <Label htmlFor="cp-toggle" className="text-sm text-muted-foreground">
+              Highlight critical path
+            </Label>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!controlsAccess.data?.canAdmin || recomputeCpMut.isPending}
+            onClick={() => recomputeCpMut.mutate()}
+          >
+            Recompute critical path
+          </Button>
+        </div>
       </Card>
 
       {tasks.length === 0 ? (
