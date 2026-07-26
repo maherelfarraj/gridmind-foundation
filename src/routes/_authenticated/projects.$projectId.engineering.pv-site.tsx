@@ -137,15 +137,21 @@ function PvSitePage() {
     [configs, selectedId],
   );
 
-  // Hydrate the draft once configs land (or when the selection changes).
+  // Hydrate the draft when a different stored revision becomes current, not on
+  // every refetch — otherwise in-progress edits would be wiped mid-typing.
+  const hydratedKey = useRef<string | null>(null);
   useEffect(() => {
     if (!listQuery.isSuccess) return;
     const next = selectedId
       ? (configs.find((c) => c.id === selectedId) ?? null)
       : (configs.find((c) => c.status === "active") ?? configs[0] ?? null);
+    const key = next ? `${next.id}:${next.updated_at}:${next.status}` : "new";
+    if (hydratedKey.current === key) return;
+    hydratedKey.current = key;
     if (next && next.id !== selectedId) setSelectedId(next.id);
     setDraft(rowToDraft(next));
   }, [listQuery.isSuccess, configs, selectedId]);
+
 
   const save = useSavePvSiteConfig(projectId);
   const activate = useActivatePvSiteConfig(projectId);
