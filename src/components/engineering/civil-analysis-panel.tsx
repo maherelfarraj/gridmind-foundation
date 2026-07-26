@@ -27,7 +27,6 @@ import {
   runCutFillAnalysis,
   runPileEstimate,
   runSlopeToleranceCheck,
-  type CivilFeatureRow,
 } from "@/lib/civil.functions";
 import { civilFeaturesQueryOptions, parseServerError } from "@/lib/civil-query";
 import type { DrainageProposal } from "@/lib/civil/flow";
@@ -38,7 +37,6 @@ type Props = {
   projectId: string;
   surfaceId: string | null;
   canWrite: boolean;
-  onFeaturesChange?: (features: CivilFeatureRow[]) => void;
   onProposalsChange?: (proposals: DrainageProposal[]) => void;
 };
 
@@ -49,7 +47,6 @@ export function CivilAnalysisPanel({
   projectId,
   surfaceId,
   canWrite,
-  onFeaturesChange,
   onProposalsChange,
 }: Props) {
   const qc = useQueryClient();
@@ -81,8 +78,6 @@ export function CivilAnalysisPanel({
     embedment_m: number;
   } | null>(null);
   const [proposals, setProposals] = useState<DrainageProposal[]>([]);
-
-  if (onFeaturesChange && features.data) onFeaturesChange(features.data);
 
   const fail = (err: unknown) => toast.error(parseServerError(err));
 
