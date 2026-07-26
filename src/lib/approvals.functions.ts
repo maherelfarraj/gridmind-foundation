@@ -15,6 +15,7 @@ import {
   startApprovalSchema,
   toggleRuleSchema,
 } from "@/lib/approvals.rules";
+import { settleAfterDecision } from "@/lib/scada-actions.server";
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {

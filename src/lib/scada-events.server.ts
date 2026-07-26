@@ -4,6 +4,7 @@
  */
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { writeAuditLog } from "@/lib/civil.server";
+import { evaluateEventsSafely } from "@/lib/scada-actions.server";
 import { assertIngestionWriter, currentCompanyId, httpError } from "@/lib/scada-ingestion.server";
 import {
   buildEventRows,
