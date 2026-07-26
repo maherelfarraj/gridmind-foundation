@@ -182,3 +182,92 @@ export async function updateAlarmRca(context: AuthContext, data: RcaUpdateInput)
   });
   return { id: data.id, rca_status: data.rca_status };
 }
+
+export interface ConsoleAlarmRow {
+  id: string;
+  project_id: string;
+  project_name: string | null;
+  asset_key: string | null;
+  rule_name: string | null;
+  severity: string;
+  status: string;
+  message: string;
+  value: number | null;
+  raised_at: string;
+  acknowledged_at: string | null;
+  acknowledge_note: string | null;
+  assigned_to: string | null;
+  assignee_name: string | null;
+  rca_status: RcaStatus;
+  root_cause: string | null;
+  rca_notes: string | null;
+}
+
+export interface ConsolePayload {
+  rows: ConsoleAlarmRow[];
+  kpis: ConsoleKpis;
+  projects: { id: string; name: string }[];
+  members: AssignableMember[];
+}
+
+export async function loadAlarmConsole(
+  context: AuthContext,
+  filters: { status?: string; severity?: string; projectId?: string; limit: number },
+): Promise<ConsolePayload> {
+  const companyId = await currentCompanyId(context);
+  let q = context.supabase
+    .from("scada_alarms")
+    .select(
+      "id, project_id, severity, status, message, value, raised_at, acknowledged_at, acknowledge_note, assigned_to, rca_status, root_cause, rca_notes, project:projects(name), asset:scada_assets(asset_key), rule:alarm_rules(name), assignee:profiles!scada_alarms_assigned_to_fkey(full_name, email)",
+    )
+    .eq("company_id", companyId)
+    .order("raised_at", { ascending: false })
+    .limit(filters.limit);
+  if (filters.status) q = q.eq("status", filters.status);
+  if (filters.severity) q = q.eq("severity", filters.severity);
+  if (filters.projectId) q = q.eq("project_id", filters.projectId);
+  const { data, error } = await q;
+  if (error) throw error;
+
+  const rows: ConsoleAlarmRow[] = ((data ?? []) as unknown[]).map((raw) => {
+    const r = raw as Record<string, unknown> & {
+      project?: { name: string } | null;
+      asset?: { asset_key: string } | null;
+      rule?: { name: string } | null;
+      assignee?: { full_name: string | null; email: string | null } | null;
+    };
+    return {
+      id: r.id as string,
+      project_id: r.project_id as string,
+      project_name: r.project?.name ?? null,
+      asset_key: r.asset?.asset_key ?? null,
+      rule_name: r.rule?.name ?? null,
+      severity: r.severity as string,
+      status: r.status as string,
+      message: r.message as string,
+      value: r.value == null ? null : Number(r.value),
+      raised_at: r.raised_at as string,
+      acknowledged_at: (r.acknowledged_at as string | null) ?? null,
+      acknowledge_note: (r.acknowledge_note as string | null) ?? null,
+      assigned_to: (r.assigned_to as string | null) ?? null,
+      assignee_name: r.assignee?.full_name ?? r.assignee?.email ?? null,
+      rca_status: ((r.rca_status as string | null) ?? "open") as RcaStatus,
+      root_cause: (r.root_cause as string | null) ?? null,
+      rca_notes: (r.rca_notes as string | null) ?? null,
+    };
+  });
+
+  const projects = Array.from(
+    new Map(
+      rows.filter((r) => r.project_name).map((r) => [r.project_id, r.project_name as string]),
+    ),
+    ([id, name]) => ({ id, name }),
+  );
+
+  return {
+    rows,
+    kpis: computeConsoleKpis(rows),
+    projects,
+    members: await listAssignableMembers(context),
+  };
+}
