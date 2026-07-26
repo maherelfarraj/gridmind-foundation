@@ -44,7 +44,7 @@ const CONNECTION_STROKE: Record<
   signal: { className: "stroke-muted-foreground", width: 0.5, dash: "0.8 1.2" },
 };
 
-export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
+export function SldCanvas({ editable, titleBlock, onPlace, issueSeverity }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const spaceRef = useRef(false);
