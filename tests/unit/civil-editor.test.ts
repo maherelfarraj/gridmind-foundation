@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 // P-162 — civil feature editor: geometry helpers, kind enforcement, GeoJSON/KML round-trip.
 import { describe, expect, it } from "vitest";
 

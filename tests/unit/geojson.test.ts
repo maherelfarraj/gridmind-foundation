@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 // P-164 — GeoJSON validation, KML round-trip, optimization weights & scoring. Fully offline.
 import { describe, expect, it } from "vitest";
 
