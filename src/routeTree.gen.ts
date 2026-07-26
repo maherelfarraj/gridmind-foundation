@@ -78,6 +78,7 @@ import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_aut
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
+import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
@@ -563,6 +564,12 @@ const AuthenticatedFieldDisciplineBoardRoute =
   AuthenticatedFieldDisciplineBoardRouteImport.update({
     id: '/field/discipline-board',
     path: '/field/discipline-board',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEngineeringPvLibraryRoute =
+  AuthenticatedEngineeringPvLibraryRouteImport.update({
+    id: '/engineering/pv-library',
+    path: '/engineering/pv-library',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDocsApiRoute = AuthenticatedDocsApiRouteImport.update({
@@ -1198,6 +1205,7 @@ export interface FileRoutesByFullPath {
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
+  '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1365,6 +1373,7 @@ export interface FileRoutesByTo {
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
+  '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1528,6 +1537,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
+  '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
@@ -1699,6 +1709,7 @@ export interface FileRouteTypes {
     | '/admin/health'
     | '/crm/pipeline'
     | '/docs/api'
+    | '/engineering/pv-library'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
@@ -1866,6 +1877,7 @@ export interface FileRouteTypes {
     | '/admin/health'
     | '/crm/pipeline'
     | '/docs/api'
+    | '/engineering/pv-library'
     | '/field/discipline-board'
     | '/field/reports'
     | '/field/sync-status'
@@ -2028,6 +2040,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/health'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
+    | '/_authenticated/engineering/pv-library'
     | '/_authenticated/field/discipline-board'
     | '/_authenticated/field/reports'
     | '/_authenticated/field/sync-status'
@@ -2685,6 +2698,13 @@ declare module '@tanstack/react-router' {
       path: '/field/discipline-board'
       fullPath: '/field/discipline-board'
       preLoaderRoute: typeof AuthenticatedFieldDisciplineBoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/engineering/pv-library': {
+      id: '/_authenticated/engineering/pv-library'
+      path: '/engineering/pv-library'
+      fullPath: '/engineering/pv-library'
+      preLoaderRoute: typeof AuthenticatedEngineeringPvLibraryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/docs/api': {
@@ -3821,6 +3841,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
+  AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
   AuthenticatedFieldDisciplineBoardRoute: typeof AuthenticatedFieldDisciplineBoardRoute
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
@@ -3901,6 +3922,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
+  AuthenticatedEngineeringPvLibraryRoute:
+    AuthenticatedEngineeringPvLibraryRoute,
   AuthenticatedFieldDisciplineBoardRoute:
     AuthenticatedFieldDisciplineBoardRoute,
   AuthenticatedFieldReportsRoute: AuthenticatedFieldReportsRoute,
