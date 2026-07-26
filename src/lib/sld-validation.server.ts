@@ -112,7 +112,7 @@ export async function loadValidationGraph(
   return {
     revisionId,
     revisionStatus: (revision as any)?.status ?? null,
-    canvas: (((revision as any)?.canvas ?? {}) as Record<string, unknown>) ?? {},
+    canvas: ((revision as any)?.canvas ?? {}) as Record<string, unknown>,
     objects,
     connections,
     symbolTypes: [...byKey.values()],
