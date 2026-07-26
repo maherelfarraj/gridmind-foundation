@@ -44,6 +44,7 @@ import { initialProperties, mergeSymbolTypes } from "@/lib/sld/symbol-registry";
 import { generateTags } from "@/lib/sld/tagging";
 import { ValidationPanel } from "./validation-panel";
 import { CoordinationPanel } from "./coordination-panel";
+import { SchedulesPanel } from "./schedules-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLiveCoordination,
@@ -425,6 +426,9 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                 <TabsTrigger value="coordination" className="flex-1">
                   Coordination
                 </TabsTrigger>
+                <TabsTrigger value="schedules" className="flex-1">
+                  Schedules
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="validation" className="mt-2">
                 <ValidationPanel
@@ -447,6 +451,13 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
                   running={runCoordinationChecks.isPending}
                   lastRunAt={(runCoordinationChecks.data as any)?.ran_at ?? null}
                   onRun={() => runCoordinationChecks.mutate()}
+                />
+              </TabsContent>
+              <TabsContent value="schedules" className="mt-2">
+                <SchedulesPanel
+                  drawingId={data.drawing.id}
+                  projectId={data.drawing.project_id}
+                  canEdit={editable}
                 />
               </TabsContent>
             </Tabs>

@@ -12,6 +12,7 @@ const LABELS: Record<string, string> = {
   turnover_pack: "Turnover pack",
   audit_pack: "Audit pack",
   csv: "CSV",
+  sld_schedule: "SLD schedule",
 };
 
 interface ExportLockBadgeProps {

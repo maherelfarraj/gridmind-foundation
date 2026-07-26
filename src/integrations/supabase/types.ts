@@ -8431,6 +8431,67 @@ export type Database = {
           },
         ]
       }
+      sld_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          revision_id: string
+          row_count: number
+          rows: Json
+          schedule_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          revision_id: string
+          row_count?: number
+          rows?: Json
+          schedule_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          revision_id?: string
+          row_count?: number
+          rows?: Json
+          schedule_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sld_schedules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_schedules_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sld_schedules_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "sld_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sld_symbol_types: {
         Row: {
           category: string

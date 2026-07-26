@@ -14,6 +14,7 @@ export type ExportType =
   | "om_report"
   | "turnover_pack"
   | "audit_pack"
+  | "sld_schedule"
   | "csv";
 
 export interface ExportLockedError extends Error {
