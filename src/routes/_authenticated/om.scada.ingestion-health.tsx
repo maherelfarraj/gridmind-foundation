@@ -159,7 +159,7 @@ function IngestionHealthPage() {
         <KpiTile
           label="Retry queue"
           value={String(queue?.pending ?? 0)}
-          status={(queue?.pending ?? 0) > 50 ? "warn" : "good"}
+          status={(queue?.pending ?? 0) > 50 ? "warning" : "good"}
         />
         <KpiTile label="Processing" value={String(queue?.processing ?? 0)} />
         <KpiTile
