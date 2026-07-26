@@ -306,9 +306,11 @@ function PvSitePage() {
           <Button
             variant="ghost"
             onClick={() => {
+              hydratedKey.current = "new";
               setSelectedId(null);
               setDraft({ ...rowToDraft(null), name: `Scenario ${configs.length + 1}` });
             }}
+
           >
             New scenario
           </Button>
