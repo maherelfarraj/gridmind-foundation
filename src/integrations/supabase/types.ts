@@ -3781,6 +3781,108 @@ export type Database = {
           },
         ]
       }
+      layout_optimization_runs: {
+        Row: {
+          approval_instance_id: string | null
+          chosen_candidate: number | null
+          company_id: string
+          constraints: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          inputs: Json
+          name: string
+          project_id: string
+          results: Json | null
+          revision_code: string
+          run_ref: string
+          scenario_type: Database["public"]["Enums"]["layout_scenario_type"]
+          score: number | null
+          status: string
+          surface_id: string | null
+          updated_at: string
+          weights: Json
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          chosen_candidate?: number | null
+          company_id: string
+          constraints?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inputs?: Json
+          name: string
+          project_id: string
+          results?: Json | null
+          revision_code?: string
+          run_ref: string
+          scenario_type: Database["public"]["Enums"]["layout_scenario_type"]
+          score?: number | null
+          status?: string
+          surface_id?: string | null
+          updated_at?: string
+          weights?: Json
+        }
+        Update: {
+          approval_instance_id?: string | null
+          chosen_candidate?: number | null
+          company_id?: string
+          constraints?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inputs?: Json
+          name?: string
+          project_id?: string
+          results?: Json | null
+          revision_code?: string
+          run_ref?: string
+          scenario_type?: Database["public"]["Enums"]["layout_scenario_type"]
+          score?: number | null
+          status?: string
+          surface_id?: string | null
+          updated_at?: string
+          weights?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "layout_optimization_runs_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "layout_optimization_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "layout_optimization_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "layout_optimization_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "layout_optimization_runs_surface_id_fkey"
+            columns: ["surface_id"]
+            isOneToOne: false
+            referencedRelation: "terrain_surfaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lcoe_scenarios: {
         Row: {
           annual_energy_mwh: number
@@ -11577,6 +11679,14 @@ export type Database = {
         | "paid"
         | "disputed"
         | "cancelled"
+      layout_scenario_type:
+        | "max_capacity"
+        | "min_grading"
+        | "min_cable_length"
+        | "min_road_length"
+        | "lowest_epc_cost"
+        | "max_energy_yield"
+        | "balanced"
       lead_source:
         | "referral"
         | "inbound"
@@ -12102,6 +12212,15 @@ export const Constants = {
         "paid",
         "disputed",
         "cancelled",
+      ],
+      layout_scenario_type: [
+        "max_capacity",
+        "min_grading",
+        "min_cable_length",
+        "min_road_length",
+        "lowest_epc_cost",
+        "max_energy_yield",
+        "balanced",
       ],
       lead_source: [
         "referral",
