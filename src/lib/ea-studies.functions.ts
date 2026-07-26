@@ -39,7 +39,7 @@ const assumptionSchema = z.object({
 
 const warningSchema = z.object({
   code: z.string().trim().min(1).max(80),
-  severity: z.enum(["info", "warning", "error"]),
+  severity: z.enum(["info", "warning", "error", "critical"]),
   message: z.string().trim().min(1).max(500),
 });
 
