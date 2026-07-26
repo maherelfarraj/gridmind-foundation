@@ -12,6 +12,7 @@ import {
 import { scheduleMatrix, SCHEDULE_LABELS, type ScheduleType } from "@/lib/sld/schedules";
 
 export type ScheduleBranding = {
+  company_name?: string | null;
   logo_url: string | null;
   primary_color: string | null;
   accent_color: string | null;
@@ -24,13 +25,15 @@ export function buildSchedulePdf(args: {
   drawing: { drawing_number: string; title: string; revision_code: string | null };
   branding: ScheduleBranding | null;
 }): Blob {
-  const theme: ExportTheme = createExportThemeSync({
-    companyName: null,
-    primaryColor: args.branding?.primary_color ?? null,
-    accentColor: args.branding?.accent_color ?? null,
-    footerText: args.branding?.footer_text ?? null,
-    logoDataUrl: null,
-  } as never);
+  const theme: ExportTheme = createExportThemeSync(
+    {
+      primaryColor: args.branding?.primary_color ?? null,
+      accentColor: args.branding?.accent_color ?? null,
+      footerText: args.branding?.footer_text ?? null,
+      logoDataUrl: null,
+    },
+    { name: args.branding?.company_name ?? null },
+  );
 
   const doc = createDoc();
   const label = SCHEDULE_LABELS[args.scheduleType];
