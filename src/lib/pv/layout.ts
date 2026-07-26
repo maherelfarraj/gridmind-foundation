@@ -195,7 +195,7 @@ export function rowSpacingFromShading(
   const heightM = collectorWidthM * Math.sin(toRad(tiltDeg));
   const depthM = collectorWidthM * Math.cos(toRad(tiltDeg));
   const shadowLengthM =
-    (heightM / Math.tan(toRad(solarElevationDeg))) / Math.cos(toRad(azimuthOffsetDeg));
+    heightM / Math.tan(toRad(solarElevationDeg)) / Math.cos(toRad(azimuthOffsetDeg));
 
   return {
     solarElevationDeg,
@@ -225,10 +225,12 @@ export function tableFootprint(
     { x: halfL, y: halfW },
     { x: -halfL, y: halfW },
   ];
-  return local.map((p) => rotatePoint(p, azimuthDeg, { x: 0, y: 0 })).map((p) => ({
-    x: round6(p.x + centre.x),
-    y: round6(p.y + centre.y),
-  }));
+  return local
+    .map((p) => rotatePoint(p, azimuthDeg, { x: 0, y: 0 }))
+    .map((p) => ({
+      x: round6(p.x + centre.x),
+      y: round6(p.y + centre.y),
+    }));
 }
 
 /** Rotates a point clockwise by `azimuthDeg` (compass convention) about `origin`. */
@@ -529,7 +531,11 @@ export function gridFill(input: GridFillInput): GridFillResult {
 }
 
 /** DC capacity of a set of tables, kWp. */
-export function dcCapacityKwp(tableCount: number, modulesPerTable: number, moduleWp: number): number {
+export function dcCapacityKwp(
+  tableCount: number,
+  modulesPerTable: number,
+  moduleWp: number,
+): number {
   if (tableCount <= 0 || modulesPerTable <= 0 || moduleWp <= 0) return 0;
   return round6((tableCount * modulesPerTable * moduleWp) / 1000);
 }
@@ -552,11 +558,6 @@ export function corridorPolygon(from: PointM, to: PointM, widthM: number): RingM
 }
 
 /** An axis-aligned equipment pad centred on a point, rotated by `azimuthDeg`. */
-export function padPolygon(
-  centre: PointM,
-  widthM: number,
-  depthM: number,
-  azimuthDeg = 0,
-): RingM {
+export function padPolygon(centre: PointM, widthM: number, depthM: number, azimuthDeg = 0): RingM {
   return tableFootprint(centre, widthM, depthM, azimuthDeg);
 }
