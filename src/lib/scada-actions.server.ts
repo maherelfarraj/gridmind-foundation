@@ -841,3 +841,52 @@ export async function evaluateEventById(
   }
   return await evaluateEventActions({ db: privilegedDb(), auth: context }, event);
 }
+
+/**
+ * Hook for the P-112 inbox decision path: after `decide_approval` returns,
+ * settle any event-action row bound to that approval's instance. Reads the
+ * instance status back from the database — the caller's claim is irrelevant.
+ */
+export async function settleAfterDecision(
+  context: AuthContext,
+  approvalId: string,
+): Promise<void> {
+  try {
+    const { data } = await context.supabase
+      .from("approvals")
+      .select("instance_id")
+      .eq("id", approvalId)
+      .maybeSingle();
+    const instanceId = (data as { instance_id: string } | null)?.instance_id;
+    if (!instanceId) return;
+    const settled = await settleEventActionsForInstance(
+      privilegedDb(),
+      instanceId,
+      context.user?.id ?? null,
+    );
+    if (settled.settled > 0) {
+      await writeAuditLog(context, "scada.event_action_execute", "approval_instances", instanceId, {
+        settled: settled.settled,
+        via: "approval_decision",
+      });
+    }
+  } catch {
+    // never fail the approval decision on a downstream action error
+  }
+}
+
+/** Fire-and-forget evaluation used by the ingestion + operator event paths. */
+export async function evaluateEventsSafely(
+  events: EngineEvent[],
+  auth?: AuthContext,
+): Promise<void> {
+  if (events.length === 0) return;
+  try {
+    const db = privilegedDb();
+    for (const event of events) {
+      await evaluateEventActions({ db, auth }, event);
+    }
+  } catch {
+    // ingestion must never fail because a downstream rule misbehaved
+  }
+}
