@@ -111,8 +111,10 @@ describe("isValidGeoJSON", () => {
 
   it("normalises accepted shapes and throws typed errors otherwise", () => {
     expect(toFeatureCollection(POINT).features).toHaveLength(1);
-    expect(toFeatureCollection({ type: "Feature", geometry: LINE, properties: null }).features[0]
-      .properties).toEqual({});
+    expect(
+      toFeatureCollection({ type: "Feature", geometry: LINE, properties: null }).features[0]
+        .properties,
+    ).toEqual({});
     expect(() => parseGeoJSON("{not json")).toThrowError(GeoJsonError);
     expect(() => parseGeoJSON(JSON.stringify({ type: "Point", coordinates: [] }))).toThrowError(
       GeoJsonError,
@@ -192,9 +194,9 @@ describe("optimization weights", () => {
   it("rejects negative weights, unknown keys and sums outside tolerance", () => {
     const bad = { ...BALANCED_WEIGHTS, capacity: -0.2, grading: 0.5 } as MetricWeights;
     expect(weightsAreValid(bad)).toBe(false);
-    expect(
-      weightsAreValid({ ...BALANCED_WEIGHTS, moonshot: 0 } as unknown as MetricWeights),
-    ).toBe(false);
+    expect(weightsAreValid({ ...BALANCED_WEIGHTS, moonshot: 0 } as unknown as MetricWeights)).toBe(
+      false,
+    );
     const drifted = { ...BALANCED_WEIGHTS, capacity: BALANCED_WEIGHTS.capacity + 0.5 };
     expect(weightsAreValid(drifted)).toBe(false);
     expect(weightsAreValid({ capacity: 1 } as unknown as MetricWeights)).toBe(false);
@@ -245,7 +247,10 @@ describe("weighted scoring invariants", () => {
       expect(Math.max(...scores)).toBeLessThanOrEqual(1);
     }
     // a degenerate spread scores neutrally rather than dividing by zero
-    expect(normalizeMetric([5, 5, 5], 5, true)).toBeCloseTo(normalizeMetric([5, 5, 5], 5, false), 12);
+    expect(normalizeMetric([5, 5, 5], 5, true)).toBeCloseTo(
+      normalizeMetric([5, 5, 5], 5, false),
+      12,
+    );
   });
 
   it("keeps EPC cost monotone in each cost driver", () => {

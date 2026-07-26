@@ -65,17 +65,22 @@ describe("pile length rule", () => {
   });
 
   it("enforces the embedment floor (frost depth and uplift govern)", () => {
-    expect(embedmentFor({ ...rule, min_embedment_m: 0.2, frost_depth_m: 1.5, uplift_factor: 1 }))
-      .toBeCloseTo(1.5, 6);
-    expect(embedmentFor({ ...rule, min_embedment_m: 2, frost_depth_m: 0.5, uplift_factor: 1 }))
-      .toBeCloseTo(2, 6);
+    expect(
+      embedmentFor({ ...rule, min_embedment_m: 0.2, frost_depth_m: 1.5, uplift_factor: 1 }),
+    ).toBeCloseTo(1.5, 6);
+    expect(
+      embedmentFor({ ...rule, min_embedment_m: 2, frost_depth_m: 0.5, uplift_factor: 1 }),
+    ).toBeCloseTo(2, 6);
     // an uplift factor below 1 never reduces embedment
-    expect(embedmentFor({ ...rule, min_embedment_m: 2, frost_depth_m: 0.5, uplift_factor: 0.5 }))
-      .toBeCloseTo(2, 6);
+    expect(
+      embedmentFor({ ...rule, min_embedment_m: 2, frost_depth_m: 0.5, uplift_factor: 0.5 }),
+    ).toBeCloseTo(2, 6);
   });
 
   it("increases reveal — and therefore pile length — monotonically with slope", () => {
-    const lengths = [0, 2, 5, 10, 20].map((slopePct) => revealFor(slopePct, rule) + embedmentFor(rule));
+    const lengths = [0, 2, 5, 10, 20].map(
+      (slopePct) => revealFor(slopePct, rule) + embedmentFor(rule),
+    );
     for (let i = 1; i < lengths.length; i++) {
       expect(lengths[i]).toBeGreaterThan(lengths[i - 1]);
     }
@@ -99,7 +104,7 @@ describe("pile length rule", () => {
     expect(summary.exceeding).toBe(2);
     for (const row of rows) {
       expect(row.exceeds_max).toBe(true);
-      expect(Math.round((row.pile_length_m / 0.25) * 1e6) / 1e6 % 1).toBe(0);
+      expect((Math.round((row.pile_length_m / 0.25) * 1e6) / 1e6) % 1).toBe(0);
     }
     expect(summary.total_length_m).toBeCloseTo(rows[0].pile_length_m + rows[1].pile_length_m, 6);
   });

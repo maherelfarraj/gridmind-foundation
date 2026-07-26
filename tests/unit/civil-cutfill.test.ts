@@ -1,7 +1,12 @@
 // P-164 — Cut/fill volumes + terrain parsers. Fully offline.
 import { describe, expect, it } from "vitest";
 
-import { CutFillError, buildDesignPlane, cellsInGeometry, computeCutFill } from "@/lib/civil/cutfill";
+import {
+  CutFillError,
+  buildDesignPlane,
+  cellsInGeometry,
+  computeCutFill,
+} from "@/lib/civil/cutfill";
 import type { GeoJsonGeometry } from "@/lib/civil/geom";
 import { emptyGrid, idx, type ElevationGrid } from "@/lib/terrain/grid";
 import { TerrainParseError, parseEsriAsciiGrid, parseTerrainCsv } from "@/lib/terrain/parse";
@@ -85,8 +90,9 @@ describe("cut & fill volumes", () => {
 
   it("raises typed errors for empty overlap and missing design model", () => {
     const grid = flatGrid(4, 4, 100);
-    expect(() => computeCutFill(grid, box(1000, 1000, 1100, 1100), { design_elevation_m: 98 }))
-      .toThrowError(CutFillError);
+    expect(() =>
+      computeCutFill(grid, box(1000, 1000, 1100, 1100), { design_elevation_m: 98 }),
+    ).toThrowError(CutFillError);
     try {
       computeCutFill(grid, box(1000, 1000, 1100, 1100), { design_elevation_m: 98 });
     } catch (err) {
@@ -140,7 +146,9 @@ describe("terrain parsers", () => {
     expect(codeOf(() => parseTerrainCsv("easting,northing,elevation_m\n0,0,99999"))).toBe(
       "implausible_elevation",
     );
-    expect(codeOf(() => parseTerrainCsv("easting,northing,elevation_m\nx,0,100"))).toBe("bad_value");
+    expect(codeOf(() => parseTerrainCsv("easting,northing,elevation_m\nx,0,100"))).toBe(
+      "bad_value",
+    );
     expect(codeOf(() => parseTerrainCsv("easting,northing,elevation_m"))).toBe("empty_file");
   });
 
