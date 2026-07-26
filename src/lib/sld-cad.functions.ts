@@ -92,7 +92,7 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
         context.supabase
           .from("sld_connections")
           .select(
-            "id, from_object_id, from_port, to_object_id, to_port, connection_type, cable_number",
+            "id, from_object_id, from_port, to_object_id, to_port, connection_type, cable_number, properties",
           )
           .eq("revision_id", revision.id),
       ]);
@@ -105,7 +105,9 @@ export const getSldCadWorkspace = createServerFn({ method: "GET" })
           rotation: Number(o.rotation),
           properties: (o.properties ?? {}) as Record<string, string | number | boolean | null>,
         }));
-      connections = ((connRows ?? []) as any[]).map((c) => ({ ...c }));
+      connections = ((connRows ?? []) as any[])
+        .filter((c) => !isRemoved(c.properties))
+        .map((c) => ({ ...c }));
     }
 
     const { data: profile } = await context.supabase
@@ -332,15 +334,24 @@ export const saveSldObjects = createServerFn({ method: "POST" })
       connectionsUpdated += 1;
     }
 
+    // Soft removal — SLD tables carry no DELETE grant (supersede, never delete).
     let connectionsRemoved = 0;
-    if (data.removedConnectionIds.length > 0) {
+    for (const id of data.removedConnectionIds) {
+      const { data: existing } = await context.supabase
+        .from("sld_connections")
+        .select("properties")
+        .eq("id", id)
+        .eq("revision_id", revisionId)
+        .maybeSingle();
+      if (!existing) continue;
+      const props = { ...((existing as any).properties ?? {}), [REMOVED_FLAG]: true };
       const { error } = await context.supabase
         .from("sld_connections")
-        .delete()
-        .in("id", data.removedConnectionIds)
+        .update({ properties: props as any } as any)
+        .eq("id", id)
         .eq("revision_id", revisionId);
       if (error) throw error;
-      connectionsRemoved = data.removedConnectionIds.length;
+      connectionsRemoved += 1;
     }
 
     await cadAudit(context, "sld.objects_modified", drawing.id, {
