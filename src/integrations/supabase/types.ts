@@ -9355,6 +9355,96 @@ export type Database = {
           },
         ]
       }
+      scada_events: {
+        Row: {
+          actor_id: string | null
+          asset_node_id: string | null
+          code: string | null
+          company_id: string
+          created_at: string
+          dedupe_key: string | null
+          event_type: Database["public"]["Enums"]["scada_event_type"]
+          id: string
+          message: string
+          occurred_at: string
+          payload: Json
+          project_id: string
+          scada_asset_id: string | null
+          severity: Database["public"]["Enums"]["alarm_severity"]
+          source: string
+        }
+        Insert: {
+          actor_id?: string | null
+          asset_node_id?: string | null
+          code?: string | null
+          company_id: string
+          created_at?: string
+          dedupe_key?: string | null
+          event_type?: Database["public"]["Enums"]["scada_event_type"]
+          id?: string
+          message: string
+          occurred_at?: string
+          payload?: Json
+          project_id: string
+          scada_asset_id?: string | null
+          severity?: Database["public"]["Enums"]["alarm_severity"]
+          source?: string
+        }
+        Update: {
+          actor_id?: string | null
+          asset_node_id?: string | null
+          code?: string | null
+          company_id?: string
+          created_at?: string
+          dedupe_key?: string | null
+          event_type?: Database["public"]["Enums"]["scada_event_type"]
+          id?: string
+          message?: string
+          occurred_at?: string
+          payload?: Json
+          project_id?: string
+          scada_asset_id?: string | null
+          severity?: Database["public"]["Enums"]["alarm_severity"]
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_events_asset_node_id_fkey"
+            columns: ["asset_node_id"]
+            isOneToOne: false
+            referencedRelation: "asset_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_events_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scada_tags: {
         Row: {
           alarm_high: number | null
@@ -12255,7 +12345,127 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_bess_daily: {
+        Row: {
+          avg_soc_pct: number | null
+          company_id: string | null
+          day: string | null
+          latest_soh_pct: number | null
+          max_soc_pct: number | null
+          min_soc_pct: number | null
+          project_id: string | null
+          scada_asset_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_telemetry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_curtailment_daily: {
+        Row: {
+          avg_curtailment_kw: number | null
+          avg_setpoint_kw: number | null
+          company_id: string | null
+          day: string | null
+          max_curtailment_kw: number | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_telemetry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_meter_daily_energy: {
+        Row: {
+          company_id: string | null
+          day: string | null
+          energy_kwh: number | null
+          project_id: string | null
+          scada_asset_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_telemetry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_weather_daily: {
+        Row: {
+          avg_ambient_temp_c: number | null
+          avg_irradiance_wm2: number | null
+          avg_module_temp_c: number | null
+          avg_wind_speed_ms: number | null
+          company_id: string | null
+          day: string | null
+          irradiance_sample_sum: number | null
+          project_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scada_telemetry_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scada_telemetry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _portal_log: {
@@ -12948,6 +13158,16 @@ export type Database = {
         | "mqtt"
         | "vendor_api"
         | "csv_import"
+      scada_event_type:
+        | "event"
+        | "warning"
+        | "trip"
+        | "comm_failure"
+        | "status_change"
+        | "operator_action"
+        | "setpoint_change"
+        | "maintenance"
+        | "protection"
       schedule_task_status:
         | "not_started"
         | "in_progress"
@@ -13544,6 +13764,17 @@ export const Constants = {
         "mqtt",
         "vendor_api",
         "csv_import",
+      ],
+      scada_event_type: [
+        "event",
+        "warning",
+        "trip",
+        "comm_failure",
+        "status_change",
+        "operator_action",
+        "setpoint_change",
+        "maintenance",
+        "protection",
       ],
       schedule_task_status: [
         "not_started",
