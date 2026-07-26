@@ -2,16 +2,16 @@
 // Kept out of *.functions.ts so the serverfn-split transform cannot drop it.
 import {
   getCalculator,
-  isWave1StudyType,
+  isCalculatorStudyType,
   type CalcAssumption,
   type CalcWarning,
-  type Wave1StudyType,
+  type CalculatorStudyType,
 } from "@/lib/electrical";
 
 import { eaError, type JsonValue } from "@/lib/ea-studies.server";
 
 export type CalcRun = {
-  studyType: Wave1StudyType;
+  studyType: CalculatorStudyType;
   method: string;
   results: Record<string, JsonValue>;
   warnings: CalcWarning[];
@@ -23,7 +23,7 @@ export type CalcRun = {
  * runs it. Rejects study types that have no wave-1 calculator.
  */
 export function runCalculator(studyType: string, inputSheet: unknown): CalcRun {
-  if (!isWave1StudyType(studyType)) {
+  if (!isCalculatorStudyType(studyType)) {
     eaError(400, "no_calculator", `No calculator is wired for study type "${studyType}".`);
   }
   const calculator = getCalculator(studyType);
