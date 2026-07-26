@@ -1,15 +1,22 @@
 // P-174 — SCADA event timeline: cursor-paginated vertical log of record.
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format, formatDistanceToNow } from "date-fns";
-import { Activity, AlertTriangle, History } from "lucide-react";
+import { Activity, AlertTriangle, History, MoreHorizontal, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { evaluateEvent } from "@/lib/scada-actions.functions";
 import { getScadaEventTimeline } from "@/lib/scada-timeline.functions";
 import type { TimelineEvent } from "@/lib/scada-timeline.server";
+import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { SCADA_EVENT_SEVERITIES, SCADA_EVENT_TYPES } from "@/lib/scada/events";
 
 export const Route = createFileRoute("/_authenticated/om/scada/events")({
