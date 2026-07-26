@@ -97,6 +97,7 @@ export function GanttView({
   compare,
   baselineSnapshot,
   saving,
+  highlightCriticalPath = false,
   onSaveTask,
   onDeleteTask,
 }: Props) {
