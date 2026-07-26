@@ -400,7 +400,7 @@ export async function issueForConstruction(context: any, snap: GovernanceSnapsho
       project_id: drawing.project_id,
       tag: String(o.tag).trim(),
       equipment_type: mapEquipmentType(String(o.symbol_type)),
-      status: "planned",
+      status: "inactive",
       location_text: o.label ?? null,
       specs: { source: "sld_cad", drawing_id: drawing.id, revision_id: snap.revisionId },
     }));
@@ -431,4 +431,4 @@ export async function issueForConstruction(context: any, snap: GovernanceSnapsho
 }
 
 /** Equipment status enum guard — the registry only accepts known values. */
-export const EQUIPMENT_DEFAULT_STATUS = "planned";
+export const EQUIPMENT_DEFAULT_STATUS = "inactive";
