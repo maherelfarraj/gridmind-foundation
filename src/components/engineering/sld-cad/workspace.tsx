@@ -46,6 +46,7 @@ import { ValidationPanel } from "./validation-panel";
 import { CoordinationPanel } from "./coordination-panel";
 import { SchedulesPanel } from "./schedules-panel";
 import { RevisionsPanel } from "./revisions-panel";
+import { GovernancePanel } from "./governance-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLiveCoordination,
