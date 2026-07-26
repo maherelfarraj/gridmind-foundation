@@ -33,6 +33,7 @@ interface Props {
   compare: boolean;
   baselineSnapshot: BaselineSnapshotEntry[] | null;
   saving?: boolean;
+  highlightCriticalPath?: boolean;
   onSaveTask: (id: string, patch: TaskEditPatch) => void;
   onDeleteTask: (id: string) => void;
 }
@@ -96,6 +97,7 @@ export function GanttView({
   compare,
   baselineSnapshot,
   saving,
+  highlightCriticalPath = false,
   onSaveTask,
   onDeleteTask,
 }: Props) {
@@ -155,6 +157,11 @@ export function GanttView({
                           {t.name}
                         </button>
                       </PopoverTrigger>
+                      {highlightCriticalPath && t.is_critical && (
+                        <Badge variant="destructive" className="ml-2 text-[10px]">
+                          CP
+                        </Badge>
+                      )}
                       <PopoverContent align="start" className="p-3">
                         <TaskInlineEditor
                           task={t}
@@ -255,6 +262,9 @@ export function GanttView({
                     className={cn(
                       "absolute top-3 flex h-4 items-center rounded-sm text-[10px] font-medium text-primary-foreground shadow-sm",
                       color,
+                      highlightCriticalPath &&
+                        t.is_critical &&
+                        "bg-destructive ring-2 ring-destructive",
                     )}
                     style={{
                       left: `${leftPct}%`,

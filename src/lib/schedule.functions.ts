@@ -37,6 +37,7 @@ export interface ScheduleTaskRow {
   status: ScheduleTaskStatus;
   predecessor_ids: string[];
   is_milestone: boolean;
+  is_critical?: boolean;
   sort_order: number;
   created_by: string | null;
   created_at: string;

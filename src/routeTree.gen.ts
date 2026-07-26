@@ -82,6 +82,10 @@ import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
+import { Route as AuthenticatedConstructionProductivityRouteImport } from './routes/_authenticated/construction.productivity'
+import { Route as AuthenticatedConstructionLookAheadRouteImport } from './routes/_authenticated/construction.look-ahead'
+import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_authenticated/construction.cwp'
+import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
@@ -604,6 +608,30 @@ const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
     path: '/crm/pipeline',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConstructionProductivityRoute =
+  AuthenticatedConstructionProductivityRouteImport.update({
+    id: '/construction/productivity',
+    path: '/construction/productivity',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConstructionLookAheadRoute =
+  AuthenticatedConstructionLookAheadRouteImport.update({
+    id: '/construction/look-ahead',
+    path: '/construction/look-ahead',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConstructionCwpRoute =
+  AuthenticatedConstructionCwpRouteImport.update({
+    id: '/construction/cwp',
+    path: '/construction/cwp',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConstructionBaselineCompareRoute =
+  AuthenticatedConstructionBaselineCompareRouteImport.update({
+    id: '/construction/baseline-compare',
+    path: '/construction/baseline-compare',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminHealthRoute =
@@ -1332,6 +1360,10 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
+  '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
+  '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
+  '/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
@@ -1518,6 +1550,10 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
+  '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
+  '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
+  '/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
@@ -1700,6 +1736,10 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
+  '/_authenticated/construction/cwp': typeof AuthenticatedConstructionCwpRoute
+  '/_authenticated/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
+  '/_authenticated/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
@@ -1890,6 +1930,10 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/admin/tenants'
     | '/admin/health'
+    | '/construction/baseline-compare'
+    | '/construction/cwp'
+    | '/construction/look-ahead'
+    | '/construction/productivity'
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
@@ -2076,6 +2120,10 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/admin/health'
+    | '/construction/baseline-compare'
+    | '/construction/cwp'
+    | '/construction/look-ahead'
+    | '/construction/productivity'
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
@@ -2257,6 +2305,10 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
+    | '/_authenticated/construction/baseline-compare'
+    | '/_authenticated/construction/cwp'
+    | '/_authenticated/construction/look-ahead'
+    | '/_authenticated/construction/productivity'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/engineering/pv-library'
@@ -2964,6 +3016,34 @@ declare module '@tanstack/react-router' {
       path: '/crm/pipeline'
       fullPath: '/crm/pipeline'
       preLoaderRoute: typeof AuthenticatedCrmPipelineRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/construction/productivity': {
+      id: '/_authenticated/construction/productivity'
+      path: '/construction/productivity'
+      fullPath: '/construction/productivity'
+      preLoaderRoute: typeof AuthenticatedConstructionProductivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/construction/look-ahead': {
+      id: '/_authenticated/construction/look-ahead'
+      path: '/construction/look-ahead'
+      fullPath: '/construction/look-ahead'
+      preLoaderRoute: typeof AuthenticatedConstructionLookAheadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/construction/cwp': {
+      id: '/_authenticated/construction/cwp'
+      path: '/construction/cwp'
+      fullPath: '/construction/cwp'
+      preLoaderRoute: typeof AuthenticatedConstructionCwpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/construction/baseline-compare': {
+      id: '/_authenticated/construction/baseline-compare'
+      path: '/construction/baseline-compare'
+      fullPath: '/construction/baseline-compare'
+      preLoaderRoute: typeof AuthenticatedConstructionBaselineCompareRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/health': {
@@ -4233,6 +4313,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedConstructionBaselineCompareRoute: typeof AuthenticatedConstructionBaselineCompareRoute
+  AuthenticatedConstructionCwpRoute: typeof AuthenticatedConstructionCwpRoute
+  AuthenticatedConstructionLookAheadRoute: typeof AuthenticatedConstructionLookAheadRoute
+  AuthenticatedConstructionProductivityRoute: typeof AuthenticatedConstructionProductivityRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
@@ -4321,6 +4405,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedConstructionBaselineCompareRoute:
+    AuthenticatedConstructionBaselineCompareRoute,
+  AuthenticatedConstructionCwpRoute: AuthenticatedConstructionCwpRoute,
+  AuthenticatedConstructionLookAheadRoute:
+    AuthenticatedConstructionLookAheadRoute,
+  AuthenticatedConstructionProductivityRoute:
+    AuthenticatedConstructionProductivityRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedEngineeringPvLibraryRoute:

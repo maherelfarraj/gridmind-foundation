@@ -386,6 +386,37 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: "construction",
+    label: "Construction controls",
+    icon: HardHat,
+    items: [
+      {
+        moduleKey: "field_qaqc",
+        label: "Work packages",
+        url: "/construction/cwp",
+        icon: Boxes,
+      },
+      {
+        moduleKey: "field_qaqc",
+        label: "Look-ahead",
+        url: "/construction/look-ahead",
+        icon: CalendarRange,
+      },
+      {
+        moduleKey: "field_qaqc",
+        label: "Baseline compare",
+        url: "/construction/baseline-compare",
+        icon: GitCompare,
+      },
+      {
+        moduleKey: "field_qaqc",
+        label: "Productivity",
+        url: "/construction/productivity",
+        icon: BarChart3,
+      },
+    ],
+  },
+  {
     key: "field",
     label: "Field, HSE & QA/QC",
     icon: HardHat,

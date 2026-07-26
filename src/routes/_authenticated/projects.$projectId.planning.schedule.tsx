@@ -38,6 +38,10 @@ import { ScheduleKpiStrip } from "@/components/planning/schedule-kpi-strip";
 import { ScheduleToolbar } from "@/components/planning/schedule-toolbar";
 import { BaselineManager } from "@/components/planning/baseline-manager";
 import type { TaskEditPatch } from "@/components/planning/task-inline-editor";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { getControlsAccess, recomputeCriticalPath } from "@/lib/controls.functions";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/planning/schedule")({
   head: () => ({
@@ -81,6 +85,23 @@ function SchedulePage() {
   const [selectedBaselineId, setSelectedBaselineId] = useState<string | null>(null);
   const [compare, setCompare] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
+  const [showCp, setShowCp] = useState(false);
+
+  const controlsAccessFn = useServerFn(getControlsAccess);
+  const controlsAccess = useQuery({
+    queryKey: ["controls-access"],
+    queryFn: () => controlsAccessFn(),
+  });
+  const recomputeCpFn = useServerFn(recomputeCriticalPath);
+  const recomputeCpMut = useMutation({
+    mutationFn: () => recomputeCpFn({ data: { projectId } }),
+    onSuccess: (r) => {
+      toast.success(`Critical path recomputed — ${r.criticalIds.length} task(s) flagged`);
+      setShowCp(true);
+      void queryClient.invalidateQueries({ queryKey: ["schedule", "tasks", projectId] });
+    },
+    onError: (e) => toast.error(scheduleErrorMessage(e)),
+  });
 
   // Auto-select the latest locked baseline once loaded.
   const effectiveBaselineId = useMemo(() => {
@@ -231,6 +252,27 @@ function SchedulePage() {
           creatingBaseline={createBaselineMut.isPending}
           lockingBaseline={lockBaselineMut.isPending}
         />
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="cp-toggle"
+              checked={showCp}
+              onCheckedChange={setShowCp}
+              aria-label="Highlight critical path"
+            />
+            <Label htmlFor="cp-toggle" className="text-sm text-muted-foreground">
+              Highlight critical path
+            </Label>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!controlsAccess.data?.canAdmin || recomputeCpMut.isPending}
+            onClick={() => recomputeCpMut.mutate()}
+          >
+            Recompute critical path
+          </Button>
+        </div>
       </Card>
 
       {tasks.length === 0 ? (
@@ -247,6 +289,7 @@ function SchedulePage() {
           canWrite={canWrite}
           compare={showCompare}
           baselineSnapshot={snapshot}
+          highlightCriticalPath={showCp}
           saving={updateTaskMut.isPending || deleteTaskMut.isPending}
           onSaveTask={(id: string, patch: TaskEditPatch) => updateTaskMut.mutate({ id, patch })}
           onDeleteTask={(id: string) => deleteTaskMut.mutate(id)}
