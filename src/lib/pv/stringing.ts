@@ -504,7 +504,7 @@ export function generateStringing(input: StringingInput): StringingResult {
     const invDc = round(inverterDcKwpTotals.get(alloc.inverterStationLabel) ?? 0);
     alloc.inverterDcKwp = invDc;
     alloc.dcAcRatio = round(inverter.acKw > 0 ? invDc / inverter.acKw : 0);
-    alloc.loadingPct = round(inverter.acKw > 0 ? (invDc / inverter.acKw) * 100, 2);
+    alloc.loadingPct = round(inverter.acKw > 0 ? (invDc / inverter.acKw) * 100 : 0, 2);
     const own: Record<string, string[]> = {};
     for (const [cb, members] of Object.entries(combinerMap)) {
       const mine = members.filter((m) => alloc.stringLabels.includes(m));
