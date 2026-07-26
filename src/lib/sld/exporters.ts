@@ -751,3 +751,36 @@ export function toDxf(
 export function isValidDxf(dxf: string): boolean {
   return dxf.startsWith("0\nSECTION") && dxf.trimEnd().endsWith("EOF");
 }
+
+/**
+ * Rasterizes an SVG string to PNG in the browser (2× by default).
+ * Browser-only: needs Image + canvas.
+ */
+export function toPng(svgString: string, scale = 2): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml;charset=utf-8" }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round((img.width || 1600) * scale));
+      canvas.height = Math.max(1, Math.round((img.height || 1131) * scale));
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error("Canvas is not available in this browser"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Could not rasterize the drawing"))),
+        "image/png",
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not rasterize the drawing"));
+    };
+    img.src = url;
+  });
+}
