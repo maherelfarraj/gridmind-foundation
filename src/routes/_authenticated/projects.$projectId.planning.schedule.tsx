@@ -235,7 +235,6 @@ function SchedulePage() {
           creatingBaseline={createBaselineMut.isPending}
           lockingBaseline={lockBaselineMut.isPending}
         />
-        />
         <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
           <div className="flex items-center gap-2">
             <Switch
