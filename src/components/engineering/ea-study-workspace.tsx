@@ -60,7 +60,8 @@ import {
   resultSections,
   sortWarnings,
 } from "@/lib/ea/present";
-import { EA_DISCLAIMER, EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_VALIDATION_DISCLAIMER } from "@/lib/electrical/disclaimer";
 import {
   createEaStudyRevision,
   getEaStudy,
@@ -82,7 +83,7 @@ export function EaValidationNotice({ className }: { className?: string }) {
   return (
     <p className={className ?? "text-xs text-muted-foreground"}>
       <AlertTriangle className="mr-1 inline size-3 align-[-2px]" aria-hidden />
-      {EA_DISCLAIMER}
+      {EA_VALIDATION_DISCLAIMER}
     </p>
   );
 }
@@ -318,6 +319,8 @@ export function EaStudyWorkspace({
           </div>
         }
       />
+
+      <EaValidationNotice />
 
       {approval ? (
         <Card>

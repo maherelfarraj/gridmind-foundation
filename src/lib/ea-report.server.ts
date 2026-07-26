@@ -2,7 +2,8 @@
 // Kept out of *.functions.ts so server-fn splitting cannot drop them.
 import { assertExportAllowed } from "@/lib/export-guard";
 import { eaError, EA_STUDY_COLUMNS, EA_TABLE, type EaStudyRow } from "@/lib/ea-studies.server";
-import { EA_DISCLAIMER, EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_STUDY_SPECS } from "@/lib/ea/study-types";
+import { EA_VALIDATION_DISCLAIMER } from "@/lib/electrical/disclaimer";
 import { createExportTheme } from "@/lib/exports/theme";
 import type { EaReportApprovalStep, EaReportPayload } from "@/lib/exports/ea-study-report-pdf";
 
@@ -116,7 +117,7 @@ export async function buildReportContext(context: any, study: EaStudyRow) {
     submittedAt: study.submitted_at,
     approvedAt: study.approved_at,
     approvalSteps,
-    disclaimer: EA_DISCLAIMER,
+    disclaimer: EA_VALIDATION_DISCLAIMER,
     generatedAt: new Date().toISOString(),
   };
 
