@@ -36,6 +36,7 @@ import {
   Users,
   Wrench,
   type LucideIcon,
+  PanelsTopLeft,
 } from "lucide-react";
 import type { ModuleKey } from "./permissions";
 
