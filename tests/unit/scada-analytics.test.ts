@@ -209,3 +209,106 @@ describe("rankAssetPerformance", () => {
     expect(bottom[0].assetId).toBe("a");
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* P-178 — lost energy, availability, PR, data quality                  */
+/* ------------------------------------------------------------------ */
+
+describe("P-178 lost energy", () => {
+  const DAY = Date.parse("2026-03-01T00:00:00.000Z");
+  // Synthetic 15-min irradiance-expected curve: 06:00→18:00, flat 400 kW.
+  const curve = Array.from({ length: 48 }, (_, i) => ({
+    ts: new Date(DAY + (6 * 60 + i * 15) * 60_000).toISOString(),
+    expected_power_kw: 400,
+  }));
+  // 2 h equipment fault, 10:00 → 12:00, fully inside the daylight curve.
+  const down = [
+    { start: DAY + 10 * 3_600_000, end: DAY + 12 * 3_600_000 },
+  ];
+
+  it("integrates expected power over the down window (exact kWh)", () => {
+    // 400 kW × 2 h = 800 kWh
+    expect(lostEnergyKwh(down, curve, 15)).toBeCloseTo(800, 3);
+  });
+
+  it("returns 0 with zero downtime", () => {
+    expect(lostEnergyKwh([], curve, 15)).toBe(0);
+  });
+
+  it("returns 0 when no expected curve is available (never fabricates)", () => {
+    expect(lostEnergyKwh(down, [], 15)).toBe(0);
+  });
+});
+
+describe("P-178 availability", () => {
+  const PERIOD = 30 * 24 * 60; // 43 200 min
+
+  it("30-day window with 432 downtime minutes is 99.0%", () => {
+    expect(availabilityPct(PERIOD, 432)).toBe(99);
+  });
+
+  it("grid-exclusion variant removes grid minutes from both terms", () => {
+    // 432 down of which 432 is grid → 100% contractual availability.
+    expect(
+      availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 432 }),
+    ).toBe(100);
+    // Half grid: (432−216)/(43200−216) = 0.502...%
+    expect(
+      availabilityPct(PERIOD, 432, { excludeGrid: true, gridOutageMinutes: 216 }),
+    ).toBeCloseTo(99.497, 2);
+  });
+
+  it("returns null for a non-positive period", () => {
+    expect(availabilityPct(0, 10)).toBeNull();
+    expect(availabilityPct(-5, 0)).toBeNull();
+  });
+});
+
+describe("P-178 performance ratio", () => {
+  it("computes PR from known inputs", () => {
+    // 5.5 kWh/m² × 1000 kW = 5500 kWh reference; 4400 actual → 80%
+    expect(performanceRatio(4400, 5.5, 1000)).toBe(80);
+  });
+
+  it("returns null without irradiance (never 0)", () => {
+    expect(performanceRatio(4400, null, 1000)).toBeNull();
+    expect(performanceRatio(4400, 0, 1000)).toBeNull();
+  });
+});
+
+describe("P-178 data quality", () => {
+  const PERIOD = 24 * 60; // one day
+  const POLL = 5; // 5-minute poll interval → 288 expected samples
+
+  it("reports the correct missing % for a 1 h gap", () => {
+    const received = 288 - 12; // one hour of 5-min samples missing
+    const q = dataQuality(PERIOD, POLL, Array.from({ length: received }, () => "good"));
+    expect(q.expectedSamples).toBe(288);
+    expect(q.receivedSamples).toBe(received);
+    expect(q.missingSamples).toBe(12);
+    expect(q.missingPct).toBeCloseTo((12 / 288) * 100, 3);
+  });
+
+  function pair(hours: number, divergencePct: number) {
+    return {
+      label: "poa_irradiance",
+      samples: Array.from({ length: hours }, (_, i) => ({
+        ts: new Date(Date.parse("2026-03-01T00:00:00.000Z") + i * 3_600_000).toISOString(),
+        a: 1000,
+        b: 1000 * (1 - divergencePct / 100),
+      })),
+    };
+  }
+
+  it("flags redundant sensors diverging 3% for 25 h", () => {
+    const q = dataQuality(PERIOD, POLL, ["good"], [pair(25, 3)]);
+    expect(q.driftFlags).toHaveLength(1);
+    expect(q.driftFlags[0].label).toBe("poa_irradiance");
+    expect(q.driftFlags[0].maxDivergencePct).toBeGreaterThan(2);
+  });
+
+  it("does not flag a 2 h divergence", () => {
+    const q = dataQuality(PERIOD, POLL, ["good"], [pair(2, 3)]);
+    expect(q.driftFlags).toHaveLength(0);
+  });
+});
