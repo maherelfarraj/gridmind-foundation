@@ -213,22 +213,22 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
       .select("id, from_object_id, from_port, to_object_id, to_port, connection_type, properties")
       .eq("revision_id", state.revisionId!);
 
-    const snapshot = validateConnectivity(
+    const issues = runValidation(
       (objRows ?? []) as unknown as ConnObject[],
       (connRows ?? []) as unknown as ConnEdge[],
       SYMBOLS,
-      { voltageLevels: [0.69, 33] },
+      { projectVoltagesKv: [0.69, 33] },
     );
     expect(
-      snapshot.issues.filter((i) => i.severity === "error"),
-      JSON.stringify(snapshot.issues),
+      issues.filter((i) => i.severity === "error"),
+      JSON.stringify(issues),
     ).toHaveLength(0);
 
     await client.rpc("write_audit_log", {
       p_action: "sld.validated",
       p_entity: "sld_revisions",
       p_entity_id: state.revisionId!,
-      p_metadata: { errors: 0, warnings: snapshot.issues.length, via: "e2e_sld_smoke" },
+      p_metadata: { errors: 0, warnings: issues.length, via: "e2e_sld_smoke" },
     });
 
     // ----------------------------------------------------------------- 5
