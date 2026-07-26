@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { runCalculator, summariseWarnings } from "@/lib/ea-calc.server";
 import {
   auditStudy,
   canWriteStudy,
@@ -63,6 +64,23 @@ const updateInput = z.object({
   warnings: z.array(warningSchema).max(200).optional(),
   standardsRef: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
 });
+
+const saveInput = z
+  .object({
+    studyId: z.string().uuid().nullable().default(null),
+    projectId: z.string().uuid().nullable().default(null),
+    studyType: studyTypeSchema,
+    title: z.string().trim().min(2).max(160).nullable().default(null),
+    inputSheet: z.unknown(),
+    standardsRef: z.array(z.string().trim().min(1).max(120)).max(20).nullable().default(null),
+  })
+  .transform((v) => ({
+    ...v,
+    studyId: v.studyId ?? undefined,
+    projectId: v.projectId ?? undefined,
+    title: v.title ?? undefined,
+    standardsRef: v.standardsRef ?? undefined,
+  }));
 
 const studyIdInput = z.object({ studyId: z.string().uuid() });
 
