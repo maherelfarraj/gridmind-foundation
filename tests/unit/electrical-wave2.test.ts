@@ -35,9 +35,9 @@ describe("sizeUpsBattery", () => {
     const out = sizeUpsBattery(base);
     // 100 kW / 0.95 = 105.263 kW dc -> 52.63 kWh over 30 min -> 109.65 Ah raw.
     expect(out.results.dcPowerKw).toBeCloseTo(105.263, 2);
-    expect(out.results.requiredEnergyKwh).toBeCloseTo(26.316, 2);
-    expect(out.results.rawAh).toBeCloseTo(54.82, 1);
-    expect(out.results.requiredAh).toBeCloseTo((54.82 / 0.8) * 1.1, 0);
+    expect(out.results.requiredEnergyKwh).toBeCloseTo(52.632, 2);
+    expect(out.results.rawAh).toBeCloseTo(109.65, 1);
+    expect(out.results.requiredAh).toBeCloseTo((109.65 / 0.8) * 1.1, 0);
     expect(out.results.cellsInSeries).toBe(Math.ceil(480 / 1.75));
     expect(out.results.suggestedUpsKva).toBe(120);
     expect(out.assumptionsEcho.length).toBeGreaterThan(0);
