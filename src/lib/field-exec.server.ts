@@ -179,11 +179,13 @@ export async function loadPurchaseOrderOptions(
     .order("po_number", { ascending: false })
     .limit(200);
   if (error) throw error;
-  return ((data ?? []) as unknown as Array<{
-    id: string;
-    po_number: string;
-    vendors: { name: string } | null;
-  }>).map((r) => ({
+  return (
+    (data ?? []) as unknown as Array<{
+      id: string;
+      po_number: string;
+      vendors: { name: string } | null;
+    }>
+  ).map((r) => ({
     id: r.id,
     po_number: r.po_number,
     vendor_name: r.vendors?.name ?? null,

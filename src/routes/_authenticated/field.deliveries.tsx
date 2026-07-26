@@ -181,11 +181,7 @@ function DeliveriesPage() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="dl-carrier">Carrier</Label>
-              <Input
-                id="dl-carrier"
-                value={carrier}
-                onChange={(e) => setCarrier(e.target.value)}
-              />
+              <Input id="dl-carrier" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
             </div>
             <div className="sm:col-span-4">
               <Button type="button" disabled={create.isPending} onClick={() => create.mutate()}>

@@ -28,11 +28,7 @@ import {
   setCrewAssignment,
   upsertWorkFront,
 } from "@/lib/field-exec.functions";
-import {
-  crewHeadcountByFront,
-  FIELD_DISCIPLINES,
-  type CrewLike,
-} from "@/lib/field-exec.rules";
+import { crewHeadcountByFront, FIELD_DISCIPLINES, type CrewLike } from "@/lib/field-exec.rules";
 import { TRADES, TRADE_LABELS, type Trade } from "@/lib/dpr.rules";
 
 export const Route = createFileRoute("/_authenticated/field/work-fronts")({
@@ -128,9 +124,8 @@ function WorkFrontsPage() {
   );
 
   const headcountFor = (frontId: string, trade: Trade) =>
-    crew.find(
-      (c) => c.work_front_id === frontId && c.assignment_date === date && c.trade === trade,
-    )?.headcount ?? 0;
+    crew.find((c) => c.work_front_id === frontId && c.assignment_date === date && c.trade === trade)
+      ?.headcount ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -225,9 +220,7 @@ function WorkFrontsPage() {
                 <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
                   <span className="min-w-0 truncate">
                     {f.name}
-                    {f.area ? (
-                      <span className="text-muted-foreground"> · {f.area}</span>
-                    ) : null}
+                    {f.area ? <span className="text-muted-foreground"> · {f.area}</span> : null}
                   </span>
                   <span className="flex items-center gap-2">
                     <Badge variant="outline" className="capitalize">

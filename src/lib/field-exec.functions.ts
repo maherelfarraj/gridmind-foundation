@@ -41,12 +41,10 @@ export const getFieldAccess = createServerFn({ method: "GET" })
 export const listWorkFronts = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => z.object({ projectId: uuid }).parse(raw))
-  .handler(
-    async ({ data, context }): Promise<{ fronts: WorkFrontRow[]; crew: CrewRow[] }> => {
-      requireSupabaseAuth(context);
-      return loadWorkFronts(context.supabase, data.projectId);
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ fronts: WorkFrontRow[]; crew: CrewRow[] }> => {
+    requireSupabaseAuth(context);
+    return loadWorkFronts(context.supabase, data.projectId);
+  });
 
 export const upsertWorkFront = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -65,7 +63,10 @@ export const upsertWorkFront = createServerFn({ method: "POST" })
       created_by: context.user!.id,
     };
     const query = data.id
-      ? context.supabase.from("work_fronts").update(row as never).eq("id", data.id)
+      ? context.supabase
+          .from("work_fronts")
+          .update(row as never)
+          .eq("id", data.id)
       : context.supabase.from("work_fronts").insert(row as never);
     const { data: saved, error } = await query
       .select("id, project_id, name, area, discipline, is_active")
@@ -151,7 +152,10 @@ export const upsertEquipmentRecord = createServerFn({ method: "POST" })
       created_by: context.user!.id,
     };
     const query = data.id
-      ? context.supabase.from("equipment_records").update(row as never).eq("id", data.id)
+      ? context.supabase
+          .from("equipment_records")
+          .update(row as never)
+          .eq("id", data.id)
       : context.supabase
           .from("equipment_records")
           .upsert(row as never, { onConflict: "company_id,equipment_tag,log_date" });
@@ -257,7 +261,10 @@ export const upsertDelivery = createServerFn({ method: "POST" })
       created_by: context.user!.id,
     };
     const query = data.id
-      ? context.supabase.from("delivery_tracking").update(row as never).eq("id", data.id)
+      ? context.supabase
+          .from("delivery_tracking")
+          .update(row as never)
+          .eq("id", data.id)
       : context.supabase.from("delivery_tracking").insert(row as never);
     const { data: saved, error } = await query
       .select(

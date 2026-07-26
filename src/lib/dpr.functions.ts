@@ -25,7 +25,6 @@ import {
 import { gpsRejectionReason } from "@/lib/field-exec.rules";
 import { withIdempotency } from "@/lib/offline-mirror";
 
-
 // ---------------------------------------------------------------------------
 // types
 // ---------------------------------------------------------------------------
@@ -789,7 +788,6 @@ export const attachPhoto = createServerFn({ method: "POST" })
           area: data.area ?? null,
           media_type: data.mediaType,
           uploaded_by: userId,
-
         };
         const { data: row, error } = await context.supabase
           .from("site_photos")
