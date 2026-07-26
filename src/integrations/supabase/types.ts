@@ -2513,6 +2513,344 @@ export type Database = {
           },
         ]
       }
+      ea_grid_code_responses: {
+        Row: {
+          comment: string | null
+          company_id: string
+          created_at: string
+          evidence: string | null
+          id: string
+          item_index: number
+          project_id: string
+          responded_by: string | null
+          status: string
+          study_id: string | null
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          company_id: string
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          item_index: number
+          project_id: string
+          responded_by?: string | null
+          status?: string
+          study_id?: string | null
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          company_id?: string
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          item_index?: number
+          project_id?: string
+          responded_by?: string | null
+          status?: string
+          study_id?: string | null
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_grid_code_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_grid_code_responses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_grid_code_responses_responded_by_fkey"
+            columns: ["responded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_grid_code_responses_study_id_fkey"
+            columns: ["study_id"]
+            isOneToOne: false
+            referencedRelation: "ea_studies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_grid_code_responses_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ea_grid_code_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ea_grid_code_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          items: Json
+          market: string
+          name: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          items?: Json
+          market: string
+          name: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          items?: Json
+          market?: string
+          name?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_grid_code_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_grid_code_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ea_protection_devices: {
+        Row: {
+          ansi_codes: string[]
+          breaking_capacity_ka: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          ct_ratio: string | null
+          curve_type: string | null
+          device_type: string
+          id: string
+          making_capacity_ka: number | null
+          notes: string | null
+          project_id: string
+          rated_current_a: number | null
+          sld_object_id: string | null
+          sort_order: number
+          source: string
+          study_id: string | null
+          tag: string
+          updated_at: string
+          voltage_kv: number | null
+          vt_ratio: string | null
+        }
+        Insert: {
+          ansi_codes?: string[]
+          breaking_capacity_ka?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          ct_ratio?: string | null
+          curve_type?: string | null
+          device_type?: string
+          id?: string
+          making_capacity_ka?: number | null
+          notes?: string | null
+          project_id: string
+          rated_current_a?: number | null
+          sld_object_id?: string | null
+          sort_order?: number
+          source?: string
+          study_id?: string | null
+          tag: string
+          updated_at?: string
+          voltage_kv?: number | null
+          vt_ratio?: string | null
+        }
+        Update: {
+          ansi_codes?: string[]
+          breaking_capacity_ka?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          ct_ratio?: string | null
+          curve_type?: string | null
+          device_type?: string
+          id?: string
+          making_capacity_ka?: number | null
+          notes?: string | null
+          project_id?: string
+          rated_current_a?: number | null
+          sld_object_id?: string | null
+          sort_order?: number
+          source?: string
+          study_id?: string | null
+          tag?: string
+          updated_at?: string
+          voltage_kv?: number | null
+          vt_ratio?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_protection_devices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_protection_devices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_protection_devices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_protection_devices_study_id_fkey"
+            columns: ["study_id"]
+            isOneToOne: false
+            referencedRelation: "ea_studies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ea_relay_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          curve: string | null
+          delay_s: number | null
+          device_id: string
+          function_code: string
+          id: string
+          notes: string | null
+          pickup: number | null
+          project_id: string
+          revision: number
+          set_at: string | null
+          set_by: string | null
+          setting_group: number
+          settings: Json
+          time_dial: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          curve?: string | null
+          delay_s?: number | null
+          device_id: string
+          function_code: string
+          id?: string
+          notes?: string | null
+          pickup?: number | null
+          project_id: string
+          revision?: number
+          set_at?: string | null
+          set_by?: string | null
+          setting_group?: number
+          settings?: Json
+          time_dial?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          curve?: string | null
+          delay_s?: number | null
+          device_id?: string
+          function_code?: string
+          id?: string
+          notes?: string | null
+          pickup?: number | null
+          project_id?: string
+          revision?: number
+          set_at?: string | null
+          set_by?: string | null
+          setting_group?: number
+          settings?: Json
+          time_dial?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ea_relay_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_relay_settings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_relay_settings_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "ea_protection_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_relay_settings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ea_relay_settings_set_by_fkey"
+            columns: ["set_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ea_studies: {
         Row: {
           approval_instance_id: string | null

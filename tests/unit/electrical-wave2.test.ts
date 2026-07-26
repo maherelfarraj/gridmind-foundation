@@ -291,11 +291,11 @@ describe("registry wiring", () => {
       expect(calc.method.length).toBeGreaterThan(40);
       expect(isCalculatorStudyType(type)).toBe(true);
     }
-    expect(CALCULATOR_STUDY_TYPES).toHaveLength(12);
+    expect(CALCULATOR_STUDY_TYPES).toHaveLength(15); // + the three P-168 worksheets
   });
 
   it("rejects an invalid input sheet through the registry schema", () => {
     expect(() => getCalculator("ups_battery").compute({ loadKw: -1 })).toThrow();
-    expect(isCalculatorStudyType("arc_flash")).toBe(false);
+    expect(isCalculatorStudyType("motor_starting")).toBe(false);
   });
 });
