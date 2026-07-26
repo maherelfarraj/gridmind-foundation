@@ -32,6 +32,7 @@ import {
   type Rect,
 } from "./geometry";
 import { portPosition, symbolDef } from "./symbols";
+import type { TagArea } from "./tagging";
 
 export const MAX_HISTORY = 100;
 export const MIN_ZOOM = 0.1;
@@ -75,6 +76,7 @@ export type CanvasState = {
   gridMm: GridMm;
   snapEnabled: boolean;
   layers: SldLayer[];
+  areas: TagArea[];
   objects: SldCanvasObject[];
   connections: SldConnection[];
   selection: string[];
@@ -120,6 +122,11 @@ export type CanvasActions = {
   placeObject: (obj: SldCanvasObject) => void;
   moveSelection: (dx: number, dy: number) => void;
   setObjectProps: (id: string, patch: Partial<SldCanvasObject>) => void;
+  /** P-141 — applies a tagging plan locally (undoable) before the next save. */
+  applyTagPlan: (
+    tags: Array<{ id: string; tag: string }>,
+    cables?: Array<{ id: string; cable_number: string }>,
+  ) => void;
   rotateSelection: () => void;
   mirrorSelection: () => void;
   alignSelection: (mode: AlignMode) => void;
@@ -290,6 +297,7 @@ export const initialCanvasState: CanvasState = {
   gridMm: meta.gridMm,
   snapEnabled: meta.snapEnabled,
   layers: meta.layers,
+  areas: meta.areas,
   objects: [],
   connections: [],
   selection: [],
@@ -352,6 +360,7 @@ export const createCanvasStore = () =>
           objects,
           connections,
           layers: m.layers,
+          areas: m.areas ?? [],
           gridMm: m.gridMm,
           snapEnabled: m.snapEnabled,
           selection: [],
@@ -443,6 +452,18 @@ export const createCanvasStore = () =>
         commit("property", (s) => ({
           objects: s.objects.map((o) => (o.id === id ? { ...o, ...patch } : o)),
         })),
+
+      applyTagPlan: (tags, cables = []) => {
+        if (tags.length === 0 && cables.length === 0) return;
+        const tagMap = new Map(tags.map((t) => [t.id, t.tag]));
+        const cableMap = new Map(cables.map((c) => [c.id, c.cable_number]));
+        commit("property", (s) => ({
+          objects: s.objects.map((o) => (tagMap.has(o.id) ? { ...o, tag: tagMap.get(o.id)! } : o)),
+          connections: s.connections.map((c) =>
+            cableMap.has(c.id) ? { ...c, cable_number: cableMap.get(c.id)! } : c,
+          ),
+        }));
+      },
 
       rotateSelection: () => {
         const s0 = get();
