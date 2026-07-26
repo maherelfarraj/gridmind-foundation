@@ -2,11 +2,20 @@
 // library lands in P-139; this module only provides footprints + port anchors
 // so the canvas can place, snap and connect objects today.
 
+import {
+  mergeSymbolTypes,
+  parseSymbolRecord,
+  type ParsedSymbol,
+  type SymbolTypeRecord,
+} from "./symbol-registry";
+
 export type SymbolPort = { id: string; x: number; y: number };
 
 export type SymbolDef = {
   type: string;
   label: string;
+  /** Sanitized 40×40 viewBox markup from the registry, when available. */
+  svg?: string;
   /** Footprint in mm, origin at the symbol centre. */
   w: number;
   h: number;
@@ -38,6 +47,17 @@ export const SYMBOL_DEFS: Record<string, SymbolDef> = {
 };
 
 export function symbolDef(type: string): SymbolDef {
+  const parsed = PARSED[type];
+  if (parsed) {
+    return {
+      type,
+      label: parsed.record.display_name,
+      svg: parsed.svg,
+      w: parsed.w,
+      h: parsed.h,
+      ports: parsed.ports,
+    };
+  }
   return SYMBOL_DEFS[type] ?? generic(type, type);
 }
 
@@ -52,4 +72,34 @@ export function portPosition(
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
   return { x: obj.x + px * cos - py * sin, y: obj.y + px * sin + py * cos };
+}
+
+// ---------------------------------------------------------------------------
+// P-139 — data-driven registry. Symbol geometry now comes from
+// public.sld_symbol_types; the definitions above remain only as a fallback for
+// legacy objects whose type is missing from the registry.
+
+let REGISTRY: Record<string, SymbolTypeRecord> = {};
+let PARSED: Record<string, ParsedSymbol> = {};
+
+/** Install the merged (global + company) registry for the current session. */
+export function setSymbolRegistry(records: SymbolTypeRecord[]): void {
+  REGISTRY = {};
+  PARSED = {};
+  for (const record of mergeSymbolTypes(records)) {
+    REGISTRY[record.type_key] = record;
+    PARSED[record.type_key] = parseSymbolRecord(record);
+  }
+}
+
+export function symbolRecord(type: string): SymbolTypeRecord | undefined {
+  return REGISTRY[type];
+}
+
+export function parsedSymbol(type: string): ParsedSymbol | undefined {
+  return PARSED[type];
+}
+
+export function registrySize(): number {
+  return Object.keys(REGISTRY).length;
 }

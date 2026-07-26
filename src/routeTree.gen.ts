@@ -39,6 +39,7 @@ import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/aud
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
+import { Route as AuthenticatedSettingsSldSymbolsRouteImport } from './routes/_authenticated/settings.sld-symbols'
 import { Route as AuthenticatedSettingsShareLinksRouteImport } from './routes/_authenticated/settings.share-links'
 import { Route as AuthenticatedSettingsScheduledReportsRouteImport } from './routes/_authenticated/settings.scheduled-reports'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings.profile'
@@ -329,6 +330,12 @@ const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/settings/users',
     path: '/settings/users',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsSldSymbolsRoute =
+  AuthenticatedSettingsSldSymbolsRouteImport.update({
+    id: '/settings/sld-symbols',
+    path: '/settings/sld-symbols',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsShareLinksRoute =
@@ -1229,6 +1236,7 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
+  '/settings/sld-symbols': typeof AuthenticatedSettingsSldSymbolsRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1389,6 +1397,7 @@ export interface FileRoutesByTo {
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
+  '/settings/sld-symbols': typeof AuthenticatedSettingsSldSymbolsRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1557,6 +1566,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/settings/scheduled-reports': typeof AuthenticatedSettingsScheduledReportsRoute
   '/_authenticated/settings/share-links': typeof AuthenticatedSettingsShareLinksRoute
+  '/_authenticated/settings/sld-symbols': typeof AuthenticatedSettingsSldSymbolsRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
@@ -1727,6 +1737,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/scheduled-reports'
     | '/settings/share-links'
+    | '/settings/sld-symbols'
     | '/settings/users'
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
@@ -1887,6 +1898,7 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/settings/scheduled-reports'
     | '/settings/share-links'
+    | '/settings/sld-symbols'
     | '/settings/users'
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
@@ -2054,6 +2066,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/profile'
     | '/_authenticated/settings/scheduled-reports'
     | '/_authenticated/settings/share-links'
+    | '/_authenticated/settings/sld-symbols'
     | '/_authenticated/settings/users'
     | '/_authenticated/settings/webhooks'
     | '/api/cron/approval-escalations'
@@ -2399,6 +2412,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/users'
       fullPath: '/settings/users'
       preLoaderRoute: typeof AuthenticatedSettingsUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/sld-symbols': {
+      id: '/_authenticated/settings/sld-symbols'
+      path: '/settings/sld-symbols'
+      fullPath: '/settings/sld-symbols'
+      preLoaderRoute: typeof AuthenticatedSettingsSldSymbolsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/share-links': {
@@ -3839,6 +3859,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsScheduledReportsRoute: typeof AuthenticatedSettingsScheduledReportsRoute
   AuthenticatedSettingsShareLinksRoute: typeof AuthenticatedSettingsShareLinksRoute
+  AuthenticatedSettingsSldSymbolsRoute: typeof AuthenticatedSettingsSldSymbolsRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
@@ -3934,6 +3955,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsScheduledReportsRoute:
     AuthenticatedSettingsScheduledReportsRoute,
   AuthenticatedSettingsShareLinksRoute: AuthenticatedSettingsShareLinksRoute,
+  AuthenticatedSettingsSldSymbolsRoute: AuthenticatedSettingsSldSymbolsRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,

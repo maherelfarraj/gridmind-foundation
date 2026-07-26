@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SheetBorder, type TitleBlockData } from "./title-block";
+import { CanvasGlyph } from "./symbol-glyph";
+import { SYMBOL_DRAG_MIME } from "./symbol-palette";
 import { isLayerLocked, nearestPort, snapValue, useCanvasStore } from "@/lib/sld/canvas-store";
 import type { SldCanvasObject } from "@/lib/sld/canvas-types";
 import { symbolDef } from "@/lib/sld/symbols";
@@ -9,7 +11,7 @@ import { symbolDef } from "@/lib/sld/symbols";
 type Props = {
   editable: boolean;
   titleBlock: TitleBlockData;
-  onPlace: (point: { x: number; y: number }) => void;
+  onPlace: (point: { x: number; y: number }, symbolType?: string) => void;
 };
 
 export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
@@ -178,6 +180,22 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
         onTouchEnd={() => {
           pinchRef.current = null;
         }}
+        onDragOver={(e) => {
+          if (!editable) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "copy";
+          store.getState().setSnapIndicator(snapPoint(toSheet(e.clientX, e.clientY)));
+        }}
+        onDragLeave={() => store.getState().setSnapIndicator(null)}
+        onDrop={(e) => {
+          if (!editable) return;
+          e.preventDefault();
+          const type =
+            e.dataTransfer.getData(SYMBOL_DRAG_MIME) || e.dataTransfer.getData("text/plain");
+          store.getState().setSnapIndicator(null);
+          if (!type) return;
+          onPlace(snapPoint(toSheet(e.clientX, e.clientY)), type);
+        }}
       >
         <defs>
           <pattern
@@ -220,12 +238,19 @@ export function SldCanvas({ editable, titleBlock, onPlace }: Props) {
                   className={
                     selected
                       ? "fill-primary/15 stroke-primary"
-                      : "fill-card stroke-foreground/70 hover:stroke-primary"
+                      : def.svg
+                        ? "fill-card/60 stroke-transparent hover:stroke-primary"
+                        : "fill-card stroke-foreground/70 hover:stroke-primary"
                   }
                   strokeWidth={selected ? 0.9 : 0.5}
                 />
+                {def.svg ? (
+                  <g className="stroke-foreground fill-none" strokeWidth={1.4}>
+                    <CanvasGlyph svg={def.svg} w={def.w} h={def.h} />
+                  </g>
+                ) : null}
                 <text
-                  y={1.4}
+                  y={def.h / 2 + 3.4}
                   textAnchor="middle"
                   className="pointer-events-none fill-foreground"
                   style={{ fontSize: 3.2 }}
