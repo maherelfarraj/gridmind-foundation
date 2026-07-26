@@ -36,6 +36,7 @@ import {
   Users,
   Wrench,
   type LucideIcon,
+  PanelsTopLeft,
 } from "lucide-react";
 import type { ModuleKey } from "./permissions";
 
@@ -75,6 +76,12 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { moduleKey: "crm", label: "Develop & Sell (CRM)", url: "/crm/pipeline", icon: Handshake },
       { moduleKey: "engineering", label: "Engineering", url: "/projects", icon: PencilRuler },
+      {
+        moduleKey: "engineering",
+        label: "PV equipment library",
+        url: "/engineering/pv-library",
+        icon: PanelsTopLeft,
+      },
       { moduleKey: "procurement", label: "Procurement", url: "/procurement/vendors", icon: Truck },
       { moduleKey: "procurement", label: "RFQs", url: "/procurement/rfqs", icon: MailPlus },
       {
