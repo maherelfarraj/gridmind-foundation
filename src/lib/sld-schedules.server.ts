@@ -13,11 +13,14 @@ import {
   type ScheduleType,
 } from "./sld/schedules";
 
+/** Rows are plain JSON scalars so they cross the server-fn boundary cleanly. */
+export type ScheduleJsonRow = Record<string, string | number | boolean | null>;
+
 export type ScheduleRecord = {
   id: string;
   revision_id: string;
   schedule_type: ScheduleType;
-  rows: Record<string, unknown>[];
+  rows: ScheduleJsonRow[];
   row_count: number;
   generated_at: string;
   generated_by: string | null;
@@ -32,7 +35,7 @@ export function toScheduleRecord(row: any): ScheduleRecord {
     id: row.id as string,
     revision_id: row.revision_id as string,
     schedule_type: row.schedule_type as ScheduleType,
-    rows: Array.isArray(row.rows) ? (row.rows as Record<string, unknown>[]) : [],
+    rows: Array.isArray(row.rows) ? (row.rows as ScheduleJsonRow[]) : [],
     row_count: Number(row.row_count ?? 0),
     generated_at: row.generated_at as string,
     generated_by: (row.generated_by ?? null) as string | null,
@@ -208,7 +211,7 @@ export async function loadScheduleWithDrawing(context: any, scheduleId: string) 
 }
 
 /** CSV built through the shared export helper, column order from the registry. */
-export function scheduleCsv(type: ScheduleType, rows: Record<string, unknown>[]): string {
+export function scheduleCsv(type: ScheduleType, rows: ScheduleJsonRow[]): string {
   const { headers, body } = scheduleMatrix(type, rows);
   return toCsv(headers, body);
 }

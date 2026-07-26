@@ -55,7 +55,7 @@ export const generateSldSchedules = createServerFn({ method: "POST" })
       drawing,
       graph.revisionId,
       set,
-      context.userId,
+      context.user.id,
     );
 
     await cadAudit(context, "sld.schedules_generated", drawing.id, {
