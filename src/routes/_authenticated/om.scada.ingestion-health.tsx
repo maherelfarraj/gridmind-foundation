@@ -109,6 +109,27 @@ function IngestionHealthPage() {
     onError: () => toast.error("Toggle failed"),
   });
 
+  const queueFn = useServerFn(getIngestionQueue);
+  const queueQuery = useQuery({
+    queryKey: ["scada", "ingestion-queue", activeCompanyId],
+    queryFn: () => queueFn({ data: { companyId: activeCompanyId! } }),
+    enabled: Boolean(activeCompanyId),
+    refetchInterval: 30_000,
+  });
+  const queue = queueQuery.data;
+  const deadLetters = queue?.deadLetters ?? [];
+  const pendingReplay = deadLetters.filter((d) => !d.replayed_at);
+
+  const replayFn = useServerFn(replayIngestionDeadLetters);
+  const replayMut = useMutation({
+    mutationFn: () => replayFn({ data: { companyId: activeCompanyId! } }),
+    onSuccess: (res) => {
+      toast.success(`${res.replayed} dead letter(s) requeued`);
+      qc.invalidateQueries({ queryKey: ["scada", "ingestion-queue", activeCompanyId] });
+    },
+    onError: () => toast.error("Replay failed"),
+  });
+
   const kpis = query.data?.kpis;
   const connectors = query.data?.connectors ?? [];
   const runs = query.data?.runs ?? [];
@@ -134,20 +155,46 @@ function IngestionHealthPage() {
         />
       </KpiGrid>
 
+      <KpiGrid columns={4}>
+        <KpiTile
+          label="Retry queue"
+          value={String(queue?.pending ?? 0)}
+          status={(queue?.pending ?? 0) > 50 ? "warn" : "good"}
+        />
+        <KpiTile label="Processing" value={String(queue?.processing ?? 0)} />
+        <KpiTile
+          label="Dead letters"
+          value={String(queue?.dead ?? 0)}
+          status={(queue?.dead ?? 0) > 0 ? "bad" : "good"}
+        />
+        <KpiTile label="Oldest pending" value={relative(queue?.oldestPendingAt ?? null)} />
+      </KpiGrid>
+
       <Card>
         <CardHeader>
           <CardTitle>Connector status</CardTitle>
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <Button size="sm" variant="outline" disabled>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={pendingReplay.length === 0 || replayMut.isPending}
+                  onClick={() => replayMut.mutate()}
+                >
                   Replay dead letters
+                  {pendingReplay.length > 0 ? ` (${pendingReplay.length})` : ""}
                 </Button>
               </span>
             </TooltipTrigger>
-            <TooltipContent>Wired with the P-177 retry queue.</TooltipContent>
+            <TooltipContent>
+              {pendingReplay.length === 0
+                ? "No dead letters awaiting replay."
+                : "Requeue dead-lettered batches with a fresh attempt budget."}
+            </TooltipContent>
           </Tooltip>
         </CardHeader>
+
         <CardContent>
           {query.isLoading ? (
             <Skeleton className="h-24 w-full" />
