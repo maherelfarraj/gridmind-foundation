@@ -107,6 +107,8 @@ export interface SitePhotoRow {
   discipline: string | null;
   area: string | null;
   taken_at: string;
+  media_type?: "photo" | "video" | null;
+
   uploaded_by: string | null;
   created_at: string;
 }
