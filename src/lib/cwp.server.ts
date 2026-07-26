@@ -57,7 +57,9 @@ async function mintNumber(
     .order(column, { ascending: false })
     .limit(1);
   if (error) throw error;
-  const existing = ((data ?? []) as Array<Record<string, string>>).map((r) => r[column]);
+  const existing = ((data ?? []) as unknown as Array<Record<string, string>>).map(
+    (r) => r[column],
+  );
   return formatSequenceNumber(prefix, nextSequence(prefix, existing));
 }
 
