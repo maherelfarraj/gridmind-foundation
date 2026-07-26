@@ -15,6 +15,7 @@ export type ExportType =
   | "turnover_pack"
   | "audit_pack"
   | "sld_schedule"
+  | "sld_drawing"
   | "sld_revision_diff"
   | "csv";
 
