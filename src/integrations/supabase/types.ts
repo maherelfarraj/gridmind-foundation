@@ -427,6 +427,100 @@ export type Database = {
           },
         ]
       }
+      asset_nodes: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equipment_id: string | null
+          id: string
+          metadata: Json
+          name: string
+          node_type: Database["public"]["Enums"]["asset_node_type"]
+          parent_id: string | null
+          project_id: string
+          scada_asset_id: string | null
+          sort_order: number
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          node_type: Database["public"]["Enums"]["asset_node_type"]
+          parent_id?: string | null
+          project_id: string
+          scada_asset_id?: string | null
+          sort_order?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          node_type?: Database["public"]["Enums"]["asset_node_type"]
+          parent_id?: string | null
+          project_id?: string
+          scada_asset_id?: string | null
+          sort_order?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_nodes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_nodes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_nodes_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_nodes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "asset_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_nodes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_nodes_scada_asset_id_fkey"
+            columns: ["scada_asset_id"]
+            isOneToOne: false
+            referencedRelation: "scada_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log_retention_policies: {
         Row: {
           company_id: string
@@ -10478,6 +10572,110 @@ export type Database = {
           },
         ]
       }
+      tag_dictionary: {
+        Row: {
+          alarm_deadband: number
+          alarm_hi: number | null
+          alarm_hi_hi: number | null
+          alarm_lo: number | null
+          alarm_lo_lo: number | null
+          asset_node_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          downsample_interval: string
+          enabled: boolean
+          id: string
+          metric: string
+          project_id: string
+          quality_flags: Json
+          raw_retention_days: number
+          scaling_factor: number
+          scaling_offset: number
+          tag: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          alarm_deadband?: number
+          alarm_hi?: number | null
+          alarm_hi_hi?: number | null
+          alarm_lo?: number | null
+          alarm_lo_lo?: number | null
+          asset_node_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          downsample_interval?: string
+          enabled?: boolean
+          id?: string
+          metric: string
+          project_id: string
+          quality_flags?: Json
+          raw_retention_days?: number
+          scaling_factor?: number
+          scaling_offset?: number
+          tag: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          alarm_deadband?: number
+          alarm_hi?: number | null
+          alarm_hi_hi?: number | null
+          alarm_lo?: number | null
+          alarm_lo_lo?: number | null
+          asset_node_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          downsample_interval?: string
+          enabled?: boolean
+          id?: string
+          metric?: string
+          project_id?: string
+          quality_flags?: Json
+          raw_retention_days?: number
+          scaling_factor?: number
+          scaling_offset?: number
+          tag?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_dictionary_asset_node_id_fkey"
+            columns: ["asset_node_id"]
+            isOneToOne: false
+            referencedRelation: "asset_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_dictionary_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_dictionary_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_dictionary_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tender_events: {
         Row: {
           company_id: string
@@ -12233,6 +12431,21 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
+      asset_node_type:
+        | "plant"
+        | "site"
+        | "block"
+        | "inverter_station"
+        | "inverter"
+        | "transformer"
+        | "switchgear"
+        | "meter"
+        | "weather_station"
+        | "bess_container"
+        | "battery_rack"
+        | "battery_module"
+        | "string"
+        | "sensor"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
       change_order_status:
@@ -12771,6 +12984,22 @@ export const Constants = {
         "client_viewer",
         "investor_viewer",
         "lender_viewer",
+      ],
+      asset_node_type: [
+        "plant",
+        "site",
+        "block",
+        "inverter_station",
+        "inverter",
+        "transformer",
+        "switchgear",
+        "meter",
+        "weather_station",
+        "bess_container",
+        "battery_rack",
+        "battery_module",
+        "string",
+        "sensor",
       ],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
