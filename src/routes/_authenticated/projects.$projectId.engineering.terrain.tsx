@@ -29,7 +29,11 @@ import {
   type TerrainCursor,
   type TerrainLayers,
 } from "@/components/engineering/terrain-canvas";
-import { getTerrainSurface, getTerrainWriteAccess, listTerrainSurfaces } from "@/lib/terrain.functions";
+import {
+  getTerrainSurface,
+  getTerrainWriteAccess,
+  listTerrainSurfaces,
+} from "@/lib/terrain.functions";
 import {
   parseServerError,
   terrainSurfaceQueryOptions,
@@ -146,8 +150,8 @@ function TerrainPage() {
                   <Row label="Source">{surface.source_type}</Row>
                   <Row label="CRS">{surface.crs}</Row>
                   <Row label="Grid">
-                    {surface.grid_rows ?? "—"}×{surface.grid_cols ?? "—"} @{" "}
-                    {surface.grid_spacing_m} m
+                    {surface.grid_rows ?? "—"}×{surface.grid_cols ?? "—"} @ {surface.grid_spacing_m}{" "}
+                    m
                   </Row>
                   <Row label="Elevation">
                     {surface.min_elevation_m?.toFixed(1) ?? "—"}–

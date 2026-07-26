@@ -67,9 +67,7 @@ describe("terrain contours", () => {
 
   it("is deterministic", () => {
     const grid = buildElevationGrid(planePoints(), { spacing: 10 });
-    expect(JSON.stringify(extractContours(grid, 1))).toBe(
-      JSON.stringify(extractContours(grid, 1)),
-    );
+    expect(JSON.stringify(extractContours(grid, 1))).toBe(JSON.stringify(extractContours(grid, 1)));
   });
 });
 
@@ -100,8 +98,8 @@ describe("terrain parsing", () => {
 
   it("rejects unsupported extensions and implausible elevations", () => {
     expect(() => parseTerrainFile("x.pdf", "")).toThrow(TerrainParseError);
-    expect(() =>
-      parseTerrainFile("bad.csv", "easting,northing,elevation_m\n0,0,99999"),
-    ).toThrow(TerrainParseError);
+    expect(() => parseTerrainFile("bad.csv", "easting,northing,elevation_m\n0,0,99999")).toThrow(
+      TerrainParseError,
+    );
   });
 });

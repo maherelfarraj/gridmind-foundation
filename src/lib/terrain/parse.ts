@@ -28,7 +28,8 @@ const MAX_ELEVATION_M = 9000;
 export const MAX_TERRAIN_POINTS = 40000;
 
 function assertPlausible(z: number, line: number) {
-  if (!Number.isFinite(z)) throw new TerrainParseError("bad_value", `Line ${line}: elevation is not a number.`);
+  if (!Number.isFinite(z))
+    throw new TerrainParseError("bad_value", `Line ${line}: elevation is not a number.`);
   if (z < MIN_ELEVATION_M || z > MAX_ELEVATION_M) {
     throw new TerrainParseError(
       "implausible_elevation",
@@ -146,8 +147,10 @@ export function parseEsriAsciiGrid(text: string): ParsedSurface {
   const cols = Math.round(header.ncols);
   const rows = Math.round(header.nrows);
   const cellsize = header.cellsize;
-  if (!(cols > 0 && rows > 0)) throw new TerrainParseError("bad_header", "ncols/nrows must be positive.");
-  if (!(cellsize > 0)) throw new TerrainParseError("bad_header", "cellsize must be greater than zero.");
+  if (!(cols > 0 && rows > 0))
+    throw new TerrainParseError("bad_header", "ncols/nrows must be positive.");
+  if (!(cellsize > 0))
+    throw new TerrainParseError("bad_header", "cellsize must be greater than zero.");
   if (rows * cols > MAX_TERRAIN_POINTS) {
     throw new TerrainParseError(
       "too_many_points",
@@ -179,7 +182,10 @@ export function parseEsriAsciiGrid(text: string): ParsedSurface {
     cells.forEach((cell, c) => {
       const z = Number(cell);
       if (!Number.isFinite(z)) {
-        throw new TerrainParseError("bad_value", `Data row ${r + 1}, column ${c + 1}: not a number.`);
+        throw new TerrainParseError(
+          "bad_value",
+          `Data row ${r + 1}, column ${c + 1}: not a number.`,
+        );
       }
       if (z === nodata) return;
       assertPlausible(z, r + 1);
@@ -220,7 +226,10 @@ export function parseTerrainFile(fileName: string, text: string): ParsedSurface 
     return parseEsriAsciiGrid(text);
   }
   if (lower.endsWith(".csv")) return parseTerrainCsv(text);
-  throw new TerrainParseError("unsupported_extension", "Upload a .csv or Esri ASCII .asc/.txt file.");
+  throw new TerrainParseError(
+    "unsupported_extension",
+    "Upload a .csv or Esri ASCII .asc/.txt file.",
+  );
 }
 
 /** Grid straight from a parsed DEM (keeps NODATA holes as nulls). */

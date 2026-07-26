@@ -28,12 +28,7 @@ export function contourLevels(min: number, max: number, interval: number): numbe
   return levels;
 }
 
-function cellSegments(
-  grid: ElevationGrid,
-  r: number,
-  c: number,
-  level: number,
-): Seg[] {
+function cellSegments(grid: ElevationGrid, r: number, c: number, level: number): Seg[] {
   const tl = valueAt(grid, r + 1, c);
   const tr = valueAt(grid, r + 1, c + 1);
   const br = valueAt(grid, r, c + 1);

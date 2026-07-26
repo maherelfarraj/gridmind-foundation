@@ -198,7 +198,12 @@ export function TerrainCanvas({
     const elevation = sampleElevation(grid, e, n);
     const r = Math.round((n - grid.originN) / grid.spacing);
     const c = Math.round((e - grid.originE) / grid.spacing);
-    return { easting: e, northing: n, elevation, slope: slopeAt(slope, r, c) } satisfies TerrainCursor;
+    return {
+      easting: e,
+      northing: n,
+      elevation,
+      slope: slopeAt(slope, r, c),
+    } satisfies TerrainCursor;
   }
 
   return (
@@ -260,8 +265,8 @@ export function TerrainCanvas({
         }}
       />
       <div className="pointer-events-none absolute left-3 top-3 rounded-md border border-border bg-background/85 px-2 py-1 text-xs text-muted-foreground">
-        {grid.rows}×{grid.cols} nodes · {grid.spacing.toFixed(1)} m spacing · {stats.min.toFixed(1)}–
-        {stats.max.toFixed(1)} m
+        {grid.rows}×{grid.cols} nodes · {grid.spacing.toFixed(1)} m spacing · {stats.min.toFixed(1)}
+        –{stats.max.toFixed(1)} m
       </div>
       <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-2 rounded-md border border-border bg-background/85 px-2 py-1 text-xs text-muted-foreground">
         <span>0%</span>

@@ -172,10 +172,7 @@ export const parseTerrainSurface = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ surfaceId: string; points: number; contours: number }> => {
+    async ({ data, context }): Promise<{ surfaceId: string; points: number; contours: number }> => {
       requireSupabaseAuth(context);
       if (!(await canWriteTerrain(context))) httpError(403, "forbidden");
       const project = await assertProjectVisible(context, data.projectId);
@@ -256,7 +253,12 @@ export const parseTerrainSurface = createServerFn({ method: "POST" })
         .single();
       if (sErr) {
         if ((sErr as any).code === "42501") httpError(403, "forbidden");
-        if ((sErr as any).code === "23505") httpError(409, "duplicate_surface", "A surface with this name and revision already exists.");
+        if ((sErr as any).code === "23505")
+          httpError(
+            409,
+            "duplicate_surface",
+            "A surface with this name and revision already exists.",
+          );
         throw sErr;
       }
       const surfaceId = surface.id as string;

@@ -34,8 +34,10 @@ export function computeSlope(grid: ElevationGrid): SlopeGrid {
       const w = valueAt(grid, r, c - 1) ?? centre;
       const n = valueAt(grid, r + 1, c) ?? centre;
       const s = valueAt(grid, r - 1, c) ?? centre;
-      const spanX = (valueAt(grid, r, c + 1) != null ? 1 : 0) + (valueAt(grid, r, c - 1) != null ? 1 : 0);
-      const spanY = (valueAt(grid, r + 1, c) != null ? 1 : 0) + (valueAt(grid, r - 1, c) != null ? 1 : 0);
+      const spanX =
+        (valueAt(grid, r, c + 1) != null ? 1 : 0) + (valueAt(grid, r, c - 1) != null ? 1 : 0);
+      const spanY =
+        (valueAt(grid, r + 1, c) != null ? 1 : 0) + (valueAt(grid, r - 1, c) != null ? 1 : 0);
       if (spanX === 0 && spanY === 0) continue;
       const dzdx = spanX > 0 ? (e - w) / (spanX * h) : 0;
       const dzdy = spanY > 0 ? (n - s) / (spanY * h) : 0;
