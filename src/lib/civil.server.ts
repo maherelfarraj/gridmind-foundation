@@ -13,7 +13,8 @@ export type CivilFeatureRow = {
   feature_ref: string;
   name: string;
   feature_type: string;
-  geometry: { type: string; coordinates: unknown };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  geometry: { type: string; coordinates: any };
   properties: Record<string, unknown>;
   status: string;
   revision_code: string;
@@ -146,7 +147,7 @@ export async function writeAuditLog(
     await context.supabase.rpc("write_audit_log", {
       p_action: action,
       p_entity: entity,
-      p_entity_id: entityId ?? undefined,
+      p_entity_id: (entityId ?? null) as unknown as string,
       p_metadata: metadata as any,
     });
   } catch {
