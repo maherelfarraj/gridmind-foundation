@@ -118,7 +118,7 @@ export function SldCadWorkspaceView({ data }: { data: SldCadWorkspace }) {
       removedIds: s.removedIds,
       connections: s.connections,
       removedConnectionIds: s.removedConnectionIds,
-      canvas: { layers: s.layers, gridMm: s.gridMm, snapEnabled: s.snapEnabled },
+      canvas: { layers: s.layers, gridMm: s.gridMm, snapEnabled: s.snapEnabled, areas: s.areas },
     });
   }, [data.editable, save, store]);
 
