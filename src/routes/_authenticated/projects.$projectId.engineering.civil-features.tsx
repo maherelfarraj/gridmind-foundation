@@ -221,10 +221,7 @@ function CivilFeatureEditorPage() {
   }, [undo, redo]);
 
   /* ------------------------------ mutations --------------------------- */
-  const saveMutation = useCivilMutation<
-    Parameters<typeof saveCivilFeature>[0]["data"],
-    CivilFeatureRow
-  >(saveFn as never, {
+  const saveMutation = useCivilMutation<Record<string, unknown>, CivilFeatureRow>(saveFn as never, {
     onSuccess: (row) => {
       toast.success(`${row.feature_ref} saved`);
       setSelectedId(row.id);
@@ -252,10 +249,7 @@ function CivilFeatureEditorPage() {
     onError: (message) => toast.error(message),
   });
 
-  const importMutation = useCivilMutation<
-    Parameters<typeof importCivilFeatures>[0]["data"],
-    { imported: number }
-  >(importFn as never, {
+  const importMutation = useCivilMutation<Record<string, unknown>, { imported: number }>(importFn as never, {
     onSuccess: (res) => {
       toast.success(`${res.imported} feature(s) imported as drafts`);
       setPendingImport(null);
@@ -306,10 +300,12 @@ function CivilFeatureEditorPage() {
           source: "kml",
           rows: placemarks.map((p) => ({
             name: p.name,
-            kind: p.kind ?? "",
+            kind: p.geometry.type,
             geometry: geometryToLocal(p.geometry, { lon: 0, lat: 0 }),
           })),
-          mapping: {},
+          mapping: Object.fromEntries(
+            Array.from(new Set(placemarks.map((p) => p.geometry.type))).map((k) => [k, ""]),
+          ) as PendingImport["mapping"],
         });
       } else {
         const collection = parseGeoJSON(text);
@@ -620,7 +616,7 @@ function CivilFeatureEditorPage() {
                       ) : (
                         <Input
                           id={`fld-${field.key}`}
-                          type={field.type === "number" ? "number" : "text"}
+                          type={field.kind === "number" ? "number" : "text"}
                           value={form.properties[field.key] ?? ""}
                           disabled={selectedLocked || !canWrite}
                           onChange={(ev) =>
