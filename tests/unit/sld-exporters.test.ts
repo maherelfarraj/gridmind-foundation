@@ -14,6 +14,7 @@ import {
   type ExportSheet,
   type ExportSymbol,
 } from "@/lib/sld/exporters";
+import { graphHash } from "@/lib/sld/diff";
 
 const symbols: ExportSymbol[] = [
   {
