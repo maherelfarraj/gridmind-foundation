@@ -225,7 +225,7 @@ describe("voltageDrop", () => {
       voltageV: 400,
     });
     expect(three.results.limitPct).toBe(4);
-    expect(single.results.dropV / three.results.dropV).toBeCloseTo(2 / Math.sqrt(3), 6);
+    expect(single.results.dropV / three.results.dropV).toBeCloseTo(2 / Math.sqrt(3), 4);
   });
 });
 

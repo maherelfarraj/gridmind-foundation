@@ -8,13 +8,19 @@ const DIR = join(process.cwd(), "src/lib/electrical");
 const FILES = readdirSync(DIR).filter((f) => f.endsWith(".ts"));
 
 const FORBIDDEN = [
-  "react",
-  "@tanstack/",
-  "@supabase/",
-  "integrations/supabase",
-  "createServerFn",
-  "src/routes",
+  /^react$/,
+  /^react[-/]/,
+  /^@tanstack\//,
+  /^@supabase\//,
+  /integrations\/supabase/,
+  /^@\/routes/,
+  /\.server$/,
 ];
+
+/** Every module specifier this file imports from. */
+function importSpecifiers(source: string): string[] {
+  return [...source.matchAll(/from\s+"([^"]+)"/g)].map((m) => m[1]);
+}
 
 const DISCLAIMER =
   "Simplified engineering estimates — not validated against commercial analysis software; " +
@@ -28,9 +34,12 @@ describe("src/lib/electrical purity", () => {
   for (const file of FILES) {
     it(`${file} has no React/Supabase/route imports`, () => {
       const source = readFileSync(join(DIR, file), "utf8");
-      for (const token of FORBIDDEN) {
-        expect(source.toLowerCase()).not.toContain(token.toLowerCase());
+      for (const specifier of importSpecifiers(source)) {
+        for (const pattern of FORBIDDEN) {
+          expect(specifier, `${file} imports ${specifier}`).not.toMatch(pattern);
+        }
       }
+      expect(source).not.toContain("createServerFn");
     });
 
     it(`${file} carries the honesty header comment`, () => {
