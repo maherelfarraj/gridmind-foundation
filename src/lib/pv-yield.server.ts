@@ -55,7 +55,7 @@ export async function auditPvSimulation(
 ): Promise<void> {
   await context.supabase.rpc("write_audit_log", {
     p_action: action,
-    p_entity_type: "pv_simulations",
+    p_entity: "pv_simulations",
     p_entity_id: simulationId,
     p_metadata: metadata as never,
   });
