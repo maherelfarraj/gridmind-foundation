@@ -22,10 +22,7 @@ import {
 } from "@/components/ui/table";
 import { listPvEquipment } from "@/lib/pv-library.functions";
 import { pvEquipmentListQueryOptions } from "@/lib/pv-library-query";
-import {
-  getPvLayoutWriteAccess,
-  listPvLayouts,
-} from "@/lib/pv-layout.functions";
+import { getPvLayoutWriteAccess, listPvLayouts } from "@/lib/pv-layout.functions";
 import {
   pvLayoutWriteAccessQueryOptions,
   pvLayoutsQueryOptions,
@@ -112,7 +109,7 @@ function PvLayoutPage() {
   const [highlighted, setHighlighted] = useState<string[]>([]);
 
   const canWrite = accessQuery.data?.canWrite ?? false;
-  const site = siteQuery.data ?? null;
+  const site = siteQuery.data?.config ?? null;
   const moduleRow = modulesQuery.data?.[0] ?? null;
 
   const geometry = useMemo(() => {
@@ -123,7 +120,7 @@ function PvLayoutPage() {
     return {
       anchor,
       boundary: ringToLocal(ring, anchor),
-      exclusions: (site.exclusions ?? []).map((e) =>
+      exclusions: (site.exclusions ?? []).map((e: (typeof site.exclusions)[number]) =>
         ringToLocal((e.polygon?.coordinates?.[0] ?? []) as Ring, anchor),
       ),
     };
@@ -226,9 +223,8 @@ function PvLayoutPage() {
 
   function focusFinding(finding: ComplianceFinding) {
     const keys =
-      current?.result.blocks
-        .filter((b) => finding.blocks.includes(b.label))
-        .map((b) => b.key) ?? [];
+      current?.result.blocks.filter((b) => finding.blocks.includes(b.label)).map((b) => b.key) ??
+      [];
     setHighlighted(keys);
     setSelectedKey(keys[0] ?? null);
   }
@@ -329,7 +325,8 @@ function PvLayoutPage() {
                         <p className="font-medium text-foreground">{selectedBlock.label}</p>
                         <p className="text-muted-foreground">Type: {selectedBlock.type}</p>
                         <p className="text-muted-foreground">
-                          Modules: {selectedBlock.moduleCount} — {selectedBlock.dcKwp.toFixed(2)} kWp
+                          Modules: {selectedBlock.moduleCount} — {selectedBlock.dcKwp.toFixed(2)}{" "}
+                          kWp
                         </p>
                         <p className="text-muted-foreground">
                           Slope:{" "}

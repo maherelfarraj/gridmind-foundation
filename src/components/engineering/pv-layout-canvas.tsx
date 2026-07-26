@@ -80,7 +80,11 @@ export function PvLayoutCanvas({
       className="w-full rounded-lg border border-border bg-card"
       onClick={() => onSelect?.(null)}
     >
-      <path d={pathFrom(boundary, project)} className="fill-background stroke-foreground" strokeWidth={1.5} />
+      <path
+        d={pathFrom(boundary, project)}
+        className="fill-background stroke-foreground"
+        strokeWidth={1.5}
+      />
       {exclusions.map((zone, i) => (
         <path
           key={`ex-${i}`}
