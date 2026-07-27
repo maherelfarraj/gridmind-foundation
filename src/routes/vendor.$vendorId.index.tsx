@@ -197,7 +197,6 @@ function VendorDashboard() {
             </Button>
           </div>
           {deliveries.isLoading || deliveries.error ? (
-
             <TabState loading={deliveries.isLoading} error={deliveries.error} />
           ) : (deliveries.data ?? []).length === 0 ? (
             <EmptyState
@@ -237,7 +236,14 @@ function VendorDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="invoices" className="mt-4">
+        <TabsContent value="invoices" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/vendor/$vendorId/invoices" params={{ vendorId }}>
+                Submit an invoice
+              </Link>
+            </Button>
+          </div>
           {invoices.isLoading || invoices.error ? (
             <TabState loading={invoices.isLoading} error={invoices.error} />
           ) : (invoices.data ?? []).length === 0 ? (
@@ -282,7 +288,14 @@ function VendorDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="documents" className="mt-4">
+        <TabsContent value="documents" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/vendor/$vendorId/documents" params={{ vendorId }}>
+                Share a document
+              </Link>
+            </Button>
+          </div>
           {documents.isLoading || documents.error ? (
             <TabState loading={documents.isLoading} error={documents.error} />
           ) : (documents.data ?? []).length === 0 ? (

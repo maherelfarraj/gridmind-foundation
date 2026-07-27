@@ -17525,6 +17525,62 @@ export type Database = {
           },
         ]
       }
+      vendor_portal_documents: {
+        Row: {
+          actor_type: string
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          storage_path: string
+          title: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          actor_type?: string
+          category: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path: string
+          title: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          actor_type?: string
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_portal_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_portal_events: {
         Row: {
           actor_id: string | null
@@ -19418,7 +19474,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      vendor_portal_get_portal_documents: {
+        Args: { p_vendor_id: string }
+        Returns: Json
+      }
       vendor_portal_get_pos: { Args: { p_vendor_id: string }; Returns: Json }
+      vendor_portal_get_submitted_invoices: {
+        Args: { p_vendor_id: string }
+        Returns: Json
+      }
       vendor_portal_my_memberships: {
         Args: never
         Returns: {
@@ -19438,6 +19502,29 @@ export type Database = {
       vendor_portal_propose_delivery: {
         Args: { p_lines: Json; p_po_id: string }
         Returns: number
+      }
+      vendor_portal_register_document: {
+        Args: {
+          p_category: string
+          p_file_name?: string
+          p_file_path: string
+          p_file_size?: number
+          p_mime_type?: string
+          p_title: string
+          p_vendor_id: string
+        }
+        Returns: string
+      }
+      vendor_portal_submit_invoice: {
+        Args: {
+          p_currency: string
+          p_file_path: string
+          p_invoice_amount: number
+          p_invoice_date: string
+          p_po_id: string
+          p_vendor_invoice_number: string
+        }
+        Returns: string
       }
       vendor_portal_write_event: {
         Args: {

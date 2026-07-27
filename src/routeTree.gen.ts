@@ -37,6 +37,8 @@ import { Route as AuthenticatedEstimatingIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedEsgIndexRouteImport } from './routes/_authenticated/esg.index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
 import { Route as VendorVendorIdPosRouteImport } from './routes/vendor.$vendorId.pos'
+import { Route as VendorVendorIdInvoicesRouteImport } from './routes/vendor.$vendorId.invoices'
+import { Route as VendorVendorIdDocumentsRouteImport } from './routes/vendor.$vendorId.documents'
 import { Route as VendorVendorIdDeliveriesRouteImport } from './routes/vendor.$vendorId.deliveries'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
@@ -385,6 +387,16 @@ const AuthenticatedChangesIndexRoute =
 const VendorVendorIdPosRoute = VendorVendorIdPosRouteImport.update({
   id: '/pos',
   path: '/pos',
+  getParentRoute: () => VendorVendorIdRoute,
+} as any)
+const VendorVendorIdInvoicesRoute = VendorVendorIdInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => VendorVendorIdRoute,
+} as any)
+const VendorVendorIdDocumentsRoute = VendorVendorIdDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => VendorVendorIdRoute,
 } as any)
 const VendorVendorIdDeliveriesRoute =
@@ -1732,6 +1744,8 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/vendor/$vendorId/deliveries': typeof VendorVendorIdDeliveriesRoute
+  '/vendor/$vendorId/documents': typeof VendorVendorIdDocumentsRoute
+  '/vendor/$vendorId/invoices': typeof VendorVendorIdInvoicesRoute
   '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/esg/': typeof AuthenticatedEsgIndexRoute
@@ -1956,6 +1970,8 @@ export interface FileRoutesByTo {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/vendor/$vendorId/deliveries': typeof VendorVendorIdDeliveriesRoute
+  '/vendor/$vendorId/documents': typeof VendorVendorIdDocumentsRoute
+  '/vendor/$vendorId/invoices': typeof VendorVendorIdInvoicesRoute
   '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/esg': typeof AuthenticatedEsgIndexRoute
@@ -2190,6 +2206,8 @@ export interface FileRoutesById {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/vendor/$vendorId/deliveries': typeof VendorVendorIdDeliveriesRoute
+  '/vendor/$vendorId/documents': typeof VendorVendorIdDocumentsRoute
+  '/vendor/$vendorId/invoices': typeof VendorVendorIdInvoicesRoute
   '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/esg/': typeof AuthenticatedEsgIndexRoute
@@ -2426,6 +2444,8 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/vendor/$vendorId/deliveries'
+    | '/vendor/$vendorId/documents'
+    | '/vendor/$vendorId/invoices'
     | '/vendor/$vendorId/pos'
     | '/changes/'
     | '/esg/'
@@ -2650,6 +2670,8 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/vendor/$vendorId/deliveries'
+    | '/vendor/$vendorId/documents'
+    | '/vendor/$vendorId/invoices'
     | '/vendor/$vendorId/pos'
     | '/changes'
     | '/esg'
@@ -2883,6 +2905,8 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/vendor/$vendorId/deliveries'
+    | '/vendor/$vendorId/documents'
+    | '/vendor/$vendorId/invoices'
     | '/vendor/$vendorId/pos'
     | '/_authenticated/changes/'
     | '/_authenticated/esg/'
@@ -3232,6 +3256,20 @@ declare module '@tanstack/react-router' {
       path: '/pos'
       fullPath: '/vendor/$vendorId/pos'
       preLoaderRoute: typeof VendorVendorIdPosRouteImport
+      parentRoute: typeof VendorVendorIdRoute
+    }
+    '/vendor/$vendorId/invoices': {
+      id: '/vendor/$vendorId/invoices'
+      path: '/invoices'
+      fullPath: '/vendor/$vendorId/invoices'
+      preLoaderRoute: typeof VendorVendorIdInvoicesRouteImport
+      parentRoute: typeof VendorVendorIdRoute
+    }
+    '/vendor/$vendorId/documents': {
+      id: '/vendor/$vendorId/documents'
+      path: '/documents'
+      fullPath: '/vendor/$vendorId/documents'
+      preLoaderRoute: typeof VendorVendorIdDocumentsRouteImport
       parentRoute: typeof VendorVendorIdRoute
     }
     '/vendor/$vendorId/deliveries': {
@@ -5450,12 +5488,16 @@ const PortalRouteWithChildren =
 
 interface VendorVendorIdRouteChildren {
   VendorVendorIdDeliveriesRoute: typeof VendorVendorIdDeliveriesRoute
+  VendorVendorIdDocumentsRoute: typeof VendorVendorIdDocumentsRoute
+  VendorVendorIdInvoicesRoute: typeof VendorVendorIdInvoicesRoute
   VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
   VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
 }
 
 const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
   VendorVendorIdDeliveriesRoute: VendorVendorIdDeliveriesRoute,
+  VendorVendorIdDocumentsRoute: VendorVendorIdDocumentsRoute,
+  VendorVendorIdInvoicesRoute: VendorVendorIdInvoicesRoute,
   VendorVendorIdPosRoute: VendorVendorIdPosRoute,
   VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
 }

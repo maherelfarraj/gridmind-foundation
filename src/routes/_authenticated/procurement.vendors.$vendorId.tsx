@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page-header";
 import { VendorForm } from "@/components/procurement/vendor-form";
+import { VendorDocumentExchange } from "@/components/procurement/vendor-document-exchange";
 import { VendorCertifications } from "@/components/procurement/vendor-certifications";
 import { VendorPortalAccess } from "@/components/procurement/vendor-portal-access";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -120,6 +121,7 @@ function VendorDetail() {
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="portal">Portal access</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="mt-4 space-y-6">
@@ -146,8 +148,11 @@ function VendorDetail() {
         <TabsContent value="portal" className="mt-4">
           <VendorPortalAccess vendorId={vendor.id} canWrite={canWrite} />
         </TabsContent>
-      </Tabs>
 
+        <TabsContent value="documents" className="mt-4">
+          <VendorDocumentExchange vendorId={vendor.id} canWrite={canWrite} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
