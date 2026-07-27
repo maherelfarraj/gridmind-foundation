@@ -196,7 +196,7 @@ function ContractDetail() {
 // ---------------------------------------------------------------------------
 // Overview
 // ---------------------------------------------------------------------------
-const OverviewFormSchema = ContractUpsertSchema.omit({ id: true, project_id: true });
+const OverviewFormSchema = ContractUpsertSchema.omit({ id: true });
 type OverviewFormValues = z.infer<typeof OverviewFormSchema>;
 
 function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: boolean }) {
@@ -213,6 +213,7 @@ function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: 
     resolver: zodResolver(OverviewFormSchema),
     defaultValues: {
       title: contract.title,
+      project_id: contract.project_id ?? null,
       contract_type: contract.contract_type,
       counterparty: contract.counterparty,
       status: contract.status,
