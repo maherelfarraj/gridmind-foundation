@@ -2,6 +2,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import {
+  getEstimateComparison,
+  getEstimateRevisions,
   getEstimateDetail,
   getEstimatingRegister,
   getRateLibrary,
@@ -21,6 +23,22 @@ export function estimateDetailQueryOptions(id: string) {
     queryKey: ["estimating", "estimate", id],
     queryFn: () => getEstimateDetail({ data: { id } }),
     staleTime: 5_000,
+  });
+}
+
+export function estimateComparisonQueryOptions(estimateId: string) {
+  return queryOptions({
+    queryKey: ["estimating", "comparison", estimateId],
+    queryFn: () => getEstimateComparison({ data: { estimate_id: estimateId } }),
+    staleTime: 30_000,
+  });
+}
+
+export function estimateRevisionsQueryOptions(estimateId: string) {
+  return queryOptions({
+    queryKey: ["estimating", "revisions", estimateId],
+    queryFn: () => getEstimateRevisions({ data: { estimate_id: estimateId } }),
+    staleTime: 15_000,
   });
 }
 
