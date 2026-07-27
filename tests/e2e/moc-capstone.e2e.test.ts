@@ -71,17 +71,28 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
     if (projErr || !proj) throw projErr ?? new Error("project insert failed");
     state.projectId = (proj as { id: string }).id;
 
-    const { data: po } = await svc
+    const { data: vendor, error: vendErr } = await svc
+      .from("vendors")
+      .insert({ company_id: co.id, name: `P192 vendor ${suffix}` } as never)
+      .select("id")
+      .single();
+    if (vendErr || !vendor) throw vendErr ?? new Error("vendor insert failed");
+    state.vendorId = (vendor as { id: string }).id;
+
+    const { data: po, error: poErr } = await svc
       .from("purchase_orders")
       .insert({
         company_id: co.id,
         project_id: state.projectId,
+        vendor_id: state.vendorId,
+        currency_code: "JOD",
         po_number: `PO-P192-${suffix.slice(0, 5)}`,
         status: "draft",
       } as never)
       .select("id")
       .single();
-    state.poId = (po as { id: string } | null)?.id;
+    if (poErr || !po) throw poErr ?? new Error("po insert failed");
+    state.poId = (po as { id: string }).id;
 
     ({ client } = await login(email, password));
   });
@@ -180,15 +191,15 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
       // Approve every pending step as the admin who holds both chain roles.
       for (let i = 0; i < 4; i += 1) {
         const { data: steps } = await client
-          .from("approval_steps")
+          .from("approvals")
           .select("id, status")
           .eq("instance_id", instanceId)
           .eq("status", "pending");
         const pending = (steps ?? []) as Array<{ id: string }>;
         if (pending.length === 0) break;
         for (const step of pending) {
-          await client.rpc("decide_approval_step", {
-            p_step_id: step.id,
+          await client.rpc("decide_approval", {
+            p_approval_id: step.id,
             p_decision: "approved",
             p_comment: "P192 capstone approval",
           } as never);
