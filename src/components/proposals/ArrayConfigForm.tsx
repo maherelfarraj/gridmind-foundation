@@ -18,25 +18,37 @@ import { useSaveArrayConfig } from "@/lib/proposal-query";
 import type { ProposalDetail } from "@/lib/proposal.functions";
 import type { ArrayConfig } from "@/lib/yield/stub";
 
+// Human messages: a blank or out-of-range entry must read as an instruction,
+// never as a bare zod default the operator cannot act on.
+const fraction = (label: string) =>
+  z.coerce
+    .number({ message: `${label} must be a number` })
+    .min(0, `${label} must be 0 or more`)
+    .max(0.5, `${label} must be 0.5 or less`);
+
 const schema = z.object({
-  dc_capacity_kw: z.coerce.number().positive(),
-  ac_capacity_kw: z.coerce.number().positive(),
-  tilt: z.coerce.number().min(0).max(90),
-  azimuth: z.coerce.number().min(0).max(360),
-  gcr: z.coerce.number().min(0.1).max(1),
+  dc_capacity_kw: z.coerce.number().positive("DC capacity must be greater than zero"),
+  ac_capacity_kw: z.coerce.number().positive("AC capacity must be greater than zero"),
+  tilt: z.coerce.number().min(0, "Tilt must be 0–90°").max(90, "Tilt must be 0–90°"),
+  azimuth: z.coerce.number().min(0, "Azimuth must be 0–360°").max(360, "Azimuth must be 0–360°"),
+  gcr: z.coerce.number().min(0.1, "GCR must be 0.1–1").max(1, "GCR must be 0.1–1"),
   tracking: z.enum(["fixed", "single_axis"]),
-  latitude: z.coerce.number().min(-90).max(90),
-  module_w: z.coerce.number().positive(),
+  latitude: z.coerce.number().min(-90, "Latitude must be −90–90").max(90, "Latitude must be −90–90"),
+  module_w: z.coerce.number().positive("Module power must be greater than zero"),
   inverter: z.string().max(120),
-  loss_soiling: z.coerce.number().min(0).max(0.5),
-  loss_temperature: z.coerce.number().min(0).max(0.5),
-  loss_mismatch: z.coerce.number().min(0).max(0.5),
-  loss_wiring: z.coerce.number().min(0).max(0.5),
-  loss_inverter: z.coerce.number().min(0).max(0.5),
-  loss_availability: z.coerce.number().min(0).max(0.5),
-  degradation_y1_pct: z.coerce.number().min(0).max(10),
-  p90_sigma: z.coerce.number().min(0).max(0.3),
+  loss_soiling: fraction("Soiling loss"),
+  loss_temperature: fraction("Temperature loss"),
+  loss_mismatch: fraction("Mismatch loss"),
+  loss_wiring: fraction("Wiring loss"),
+  loss_inverter: fraction("Inverter loss"),
+  loss_availability: fraction("Availability loss"),
+  degradation_y1_pct: z.coerce
+    .number()
+    .min(0, "Year-1 degradation must be 0–10%")
+    .max(10, "Year-1 degradation must be 0–10%"),
+  p90_sigma: z.coerce.number().min(0, "P90 sigma must be 0–0.3").max(0.3, "P90 sigma must be 0–0.3"),
 });
+
 
 type FormValues = z.infer<typeof schema>;
 
