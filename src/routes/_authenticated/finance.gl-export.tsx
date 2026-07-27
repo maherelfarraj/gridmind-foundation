@@ -207,7 +207,7 @@ function GlExportPage() {
             <KpiTile
               label="Balance"
               value={balanced ? "Balanced" : "Out of balance"}
-              tone={balanced ? "success" : "destructive"}
+              status={balanced ? "good" : "bad"}
             />
           </div>
 
@@ -216,7 +216,7 @@ function GlExportPage() {
               <TriangleAlert className="size-4" />
               <span>Mappings missing or disabled for activity in this range:</span>
               {missingForRange.map((ev) => (
-                <StatusBadge key={ev} status="warning" label={GL_EVENT_LABELS[ev]} />
+                <StatusBadge key={ev} status={ev} tone="attention" label={GL_EVENT_LABELS[ev]} />
               ))}
               <Button variant="link" asChild className="h-auto p-0">
                 <Link to="/finance/gl-export/mappings">Fix the chart of accounts</Link>
@@ -281,16 +281,7 @@ function GlExportPage() {
                       {money.format(run.total_credit)}
                     </TableCell>
                     <TableCell>
-                      <StatusBadge
-                        status={
-                          run.status === "superseded"
-                            ? "muted"
-                            : run.status === "downloaded"
-                              ? "success"
-                              : "info"
-                        }
-                        label={run.status}
-                      />
+                      <StatusBadge status={run.status} />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
