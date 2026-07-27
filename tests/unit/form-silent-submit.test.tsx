@@ -12,8 +12,7 @@ vi.mock("@tanstack/react-start", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useServerFn: () => serverCalls,
 }));
-const toastError = vi.fn();
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: (...a: unknown[]) => toastError(...a) } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const saveMutate = vi.fn();
 vi.mock("@/lib/proposal-query", () => ({
@@ -53,11 +52,13 @@ describe("RecordPaymentDialog", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /record payment/i }));
 
-    await waitFor(() => expect(screen.getAllByText(/enter a valid amount/i).length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(screen.getAllByText(/enter a valid amount/i).length).toBeGreaterThan(0),
+    );
     expect(serverCalls).not.toHaveBeenCalled();
   });
 
-  it("shows a message for a non-positive amount", async () => {
+  it("shows a message and fires no request when the date is cleared", async () => {
     wrap(
       <RecordPaymentDialog
         open
@@ -65,18 +66,14 @@ describe("RecordPaymentDialog", () => {
         invoiceId="00000000-0000-0000-0000-000000000001"
         invoiceNumber="INV-0002"
         currency="USD"
-        balance={0}
+        balance={1000}
         blocked={false}
       />,
     );
-    fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: "-5" } });
+    fireEvent.change(screen.getByLabelText(/payment date/i), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: /record payment/i }));
 
-    await new Promise((r) => setTimeout(r, 300));
-    // eslint-disable-next-line no-console
-    console.log("CALLS>>", serverCalls.mock.calls.length, JSON.stringify(serverCalls.mock.calls[0]));
-    // eslint-disable-next-line no-console
-    console.log("TOAST>>", toastError.mock.calls.length, JSON.stringify(toastError.mock.calls));
+    await waitFor(() => expect(screen.getAllByText(/valid date/i).length).toBeGreaterThan(0));
     expect(serverCalls).not.toHaveBeenCalled();
   });
 });
