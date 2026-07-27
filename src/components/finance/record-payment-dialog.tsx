@@ -88,6 +88,8 @@ export function RecordPaymentDialog({
   });
 
   const watched = form.watch("amount");
+  const formError = form.formState.errors.root?.message;
+
   const balanceAfter = useMemo(() => {
     const amt = Number(watched);
     if (!Number.isFinite(amt)) return balance;
