@@ -12368,6 +12368,7 @@ export type Database = {
           acknowledged_by_email: string | null
           acknowledgment_note: string | null
           acknowledgment_status: string | null
+          approval_instance_id: string | null
           approval_note: string | null
           approved_at: string | null
           approved_by: string | null
@@ -12401,6 +12402,7 @@ export type Database = {
           acknowledged_by_email?: string | null
           acknowledgment_note?: string | null
           acknowledgment_status?: string | null
+          approval_instance_id?: string | null
           approval_note?: string | null
           approved_at?: string | null
           approved_by?: string | null
@@ -12434,6 +12436,7 @@ export type Database = {
           acknowledged_by_email?: string | null
           acknowledgment_note?: string | null
           acknowledgment_status?: string | null
+          approval_instance_id?: string | null
           approval_note?: string | null
           approved_at?: string | null
           approved_by?: string | null
@@ -12463,6 +12466,13 @@ export type Database = {
           vendor_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "purchase_orders_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "purchase_orders_approved_by_fkey"
             columns: ["approved_by"]
