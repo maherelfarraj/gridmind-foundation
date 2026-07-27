@@ -188,8 +188,16 @@ function VendorDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="deliveries" className="mt-4">
+        <TabsContent value="deliveries" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/vendor/$vendorId/deliveries" params={{ vendorId }}>
+                Propose delivery dates
+              </Link>
+            </Button>
+          </div>
           {deliveries.isLoading || deliveries.error ? (
+
             <TabState loading={deliveries.isLoading} error={deliveries.error} />
           ) : (deliveries.data ?? []).length === 0 ? (
             <EmptyState
