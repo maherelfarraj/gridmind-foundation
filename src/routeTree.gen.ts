@@ -38,6 +38,7 @@ import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/stora
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
 import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
 import { Route as ApiCronIngestionRetryRouteImport } from './routes/api/cron/ingestion-retry'
+import { Route as ApiCronFinanceAlertsRouteImport } from './routes/api/cron/finance-alerts'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
@@ -95,6 +96,7 @@ import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_auth
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
+import { Route as AuthenticatedFinanceAlertsRouteImport } from './routes/_authenticated/finance.alerts'
 import { Route as AuthenticatedFieldWorkFrontsRouteImport } from './routes/_authenticated/field.work-fronts'
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
@@ -371,6 +373,11 @@ const ApiCronPmWorkOrdersRoute = ApiCronPmWorkOrdersRouteImport.update({
 const ApiCronIngestionRetryRoute = ApiCronIngestionRetryRouteImport.update({
   id: '/api/cron/ingestion-retry',
   path: '/api/cron/ingestion-retry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronFinanceAlertsRoute = ApiCronFinanceAlertsRouteImport.update({
+  id: '/api/cron/finance-alerts',
+  path: '/api/cron/finance-alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronAuditRetentionRoute = ApiCronAuditRetentionRouteImport.update({
@@ -706,6 +713,12 @@ const AuthenticatedFinanceContractsRoute =
   AuthenticatedFinanceContractsRouteImport.update({
     id: '/finance/contracts',
     path: '/finance/contracts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceAlertsRoute =
+  AuthenticatedFinanceAlertsRouteImport.update({
+    id: '/finance/alerts',
+    path: '/finance/alerts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldWorkFrontsRoute =
@@ -1536,6 +1549,7 @@ export interface FileRoutesByFullPath {
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
+  '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1593,6 +1607,7 @@ export interface FileRoutesByFullPath {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
   '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
@@ -1750,6 +1765,7 @@ export interface FileRoutesByTo {
   '/field/reports': typeof AuthenticatedFieldReportsRoute
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
+  '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1801,6 +1817,7 @@ export interface FileRoutesByTo {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
   '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
@@ -1960,6 +1977,7 @@ export interface FileRoutesById {
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/_authenticated/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
+  '/_authenticated/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -2017,6 +2035,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
+  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
   '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
   '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
@@ -2178,6 +2197,7 @@ export interface FileRouteTypes {
     | '/field/reports'
     | '/field/sync-status'
     | '/field/work-fronts'
+    | '/finance/alerts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2235,6 +2255,7 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/finance-alerts'
     | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
@@ -2392,6 +2413,7 @@ export interface FileRouteTypes {
     | '/field/reports'
     | '/field/sync-status'
     | '/field/work-fronts'
+    | '/finance/alerts'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2443,6 +2465,7 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/finance-alerts'
     | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
@@ -2601,6 +2624,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/reports'
     | '/_authenticated/field/sync-status'
     | '/_authenticated/field/work-fronts'
+    | '/_authenticated/finance/alerts'
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
@@ -2658,6 +2682,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/webhooks'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
+    | '/api/cron/finance-alerts'
     | '/api/cron/ingestion-retry'
     | '/api/cron/pm-work-orders'
     | '/api/cron/scheduled-reports'
@@ -2798,6 +2823,7 @@ export interface RootRouteChildren {
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
   ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
+  ApiCronFinanceAlertsRoute: typeof ApiCronFinanceAlertsRoute
   ApiCronIngestionRetryRoute: typeof ApiCronIngestionRetryRoute
   ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
@@ -3014,6 +3040,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/ingestion-retry'
       fullPath: '/api/cron/ingestion-retry'
       preLoaderRoute: typeof ApiCronIngestionRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/finance-alerts': {
+      id: '/api/cron/finance-alerts'
+      path: '/api/cron/finance-alerts'
+      fullPath: '/api/cron/finance-alerts'
+      preLoaderRoute: typeof ApiCronFinanceAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/audit-retention': {
@@ -3413,6 +3446,13 @@ declare module '@tanstack/react-router' {
       path: '/finance/contracts'
       fullPath: '/finance/contracts'
       preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/alerts': {
+      id: '/_authenticated/finance/alerts'
+      path: '/finance/alerts'
+      fullPath: '/finance/alerts'
+      preLoaderRoute: typeof AuthenticatedFinanceAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/work-fronts': {
@@ -4801,6 +4841,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
   AuthenticatedFieldWorkFrontsRoute: typeof AuthenticatedFieldWorkFrontsRoute
+  AuthenticatedFinanceAlertsRoute: typeof AuthenticatedFinanceAlertsRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
@@ -4922,6 +4963,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldReportsRoute: AuthenticatedFieldReportsRoute,
   AuthenticatedFieldSyncStatusRoute: AuthenticatedFieldSyncStatusRoute,
   AuthenticatedFieldWorkFrontsRoute: AuthenticatedFieldWorkFrontsRoute,
+  AuthenticatedFinanceAlertsRoute: AuthenticatedFinanceAlertsRoute,
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
@@ -5074,6 +5116,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
   ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
+  ApiCronFinanceAlertsRoute: ApiCronFinanceAlertsRoute,
   ApiCronIngestionRetryRoute: ApiCronIngestionRetryRoute,
   ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
