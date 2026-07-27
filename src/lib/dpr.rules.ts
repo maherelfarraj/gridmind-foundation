@@ -101,6 +101,8 @@ export const attachPhotoInput = z.object({
   area: z.string().trim().max(120).nullable().optional(),
   discipline: z.string().trim().max(60).nullable().optional(),
   mediaType: z.enum(["photo", "video"]).default("photo"),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 
   clientIdempotencyKey: idem,
 });

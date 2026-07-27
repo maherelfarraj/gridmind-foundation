@@ -22,7 +22,7 @@ import {
   weatherDelayInput,
   type DprStatus,
 } from "@/lib/dpr.rules";
-import { gpsRejectionReason } from "@/lib/field-exec.rules";
+import { geofenceRejection, gpsRejectionDetail } from "@/lib/field-exec.rules";
 import { withIdempotency } from "@/lib/offline-mirror";
 
 // ---------------------------------------------------------------------------
@@ -196,10 +196,17 @@ async function currentRoles(context: AuthContext): Promise<string[]> {
 async function projectCompany(
   context: AuthContext,
   projectId: string,
-): Promise<{ id: string; company_id: string; name: string; code: string | null }> {
+): Promise<{
+  id: string;
+  company_id: string;
+  name: string;
+  code: string | null;
+  site_lat: number | string | null;
+  site_lng: number | string | null;
+}> {
   const { data, error } = await context.supabase
     .from("projects")
-    .select("id, company_id, name, code")
+    .select("id, company_id, name, code, site_lat, site_lng")
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw error;
@@ -777,11 +784,31 @@ export const attachPhoto = createServerFn({ method: "POST" })
         input: data,
       },
       async () => {
+        // P-086 — geotagged pins must fall inside the project geofence.
+        if (data.latitude !== null && data.latitude !== undefined &&
+            data.longitude !== null && data.longitude !== undefined) {
+          const fence = geofenceRejection(data.latitude, data.longitude, {
+            latitude: project.site_lat === null ? null : Number(project.site_lat),
+            longitude: project.site_lng === null ? null : Number(project.site_lng),
+          });
+          if (fence) {
+            await audit(context, "photo.gps_rejected", "site_photos", data.projectId, {
+              code: fence.code,
+              distance_m: fence.distanceM ?? null,
+              radius_m: fence.radiusM ?? null,
+              latitude: data.latitude,
+              longitude: data.longitude,
+            });
+            httpError(422, fence.code, fence.message);
+          }
+        }
         const insert = {
           company_id: project.company_id,
           project_id: data.projectId,
           dpr_id: data.dprId ?? null,
           observation_id: data.observationId ?? null,
+          latitude: data.latitude ?? null,
+          longitude: data.longitude ?? null,
           file_path: data.filePath,
           caption: data.caption ?? null,
           discipline: data.discipline ?? null,
@@ -955,7 +982,8 @@ export const submitDpr = createServerFn({ method: "POST" })
 
         // P-181 — mobile submits must carry a fresh, in-range GPS fix. Client
         // coordinates are stored as evidence only, never trusted for logic.
-        const gpsReason = gpsRejectionReason(
+        const site = await projectCompany(context, header.project_id);
+        const gpsReason = gpsRejectionDetail(
           {
             source: data.source,
             latitude: data.latitude ?? null,
@@ -963,8 +991,21 @@ export const submitDpr = createServerFn({ method: "POST" })
             gpsCapturedAt: data.gpsCapturedAt ?? null,
           },
           Date.now(),
+          {
+            latitude: site.site_lat === null ? null : Number(site.site_lat),
+            longitude: site.site_lng === null ? null : Number(site.site_lng),
+          },
         );
-        if (gpsReason) httpError(422, "gps_required", gpsReason);
+        if (gpsReason) {
+          await audit(context, "dpr.gps_rejected", "construction_daily_reports", data.id, {
+            code: gpsReason.code,
+            distance_m: gpsReason.distanceM ?? null,
+            radius_m: gpsReason.radiusM ?? null,
+            latitude: data.latitude ?? null,
+            longitude: data.longitude ?? null,
+          });
+          httpError(422, gpsReason.code, gpsReason.message);
+        }
 
         const { data: updated, error } = await context.supabase
           .from("construction_daily_reports")
