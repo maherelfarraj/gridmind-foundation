@@ -41,7 +41,8 @@ import {
 import { formatDate, formatDateTime } from "@/lib/format";
 import {
   DEFAULT_VENDOR_EXPOSURE,
-  EXPOSURE_KEYS,
+  VENDOR_EXPOSURE_KEYS,
+  VENDOR_EXPOSURE_LABELS,
   inviteExpiryDate,
   type VendorExposure,
 } from "@/lib/vendor-portal.rules";
@@ -160,7 +161,7 @@ export function VendorPortalAccess({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {EXPOSURE_KEYS.map((k) => (
+                        {VENDOR_EXPOSURE_KEYS.map((k) => (
                           <button
                             key={k}
                             type="button"
@@ -177,7 +178,7 @@ export function VendorPortalAccess({
                               variant={m.exposure[k] ? "secondary" : "outline"}
                               className={m.exposure[k] ? "" : "text-muted-foreground"}
                             >
-                              {k}
+                              {VENDOR_EXPOSURE_LABELS[k]}
                             </Badge>
                           </button>
                         ))}
@@ -330,9 +331,9 @@ function InviteDialog({ vendorId, onDone }: { vendorId: string; onDone: () => vo
           </div>
           <div className="space-y-2">
             <Label>What they can see</Label>
-            {EXPOSURE_KEYS.map((k) => (
+            {VENDOR_EXPOSURE_KEYS.map((k) => (
               <div key={k} className="flex items-center justify-between">
-                <span className="text-sm capitalize text-muted-foreground">{k}</span>
+                <span className="text-sm text-muted-foreground">{VENDOR_EXPOSURE_LABELS[k]}</span>
                 <Switch
                   checked={exposure[k]}
                   onCheckedChange={(v) => setExposure((prev) => ({ ...prev, [k]: v }))}
