@@ -383,7 +383,7 @@ function FinanceCockpitPage() {
             }
             status={
               data?.bonds_expiring_30.value?.count
-                ? ("destructive" as KpiStatus)
+                ? ("bad" as KpiStatus)
                 : ("neutral" as KpiStatus)
             }
             hint={
