@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { AffectedSystems } from "@/components/moc/affected-systems";
 import { ChangeTypeBadge } from "@/components/moc/change-type-badge";
+import { ImplementationTasks } from "@/components/moc/implementation-tasks";
+import { VendorSubstitution } from "@/components/moc/vendor-substitution";
 import {
   ImpactCards,
   draftToPayload,
@@ -15,6 +17,7 @@ import {
   type ImpactDraft,
 } from "@/components/moc/impact-cards";
 import { ReviewerStepper } from "@/components/moc/reviewer-stepper";
+
 import { ThreadGraph } from "@/components/thread/thread-graph";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
