@@ -334,6 +334,9 @@ export const billMilestone = createServerFn({ method: "POST" })
       if (!(await hasAnyRole(context, FINANCE_ROLES))) httpError(403, "forbidden");
       const companyId = await currentCompanyId(context as AuthContext & { user: { id: string } });
 
+      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
+
+
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")
         .select("*")
