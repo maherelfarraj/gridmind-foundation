@@ -40,19 +40,19 @@ export function RfiKpiCard({ kpis }: { kpis: RfiKpiResult }) {
       <div className="mt-4 h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={kpis.by_month}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={11} />
+            <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                borderColor: "hsl(var(--border))",
-                color: "hsl(var(--popover-foreground))",
+                backgroundColor: "var(--popover)",
+                borderColor: "var(--border)",
+                color: "var(--popover-foreground)",
               }}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar dataKey="raised" fill="hsl(var(--primary))" name="Raised" />
-            <Bar dataKey="answered" fill="hsl(var(--muted-foreground))" name="Answered" />
+            <Bar dataKey="raised" fill="var(--primary)" name="Raised" />
+            <Bar dataKey="answered" fill="var(--muted-foreground)" name="Answered" />
           </BarChart>
         </ResponsiveContainer>
       </div>

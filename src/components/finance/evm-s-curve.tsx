@@ -42,10 +42,10 @@ export function EvmSCurve({ rows }: { rows: EvmSnapshotRow[] }) {
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="date" stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} />
             <YAxis
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--muted-foreground)"
               tick={{ fontSize: 11 }}
               tickFormatter={(v: number) =>
                 new Intl.NumberFormat(undefined, {
@@ -56,8 +56,8 @@ export function EvmSCurve({ rows }: { rows: EvmSnapshotRow[] }) {
             />
             <Tooltip
               contentStyle={{
-                background: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
+                background: "var(--popover)",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 fontSize: 12,
               }}
@@ -67,21 +67,21 @@ export function EvmSCurve({ rows }: { rows: EvmSnapshotRow[] }) {
             <Line
               type="monotone"
               dataKey="PV"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth={2}
               dot={{ r: 3 }}
             />
             <Line
               type="monotone"
               dataKey="EV"
-              stroke="hsl(var(--chart-2, 142 76% 36%))"
+              stroke="var(--chart-2)"
               strokeWidth={2}
               dot={{ r: 3 }}
             />
             <Line
               type="monotone"
               dataKey="AC"
-              stroke="hsl(var(--destructive))"
+              stroke="var(--destructive)"
               strokeWidth={2}
               dot={{ r: 3 }}
             />

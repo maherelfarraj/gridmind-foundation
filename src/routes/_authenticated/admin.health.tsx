@@ -195,40 +195,40 @@ function HealthContent({ data }: { data: OpsHealth }) {
               <AreaChart data={data.series} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
                 <defs>
                   <linearGradient id="sigFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="rateFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="day"
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  stroke="hsl(var(--border))"
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  stroke="var(--border)"
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  stroke="hsl(var(--border))"
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  stroke="var(--border)"
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: 6,
                     fontSize: 12,
                   }}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
+                  labelStyle={{ color: "var(--foreground)" }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Area
                   type="monotone"
                   dataKey="signature_failed"
                   name="Signature failed"
-                  stroke="hsl(var(--destructive))"
+                  stroke="var(--destructive)"
                   fill="url(#sigFill)"
                   strokeWidth={2}
                 />
@@ -236,7 +236,7 @@ function HealthContent({ data }: { data: OpsHealth }) {
                   type="monotone"
                   dataKey="guard_429"
                   name="Rate limited (429)"
-                  stroke="hsl(var(--primary))"
+                  stroke="var(--primary)"
                   fill="url(#rateFill)"
                   strokeWidth={2}
                 />

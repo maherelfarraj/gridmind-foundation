@@ -45,11 +45,11 @@ const FIELDS = [
 ] as const;
 
 const STAGE_COLORS: Record<BuildupStage["key"], string> = {
-  direct: "hsl(var(--chart-1))",
-  escalation: "hsl(var(--chart-2))",
-  contingency: "hsl(var(--chart-3))",
-  overhead: "hsl(var(--chart-4))",
-  profit: "hsl(var(--chart-5))",
+  direct: "var(--chart-1)",
+  escalation: "var(--chart-2)",
+  contingency: "var(--chart-3)",
+  overhead: "var(--chart-4)",
+  profit: "var(--chart-5)",
 };
 
 function money(v: number, currency: string) {

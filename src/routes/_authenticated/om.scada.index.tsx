@@ -265,22 +265,22 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
-                <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="label"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   tick={{ fontSize: 11 }}
                   minTickGap={40}
                 />
                 <YAxis
                   yAxisId="power"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   tick={{ fontSize: 11 }}
                   label={{
                     value: "kW",
                     angle: -90,
                     position: "insideLeft",
-                    fill: "hsl(var(--muted-foreground))",
+                    fill: "var(--muted-foreground)",
                     fontSize: 11,
                   }}
                 />
@@ -288,22 +288,22 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                   <YAxis
                     yAxisId="irr"
                     orientation="right"
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="var(--muted-foreground)"
                     tick={{ fontSize: 11 }}
                     label={{
                       value: "W/m²",
                       angle: 90,
                       position: "insideRight",
-                      fill: "hsl(var(--muted-foreground))",
+                      fill: "var(--muted-foreground)",
                       fontSize: 11,
                     }}
                   />
                 )}
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
-                    color: "hsl(var(--popover-foreground))",
+                    background: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    color: "var(--popover-foreground)",
                     fontSize: 12,
                   }}
                   formatter={(v: number, name: string) =>
@@ -318,8 +318,8 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                   type="monotone"
                   dataKey="ac_power_kw"
                   name="AC power (kW)"
-                  fill="hsl(var(--primary))"
-                  stroke="hsl(var(--primary))"
+                  fill="var(--primary)"
+                  stroke="var(--primary)"
                   fillOpacity={0.25}
                 />
                 {data.weatherAvailable && (
@@ -328,7 +328,7 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                     type="monotone"
                     dataKey="irradiance_wm2"
                     name="Irradiance (W/m²)"
-                    stroke="hsl(var(--accent-foreground))"
+                    stroke="var(--accent-foreground)"
                     dot={false}
                     strokeWidth={2}
                   />

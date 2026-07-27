@@ -99,6 +99,19 @@ export function EstimateApprovalCard({ detail }: { detail: EstimateDetail }) {
           </div>
         ) : null}
 
+        {estimate.status === "priced" && !conversion.converted_proposal_id ? (
+          <p className="text-sm text-muted-foreground">
+            Priced and locked. Start a new revision to reopen editing, or approve it to convert it
+            into a proposal.
+          </p>
+        ) : null}
+        {estimate.status === "superseded" ? (
+          <p className="text-sm text-muted-foreground">
+            Superseded by a later revision — no further approval or conversion actions are
+            available.
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap gap-2">
           {estimate.status === "draft" ? (
             <Button

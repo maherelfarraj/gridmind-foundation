@@ -94,7 +94,7 @@ export function MarkupViewer({ revision, projectId }: Props) {
     if (!pending) return;
     create.mutate(
       {
-        annotation: { coords: pending, comment, color: "hsl(var(--primary))", type: "pin" },
+        annotation: { coords: pending, comment, color: "var(--primary)", type: "pin" },
       },
       {
         onSuccess: () => {
