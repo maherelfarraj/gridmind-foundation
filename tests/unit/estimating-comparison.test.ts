@@ -114,15 +114,47 @@ describe("revisions", () => {
       {
         summary: base,
         lines: [
-          { id: "l1", description: "Module", line_type: "material", qty: 10, unit_rate: 145, amount: 1450, source_bom_line_id: "b1" },
-          { id: "l2", description: "Old", line_type: "other", qty: 1, unit_rate: 10, amount: 10, source_bom_line_id: null },
+          {
+            id: "l1",
+            description: "Module",
+            line_type: "material",
+            qty: 10,
+            unit_rate: 145,
+            amount: 1450,
+            source_bom_line_id: "b1",
+          },
+          {
+            id: "l2",
+            description: "Old",
+            line_type: "other",
+            qty: 1,
+            unit_rate: 10,
+            amount: 10,
+            source_bom_line_id: null,
+          },
         ],
       },
       {
         summary: { ...base, id: "b", revision: 2, escalation_pct: 3, total_price: 1300 },
         lines: [
-          { id: "l3", description: "Module", line_type: "material", qty: 10, unit_rate: 152.5, amount: 1525, source_bom_line_id: "b1" },
-          { id: "l4", description: "New", line_type: "labor", qty: 2, unit_rate: 50, amount: 100, source_bom_line_id: null },
+          {
+            id: "l3",
+            description: "Module",
+            line_type: "material",
+            qty: 10,
+            unit_rate: 152.5,
+            amount: 1525,
+            source_bom_line_id: "b1",
+          },
+          {
+            id: "l4",
+            description: "New",
+            line_type: "labor",
+            qty: 2,
+            unit_rate: 50,
+            amount: 100,
+            source_bom_line_id: null,
+          },
         ],
       },
     );
