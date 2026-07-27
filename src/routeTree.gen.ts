@@ -92,6 +92,7 @@ import { Route as AuthenticatedHseAuditsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedFinanceRevenueRecognitionRouteImport } from './routes/_authenticated/finance.revenue-recognition'
 import { Route as AuthenticatedFinanceReconciliationRouteImport } from './routes/_authenticated/finance.reconciliation'
 import { Route as AuthenticatedFinanceReceivablesRouteImport } from './routes/_authenticated/finance.receivables'
+import { Route as AuthenticatedFinancePeriodsRouteImport } from './routes/_authenticated/finance.periods'
 import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_authenticated/finance.payments'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
@@ -689,6 +690,12 @@ const AuthenticatedFinanceReceivablesRoute =
   AuthenticatedFinanceReceivablesRouteImport.update({
     id: '/finance/receivables',
     path: '/finance/receivables',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinancePeriodsRoute =
+  AuthenticatedFinancePeriodsRouteImport.update({
+    id: '/finance/periods',
+    path: '/finance/periods',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFinancePaymentsRoute =
@@ -1554,6 +1561,7 @@ export interface FileRoutesByFullPath {
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
+  '/finance/periods': typeof AuthenticatedFinancePeriodsRoute
   '/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
   '/finance/reconciliation': typeof AuthenticatedFinanceReconciliationRoute
   '/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
@@ -1770,6 +1778,7 @@ export interface FileRoutesByTo {
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
+  '/finance/periods': typeof AuthenticatedFinancePeriodsRoute
   '/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
   '/finance/reconciliation': typeof AuthenticatedFinanceReconciliationRoute
   '/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
@@ -1982,6 +1991,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/finance/payments': typeof AuthenticatedFinancePaymentsRoute
+  '/_authenticated/finance/periods': typeof AuthenticatedFinancePeriodsRoute
   '/_authenticated/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
   '/_authenticated/finance/reconciliation': typeof AuthenticatedFinanceReconciliationRoute
   '/_authenticated/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
@@ -2202,6 +2212,7 @@ export interface FileRouteTypes {
     | '/finance/debit-notes'
     | '/finance/invoices'
     | '/finance/payments'
+    | '/finance/periods'
     | '/finance/receivables'
     | '/finance/reconciliation'
     | '/finance/revenue-recognition'
@@ -2418,6 +2429,7 @@ export interface FileRouteTypes {
     | '/finance/debit-notes'
     | '/finance/invoices'
     | '/finance/payments'
+    | '/finance/periods'
     | '/finance/receivables'
     | '/finance/reconciliation'
     | '/finance/revenue-recognition'
@@ -2629,6 +2641,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
     | '/_authenticated/finance/payments'
+    | '/_authenticated/finance/periods'
     | '/_authenticated/finance/receivables'
     | '/_authenticated/finance/reconciliation'
     | '/_authenticated/finance/revenue-recognition'
@@ -3418,6 +3431,13 @@ declare module '@tanstack/react-router' {
       path: '/finance/receivables'
       fullPath: '/finance/receivables'
       preLoaderRoute: typeof AuthenticatedFinanceReceivablesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/periods': {
+      id: '/_authenticated/finance/periods'
+      path: '/finance/periods'
+      fullPath: '/finance/periods'
+      preLoaderRoute: typeof AuthenticatedFinancePeriodsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/payments': {
@@ -4846,6 +4866,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedFinancePaymentsRoute: typeof AuthenticatedFinancePaymentsRoute
+  AuthenticatedFinancePeriodsRoute: typeof AuthenticatedFinancePeriodsRoute
   AuthenticatedFinanceReceivablesRoute: typeof AuthenticatedFinanceReceivablesRoute
   AuthenticatedFinanceReconciliationRoute: typeof AuthenticatedFinanceReconciliationRoute
   AuthenticatedFinanceRevenueRecognitionRoute: typeof AuthenticatedFinanceRevenueRecognitionRoute
@@ -4969,6 +4990,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedFinancePaymentsRoute: AuthenticatedFinancePaymentsRoute,
+  AuthenticatedFinancePeriodsRoute: AuthenticatedFinancePeriodsRoute,
   AuthenticatedFinanceReceivablesRoute: AuthenticatedFinanceReceivablesRoute,
   AuthenticatedFinanceReconciliationRoute:
     AuthenticatedFinanceReconciliationRoute,
