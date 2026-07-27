@@ -302,3 +302,80 @@ export function sanitizeFilename(name: string): string {
 export function bondDocumentPath(companyId: string, instrumentId: string, filename: string) {
   return `${companyId}/bonds/${instrumentId}/${sanitizeFilename(filename)}`;
 }
+
+// ---------------------------------------------------------------------------
+// P-204 — claims + release/return/cancel rules
+// ---------------------------------------------------------------------------
+export const CLAIM_STATUSES = [
+  "draft",
+  "submitted",
+  "contested",
+  "paid",
+  "rejected",
+  "withdrawn",
+] as const;
+export type ClaimStatus = (typeof CLAIM_STATUSES)[number];
+
+/** A claim in one of these states blocks a second claim on the instrument. */
+export const OPEN_CLAIM_STATUSES: readonly ClaimStatus[] = ["draft", "submitted", "contested"];
+
+export const CLAIM_RESOLUTIONS = ["contested", "paid", "rejected", "withdrawn"] as const;
+export type ClaimResolution = (typeof CLAIM_RESOLUTIONS)[number];
+
+/** Outcomes that close the claim (resolved_at set). */
+export const TERMINAL_CLAIM_STATUSES: readonly ClaimStatus[] = ["paid", "rejected", "withdrawn"];
+
+/** Instrument statuses that reject every further transition. */
+export const TERMINAL_BOND_STATUSES: readonly BondStatus[] = ["released", "returned", "cancelled"];
+
+export function isTerminalBondStatus(status: BondStatus): boolean {
+  return TERMINAL_BOND_STATUSES.includes(status);
+}
+
+/** Release may be requested from live or lapsed instruments only. */
+export const RELEASABLE_STATUSES: readonly BondStatus[] = ["active", "expiring_soon", "expired"];
+
+/** Bid bonds only, and only while live or lapsed. */
+export const RETURNABLE_STATUSES: readonly BondStatus[] = ["active", "expired"];
+
+export function paidTotal(claims: { status: string; amount: number }[]): number {
+  return claims
+    .filter((c) => c.status === "paid")
+    .reduce((sum, c) => sum + Number(c.amount ?? 0), 0);
+}
+
+const reason = z.string().trim().min(3, "A reason is required.").max(2000);
+const claimIsoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
+
+export const CreateClaimSchema = z.object({
+  instrument_id: z.string().uuid(),
+  amount: z.number().finite().positive(),
+  currency_code: z.string().trim().min(3).max(8),
+  reason,
+  claim_date: claimIsoDate,
+});
+export type CreateClaimInput = z.infer<typeof CreateClaimSchema>;
+
+export const ClaimIdSchema = z.object({ claim_id: z.string().uuid() });
+
+export const ResolveClaimSchema = z
+  .object({
+    claim_id: z.string().uuid(),
+    outcome: z.enum(CLAIM_RESOLUTIONS),
+    resolution_notes: z.string().trim().max(2000).optional(),
+  })
+  .refine(
+    (v) =>
+      !["paid", "rejected"].includes(v.outcome) || (v.resolution_notes ?? "").trim().length >= 3,
+    {
+      message: "Resolution notes are mandatory for paid or rejected claims.",
+      path: ["resolution_notes"],
+    },
+  );
+export type ResolveClaimInput = z.infer<typeof ResolveClaimSchema>;
+
+export const BondReasonSchema = z.object({
+  instrument_id: z.string().uuid(),
+  reason,
+});
+export type BondReasonInput = z.infer<typeof BondReasonSchema>;

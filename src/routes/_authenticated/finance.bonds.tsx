@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Download, Plus, Search, ShieldCheck, Siren, Timer } from "lucide-react";
 import { toast } from "sonner";
 
+import { BondWorkflowSections } from "@/components/bonds/bond-workflow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -897,24 +898,7 @@ function InstrumentDrawer({
               )}
             </section>
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Claims</h3>
-              {d.claims.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No claims against this instrument.</p>
-              ) : (
-                <ul className="space-y-1 text-sm">
-                  {d.claims.map((c) => (
-                    <li key={c.id} className="flex items-center justify-between gap-2">
-                      <span>{c.claim_number}</span>
-                      <span className="tabular-nums">
-                        {fmt(c.amount, c.currency_code ?? d.instrument.currency_code)}
-                      </span>
-                      <StatusBadge status={c.status} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            <BondWorkflowSections detail={d} />
 
             <section className="space-y-2">
               <h3 className="text-sm font-semibold">Renewals</h3>
