@@ -33,17 +33,13 @@ export const Route = createFileRoute("/api/public/healthz")({
             .maybeSingle();
 
           if (error) {
-            return Response.json(
-              { status: "degraded", error: error.message },
-              { status: 503 },
-            );
+            return Response.json({ status: "degraded", error: error.message }, { status: 503 });
           }
 
           return Response.json({
             status: "ok",
             db: "ok",
-            cron_probe_last_fired_at:
-              (data as { fired_at?: string } | null)?.fired_at ?? null,
+            cron_probe_last_fired_at: (data as { fired_at?: string } | null)?.fired_at ?? null,
           });
         } catch (e) {
           return Response.json(

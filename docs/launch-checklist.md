@@ -2,6 +2,8 @@
 
 This is the go-live gate for GridMind EPC. Work top-to-bottom. Every box must be ticked before the DNS cutover to **gridmindepc.com**. Consistent with `docs/operator-env.md`, `docs/pitr-runbook.md`, and the pinned test commands (`bun run test` for unit, `bun run test:all` for the full suite).
 
+For Day 2 (post-launch) operations, see `docs/ops-runbook.md` for on-call playbooks, `docs/ops-decisions.md` for the operational thresholds and SLOs backing the observability dashboards, and `docs/uat-checklist.md` for persona-based UAT sign-off.
+
 Do not edit historical rows. Corrections go in a new row that references the mistaken one.
 
 ---
@@ -137,6 +139,25 @@ Modules in scope include CRM, Engineering, Procurement, Finance, Field, QA/QC, *
 | Engineering Lead |      |            |           |
 | Security Owner   |      |            |           |
 | Operations Owner |      |            |           |
+
+---
+
+_Once the table is fully signed, proceed with the DNS cutover to **gridmindepc.com** per the operations runbook._
+
+---
+
+## 7 — Day 2 Observability Sign-off
+
+Confirm the operational dashboards and controls that back `docs/ops-runbook.md` and
+`docs/ops-decisions.md` are live and reviewed before cutover.
+
+- [ ] `/admin/health` reviewed — no unexplained `public_hook.*` denials or cron gaps
+- [ ] `/admin/performance` reviewed — memory, disk, connections, and WAL within thresholds defined in `docs/ops-decisions.md`
+- [ ] `/admin/ops-alerts` reviewed — alert routing confirmed against severity mapping in `docs/ops-decisions.md`
+- [ ] `/admin/slo` reviewed — SLO targets from `docs/ops-decisions.md` are tracking and not in breach
+- [ ] Cron audit logging confirmed for all scheduled jobs (`escalations`, `pm-work-orders`, `scheduled-reports`, `audit-retention`, `webhook-dispatch`) — each has recent `audit_logs` rows
+- [ ] Access review completed — admin/service-role access limited to authorized personnel, on-call escalation contacts in `docs/ops-runbook.md` §2 are current
+
 
 ---
 
