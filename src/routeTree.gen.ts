@@ -28,6 +28,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
+import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
@@ -101,6 +102,8 @@ import { Route as AuthenticatedConstructionProductivityRouteImport } from './rou
 import { Route as AuthenticatedConstructionLookAheadRouteImport } from './routes/_authenticated/construction.look-ahead'
 import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_authenticated/construction.cwp'
 import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
+import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
+import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
@@ -313,6 +316,12 @@ const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
   path: '/hse/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChangesIndexRoute =
+  AuthenticatedChangesIndexRouteImport.update({
+    id: '/changes/',
+    path: '/changes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -735,6 +744,17 @@ const AuthenticatedConstructionBaselineCompareRoute =
     path: '/construction/baseline-compare',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChangesDashboardRoute =
+  AuthenticatedChangesDashboardRouteImport.update({
+    id: '/changes/dashboard',
+    path: '/changes/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedChangesIdRoute = AuthenticatedChangesIdRouteImport.update({
+  id: '/changes/$id',
+  path: '/changes/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminHealthRoute =
   AuthenticatedAdminHealthRouteImport.update({
     id: '/health',
@@ -1467,6 +1487,8 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1540,6 +1562,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/changes/': typeof AuthenticatedChangesIndexRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1673,6 +1696,8 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1740,6 +1765,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/changes': typeof AuthenticatedChangesIndexRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
@@ -1875,6 +1901,8 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/_authenticated/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/_authenticated/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1948,6 +1976,7 @@ export interface FileRoutesById {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -2085,6 +2114,8 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/admin/tenants'
     | '/admin/health'
+    | '/changes/$id'
+    | '/changes/dashboard'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2158,6 +2189,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/changes/'
     | '/hse/'
     | '/projects/'
     | '/proposals/'
@@ -2291,6 +2323,8 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/admin/health'
+    | '/changes/$id'
+    | '/changes/dashboard'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2358,6 +2392,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/changes'
     | '/hse'
     | '/projects'
     | '/proposals'
@@ -2492,6 +2527,8 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
+    | '/_authenticated/changes/$id'
+    | '/_authenticated/changes/dashboard'
     | '/_authenticated/construction/baseline-compare'
     | '/_authenticated/construction/cwp'
     | '/_authenticated/construction/look-ahead'
@@ -2565,6 +2602,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/_authenticated/changes/'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
@@ -2841,6 +2879,13 @@ declare module '@tanstack/react-router' {
       path: '/hse'
       fullPath: '/hse/'
       preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/': {
+      id: '/_authenticated/changes/'
+      path: '/changes'
+      fullPath: '/changes/'
+      preLoaderRoute: typeof AuthenticatedChangesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/portal/projects/$projectId': {
@@ -3352,6 +3397,20 @@ declare module '@tanstack/react-router' {
       path: '/construction/baseline-compare'
       fullPath: '/construction/baseline-compare'
       preLoaderRoute: typeof AuthenticatedConstructionBaselineCompareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/dashboard': {
+      id: '/_authenticated/changes/dashboard'
+      path: '/changes/dashboard'
+      fullPath: '/changes/dashboard'
+      preLoaderRoute: typeof AuthenticatedChangesDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/$id': {
+      id: '/_authenticated/changes/$id'
+      path: '/changes/$id'
+      fullPath: '/changes/$id'
+      preLoaderRoute: typeof AuthenticatedChangesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/health': {
@@ -4628,6 +4687,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedChangesIdRoute: typeof AuthenticatedChangesIdRoute
+  AuthenticatedChangesDashboardRoute: typeof AuthenticatedChangesDashboardRoute
   AuthenticatedConstructionBaselineCompareRoute: typeof AuthenticatedConstructionBaselineCompareRoute
   AuthenticatedConstructionCwpRoute: typeof AuthenticatedConstructionCwpRoute
   AuthenticatedConstructionLookAheadRoute: typeof AuthenticatedConstructionLookAheadRoute
@@ -4691,6 +4752,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsSldSymbolsRoute: typeof AuthenticatedSettingsSldSymbolsRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
+  AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
@@ -4736,6 +4798,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedChangesIdRoute: AuthenticatedChangesIdRoute,
+  AuthenticatedChangesDashboardRoute: AuthenticatedChangesDashboardRoute,
   AuthenticatedConstructionBaselineCompareRoute:
     AuthenticatedConstructionBaselineCompareRoute,
   AuthenticatedConstructionCwpRoute: AuthenticatedConstructionCwpRoute,
@@ -4819,6 +4883,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsSldSymbolsRoute: AuthenticatedSettingsSldSymbolsRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
+  AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
