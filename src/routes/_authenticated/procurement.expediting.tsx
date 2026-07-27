@@ -556,12 +556,22 @@ function ExpeditingRowUI({
         />
       </TableCell>
       <TableCell>
-        <Switch
-          checked={row.eta_confirmed}
-          disabled={!canWrite}
-          onCheckedChange={(v) => onPatch({ eta_confirmed: !!v })}
-          aria-label="ETA confirmed"
-        />
+        <div className="flex flex-col items-start gap-1">
+          <Switch
+            checked={row.eta_confirmed}
+            disabled={!canWrite}
+            onCheckedChange={(v) => onPatch({ eta_confirmed: !!v })}
+            aria-label="ETA confirmed"
+          />
+          {vendorProposed ? (
+            <Badge className="bg-accent text-[10px] text-accent-foreground">
+              Vendor-proposed ETA
+            </Badge>
+          ) : null}
+          {isCounterProposedNote(row.notes) && !row.eta_confirmed ? (
+            <span className="text-[10px] text-muted-foreground">Counter-proposed</span>
+          ) : null}
+        </div>
       </TableCell>
       <TableCell>
         <ExpeditingStatusBadge status={row.status} />
@@ -570,7 +580,64 @@ function ExpeditingRowUI({
         <CountdownChip siteNeedDate={row.site_need_date} />
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-1">
+        <div className="flex flex-wrap justify-end gap-1">
+          {canWrite && vendorProposed ? (
+            <>
+              <Button variant="outline" size="sm" onClick={onConfirmEta}>
+                Confirm ETA
+              </Button>
+              <Dialog open={counterOpen} onOpenChange={setCounterOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    Counter
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Counter-propose delivery date</DialogTitle>
+                    <DialogDescription>
+                      The vendor is notified and the ETA stays unconfirmed until they agree.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor={`counter-eta-${row.id}`}>Proposed ETA</Label>
+                      <Input
+                        id={`counter-eta-${row.id}`}
+                        type="date"
+                        value={counterEta}
+                        onChange={(e) => setCounterEta(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`counter-note-${row.id}`}>Comment</Label>
+                      <Input
+                        id={`counter-note-${row.id}`}
+                        value={counterComment}
+                        onChange={(e) => setCounterComment(e.target.value)}
+                        placeholder="Why this date works better"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setCounterOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={!counterEta || counterComment.trim() === ""}
+                      onClick={() => {
+                        onCounterPropose(counterEta, counterComment.trim());
+                        setCounterOpen(false);
+                        setCounterComment("");
+                      }}
+                    >
+                      Send counter-proposal
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : null}
           <Button
             variant="ghost"
             size="sm"
@@ -596,6 +663,7 @@ function ExpeditingRowUI({
         </div>
       </TableCell>
     </TableRow>
+
   );
 }
 
