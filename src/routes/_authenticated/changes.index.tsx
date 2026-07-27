@@ -49,6 +49,11 @@ import {
 } from "@/lib/moc.functions";
 
 export const Route = createFileRoute("/_authenticated/changes/")({
+  validateSearch: (raw: Record<string, unknown>) => ({
+    status: typeof raw.status === "string" ? raw.status : undefined,
+    type: typeof raw.type === "string" ? raw.type : undefined,
+    project: typeof raw.project === "string" ? raw.project : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Change control — GridMind EPC" },
