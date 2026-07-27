@@ -60,7 +60,7 @@ describe("leave tables", () => {
   }
 
   it("numbers leave requests LR-#### through a trigger", () => {
-    expect(leaveSql).toMatch(/leave_number/i);
+    expect(leaveSql).toMatch(/request_number/i);
     expect(leaveSql).toMatch(/LR-/);
   });
 

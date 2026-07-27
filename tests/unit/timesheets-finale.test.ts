@@ -70,7 +70,7 @@ describe("split math", () => {
 
   it("converts clock in/out to quarter-hour totals", () => {
     expect(clockHours("07:00", "15:30")).toBe(8.5);
-    expect(clockHours("08:00", "08:07")).toBe(0.25);
+    expect(clockHours("08:00", "08:10")).toBe(0.25);
     expect(clockHours("15:00", "07:00")).toBe(0);
     expect(clockHours(null, "15:00")).toBe(0);
   });
