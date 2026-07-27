@@ -7,6 +7,7 @@
 import {
   BellRing,
   Landmark,
+  Leaf,
   Library,
   Activity,
   AlertTriangle,
