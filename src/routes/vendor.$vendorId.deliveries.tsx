@@ -14,15 +14,10 @@ import {
   Truck,
 } from "lucide-react";
 
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -205,7 +200,6 @@ function VendorDeliveries() {
       />
     );
   }
-
 
   const openPos = (pos.data ?? []).filter((p) => p.status !== "closed" && p.status !== "cancelled");
 

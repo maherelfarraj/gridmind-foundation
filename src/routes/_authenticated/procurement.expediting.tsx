@@ -399,7 +399,6 @@ function ExpeditingPage() {
                       onCounterPropose={(eta, comment) =>
                         counterMutation.mutate({ id: r.id, eta, comment })
                       }
-
                     />
                   ))}
                 </TableBody>
@@ -499,7 +498,6 @@ function ExpeditingRowUI({
     if (next === row.current_eta) return;
     onPatch({ current_eta: next });
   };
-
 
   return (
     <TableRow>
@@ -663,7 +661,6 @@ function ExpeditingRowUI({
         </div>
       </TableCell>
     </TableRow>
-
   );
 }
 
