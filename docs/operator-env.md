@@ -125,3 +125,32 @@ Schedule a **quarterly** review of the allowlist and active API keys — revoke 
 - [ ] Latest migrations applied.
 - [ ] `webhook_endpoint_secrets` and `api_keys.key_hash` unreachable from the `authenticated` role (RLS spot-check).
 - [ ] **Signed `/api/public/hooks/ping` smoke test returns 200 `{ pong: true }`** — copy the exact curl from `docs/public-api-signing.md`, run against production, expect `pong`. This is the last gate before promotion.
+
+---
+
+## Error-code transit (typed errors from server to toast)
+
+GridMind surfaces business rejections as **typed codes**, not generic 500s. The code must
+survive three hops unchanged: Postgres → server function → client toast.
+
+| Hop | Carrier | Rule |
+| --- | --- | --- |
+| Postgres → server fn | `raise exception '<code>: <human message>'` | The prefix before the first `:` **is** the machine code (`finance_period_closed`, `export_locked`, `hold_point_open`, `cr_status_invalid`). Never reword the prefix — parsers match on it. |
+| Server fn → client | thrown `Error` with `statusCode`, `code`, and a JSON `body` | Built by the typed-error helpers (`periodClosedError`, `assertExportAllowed`, `httpError`). The RPC boundary preserves `message`; `code` is re-derived client-side from the message prefix, so the prefix must stay in the message text. |
+| Client → user | `toast.error(err.message)` via `src/lib/typed-error.ts` | Extract with `extractTypedError(err)`. Never render `String(err)` — it prints `[object Response]` for thrown redirects. |
+
+Canonical codes in use:
+
+| Code | HTTP | Raised by | Meaning |
+| --- | --- | --- | --- |
+| `finance_period_closed` | 409 | `assert_finance_period_open` | Posting date falls in a closed month. |
+| `export_locked` | 423 | `assert_export_unlocked` | A blocking approval is still open for that export type. |
+| `hold_point_open` | 409 | `trg_cwp_hold_point` | CWP cannot advance past an unsigned ITP hold point. |
+| `geofence_violation` | 422 | DPR submit | GPS outside the project boundary. |
+
+**Blocked attempts are audited.** Because Postgres has no autonomous transactions, an audit
+row written inside the raising function would roll back with the failed statement. The audit
+write therefore happens at the application boundary (`src/lib/blocked-audit.ts`) immediately
+before the typed error is rethrown: exactly one `period.post_blocked` / `export.blocked` row
+per rejection, with actor, attempted posting date, and entity. Audit-write failures are
+swallowed so they can never mask the original typed error.
