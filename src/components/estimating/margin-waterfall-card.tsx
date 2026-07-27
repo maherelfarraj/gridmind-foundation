@@ -90,12 +90,15 @@ export function MarginWaterfallCard({
   }, [margins.escalation_pct, margins.contingency_pct, margins.overhead_pct, margins.profit_pct]);
 
   const watched = form.watch();
-  const safeMargins: MarginInput = {
-    escalation_pct: Number(watched.escalation_pct) || 0,
-    contingency_pct: Number(watched.contingency_pct) || 0,
-    overhead_pct: Number(watched.overhead_pct) || 0,
-    profit_pct: Number(watched.profit_pct) || 0,
-  };
+  const safeMargins: MarginInput = useMemo(
+    () => ({
+      escalation_pct: Number(watched.escalation_pct) || 0,
+      contingency_pct: Number(watched.contingency_pct) || 0,
+      overhead_pct: Number(watched.overhead_pct) || 0,
+      profit_pct: Number(watched.profit_pct) || 0,
+    }),
+    [watched.escalation_pct, watched.contingency_pct, watched.overhead_pct, watched.profit_pct],
+  );
 
   const buildup = useMemo(() => computeEstimate(lines, safeMargins), [lines, safeMargins]);
   const combined = combinedMarginPct(safeMargins);
