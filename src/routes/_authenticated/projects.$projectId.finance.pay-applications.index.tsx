@@ -48,7 +48,7 @@ import { toPayAppCsv } from "@/lib/pay-app.csv";
 import { payAppStatusLabel, type PayAppStatus } from "@/lib/pay-app.rules";
 
 export const Route = createFileRoute(
-  "/_authenticated/projects/$projectId/finance/pay-applications",
+  "/_authenticated/projects/$projectId/finance/pay-applications/",
 )({
   head: () => ({
     meta: [
