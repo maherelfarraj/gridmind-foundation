@@ -84,3 +84,33 @@ export interface BondRunSummary {
   expiring_soon: number;
   notifications: number;
 }
+
+export interface ExpiringBondsSummary {
+  count: number;
+  per_currency: Array<{ currency_code: string; amount: number }>;
+}
+
+/**
+ * Cockpit tile 8 — count + Σ amount per currency of coverage instruments
+ * expiring within `within` days (0 ≤ days_to_expiry ≤ within).
+ */
+export function summarizeExpiringBonds(
+  rows: Array<{ expiry_date: string | null; amount: number | null; currency_code: string }>,
+  today: string,
+  within = 30,
+): ExpiringBondsSummary {
+  const map = new Map<string, number>();
+  let count = 0;
+  for (const r of rows) {
+    const days = bondDaysToExpiry(r.expiry_date, today);
+    if (days === null || days < 0 || days > within) continue;
+    count += 1;
+    map.set(r.currency_code, (map.get(r.currency_code) ?? 0) + Number(r.amount ?? 0));
+  }
+  return {
+    count,
+    per_currency: [...map.entries()]
+      .map(([currency_code, amount]) => ({ currency_code, amount }))
+      .sort((a, b) => b.amount - a.amount),
+  };
+}
