@@ -54,6 +54,15 @@ export const VoidPaymentSchema = z.object({
 
 export const MarkInvoiceSentSchema = z.object({ invoice_id: z.string().uuid() });
 
+export const ApproveInvoiceSchema = z.object({ invoice_id: z.string().uuid() });
+
+/** Statuses an invoice can be approved from. */
+export const APPROVABLE_INVOICE_STATUSES = ["draft", "submitted"] as const;
+
+export function canApproveInvoice(status: string): boolean {
+  return (APPROVABLE_INVOICE_STATUSES as readonly string[]).includes(status);
+}
+
 export const ListPaymentsSchema = z.object({
   direction: z.enum(["receivable", "payable"]).optional(),
   method: z.enum(PAYMENT_METHODS).optional(),
