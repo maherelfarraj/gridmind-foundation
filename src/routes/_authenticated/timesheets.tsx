@@ -242,42 +242,40 @@ function TimesheetsPage() {
         title="Weekly timesheets"
         description="Book crew hours per project and work package. Overtime splits automatically."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild size="sm" variant="outline">
               <Link to="/timesheets/leave">
                 <Palmtree className="mr-1 h-4 w-4" />
                 Leave
               </Link>
             </Button>
-            {sheet ? <StatusBadge status={sheet.status} /> : null}
-          </div>
-        }
-        secondaryActions={
-          sheet ? (
-            <div className="flex items-center gap-2">
-
-              <Button
-                size="sm"
-                disabled={readOnly || submit.isPending || rows.length === 0}
-                onClick={() => submit.mutate()}
-              >
-                <Send className="mr-1 h-4 w-4" />
-                Submit week
-              </Button>
-              {sheet.approval_instance_id ? (
+            {sheet ? (
+              <>
+                <StatusBadge status={sheet.status} />
                 <Button
                   size="sm"
-                  variant="outline"
-                  disabled={check.isPending}
-                  onClick={() => check.mutate()}
+                  disabled={readOnly || submit.isPending || rows.length === 0}
+                  onClick={() => submit.mutate()}
                 >
-                  <RefreshCw className="mr-1 h-4 w-4" />
-                  Check approval
+                  <Send className="mr-1 h-4 w-4" />
+                  Submit week
                 </Button>
-              ) : null}
-            </div>
-          ) : null
+                {sheet.approval_instance_id ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={check.isPending}
+                    onClick={() => check.mutate()}
+                  >
+                    <RefreshCw className="mr-1 h-4 w-4" />
+                    Check approval
+                  </Button>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         }
+
       />
 
       <WeekPicker weekStart={weekStart} onChange={setWeekStart} />
