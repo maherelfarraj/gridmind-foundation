@@ -1,53 +1,107 @@
-# Restore and verify SCADA telemetry flow post warn-to-block flip
+Day 2 — Health & Observability is green. Now we expand from "is it alive?" to "is it operational, performant, secure, and ready for users?".
 
-## Current state
-- 7-day cleanliness query returned zero denied/signature/rate-limit events; the warn-to-block flip is active and live endpoints now return 401 for unauthenticated traffic.
-- `scada_telemetry` is empty: 0 rows in the last 24 hours, 0 rows total.
-- Root cause: the East Amman SCADA Gateway API key (`api_keys` row) has `hmac_secret = NULL`, and `/api/public/hooks/scada-telemetry` requires HMAC signatures. Any external push would fail with `secret_not_configured` before writing rows.
-- `scada_tags` is empty (0 tags), so even if data arrived there are no tag definitions/mappings for the 10 seeded assets.
-- `scada_connectors` has one active `vendor_api` connector pointing at the public hook URL, but `last_seen_at` is NULL.
-- No ingestion runs exist in `ingestion_runs`.
+Goal: Deliver a production-ready operational layer covering operations readiness, performance/capacity, security/audit hardening, user acceptance polish, expanded observability, and consolidated runbooks.
 
-## Plan
+Scope
+- Build on existing Day 1 assets: `/admin/health`, `finance/alerts`, `om/scada/ingestion-health`, cron routes, `docs/operator-env.md`, `docs/launch-checklist.md`, `docs/pitr-runbook.md`.
+- Use existing stack: TanStack Start, createServerFn, Supabase/Lovable Cloud, Tailwind v4 semantic tokens.
+- Keep the public-hook guard untouched; only add observability around it.
 
-### 1. Harden the gateway API key
-- Generate an HMAC secret for the existing `api_keys` row for the East Amman SCADA Gateway.
-- Store it in the `hmac_secret` column. This unblocks signed telemetry pushes.
-- Record the action in `audit_logs`.
+Phases
 
-### 2. Seed the tag dictionary
-- Create a migration that inserts one active `scada_tags` row per asset/metric pair needed for the demo dashboard (e.g. `ac_power_kw`, `dc_power_kw`, `energy_kwh`, `irradiance_wm2`, `ambient_temp_c`, `module_temp_c`, `wind_speed_ms`, `soc_pct` for the PV inverters, BESS, weather station, etc.).
-- Tag definitions include scale, unit, sample interval, and reasonable min/max/alarm/warn limits.
+Phase 1 — Operations readiness
+1. On-call rotation & ownership model
+   - Add `on_call_rotations` table (optional) or document the current owner roster in `docs/ops-runbook.md`.
+   - Define severity levels (SEV-1/2/3/4) and response-time SLAs.
+2. Alert routing layer
+   - Extend `finance_alert_rules` / `finance_alerts` pattern to a generic `ops_alert_rules` table (rule_type, threshold, notify_role, enabled).
+   - Build `/admin/ops-alerts` UI for triage, ack, dismiss, rule config.
+   - Add server functions: `getOpsAlerts`, `actOnOpsAlert`, `saveOpsAlertRule`.
+3. Health dashboard extensions
+   - Add `/admin/health` signals: DB rolled-back transaction rate, PgBouncer saturation, public-hook 401/403/429 trends, ingestion dead-letter queue depth, cron staleness per job.
+   - Add a "today's incidents" card sourced from a new `ops_incidents` table (or manual rows via UI).
+4. Cron fleet observability
+   - Ensure every cron route writes a structured `audit_logs` row on start/success/failure with `duration_ms`.
+   - Add `/admin/health` cron grid with last-run status, next-run ETA, failure count.
 
-### 3. Inject synthetic telemetry
-- Add a small, idempotent server function (or script) that generates 24 hours of realistic telemetry for the showcase assets using a diurnal power curve and weather pattern, then writes it to `scada_telemetry` via the service role client.
-- Re-run the 24-hour count query to confirm rows exist.
-- Confirm `scada_connectors.last_seen_at` updates after the first successful batch (either by direct update or by the public hook path in the next step).
+Phase 2 — Performance & capacity
+1. Performance cockpit
+   - Add `/admin/performance` route with KPIs: slow query count, p95 query time, rolled-back tx rate, connection saturation, top N tables by size.
+2. Slow-query review & indexes
+   - Use `supabase--slow_queries` output; target the recurring DELETE patterns (likely RLS test cleanup) and heavy SELECTs used by dashboards.
+   - Add targeted `CREATE INDEX` migrations where EXPLAIN confirms benefit.
+3. Capacity thresholds
+   - Define warn/crit thresholds (memory >80%, disk >70%, connections >45, WAL >1GB, rolled-back tx >100/hour).
+   - Surface them as signals on `/admin/health` and as ops alert rules.
+4. Load test strategy
+   - Add `tests/load/README.md` with a k6/Playwright-based smoke script for the golden path (login → project wizard → PO approve → proposal PDF).
+   - Do not run production load tests from the plan; document the harness and a safe staging procedure.
 
-### 4. Verify the public hook end-to-end
-- Use the gateway API key + HMAC secret to send a signed `POST /api/public/hooks/scada-telemetry` request from a local test script.
-- Confirm:
-  - Valid signed request → 200 with accepted rows.
-  - Invalid signature → 401/403.
-  - Missing Bearer → 401.
-- Confirm the cleanliness query still stays clean (no new `ip_denied`/`signature_failed`/`rate_limited` events from legitimate traffic).
+Phase 3 — Security & audit hardening
+1. Security-finding triage
+   - Load `security--run_security_scan` results (currently 67 findings, mostly SECURITY DEFINER warnings).
+   - Categorize: true positives to fix, expected behavior to document/ignore, false positives to record in security memory.
+2. Function hardening
+   - For each `SECURITY DEFINER` function that must stay callable, ensure it has `set search_path = public` and an explicit `GRANT EXECUTE` only to required roles.
+   - Move helper-only functions out of the public schema or revoke `EXECUTE` from `anon`/`authenticated`.
+3. Access certification
+   - Add `/admin/access-review` UI listing active users, roles, and company memberships; allow export CSV.
+   - Add server function `getAccessReview` (super-admin scoped).
+4. Audit coverage gaps
+   - Verify `audit_logs` writes on: role grants, API key rotation, webhook endpoint enable/disable, finance period open/close, export lock/unlock.
+   - Add missing triggers/RPC wrappers where absent.
 
-### 5. UI/connector sanity check
-- Open `/om/scada/connectors` and `/om/scada` to confirm the connector shows data, the dashboard renders KPIs, and the last-telemetry timestamp updates.
-- Verify the API key is visible in the API-key management UI with the correct scope and that the connector config still references the public hook URL.
+Phase 4 — User acceptance & feature polish
+1. UAT checklist
+   - Create `docs/uat-checklist.md` covering core personas: EPC admin, project manager, procurement, finance, field engineer, vendor, client.
+2. Bug bash workflow
+   - Add `/admin/feedback` lightweight issue capture (category, severity, screenshot URL) writing to `ops_feedback` table.
+   - Define triage labels and owner assignment.
+3. Final UX gaps
+   - Review mobile-first pages (`/timesheets`, vendor portal) for offline queue visibility and error retry states.
+   - Add empty-state illustrations and loading skeletons where missing.
 
-### 6. Record confirmation
-- Insert a second `audit_logs` row documenting that live telemetry is restored and the public hook is verified in block mode.
+Phase 5 — Expanded observability
+1. SLO/SLI dashboard
+   - Add `/admin/slo` route: availability (uptime proxy via cron probe success), p95 auth/login latency, SCADA ingestion freshness, finance alert triage time.
+2. Dead-letter & retry monitoring
+   - Surface `ingestion_dead_letter` and `ingestion_retry_queue` counts on `/admin/health` and `/om/scada/ingestion-health`.
+   - Add retry-all / purge buttons for authorized roles.
+3. Telemetry quality
+   - Add SCADA tag heartbeat checks (last received per connector) and staleness alerts.
+4. Synthetic checks
+   - Add a `/api/public/healthz` unauthenticated endpoint returning core dependencies (DB, cron probe timestamp). Avoid PII.
 
-## Technical notes
-- All writes are scoped to the GSI company (`1ab0730f-d6fa-4678-b1b7-7f752c80eceb`) and project `d887fd69-4542-4ae4-a9a1-e0253e7258ff`.
-- The HMAC secret will be stored in the existing `hmac_secret` column of `api_keys`. If that column is considered sensitive, flag it for future migration to a hashed/encrypted storage model.
-- Synthetic telemetry will use the `ts` column on `scada_telemetry` (the previous `received_at` column does not exist).
-- The public hook uses `cf-connecting-ip`; local test scripts will need to include the allowed IP in the API key allowlist or set the header to a permitted IP.
+Phase 6 — Runbook documentation
+1. Consolidate existing docs
+   - Keep `docs/operator-env.md`, `docs/launch-checklist.md`, `docs/pitr-runbook.md`, `docs/public-api-signing.md`.
+   - Add `docs/ops-runbook.md` as the central index: on-call, incident response, escalation contacts, rollback procedures.
+2. Incident response playbooks
+   - Public hook 401/403 spike: check `PUBLIC_HOOK_ENFORCE`, allowlist, signing secret, API key status.
+   - Cron fleet stale: check `pg_cron` launcher, job schedules, route handler logs.
+   - DB saturation: check slow queries, connection count, PgBouncer pool, rollback rate.
+   - SCADA telemetry gap: check connector status, ingestion dead letter, HMAC secret.
+3. Decision records
+   - Add a `docs/ops-decisions.md` log for every Day 2 configuration choice (thresholds, retention, escalation policy).
 
-## Verification criteria
-- `select count(*) from scada_telemetry where ts > now() - interval '24 hours'` returns > 0 rows.
-- `select max(ts) from scada_telemetry` returns a recent timestamp.
-- `/api/public/hooks/scada-telemetry` returns 200 for a valid signed request and 401/403 for invalid ones.
-- SCADA dashboard `/om/scada` renders KPIs and a 24-hour power curve.
-- No new `public_hook.ip_denied`, `public_hook.signature_failed`, or `public_hook.rate_limited` audit events appear in the 7-day window from legitimate gateway traffic.
+Deliverables
+- New routes: `/admin/ops-alerts`, `/admin/performance`, `/admin/access-review`, `/admin/slo`, `/admin/feedback`, `/api/public/healthz`.
+- New tables/migrations: `ops_alert_rules`, `ops_alerts`, `ops_incidents`, `ops_feedback`, `ops_slo_snapshots` (or reuse existing `audit_logs` + materialized views where possible).
+- New server functions: `getOpsAlerts`, `actOnOpsAlert`, `saveOpsAlertRule`, `getPerformanceSignals`, `getAccessReview`, `getSloDashboard`, `submitFeedback`, `getHealthz`.
+- Updated docs: `docs/ops-runbook.md`, `docs/ops-decisions.md`, `docs/uat-checklist.md`, updates to `docs/launch-checklist.md`.
+- Updated `/admin/health` with new signal cards and cron grid.
+- Tests: unit tests for new pure logic, RLS tests for new tables, API tests for `/api/public/healthz`.
+
+Success criteria
+- `/admin/health` loads with no errors and shows all new signal cards.
+- Every cron route writes structured `audit_logs` with duration.
+- `/admin/ops-alerts` can create a rule, raise an alert (via seed or cron), and mark it ack/dismiss.
+- `security--run_security_scan` true positives are reduced or documented with accepted-risk reasoning.
+- `docs/ops-runbook.md` contains incident response playbooks for the five critical scenarios above.
+- `bun run test` and `bun run test:all` remain green (current baselines: 1800+ tests).
+
+Risks & dependencies
+- Lovable Cloud scheduled functions vs `pg_cron`: keep cron routes unchanged; observability only reads `audit_logs` so the clock source does not matter.
+- Security scan findings may include acceptable warnings (e.g., intentionally public helper functions); we will document accepted risks rather than blindly revoke access.
+- Performance work may expose that some slow queries are test-suite artifacts; we will confirm with EXPLAIN before adding indexes.
+- Rollback transactions at 5,480 since boot need investigation; we will add a signal to track whether this is sustained or a test artifact.

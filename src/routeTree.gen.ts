@@ -44,6 +44,7 @@ import { Route as VendorVendorIdDeliveriesRouteImport } from './routes/vendor.$v
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
+import { Route as ApiPublicHealthzRouteImport } from './routes/api/public/healthz'
 import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/webhook-dispatch'
 import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/storage-check'
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
@@ -131,7 +132,11 @@ import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_auth
 import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
 import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
 import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
+import { Route as AuthenticatedAdminSloRouteImport } from './routes/_authenticated/admin.slo'
+import { Route as AuthenticatedAdminPerformanceRouteImport } from './routes/_authenticated/admin.performance'
+import { Route as AuthenticatedAdminOpsAlertsRouteImport } from './routes/_authenticated/admin.ops-alerts'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
+import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
@@ -426,6 +431,11 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
 const ApiWebhooksCalendarRoute = ApiWebhooksCalendarRouteImport.update({
   id: '/api/webhooks/calendar',
   path: '/api/webhooks/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHealthzRoute = ApiPublicHealthzRouteImport.update({
+  id: '/api/public/healthz',
+  path: '/api/public/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronWebhookDispatchRoute = ApiCronWebhookDispatchRouteImport.update({
@@ -934,10 +944,33 @@ const AuthenticatedChangesIdRoute = AuthenticatedChangesIdRouteImport.update({
   path: '/changes/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminSloRoute = AuthenticatedAdminSloRouteImport.update({
+  id: '/slo',
+  path: '/slo',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminPerformanceRoute =
+  AuthenticatedAdminPerformanceRouteImport.update({
+    id: '/performance',
+    path: '/performance',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOpsAlertsRoute =
+  AuthenticatedAdminOpsAlertsRouteImport.update({
+    id: '/ops-alerts',
+    path: '/ops-alerts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminHealthRoute =
   AuthenticatedAdminHealthRouteImport.update({
     id: '/health',
     path: '/health',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminFeedbackRoute =
+  AuthenticatedAdminFeedbackRouteImport.update({
+    id: '/feedback',
+    path: '/feedback',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminTenantsRouteRoute =
@@ -1675,7 +1708,11 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
+  '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -1763,6 +1800,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -1910,7 +1948,11 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
+  '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -1992,6 +2034,7 @@ export interface FileRoutesByTo {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -2143,7 +2186,11 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/_authenticated/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/_authenticated/admin/performance': typeof AuthenticatedAdminPerformanceRoute
+  '/_authenticated/admin/slo': typeof AuthenticatedAdminSloRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
   '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -2231,6 +2278,7 @@ export interface FileRoutesById {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -2384,7 +2432,11 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/vendor/'
     | '/admin/tenants'
+    | '/admin/feedback'
     | '/admin/health'
+    | '/admin/ops-alerts'
+    | '/admin/performance'
+    | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
     | '/construction/baseline-compare'
@@ -2472,6 +2524,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -2619,7 +2672,11 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/vendor'
+    | '/admin/feedback'
     | '/admin/health'
+    | '/admin/ops-alerts'
+    | '/admin/performance'
+    | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
     | '/construction/baseline-compare'
@@ -2701,6 +2758,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -2851,7 +2909,11 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/vendor/'
     | '/_authenticated/admin/tenants'
+    | '/_authenticated/admin/feedback'
     | '/_authenticated/admin/health'
+    | '/_authenticated/admin/ops-alerts'
+    | '/_authenticated/admin/performance'
+    | '/_authenticated/admin/slo'
     | '/_authenticated/changes/$id'
     | '/_authenticated/changes/dashboard'
     | '/_authenticated/construction/baseline-compare'
@@ -2939,6 +3001,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -3090,6 +3153,7 @@ export interface RootRouteChildren {
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
   ApiCronStorageCheckRoute: typeof ApiCronStorageCheckRoute
   ApiCronWebhookDispatchRoute: typeof ApiCronWebhookDispatchRoute
+  ApiPublicHealthzRoute: typeof ApiPublicHealthzRoute
   ApiWebhooksCalendarRoute: typeof ApiWebhooksCalendarRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEchoRoute: typeof ApiPublicHooksEchoRoute
@@ -3343,6 +3407,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/calendar'
       fullPath: '/api/webhooks/calendar'
       preLoaderRoute: typeof ApiWebhooksCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/healthz': {
+      id: '/api/public/healthz'
+      path: '/api/public/healthz'
+      fullPath: '/api/public/healthz'
+      preLoaderRoute: typeof ApiPublicHealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/webhook-dispatch': {
@@ -3954,11 +4025,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChangesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/slo': {
+      id: '/_authenticated/admin/slo'
+      path: '/slo'
+      fullPath: '/admin/slo'
+      preLoaderRoute: typeof AuthenticatedAdminSloRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/performance': {
+      id: '/_authenticated/admin/performance'
+      path: '/performance'
+      fullPath: '/admin/performance'
+      preLoaderRoute: typeof AuthenticatedAdminPerformanceRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/ops-alerts': {
+      id: '/_authenticated/admin/ops-alerts'
+      path: '/ops-alerts'
+      fullPath: '/admin/ops-alerts'
+      preLoaderRoute: typeof AuthenticatedAdminOpsAlertsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/health': {
       id: '/_authenticated/admin/health'
       path: '/health'
       fullPath: '/admin/health'
       preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/feedback': {
+      id: '/_authenticated/admin/feedback'
+      path: '/feedback'
+      fullPath: '/admin/feedback'
+      preLoaderRoute: typeof AuthenticatedAdminFeedbackRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/tenants': {
@@ -4813,13 +4912,21 @@ const AuthenticatedAdminTenantsRouteRouteWithChildren =
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminTenantsRouteRoute: typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
   AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
+  AuthenticatedAdminOpsAlertsRoute: typeof AuthenticatedAdminOpsAlertsRoute
+  AuthenticatedAdminPerformanceRoute: typeof AuthenticatedAdminPerformanceRoute
+  AuthenticatedAdminSloRoute: typeof AuthenticatedAdminSloRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminTenantsRouteRoute:
     AuthenticatedAdminTenantsRouteRouteWithChildren,
+  AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
   AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
+  AuthenticatedAdminOpsAlertsRoute: AuthenticatedAdminOpsAlertsRoute,
+  AuthenticatedAdminPerformanceRoute: AuthenticatedAdminPerformanceRoute,
+  AuthenticatedAdminSloRoute: AuthenticatedAdminSloRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
@@ -5603,6 +5710,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
   ApiCronStorageCheckRoute: ApiCronStorageCheckRoute,
   ApiCronWebhookDispatchRoute: ApiCronWebhookDispatchRoute,
+  ApiPublicHealthzRoute: ApiPublicHealthzRoute,
   ApiWebhooksCalendarRoute: ApiWebhooksCalendarRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEchoRoute: ApiPublicHooksEchoRoute,

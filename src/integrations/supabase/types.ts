@@ -9750,6 +9750,275 @@ export type Database = {
           },
         ]
       }
+      ops_alert_rules: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          notify_role: Database["public"]["Enums"]["app_role"]
+          rule_type: string
+          threshold: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          rule_type: string
+          threshold?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          rule_type?: string
+          threshold?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_alert_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_date: string
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          message: string
+          metadata: Json
+          rule_id: string | null
+          severity: Database["public"]["Enums"]["ops_alert_severity"]
+          status: Database["public"]["Enums"]["ops_alert_status"]
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_date?: string
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          message: string
+          metadata?: Json
+          rule_id?: string | null
+          severity?: Database["public"]["Enums"]["ops_alert_severity"]
+          status?: Database["public"]["Enums"]["ops_alert_status"]
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_date?: string
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          rule_id?: string | null
+          severity?: Database["public"]["Enums"]["ops_alert_severity"]
+          status?: Database["public"]["Enums"]["ops_alert_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ops_alerts_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "ops_alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_feedback: {
+        Row: {
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["ops_feedback_category"]
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          metadata: Json
+          screenshot_url: string | null
+          severity: Database["public"]["Enums"]["ops_alert_severity"]
+          status: Database["public"]["Enums"]["ops_feedback_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ops_feedback_category"]
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          screenshot_url?: string | null
+          severity?: Database["public"]["Enums"]["ops_alert_severity"]
+          status?: Database["public"]["Enums"]["ops_feedback_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ops_feedback_category"]
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          screenshot_url?: string | null
+          severity?: Database["public"]["Enums"]["ops_alert_severity"]
+          status?: Database["public"]["Enums"]["ops_feedback_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_feedback_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_incidents: {
+        Row: {
+          acknowledged_by: string | null
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          metadata: Json
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["ops_incident_severity"]
+          started_at: string
+          status: Database["public"]["Enums"]["ops_incident_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["ops_incident_severity"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["ops_incident_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_by?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["ops_incident_severity"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["ops_incident_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_incidents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_slo_snapshots: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          measurement_window: string
+          metadata: Json
+          observed_value: number | null
+          slo_name: string
+          slo_target: Json
+          status: Database["public"]["Enums"]["slo_status"]
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          measurement_window: string
+          metadata?: Json
+          observed_value?: number | null
+          slo_name: string
+          slo_target?: Json
+          status?: Database["public"]["Enums"]["slo_status"]
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          measurement_window?: string
+          metadata?: Json
+          observed_value?: number | null
+          slo_name?: string
+          slo_target?: Json
+          status?: Database["public"]["Enums"]["slo_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_slo_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pay_applications: {
         Row: {
           application_number: number
@@ -19301,6 +19570,36 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_get_db_health: {
+        Args: never
+        Returns: {
+          connections_max: number
+          connections_used: number
+          db_size_mb: number
+          rollback_rate: number
+          wal_size_mb: number
+          xact_commit: number
+          xact_rollback: number
+        }[]
+      }
+      admin_get_slow_queries: {
+        Args: never
+        Returns: {
+          calls: number
+          max_ms: number
+          mean_ms: number
+          query: string
+          total_ms: number
+        }[]
+      }
+      admin_get_table_sizes: {
+        Args: never
+        Returns: {
+          schema_name: string
+          table_name: string
+          total_mb: number
+        }[]
+      }
       approve_change_order: {
         Args: { p_co_id: string; p_note?: string }
         Returns: Json
@@ -19552,6 +19851,10 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      is_ops_admin_for_company: {
+        Args: { _company_id: string }
+        Returns: boolean
+      }
       is_under_change_control: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
@@ -20319,6 +20622,23 @@ export type Database = {
         | "negotiation"
         | "won"
         | "lost"
+      ops_alert_severity: "info" | "warning" | "critical"
+      ops_alert_status: "open" | "acknowledged" | "dismissed"
+      ops_feedback_category:
+        | "bug"
+        | "ux"
+        | "performance"
+        | "security"
+        | "feature"
+        | "other"
+      ops_feedback_status:
+        | "open"
+        | "triaged"
+        | "in_progress"
+        | "resolved"
+        | "closed"
+      ops_incident_severity: "sev1" | "sev2" | "sev3" | "sev4"
+      ops_incident_status: "open" | "acknowledged" | "mitigated" | "resolved"
       pay_app_status:
         | "draft"
         | "submitted"
@@ -20487,6 +20807,7 @@ export type Database = {
         | "ifc"
         | "as_built"
         | "superseded"
+      slo_status: "ok" | "warn" | "breach"
       submittal_status:
         | "draft"
         | "submitted"
@@ -21143,6 +21464,25 @@ export const Constants = {
         "won",
         "lost",
       ],
+      ops_alert_severity: ["info", "warning", "critical"],
+      ops_alert_status: ["open", "acknowledged", "dismissed"],
+      ops_feedback_category: [
+        "bug",
+        "ux",
+        "performance",
+        "security",
+        "feature",
+        "other",
+      ],
+      ops_feedback_status: [
+        "open",
+        "triaged",
+        "in_progress",
+        "resolved",
+        "closed",
+      ],
+      ops_incident_severity: ["sev1", "sev2", "sev3", "sev4"],
+      ops_incident_status: ["open", "acknowledged", "mitigated", "resolved"],
       pay_app_status: [
         "draft",
         "submitted",
@@ -21330,6 +21670,7 @@ export const Constants = {
         "as_built",
         "superseded",
       ],
+      slo_status: ["ok", "warn", "breach"],
       submittal_status: [
         "draft",
         "submitted",

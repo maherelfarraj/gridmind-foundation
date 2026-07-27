@@ -42,59 +42,98 @@ export const Route = createFileRoute("/api/cron/pm-work-orders")({
 
         const admin = createServiceRoleClient();
 
-        let summary: Awaited<ReturnType<typeof generatePmWorkOrders>>;
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.pm_work_orders.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
         try {
-          summary = await generatePmWorkOrders(admin);
-        } catch (e) {
-          const code = (e as { code?: string }).code;
-          if (code === "42P01") {
-            return Response.json(
-              { skipped: true, reason: "preventive_maintenance_plans_missing" },
-              { status: 200 },
-            );
-          }
-          return Response.json(
-            { error: "generation_failed", message: e instanceof Error ? e.message : String(e) },
-            { status: 500 },
-          );
-        }
+          const __result = await (async () => {
+            let summary: Awaited<ReturnType<typeof generatePmWorkOrders>>;
+            try {
+              summary = await generatePmWorkOrders(admin);
+            } catch (e) {
+              const code = (e as { code?: string }).code;
+              if (code === "42P01") {
+                return Response.json(
+                  { skipped: true, reason: "preventive_maintenance_plans_missing" },
+                  { status: 200 },
+                );
+              }
+              return Response.json(
+                { error: "generation_failed", message: e instanceof Error ? e.message : String(e) },
+                { status: 500 },
+              );
+            }
 
-        // Aggregate per-company counts from touched plan IDs.
-        const perCompany = new Map<string, { generated: number; skipped: number }>();
-        if (summary.plan_ids.length > 0) {
-          const { data: planRows } = await admin
-            .from("preventive_maintenance_plans")
-            .select("id, company_id")
-            .in("id", summary.plan_ids);
-          for (const p of (planRows ?? []) as Array<{ id: string; company_id: string }>) {
-            const row = perCompany.get(p.company_id) ?? { generated: 0, skipped: 0 };
-            perCompany.set(p.company_id, row);
-          }
-        }
+            // Aggregate per-company counts from touched plan IDs.
+            const perCompany = new Map<string, { generated: number; skipped: number }>();
+            if (summary.plan_ids.length > 0) {
+              const { data: planRows } = await admin
+                .from("preventive_maintenance_plans")
+                .select("id, company_id")
+                .in("id", summary.plan_ids);
+              for (const p of (planRows ?? []) as Array<{ id: string; company_id: string }>) {
+                const row = perCompany.get(p.company_id) ?? { generated: 0, skipped: 0 };
+                perCompany.set(p.company_id, row);
+              }
+            }
 
-        // Summary audit — one row per company that had activity this run.
-        for (const [companyId, counts] of perCompany) {
+            // Summary audit — one row per company that had activity this run.
+            for (const [companyId, counts] of perCompany) {
+              await admin.from("audit_logs").insert({
+                company_id: companyId,
+                actor_id: null,
+                action: "cron.pm_work_orders",
+                entity: "cron",
+                entity_id: null,
+                metadata: {
+                  route: ROUTE,
+                  generated: counts.generated,
+                  skipped: counts.skipped,
+                  total_run_generated: summary.generated,
+                  total_run_skipped: summary.skipped,
+                },
+              } as never);
+            }
+
+            return Response.json({
+              generated: summary.generated,
+              skipped: summary.skipped,
+              companies_affected: perCompany.size,
+            });
+          })();
           await admin.from("audit_logs").insert({
-            company_id: companyId,
+            company_id: null,
             actor_id: null,
-            action: "cron.pm_work_orders",
+            action: "cron.pm_work_orders.success",
             entity: "cron",
             entity_id: null,
             metadata: {
-              route: ROUTE,
-              generated: counts.generated,
-              skipped: counts.skipped,
-              total_run_generated: summary.generated,
-              total_run_skipped: summary.skipped,
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
             },
           } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.pm_work_orders.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
         }
-
-        return Response.json({
-          generated: summary.generated,
-          skipped: summary.skipped,
-          companies_affected: perCompany.size,
-        });
       },
     },
   },

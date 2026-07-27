@@ -75,212 +75,253 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
         }
 
         const admin = createServiceRoleClient();
-        const nowIso = new Date().toISOString();
 
-        // Claim pending deliveries whose retry time has arrived.
-        const claim = await admin
-          .from("webhook_deliveries")
-          .select("id, endpoint_id, company_id, event, payload, attempts")
-          .eq("status", "pending")
-          .lte("next_retry_at", nowIso)
-          .order("next_retry_at", { ascending: true })
-          .limit(BATCH_SIZE);
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.webhook_dispatch.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
+            const nowIso = new Date().toISOString();
 
-        if (claim.error && (claim.error as { code?: string }).code === "42P01") {
-          return Response.json({ skipped: true, reason: "deliveries_missing" });
-        }
-        if (claim.error) {
-          return Response.json(
-            { error: "query_failed", message: claim.error.message },
-            { status: 500 },
-          );
-        }
-
-        const deliveries = (claim.data ?? []) as DeliveryRow[];
-        if (deliveries.length === 0) {
-          return Response.json({ processed: 0, success: 0, failed: 0, retried: 0 });
-        }
-
-        // Fetch endpoints + secrets for all target endpoints in one shot.
-        const endpointIds = Array.from(new Set(deliveries.map((d) => d.endpoint_id)));
-        const [epRes, secRes] = await Promise.all([
-          admin.from("webhook_endpoints").select("id, url, is_active").in("id", endpointIds),
-          admin
-            .from("webhook_endpoint_secrets")
-            .select("endpoint_id, secret")
-            .in("endpoint_id", endpointIds),
-        ]);
-        if (epRes.error || secRes.error) {
-          return Response.json({ error: "endpoint_fetch_failed" }, { status: 500 });
-        }
-        const epMap = new Map<string, { url: string; is_active: boolean }>();
-        for (const e of (epRes.data ?? []) as Array<{
-          id: string;
-          url: string;
-          is_active: boolean;
-        }>) {
-          epMap.set(e.id, { url: e.url, is_active: e.is_active });
-        }
-        const secMap = new Map<string, string>();
-        for (const s of (secRes.data ?? []) as Array<{
-          endpoint_id: string;
-          secret: string;
-        }>) {
-          secMap.set(s.endpoint_id, s.secret);
-        }
-
-        const perCompany = new Map<
-          string,
-          { success: number; failed: number; retried: number; skipped: number }
-        >();
-        function bump(companyId: string, key: "success" | "failed" | "retried" | "skipped") {
-          const cur = perCompany.get(companyId) ?? {
-            success: 0,
-            failed: 0,
-            retried: 0,
-            skipped: 0,
-          };
-          cur[key]++;
-          perCompany.set(companyId, cur);
-        }
-
-        let success = 0;
-        let failed = 0;
-        let retried = 0;
-
-        for (const d of deliveries) {
-          const endpoint = epMap.get(d.endpoint_id);
-          const secret = secMap.get(d.endpoint_id);
-
-          // Missing endpoint or secret → mark failed (nothing to send).
-          if (!endpoint || !secret) {
-            await admin
+            // Claim pending deliveries whose retry time has arrived.
+            const claim = await admin
               .from("webhook_deliveries")
-              .update({
-                status: "failed" as const,
-                attempts: d.attempts + 1,
-                response_body: !endpoint ? "endpoint_missing" : "signing_secret_missing",
-                next_retry_at: null,
-              } as never)
-              .eq("id", d.id);
-            failed++;
-            bump(d.company_id, "failed");
-            continue;
-          }
+              .select("id, endpoint_id, company_id, event, payload, attempts")
+              .eq("status", "pending")
+              .lte("next_retry_at", nowIso)
+              .order("next_retry_at", { ascending: true })
+              .limit(BATCH_SIZE);
 
-          if (!endpoint.is_active) {
-            // Endpoint paused — leave pending, push retry out by 1h.
-            await admin
-              .from("webhook_deliveries")
-              .update({
-                next_retry_at: new Date(Date.now() + 60 * 60_000).toISOString(),
-              } as never)
-              .eq("id", d.id);
-            bump(d.company_id, "skipped");
-            continue;
-          }
+            if (claim.error && (claim.error as { code?: string }).code === "42P01") {
+              return Response.json({ skipped: true, reason: "deliveries_missing" });
+            }
+            if (claim.error) {
+              return Response.json(
+                { error: "query_failed", message: claim.error.message },
+                { status: 500 },
+              );
+            }
 
-          const rawBody = JSON.stringify(d.payload ?? {});
-          const timestamp = Math.floor(Date.now() / 1000).toString();
-          const signature = await hmacSha256Hex(secret, `${timestamp}.${rawBody}`);
-          const attempts = d.attempts + 1;
+            const deliveries = (claim.data ?? []) as DeliveryRow[];
+            if (deliveries.length === 0) {
+              return Response.json({ processed: 0, success: 0, failed: 0, retried: 0 });
+            }
 
-          let responseStatus: number | null = null;
-          let responseBody: string | null = null;
-          let ok = false;
+            // Fetch endpoints + secrets for all target endpoints in one shot.
+            const endpointIds = Array.from(new Set(deliveries.map((d) => d.endpoint_id)));
+            const [epRes, secRes] = await Promise.all([
+              admin.from("webhook_endpoints").select("id, url, is_active").in("id", endpointIds),
+              admin
+                .from("webhook_endpoint_secrets")
+                .select("endpoint_id, secret")
+                .in("endpoint_id", endpointIds),
+            ]);
+            if (epRes.error || secRes.error) {
+              return Response.json({ error: "endpoint_fetch_failed" }, { status: 500 });
+            }
+            const epMap = new Map<string, { url: string; is_active: boolean }>();
+            for (const e of (epRes.data ?? []) as Array<{
+              id: string;
+              url: string;
+              is_active: boolean;
+            }>) {
+              epMap.set(e.id, { url: e.url, is_active: e.is_active });
+            }
+            const secMap = new Map<string, string>();
+            for (const s of (secRes.data ?? []) as Array<{
+              endpoint_id: string;
+              secret: string;
+            }>) {
+              secMap.set(s.endpoint_id, s.secret);
+            }
 
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-          try {
-            const res = await fetch(endpoint.url, {
-              method: "POST",
-              headers: {
-                "content-type": "application/json",
-                "user-agent": "GridMind-Webhooks/1.0",
-                "x-gridmind-event": d.event,
-                "x-gridmind-delivery": d.id,
-                "x-gridmind-timestamp": timestamp,
-                "x-gridmind-signature": `sha256=${signature}`,
-              },
-              body: rawBody,
-              signal: controller.signal,
+            const perCompany = new Map<
+              string,
+              { success: number; failed: number; retried: number; skipped: number }
+            >();
+            function bump(companyId: string, key: "success" | "failed" | "retried" | "skipped") {
+              const cur = perCompany.get(companyId) ?? {
+                success: 0,
+                failed: 0,
+                retried: 0,
+                skipped: 0,
+              };
+              cur[key]++;
+              perCompany.set(companyId, cur);
+            }
+
+            let success = 0;
+            let failed = 0;
+            let retried = 0;
+
+            for (const d of deliveries) {
+              const endpoint = epMap.get(d.endpoint_id);
+              const secret = secMap.get(d.endpoint_id);
+
+              // Missing endpoint or secret → mark failed (nothing to send).
+              if (!endpoint || !secret) {
+                await admin
+                  .from("webhook_deliveries")
+                  .update({
+                    status: "failed" as const,
+                    attempts: d.attempts + 1,
+                    response_body: !endpoint ? "endpoint_missing" : "signing_secret_missing",
+                    next_retry_at: null,
+                  } as never)
+                  .eq("id", d.id);
+                failed++;
+                bump(d.company_id, "failed");
+                continue;
+              }
+
+              if (!endpoint.is_active) {
+                // Endpoint paused — leave pending, push retry out by 1h.
+                await admin
+                  .from("webhook_deliveries")
+                  .update({
+                    next_retry_at: new Date(Date.now() + 60 * 60_000).toISOString(),
+                  } as never)
+                  .eq("id", d.id);
+                bump(d.company_id, "skipped");
+                continue;
+              }
+
+              const rawBody = JSON.stringify(d.payload ?? {});
+              const timestamp = Math.floor(Date.now() / 1000).toString();
+              const signature = await hmacSha256Hex(secret, `${timestamp}.${rawBody}`);
+              const attempts = d.attempts + 1;
+
+              let responseStatus: number | null = null;
+              let responseBody: string | null = null;
+              let ok = false;
+
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+              try {
+                const res = await fetch(endpoint.url, {
+                  method: "POST",
+                  headers: {
+                    "content-type": "application/json",
+                    "user-agent": "GridMind-Webhooks/1.0",
+                    "x-gridmind-event": d.event,
+                    "x-gridmind-delivery": d.id,
+                    "x-gridmind-timestamp": timestamp,
+                    "x-gridmind-signature": `sha256=${signature}`,
+                  },
+                  body: rawBody,
+                  signal: controller.signal,
+                });
+                responseStatus = res.status;
+                const text = await res.text().catch(() => "");
+                responseBody =
+                  text.length > RESPONSE_BODY_CAP ? text.slice(0, RESPONSE_BODY_CAP) : text;
+                ok = res.status >= 200 && res.status < 300;
+              } catch (err) {
+                responseBody =
+                  `fetch_error: ${err instanceof Error ? err.message : String(err)}`.slice(
+                    0,
+                    RESPONSE_BODY_CAP,
+                  );
+              } finally {
+                clearTimeout(timer);
+              }
+
+              if (ok) {
+                await admin
+                  .from("webhook_deliveries")
+                  .update({
+                    status: "success" as const,
+                    attempts,
+                    response_status: responseStatus,
+                    response_body: responseBody,
+                    delivered_at: new Date().toISOString(),
+                    next_retry_at: null,
+                  } as never)
+                  .eq("id", d.id);
+                success++;
+                bump(d.company_id, "success");
+              } else if (attempts >= MAX_ATTEMPTS) {
+                await admin
+                  .from("webhook_deliveries")
+                  .update({
+                    status: "failed" as const,
+                    attempts,
+                    response_status: responseStatus,
+                    response_body: responseBody,
+                    next_retry_at: null,
+                  } as never)
+                  .eq("id", d.id);
+                failed++;
+                bump(d.company_id, "failed");
+              } else {
+                const backoffMs = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
+                await admin
+                  .from("webhook_deliveries")
+                  .update({
+                    status: "pending" as const,
+                    attempts,
+                    response_status: responseStatus,
+                    response_body: responseBody,
+                    next_retry_at: new Date(Date.now() + backoffMs).toISOString(),
+                  } as never)
+                  .eq("id", d.id);
+                retried++;
+                bump(d.company_id, "retried");
+              }
+            }
+
+            // Summary audit — one row per affected company.
+            for (const [companyId, counts] of perCompany) {
+              await admin.from("audit_logs").insert({
+                company_id: companyId,
+                actor_id: null,
+                action: "cron.webhook_dispatch",
+                entity: "cron",
+                entity_id: null,
+                metadata: { route: ROUTE, ...counts },
+              } as never);
+            }
+
+            return Response.json({
+              processed: deliveries.length,
+              success,
+              failed,
+              retried,
             });
-            responseStatus = res.status;
-            const text = await res.text().catch(() => "");
-            responseBody =
-              text.length > RESPONSE_BODY_CAP ? text.slice(0, RESPONSE_BODY_CAP) : text;
-            ok = res.status >= 200 && res.status < 300;
-          } catch (err) {
-            responseBody = `fetch_error: ${err instanceof Error ? err.message : String(err)}`.slice(
-              0,
-              RESPONSE_BODY_CAP,
-            );
-          } finally {
-            clearTimeout(timer);
-          }
-
-          if (ok) {
-            await admin
-              .from("webhook_deliveries")
-              .update({
-                status: "success" as const,
-                attempts,
-                response_status: responseStatus,
-                response_body: responseBody,
-                delivered_at: new Date().toISOString(),
-                next_retry_at: null,
-              } as never)
-              .eq("id", d.id);
-            success++;
-            bump(d.company_id, "success");
-          } else if (attempts >= MAX_ATTEMPTS) {
-            await admin
-              .from("webhook_deliveries")
-              .update({
-                status: "failed" as const,
-                attempts,
-                response_status: responseStatus,
-                response_body: responseBody,
-                next_retry_at: null,
-              } as never)
-              .eq("id", d.id);
-            failed++;
-            bump(d.company_id, "failed");
-          } else {
-            const backoffMs = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
-            await admin
-              .from("webhook_deliveries")
-              .update({
-                status: "pending" as const,
-                attempts,
-                response_status: responseStatus,
-                response_body: responseBody,
-                next_retry_at: new Date(Date.now() + backoffMs).toISOString(),
-              } as never)
-              .eq("id", d.id);
-            retried++;
-            bump(d.company_id, "retried");
-          }
-        }
-
-        // Summary audit — one row per affected company.
-        for (const [companyId, counts] of perCompany) {
+          })();
           await admin.from("audit_logs").insert({
-            company_id: companyId,
+            company_id: null,
             actor_id: null,
-            action: "cron.webhook_dispatch",
+            action: "cron.webhook_dispatch.success",
             entity: "cron",
             entity_id: null,
-            metadata: { route: ROUTE, ...counts },
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
           } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.webhook_dispatch.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
         }
-
-        return Response.json({
-          processed: deliveries.length,
-          success,
-          failed,
-          retried,
-        });
       },
     },
   },
