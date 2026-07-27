@@ -153,7 +153,6 @@ function VendorDetail() {
           <VendorDocumentExchange vendorId={vendor.id} canWrite={canWrite} />
         </TabsContent>
       </Tabs>
-
     </div>
   );
 }

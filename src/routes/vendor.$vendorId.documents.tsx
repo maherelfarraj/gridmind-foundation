@@ -36,7 +36,8 @@ export const Route = createFileRoute("/vendor/$vendorId/documents")({
       { title: "Documents — GridMind Vendor Portal" },
       {
         name: "description",
-        content: "Share datasheets and certificates with your buyer and read documents they publish to you.",
+        content:
+          "Share datasheets and certificates with your buyer and read documents they publish to you.",
       },
       { name: "robots", content: "noindex" },
     ],

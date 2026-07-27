@@ -197,7 +197,6 @@ function VendorDashboard() {
             </Button>
           </div>
           {deliveries.isLoading || deliveries.error ? (
-
             <TabState loading={deliveries.isLoading} error={deliveries.error} />
           ) : (deliveries.data ?? []).length === 0 ? (
             <EmptyState

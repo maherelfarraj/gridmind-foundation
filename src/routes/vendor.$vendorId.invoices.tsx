@@ -61,8 +61,6 @@ export const Route = createFileRoute("/vendor/$vendorId/invoices")({
   component: VendorInvoicesPage,
 });
 
-
-
 function VendorInvoicesPage() {
   const { vendorId } = Route.useParams();
   const qc = useQueryClient();

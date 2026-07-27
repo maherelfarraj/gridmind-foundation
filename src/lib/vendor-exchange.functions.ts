@@ -135,21 +135,12 @@ export const createVendorInvoiceUpload = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const membership = await vendorGate(context, data.vendorId);
     if (!membership.exposure.invoices) throw httpError("invoices_not_exposed", 403);
-    const bad = validateUploadFile({ size: data.size, type: data.mimeType }, [
-      VENDOR_INVOICE_MIME,
-    ]);
+    const bad = validateUploadFile({ size: data.size, type: data.mimeType }, [VENDOR_INVOICE_MIME]);
     if (bad) throw httpError(bad, 400);
 
-    const path = vendorInvoicePath(
-      membership.company_id,
-      data.vendorId,
-      data.poId,
-      data.filename,
-    );
+    const path = vendorInvoicePath(membership.company_id, data.vendorId, data.poId, data.filename);
     const admin = await adminClient();
-    const { data: signed, error } = await admin.storage
-      .from(BUCKET)
-      .createSignedUploadUrl(path);
+    const { data: signed, error } = await admin.storage.from(BUCKET).createSignedUploadUrl(path);
     if (error || !signed) throw httpError("upload_url_failed", 400);
     return { path, token: signed.token, bucket: BUCKET };
   });
@@ -297,10 +288,9 @@ export const listVendorExchangeDocuments = createServerFn({ method: "POST" })
   .handler(async ({ context, data }): Promise<VendorExchangeDocRow[]> => {
     requireSupabaseAuth(context);
     await vendorGate(context, data.vendorId);
-    const { data: rows, error } = await context.supabase.rpc(
-      "vendor_portal_get_portal_documents",
-      { p_vendor_id: data.vendorId },
-    );
+    const { data: rows, error } = await context.supabase.rpc("vendor_portal_get_portal_documents", {
+      p_vendor_id: data.vendorId,
+    });
     if (error) throw rpcError(error.message);
     return (rows ?? []) as unknown as VendorExchangeDocRow[];
   });

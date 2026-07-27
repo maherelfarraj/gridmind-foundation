@@ -57,10 +57,9 @@ describe("validateUploadFile", () => {
 
   it("caps size at 25 MB", () => {
     expect(
-      validateUploadFile(
-        { size: VENDOR_UPLOAD_MAX_BYTES + 1, type: VENDOR_INVOICE_MIME },
-        [VENDOR_INVOICE_MIME],
-      ),
+      validateUploadFile({ size: VENDOR_UPLOAD_MAX_BYTES + 1, type: VENDOR_INVOICE_MIME }, [
+        VENDOR_INVOICE_MIME,
+      ]),
     ).toBe("file_too_large");
   });
 
