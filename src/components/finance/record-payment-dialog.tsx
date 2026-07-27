@@ -139,11 +139,38 @@ export function RecordPaymentDialog({
           </div>
         )}
 
+        {formError && (
+          <div
+            className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            {formError}
+          </div>
+        )}
+
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={form.handleSubmit(
+              (values) => {
+                form.clearErrors("root");
+                mutation.mutate(values);
+              },
+              // A resolver rejection must never be silent: if no field message is
+              // rendered, surface the raw issue list at form level.
+              (errors) => {
+                const messages = Object.entries(errors)
+                  .filter(([name]) => name !== "root")
+                  .map(([name, e]) => `${name}: ${(e as { message?: string })?.message ?? "invalid"}`);
+                form.setError("root", {
+                  message: messages.length
+                    ? `Check the highlighted fields — ${messages.join("; ")}`
+                    : "The form could not be validated. Please review your entries.",
+                });
+              },
+            )}
           >
+
             <FormField
               control={form.control}
               name="amount"
