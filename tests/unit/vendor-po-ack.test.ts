@@ -64,13 +64,16 @@ describe("parsePoLines", () => {
   it("normalizes aliases and derives amounts", () => {
     const [line] = parsePoLines([{ item: "Tracker", qty: "4", unit_price: "2.5", unit: "ea" }]);
     expect(line).toEqual({
+      line_no: 1,
       description: "Tracker",
       spec: null,
       quantity: 4,
       uom: "ea",
       unit_price: 2.5,
       amount: 10,
+      site_need_date: null,
     });
+
   });
 });
 
