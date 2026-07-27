@@ -2,9 +2,10 @@
  * Public health endpoint.
  *
  * GET /api/public/healthz — unauthenticated liveness probe. Reports overall
- * status, DB reachability, and the timestamp of the most recent cron_probe
- * heartbeat row (used to detect stalled pg_cron scheduling). Queries via a
- * publishable (anon) Supabase client only — no service-role access, no PII.
+ * status and DB reachability via a cheap read on a public reference table.
+ * Queries via a publishable (anon) Supabase client only — no service-role
+ * access, no PII. (The cron_probe heartbeat was retired at the end of
+ * consolidation week; cron health is reviewed in cron.job_run_details.)
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
@@ -25,22 +26,13 @@ export const Route = createFileRoute("/api/public/healthz")({
 
         try {
           const supabase = createClient(url, anonKey);
-          const { data, error } = await supabase
-            .from("cron_probe")
-            .select("fired_at")
-            .order("fired_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          const { error } = await supabase.from("currencies").select("code").limit(1);
 
           if (error) {
             return Response.json({ status: "degraded", error: error.message }, { status: 503 });
           }
 
-          return Response.json({
-            status: "ok",
-            db: "ok",
-            cron_probe_last_fired_at: (data as { fired_at?: string } | null)?.fired_at ?? null,
-          });
+          return Response.json({ status: "ok", db: "ok" });
         } catch (e) {
           return Response.json(
             { status: "degraded", error: e instanceof Error ? e.message : String(e) },
@@ -51,3 +43,4 @@ export const Route = createFileRoute("/api/public/healthz")({
     },
   },
 });
+

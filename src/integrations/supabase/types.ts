@@ -3108,21 +3108,6 @@ export type Database = {
           },
         ]
       }
-      cron_probe: {
-        Row: {
-          fired_at: string
-          id: number
-        }
-        Insert: {
-          fired_at?: string
-          id?: never
-        }
-        Update: {
-          fired_at?: string
-          id?: never
-        }
-        Relationships: []
-      }
       currencies: {
         Row: {
           code: string
