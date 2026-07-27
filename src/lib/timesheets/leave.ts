@@ -66,12 +66,7 @@ export function countWorkingDays(
 }
 
 /** Inclusive overlap test on two ISO date ranges — `[]` bounds, like Postgres daterange. */
-export function rangesOverlap(
-  aFrom: string,
-  aTo: string,
-  bFrom: string,
-  bTo: string,
-): boolean {
+export function rangesOverlap(aFrom: string, aTo: string, bFrom: string, bTo: string): boolean {
   return aFrom <= bTo && bFrom <= aTo;
 }
 
@@ -123,11 +118,13 @@ export interface BalanceSummary {
   sickUsed: number;
 }
 
-export function summariseBalance(row: {
-  annual_entitlement_days?: number | null;
-  annual_used_days?: number | null;
-  sick_used_days?: number | null;
-} | null): BalanceSummary {
+export function summariseBalance(
+  row: {
+    annual_entitlement_days?: number | null;
+    annual_used_days?: number | null;
+    sick_used_days?: number | null;
+  } | null,
+): BalanceSummary {
   const entitlement = Number(
     row?.annual_entitlement_days ?? TIMESHEET_POLICY.defaultAnnualEntitlementDays,
   );

@@ -121,10 +121,9 @@ function LeavePage() {
           : "Request rejected",
       );
       if (res.skipped_weeks.length) {
-        toast.warning(
-          `Locked weeks need manual adjustment: ${res.skipped_weeks.join(", ")}`,
-          { duration: 8000 },
-        );
+        toast.warning(`Locked weeks need manual adjustment: ${res.skipped_weeks.join(", ")}`, {
+          duration: 8000,
+        });
       }
       setDecisionFor(null);
       setComment("");
@@ -346,9 +345,7 @@ function LeavePage() {
       <Dialog open={!!decisionFor} onOpenChange={(o) => !o && setDecisionFor(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {decision === "approved" ? "Approve leave" : "Reject leave"}
-            </DialogTitle>
+            <DialogTitle>{decision === "approved" ? "Approve leave" : "Reject leave"}</DialogTitle>
             <DialogDescription>
               {decisionFor
                 ? `${decisionFor.request_number} · ${describeWorkingDays(Number(decisionFor.days))}`

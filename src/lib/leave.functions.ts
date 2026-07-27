@@ -19,12 +19,7 @@ import {
   serverDays,
   type LeaveRow,
 } from "@/lib/leave.server";
-import {
-  currentCompanyId,
-  hasAnyRole,
-  httpError,
-  writeAuditLog,
-} from "@/lib/timesheets.server";
+import { currentCompanyId, hasAnyRole, httpError, writeAuditLog } from "@/lib/timesheets.server";
 import {
   isInsideLeavePrefix,
   leaveAttachmentPath,
@@ -120,9 +115,7 @@ export const getLeaveOverview = createServerFn({ method: "GET" })
 /** Live day count preview — always recomputed on the server. */
 export const previewLeaveDays = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ date_from: isoDate, date_to: isoDate }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ date_from: isoDate, date_to: isoDate }).parse(raw))
   .handler(async ({ context, data }): Promise<{ days: number }> => {
     requireSupabaseAuth(context);
     return { days: serverDays(data.date_from, data.date_to) };
@@ -232,25 +225,23 @@ export const createLeaveAttachmentUpload = createServerFn({ method: "POST" })
       })
       .parse(raw),
   )
-  .handler(
-    async ({ context, data }): Promise<{ path: string; token: string; bucket: string }> => {
-      requireSupabaseAuth(context);
-      const db = context.supabase;
-      const userId = context.user!.id;
-      const leave = await loadLeave(db, data.leave_request_id);
-      if (leave.user_id !== userId) httpError(403, "forbidden");
-      const bad = validateLeaveFile({ size: data.size, type: data.mimeType });
-      if (bad) httpError(400, bad);
+  .handler(async ({ context, data }): Promise<{ path: string; token: string; bucket: string }> => {
+    requireSupabaseAuth(context);
+    const db = context.supabase;
+    const userId = context.user!.id;
+    const leave = await loadLeave(db, data.leave_request_id);
+    if (leave.user_id !== userId) httpError(403, "forbidden");
+    const bad = validateLeaveFile({ size: data.size, type: data.mimeType });
+    if (bad) httpError(400, bad);
 
-      const path = leaveAttachmentPath(leave.company_id, userId, leave.id, data.filename);
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: signed, error } = await supabaseAdmin.storage
-        .from(BUCKET)
-        .createSignedUploadUrl(path);
-      if (error || !signed) httpError(400, "upload_url_failed");
-      return { path, token: signed!.token, bucket: BUCKET };
-    },
-  );
+    const path = leaveAttachmentPath(leave.company_id, userId, leave.id, data.filename);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUploadUrl(path);
+    if (error || !signed) httpError(400, "upload_url_failed");
+    return { path, token: signed!.token, bucket: BUCKET };
+  });
 
 export const attachLeaveDocument = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
@@ -310,7 +301,12 @@ export const decideLeave = createServerFn({ method: "POST" })
     async ({
       context,
       data,
-    }): Promise<{ status: string; days: number; skipped_weeks: string[]; entries_created: number }> => {
+    }): Promise<{
+      status: string;
+      days: number;
+      skipped_weeks: string[];
+      entries_created: number;
+    }> => {
       requireSupabaseAuth(context);
       const db = context.supabase;
       const userId = context.user!.id;
@@ -416,41 +412,39 @@ export const withdrawApprovedLeave = createServerFn({ method: "POST" })
       .object({ leave_request_id: z.string().uuid(), comment: z.string().trim().min(1).max(2000) })
       .parse(raw),
   )
-  .handler(
-    async ({ context, data }): Promise<{ removed: number; skipped_weeks: string[] }> => {
-      requireSupabaseAuth(context);
-      const db = context.supabase;
-      if (!(await hasAnyRole(db, LEAVE_UNWIND_ROLES))) httpError(403, "forbidden");
-      const leave = await loadLeave(db, data.leave_request_id);
-      if (leave.status !== "approved") httpError(409, "leave_not_approved");
+  .handler(async ({ context, data }): Promise<{ removed: number; skipped_weeks: string[] }> => {
+    requireSupabaseAuth(context);
+    const db = context.supabase;
+    if (!(await hasAnyRole(db, LEAVE_UNWIND_ROLES))) httpError(403, "forbidden");
+    const leave = await loadLeave(db, data.leave_request_id);
+    if (leave.status !== "approved") httpError(409, "leave_not_approved");
 
-      const undo = await removeLeaveEntries(db, leave);
-      await applyBalance(
-        db,
-        leave.company_id,
-        leave.user_id,
-        leave.leave_type as LeaveType,
-        -Number(leave.days),
-      );
-      const { error } = await db
-        .from("leave_requests")
-        .update({ status: "cancelled" as never, decision_comment: data.comment })
-        .eq("id", leave.id)
-        .eq("status", "approved" as never);
-      if (error) throw error;
+    const undo = await removeLeaveEntries(db, leave);
+    await applyBalance(
+      db,
+      leave.company_id,
+      leave.user_id,
+      leave.leave_type as LeaveType,
+      -Number(leave.days),
+    );
+    const { error } = await db
+      .from("leave_requests")
+      .update({ status: "cancelled" as never, decision_comment: data.comment })
+      .eq("id", leave.id)
+      .eq("status", "approved" as never);
+    if (error) throw error;
 
-      await writeAuditLog(db, "leave.cancelled", "leave_requests", leave.id, {
-        leave_number: leave.request_number,
-        by: "admin",
-        entries_removed: undo.removed,
-        skipped_weeks: undo.skipped_weeks,
-      });
-      await notifyUsers(db, leave.company_id, [leave.user_id], {
-        type: "leave.cancelled",
-        title: `Leave withdrawn: ${leave.request_number ?? ""}`.trim(),
-        body: data.comment,
-        link: "/timesheets/leave",
-      });
-      return undo;
-    },
-  );
+    await writeAuditLog(db, "leave.cancelled", "leave_requests", leave.id, {
+      leave_number: leave.request_number,
+      by: "admin",
+      entries_removed: undo.removed,
+      skipped_weeks: undo.skipped_weeks,
+    });
+    await notifyUsers(db, leave.company_id, [leave.user_id], {
+      type: "leave.cancelled",
+      title: `Leave withdrawn: ${leave.request_number ?? ""}`.trim(),
+      body: data.comment,
+      link: "/timesheets/leave",
+    });
+    return undo;
+  });

@@ -47,7 +47,11 @@ export const LEAVE_COLS =
   "id, company_id, request_number, user_id, leave_type, date_from, date_to, days, reason, status, approver_id, decided_at, decision_comment, attachment_path, created_at";
 
 export async function loadLeave(client: Client, id: string): Promise<LeaveRow> {
-  const { data, error } = await client.from("leave_requests").select(LEAVE_COLS).eq("id", id).maybeSingle();
+  const { data, error } = await client
+    .from("leave_requests")
+    .select(LEAVE_COLS)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   if (!data) httpError(404, "leave_not_found", "That leave request no longer exists.");
   return data as unknown as LeaveRow;
@@ -173,7 +177,10 @@ async function recomputeTotals(client: Client, timesheetId: string): Promise<voi
  * duplicated. Weeks whose timesheet is locked (submitted/in_review/approved)
  * — or that the approver may not create — are reported as skipped_weeks.
  */
-export async function createLeaveEntries(client: Client, leave: LeaveRow): Promise<AutoEntryResult> {
+export async function createLeaveEntries(
+  client: Client,
+  leave: LeaveRow,
+): Promise<AutoEntryResult> {
   const days = workingDaysInRange(leave.date_from, leave.date_to);
   const byWeek = new Map<string, string[]>();
   for (const day of days) {
