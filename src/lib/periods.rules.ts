@@ -132,13 +132,13 @@ export interface ChecklistFacts {
 }
 
 export function buildChecklist(facts: ChecklistFacts): ChecklistItem[] {
-  const detail = (n: number, noun: string) =>
-    n === 0 ? `0 ${noun}` : `${n} ${noun}${n === 1 ? "" : "s"} outstanding`;
+  const detail = (n: number, noun: string, plural: string) =>
+    n === 0 ? `0 ${plural}` : `${n} ${n === 1 ? noun : plural} outstanding`;
   const base: { key: ChecklistKey; pass: boolean; detail: string; manual: boolean }[] = [
     {
       key: "payables_matched",
       pass: facts.blocked_matches === 0,
-      detail: detail(facts.blocked_matches, "blocked match"),
+      detail: detail(facts.blocked_matches, "blocked match", "blocked matches"),
       manual: false,
     },
     {
@@ -153,13 +153,13 @@ export function buildChecklist(facts: ChecklistFacts): ChecklistItem[] {
     {
       key: "unmatched_resolved",
       pass: facts.unmatched_payments === 0,
-      detail: detail(facts.unmatched_payments, "unmatched payment"),
+      detail: detail(facts.unmatched_payments, "unmatched payment", "unmatched payments"),
       manual: false,
     },
     {
       key: "alerts_acknowledged",
       pass: facts.open_alerts === 0,
-      detail: detail(facts.open_alerts, "open alert"),
+      detail: detail(facts.open_alerts, "open alert", "open alerts"),
       manual: false,
     },
   ];

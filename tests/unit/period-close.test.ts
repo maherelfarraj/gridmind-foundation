@@ -74,7 +74,7 @@ describe("close checklist", () => {
       "unmatched_resolved",
       "alerts_acknowledged",
     ]);
-    expect(items[0].detail).toBe("2 blocked matchs outstanding".replace("matchs", "matches"));
+    expect(items[0].detail).toBe("2 blocked matches outstanding");
   });
 
   it("requires a manual review acknowledgement when WIP contracts exist", () => {
