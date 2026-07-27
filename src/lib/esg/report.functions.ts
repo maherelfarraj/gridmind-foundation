@@ -195,7 +195,11 @@ export const publishEsgReport = createServerFn({ method: "POST" })
     const companyId = await currentCompanyId(context.supabase, context.user.id);
     const report = await loadReport(context.supabase, companyId, data.report_id);
     if (report.status !== "approved") {
-      httpError(409, "report_not_approved", `Report is ${report.status} — publish requires approved`);
+      httpError(
+        409,
+        "report_not_approved",
+        `Report is ${report.status} — publish requires approved`,
+      );
     }
     await patchReport(context.supabase, report.id, {
       status: "published",

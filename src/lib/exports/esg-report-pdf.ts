@@ -57,7 +57,11 @@ export async function buildEsgReportPdfBytes(pkg: EsgReportPackage): Promise<Uin
     `Project: ${sanitize(pkg.project.code ? `${pkg.project.code} — ${pkg.project.name}` : pkg.project.name)}`,
     y + 4,
   );
-  y = docBody(doc, `Reporting period: ${periodLabel(pkg.report.period_from, pkg.report.period_to)}`, y);
+  y = docBody(
+    doc,
+    `Reporting period: ${periodLabel(pkg.report.period_from, pkg.report.period_to)}`,
+    y,
+  );
   y = docBody(doc, `Report number: ${sanitize(pkg.report.report_number ?? "—")}`, y);
   y += 10;
 

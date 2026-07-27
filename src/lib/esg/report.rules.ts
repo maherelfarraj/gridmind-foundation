@@ -97,7 +97,11 @@ export function lenderIndicatorRows(i: LenderIndicatorInput): LenderIndicatorRow
   const gross = i.totals.scope_1_kg + i.totals.scope_2_kg + i.totals.scope_3_kg;
   return [
     { indicator: "Gross emissions", value: t(gross), formula: "scope 1 + scope 2 + scope 3" },
-    { indicator: "Scope 1 (direct)", value: t(i.totals.scope_1_kg), formula: "Σ quantity × factor" },
+    {
+      indicator: "Scope 1 (direct)",
+      value: t(i.totals.scope_1_kg),
+      formula: "Σ quantity × factor",
+    },
     {
       indicator: "Scope 2 (purchased energy)",
       value: t(i.totals.scope_2_kg),
