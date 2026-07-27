@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { attachSupabaseAuth, requireSupabaseAuth, type AuthContext } from "@/integrations/supabase/auth-attacher";
 import type { Database } from "@/integrations/supabase/types";
 
 export type SloStatus = Database["public"]["Enums"]["slo_status"];
@@ -19,10 +19,7 @@ export type SloSnapshot = {
   created_at: string;
 };
 
-async function requireSuperAdmin(context: {
-  user: { id: string };
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> };
-}) {
+async function requireSuperAdmin(context: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
   const { data: isSuper, error: roleErr } = await context.supabase.rpc("has_role", {
     p_user_id: context.user.id,
     p_role: "super_admin",

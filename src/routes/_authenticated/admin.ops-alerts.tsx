@@ -83,19 +83,15 @@ function OpsAlertsPage() {
   });
 
   const alerts = useQuery(opsAlertsQueryOptions(filters));
-  const tenants = useQuery({
-    queryKey: ["ops-alerts", "tenants"],
-    queryFn: () => useServerFnTenants(),
-    staleTime: 60_000,
-  });
-
   const act = useServerFn(actOnOpsAlert);
   const saveRule = useServerFn(saveOpsAlertRule);
   const listTenantsFn = useServerFn(listTenants);
 
-  function useServerFnTenants() {
-    return listTenantsFn({ data: {} });
-  }
+  const tenants = useQuery({
+    queryKey: ["ops-alerts", "tenants"],
+    queryFn: () => listTenantsFn({ data: {} }),
+    staleTime: 60_000,
+  });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["ops-alerts"] });
 
@@ -110,7 +106,7 @@ function OpsAlertsPage() {
   });
 
   const ruleMutation = useMutation({
-    mutationFn: (vars: Parameters<typeof saveRule>[0]["data"]) => saveRule({ data: vars }),
+    mutationFn: (vars: RulePayload & { id?: string }) => saveRule({ data: vars }),
     onSuccess: () => {
       toast.success("Rule saved");
       void invalidate();
@@ -347,7 +343,7 @@ function RuleCard({
     JSON.stringify(rule?.threshold ?? {}, null, 2),
   );
   const [enabled, setEnabled] = useState(rule?.enabled ?? true);
-  const [notifyRole, setNotifyRole] = useState(rule?.notify_role ?? "super_admin");
+  const [notifyRole, setNotifyRole] = useState<string>(rule?.notify_role ?? "super_admin");
   const [companyId, setCompanyId] = useState<string>(rule?.company_id ?? "global");
   const [thresholdError, setThresholdError] = useState<string | null>(null);
 
