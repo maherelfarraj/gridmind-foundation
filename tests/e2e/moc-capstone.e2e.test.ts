@@ -64,6 +64,7 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
         name: `P192 capstone project ${suffix}`,
         code: `P192-${suffix.slice(0, 4).toUpperCase()}`,
         status: "active",
+        archetype: "utility_pv",
       } as never)
       .select("id")
       .single();
