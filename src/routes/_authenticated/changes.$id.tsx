@@ -493,13 +493,12 @@ function ChangeDetailPage() {
           ) : null}
         </TabsContent>
 
-        <TabsContent value="tasks" className="space-y-3 pt-4">
-          {cr.updated_documents.length === 0 && cr.updated_asbuilts.length === 0 ? (
-            <EmptyState
-              title="No implementation tasks recorded"
-              description="Updated documents and as-builts are captured when the change is closed."
-            />
-          ) : (
+        <TabsContent value="tasks" className="space-y-4 pt-4">
+          <ImplementationTasks
+            changeRequestId={id}
+            canEdit={cr.status === "approved" || cr.status === "implementing"}
+          />
+          {cr.updated_documents.length > 0 || cr.updated_asbuilts.length > 0 ? (
             <Card className="space-y-3 p-4">
               <h2 className="text-sm font-medium text-foreground">Updated documents</h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
@@ -515,8 +514,9 @@ function ChangeDetailPage() {
                 ))}
               </ul>
             </Card>
-          )}
+          ) : null}
         </TabsContent>
+
 
         <TabsContent value="audit" className="space-y-3 pt-4">
           <div className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
