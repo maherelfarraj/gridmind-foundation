@@ -381,8 +381,8 @@ export async function emitThreadEvent(
   // graph reads correctly from either end.
   for (const i of impacts) {
     if (!i.entity_id) continue;
-    await safe(async () => {
-      await db.rpc("link_entities", {
+    const linked = await safe(async () => {
+      const { error } = await db.rpc("link_entities", {
         p_source_type: input.sourceType,
         p_source_id: input.sourceId,
         p_link_type: i.link_type,
@@ -391,8 +391,31 @@ export async function emitThreadEvent(
         p_company_id: project.company_id,
         p_metadata: { project_id: project.id, area: i.area, action: i.action },
       });
-      return true;
+      return error ? null : true;
     });
+    if (!linked) {
+      await safe(async () => {
+        await db
+          .from("entity_links")
+          .upsert(
+            {
+              company_id: project.company_id,
+              project_id: project.id,
+              source_type: input.sourceType,
+              source_id: input.sourceId,
+              link_type: i.link_type,
+              target_type: i.entity_type,
+              target_id: i.entity_id,
+              metadata: { project_id: project.id, area: i.area, action: i.action },
+            },
+            {
+              onConflict: "company_id,source_type,source_id,link_type,target_type,target_id",
+              ignoreDuplicates: true,
+            },
+          );
+        return true;
+      });
+    }
   }
 
   const roles = Array.from(new Set(spec.impacts.map((s) => s.owner_role)));
