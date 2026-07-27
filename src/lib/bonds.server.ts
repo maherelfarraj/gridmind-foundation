@@ -241,25 +241,80 @@ export interface RenewalRow {
   previous_expiry: string | null;
   new_expiry: string | null;
   renewed_at: string | null;
+  renewed_by: string | null;
+  renewed_by_name: string | null;
   premium_amount: number | null;
   notes: string | null;
   document_path: string | null;
+  document_url?: string | null;
+}
+
+/** Display names for actor ids (renewals timeline). */
+export async function loadActorNames(
+  ctx: AuthContext,
+  ids: string[],
+): Promise<Map<string, string>> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows =
+    (await safeRows<{ id: string; full_name: string | null; email: string | null }>(() =>
+      ctx.supabase.from("profiles").select("id, full_name, email").in("id", unique),
+    )) ?? [];
+  return new Map(rows.map((r) => [r.id, r.full_name || r.email || "Unknown user"]));
 }
 
 export async function loadRenewals(ctx: AuthContext, instrumentId: string): Promise<RenewalRow[]> {
   const rows =
-    (await safeRows<RenewalRow & { premium_amount: number | string | null }>(() =>
+    (await safeRows<
+      Omit<RenewalRow, "premium_amount" | "renewed_by_name"> & {
+        premium_amount: number | string | null;
+      }
+    >(() =>
       ctx.supabase
         .from("bond_renewals")
-        .select("id, previous_expiry, new_expiry, renewed_at, premium_amount, notes, document_path")
+        .select(
+          "id, previous_expiry, new_expiry, renewed_at, renewed_by, premium_amount, notes, document_path",
+        )
         .eq("instrument_id", instrumentId)
-        .order("renewed_at", { ascending: true }),
+        .order("renewed_at", { ascending: false }),
     )) ?? [];
+  const names = await loadActorNames(
+    ctx,
+    rows.map((r) => r.renewed_by ?? ""),
+  );
   return rows.map((r) => ({
     ...r,
+    renewed_by_name: r.renewed_by ? (names.get(r.renewed_by) ?? null) : null,
     premium_amount: r.premium_amount === null ? null : Number(r.premium_amount),
   }));
 }
+
+/** Renewal history rows are insert-only — no update/delete helper exists. */
+export async function insertRenewal(
+  ctx: AuthContext,
+  companyId: string,
+  data: {
+    instrument_id: string;
+    previous_expiry: string | null;
+    new_expiry: string;
+    premium_amount?: number;
+    document_path?: string;
+    notes?: string;
+  },
+): Promise<void> {
+  const { error } = await ctx.supabase.from("bond_renewals").insert({
+    company_id: companyId,
+    instrument_id: data.instrument_id,
+    previous_expiry: data.previous_expiry,
+    new_expiry: data.new_expiry,
+    premium_amount: data.premium_amount ?? null,
+    document_path: data.document_path ?? null,
+    notes: data.notes ?? null,
+    renewed_by: ctx.user!.id,
+  } as never);
+  if (error) throw error;
+}
+
 
 export interface ClaimRow {
   id: string;
