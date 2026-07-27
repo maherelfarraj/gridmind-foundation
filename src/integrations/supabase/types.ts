@@ -4079,6 +4079,66 @@ export type Database = {
           },
         ]
       }
+      entity_links: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          link_type: string
+          metadata: Json
+          project_id: string | null
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_type: string
+          metadata?: Json
+          project_id?: string | null
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_type?: string
+          metadata?: Json
+          project_id?: string | null
+          source_id?: string
+          source_type?: string
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       environmental_monitoring: {
         Row: {
           company_id: string
@@ -5516,6 +5576,104 @@ export type Database = {
           {
             foreignKeyName: "ifc_releases_voided_by_fkey"
             columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impact_assessments: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          change_request_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          event_type: string
+          id: string
+          impacts: Json
+          metadata: Json
+          project_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          source_id: string
+          source_type: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          change_request_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          event_type: string
+          id?: string
+          impacts?: Json
+          metadata?: Json
+          project_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source_id: string
+          source_type: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          change_request_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          event_type?: string
+          id?: string
+          impacts?: Json
+          metadata?: Json
+          project_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source_id?: string
+          source_type?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impact_assessments_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impact_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impact_assessments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impact_assessments_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -16792,6 +16950,20 @@ export type Database = {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
         Returns: boolean
       }
+      create_impact_assessment: {
+        Args: {
+          p_company_id: string
+          p_event_type: string
+          p_impacts: Json
+          p_metadata?: Json
+          p_severity?: string
+          p_source_id: string
+          p_source_type: string
+          p_summary?: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_invite: {
         Args: {
           p_company_id: string
@@ -16874,7 +17046,21 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      entity_link_orphans: {
+        Args: never
+        Returns: {
+          company_id: string
+          endpoint: string
+          entity_id: string
+          entity_type: string
+          link_id: string
+        }[]
+      }
       escalate_overdue_approvals: { Args: never; Returns: number }
+      get_entity_graph: {
+        Args: { p_depth?: number; p_entity_id: string; p_entity_type: string }
+        Returns: Json
+      }
       get_po_by_share_token: {
         Args: { p_token: string }
         Returns: {
@@ -16925,6 +17111,18 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      link_entities: {
+        Args: {
+          p_company_id: string
+          p_link_type: string
+          p_metadata?: Json
+          p_source_id: string
+          p_source_type: string
+          p_target_id: string
+          p_target_type: string
+        }
+        Returns: string
+      }
       list_storage_buckets_status: {
         Args: { _ids: string[] }
         Returns: {
