@@ -5789,6 +5789,256 @@ export type Database = {
           },
         ]
       }
+      gl_account_mappings: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          credit_account_code: string
+          credit_account_name: string
+          debit_account_code: string
+          debit_account_name: string
+          enabled: boolean
+          event_type: Database["public"]["Enums"]["gl_event_type"]
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          credit_account_code: string
+          credit_account_name: string
+          debit_account_code: string
+          debit_account_name: string
+          enabled?: boolean
+          event_type: Database["public"]["Enums"]["gl_event_type"]
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          credit_account_code?: string
+          credit_account_name?: string
+          debit_account_code?: string
+          debit_account_name?: string
+          enabled?: boolean
+          event_type?: Database["public"]["Enums"]["gl_event_type"]
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gl_account_mappings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gl_account_mappings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gl_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gl_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gl_export_runs: {
+        Row: {
+          base_currency_code: string
+          company_id: string
+          created_at: string
+          downloaded_at: string | null
+          file_path: string | null
+          generated_by: string | null
+          id: string
+          period_from: string
+          period_to: string
+          row_count: number
+          run_number: string | null
+          source_counts: Json
+          status: Database["public"]["Enums"]["gl_run_status"]
+          superseded_at: string | null
+          superseded_by: string | null
+          total_credit: number
+          total_debit: number
+          updated_at: string
+        }
+        Insert: {
+          base_currency_code?: string
+          company_id: string
+          created_at?: string
+          downloaded_at?: string | null
+          file_path?: string | null
+          generated_by?: string | null
+          id?: string
+          period_from: string
+          period_to: string
+          row_count?: number
+          run_number?: string | null
+          source_counts?: Json
+          status?: Database["public"]["Enums"]["gl_run_status"]
+          superseded_at?: string | null
+          superseded_by?: string | null
+          total_credit?: number
+          total_debit?: number
+          updated_at?: string
+        }
+        Update: {
+          base_currency_code?: string
+          company_id?: string
+          created_at?: string
+          downloaded_at?: string | null
+          file_path?: string | null
+          generated_by?: string | null
+          id?: string
+          period_from?: string
+          period_to?: string
+          row_count?: number
+          run_number?: string | null
+          source_counts?: Json
+          status?: Database["public"]["Enums"]["gl_run_status"]
+          superseded_at?: string | null
+          superseded_by?: string | null
+          total_credit?: number
+          total_debit?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gl_export_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gl_export_runs_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gl_export_runs_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "gl_export_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gl_journal_entries: {
+        Row: {
+          account_code: string
+          account_name: string
+          company_id: string
+          created_at: string
+          credit: number
+          currency_code: string
+          debit: number
+          entry_date: string
+          event_type: Database["public"]["Enums"]["gl_event_type"]
+          id: string
+          line_no: number
+          memo: string
+          project_id: string | null
+          run_id: string
+          source_id: string | null
+          source_number: string | null
+          source_type: string
+        }
+        Insert: {
+          account_code: string
+          account_name: string
+          company_id: string
+          created_at?: string
+          credit?: number
+          currency_code: string
+          debit?: number
+          entry_date: string
+          event_type: Database["public"]["Enums"]["gl_event_type"]
+          id?: string
+          line_no: number
+          memo: string
+          project_id?: string | null
+          run_id: string
+          source_id?: string | null
+          source_number?: string | null
+          source_type: string
+        }
+        Update: {
+          account_code?: string
+          account_name?: string
+          company_id?: string
+          created_at?: string
+          credit?: number
+          currency_code?: string
+          debit?: number
+          entry_date?: string
+          event_type?: Database["public"]["Enums"]["gl_event_type"]
+          id?: string
+          line_no?: number
+          memo?: string
+          project_id?: string | null
+          run_id?: string
+          source_id?: string | null
+          source_number?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gl_journal_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gl_journal_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gl_journal_entries_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "gl_export_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goods_receipts: {
         Row: {
           company_id: string
@@ -18165,6 +18415,10 @@ export type Database = {
         Returns: number
       }
       next_cr_number: { Args: { p_company_id: string }; Returns: string }
+      next_gl_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
+      }
       next_sld_drawing_number: {
         Args: { p_project_id: string }
         Returns: string
@@ -18589,6 +18843,15 @@ export type Database = {
         | "payment_unmatched_days"
       finance_alert_status: "open" | "acknowledged" | "dismissed"
       finance_period_status: "open" | "closing" | "closed"
+      gl_event_type:
+        | "invoice_receivable_issued"
+        | "invoice_payable_received"
+        | "payment_received"
+        | "payment_made"
+        | "retention_withheld"
+        | "change_order_approved"
+        | "debit_note_issued"
+      gl_run_status: "generated" | "downloaded" | "superseded"
       gov_doc_status:
         | "draft"
         | "submitted"
@@ -19342,6 +19605,16 @@ export const Constants = {
       ],
       finance_alert_status: ["open", "acknowledged", "dismissed"],
       finance_period_status: ["open", "closing", "closed"],
+      gl_event_type: [
+        "invoice_receivable_issued",
+        "invoice_payable_received",
+        "payment_received",
+        "payment_made",
+        "retention_withheld",
+        "change_order_approved",
+        "debit_note_issued",
+      ],
+      gl_run_status: ["generated", "downloaded", "superseded"],
       gov_doc_status: [
         "draft",
         "submitted",
