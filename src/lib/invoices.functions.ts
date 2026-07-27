@@ -20,6 +20,7 @@ import {
   sumPriorBilledPerLine,
   type InvoiceDirection,
   type InvoiceStatus,
+  defaultDueDate,
 } from "@/lib/invoices.rules";
 import { invoiceBalance, isOverdue, todayIso } from "@/lib/payments.rules";
 
@@ -373,6 +374,7 @@ export const billMilestone = createServerFn({ method: "POST" })
         ((nums ?? []) as any[]).map((x) => String(x.invoice_number)),
       );
 
+      const issueDate = new Date().toISOString().slice(0, 10);
       const { data: ins, error: iErr } = await context.supabase
         .from("invoices")
         .insert({
@@ -384,7 +386,8 @@ export const billMilestone = createServerFn({ method: "POST" })
           status: "draft",
           amount: comp.amount,
           currency_code: contract.currency_code ?? "USD",
-          issue_date: new Date().toISOString().slice(0, 10),
+          issue_date: issueDate,
+          due_date: defaultDueDate(issueDate),
           milestone_label: milestoneLabelFor(line.line_no, line.description, comp.cappedPct),
           created_by: context.user!.id,
         } as any)

@@ -102,8 +102,24 @@ export function InsuranceSummaryCards({ rows }: { rows: BondRow[] }) {
 
 export function CoverageByTypeChart({ rows }: { rows: BondRow[] }) {
   const currencies = useMemo(() => [...new Set(rows.map((r) => r.currency_code))].sort(), [rows]);
+  // Default to the currency carrying the most active coverage, not the
+  // alphabetically first one — draft zero-value instruments otherwise select a
+  // currency with nothing to chart.
+  const defaultCurrency = useMemo(() => {
+    let best = "";
+    let bestTotal = -1;
+    for (const c of currencies) {
+      const total = coverageByType(rows, c).reduce((sum, b) => sum + b.amount, 0);
+      if (total > bestTotal) {
+        best = c;
+        bestTotal = total;
+      }
+    }
+    return best;
+  }, [rows, currencies]);
   const [currency, setCurrency] = useState<string | null>(null);
-  const active = currency && currencies.includes(currency) ? currency : (currencies[0] ?? "");
+  const active = currency && currencies.includes(currency) ? currency : defaultCurrency;
+
   const bars = useMemo(() => coverageByType(rows, active), [rows, active]);
 
   return (

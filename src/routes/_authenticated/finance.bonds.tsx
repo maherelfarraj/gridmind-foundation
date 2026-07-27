@@ -1,5 +1,5 @@
 // P-202 — Bonds & guarantees register with instrument detail drawer.
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -424,6 +424,25 @@ interface WizardProps {
   filters: ListBondsInput;
 }
 
+/** Wizard-field labels so a zod failure names the field the operator must fix. */
+const FIELD_LABELS: Record<string, string> = {
+  instrument_type: "Instrument type",
+  beneficiary_name: "Beneficiary name",
+  beneficiary_type: "Beneficiary type",
+  issuer_name: "Issuer name",
+  issuer_type: "Issuer type",
+  principal_name: "Principal",
+  amount: "Amount",
+  currency_code: "Currency",
+  premium_pct: "Premium %",
+  issue_date: "Issue date",
+  effective_date: "Effective date",
+  expiry_date: "Expiry date",
+  project_id: "Project",
+  contract_id: "Contract",
+  notes: "Notes",
+};
+
 const EMPTY_FORM = {
   instrument_type: "performance_bond",
   beneficiary_name: "",
@@ -458,6 +477,14 @@ function NewInstrumentWizard({
   const createFn = useServerFn(createBondInstrument);
   const qc = useQueryClient();
 
+  // Currency is mandatory but has no sane empty state — default it to the
+  // register's first currency so the wizard never fails on an invisible field.
+  useEffect(() => {
+    if (!open) return;
+    setForm((f) => (f.currency_code ? f : { ...f, currency_code: currencies[0] ?? "USD" }));
+  }, [open, currencies]);
+
+
   function set<K extends keyof typeof EMPTY_FORM>(key: K, value: (typeof EMPTY_FORM)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
@@ -483,7 +510,13 @@ function NewInstrumentWizard({
     };
     const parsed = CreateBondSchema.safeParse(candidate);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Check the form.");
+      const issue = parsed.error.issues[0];
+      const field = issue?.path?.[0];
+      const label = typeof field === "string" ? (FIELD_LABELS[field] ?? titleize(field)) : null;
+      setError(
+        issue ? `${label ? `${label}: ` : ""}${issue.message}` : "Check the form and try again.",
+      );
+
       return null;
     }
     setError(null);

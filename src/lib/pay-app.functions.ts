@@ -1,4 +1,5 @@
 // P-079 — Pay applications server functions (createServerFn + zod + audit).
+import { defaultDueDate } from "@/lib/invoices.rules";
 import { createServerFn } from "@tanstack/react-start";
 import { assertPeriodOpen } from "@/lib/finance/periods";
 import { z } from "zod";
@@ -553,6 +554,7 @@ export const generatePayAppInvoice = createServerFn({ method: "POST" })
         ((existing ?? []) as any[]).map((r) => String(r.invoice_number)),
       );
 
+      const issueDate = new Date().toISOString().slice(0, 10);
       const { data: inv, error: iErr } = await context.supabase
         .from("invoices")
         .insert({
@@ -564,7 +566,8 @@ export const generatePayAppInvoice = createServerFn({ method: "POST" })
           contract_id: row.contract_id,
           amount: row.net_amount,
           currency_code: currency,
-          issue_date: new Date().toISOString().slice(0, 10),
+          issue_date: issueDate,
+          due_date: defaultDueDate(issueDate),
           milestone_label: `Pay App #${row.application_number}`,
           retention_pct: row.retention_pct,
           created_by: (context as any).user.id,
