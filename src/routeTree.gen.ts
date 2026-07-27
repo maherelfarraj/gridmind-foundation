@@ -28,6 +28,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
+import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
@@ -313,6 +314,12 @@ const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
   path: '/hse/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChangesIndexRoute =
+  AuthenticatedChangesIndexRouteImport.update({
+    id: '/changes/',
+    path: '/changes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -1540,6 +1547,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/changes/': typeof AuthenticatedChangesIndexRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -1740,6 +1748,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/changes': typeof AuthenticatedChangesIndexRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
@@ -1948,6 +1957,7 @@ export interface FileRoutesById {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -2158,6 +2168,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/changes/'
     | '/hse/'
     | '/projects/'
     | '/proposals/'
@@ -2358,6 +2369,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/changes'
     | '/hse'
     | '/projects'
     | '/proposals'
@@ -2565,6 +2577,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/_authenticated/changes/'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
@@ -2841,6 +2854,13 @@ declare module '@tanstack/react-router' {
       path: '/hse'
       fullPath: '/hse/'
       preLoaderRoute: typeof AuthenticatedHseIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/': {
+      id: '/_authenticated/changes/'
+      path: '/changes'
+      fullPath: '/changes/'
+      preLoaderRoute: typeof AuthenticatedChangesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/portal/projects/$projectId': {
@@ -4691,6 +4711,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsSldSymbolsRoute: typeof AuthenticatedSettingsSldSymbolsRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
+  AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
@@ -4819,6 +4840,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsSldSymbolsRoute: AuthenticatedSettingsSldSymbolsRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
+  AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
