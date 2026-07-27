@@ -28,6 +28,7 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
     projectId?: string;
     userId?: string;
     poId?: string;
+    vendorId?: string;
     crId?: string;
     crNumber?: string;
     assessmentId?: string | null;
@@ -107,6 +108,7 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
       "audit_logs",
       "notifications",
       "purchase_orders",
+      "vendors",
       "projects",
       "user_roles",
       "profiles",
