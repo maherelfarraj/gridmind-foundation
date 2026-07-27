@@ -8,7 +8,6 @@ import {
   RATE_WRITE_ROLES,
   bomLinesToEstimateLines,
   isEstimateEditable,
-  sumAmounts,
   type BomLineForImport,
   type EstimateStatus,
 } from "@/lib/estimating.rules";
@@ -228,16 +227,14 @@ export async function assertDraft(ctx: AuthContext, estimateId: string): Promise
   return estimate;
 }
 
-/** Recompute and persist estimates.direct_cost = Σ lines.amount. */
+/**
+ * Recompute and persist the money columns after a line change: direct_cost =
+ * Σ lines.amount, plus the staged build-up at the estimate's current margins.
+ */
 export async function recomputeDirectCost(ctx: AuthContext, estimateId: string): Promise<number> {
-  const lines = await loadLines(ctx, estimateId);
-  const total = sumAmounts(lines);
-  const { error } = await ctx.supabase
-    .from("estimates")
-    .update({ direct_cost: total })
-    .eq("id", estimateId);
-  if (error) throw error;
-  return total;
+  const estimate = await loadEstimate(ctx, estimateId);
+  const { result } = await persistBuildup(ctx, estimateId, marginsOf(estimate));
+  return result.direct_cost;
 }
 
 /** Copy a BOM snapshot's lines into a fresh estimate. Returns lines imported. */
