@@ -45,12 +45,20 @@ import {
 import { invoiceErrorMessage } from "@/lib/invoices.query";
 
 const FormSchema = z.object({
-  amount: z.coerce.number().finite().gt(0, "Amount must be greater than zero"),
-  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Required"),
+  // Explicit coercion: an empty/blank input must read as "Required", never as NaN
+  // silently failing a z.coerce.number() with no message the operator can see.
+  amount: z
+    .union([z.string(), z.number()])
+    .transform((v) => (typeof v === "string" ? v.trim() : v))
+    .refine((v) => v !== "" && Number.isFinite(Number(v)), "Enter a valid amount")
+    .transform((v) => Number(v))
+    .refine((n) => n > 0, "Amount must be greater than zero"),
+  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date (YYYY-MM-DD)"),
   method: z.enum(PAYMENT_METHODS),
   bank_reference: z.string().max(120).optional(),
   notes: z.string().max(2000).optional(),
 });
+
 type FormValues = z.input<typeof FormSchema>;
 
 function fmt(n: number, currency: string) {
