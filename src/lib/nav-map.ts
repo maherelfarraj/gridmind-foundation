@@ -379,6 +379,12 @@ export const NAV_GROUPS: NavGroup[] = [
 
       {
         moduleKey: "planning_budget",
+        label: "Revenue recognition",
+        url: "/finance/revenue-recognition",
+        icon: Scale,
+      },
+      {
+        moduleKey: "planning_budget",
         label: "Debit notes",
         url: "/finance/debit-notes",
         icon: Scale,
