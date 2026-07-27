@@ -353,6 +353,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         moduleKey: "planning_budget",
+        label: "Cockpit",
+        url: "/finance",
+        icon: Coins,
+      },
+      {
+        moduleKey: "planning_budget",
         label: "Contracts",
         url: "/finance/contracts",
         icon: FileSignature,
