@@ -33,6 +33,7 @@ import {
   HardHat,
   Handshake,
   Home,
+  GitPullRequestArrow,
   Inbox,
   KeyRound,
   LayoutDashboard,
