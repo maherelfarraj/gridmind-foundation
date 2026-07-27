@@ -127,7 +127,7 @@ export interface ChecklistFacts {
 export function buildChecklist(facts: ChecklistFacts): ChecklistItem[] {
   const detail = (n: number, noun: string) =>
     n === 0 ? `0 ${noun}` : `${n} ${noun}${n === 1 ? "" : "s"} outstanding`;
-  return [
+  const base: { key: ChecklistKey; pass: boolean; detail: string; manual: boolean }[] = [
     {
       key: "payables_matched",
       pass: facts.blocked_matches === 0,
@@ -155,7 +155,8 @@ export function buildChecklist(facts: ChecklistFacts): ChecklistItem[] {
       detail: detail(facts.open_alerts, "open alert"),
       manual: false,
     },
-  ].map((i) => ({
+  ];
+  return base.map((i) => ({
     ...i,
     label: CHECKLIST_LABELS[i.key],
     hint: CHECKLIST_HINTS[i.key],
