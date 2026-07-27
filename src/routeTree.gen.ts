@@ -133,7 +133,9 @@ import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './
 import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
 import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
 import { Route as AuthenticatedAdminSloRouteImport } from './routes/_authenticated/admin.slo'
+import { Route as AuthenticatedAdminOpsAlertsRouteImport } from './routes/_authenticated/admin.ops-alerts'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
+import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
@@ -946,10 +948,22 @@ const AuthenticatedAdminSloRoute = AuthenticatedAdminSloRouteImport.update({
   path: '/slo',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminOpsAlertsRoute =
+  AuthenticatedAdminOpsAlertsRouteImport.update({
+    id: '/ops-alerts',
+    path: '/ops-alerts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminHealthRoute =
   AuthenticatedAdminHealthRouteImport.update({
     id: '/health',
     path: '/health',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminFeedbackRoute =
+  AuthenticatedAdminFeedbackRouteImport.update({
+    id: '/feedback',
+    path: '/feedback',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminTenantsRouteRoute =
@@ -1687,7 +1701,9 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
   '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -1924,7 +1940,9 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
   '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2159,7 +2177,9 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  '/_authenticated/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
   '/_authenticated/admin/slo': typeof AuthenticatedAdminSloRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
   '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2402,7 +2422,9 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/vendor/'
     | '/admin/tenants'
+    | '/admin/feedback'
     | '/admin/health'
+    | '/admin/ops-alerts'
     | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2639,7 +2661,9 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/vendor'
+    | '/admin/feedback'
     | '/admin/health'
+    | '/admin/ops-alerts'
     | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2873,7 +2897,9 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/vendor/'
     | '/_authenticated/admin/tenants'
+    | '/_authenticated/admin/feedback'
     | '/_authenticated/admin/health'
+    | '/_authenticated/admin/ops-alerts'
     | '/_authenticated/admin/slo'
     | '/_authenticated/changes/$id'
     | '/_authenticated/changes/dashboard'
@@ -3993,11 +4019,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSloRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/ops-alerts': {
+      id: '/_authenticated/admin/ops-alerts'
+      path: '/ops-alerts'
+      fullPath: '/admin/ops-alerts'
+      preLoaderRoute: typeof AuthenticatedAdminOpsAlertsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/health': {
       id: '/_authenticated/admin/health'
       path: '/health'
       fullPath: '/admin/health'
       preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/feedback': {
+      id: '/_authenticated/admin/feedback'
+      path: '/feedback'
+      fullPath: '/admin/feedback'
+      preLoaderRoute: typeof AuthenticatedAdminFeedbackRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/tenants': {
@@ -4852,14 +4892,18 @@ const AuthenticatedAdminTenantsRouteRouteWithChildren =
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminTenantsRouteRoute: typeof AuthenticatedAdminTenantsRouteRouteWithChildren
+  AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
   AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
+  AuthenticatedAdminOpsAlertsRoute: typeof AuthenticatedAdminOpsAlertsRoute
   AuthenticatedAdminSloRoute: typeof AuthenticatedAdminSloRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminTenantsRouteRoute:
     AuthenticatedAdminTenantsRouteRouteWithChildren,
+  AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
   AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
+  AuthenticatedAdminOpsAlertsRoute: AuthenticatedAdminOpsAlertsRoute,
   AuthenticatedAdminSloRoute: AuthenticatedAdminSloRoute,
 }
 

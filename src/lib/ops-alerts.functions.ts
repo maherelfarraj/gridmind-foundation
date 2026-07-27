@@ -8,6 +8,7 @@ import {
   assertSuperAdmin,
   OPS_ALERT_SEVERITIES,
   OPS_ALERT_STATUSES,
+  type AppRole,
   type OpsAlertRow,
   type OpsAlertRuleRow,
 } from "@/lib/ops-alerts.server";
@@ -139,16 +140,16 @@ export const saveOpsAlertRule = createServerFn({ method: "POST" })
     const payload = {
       ...(data.id ? { id: data.id } : {}),
       rule_type: data.rule_type,
-      threshold: data.threshold,
+      threshold: data.threshold as never,
       enabled: data.enabled,
-      notify_role: data.notify_role,
+      notify_role: data.notify_role as AppRole,
       company_id: data.company_id ?? null,
       created_by: context.user.id,
     };
 
     const { data: row, error } = await supabaseAdmin
       .from("ops_alert_rules")
-      .upsert(payload, data.id ? { onConflict: "id" } : undefined)
+      .upsert(payload as never, data.id ? { onConflict: "id" } : undefined)
       .select("id")
       .single();
     if (error) throw error;

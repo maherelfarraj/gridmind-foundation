@@ -91,13 +91,14 @@ function FeedbackPage() {
   const qc = useQueryClient();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  const list = useQuery({
-    queryKey: ["ops-feedback"],
-    queryFn: () => useServerFn(getOpsFeedback)({ data: {} }),
-  });
-
+  const fetchFeedback = useServerFn(getOpsFeedback);
   const submit = useServerFn(submitFeedback);
   const updateStatus = useServerFn(updateFeedbackStatus);
+
+  const list = useQuery({
+    queryKey: ["ops-feedback"],
+    queryFn: () => fetchFeedback({ data: {} }),
+  });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["ops-feedback"] });
 
