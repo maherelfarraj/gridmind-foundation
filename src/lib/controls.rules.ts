@@ -148,9 +148,7 @@ export function pickRule(
   discipline: string,
   uom: string,
 ): WeightingRule | null {
-  const matches = rules.filter(
-    (r) => r.is_active && r.discipline === discipline && r.uom === uom,
-  );
+  const matches = rules.filter((r) => r.is_active && r.discipline === discipline && r.uom === uom);
   return matches.find((r) => r.project_id != null) ?? matches[0] ?? null;
 }
 

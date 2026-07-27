@@ -135,9 +135,12 @@ export async function assertNoOpenHoldPoint(
   cwpId: string | null | undefined,
 ): Promise<void> {
   if (!cwpId) return;
-  const { error } = await client.rpc("assert_no_open_hold_point" as never, {
-    p_cwp_id: cwpId,
-  } as never);
+  const { error } = await client.rpc(
+    "assert_no_open_hold_point" as never,
+    {
+      p_cwp_id: cwpId,
+    } as never,
+  );
   if (!error) return;
   const message = (error as { message?: string }).message ?? "";
   if (message.includes("open_hold_point")) httpError(409, "open_hold_point", HOLD_POINT_MESSAGE);
@@ -217,7 +220,8 @@ export async function assertDossierSectionsResolve(
 ): Promise<void> {
   for (const section of sections) {
     const table = DOSSIER_TABLES[section.entity_type];
-    if (!table) httpError(422, "unknown_entity_type", `Unknown section type ${section.entity_type}`);
+    if (!table)
+      httpError(422, "unknown_entity_type", `Unknown section type ${section.entity_type}`);
     const ids = section.entity_ids ?? [];
     if (ids.length === 0) continue;
     const { data, error } = await client
@@ -226,7 +230,11 @@ export async function assertDossierSectionsResolve(
       .in("id", ids as never);
     if (error) throw error;
     if ((data ?? []).length !== ids.length)
-      httpError(422, "dangling_section_reference", `Section ${section.key} references missing rows`);
+      httpError(
+        422,
+        "dangling_section_reference",
+        `Section ${section.key} references missing rows`,
+      );
   }
 }
 

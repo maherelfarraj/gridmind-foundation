@@ -22,7 +22,13 @@ export type ItpStepStatus = (typeof ITP_STEP_STATUSES)[number];
 export const TEST_RESULT_STATUSES = ["pending", "pass", "fail", "conditional"] as const;
 export type TestResultStatus = (typeof TEST_RESULT_STATUSES)[number];
 
-export const MIR_STATUSES = ["requested", "scheduled", "inspected", "accepted", "rejected"] as const;
+export const MIR_STATUSES = [
+  "requested",
+  "scheduled",
+  "inspected",
+  "accepted",
+  "rejected",
+] as const;
 export type MirStatus = (typeof MIR_STATUSES)[number];
 
 export const DOSSIER_STATUSES = ["compiling", "complete", "issued"] as const;
@@ -105,7 +111,9 @@ export function isForwardCwpTransition(input: {
   const from = CWP_FORWARD_ORDER.indexOf(
     (input.fromStatus ?? "") as (typeof CWP_FORWARD_ORDER)[number],
   );
-  const to = CWP_FORWARD_ORDER.indexOf((input.toStatus ?? "") as (typeof CWP_FORWARD_ORDER)[number]);
+  const to = CWP_FORWARD_ORDER.indexOf(
+    (input.toStatus ?? "") as (typeof CWP_FORWARD_ORDER)[number],
+  );
   if (to >= 0 && (from < 0 || to > from)) return true;
   const fromPct = input.fromProgress ?? 0;
   const toPct = input.toProgress;

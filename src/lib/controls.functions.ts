@@ -91,9 +91,7 @@ export const getCwpBoard = createServerFn({ method: "GET" })
 
 export const setWorkPackageStatus = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ id: uuid, status: z.enum(CWP_STATUSES) }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ id: uuid, status: z.enum(CWP_STATUSES) }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     await assertRoles(context.supabase, CWP_WRITER_ROLES);
@@ -138,14 +136,19 @@ export const getWorkPackageDetail = createServerFn({ method: "GET" })
     return {
       cwp: (cwp ?? null) as unknown as CwpCardRow | null,
       tasks: (tasks ?? []) as unknown as CwpTaskRow[],
-      history: ((history ?? []) as Array<{ id: string; action: string; created_at: string; metadata: unknown }>).map(
-        (h) => ({
-          id: h.id,
-          action: h.action,
-          created_at: h.created_at,
-          detail: h.metadata == null ? "" : JSON.stringify(h.metadata),
-        }),
-      ) as CwpHistoryRow[],
+      history: (
+        (history ?? []) as Array<{
+          id: string;
+          action: string;
+          created_at: string;
+          metadata: unknown;
+        }>
+      ).map((h) => ({
+        id: h.id,
+        action: h.action,
+        created_at: h.created_at,
+        detail: h.metadata == null ? "" : JSON.stringify(h.metadata),
+      })) as CwpHistoryRow[],
     };
   });
 

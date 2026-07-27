@@ -7,7 +7,6 @@
 import {
   BellRing,
   Landmark,
-
   Activity,
   AlertTriangle,
   Atom,

@@ -459,9 +459,7 @@ export const listTestRecords = createServerFn({ method: "GET" })
       "transformer_test_results",
     ] as const;
     const [welding, torque, cable, thermographic, relay, transformer] = await Promise.all(
-      tables.map((t) =>
-        listQaRows(context.supabase, t, "project_id", data.projectId),
-      ),
+      tables.map((t) => listQaRows(context.supabase, t, "project_id", data.projectId)),
     );
     return { welding, torque, cable, thermographic, relay, transformer };
   });
@@ -620,10 +618,16 @@ export const createTransformerTest = createServerFn({ method: "POST" })
         created_by: context.user!.id,
       },
     );
-    await auditQa(context.supabase, "transformer_test.created", "transformer_test_results", row.id, {
-      transformer_tag: data.transformerTag,
-      test_type: data.testType,
-    });
+    await auditQa(
+      context.supabase,
+      "transformer_test.created",
+      "transformer_test_results",
+      row.id,
+      {
+        transformer_tag: data.transformerTag,
+        test_type: data.testType,
+      },
+    );
     return row;
   });
 
@@ -716,7 +720,11 @@ export const issueDossier = createServerFn({ method: "POST" })
       entity_ids: string[];
     }>;
     if (!isDossierComplete(sections))
-      httpError(422, "dossier_incomplete", "Every dossier section must reference at least one record.");
+      httpError(
+        422,
+        "dossier_incomplete",
+        "Every dossier section must reference at least one record.",
+      );
     await assertDossierSectionsResolve(context.supabase, sections);
     const issuedAt = new Date().toISOString();
     const { data: row, error } = await context.supabase

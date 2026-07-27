@@ -10,9 +10,7 @@ import {
   type AnalyticsResult,
 } from "@/lib/scada-analytics.server";
 
-const dayString = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "day must be YYYY-MM-DD");
+const dayString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "day must be YYYY-MM-DD");
 
 export const listAnalyticsProjectOptions = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])

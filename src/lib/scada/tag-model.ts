@@ -4,13 +4,7 @@
  */
 
 export type TagDataType = "analog" | "digital" | "counter" | "string" | "enum";
-export type TagSourceSystem =
-  | "manual"
-  | "mqtt"
-  | "opcua"
-  | "modbus"
-  | "historian_csv"
-  | "api";
+export type TagSourceSystem = "manual" | "mqtt" | "opcua" | "modbus" | "historian_csv" | "api";
 
 export type TagQuality = "good" | "suspect" | "bad";
 
@@ -33,12 +27,19 @@ export interface TagDefinition {
 }
 
 /** Convert a raw source value to engineering units. */
-export function applyScaling(raw: number, tag: Pick<TagDefinition, "scale_factor" | "scale_offset">): number {
+export function applyScaling(
+  raw: number,
+  tag: Pick<TagDefinition, "scale_factor" | "scale_offset">,
+): number {
   return raw * tag.scale_factor + tag.scale_offset;
 }
 
 /** True when a new value moves more than the configured deadband. */
-export function exceedsDeadband(previous: number | null | undefined, next: number, deadband: number): boolean {
+export function exceedsDeadband(
+  previous: number | null | undefined,
+  next: number,
+  deadband: number,
+): boolean {
   if (previous === null || previous === undefined) return true;
   return Math.abs(next - previous) > deadband;
 }

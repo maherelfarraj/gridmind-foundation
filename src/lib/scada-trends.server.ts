@@ -40,9 +40,7 @@ export async function listTrendTags(
   const cid = await companyId(context);
   let q = context.supabase
     .from("tag_dictionary")
-    .select(
-      "id, tag, metric, unit, description, asset_node_id, project_id, node:asset_nodes(name)",
-    )
+    .select("id, tag, metric, unit, description, asset_node_id, project_id, node:asset_nodes(name)")
     .eq("company_id", cid)
     .eq("enabled", true)
     .order("tag", { ascending: true })

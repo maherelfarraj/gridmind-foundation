@@ -40,7 +40,11 @@ export interface AnalyticsResult {
   nameplateKw: number | null;
   dataQuality: ReturnType<typeof dataQuality>;
   guarantee: GuaranteeResult;
-  assets: { rows: AssetPerformanceRow[]; top: AssetPerformanceRow[]; bottom: AssetPerformanceRow[] };
+  assets: {
+    rows: AssetPerformanceRow[];
+    top: AssetPerformanceRow[];
+    bottom: AssetPerformanceRow[];
+  };
   trend: Array<{ day: string; actualKwh: number | null; expectedKwh: number | null }>;
   hasBaseline: boolean;
 }
@@ -188,14 +192,16 @@ export async function computeAnalytics(
     irradianceSamples.length > 0
       ? Number(
           (
-            irradianceSamples.reduce((s, t) => s + (Number(t.value) || 0), 0) *
-            (POLL_INTERVAL_MINUTES / 60) /
+            (irradianceSamples.reduce((s, t) => s + (Number(t.value) || 0), 0) *
+              (POLL_INTERVAL_MINUTES / 60)) /
             1000
           ).toFixed(4),
         )
       : null;
 
-  const dcMw = num(pvRes.error ? null : (pvRes.data as { dc_capacity_mwp: number } | null)?.dc_capacity_mwp);
+  const dcMw = num(
+    pvRes.error ? null : (pvRes.data as { dc_capacity_mwp: number } | null)?.dc_capacity_mwp,
+  );
   const nameplateKw = dcMw != null ? dcMw * 1000 : null;
 
   // Expected power curve — irradiance-scaled nameplate, sampled at telemetry cadence.
@@ -226,7 +232,9 @@ export async function computeAnalytics(
   );
 
   // Batch 17 baseline (graceful when absent)
-  const yieldRow = yieldRes.error ? null : (yieldRes.data as { p50_mwh: number | null; results: unknown } | null);
+  const yieldRow = yieldRes.error
+    ? null
+    : (yieldRes.data as { p50_mwh: number | null; results: unknown } | null);
   const monthly = extractMonthlyProfile(yieldRow?.results);
   let expectedEnergyKwh = expectedDailyKwhFromMonthlyProfile(monthly, start);
   if (expectedEnergyKwh == null && yieldRow?.p50_mwh != null) {
@@ -272,7 +280,6 @@ export async function computeAnalytics(
     },
     guaranteeTerms,
   );
-
 
   // Per-asset performance: share the project baseline across producing assets.
   const producing = assets.filter((a) => perAsset.has(a.id));
@@ -367,7 +374,11 @@ async function loadTrend(
     const baseline =
       expectedDailyKwhFromMonthlyProfile(monthly, d) ??
       (p50Mwh != null ? Number(((Number(p50Mwh) * 1000) / 365).toFixed(3)) : null);
-    out.push({ day: key, actualKwh: snap?.actual ?? null, expectedKwh: snap?.expected ?? baseline });
+    out.push({
+      day: key,
+      actualKwh: snap?.actual ?? null,
+      expectedKwh: snap?.expected ?? baseline,
+    });
   }
   return out;
 }
@@ -426,13 +437,19 @@ export async function upsertDailyKpis(
     .single();
   if (error) throw error;
 
-  await writeAuditLog(context, "scada.kpi_compute", "scada_kpi_daily", (data as { id: string }).id, {
-    project_id: projectId,
-    day,
-    availability_pct: result.availabilityPct,
-    performance_ratio_pct: result.performanceRatioPct,
-    lost_energy_kwh: result.lostEnergyKwh,
-  });
+  await writeAuditLog(
+    context,
+    "scada.kpi_compute",
+    "scada_kpi_daily",
+    (data as { id: string }).id,
+    {
+      project_id: projectId,
+      day,
+      availability_pct: result.availabilityPct,
+      performance_ratio_pct: result.performanceRatioPct,
+      lost_energy_kwh: result.lostEnergyKwh,
+    },
+  );
 
   return data as { id: string; day: string };
 }

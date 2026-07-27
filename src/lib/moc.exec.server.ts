@@ -138,9 +138,7 @@ export async function blockingChanges(
     .in("status", CONTROLLING_STATUSES);
   if (error) throw error;
 
-  const rows = (open ?? []) as unknown as Array<
-    BlockingChange & { affected_systems: unknown }
-  >;
+  const rows = (open ?? []) as unknown as Array<BlockingChange & { affected_systems: unknown }>;
   const byId = new Map(rows.map((r) => [r.id, r]));
   const hit = new Map<string, BlockingChange>();
 
@@ -167,7 +165,7 @@ export async function blockingChanges(
     .eq("link_type", "impacts")
     .eq("target_type", entityType)
     .eq("target_id", entityId);
-  for (const link of ((links ?? []) as Array<{ source_id: string }>)) {
+  for (const link of (links ?? []) as Array<{ source_id: string }>) {
     const row = byId.get(link.source_id);
     if (row) {
       hit.set(row.id, {
@@ -269,7 +267,7 @@ export async function loadSubstitution(
       .eq("vendor_id", oldVendorId);
     if (projectId) poQuery = poQuery.eq("project_id", projectId);
     const { data: pos } = await poQuery;
-    for (const po of ((pos ?? []) as Array<{ id: string; po_number: string; status: string }>)) {
+    for (const po of (pos ?? []) as Array<{ id: string; po_number: string; status: string }>) {
       suggested.push({ id: po.id, kind: "purchase_order", label: po.po_number, status: po.status });
     }
 
@@ -277,9 +275,9 @@ export async function loadSubstitution(
       .from("rfq_bids")
       .select("rfq_id, rfqs(id, rfq_number, status, project_id)")
       .eq("vendor_id", oldVendorId);
-    for (const bid of ((bids ?? []) as Array<{
+    for (const bid of (bids ?? []) as Array<{
       rfqs: { id: string; rfq_number: string | null; status: string; project_id: string } | null;
-    }>)) {
+    }>) {
       const rfq = bid.rfqs;
       if (!rfq) continue;
       if (projectId && rfq.project_id !== projectId) continue;
@@ -336,10 +334,7 @@ export async function saveSubstitution(
 }
 
 /** Re-validated server-side before a vendor substitution may be submitted. */
-export async function assertSubstitutionReady(
-  context: AuthContext,
-  crId: string,
-): Promise<void> {
+export async function assertSubstitutionReady(context: AuthContext, crId: string): Promise<void> {
   const { data, error } = await context.supabase
     .from("change_requests")
     .select("change_type, metadata")

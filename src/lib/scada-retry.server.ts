@@ -264,7 +264,9 @@ export async function getIngestionQueueHealth(
       .eq("company_id", companyId)
       .limit(5000),
     t(context.supabase, DLQ_TABLE)
-      .select("id, connector_id, payload, payload_kind, attempts, final_error, failed_at, replayed_at")
+      .select(
+        "id, connector_id, payload, payload_kind, attempts, final_error, failed_at, replayed_at",
+      )
       .eq("company_id", companyId)
       .order("failed_at", { ascending: false })
       .limit(50),

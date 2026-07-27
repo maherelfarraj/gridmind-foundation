@@ -2,6 +2,7 @@
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { safeRows } from "@/lib/finance-cockpit.server";
 import { httpError } from "@/lib/payments.server";
+import type { BondGuardError } from "@/lib/bonds.guards";
 import {
   BOND_WRITE_ROLES,
   daysToExpiry,
@@ -514,4 +515,10 @@ export async function latestReleaseApproval(
     reason: typeof meta?.reason === "string" ? meta.reason : null,
     requested_at: row.requested_at,
   };
+}
+
+/** Converts a pure bond guard failure into the typed HTTP error. */
+export function raiseGuard(err: BondGuardError | null): void {
+  if (!err) return;
+  httpError(err.status, err.code, err.message, err.meta);
 }
