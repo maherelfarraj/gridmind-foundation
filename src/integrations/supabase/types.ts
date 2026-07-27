@@ -1015,6 +1015,293 @@ export type Database = {
           },
         ]
       }
+      bond_claims: {
+        Row: {
+          amount: number
+          claim_date: string
+          claim_number: string | null
+          company_id: string
+          created_at: string
+          currency_code: string
+          id: string
+          instrument_id: string
+          reason: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["bond_claim_status"]
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          claim_date?: string
+          claim_number?: string | null
+          company_id: string
+          created_at?: string
+          currency_code: string
+          id?: string
+          instrument_id: string
+          reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["bond_claim_status"]
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          claim_date?: string
+          claim_number?: string | null
+          company_id?: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          instrument_id?: string
+          reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["bond_claim_status"]
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bond_claims_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_claims_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "bond_claims_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "bond_instruments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_claims_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bond_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bond_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bond_instruments: {
+        Row: {
+          amount: number
+          auto_renew: boolean
+          beneficiary_name: string
+          beneficiary_type: Database["public"]["Enums"]["bond_beneficiary_type"]
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          document_path: string | null
+          effective_date: string | null
+          expiry_date: string | null
+          id: string
+          instrument_number: string | null
+          instrument_type: Database["public"]["Enums"]["bond_instrument_type"]
+          issue_date: string | null
+          issuer_name: string
+          issuer_type: Database["public"]["Enums"]["bond_issuer_type"]
+          notes: string | null
+          premium_pct: number | null
+          principal_name: string | null
+          project_id: string | null
+          status: Database["public"]["Enums"]["bond_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          auto_renew?: boolean
+          beneficiary_name: string
+          beneficiary_type?: Database["public"]["Enums"]["bond_beneficiary_type"]
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          document_path?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          instrument_number?: string | null
+          instrument_type: Database["public"]["Enums"]["bond_instrument_type"]
+          issue_date?: string | null
+          issuer_name: string
+          issuer_type?: Database["public"]["Enums"]["bond_issuer_type"]
+          notes?: string | null
+          premium_pct?: number | null
+          principal_name?: string | null
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["bond_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          auto_renew?: boolean
+          beneficiary_name?: string
+          beneficiary_type?: Database["public"]["Enums"]["bond_beneficiary_type"]
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          document_path?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          instrument_number?: string | null
+          instrument_type?: Database["public"]["Enums"]["bond_instrument_type"]
+          issue_date?: string | null
+          issuer_name?: string
+          issuer_type?: Database["public"]["Enums"]["bond_issuer_type"]
+          notes?: string | null
+          premium_pct?: number | null
+          principal_name?: string | null
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["bond_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bond_instruments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_instruments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_instruments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_instruments_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "bond_instruments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bond_renewals: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_path: string | null
+          id: string
+          instrument_id: string
+          new_expiry: string
+          notes: string | null
+          premium_amount: number | null
+          previous_expiry: string | null
+          renewed_at: string
+          renewed_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_path?: string | null
+          id?: string
+          instrument_id: string
+          new_expiry: string
+          notes?: string | null
+          premium_amount?: number | null
+          previous_expiry?: string | null
+          renewed_at?: string
+          renewed_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_path?: string | null
+          id?: string
+          instrument_id?: string
+          new_expiry?: string
+          notes?: string | null
+          premium_amount?: number | null
+          previous_expiry?: string | null
+          renewed_at?: string
+          renewed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bond_renewals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_renewals_instrument_id_fkey"
+            columns: ["instrument_id"]
+            isOneToOne: false
+            referencedRelation: "bond_instruments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_renewals_renewed_by_fkey"
+            columns: ["renewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budgets: {
         Row: {
           actual_amount: number
@@ -17854,6 +18141,10 @@ export type Database = {
           policyname: string
         }[]
       }
+      next_bond_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
+      }
       next_cr_number: { Args: { p_company_id: string }; Returns: string }
       next_sld_drawing_number: {
         Args: { p_project_id: string }
@@ -18068,6 +18359,42 @@ export type Database = {
         | "string"
         | "sensor"
       audit_checklist_status: "scheduled" | "completed" | "closed"
+      bond_beneficiary_type:
+        | "client"
+        | "supplier"
+        | "subcontractor"
+        | "employer"
+        | "utility"
+        | "other"
+      bond_claim_status:
+        | "draft"
+        | "submitted"
+        | "contested"
+        | "paid"
+        | "rejected"
+        | "withdrawn"
+      bond_instrument_type:
+        | "bid_bond"
+        | "advance_payment_guarantee"
+        | "performance_bond"
+        | "retention_bond"
+        | "warranty_bond"
+        | "insurance_car_ear"
+        | "insurance_pi"
+        | "insurance_pl"
+        | "workmen_comp"
+        | "parent_company_guarantee"
+        | "standby_lc"
+      bond_issuer_type: "bank" | "insurance_company"
+      bond_status:
+        | "draft"
+        | "active"
+        | "expiring_soon"
+        | "expired"
+        | "released"
+        | "claimed"
+        | "returned"
+        | "cancelled"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
       change_order_status:
@@ -18762,6 +19089,46 @@ export const Constants = {
         "sensor",
       ],
       audit_checklist_status: ["scheduled", "completed", "closed"],
+      bond_beneficiary_type: [
+        "client",
+        "supplier",
+        "subcontractor",
+        "employer",
+        "utility",
+        "other",
+      ],
+      bond_claim_status: [
+        "draft",
+        "submitted",
+        "contested",
+        "paid",
+        "rejected",
+        "withdrawn",
+      ],
+      bond_instrument_type: [
+        "bid_bond",
+        "advance_payment_guarantee",
+        "performance_bond",
+        "retention_bond",
+        "warranty_bond",
+        "insurance_car_ear",
+        "insurance_pi",
+        "insurance_pl",
+        "workmen_comp",
+        "parent_company_guarantee",
+        "standby_lc",
+      ],
+      bond_issuer_type: ["bank", "insurance_company"],
+      bond_status: [
+        "draft",
+        "active",
+        "expiring_soon",
+        "expired",
+        "released",
+        "claimed",
+        "returned",
+        "cancelled",
+      ],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
       change_order_status: [
