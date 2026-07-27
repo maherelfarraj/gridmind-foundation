@@ -19421,6 +19421,10 @@ export type Database = {
           vendor_name: string
         }[]
       }
+      vendor_portal_propose_delivery: {
+        Args: { p_lines: Json; p_po_id: string }
+        Returns: number
+      }
       vendor_portal_write_event: {
         Args: {
           p_company_id?: string
