@@ -28,10 +28,7 @@ export function PoStatusStepper({ status }: { status: string }) {
               {PO_STATUS_LABELS[step]}
             </span>
             {index < PO_STATUS_STEPS.length - 1 ? (
-              <span
-                aria-hidden
-                className={`h-px w-4 ${done ? "bg-foreground/40" : "bg-border"}`}
-              />
+              <span aria-hidden className={`h-px w-4 ${done ? "bg-foreground/40" : "bg-border"}`} />
             ) : null}
           </li>
         );

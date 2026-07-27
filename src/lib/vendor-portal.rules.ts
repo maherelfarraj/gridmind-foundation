@@ -74,9 +74,7 @@ const KNOWN_CODES: VendorPortalErrorCode[] = [
 export function vendorPortalErrorCode(err: unknown): VendorPortalErrorCode {
   const msg =
     err && typeof err === "object"
-      ? String(
-          (err as { message?: unknown }).message ?? (err as { code?: unknown }).code ?? "",
-        )
+      ? String((err as { message?: unknown }).message ?? (err as { code?: unknown }).code ?? "")
       : String(err ?? "");
   for (const code of KNOWN_CODES) {
     if (msg.includes(code)) return code;

@@ -243,9 +243,7 @@ function VendorPoList() {
         po={ackPo}
         pending={ack.isPending}
         onClose={() => setAckPo(null)}
-        onSubmit={(decision, comment) =>
-          ackPo && ack.mutate({ poId: ackPo.id, decision, comment })
-        }
+        onSubmit={(decision, comment) => ackPo && ack.mutate({ poId: ackPo.id, decision, comment })}
       />
     </div>
   );
