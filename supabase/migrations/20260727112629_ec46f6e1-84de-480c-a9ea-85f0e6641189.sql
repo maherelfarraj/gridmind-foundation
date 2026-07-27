@@ -1,0 +1,1 @@
+revoke all on function public.gl_export_runs_before_insert() from anon, authenticated, public;
