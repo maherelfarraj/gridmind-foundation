@@ -63,6 +63,7 @@ import {
   Workflow,
   Zap,
   type LucideIcon,
+  Wallet,
 } from "lucide-react";
 import type { ModuleKey } from "./permissions";
 
