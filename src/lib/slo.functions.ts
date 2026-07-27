@@ -51,23 +51,10 @@ export const getSloDashboard = createServerFn({ method: "GET" })
     const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     const snapshots: SloSnapshot[] = [];
 
-    // 1. Cron probe freshness
-    const { data: cronRow, error: cronErr } = await supabaseAdmin
-      .from("cron_probe")
-      .select("fired_at")
-      .order("fired_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (cronErr) throw cronErr;
-    const cronAgeMin = minutesAgo(cronRow?.fired_at ?? null, now);
-    snapshots.push({
-      slo_name: "Cron probe freshness",
-      target: "< 15 min since last fire",
-      observed_value: cronAgeMin,
-      status: cronAgeMin === null ? "breach" : cronAgeMin <= 15 ? "ok" : cronAgeMin <= 60 ? "warn" : "breach",
-      measurement_window: "point-in-time",
-      created_at: now.toISOString(),
-    });
+    // 1. (retired) Cron heartbeat probe — public.cron_probe was torn down at the
+    // end of consolidation week; the four real cron jobs are reviewed directly
+    // in cron.job_run_details.
+
 
     // 2. SCADA ingestion freshness
     const { data: scadaRow, error: scadaErr } = await supabaseAdmin
