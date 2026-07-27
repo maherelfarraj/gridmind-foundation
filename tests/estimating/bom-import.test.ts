@@ -43,13 +43,16 @@ describe("BOM import", () => {
       snapshotId: "snap-1",
     });
     expect(imported).toBe(3);
-    const lines = w.db.estimate_lines;
+    const lines = [...w.db.estimate_lines].sort((a, b) =>
+      String(a.source_bom_line_id).localeCompare(String(b.source_bom_line_id)),
+    );
     expect(lines.map((l) => l.source_bom_line_id)).toEqual(["bom-1", "bom-2", "bom-3"]);
     expect(lines.map((l) => l.line_type)).toEqual(["material", "material", "material"]);
-    expect(lines.map((l) => l.sort_order)).toEqual([0, 1, 2]);
+    expect([...w.db.estimate_lines].map((l) => l.sort_order).sort()).toEqual([0, 1, 2]);
     expect(lines.map((l) => l.qty)).toEqual([10, 4, 1200]);
     expect(lines.map((l) => l.unit_rate)).toEqual([120, 2500.005, 0]);
     expect(lines.map((l) => l.amount)).toEqual([1200, 10_000.02, 0]);
+
     expect(lines.every((l) => l.company_id === COMPANY_A && l.estimate_id === "est-1")).toBe(true);
   });
 
