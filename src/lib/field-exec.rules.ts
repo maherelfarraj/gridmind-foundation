@@ -146,6 +146,9 @@ export function equipmentUtilization(rows: readonly EquipmentLike[]): number {
 
 export const GPS_MAX_AGE_MS = 15 * 60_000;
 
+/** Default site geofence radius in metres when a project sets no override. */
+export const GEOFENCE_RADIUS_M = 5_000;
+
 export interface GpsClaim {
   source?: string | null;
   latitude?: number | null;
@@ -153,12 +156,49 @@ export interface GpsClaim {
   gpsCapturedAt?: string | null;
 }
 
+/** Project site anchor used for the geofence test. */
+export interface SiteAnchor {
+  latitude?: number | null;
+  longitude?: number | null;
+  radiusM?: number | null;
+}
+
+export interface GpsRejection {
+  /** Typed error code returned to the client (never a generic message). */
+  code: "gps_required" | "gps_out_of_range" | "gps_stale" | "gps_outside_geofence";
+  message: string;
+  /** Distance from the site anchor, metres — only for geofence rejections. */
+  distanceM?: number;
+  radiusM?: number;
+}
+
+/** Great-circle distance in metres between two WGS-84 points. */
+export function haversineMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.min(1, Math.sqrt(a))));
+}
+
 /**
- * Mobile DPR submissions MUST carry a fresh GPS fix. Returns null when the
- * claim is acceptable, otherwise a human-readable rejection message.
- * Coordinates are never trusted beyond storage — they are only range-checked.
+ * Full GPS validation: presence, range, freshness and — when the project has a
+ * site anchor — the site geofence. Returns null when the claim is acceptable.
+ * Coordinates are evidence only; every check runs server-side.
  */
-export function gpsRejectionReason(claim: GpsClaim, nowMs: number): string | null {
+export function gpsRejectionDetail(
+  claim: GpsClaim,
+  nowMs: number,
+  anchor?: SiteAnchor | null,
+): GpsRejection | null {
   if (claim.source !== "mobile") return null;
   const { latitude, longitude, gpsCapturedAt } = claim;
   if (
@@ -168,21 +208,63 @@ export function gpsRejectionReason(claim: GpsClaim, nowMs: number): string | nul
     longitude === undefined ||
     !gpsCapturedAt
   ) {
-    return "Location required — enable GPS on the device and retry the submission.";
+    return {
+      code: "gps_required",
+      message: "Location required — enable GPS on the device and retry the submission.",
+    };
   }
   if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
-    return "Latitude is out of range.";
+    return { code: "gps_out_of_range", message: "Latitude is out of range." };
   }
   if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-    return "Longitude is out of range.";
+    return { code: "gps_out_of_range", message: "Longitude is out of range." };
   }
   const capturedMs = Date.parse(gpsCapturedAt);
-  if (Number.isNaN(capturedMs)) return "GPS capture time is not a valid timestamp.";
-  if (Math.abs(nowMs - capturedMs) > GPS_MAX_AGE_MS) {
-    return "GPS fix is stale — capture a new location within 15 minutes of submitting.";
+  if (Number.isNaN(capturedMs)) {
+    return { code: "gps_stale", message: "GPS capture time is not a valid timestamp." };
   }
-  return null;
+  if (Math.abs(nowMs - capturedMs) > GPS_MAX_AGE_MS) {
+    return {
+      code: "gps_stale",
+      message: "GPS fix is stale — capture a new location within 15 minutes of submitting.",
+    };
+  }
+  return geofenceRejection(latitude, longitude, anchor);
 }
+
+/** Geofence test alone — used by photo pins, which are always geotagged. */
+export function geofenceRejection(
+  latitude: number,
+  longitude: number,
+  anchor?: SiteAnchor | null,
+): GpsRejection | null {
+  const aLat = anchor?.latitude;
+  const aLon = anchor?.longitude;
+  if (aLat === null || aLat === undefined || aLon === null || aLon === undefined) return null;
+  const radiusM = Number(anchor?.radiusM) > 0 ? Number(anchor?.radiusM) : GEOFENCE_RADIUS_M;
+  const distanceM = haversineMeters(Number(aLat), Number(aLon), latitude, longitude);
+  if (distanceM <= radiusM) return null;
+  return {
+    code: "gps_outside_geofence",
+    message: `Location is ${(distanceM / 1000).toFixed(1)} km from the project site — outside the ${(
+      radiusM / 1000
+    ).toFixed(1)} km site geofence.`,
+    distanceM,
+    radiusM,
+  };
+}
+
+/**
+ * Backwards-compatible string form of {@link gpsRejectionDetail}.
+ */
+export function gpsRejectionReason(
+  claim: GpsClaim,
+  nowMs: number,
+  anchor?: SiteAnchor | null,
+): string | null {
+  return gpsRejectionDetail(claim, nowMs, anchor)?.message ?? null;
+}
+
 
 /** Accepted media MIME prefixes for field capture. */
 export function mediaTypeForFile(mime: string | null | undefined): "photo" | "video" {
