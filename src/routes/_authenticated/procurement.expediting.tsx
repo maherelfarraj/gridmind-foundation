@@ -52,9 +52,12 @@ import {
   listOpenPosForExpediting,
   logVendorContact,
   updateExpediting,
+  confirmEta,
+  counterProposeEta,
   type ExpeditingRow,
 } from "@/lib/expediting.functions";
 import { daysUntilNeed, EXPEDITING_STATUSES, type ExpeditingStatus } from "@/lib/expediting-rules";
+import { isCounterProposedNote, isVendorProposedNote } from "@/lib/vendor-portal.rules";
 import {
   errorMessage,
   expeditingAccessQueryOptions,
@@ -126,6 +129,8 @@ function ExpeditingPage() {
   const contactFn = useServerFn(logVendorContact);
   const importFn = useServerFn(importFromPo);
   const deleteFn = useServerFn(deleteExpediting);
+  const confirmEtaFn = useServerFn(confirmEta);
+  const counterEtaFn = useServerFn(counterProposeEta);
 
   const [statusFilter, setStatusFilter] = useState<ExpeditingStatus | "all">("all");
   const [longLeadOnly, setLongLeadOnly] = useState(false);
@@ -176,6 +181,25 @@ function ExpeditingPage() {
     onSuccess: () => {
       invalidate();
       toast.success("Vendor contact logged");
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+
+  const confirmMutation = useMutation({
+    mutationFn: (id: string) => confirmEtaFn({ data: { id } }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("ETA confirmed — vendor notified");
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+
+  const counterMutation = useMutation({
+    mutationFn: (vars: { id: string; eta: string; comment: string }) =>
+      counterEtaFn({ data: vars }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Counter-proposal sent to vendor");
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
