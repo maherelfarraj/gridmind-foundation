@@ -1145,7 +1145,10 @@ export type Database = {
           premium_pct: number | null
           principal_name: string | null
           project_id: string | null
+          released_at: string | null
+          released_by: string | null
           status: Database["public"]["Enums"]["bond_status"]
+          status_reason: string | null
           updated_at: string
         }
         Insert: {
@@ -1171,7 +1174,10 @@ export type Database = {
           premium_pct?: number | null
           principal_name?: string | null
           project_id?: string | null
+          released_at?: string | null
+          released_by?: string | null
           status?: Database["public"]["Enums"]["bond_status"]
+          status_reason?: string | null
           updated_at?: string
         }
         Update: {
@@ -1197,7 +1203,10 @@ export type Database = {
           premium_pct?: number | null
           principal_name?: string | null
           project_id?: string | null
+          released_at?: string | null
+          released_by?: string | null
           status?: Database["public"]["Enums"]["bond_status"]
+          status_reason?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1234,6 +1243,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bond_instruments_released_by_fkey"
+            columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

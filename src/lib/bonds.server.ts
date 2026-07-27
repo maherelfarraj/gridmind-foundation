@@ -9,6 +9,7 @@ import {
   type BondRow,
   type BondStatus,
   type CreateBondInput,
+  type CreateClaimInput,
   type ListBondsInput,
 } from "@/lib/bonds.rules";
 import { hasAnyRole } from "@/lib/payments.server";
@@ -262,7 +263,7 @@ export async function loadRenewals(ctx: AuthContext, instrumentId: string): Prom
 
 export interface ClaimRow {
   id: string;
-  claim_number: string;
+  claim_number: string | null;
   claim_date: string | null;
   amount: number;
   currency_code: string | null;
@@ -270,6 +271,8 @@ export interface ClaimRow {
   status: string;
   resolved_at: string | null;
   resolution_notes: string | null;
+  submitted_by: string | null;
+  instrument_id?: string;
 }
 
 export async function loadClaims(ctx: AuthContext, instrumentId: string): Promise<ClaimRow[]> {
@@ -278,7 +281,7 @@ export async function loadClaims(ctx: AuthContext, instrumentId: string): Promis
       ctx.supabase
         .from("bond_claims")
         .select(
-          "id, claim_number, claim_date, amount, currency_code, reason, status, resolved_at, resolution_notes",
+          "id, claim_number, claim_date, amount, currency_code, reason, status, resolved_at, resolution_notes, submitted_by",
         )
         .eq("instrument_id", instrumentId)
         .order("claim_date", { ascending: true }),
@@ -335,4 +338,126 @@ export function decodeBase64(b64: string): Uint8Array {
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
   return bytes;
+}
+
+// ---------------------------------------------------------------------------
+// P-204 — claims + release/return/cancel I/O
+// ---------------------------------------------------------------------------
+
+export interface ClaimRecord extends ClaimRow {
+  instrument_id: string;
+}
+
+export async function loadClaim(ctx: AuthContext, claimId: string): Promise<ClaimRecord> {
+  const { data, error } = await ctx.supabase
+    .from("bond_claims")
+    .select(
+      "id, instrument_id, claim_number, claim_date, amount, currency_code, reason, status, resolved_at, resolution_notes, submitted_by",
+    )
+    .eq("id", claimId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) httpError(404, "claim_not_found", "Claim not found.");
+  const raw = data as ClaimRecord & { amount: number | string | null };
+  return { ...raw, amount: Number(raw.amount ?? 0) };
+}
+
+export async function insertClaim(
+  ctx: AuthContext,
+  companyId: string,
+  data: CreateClaimInput,
+): Promise<ClaimRecord> {
+  const { data: inserted, error } = await ctx.supabase
+    .from("bond_claims")
+    .insert({
+      company_id: companyId,
+      instrument_id: data.instrument_id,
+      amount: data.amount,
+      currency_code: data.currency_code,
+      reason: data.reason,
+      claim_date: data.claim_date,
+      status: "draft",
+    } as never)
+    .select("id")
+    .single();
+  if (error) throw error;
+  return loadClaim(ctx, (inserted as { id: string }).id);
+}
+
+export async function updateClaim(
+  ctx: AuthContext,
+  claimId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await ctx.supabase
+    .from("bond_claims")
+    .update(patch as never)
+    .eq("id", claimId);
+  if (error) throw error;
+}
+
+/** Terminal/lifecycle patch on the instrument (status + reason + release stamps). */
+export async function patchBond(
+  ctx: AuthContext,
+  id: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await ctx.supabase
+    .from("bond_instruments")
+    .update(patch as never)
+    .eq("id", id);
+  if (error) throw error;
+}
+
+/** P-111 approval start. Returns the instance id, or null when no rule exists. */
+export async function startBondRelease(
+  ctx: AuthContext,
+  instrumentId: string,
+  amount: number,
+  reason: string,
+): Promise<string | null> {
+  const { data, error } = await ctx.supabase.rpc("start_approval_instance", {
+    p_rule_key: "bond_release",
+    p_entity_type: "bond_instrument",
+    p_entity_id: instrumentId,
+    p_amount: amount,
+    p_metadata: { reason } as never,
+  });
+  if (error) return null;
+  return (data as string | null) ?? null;
+}
+
+export interface ReleaseApproval {
+  id: string;
+  status: string;
+  current_step: number;
+  reason: string | null;
+  requested_at: string | null;
+}
+
+/** Latest bond_release approval instance for an instrument (null when none). */
+export async function latestReleaseApproval(
+  ctx: AuthContext,
+  instrumentId: string,
+): Promise<ReleaseApproval | null> {
+  const rows =
+    (await safeRows<ReleaseApproval>(() =>
+      ctx.supabase
+        .from("approval_instances")
+        .select("id, status, current_step, metadata, requested_at")
+        .eq("entity_type", "bond_instrument")
+        .eq("entity_id", instrumentId)
+        .order("created_at", { ascending: false })
+        .limit(1),
+    )) ?? [];
+  const row = rows[0] as (ReleaseApproval & { metadata?: unknown }) | undefined;
+  if (!row) return null;
+  const meta = (row.metadata ?? null) as { reason?: unknown } | null;
+  return {
+    id: row.id,
+    status: row.status,
+    current_step: row.current_step,
+    reason: typeof meta?.reason === "string" ? meta.reason : null,
+    requested_at: row.requested_at,
+  };
 }
