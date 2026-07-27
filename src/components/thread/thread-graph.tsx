@@ -123,6 +123,7 @@ export function ThreadGraph({
               key={`link-${n.entity_type}:${n.entity_id}`}
               to="/thread/$entityType/$entityId"
               params={{ entityType: n.entity_type, entityId: n.entity_id }}
+              search={{ depth: 2 }}
               className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             >
               {typeLabel(n.entity_type)}: {n.label}

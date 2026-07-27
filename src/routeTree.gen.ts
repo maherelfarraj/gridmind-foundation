@@ -123,6 +123,7 @@ import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/p
 import { Route as ApiPublicHooksPingRouteImport } from './routes/api/public/hooks/ping'
 import { Route as ApiPublicHooksEventsRouteImport } from './routes/api/public/hooks/events'
 import { Route as ApiPublicHooksEchoRouteImport } from './routes/api/public/hooks/echo'
+import { Route as AuthenticatedThreadEntityTypeEntityIdRouteImport } from './routes/_authenticated/thread.$entityType.$entityId'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
 import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
 import { Route as AuthenticatedQaqcNcrsNewRouteImport } from './routes/_authenticated/qaqc.ncrs.new'
@@ -863,6 +864,12 @@ const ApiPublicHooksEchoRoute = ApiPublicHooksEchoRouteImport.update({
   path: '/api/public/hooks/echo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedThreadEntityTypeEntityIdRoute =
+  AuthenticatedThreadEntityTypeEntityIdRouteImport.update({
+    id: '/thread/$entityType/$entityId',
+    path: '/thread/$entityType/$entityId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQaqcPunchWalkRoute =
   AuthenticatedQaqcPunchWalkRouteImport.update({
     id: '/qaqc/punch/walk',
@@ -1582,6 +1589,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -1780,6 +1788,7 @@ export interface FileRoutesByTo {
   '/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -1988,6 +1997,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/ncrs/new': typeof AuthenticatedQaqcNcrsNewRoute
   '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
+  '/_authenticated/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -2197,6 +2207,7 @@ export interface FileRouteTypes {
     | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
+    | '/thread/$entityType/$entityId'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -2395,6 +2406,7 @@ export interface FileRouteTypes {
     | '/qaqc/ncrs/new'
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
+    | '/thread/$entityType/$entityId'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -2602,6 +2614,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/ncrs/new'
     | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
+    | '/_authenticated/thread/$entityType/$entityId'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -3494,6 +3507,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/hooks/echo'
       preLoaderRoute: typeof ApiPublicHooksEchoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/thread/$entityType/$entityId': {
+      id: '/_authenticated/thread/$entityType/$entityId'
+      path: '/thread/$entityType/$entityId'
+      fullPath: '/thread/$entityType/$entityId'
+      preLoaderRoute: typeof AuthenticatedThreadEntityTypeEntityIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/qaqc/punch/walk': {
       id: '/_authenticated/qaqc/punch/walk'
@@ -4699,6 +4719,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQaqcNcrsNewRoute: typeof AuthenticatedQaqcNcrsNewRoute
   AuthenticatedQaqcPunchIdRoute: typeof AuthenticatedQaqcPunchIdRoute
   AuthenticatedQaqcPunchWalkRoute: typeof AuthenticatedQaqcPunchWalkRoute
+  AuthenticatedThreadEntityTypeEntityIdRoute: typeof AuthenticatedThreadEntityTypeEntityIdRoute
   AuthenticatedFieldDprIndexRoute: typeof AuthenticatedFieldDprIndexRoute
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
   AuthenticatedFieldSubmittalsIndexRoute: typeof AuthenticatedFieldSubmittalsIndexRoute
@@ -4830,6 +4851,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQaqcNcrsNewRoute: AuthenticatedQaqcNcrsNewRoute,
   AuthenticatedQaqcPunchIdRoute: AuthenticatedQaqcPunchIdRoute,
   AuthenticatedQaqcPunchWalkRoute: AuthenticatedQaqcPunchWalkRoute,
+  AuthenticatedThreadEntityTypeEntityIdRoute:
+    AuthenticatedThreadEntityTypeEntityIdRoute,
   AuthenticatedFieldDprIndexRoute: AuthenticatedFieldDprIndexRoute,
   AuthenticatedFieldMobilizationIndexRoute:
     AuthenticatedFieldMobilizationIndexRoute,
