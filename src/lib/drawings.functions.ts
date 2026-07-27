@@ -660,6 +660,23 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
         .eq("status", "open");
     }
 
+    // P-188 — digital thread: an approved as-built fans out to the equipment
+    // registry as a recommendation (never an automatic registry mutation).
+    if (data.toStatus === "as_built") {
+      const { emitThreadEvent } = await import("@/lib/digital-thread/engine.server");
+      await emitThreadEvent(context, {
+        event: "asbuilt_approved",
+        sourceType: "drawing",
+        sourceId: drawing.id,
+        projectId: drawing.project_id,
+        payload: {
+          drawingId: drawing.id,
+          revisionId: rev.id,
+          summary: `As-built approved for drawing ${drawing.drawing_number ?? drawing.id.slice(0, 8)}.`,
+        },
+      });
+    }
+
     return { ok: true, toStatus: data.toStatus, revisionId: rev.id };
   });
 
@@ -905,6 +922,32 @@ export const updateMarkupStatus = createServerFn({ method: "POST" })
       to: data.status,
       revision_id: (existing as any).revision_id,
     });
+
+    // P-188 — digital thread: an accepted red-line derives an as-built revision.
+    if (data.status === "accepted" && prev !== "accepted") {
+      const { data: revRow } = await context.supabase
+        .from("drawing_revisions")
+        .select("id, drawing_id")
+        .eq("id", (existing as any).revision_id)
+        .maybeSingle();
+      const drawingId = (revRow as any)?.drawing_id as string | undefined;
+      if (drawingId) {
+        const drawing = await loadDrawingWithCompany(context, drawingId);
+        const { emitThreadEvent } = await import("@/lib/digital-thread/engine.server");
+        await emitThreadEvent(context, {
+          event: "redline_marked",
+          sourceType: "drawing",
+          sourceId: drawingId,
+          projectId: drawing.project_id,
+          payload: {
+            drawingId,
+            markupId: data.markupId,
+            revisionId: (existing as any).revision_id,
+            summary: "Red-line markup accepted — an as-built revision is required.",
+          },
+        });
+      }
+    }
 
     return { ok: true };
   });

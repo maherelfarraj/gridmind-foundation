@@ -1092,6 +1092,13 @@ export const saveArchetypeConfig = createServerFn({ method: "POST" })
       project_id: proj.id,
     };
 
+    // P-188 — capture the pre-change row so the digital thread can tell what moved.
+    const { data: before } = await context.supabase
+      .from(table as any)
+      .select("*")
+      .eq("project_id", proj.id)
+      .maybeSingle();
+
     const { data: saved, error: upErr } = await context.supabase
       .from(table as any)
       .upsert(payload, { onConflict: "project_id" })
@@ -1109,6 +1116,35 @@ export const saveArchetypeConfig = createServerFn({ method: "POST" })
       },
     });
     if (auditErr) throw new Error(auditErr.message);
+
+    // P-188 — digital thread: PV module / inverter changes fan out as impact
+    // assessments. Recommendation-only; downstream records are never mutated.
+    if (configKey === "pv") {
+      const prev = (before ?? {}) as Record<string, any>;
+      const next = saved as Record<string, any>;
+      const changed = (k: string) => (prev[k] ?? null) !== (next[k] ?? null);
+      const events: string[] = [];
+      if (before && changed("module_type")) events.push("module_changed");
+      if (before && (changed("inverter_count") || changed("dc_ac_ratio")))
+        events.push("inverter_changed");
+      if (events.length > 0) {
+        const { emitThreadEvent } = await import("@/lib/digital-thread/engine.server");
+        for (const event of events) {
+          await emitThreadEvent(context, {
+            event: event as "module_changed" | "inverter_changed",
+            sourceType: "project",
+            sourceId: proj.id,
+            projectId: proj.id,
+            payload: {
+              summary:
+                event === "module_changed"
+                  ? `Module changed from ${prev.module_type ?? "—"} to ${next.module_type ?? "—"}.`
+                  : `Inverter configuration changed (count ${prev.inverter_count ?? "—"} → ${next.inverter_count ?? "—"}).`,
+            },
+          });
+        }
+      }
+    }
 
     return { row: saved as Record<string, any> };
   });
