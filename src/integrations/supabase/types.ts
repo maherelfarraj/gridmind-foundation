@@ -5082,6 +5082,7 @@ export type Database = {
           id: string
           opportunity_id: string | null
           overhead_pct: number
+          priced_at: string | null
           profit_pct: number
           project_id: string
           revision: number
@@ -5106,6 +5107,7 @@ export type Database = {
           id?: string
           opportunity_id?: string | null
           overhead_pct?: number
+          priced_at?: string | null
           profit_pct?: number
           project_id: string
           revision?: number
@@ -5130,6 +5132,7 @@ export type Database = {
           id?: string
           opportunity_id?: string | null
           overhead_pct?: number
+          priced_at?: string | null
           profit_pct?: number
           project_id?: string
           revision?: number

@@ -256,3 +256,16 @@ export function bomLinesToEstimateLines(lines: readonly BomLineForImport[]): Est
     };
   });
 }
+
+/* ------------------------------------------------------- build-up (P-211) */
+
+export const SaveEstimateMarginsSchema = z.object({
+  estimate_id: uuid,
+  escalation_pct: z.number().min(0).max(50),
+  contingency_pct: z.number().min(0).max(50),
+  overhead_pct: z.number().min(0).max(50),
+  profit_pct: z.number().min(0).max(50),
+});
+export type SaveEstimateMarginsInput = z.infer<typeof SaveEstimateMarginsSchema>;
+
+export const MarkEstimatePricedSchema = z.object({ estimate_id: uuid });
