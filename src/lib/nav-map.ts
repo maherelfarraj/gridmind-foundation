@@ -7,6 +7,7 @@
 import {
   BellRing,
   Landmark,
+  Leaf,
   Library,
   Activity,
   AlertTriangle,
@@ -561,6 +562,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Shield,
       },
       { moduleKey: "field_qaqc", label: "Waste tracking", url: "/hse/waste", icon: Truck },
+      { moduleKey: "field_qaqc", label: "ESG activity", url: "/esg/activity", icon: Leaf },
+
       { moduleKey: "field_qaqc", label: "HSE audits", url: "/hse/audits", icon: ClipboardCheck },
       {
         moduleKey: "field_qaqc",

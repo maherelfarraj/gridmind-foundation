@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.esg_activities_before_write() FROM PUBLIC, anon, authenticated;
