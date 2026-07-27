@@ -81,6 +81,9 @@ function ChangeDetailPage() {
   const addEvidenceFn = useServerFn(addChangeEvidence);
   const signUrlFn = useServerFn(signChangeEvidenceUrl);
   const fetchThread = useServerFn(getEntityThread);
+  const generateTasksFn = useServerFn(generateImplementationTasks);
+  const closeFn = useServerFn(closeChangeRequest);
+  const listTasksFn = useServerFn(listImplementationTasks);
 
   const detail = useQuery({
     queryKey: ["moc", "detail", id],
@@ -96,6 +99,14 @@ function ChangeDetailPage() {
   const [updatedDocs, setUpdatedDocs] = useState("");
   const [updatedAsbuilts, setUpdatedAsbuilts] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [tab, setTab] = useState("overview");
+
+  const taskList = useQuery({
+    queryKey: ["moc", "tasks", id],
+    queryFn: () => listTasksFn({ data: { id } }),
+  });
+  const pendingTasks = (taskList.data?.rows ?? []).filter((t) => t.status === "pending").length;
+
 
   const cr = detail.data?.cr;
   useEffect(() => {
