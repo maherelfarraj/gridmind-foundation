@@ -2,6 +2,7 @@
 // server-fn splitter never drops module-scope siblings.
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { hasAnyRole, httpError } from "@/lib/payments.server";
+import { computeEstimate, type MarginInput } from "@/lib/estimating/buildup";
 import {
   ESTIMATE_WRITE_ROLES,
   RATE_WRITE_ROLES,
@@ -23,7 +24,13 @@ export interface EstimateRow {
   status: EstimateStatus;
   currency_code: string;
   direct_cost: number;
+  escalation_pct: number;
+  contingency_pct: number;
+  overhead_pct: number;
+  profit_pct: number;
+  subtotal: number;
   total_price: number;
+  priced_at: string | null;
   updated_at: string;
 }
 
@@ -57,7 +64,7 @@ export interface RateRowRecord {
 }
 
 const ESTIMATE_COLUMNS =
-  "id, estimate_number, title, project_id, opportunity_id, bom_snapshot_id, revision, status, currency_code, direct_cost, total_price, updated_at";
+  "id, estimate_number, title, project_id, opportunity_id, bom_snapshot_id, revision, status, currency_code, direct_cost, escalation_pct, contingency_pct, overhead_pct, profit_pct, subtotal, total_price, priced_at, updated_at";
 const LINE_COLUMNS =
   "id, estimate_id, line_type, description, qty, uom, unit_rate, amount, rate_library_id, source_bom_line_id, sort_order, notes";
 const RATE_COLUMNS =
@@ -255,4 +262,44 @@ export async function importBomSnapshot(
   const { error: insErr } = await ctx.supabase.from("estimate_lines").insert(payload as never);
   if (insErr) throw insErr;
   return payload.length;
+}
+
+/* ------------------------------------------------------- build-up (P-211) */
+
+export function marginsOf(estimate: EstimateRow): MarginInput {
+  return {
+    escalation_pct: Number(estimate.escalation_pct) || 0,
+    contingency_pct: Number(estimate.contingency_pct) || 0,
+    overhead_pct: Number(estimate.overhead_pct) || 0,
+    profit_pct: Number(estimate.profit_pct) || 0,
+  };
+}
+
+/**
+ * Recompute the whole build-up server-side from persisted lines — client
+ * totals are never trusted — and persist the derived money columns.
+ */
+export async function persistBuildup(
+  ctx: AuthContext,
+  estimateId: string,
+  margins: MarginInput,
+  extra: Record<string, unknown> = {},
+) {
+  const lines = await loadLines(ctx, estimateId);
+  const result = computeEstimate(lines, margins);
+  const { error } = await ctx.supabase
+    .from("estimates")
+    .update({
+      escalation_pct: margins.escalation_pct,
+      contingency_pct: margins.contingency_pct,
+      overhead_pct: margins.overhead_pct,
+      profit_pct: margins.profit_pct,
+      direct_cost: result.direct_cost,
+      subtotal: result.subtotal,
+      total_price: result.total_price,
+      ...extra,
+    } as never)
+    .eq("id", estimateId);
+  if (error) throw error;
+  return { result, lines };
 }
