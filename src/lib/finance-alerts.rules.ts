@@ -73,10 +73,10 @@ export const AgingThresholdSchema = z.object({
   bucket: z.enum(AGING_BUCKETS as unknown as [AgingBucketKey, ...AgingBucketKey[]]),
 });
 
-export function parseThreshold(
-  ruleType: FinanceAlertRuleType,
-  raw: unknown,
-): Record<string, unknown> {
+export type ThresholdValue = string | number | boolean | null;
+export type ThresholdMap = Record<string, ThresholdValue>;
+
+export function parseThreshold(ruleType: FinanceAlertRuleType, raw: unknown): ThresholdMap {
   switch (ruleType) {
     case "overdue_invoice_days":
     case "payment_unmatched_days":
@@ -88,7 +88,7 @@ export function parseThreshold(
   }
 }
 
-export function defaultThreshold(ruleType: FinanceAlertRuleType): Record<string, unknown> {
+export function defaultThreshold(ruleType: FinanceAlertRuleType): ThresholdMap {
   switch (ruleType) {
     case "overdue_invoice_days":
       return { days: 30 };
@@ -104,7 +104,7 @@ export function defaultThreshold(ruleType: FinanceAlertRuleType): Record<string,
 export const SaveAlertRuleSchema = z.object({
   id: z.string().uuid().optional(),
   rule_type: z.enum(FINANCE_ALERT_RULE_TYPES),
-  threshold: z.record(z.string(), z.unknown()),
+  threshold: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])),
   enabled: z.boolean(),
   notify_role: z.enum(NOTIFY_ROLE_OPTIONS),
 });
@@ -130,7 +130,7 @@ export interface AlertCandidate {
   entity_id: string;
   severity: FinanceAlertSeverity;
   message: string;
-  metadata: Record<string, unknown>;
+  metadata: ThresholdMap;
 }
 
 export interface OverdueInvoiceInput {

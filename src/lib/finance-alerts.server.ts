@@ -4,6 +4,7 @@ import {
   FINANCE_ALERT_FULL_ROLES,
   FINANCE_ALERT_READ_ROLES,
   parseThreshold,
+  type ThresholdMap,
   type FinanceAlertAccess,
   type ListAlertsInput,
   type SaveAlertRuleInput,
@@ -22,13 +23,13 @@ export interface FinanceAlertRow {
   message: string;
   status: string;
   acknowledged_at: string | null;
-  metadata: Record<string, unknown>;
+  metadata: ThresholdMap;
 }
 
 export interface FinanceAlertRuleRow {
   id: string;
   rule_type: string;
-  threshold: Record<string, unknown>;
+  threshold: ThresholdMap;
   enabled: boolean;
   notify_role: string;
   updated_at: string;
@@ -74,7 +75,7 @@ export async function listAlerts(
     message: r.message as string,
     status: r.status as string,
     acknowledged_at: (r.acknowledged_at ?? null) as string | null,
-    metadata: (r.metadata ?? {}) as Record<string, unknown>,
+    metadata: (r.metadata ?? {}) as ThresholdMap,
   }));
   return filters.rule_type === "all"
     ? rows
@@ -90,7 +91,7 @@ export async function listAlertRules(ctx: AuthContext): Promise<FinanceAlertRule
   return ((data ?? []) as Record<string, any>[]).map((r) => ({
     id: r.id as string,
     rule_type: r.rule_type as string,
-    threshold: (r.threshold ?? {}) as Record<string, unknown>,
+    threshold: (r.threshold ?? {}) as ThresholdMap,
     enabled: Boolean(r.enabled),
     notify_role: r.notify_role as string,
     updated_at: r.updated_at as string,
