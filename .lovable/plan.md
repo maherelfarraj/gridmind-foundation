@@ -1,86 +1,53 @@
-## Goal
+# Restore and verify SCADA telemetry flow post warn-to-block flip
 
-Complete the two remaining quickstart steps for the live GSI project **East Amman Hybrid PV + BESS** (`GSI-EAM-001`, id `d887fd69…`), all through the app UI/RPCs — no SQL-level writes:
+## Current state
+- 7-day cleanliness query returned zero denied/signature/rate-limit events; the warn-to-block flip is active and live endpoints now return 401 for unauthenticated traffic.
+- `scada_telemetry` is empty: 0 rows in the last 24 hours, 0 rows total.
+- Root cause: the East Amman SCADA Gateway API key (`api_keys` row) has `hmac_secret = NULL`, and `/api/public/hooks/scada-telemetry` requires HMAC signatures. Any external push would fail with `secret_not_configured` before writing rows.
+- `scada_tags` is empty (0 tags), so even if data arrived there are no tag definitions/mappings for the 10 seeded assets.
+- `scada_connectors` has one active `vendor_api` connector pointing at the public hook URL, but `last_seen_at` is NULL.
+- No ingestion runs exist in `ingestion_runs`.
 
-1. Vendors LONGi + Trina Solar onboarded (status `onboarding`).
-2. RFQ **RFQ-0001** — "65 MWp PV Module Supply — East Amman Hybrid Project", USD, both vendors invited, bid due 21 Aug 2026 17:00 Asia/Amman.
-3. SCADA connector "East Amman SCADA Gateway" (REST push, gateway → GridMind) + production API key scoped `scada:telemetry:write`, with the 10 assets registered.
+## Plan
 
-External references (`GSI-JOR-EAM-HYB-001`, `GSI-JOR-EAM-RFQ-MOD-001`) are carried as text in the RFQ title/terms and connector config — app codes stay `GSI-EAM-001` / `RFQ-0001` as you decided.
+### 1. Harden the gateway API key
+- Generate an HMAC secret for the existing `api_keys` row for the East Amman SCADA Gateway.
+- Store it in the `hmac_secret` column. This unblocks signed telemetry pushes.
+- Record the action in `audit_logs`.
 
-## Step 1 — Vendors (Procurement → Vendors → Onboard)
+### 2. Seed the tag dictionary
+- Create a migration that inserts one active `scada_tags` row per asset/metric pair needed for the demo dashboard (e.g. `ac_power_kw`, `dc_power_kw`, `energy_kwh`, `irradiance_wm2`, `ambient_temp_c`, `module_temp_c`, `wind_speed_ms`, `soc_pct` for the PV inverters, BESS, weather station, etc.).
+- Tag definitions include scale, unit, sample interval, and reasonable min/max/alarm/warn limits.
 
-Create two vendors under GSI via the vendor form:
+### 3. Inject synthetic telemetry
+- Add a small, idempotent server function (or script) that generates 24 hours of realistic telemetry for the showcase assets using a diurnal power curve and weather pattern, then writes it to `scada_telemetry` via the service role client.
+- Re-run the 24-hour count query to confirm rows exist.
+- Confirm `scada_connectors.last_seen_at` updates after the first successful batch (either by direct update or by the public hook path in the next step).
 
-| Field      | LONGi                                   | Trina Solar           |
-| ---------- | --------------------------------------- | --------------------- |
-| Name       | LONGi                                   | Trina Solar           |
-| Legal name | LONGi Green Energy Technology Co., Ltd. | Trina Solar Co., Ltd. |
-| Country    | China                                   | China                 |
-| Currency   | USD                                     | USD                   |
-| Categories | modules                                 | modules               |
-| Status     | onboarding                              | onboarding            |
+### 4. Verify the public hook end-to-end
+- Use the gateway API key + HMAC secret to send a signed `POST /api/public/hooks/scada-telemetry` request from a local test script.
+- Confirm:
+  - Valid signed request → 200 with accepted rows.
+  - Invalid signature → 401/403.
+  - Missing Bearer → 401.
+- Confirm the cleanliness query still stays clean (no new `ip_denied`/`signature_failed`/`rate_limited` events from legitimate traffic).
 
-Notes field records "Prequalification pending — PV module supply, East Amman (ext. ref GSI-JOR-EAM-HYB-001)".
+### 5. UI/connector sanity check
+- Open `/om/scada/connectors` and `/om/scada` to confirm the connector shows data, the dashboard renders KPIs, and the last-telemetry timestamp updates.
+- Verify the API key is visible in the API-key management UI with the correct scope and that the connector config still references the public hook URL.
 
-Open item: you didn't give contact emails / payment terms / incoterms. I'll leave those blank and flag them — an RFQ invite without a vendor email means the bid link has to be delivered manually. Give me the two bid-desk emails and I'll fill them in the same pass.
+### 6. Record confirmation
+- Insert a second `audit_logs` row documenting that live telemetry is restored and the public hook is verified in block mode.
 
-## Step 2 — RFQ (Procurement → RFQs → New)
+## Technical notes
+- All writes are scoped to the GSI company (`1ab0730f-d6fa-4678-b1b7-7f752c80eceb`) and project `d887fd69-4542-4ae4-a9a1-e0253e7258ff`.
+- The HMAC secret will be stored in the existing `hmac_secret` column of `api_keys`. If that column is considered sensitive, flag it for future migration to a hashed/encrypted storage model.
+- Synthetic telemetry will use the `ts` column on `scada_telemetry` (the previous `received_at` column does not exist).
+- The public hook uses `cf-connecting-ip`; local test scripts will need to include the allowed IP in the API key allowlist or set the header to a permitted IP.
 
-- Title: `65 MWp PV Module Supply — East Amman Hybrid Project`
-- Project: East Amman Hybrid PV + BESS (`GSI-EAM-001`)
-- Currency: USD
-- Due date: `2026-08-21T17:00:00+03:00` (stored UTC `2026-08-21T14:00:00Z`)
-- Terms/description: external RFQ ref `GSI-JOR-EAM-RFQ-MOD-001`, external project ref `GSI-JOR-EAM-HYB-001`, Incoterms + payment terms placeholder until you confirm.
-- Line items: one module supply line at 65,000 kWp (I'll use a single lump line unless you want a per-tranche breakdown).
-- Invite both vendors, then **Issue** → assigns `RFQ-0001` and moves status draft → issued.
-
-## Step 3 — SCADA connector + API key
-
-**API key** (Settings → API keys): name `East Amman SCADA Gateway (prod)`, scope `scada:telemetry:write` only — read/admin scopes off. Key is shown once; I'll hand it to you in chat at that moment and it is never retrievable again.
-
-**Connector** (O&M → SCADA → Add connector): the connector-type enum has no `rest_push` value, so the closest supported type is used with the REST-push contract recorded in config:
-
-```text
-name            East Amman SCADA Gateway
-project         GSI-EAM-001
-type            vendor_api  (REST push)
-config.direction    inbound_push  (site edge gateway → GridMind)
-config.endpoint     POST https://gridmind-sparkle.lovable.app/api/public/hooks/scada-telemetry
-config.headers      Authorization: Bearer <key>, X-GM-Timestamp, X-GM-Signature,
-                    X-Project-Code: GSI-JOR-EAM-HYB-001
-config.interval_sec 60
-config.auth         api_key + HMAC-SHA256 (300 s replay window)
-config.alarms       immediate
-```
-
-**Assets** — the `scada_asset_type` enum supports inverter / bess / meter / weather_station / plant_controller / combiner, so your 10 assets map like this:
-
-| Asset                | asset_key     | type             |
-| -------------------- | ------------- | ---------------- |
-| PV array / inverters | `PV-INV-01`   | inverter         |
-| BESS                 | `BESS-01`     | bess             |
-| PCS                  | `BESS-PCS-01` | inverter         |
-| BMS                  | `BESS-BMS-01` | bess             |
-| EMS / PPC            | `EMS-PPC-01`  | plant_controller |
-| POI meter            | `POI-MTR-01`  | meter            |
-| MV switchgear        | `MV-SWGR-01`  | combiner         |
-| Main transformer     | `TRF-MAIN-01` | combiner         |
-| Weather station      | `WS-01`       | weather_station  |
-| Substation           | `SUBSTN-01`   | plant_controller |
-
-If you'd rather have exact `pcs` / `bms` / `transformer` / `switchgear` / `substation` enum values, that's a migration plus wizard/label updates — say so and I'll add it instead of mapping.
-
-**Security prerequisite:** the public-hook guard checks a `cf-connecting-ip` allowlist and an HMAC secret. I need the site gateway's **public egress IP** to allowlist it; until then the guard runs in warn mode (window closes ≈ 8 Aug), after which unlisted IPs are rejected. The HMAC signing secret is generated with the key and shown once alongside it.
-
-## Verification
-
-- `psql` reads confirming: 2 GSI vendors `onboarding`; `rfqs` row status `issued`, `rfq_number = RFQ-0001`, due `2026-08-21T14:00:00Z`, 2 `rfq_bids` invites; 1 `scada_connectors` row + 10 `scada_assets` for the project.
-- A signed sample POST to `/api/public/hooks/scada-telemetry` with one reading per asset, proving 200 + `accepted` count and that an unsigned/foreign-key request is rejected.
-- Screenshots of the RFQ detail page and the SCADA connector page.
-
-## Open items I need from you
-
-1. LONGi / Trina bid-desk emails (and payment terms + incoterms if fixed).
-2. Gateway public egress IP for the allowlist.
-3. RFQ line breakdown — single 65 MWp line, or split by tranche/module type?
+## Verification criteria
+- `select count(*) from scada_telemetry where ts > now() - interval '24 hours'` returns > 0 rows.
+- `select max(ts) from scada_telemetry` returns a recent timestamp.
+- `/api/public/hooks/scada-telemetry` returns 200 for a valid signed request and 401/403 for invalid ones.
+- SCADA dashboard `/om/scada` renders KPIs and a 24-hour power curve.
+- No new `public_hook.ip_denied`, `public_hook.signature_failed`, or `public_hook.rate_limited` audit events appear in the 7-day window from legitimate gateway traffic.

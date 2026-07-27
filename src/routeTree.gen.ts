@@ -21,6 +21,7 @@ import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as VendorVendorIdRouteImport } from './routes/vendor.$vendorId'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
+import { Route as ApiScadaDebugRouteImport } from './routes/api/scada-debug'
 import { Route as AuthenticatedTimesheetsRouteImport } from './routes/_authenticated/timesheets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
@@ -305,6 +306,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
 const PoTokenRoute = PoTokenRouteImport.update({
   id: '/po/$token',
   path: '/po/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiScadaDebugRoute = ApiScadaDebugRouteImport.update({
+  id: '/api/scada-debug',
+  path: '/api/scada-debug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTimesheetsRoute = AuthenticatedTimesheetsRouteImport.update({
@@ -1669,6 +1675,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/timesheets': typeof AuthenticatedTimesheetsRoute
+  '/api/scada-debug': typeof ApiScadaDebugRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
@@ -1906,6 +1913,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/timesheets': typeof AuthenticatedTimesheetsRoute
+  '/api/scada-debug': typeof ApiScadaDebugRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
@@ -2137,6 +2145,7 @@ export interface FileRoutesById {
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/timesheets': typeof AuthenticatedTimesheetsRoute
+  '/api/scada-debug': typeof ApiScadaDebugRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
@@ -2378,6 +2387,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/timesheets'
+    | '/api/scada-debug'
     | '/po/$token'
     | '/share/$token'
     | '/vendor/$vendorId'
@@ -2615,6 +2625,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/dashboard'
     | '/timesheets'
+    | '/api/scada-debug'
     | '/po/$token'
     | '/share/$token'
     | '/portal'
@@ -2845,6 +2856,7 @@ export interface FileRouteTypes {
     | '/_authenticated/approvals'
     | '/_authenticated/dashboard'
     | '/_authenticated/timesheets'
+    | '/api/scada-debug'
     | '/po/$token'
     | '/share/$token'
     | '/vendor/$vendorId'
@@ -3079,6 +3091,7 @@ export interface RootRouteChildren {
   DesignSystemRoute: typeof DesignSystemRoute
   PortalRoute: typeof PortalRouteWithChildren
   VendorRoute: typeof VendorRouteWithChildren
+  ApiScadaDebugRoute: typeof ApiScadaDebugRoute
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
@@ -3182,6 +3195,13 @@ declare module '@tanstack/react-router' {
       path: '/po/$token'
       fullPath: '/po/$token'
       preLoaderRoute: typeof PoTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/scada-debug': {
+      id: '/api/scada-debug'
+      path: '/api/scada-debug'
+      fullPath: '/api/scada-debug'
+      preLoaderRoute: typeof ApiScadaDebugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/timesheets': {
@@ -5592,6 +5612,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesignSystemRoute: DesignSystemRoute,
   PortalRoute: PortalRouteWithChildren,
   VendorRoute: VendorRouteWithChildren,
+  ApiScadaDebugRoute: ApiScadaDebugRoute,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
