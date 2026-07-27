@@ -98,9 +98,15 @@ export async function listAlertRules(ctx: AuthContext): Promise<FinanceAlertRule
 }
 
 async function currentCompanyId(ctx: AuthContext): Promise<string> {
-  const { data, error } = await ctx.supabase.rpc("current_company_id");
-  if (error || !data) httpError(400, "no_company", "No active company context.");
-  return data as unknown as string;
+  const { data, error } = await ctx.supabase
+    .from("profiles")
+    .select("company_id")
+    .eq("id", ctx.user!.id)
+    .maybeSingle();
+  if (error) throw error;
+  const companyId = (data as { company_id: string | null } | null)?.company_id;
+  if (!companyId) httpError(400, "no_company", "No active company context.");
+  return companyId as string;
 }
 
 export async function saveAlertRule(ctx: AuthContext, input: SaveAlertRuleInput): Promise<string> {
@@ -112,7 +118,7 @@ export async function saveAlertRule(ctx: AuthContext, input: SaveAlertRuleInput)
     threshold,
     enabled: input.enabled,
     notify_role: input.notify_role,
-    created_by: ctx.userId,
+    created_by: ctx.user!.id,
   };
   const { data, error } = await ctx.supabase
     .from("finance_alert_rules")
@@ -148,7 +154,7 @@ export async function transitionAlert(
     .from("finance_alerts")
     .update({
       status,
-      acknowledged_by: ctx.userId,
+      acknowledged_by: ctx.user!.id,
       acknowledged_at: new Date().toISOString(),
     } as never)
     .eq("id", alertId);
