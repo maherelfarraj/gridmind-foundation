@@ -39,7 +39,7 @@ function parsePolicies(): Policy[] {
       action: m[2].toLowerCase() as Action,
       body,
       memberScoped: /is_company_member\(company_id\)/.test(body),
-      roles: [...body.matchAll(/has_company_role\('(\w+)'\)/g)].map((r) => r[1]),
+      roles: [...new Set([...body.matchAll(/has_company_role\('(\w+)'\)/g)].map((r) => r[1]))],
     });
   }
   return out;
