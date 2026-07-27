@@ -63,6 +63,8 @@ function RfqDetail() {
   const invite = useInviteVendors(rfqId);
   const removeInvite = useRemoveInvite(rfqId);
   const issue = useIssueRfq(rfqId);
+  const changeControl = useUnderChangeControl("rfq", rfqId);
+
   const submitBid = useSubmitBid(rfqId);
 
   const invitedVendorIds = useMemo(() => new Set(bids.map((b) => b.vendor_id)), [bids]);
