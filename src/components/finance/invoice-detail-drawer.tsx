@@ -283,6 +283,15 @@ export function InvoiceDetailDrawer({
             />
 
             <div className="flex flex-wrap gap-2 border-t pt-4">
+              {canApproveInvoice(d.invoice.status) && (
+                <Button
+                  variant="outline"
+                  disabled={!canRecord || approveMutation.isPending}
+                  onClick={() => approveMutation.mutate()}
+                >
+                  {approveMutation.isPending ? "Approving…" : "Approve"}
+                </Button>
+              )}
               {d.invoice.status === "approved" && (
                 <Button
                   variant="outline"
