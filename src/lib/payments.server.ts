@@ -221,7 +221,10 @@ export async function applyPaymentToInvoice(
     status,
   };
   if (status === "paid") patch.paid_at = new Date().toISOString();
-  const { error } = await ctx.supabase.from("invoices").update(patch as never).eq("id", invoice.id);
+  const { error } = await ctx.supabase
+    .from("invoices")
+    .update(patch as never)
+    .eq("id", invoice.id);
   if (error) throw error;
   return {
     status,
@@ -241,7 +244,10 @@ export async function reversePaymentOnInvoice(
     status: next.status,
   };
   if (next.status !== "paid") patch.paid_at = null;
-  const { error } = await ctx.supabase.from("invoices").update(patch as never).eq("id", invoice.id);
+  const { error } = await ctx.supabase
+    .from("invoices")
+    .update(patch as never)
+    .eq("id", invoice.id);
   if (error) throw error;
   return next;
 }

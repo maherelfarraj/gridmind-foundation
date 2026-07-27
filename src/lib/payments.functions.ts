@@ -174,7 +174,10 @@ export const listInvoicePayments = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ invoice_id: z.string().uuid() }).parse(input))
   .handler(
-    async ({ data, context }): Promise<{ rows: PaymentRow[]; paid_amount: number; balance: number }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{ rows: PaymentRow[]; paid_amount: number; balance: number }> => {
       requireSupabaseAuth(context);
       const [payRes, invoice] = await Promise.all([
         context.supabase

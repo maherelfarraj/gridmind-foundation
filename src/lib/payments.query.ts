@@ -1,11 +1,7 @@
 // P-194 — TanStack Query options for payments.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getPaymentsAccess,
-  listInvoicePayments,
-  listPayments,
-} from "@/lib/payments.functions";
+import { getPaymentsAccess, listInvoicePayments, listPayments } from "@/lib/payments.functions";
 import type { ListPaymentsInput } from "@/lib/payments.rules";
 
 export function paymentsListQueryOptions(filters: ListPaymentsInput = {}) {

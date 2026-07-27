@@ -98,7 +98,9 @@ export function InvoiceDetailDrawer({
 
   const d = detail.data;
   const canRecord =
-    d?.invoice.direction === "payable" ? Boolean(access.data?.canPayable) : Boolean(access.data?.canFinance);
+    d?.invoice.direction === "payable"
+      ? Boolean(access.data?.canPayable)
+      : Boolean(access.data?.canFinance);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

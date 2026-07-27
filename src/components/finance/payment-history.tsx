@@ -48,8 +48,7 @@ export function PaymentHistory({
   });
 
   if (q.isLoading) return <Skeleton className="h-24 w-full" />;
-  if (q.isError)
-    return <p className="text-sm text-destructive">Could not load payment history.</p>;
+  if (q.isError) return <p className="text-sm text-destructive">Could not load payment history.</p>;
 
   const rows = q.data?.rows ?? [];
 
@@ -83,9 +82,7 @@ export function PaymentHistory({
                     <TooltipTrigger asChild>
                       <span
                         className={
-                          voided
-                            ? "font-mono tabular-nums line-through"
-                            : "font-mono tabular-nums"
+                          voided ? "font-mono tabular-nums line-through" : "font-mono tabular-nums"
                         }
                       >
                         {fmt(p.amount, p.currency_code)}

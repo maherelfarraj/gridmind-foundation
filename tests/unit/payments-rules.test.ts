@@ -60,9 +60,9 @@ describe("void reversal", () => {
       status: "partially_paid",
       paid_amount: 500,
     });
-    expect(statusAfterVoid({ ...inv({ paid_amount: 500 }), status: "partially_paid" }, 500)).toEqual(
-      { status: "sent", paid_amount: 0 },
-    );
+    expect(
+      statusAfterVoid({ ...inv({ paid_amount: 500 }), status: "partially_paid" }, 500),
+    ).toEqual({ status: "sent", paid_amount: 0 });
   });
   it("never drives paid_amount negative", () => {
     expect(statusAfterVoid({ ...inv({ paid_amount: 100 }), status: "paid" }, 250).paid_amount).toBe(
