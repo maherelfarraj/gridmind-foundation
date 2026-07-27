@@ -221,7 +221,12 @@ function TimesheetsPage() {
 
   // Pull the verdict automatically whenever an in-review week is opened.
   useEffect(() => {
-    if (sheet && sheet.approval_instance_id && sheet.status === "in_review") check.mutate();
+    if (
+      sheet?.approval_instance_id &&
+      (sheet.status === "in_review" || sheet.status === "submitted" || sheet.status === "rejected")
+    ) {
+      check.mutate();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheet?.id, sheet?.status]);
 

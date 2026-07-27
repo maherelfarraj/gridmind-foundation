@@ -212,6 +212,7 @@ function DecideDialog({
     onSuccess: () => {
       toast.success("Approval recorded");
       qc.invalidateQueries({ queryKey: ["approvals"] });
+      qc.invalidateQueries({ queryKey: ["timesheets"] });
       setComment("");
       onOpenChange(false);
       onDone();
