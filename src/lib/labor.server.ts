@@ -4,7 +4,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/integrations/supabase/types";
 import { assertExportAllowed, type ExportType } from "@/lib/export-guard";
-import { type RateContext, type ReportEntry, yearRange } from "@/lib/timesheets/reports";
+import {
+  aggregateLaborActuals,
+  type RateContext,
+  type ReportEntry,
+  yearRange,
+} from "@/lib/timesheets/reports";
 
 export type Client = SupabaseClient<Database>;
 
@@ -205,4 +210,32 @@ export async function assertProjectsExportable(
   for (const id of ids) {
     await assertExportAllowed(client as unknown as SupabaseClient, id, exportType);
   }
+}
+
+/**
+ * P-231 — Preferred labor actuals source: approved timesheet entries.
+ * Returns null when the timesheet tables are absent (42P01) or when there are
+ * zero approved rows, so callers can fall back to their legacy path unchanged.
+ */
+export async function loadTimesheetLaborCost(
+  client: Client,
+  projectId: string,
+  range?: { from: string; to: string },
+): Promise<number | null> {
+  return guarded<number | null>(
+    "labor_cost",
+    async () => {
+      const entries = await loadReportEntries(client, {
+        from: range?.from ?? "1900-01-01",
+        to: range?.to ?? "2999-12-31",
+        project_id: projectId,
+        statuses: ["approved"],
+      });
+      if (entries.length === 0) return null;
+      const ctx = await loadRateContext(client, entries);
+      const { labor_cost } = aggregateLaborActuals(projectId, "", entries, ctx);
+      return labor_cost > 0 ? labor_cost : null;
+    },
+    null,
+  );
 }
