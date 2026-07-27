@@ -7,6 +7,8 @@ import { ArrowLeft, ChevronDown, ChevronUp, Lock, Plus, Table2, Trash2 } from "l
 import { toast } from "sonner";
 
 import { EstimateApprovalCard } from "@/components/estimating/approval-actions-card";
+import { EstimateComparisonCard } from "@/components/estimating/comparison-card";
+import { RevisionHistoryDrawer } from "@/components/estimating/revision-history-drawer";
 import { MarginWaterfallCard } from "@/components/estimating/margin-waterfall-card";
 import { RatePickerButton } from "@/components/estimating/rate-picker";
 import { Badge } from "@/components/ui/badge";
@@ -229,11 +231,18 @@ function EstimateBody({
         }
         description={estimate.title}
         actions={
-          <Button variant="outline" asChild>
-            <Link to="/estimating">
-              <ArrowLeft className="mr-2 size-4" /> Back to register
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <RevisionHistoryDrawer
+              estimateId={estimate.id}
+              status={estimate.status}
+              canWrite={detail.can_write}
+            />
+            <Button variant="outline" asChild>
+              <Link to="/estimating">
+                <ArrowLeft className="mr-2 size-4" /> Back to register
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -282,6 +291,12 @@ function EstimateBody({
       </Card>
 
       <EstimateApprovalCard detail={detail} />
+
+      <EstimateComparisonCard
+        estimateId={estimate.id}
+        status={estimate.status}
+        projectId={estimate.project_id}
+      />
 
       {!editable ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
