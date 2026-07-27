@@ -227,7 +227,7 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
       })),
       dbHealth,
       capacity,
-      tableSizes: (tableRows ?? []).map((r) => ({
+      tableSizes: ((tableRows ?? []) as unknown[]).map((r) => ({
         schema: (r as { schema_name: string }).schema_name,
         table: (r as { table_name: string }).table_name,
         totalMb: (r as { total_mb: number }).total_mb,
