@@ -1,10 +1,13 @@
-// Performance & Capacity cockpit — super-admin only. Reads Postgres
-// introspection RPCs (admin_get_slow_queries / admin_get_db_health /
-// admin_get_table_sizes) via the service-role client. Read-only; no mutations.
+// Performance & Capacity cockpit — super-admin only. Reads Postgres system
+// introspection tables via the service-role client. Read-only; no mutations.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import {
+  attachSupabaseAuth,
+  requireSupabaseAuth,
+  type AuthContext,
+} from "@/integrations/supabase/auth-attacher";
 
 export type CapacityStatus = "ok" | "warn" | "crit";
 
@@ -56,11 +59,11 @@ const THRESHOLDS = {
   memory: { warn: 75, crit: 90 },
   disk: { warn: 75, crit: 90 },
   connections: { warn: 75, crit: 90 },
-  wal: { warn: 75, crit: 90 }, // wal % of an assumed soft budget (see below)
-  rollback_rate: { warn: 2, crit: 5 }, // percent of transactions rolled back
+  wal: { warn: 75, crit: 90 },
+  rollback_rate: { warn: 2, crit: 5 },
 };
 
-const WAL_SOFT_BUDGET_MB = 2048; // heuristic budget for a single-node Postgres
+const WAL_SOFT_BUDGET_MB = 2048;
 
 function statusFor(value: number | null, warn: number, crit: number): CapacityStatus {
   if (value == null) return "ok";
@@ -75,73 +78,116 @@ function worst(...items: CapacityStatus[]): CapacityStatus {
   return "ok";
 }
 
-type SlowQueryRow = {
-  query: string;
-  calls: number;
-  mean_ms: number;
-  total_ms: number;
-  max_ms: number;
-};
-
-type DbHealthRow = {
-  connections_used: number;
-  connections_max: number;
-  db_size_mb: number;
-  wal_size_mb: number;
-  xact_commit: number;
-  xact_rollback: number;
-  rollback_rate: number;
-};
-
-type TableSizeRow = {
-  schema_name: string;
-  table_name: string;
-  total_bytes: number;
-  total_mb: number;
-};
+async function assertSuperAdmin(context: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
+  const { data, error } = await context.supabase.rpc("has_role", {
+    p_user_id: context.user.id,
+    p_role: "super_admin",
+  });
+  if (error) throw error;
+  if (data !== true) {
+    throw Object.assign(new Error("forbidden"), {
+      statusCode: 403,
+      body: JSON.stringify({ error: "forbidden" }),
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  }
+}
 
 export const getPerformanceSignals = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => z.object({}).parse(input ?? {}))
   .handler(async ({ context }): Promise<PerformanceSignals> => {
     requireSupabaseAuth(context);
+    await assertSuperAdmin(context);
 
-    const { data: isSuper, error: roleErr } = await context.supabase.rpc("has_role", {
-      p_user_id: context.user.id,
-      p_role: "super_admin",
-    });
-    if (roleErr) throw roleErr;
-    if (isSuper !== true) {
-      throw Object.assign(new Error("forbidden"), {
-        statusCode: 403,
-        body: JSON.stringify({ error: "forbidden" }),
-        headers: { "content-type": "application/json; charset=utf-8" },
-      });
-    }
-
-    // Cross-tenant, system-level introspection requires the service-role
-    // client. Load it inside the handler only.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const now = new Date();
 
-    const admin = supabaseAdmin as unknown as {
-      rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-    };
+    // Slow queries from pg_stat_statements (view lives in extensions schema).
+    const { data: slowRows, error: slowErr } = await supabaseAdmin.rpc(
+      "exec_sql",
+      {
+        sql: `
+          SELECT LEFT(query, 200) AS query,
+                 calls,
+                 ROUND(mean_exec_time::numeric, 2) AS mean_ms,
+                 ROUND(total_exec_time::numeric, 2) AS total_ms,
+                 ROUND(max_exec_time::numeric, 2) AS max_ms
+          FROM extensions.pg_stat_statements
+          WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+            AND query NOT LIKE '%pg_stat_statements%'
+          ORDER BY total_exec_time DESC
+          LIMIT 10;
+        `,
+      },
+    );
+    if (slowErr) throw slowErr;
 
-    const [slowRes, healthRes, tableRes] = await Promise.all([
-      admin.rpc("admin_get_slow_queries"),
-      admin.rpc("admin_get_db_health"),
-      admin.rpc("admin_get_table_sizes"),
-    ]);
+    // DB health snapshot from pg_stat_database + pg_database_size.
+    const { data: healthRows, error: healthErr } = await supabaseAdmin.rpc(
+      "exec_sql",
+      {
+        sql: `
+          SELECT
+            (SELECT count(*) FROM pg_stat_activity) AS connections_used,
+            (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') AS connections_max,
+            ROUND(pg_database_size(current_database()) / 1024.0 / 1024.0, 2) AS db_size_mb,
+            ROUND(
+              (SELECT sum(pg_total_relation_size(c.oid)) FROM pg_class c
+               JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = 'pg_wal') / 1024.0 / 1024.0,
+              2
+            ) AS wal_size_mb,
+            xact_commit,
+            xact_rollback,
+            CASE WHEN xact_commit + xact_rollback > 0
+              THEN ROUND((xact_rollback::numeric / (xact_commit + xact_rollback)) * 100, 2)
+              ELSE 0
+            END AS rollback_rate
+          FROM pg_stat_database
+          WHERE datname = current_database();
+        `,
+      },
+    );
+    if (healthErr) throw healthErr;
 
-    if (slowRes.error) throw slowRes.error;
-    if (healthRes.error) throw healthRes.error;
-    if (tableRes.error) throw tableRes.error;
+    // Top 20 tables by size in the public schema.
+    const { data: tableRows, error: tableErr } = await supabaseAdmin.rpc(
+      "exec_sql",
+      {
+        sql: `
+          SELECT n.nspname AS schema_name,
+                 c.relname AS table_name,
+                 ROUND(pg_total_relation_size(c.oid) / 1024.0 / 1024.0, 2) AS total_mb
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'public'
+          ORDER BY pg_total_relation_size(c.oid) DESC
+          LIMIT 20;
+        `,
+      },
+    );
+    if (tableErr) throw tableErr;
 
-    const slowRows = (slowRes.data ?? []) as SlowQueryRow[];
-    const healthRows = (healthRes.data ?? []) as DbHealthRow[];
-    const tableRows = (tableRes.data ?? []) as TableSizeRow[];
+    const rawSlow = (slowRows ?? []) as Array<{
+      query: string;
+      calls: number;
+      mean_ms: number;
+      total_ms: number;
+      max_ms: number;
+    }>;
 
-    const healthRow = healthRows[0] ?? {
+    const rawHealth = (healthRows ?? []) as Array<{
+      connections_used: number;
+      connections_max: number;
+      db_size_mb: number;
+      wal_size_mb: number;
+      xact_commit: number;
+      xact_rollback: number;
+      rollback_rate: number;
+    }>;
+
+    const healthRow = rawHealth[0] ?? {
       connections_used: 0,
       connections_max: 0,
       db_size_mb: 0,
@@ -157,8 +203,6 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
         : 0;
     const walPct = Math.round((healthRow.wal_size_mb / WAL_SOFT_BUDGET_MB) * 1000) / 10;
 
-    // Memory/disk aren't exposed by managed Postgres over SQL — surface as
-    // "unknown" (null) rather than fabricate a number.
     const dbHealth: DbHealth = {
       memoryPct: null,
       diskPct: null,
@@ -223,9 +267,9 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
     ];
 
     return {
-      windowEnd: new Date().toISOString(),
+      windowEnd: now.toISOString(),
       overall: worst(...capacity.map((c) => c.status)),
-      slowQueries: slowRows.map((r) => ({
+      slowQueries: rawSlow.map((r) => ({
         query: r.query,
         calls: r.calls,
         meanMs: r.mean_ms,
@@ -234,10 +278,10 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
       })),
       dbHealth,
       capacity,
-      tableSizes: tableRows.map((r) => ({
-        schema: r.schema_name,
-        table: r.table_name,
-        totalMb: r.total_mb,
+      tableSizes: (tableRows ?? []).map((r) => ({
+        schema: (r as { schema_name: string }).schema_name,
+        table: (r as { table_name: string }).table_name,
+        totalMb: (r as { total_mb: number }).total_mb,
       })),
     };
   });
