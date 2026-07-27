@@ -5041,14 +5041,17 @@ export type Database = {
         Row: {
           company_id: string
           next_activity_seq: number
+          next_report_seq: number
         }
         Insert: {
           company_id: string
           next_activity_seq?: number
+          next_report_seq?: number
         }
         Update: {
           company_id?: string
           next_activity_seq?: number
+          next_report_seq?: number
         }
         Relationships: [
           {
@@ -5118,6 +5121,7 @@ export type Database = {
       }
       esg_reports: {
         Row: {
+          approval_instance_id: string | null
           approved_at: string | null
           approved_by: string | null
           company_id: string
@@ -5126,15 +5130,23 @@ export type Database = {
           generated_by: string | null
           id: string
           methodology_note: string | null
+          pdf_path: string | null
           period_from: string
           period_to: string
           project_id: string
+          published_at: string | null
+          published_by: string | null
+          rejection_comment: string | null
+          report_number: string | null
           row_count: number
           status: string
+          submitted_at: string | null
+          submitted_by: string | null
           totals: Json
           updated_at: string
         }
         Insert: {
+          approval_instance_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           company_id: string
@@ -5143,15 +5155,23 @@ export type Database = {
           generated_by?: string | null
           id?: string
           methodology_note?: string | null
+          pdf_path?: string | null
           period_from: string
           period_to: string
           project_id: string
+          published_at?: string | null
+          published_by?: string | null
+          rejection_comment?: string | null
+          report_number?: string | null
           row_count?: number
           status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
           totals?: Json
           updated_at?: string
         }
         Update: {
+          approval_instance_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           company_id?: string
@@ -5160,11 +5180,18 @@ export type Database = {
           generated_by?: string | null
           id?: string
           methodology_note?: string | null
+          pdf_path?: string | null
           period_from?: string
           period_to?: string
           project_id?: string
+          published_at?: string | null
+          published_by?: string | null
+          rejection_comment?: string | null
+          report_number?: string | null
           row_count?: number
           status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
           totals?: Json
           updated_at?: string
         }
