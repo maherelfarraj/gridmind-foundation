@@ -96,6 +96,7 @@ import { Route as AuthenticatedFinanceReceivablesRouteImport } from './routes/_a
 import { Route as AuthenticatedFinancePeriodsRouteImport } from './routes/_authenticated/finance.periods'
 import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_authenticated/finance.payments'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
+import { Route as AuthenticatedFinanceGlExportRouteImport } from './routes/_authenticated/finance.gl-export'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
 import { Route as AuthenticatedFinanceBondsRouteImport } from './routes/_authenticated/finance.bonds'
@@ -715,6 +716,12 @@ const AuthenticatedFinanceInvoicesRoute =
   AuthenticatedFinanceInvoicesRouteImport.update({
     id: '/finance/invoices',
     path: '/finance/invoices',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceGlExportRoute =
+  AuthenticatedFinanceGlExportRouteImport.update({
+    id: '/finance/gl-export',
+    path: '/finance/gl-export',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFinanceDebitNotesRoute =
@@ -1573,6 +1580,7 @@ export interface FileRoutesByFullPath {
   '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/finance/gl-export': typeof AuthenticatedFinanceGlExportRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/finance/periods': typeof AuthenticatedFinancePeriodsRoute
@@ -1792,6 +1800,7 @@ export interface FileRoutesByTo {
   '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/finance/gl-export': typeof AuthenticatedFinanceGlExportRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/finance/periods': typeof AuthenticatedFinancePeriodsRoute
@@ -2007,6 +2016,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
+  '/_authenticated/finance/gl-export': typeof AuthenticatedFinanceGlExportRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/_authenticated/finance/periods': typeof AuthenticatedFinancePeriodsRoute
@@ -2230,6 +2240,7 @@ export interface FileRouteTypes {
     | '/finance/bonds'
     | '/finance/contracts'
     | '/finance/debit-notes'
+    | '/finance/gl-export'
     | '/finance/invoices'
     | '/finance/payments'
     | '/finance/periods'
@@ -2449,6 +2460,7 @@ export interface FileRouteTypes {
     | '/finance/bonds'
     | '/finance/contracts'
     | '/finance/debit-notes'
+    | '/finance/gl-export'
     | '/finance/invoices'
     | '/finance/payments'
     | '/finance/periods'
@@ -2663,6 +2675,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/bonds'
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
+    | '/_authenticated/finance/gl-export'
     | '/_authenticated/finance/invoices'
     | '/_authenticated/finance/payments'
     | '/_authenticated/finance/periods'
@@ -3485,6 +3498,13 @@ declare module '@tanstack/react-router' {
       path: '/finance/invoices'
       fullPath: '/finance/invoices'
       preLoaderRoute: typeof AuthenticatedFinanceInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/gl-export': {
+      id: '/_authenticated/finance/gl-export'
+      path: '/finance/gl-export'
+      fullPath: '/finance/gl-export'
+      preLoaderRoute: typeof AuthenticatedFinanceGlExportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/debit-notes': {
@@ -4905,6 +4925,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceBondsRoute: typeof AuthenticatedFinanceBondsRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
+  AuthenticatedFinanceGlExportRoute: typeof AuthenticatedFinanceGlExportRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedFinancePaymentsRoute: typeof AuthenticatedFinancePaymentsRoute
   AuthenticatedFinancePeriodsRoute: typeof AuthenticatedFinancePeriodsRoute
@@ -5030,6 +5051,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
+  AuthenticatedFinanceGlExportRoute: AuthenticatedFinanceGlExportRoute,
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedFinancePaymentsRoute: AuthenticatedFinancePaymentsRoute,
   AuthenticatedFinancePeriodsRoute: AuthenticatedFinancePeriodsRoute,
