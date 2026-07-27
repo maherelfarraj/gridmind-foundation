@@ -1,3 +1,6 @@
+import { describe, expect, it } from "vitest";
+
+import { defaultDueDate } from "@/lib/invoices.rules";
 
 describe("defaultDueDate", () => {
   it("adds the default net terms", () => {
