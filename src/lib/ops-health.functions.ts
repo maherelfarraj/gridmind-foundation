@@ -9,7 +9,18 @@ import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase
 export type SignalStatus = "ok" | "warn" | "crit";
 
 export type Signal = {
-  key: "rate_limit_fail_open" | "signature_failed" | "ip_denied" | "guard_401" | "guard_429";
+  key:
+    | "rate_limit_fail_open"
+    | "signature_failed"
+    | "ip_denied"
+    | "guard_401"
+    | "guard_429"
+    | "db_rollback_rate"
+    | "dead_letter_depth"
+    | "retry_queue_depth"
+    | "open_ops_alerts"
+    | "open_incidents"
+    | "cron_probe_freshness";
   label: string;
   status: SignalStatus;
   value24h: number;

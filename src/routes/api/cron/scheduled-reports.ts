@@ -86,175 +86,173 @@ export const Route = createFileRoute("/api/cron/scheduled-reports")({
         } as never);
         try {
           const __result = await (async () => {
-
-        const nowIso = new Date().toISOString();
-        const due = await admin
-          .from("scheduled_reports")
-          .select(
-            "id, company_id, project_id, name, report_type, frequency, day_of_week, day_of_month, hour_utc, recipients, template_sections, projects:project_id(name), companies:company_id(name)",
-          )
-          .eq("is_active", true)
-          .lte("next_run_at", nowIso)
-          .order("next_run_at", { ascending: true })
-          .limit(MAX_PER_RUN);
-
-        if (due.error && (due.error as { code?: string }).code === "42P01") {
-          return Response.json(
-            { skipped: true, reason: "scheduled_reports_missing" },
-            { status: 200 },
-          );
-        }
-        if (due.error) {
-          return Response.json(
-            { error: "query_failed", message: due.error.message },
-            { status: 500 },
-          );
-        }
-
-        const serviceId = process.env.EMAILJS_SERVICE_ID;
-        const templateId = process.env.EMAILJS_TEMPLATE_ID;
-        const publicKey = process.env.EMAILJS_PUBLIC_KEY;
-        const privateKey = process.env.EMAILJS_PRIVATE_KEY;
-        const emailjsReady = !!(serviceId && templateId && publicKey && privateKey);
-
-        type Counts = {
-          sent: number;
-          failed: number;
-          recipients_ok: number;
-          recipients_failed: number;
-        };
-        const perCompany = new Map<string, Counts>();
-        const bump = (c: string, patch: Partial<Counts>) => {
-          const cur = perCompany.get(c) ?? {
-            sent: 0,
-            failed: 0,
-            recipients_ok: 0,
-            recipients_failed: 0,
-          };
-          perCompany.set(c, {
-            sent: cur.sent + (patch.sent ?? 0),
-            failed: cur.failed + (patch.failed ?? 0),
-            recipients_ok: cur.recipients_ok + (patch.recipients_ok ?? 0),
-            recipients_failed: cur.recipients_failed + (patch.recipients_failed ?? 0),
-          });
-        };
-
-        for (const row of (due.data ?? []) as Array<Record<string, unknown>>) {
-          const schedule = row as unknown as {
-            id: string;
-            company_id: string;
-            frequency: string;
-            day_of_week: number | null;
-            day_of_month: number | null;
-            hour_utc: number | null;
-            recipients: string[];
-            name: string;
-            report_type: string;
-            template_sections: Record<string, unknown> | null;
-            projects: { name?: string } | null;
-            companies: { name?: string } | null;
-          };
-
-          if (!emailjsReady) {
-            await admin
+            const nowIso = new Date().toISOString();
+            const due = await admin
               .from("scheduled_reports")
-              .update({
-                last_run_at: nowIso,
-                last_run_status: "error",
-                last_run_error: "emailjs_not_configured",
-              } as never)
-              .eq("id", schedule.id);
-            bump(schedule.company_id, { failed: 1 });
-            continue;
-          }
+              .select(
+                "id, company_id, project_id, name, report_type, frequency, day_of_week, day_of_month, hour_utc, recipients, template_sections, projects:project_id(name), companies:company_id(name)",
+              )
+              .eq("is_active", true)
+              .lte("next_run_at", nowIso)
+              .order("next_run_at", { ascending: true })
+              .limit(MAX_PER_RUN);
 
-          let recipientsOk = 0;
-          let recipientsFailed = 0;
-          let lastError: string | null = null;
-          try {
-            const pdfBase64 = await renderPdfBase64(schedule);
-            for (const to of schedule.recipients ?? []) {
+            if (due.error && (due.error as { code?: string }).code === "42P01") {
+              return Response.json(
+                { skipped: true, reason: "scheduled_reports_missing" },
+                { status: 200 },
+              );
+            }
+            if (due.error) {
+              return Response.json(
+                { error: "query_failed", message: due.error.message },
+                { status: 500 },
+              );
+            }
+
+            const serviceId = process.env.EMAILJS_SERVICE_ID;
+            const templateId = process.env.EMAILJS_TEMPLATE_ID;
+            const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+            const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+            const emailjsReady = !!(serviceId && templateId && publicKey && privateKey);
+
+            type Counts = {
+              sent: number;
+              failed: number;
+              recipients_ok: number;
+              recipients_failed: number;
+            };
+            const perCompany = new Map<string, Counts>();
+            const bump = (c: string, patch: Partial<Counts>) => {
+              const cur = perCompany.get(c) ?? {
+                sent: 0,
+                failed: 0,
+                recipients_ok: 0,
+                recipients_failed: 0,
+              };
+              perCompany.set(c, {
+                sent: cur.sent + (patch.sent ?? 0),
+                failed: cur.failed + (patch.failed ?? 0),
+                recipients_ok: cur.recipients_ok + (patch.recipients_ok ?? 0),
+                recipients_failed: cur.recipients_failed + (patch.recipients_failed ?? 0),
+              });
+            };
+
+            for (const row of (due.data ?? []) as Array<Record<string, unknown>>) {
+              const schedule = row as unknown as {
+                id: string;
+                company_id: string;
+                frequency: string;
+                day_of_week: number | null;
+                day_of_month: number | null;
+                hour_utc: number | null;
+                recipients: string[];
+                name: string;
+                report_type: string;
+                template_sections: Record<string, unknown> | null;
+                projects: { name?: string } | null;
+                companies: { name?: string } | null;
+              };
+
+              if (!emailjsReady) {
+                await admin
+                  .from("scheduled_reports")
+                  .update({
+                    last_run_at: nowIso,
+                    last_run_status: "error",
+                    last_run_error: "emailjs_not_configured",
+                  } as never)
+                  .eq("id", schedule.id);
+                bump(schedule.company_id, { failed: 1 });
+                continue;
+              }
+
+              let recipientsOk = 0;
+              let recipientsFailed = 0;
+              let lastError: string | null = null;
               try {
-                const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    service_id: serviceId,
-                    template_id: templateId,
-                    user_id: publicKey,
-                    accessToken: privateKey,
-                    template_params: {
-                      to_email: to,
-                      report_name: schedule.name,
-                      period: schedule.frequency,
-                      company_name: schedule.companies?.name ?? "GridMind EPC",
-                      attachment_base64: pdfBase64,
-                    },
-                  }),
-                });
-                if (!res.ok) {
-                  recipientsFailed++;
-                  lastError = `HTTP ${res.status}`;
-                } else {
-                  recipientsOk++;
+                const pdfBase64 = await renderPdfBase64(schedule);
+                for (const to of schedule.recipients ?? []) {
+                  try {
+                    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        service_id: serviceId,
+                        template_id: templateId,
+                        user_id: publicKey,
+                        accessToken: privateKey,
+                        template_params: {
+                          to_email: to,
+                          report_name: schedule.name,
+                          period: schedule.frequency,
+                          company_name: schedule.companies?.name ?? "GridMind EPC",
+                          attachment_base64: pdfBase64,
+                        },
+                      }),
+                    });
+                    if (!res.ok) {
+                      recipientsFailed++;
+                      lastError = `HTTP ${res.status}`;
+                    } else {
+                      recipientsOk++;
+                    }
+                  } catch (e) {
+                    recipientsFailed++;
+                    lastError = e instanceof Error ? e.message : String(e);
+                  }
                 }
               } catch (e) {
-                recipientsFailed++;
                 lastError = e instanceof Error ? e.message : String(e);
+                recipientsFailed = (schedule.recipients ?? []).length;
               }
+
+              const success = recipientsFailed === 0 && recipientsOk > 0;
+              const { data: nextRun } = await admin.rpc("compute_next_run", {
+                p_frequency: schedule.frequency,
+                p_day_of_week: schedule.day_of_week,
+                p_day_of_month: schedule.day_of_month,
+                p_hour_utc: schedule.hour_utc,
+              } as never);
+              await admin
+                .from("scheduled_reports")
+                .update({
+                  last_run_at: nowIso,
+                  last_run_status: success ? "success" : "error",
+                  last_run_error: success ? null : lastError,
+                  next_run_at: (nextRun as unknown as string | null) ?? null,
+                } as never)
+                .eq("id", schedule.id);
+
+              bump(schedule.company_id, {
+                sent: success ? 1 : 0,
+                failed: success ? 0 : 1,
+                recipients_ok: recipientsOk,
+                recipients_failed: recipientsFailed,
+              });
             }
-          } catch (e) {
-            lastError = e instanceof Error ? e.message : String(e);
-            recipientsFailed = (schedule.recipients ?? []).length;
-          }
 
-          const success = recipientsFailed === 0 && recipientsOk > 0;
-          const { data: nextRun } = await admin.rpc("compute_next_run", {
-            p_frequency: schedule.frequency,
-            p_day_of_week: schedule.day_of_week,
-            p_day_of_month: schedule.day_of_month,
-            p_hour_utc: schedule.hour_utc,
-          } as never);
-          await admin
-            .from("scheduled_reports")
-            .update({
-              last_run_at: nowIso,
-              last_run_status: success ? "success" : "error",
-              last_run_error: success ? null : lastError,
-              next_run_at: (nextRun as unknown as string | null) ?? null,
-            } as never)
-            .eq("id", schedule.id);
+            // Per-company summary audit rows.
+            for (const [companyId, counts] of perCompany) {
+              await admin.from("audit_logs").insert({
+                company_id: companyId,
+                actor_id: null,
+                action: "cron.scheduled_reports",
+                entity: "cron",
+                entity_id: null,
+                metadata: {
+                  route: ROUTE,
+                  emailjs_configured: emailjsReady,
+                  ...counts,
+                },
+              } as never);
+            }
 
-          bump(schedule.company_id, {
-            sent: success ? 1 : 0,
-            failed: success ? 0 : 1,
-            recipients_ok: recipientsOk,
-            recipients_failed: recipientsFailed,
-          });
-        }
-
-        // Per-company summary audit rows.
-        for (const [companyId, counts] of perCompany) {
-          await admin.from("audit_logs").insert({
-            company_id: companyId,
-            actor_id: null,
-            action: "cron.scheduled_reports",
-            entity: "cron",
-            entity_id: null,
-            metadata: {
-              route: ROUTE,
+            return Response.json({
+              processed: (due.data ?? []).length,
+              companies_affected: perCompany.size,
               emailjs_configured: emailjsReady,
-              ...counts,
-            },
-          } as never);
-        }
-
-        return Response.json({
-          processed: (due.data ?? []).length,
-          companies_affected: perCompany.size,
-          emailjs_configured: emailjsReady,
-        });
-      
+            });
           })();
           await admin.from("audit_logs").insert({
             company_id: null,
@@ -282,7 +280,7 @@ export const Route = createFileRoute("/api/cron/scheduled-reports")({
           } as never);
           throw __err;
         }
-},
+      },
     },
   },
 });

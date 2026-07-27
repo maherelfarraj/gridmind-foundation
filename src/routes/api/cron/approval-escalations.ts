@@ -60,88 +60,86 @@ export const Route = createFileRoute("/api/cron/approval-escalations")({
         } as never);
         try {
           const __result = await (async () => {
+            // Snapshot which instances will fire (so we know which companies to
+            // notify + audit) BEFORE running the RPC — the RPC flips the flag.
+            const dueSnap = await admin
+              .from("approval_instances")
+              .select("id, company_id")
+              .in("status", ["pending", "in_progress"])
+              .lt("sla_due_at", new Date().toISOString())
+              .is("metadata->>escalated_at", null);
 
-        // Snapshot which instances will fire (so we know which companies to
-        // notify + audit) BEFORE running the RPC — the RPC flips the flag.
-        const dueSnap = await admin
-          .from("approval_instances")
-          .select("id, company_id")
-          .in("status", ["pending", "in_progress"])
-          .lt("sla_due_at", new Date().toISOString())
-          .is("metadata->>escalated_at", null);
+            if (dueSnap.error && (dueSnap.error as { code?: string }).code === "42P01") {
+              return skipped("approval_instances_missing");
+            }
 
-        if (dueSnap.error && (dueSnap.error as { code?: string }).code === "42P01") {
-          return skipped("approval_instances_missing");
-        }
+            const rpc = await admin.rpc("escalate_overdue_approvals");
+            if (rpc.error) {
+              return Response.json(
+                { error: "escalation_failed", message: rpc.error.message },
+                { status: 500 },
+              );
+            }
+            const escalated = typeof rpc.data === "number" ? rpc.data : 0;
 
-        const rpc = await admin.rpc("escalate_overdue_approvals");
-        if (rpc.error) {
-          return Response.json(
-            { error: "escalation_failed", message: rpc.error.message },
-            { status: 500 },
-          );
-        }
-        const escalated = typeof rpc.data === "number" ? rpc.data : 0;
+            // Aggregate per company from the pre-snapshot; if the snapshot missed
+            // (e.g. approvals became due mid-run), counts stay conservative.
+            const perCompany = new Map<string, number>();
+            for (const row of (dueSnap.data ?? []) as Array<{ company_id: string }>) {
+              perCompany.set(row.company_id, (perCompany.get(row.company_id) ?? 0) + 1);
+            }
 
-        // Aggregate per company from the pre-snapshot; if the snapshot missed
-        // (e.g. approvals became due mid-run), counts stay conservative.
-        const perCompany = new Map<string, number>();
-        for (const row of (dueSnap.data ?? []) as Array<{ company_id: string }>) {
-          perCompany.set(row.company_id, (perCompany.get(row.company_id) ?? 0) + 1);
-        }
+            // Notify escalation_role holders per company (idempotent: reuse
+            // notifications.entity_id + action so re-runs collide harmlessly).
+            for (const [companyId, count] of perCompany) {
+              const { data: rules } = await admin
+                .from("approval_rules")
+                .select("escalation_role")
+                .eq("company_id", companyId);
+              const roles = Array.from(
+                new Set(
+                  ((rules ?? []) as Array<{ escalation_role: string | null }>)
+                    .map((r) => r.escalation_role)
+                    .filter((r): r is string => !!r),
+                ),
+              );
+              if (roles.length === 0) continue;
 
-        // Notify escalation_role holders per company (idempotent: reuse
-        // notifications.entity_id + action so re-runs collide harmlessly).
-        for (const [companyId, count] of perCompany) {
-          const { data: rules } = await admin
-            .from("approval_rules")
-            .select("escalation_role")
-            .eq("company_id", companyId);
-          const roles = Array.from(
-            new Set(
-              ((rules ?? []) as Array<{ escalation_role: string | null }>)
-                .map((r) => r.escalation_role)
-                .filter((r): r is string => !!r),
-            ),
-          );
-          if (roles.length === 0) continue;
+              const { data: recipients } = await admin
+                .from("user_roles")
+                .select("user_id")
+                .in("role", roles as never[]);
+              const recipientIds = Array.from(
+                new Set(((recipients ?? []) as Array<{ user_id: string }>).map((r) => r.user_id)),
+              );
+              if (recipientIds.length === 0) continue;
 
-          const { data: recipients } = await admin
-            .from("user_roles")
-            .select("user_id")
-            .in("role", roles as never[]);
-          const recipientIds = Array.from(
-            new Set(((recipients ?? []) as Array<{ user_id: string }>).map((r) => r.user_id)),
-          );
-          if (recipientIds.length === 0) continue;
+              await admin.from("notifications").insert(
+                recipientIds.map((uid) => ({
+                  user_id: uid,
+                  company_id: companyId,
+                  type: "approval.escalated",
+                  title: "Approvals overdue",
+                  body: `${count} approval(s) escalated for SLA breach.`,
+                  entity_type: "approval_instances",
+                })) as never,
+              );
 
-          await admin.from("notifications").insert(
-            recipientIds.map((uid) => ({
-              user_id: uid,
-              company_id: companyId,
-              type: "approval.escalated",
-              title: "Approvals overdue",
-              body: `${count} approval(s) escalated for SLA breach.`,
-              entity_type: "approval_instances",
-            })) as never,
-          );
+              await admin.from("audit_logs").insert({
+                company_id: companyId,
+                actor_id: null,
+                action: "cron.approval_escalations",
+                entity: "cron",
+                entity_id: null,
+                metadata: {
+                  route: ROUTE,
+                  escalated: count,
+                  notified_recipients: recipientIds.length,
+                },
+              } as never);
+            }
 
-          await admin.from("audit_logs").insert({
-            company_id: companyId,
-            actor_id: null,
-            action: "cron.approval_escalations",
-            entity: "cron",
-            entity_id: null,
-            metadata: {
-              route: ROUTE,
-              escalated: count,
-              notified_recipients: recipientIds.length,
-            },
-          } as never);
-        }
-
-        return Response.json({ escalated, companies_affected: perCompany.size });
-      
+            return Response.json({ escalated, companies_affected: perCompany.size });
           })();
           await admin.from("audit_logs").insert({
             company_id: null,
@@ -169,7 +167,7 @@ export const Route = createFileRoute("/api/cron/approval-escalations")({
           } as never);
           throw __err;
         }
-},
+      },
     },
   },
 });

@@ -57,37 +57,36 @@ export const Route = createFileRoute("/api/cron/ingestion-retry")({
         } as never);
         try {
           const __result = await (async () => {
-        const summary = await processIngestionRetries(admin);
+            const summary = await processIngestionRetries(admin);
 
-        if (summary.queue_missing) {
-          return Response.json({ error: "queue_unavailable" }, { status: 503 });
-        }
+            if (summary.queue_missing) {
+              return Response.json({ error: "queue_unavailable" }, { status: 503 });
+            }
 
-        for (const [companyId, s] of summary.perCompany) {
-          await admin.from("audit_logs").insert({
-            company_id: companyId,
-            actor_id: null,
-            action: "cron.ingestion_retry",
-            entity: "cron",
-            entity_id: null,
-            metadata: {
-              route: ROUTE,
-              processed: s.processed,
-              succeeded: s.succeeded,
-              requeued: s.requeued,
-              dead_lettered: s.dead_lettered,
-            },
-          } as never);
-        }
+            for (const [companyId, s] of summary.perCompany) {
+              await admin.from("audit_logs").insert({
+                company_id: companyId,
+                actor_id: null,
+                action: "cron.ingestion_retry",
+                entity: "cron",
+                entity_id: null,
+                metadata: {
+                  route: ROUTE,
+                  processed: s.processed,
+                  succeeded: s.succeeded,
+                  requeued: s.requeued,
+                  dead_lettered: s.dead_lettered,
+                },
+              } as never);
+            }
 
-        return Response.json({
-          processed: summary.processed,
-          succeeded: summary.succeeded,
-          requeued: summary.requeued,
-          dead_lettered: summary.dead_lettered,
-          companies_affected: summary.perCompany.size,
-        });
-      
+            return Response.json({
+              processed: summary.processed,
+              succeeded: summary.succeeded,
+              requeued: summary.requeued,
+              dead_lettered: summary.dead_lettered,
+              companies_affected: summary.perCompany.size,
+            });
           })();
           await admin.from("audit_logs").insert({
             company_id: null,
@@ -115,7 +114,7 @@ export const Route = createFileRoute("/api/cron/ingestion-retry")({
           } as never);
           throw __err;
         }
-},
+      },
     },
   },
 });
