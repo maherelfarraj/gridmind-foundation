@@ -77,6 +77,19 @@ export const Route = createFileRoute("/api/cron/bond-expiry")({
         }
 
         const admin = createServiceRoleClient();
+
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.bond_expiry.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
         const today = new Date().toISOString().slice(0, 10);
 
         const listRes = await admin
@@ -256,7 +269,35 @@ export const Route = createFileRoute("/api/cron/bond-expiry")({
           expired: totalExpired,
           notifications: totalNotifications,
         });
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.bond_expiry.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.bond_expiry.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

@@ -75,6 +75,19 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
         }
 
         const admin = createServiceRoleClient();
+
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.webhook_dispatch.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
         const nowIso = new Date().toISOString();
 
         // Claim pending deliveries whose retry time has arrived.
@@ -281,7 +294,35 @@ export const Route = createFileRoute("/api/cron/webhook-dispatch")({
           failed,
           retried,
         });
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.webhook_dispatch.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.webhook_dispatch.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

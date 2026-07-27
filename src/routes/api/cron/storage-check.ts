@@ -63,6 +63,19 @@ export const Route = createFileRoute("/api/cron/storage-check")({
         }
 
         const admin = createServiceRoleClient();
+
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.storage_check.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
         const failures: Failure[] = [];
 
         const rpc: LooseRpc = (name, args) =>
@@ -151,7 +164,35 @@ export const Route = createFileRoute("/api/cron/storage-check")({
           },
           { status: 200 },
         );
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.storage_check.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.storage_check.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

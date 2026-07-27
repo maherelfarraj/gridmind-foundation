@@ -54,6 +54,19 @@ export const Route = createFileRoute("/api/cron/audit-retention")({
 
         const admin = createServiceRoleClient();
 
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.audit_retention.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
+
         const { data, error } = await admin.rpc("enforce_audit_log_retention");
         if (error) {
           return Response.json(
@@ -94,7 +107,35 @@ export const Route = createFileRoute("/api/cron/audit-retention")({
           companies_affected: perCompany.size,
           policies_applied: rows.length,
         });
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.audit_retention.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.audit_retention.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

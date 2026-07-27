@@ -48,6 +48,19 @@ export const Route = createFileRoute("/api/cron/approval-escalations")({
 
         const admin = createServiceRoleClient();
 
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.approval_escalations.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
+
         // Snapshot which instances will fire (so we know which companies to
         // notify + audit) BEFORE running the RPC — the RPC flips the flag.
         const dueSnap = await admin
@@ -128,7 +141,35 @@ export const Route = createFileRoute("/api/cron/approval-escalations")({
         }
 
         return Response.json({ escalated, companies_affected: perCompany.size });
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.approval_escalations.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.approval_escalations.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

@@ -42,6 +42,19 @@ export const Route = createFileRoute("/api/cron/pm-work-orders")({
 
         const admin = createServiceRoleClient();
 
+        const __auditStartedAt = Date.now();
+        const __scheduledAt = new Date().toISOString();
+        await admin.from("audit_logs").insert({
+          company_id: null,
+          actor_id: null,
+          action: "cron.pm_work_orders.start",
+          entity: "cron",
+          entity_id: null,
+          metadata: { scheduled_at: __scheduledAt, route: ROUTE },
+        } as never);
+        try {
+          const __result = await (async () => {
+
         let summary: Awaited<ReturnType<typeof generatePmWorkOrders>>;
         try {
           summary = await generatePmWorkOrders(admin);
@@ -95,7 +108,35 @@ export const Route = createFileRoute("/api/cron/pm-work-orders")({
           skipped: summary.skipped,
           companies_affected: perCompany.size,
         });
-      },
+      
+          })();
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.pm_work_orders.success",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              result_summary: { status: __result.status },
+            },
+          } as never);
+          return __result;
+        } catch (__err) {
+          await admin.from("audit_logs").insert({
+            company_id: null,
+            actor_id: null,
+            action: "cron.pm_work_orders.failure",
+            entity: "cron",
+            entity_id: null,
+            metadata: {
+              duration_ms: Date.now() - __auditStartedAt,
+              error_message: __err instanceof Error ? __err.message : String(__err),
+            },
+          } as never);
+          throw __err;
+        }
+},
     },
   },
 });

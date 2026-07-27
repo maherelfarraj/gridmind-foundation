@@ -44,6 +44,7 @@ import { Route as VendorVendorIdDeliveriesRouteImport } from './routes/vendor.$v
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
+import { Route as ApiPublicHealthzRouteImport } from './routes/api/public/healthz'
 import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/webhook-dispatch'
 import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/storage-check'
 import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
@@ -426,6 +427,11 @@ const ApiWebhooksEsignRoute = ApiWebhooksEsignRouteImport.update({
 const ApiWebhooksCalendarRoute = ApiWebhooksCalendarRouteImport.update({
   id: '/api/webhooks/calendar',
   path: '/api/webhooks/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHealthzRoute = ApiPublicHealthzRouteImport.update({
+  id: '/api/public/healthz',
+  path: '/api/public/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronWebhookDispatchRoute = ApiCronWebhookDispatchRouteImport.update({
@@ -1763,6 +1769,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -1992,6 +1999,7 @@ export interface FileRoutesByTo {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -2231,6 +2239,7 @@ export interface FileRoutesById {
   '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
   '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
   '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
+  '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
@@ -2472,6 +2481,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -2701,6 +2711,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -2939,6 +2950,7 @@ export interface FileRouteTypes {
     | '/api/cron/scheduled-reports'
     | '/api/cron/storage-check'
     | '/api/cron/webhook-dispatch'
+    | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
@@ -3090,6 +3102,7 @@ export interface RootRouteChildren {
   ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
   ApiCronStorageCheckRoute: typeof ApiCronStorageCheckRoute
   ApiCronWebhookDispatchRoute: typeof ApiCronWebhookDispatchRoute
+  ApiPublicHealthzRoute: typeof ApiPublicHealthzRoute
   ApiWebhooksCalendarRoute: typeof ApiWebhooksCalendarRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
   ApiPublicHooksEchoRoute: typeof ApiPublicHooksEchoRoute
@@ -3343,6 +3356,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/calendar'
       fullPath: '/api/webhooks/calendar'
       preLoaderRoute: typeof ApiWebhooksCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/healthz': {
+      id: '/api/public/healthz'
+      path: '/api/public/healthz'
+      fullPath: '/api/public/healthz'
+      preLoaderRoute: typeof ApiPublicHealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/webhook-dispatch': {
@@ -5603,6 +5623,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
   ApiCronStorageCheckRoute: ApiCronStorageCheckRoute,
   ApiCronWebhookDispatchRoute: ApiCronWebhookDispatchRoute,
+  ApiPublicHealthzRoute: ApiPublicHealthzRoute,
   ApiWebhooksCalendarRoute: ApiWebhooksCalendarRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
   ApiPublicHooksEchoRoute: ApiPublicHooksEchoRoute,
