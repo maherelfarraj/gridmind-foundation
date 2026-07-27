@@ -18,7 +18,7 @@ import {
 import { PaymentHistory } from "@/components/finance/payment-history";
 import { RecordPaymentDialog } from "@/components/finance/record-payment-dialog";
 import { markInvoicePaid } from "@/lib/invoices.functions";
-import { markInvoiceSent } from "@/lib/payments.functions";
+import { approveInvoice, markInvoiceSent } from "@/lib/payments.functions";
 import { paymentsAccessQueryOptions } from "@/lib/payments.query";
 import { FORMULAS, acceptsPayment } from "@/lib/payments.rules";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
