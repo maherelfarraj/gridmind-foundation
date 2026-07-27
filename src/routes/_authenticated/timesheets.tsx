@@ -242,9 +242,20 @@ function TimesheetsPage() {
         title="Weekly timesheets"
         description="Book crew hours per project and work package. Overtime splits automatically."
         actions={
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/timesheets/leave">
+                <Palmtree className="mr-1 h-4 w-4" />
+                Leave
+              </Link>
+            </Button>
+            {sheet ? <StatusBadge status={sheet.status} /> : null}
+          </div>
+        }
+        secondaryActions={
           sheet ? (
             <div className="flex items-center gap-2">
-              <StatusBadge status={sheet.status} />
+
               <Button
                 size="sm"
                 disabled={readOnly || submit.isPending || rows.length === 0}
