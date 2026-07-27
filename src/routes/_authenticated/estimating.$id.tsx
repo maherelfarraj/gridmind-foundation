@@ -98,7 +98,13 @@ function EstimateDetailPage() {
     );
   }
 
-  return <EstimateBody detail={query.data} queryKey={estimateDetailQueryOptions(id).queryKey} onDone={() => queryClient.invalidateQueries({ queryKey: ["estimating"] })} />;
+  return (
+    <EstimateBody
+      detail={query.data}
+      queryKey={estimateDetailQueryOptions(id).queryKey}
+      onDone={() => queryClient.invalidateQueries({ queryKey: ["estimating"] })}
+    />
+  );
 }
 
 function EstimateBody({
@@ -404,7 +410,9 @@ function EstimateBody({
                         />
                       </div>
                     ) : (
-                      <span className="tabular-nums">{formatMoney(line.unit_rate, currency, { maximumFractionDigits: 2 })}</span>
+                      <span className="tabular-nums">
+                        {formatMoney(line.unit_rate, currency, { maximumFractionDigits: 2 })}
+                      </span>
                     )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">

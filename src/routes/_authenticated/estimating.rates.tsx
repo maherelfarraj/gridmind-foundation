@@ -8,12 +8,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DataTable,
-  DataTableSearch,
-  Num,
-  type DataTableColumn,
-} from "@/components/ui/data-table";
+import { DataTable, DataTableSearch, Num, type DataTableColumn } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -367,9 +362,7 @@ function RateLibraryPage() {
             </Button>
             <Button
               disabled={
-                !editing ||
-                !RateRowSchema.safeParse(editing.row).success ||
-                saveMutation.isPending
+                !editing || !RateRowSchema.safeParse(editing.row).success || saveMutation.isPending
               }
               onClick={() => editing && saveMutation.mutate(editing)}
             >
@@ -403,7 +396,9 @@ function RateLibraryPage() {
                 <tbody>
                   {parsedCsv.map((r) => (
                     <tr key={r.line} className="border-b border-border last:border-0">
-                      <td className="w-10 px-2 py-1 text-muted-foreground tabular-nums">{r.line}</td>
+                      <td className="w-10 px-2 py-1 text-muted-foreground tabular-nums">
+                        {r.line}
+                      </td>
                       <td className="px-2 py-1">{r.raw.join(" · ")}</td>
                       <td className="px-2 py-1 text-right">
                         {r.row ? (

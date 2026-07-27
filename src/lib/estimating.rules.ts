@@ -2,13 +2,7 @@
 // No server imports — safe for components and offline unit tests.
 import { z } from "zod";
 
-export const ESTIMATE_RATE_TYPES = [
-  "material",
-  "labor",
-  "plant",
-  "subcontract",
-  "other",
-] as const;
+export const ESTIMATE_RATE_TYPES = ["material", "labor", "plant", "subcontract", "other"] as const;
 export type EstimateRateType = (typeof ESTIMATE_RATE_TYPES)[number];
 
 export const ESTIMATE_STATUSES = [

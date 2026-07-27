@@ -113,7 +113,8 @@ describe("schemas", () => {
     expect(parsed.success).toBe(true);
     expect(parsed.success && parsed.data.currency_code).toBe("USD");
     expect(
-      CreateEstimateSchema.safeParse({ title: "x", project_id: UUID, currency_code: "USD" }).success,
+      CreateEstimateSchema.safeParse({ title: "x", project_id: UUID, currency_code: "USD" })
+        .success,
     ).toBe(false);
   });
 });
