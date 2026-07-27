@@ -1,7 +1,9 @@
 // P-210 — Estimating I/O helpers. Kept out of *.functions.ts so the
 // server-fn splitter never drops module-scope siblings.
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
+import { loadTimesheetLaborCost, type Client as LaborClient } from "@/lib/labor.server";
 import { hasAnyRole, httpError } from "@/lib/payments.server";
+
 import { computeEstimate, type MarginInput } from "@/lib/estimating/buildup";
 import { proposalLinesFromEstimate, sumLineTotals } from "@/lib/estimating/convert";
 import {
@@ -603,11 +605,24 @@ export async function loadInvoicedByPo(
   });
 }
 
-/** Σ labour hours × rate on completed work orders for the project. */
+/**
+ * Labor actuals for the project.
+ *
+ * P-231 — approved timesheet entries are the PREFERRED source (same data
+ * payroll uses). The legacy work_orders path below is untouched and still runs
+ * whenever the timesheet source is unavailable (42P01 / missing object) or
+ * returns zero approved rows.
+ */
 export async function loadLaborActuals(
   ctx: AuthContext,
   projectId: string,
 ): Promise<number | null> {
+  const fromTimesheets = await loadTimesheetLaborCost(
+    ctx.supabase as unknown as LaborClient,
+    projectId,
+  );
+  if (fromTimesheets != null) return fromTimesheets;
+
   return guardedSource(async () => {
     const { data, error } = await ctx.supabase
       .from("work_orders")

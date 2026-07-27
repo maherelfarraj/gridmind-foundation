@@ -53,6 +53,7 @@ import { Route as ApiCronFinanceAlertsRouteImport } from './routes/api/cron/fina
 import { Route as ApiCronBondExpiryRouteImport } from './routes/api/cron/bond-expiry'
 import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
 import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
+import { Route as AuthenticatedTimesheetsReportsRouteImport } from './routes/_authenticated/timesheets_.reports'
 import { Route as AuthenticatedTimesheetsLeaveRouteImport } from './routes/_authenticated/timesheets_.leave'
 import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated/settings.users'
@@ -472,6 +473,12 @@ const ApiCronApprovalEscalationsRoute =
     id: '/api/cron/approval-escalations',
     path: '/api/cron/approval-escalations',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedTimesheetsReportsRoute =
+  AuthenticatedTimesheetsReportsRouteImport.update({
+    id: '/timesheets_/reports',
+    path: '/timesheets/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedTimesheetsLeaveRoute =
   AuthenticatedTimesheetsLeaveRouteImport.update({
@@ -1746,6 +1753,7 @@ export interface FileRoutesByFullPath {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/timesheets/leave': typeof AuthenticatedTimesheetsLeaveRoute
+  '/timesheets/reports': typeof AuthenticatedTimesheetsReportsRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
@@ -1974,6 +1982,7 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/timesheets/leave': typeof AuthenticatedTimesheetsLeaveRoute
+  '/timesheets/reports': typeof AuthenticatedTimesheetsReportsRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
@@ -2212,6 +2221,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/_authenticated/timesheets_/leave': typeof AuthenticatedTimesheetsLeaveRoute
+  '/_authenticated/timesheets_/reports': typeof AuthenticatedTimesheetsReportsRoute
   '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
   '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
   '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
@@ -2452,6 +2462,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/settings/webhooks'
     | '/timesheets/leave'
+    | '/timesheets/reports'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/bond-expiry'
@@ -2680,6 +2691,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/settings/webhooks'
     | '/timesheets/leave'
+    | '/timesheets/reports'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/bond-expiry'
@@ -2917,6 +2929,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/users'
     | '/_authenticated/settings/webhooks'
     | '/_authenticated/timesheets_/leave'
+    | '/_authenticated/timesheets_/reports'
     | '/api/cron/approval-escalations'
     | '/api/cron/audit-retention'
     | '/api/cron/bond-expiry'
@@ -3394,6 +3407,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/cron/approval-escalations'
       preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/timesheets_/reports': {
+      id: '/_authenticated/timesheets_/reports'
+      path: '/timesheets/reports'
+      fullPath: '/timesheets/reports'
+      preLoaderRoute: typeof AuthenticatedTimesheetsReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/timesheets_/leave': {
       id: '/_authenticated/timesheets_/leave'
@@ -5308,6 +5328,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
   AuthenticatedTimesheetsLeaveRoute: typeof AuthenticatedTimesheetsLeaveRoute
+  AuthenticatedTimesheetsReportsRoute: typeof AuthenticatedTimesheetsReportsRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
   AuthenticatedEsgIndexRoute: typeof AuthenticatedEsgIndexRoute
   AuthenticatedEstimatingIndexRoute: typeof AuthenticatedEstimatingIndexRoute
@@ -5458,6 +5479,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
   AuthenticatedTimesheetsLeaveRoute: AuthenticatedTimesheetsLeaveRoute,
+  AuthenticatedTimesheetsReportsRoute: AuthenticatedTimesheetsReportsRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
   AuthenticatedEsgIndexRoute: AuthenticatedEsgIndexRoute,
   AuthenticatedEstimatingIndexRoute: AuthenticatedEstimatingIndexRoute,

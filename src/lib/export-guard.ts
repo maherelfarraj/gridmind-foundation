@@ -23,6 +23,8 @@ export type ExportType =
   | "wip_report"
   | "gl_export"
   | "esg_report"
+  | "timesheet_report"
+  | "timesheet_payroll"
   | "csv";
 
 export interface ExportLockedError extends Error {

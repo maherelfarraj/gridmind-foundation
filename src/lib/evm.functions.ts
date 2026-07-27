@@ -185,7 +185,20 @@ async function computeForDate(
 
   // AC = actuals + optional uninvoiced accrual (committed - actual).
   const accrual = includeAccruals ? Math.max(0, committed - actual) : 0;
-  const actualCost = actual + accrual;
+
+  // P-231 — additive, guarded: approved timesheet labor cost for the snapshot
+  // month enriches AC. Missing timesheet objects (42P01) skip silently and
+  // leave every other EVM behaviour untouched.
+  const { loadTimesheetLaborCost } = await import("@/lib/labor.server");
+  const { monthRange } = await import("@/lib/timesheets/reports");
+  const laborCost =
+    (await loadTimesheetLaborCost(
+      context.supabase as never,
+      projectId,
+      monthRange(snapshotDate.slice(0, 7)),
+    )) ?? 0;
+
+  const actualCost = actual + accrual + laborCost;
 
   const computation = computeEvm({
     bac,
