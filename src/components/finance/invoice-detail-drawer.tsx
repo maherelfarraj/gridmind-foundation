@@ -18,9 +18,9 @@ import {
 import { PaymentHistory } from "@/components/finance/payment-history";
 import { RecordPaymentDialog } from "@/components/finance/record-payment-dialog";
 import { markInvoicePaid } from "@/lib/invoices.functions";
-import { markInvoiceSent } from "@/lib/payments.functions";
+import { approveInvoice, markInvoiceSent } from "@/lib/payments.functions";
 import { paymentsAccessQueryOptions } from "@/lib/payments.query";
-import { FORMULAS, acceptsPayment } from "@/lib/payments.rules";
+import { FORMULAS, acceptsPayment, canApproveInvoice } from "@/lib/payments.rules";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 import {
@@ -64,6 +64,7 @@ export function InvoiceDetailDrawer({
   const qc = useQueryClient();
   const payFn = useServerFn(markInvoicePaid);
   const sendFn = useServerFn(markInvoiceSent);
+  const approveFn = useServerFn(approveInvoice);
   const [payOpen, setPayOpen] = useState(false);
   const access = useQuery(paymentsAccessQueryOptions());
   const detail = useQuery({
@@ -95,6 +96,16 @@ export function InvoiceDetailDrawer({
     },
     onError: (err) => toast.error(invoiceErrorMessage(err)),
   });
+
+  const approveMutation = useMutation({
+    mutationFn: () => approveFn({ data: { invoice_id: invoiceId! } }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["invoices"] });
+      toast.success("Invoice approved");
+    },
+    onError: (err) => toast.error(invoiceErrorMessage(err)),
+  });
+
 
   const d = detail.data;
   const canRecord =
@@ -272,6 +283,15 @@ export function InvoiceDetailDrawer({
             />
 
             <div className="flex flex-wrap gap-2 border-t pt-4">
+              {canApproveInvoice(d.invoice.status) && (
+                <Button
+                  variant="outline"
+                  disabled={!canRecord || approveMutation.isPending}
+                  onClick={() => approveMutation.mutate()}
+                >
+                  {approveMutation.isPending ? "Approving…" : "Approve"}
+                </Button>
+              )}
               {d.invoice.status === "approved" && (
                 <Button
                   variant="outline"

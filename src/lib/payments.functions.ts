@@ -8,10 +8,12 @@ import { toCsv } from "@/lib/csv";
 import { assertExportAllowed } from "@/lib/export-guard";
 import { assertPeriodOpen } from "@/lib/finance/periods";
 import {
+  ApproveInvoiceSchema,
   ListPaymentsSchema,
   MarkInvoiceSentSchema,
   RecordPaymentSchema,
   VoidPaymentSchema,
+  canApproveInvoice,
   invoiceBalance,
   paymentMethodLabel,
   reconciliationLabel,
@@ -149,6 +151,37 @@ export const voidPayment = createServerFn({ method: "POST" })
       invoice_status: next.status,
     });
     return { invoice_status: next.status, paid_amount: next.paid_amount };
+  });
+
+// ---------------------------------------------------------------------------
+// Approve (draft | submitted → approved)
+// ---------------------------------------------------------------------------
+export const approveInvoice = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => ApproveInvoiceSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ status: string }> => {
+    requireSupabaseAuth(context);
+    if (!(await hasAnyRole(context, FINANCE_ROLES))) httpError(403, "forbidden");
+    const invoice = await loadInvoiceForPayment(context, data.invoice_id);
+    if (invoice.status === "approved") return { status: "approved" };
+    if (!canApproveInvoice(invoice.status)) {
+      httpError(
+        422,
+        "invalid_transition",
+        `Invoice status "${invoice.status}" cannot be approved.`,
+      );
+    }
+    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso());
+    const { error } = await context.supabase
+      .from("invoices")
+      .update({ status: "approved" } as never)
+      .eq("id", invoice.id);
+    if (error) throw error;
+    await audit(context, "invoice.approve", "invoices", invoice.id, {
+      invoice_number: invoice.invoice_number,
+      from_status: invoice.status,
+    });
+    return { status: "approved" };
   });
 
 // ---------------------------------------------------------------------------
