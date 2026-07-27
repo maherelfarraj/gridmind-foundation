@@ -96,6 +96,16 @@ export function InvoiceDetailDrawer({
     onError: (err) => toast.error(invoiceErrorMessage(err)),
   });
 
+  const approveMutation = useMutation({
+    mutationFn: () => approveFn({ data: { invoice_id: invoiceId! } }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["invoices"] });
+      toast.success("Invoice approved");
+    },
+    onError: (err) => toast.error(invoiceErrorMessage(err)),
+  });
+
+
   const d = detail.data;
   const canRecord =
     d?.invoice.direction === "payable"
