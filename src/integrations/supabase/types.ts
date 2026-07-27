@@ -19332,7 +19332,7 @@ export type Database = {
           p_updated_asbuilts?: Json
           p_updated_documents?: Json
         }
-        Returns: string
+        Returns: Json
       }
       close_finance_period: {
         Args: { p_company_id: string; p_period_month: string }
