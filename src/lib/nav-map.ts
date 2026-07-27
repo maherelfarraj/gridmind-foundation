@@ -678,6 +678,14 @@ export const NAV_GROUPS: NavGroup[] = [
         alwaysVisible: true,
         hideFromExternalViewers: true,
       },
+      {
+        moduleKey: "admin",
+        label: "Change Control",
+        url: "/changes",
+        icon: GitPullRequestArrow,
+        alwaysVisible: true,
+        hideFromExternalViewers: true,
+      },
       { moduleKey: "admin", label: "Users", url: "/settings/users", icon: MailPlus },
       { moduleKey: "admin", label: "Departments", url: "/settings/departments", icon: Building2 },
       {
