@@ -11,11 +11,14 @@ import {
   EstimateIdSchema,
   ImportRateLibrarySchema,
   ListEstimatesSchema,
+  MarkEstimatePricedSchema,
+  SaveEstimateMarginsSchema,
   ReorderEstimateLinesSchema,
   UpsertEstimateLineSchema,
   UpsertRateSchema,
   lineAmount,
 } from "@/lib/estimating.rules";
+import { validateForPricing } from "@/lib/estimating/buildup";
 import {
   assertDraft,
   assertEstimateWrite,
@@ -30,6 +33,8 @@ import {
   loadOpportunityOptions,
   loadProjectOptions,
   loadRates,
+  marginsOf,
+  persistBuildup,
   loadSnapshotOptions,
   recomputeDirectCost,
   todayIso,
@@ -357,3 +362,75 @@ export const importRateLibrary = createServerFn({ method: "POST" })
     });
     return { imported: payload.length };
   });
+
+/* ------------------------------------------------------- build-up (P-211) */
+
+export interface SaveMarginsResult {
+  direct_cost: number;
+  subtotal: number;
+  total_price: number;
+  warnings: string[];
+}
+
+export const saveEstimateMargins = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => SaveEstimateMarginsSchema.parse(input))
+  .handler(async ({ data, context }): Promise<SaveMarginsResult> => {
+    requireSupabaseAuth(context);
+    await assertEstimateWrite(context);
+    const estimate = await assertDraft(context, data.estimate_id);
+    const margins = {
+      escalation_pct: data.escalation_pct,
+      contingency_pct: data.contingency_pct,
+      overhead_pct: data.overhead_pct,
+      profit_pct: data.profit_pct,
+    };
+    // Server-side recompute from persisted lines — client totals are ignored.
+    const { result } = await persistBuildup(context, data.estimate_id, margins);
+    await audit(context, "estimate.rates_updated", "estimates", data.estimate_id, {
+      estimate_id: data.estimate_id,
+      before: marginsOf(estimate),
+      after: margins,
+      direct_cost: result.direct_cost,
+      subtotal: result.subtotal,
+      total_price: result.total_price,
+    });
+    return {
+      direct_cost: result.direct_cost,
+      subtotal: result.subtotal,
+      total_price: result.total_price,
+      warnings: result.warnings,
+    };
+  });
+
+export const markEstimatePriced = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => MarkEstimatePricedSchema.parse(input))
+  .handler(
+    async ({ data, context }): Promise<{ total_price: number; priced_at: string | null }> => {
+      requireSupabaseAuth(context);
+      await assertEstimateWrite(context);
+      const estimate = await assertDraft(context, data.estimate_id);
+      const margins = marginsOf(estimate);
+      const lines = await loadLines(context, data.estimate_id);
+      const check = validateForPricing(lines, margins);
+      if (!check.ok) {
+        httpError(422, "estimate_not_priceable", "This estimate cannot be priced yet.", {
+          issues: check.issues,
+          total_price: check.result.total_price,
+        });
+      }
+      const pricedAt = new Date().toISOString();
+      await persistBuildup(context, data.estimate_id, margins, {
+        status: "priced",
+        priced_at: pricedAt,
+      });
+      await audit(context, "estimate.priced", "estimates", data.estimate_id, {
+        estimate_id: data.estimate_id,
+        direct_cost: check.result.direct_cost,
+        subtotal: check.result.subtotal,
+        total_price: check.result.total_price,
+      });
+      return { total_price: check.result.total_price, priced_at: pricedAt };
+    },
+  );
