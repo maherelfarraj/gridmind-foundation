@@ -77,9 +77,7 @@ export async function listAlerts(
     acknowledged_at: (r.acknowledged_at ?? null) as string | null,
     metadata: (r.metadata ?? {}) as ThresholdMap,
   }));
-  return filters.rule_type === "all"
-    ? rows
-    : rows.filter((r) => r.rule_type === filters.rule_type);
+  return filters.rule_type === "all" ? rows : rows.filter((r) => r.rule_type === filters.rule_type);
 }
 
 export async function listAlertRules(ctx: AuthContext): Promise<FinanceAlertRuleRow[]> {

@@ -293,8 +293,7 @@ function RuleCard({
   );
 
   const usesDays = ruleType === "overdue_invoice_days" || ruleType === "payment_unmatched_days";
-  const usesAmount =
-    ruleType === "ar_aging_threshold" || ruleType === "unbilled_certified_value";
+  const usesAmount = ruleType === "ar_aging_threshold" || ruleType === "unbilled_certified_value";
 
   function submit() {
     const threshold: ThresholdMap = usesDays

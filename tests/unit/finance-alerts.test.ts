@@ -71,9 +71,7 @@ describe("unbilled_certified_value", () => {
   });
 
   it("never fires when billing is ahead", () => {
-    expect(
-      evaluateUnbilledCertified([{ ...row, earned: 100, billed: 900 }], 1),
-    ).toHaveLength(0);
+    expect(evaluateUnbilledCertified([{ ...row, earned: 100, billed: 900 }], 1)).toHaveLength(0);
   });
 });
 
@@ -93,9 +91,7 @@ describe("payment_unmatched_days", () => {
   });
 
   it("ignores voided and already matched payments", () => {
-    expect(evaluateUnmatchedPayments([pay({ record_status: "voided" })], 1, TODAY)).toHaveLength(
-      0,
-    );
+    expect(evaluateUnmatchedPayments([pay({ record_status: "voided" })], 1, TODAY)).toHaveLength(0);
     expect(
       evaluateUnmatchedPayments([pay({ reconciliation_status: "matched" })], 1, TODAY),
     ).toHaveLength(0);
