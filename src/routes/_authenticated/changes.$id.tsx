@@ -385,7 +385,7 @@ function ChangeDetailPage() {
         </div>
       ) : null}
 
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="thread">Digital thread</TabsTrigger>
