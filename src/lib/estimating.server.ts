@@ -623,7 +623,6 @@ export async function loadLaborActuals(
   );
   if (fromTimesheets != null) return fromTimesheets;
 
-
   return guardedSource(async () => {
     const { data, error } = await ctx.supabase
       .from("work_orders")

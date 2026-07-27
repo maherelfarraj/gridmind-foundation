@@ -200,7 +200,6 @@ async function computeForDate(
 
   const actualCost = actual + accrual + laborCost;
 
-
   const computation = computeEvm({
     bac,
     tasks: taskInputs,

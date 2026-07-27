@@ -141,7 +141,10 @@ describe("aggregateLaborActuals", () => {
     const out = aggregateLaborActuals(
       "p1",
       "2026-07",
-      [entry({ id: "a", hours: 8, hourly_rate: 10 }), entry({ id: "b", activity: "overtime", hours: 2, hourly_rate: 15 })],
+      [
+        entry({ id: "a", hours: 8, hourly_rate: 10 }),
+        entry({ id: "b", activity: "overtime", hours: 2, hourly_rate: 15 }),
+      ],
       ctx,
     );
     expect(out.regular_hours).toBe(8);
