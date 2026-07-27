@@ -1,8 +1,14 @@
 // P-229 — Submission guards, approval routing choice and inbox summary math.
 // PURE module: no React, no Supabase, no I/O.
-import { TIMESHEET_POLICY, type TimesheetActivity } from "@/lib/timesheets/policy";
+import {
+  TIMESHEET_ACTIVITIES,
+  TIMESHEET_POLICY,
+  type TimesheetActivity,
+} from "@/lib/timesheets/policy";
 import { computeWeeklyTotals } from "@/lib/timesheets/split";
 import { weekDays } from "@/lib/timesheets/week";
+
+const TIMESHEET_ACTIVITY_SET = new Set<string>(TIMESHEET_ACTIVITIES);
 
 export interface SubmitEntry {
   work_date: string;
@@ -52,15 +58,6 @@ export function validateSubmission(
   }
   return null;
 }
-
-const TIMESHEET_ACTIVITY_SET = new Set<string>([
-  "regular",
-  "overtime",
-  "travel",
-  "leave_annual",
-  "leave_sick",
-  "leave_unpaid",
-]);
 
 export type ApprovalRouteMode = "foreman" | "construction_admin" | "inline_step2";
 
