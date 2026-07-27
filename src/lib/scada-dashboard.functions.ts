@@ -66,7 +66,6 @@ async function loadCore(context: AuthContext, opts: { projectId?: string }) {
   const windowEnd = now.toISOString();
   const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
   const todayStart = utcMidnightIso(now);
-  console.log("[scada-debug] server now", now.toISOString(), "windowStart", windowStart, "projectId", opts.projectId);
 
   // Assets in scope (company + optional project filter)
   let assetsQ = context.supabase
