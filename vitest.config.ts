@@ -23,6 +23,7 @@ export default defineConfig({
       "tests/rls/vendor-portal.test.ts",
       "tests/rls/bonds.test.ts",
       "tests/rls/estimating.rls.test.ts",
+      "tests/rls/timesheets.rls.test.ts",
       "tests/rls/gl.test.ts",
     ],
     exclude: [
