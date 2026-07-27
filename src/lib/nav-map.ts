@@ -383,12 +383,15 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Receivables",
         url: "/finance/receivables",
         icon: Wallet,
+      },
       {
         moduleKey: "planning_budget",
         label: "Finance alerts",
         url: "/finance/alerts",
         icon: BellRing,
       },
+
+
 
 
 
