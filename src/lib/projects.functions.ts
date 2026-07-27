@@ -1148,4 +1148,3 @@ export const saveArchetypeConfig = createServerFn({ method: "POST" })
 
     return { row: saved as Record<string, any> };
   });
-

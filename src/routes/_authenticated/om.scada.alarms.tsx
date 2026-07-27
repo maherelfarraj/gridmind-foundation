@@ -10,6 +10,7 @@ import { AlertTriangle, BellRing, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThreadLink } from "@/components/thread/thread-link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -240,21 +241,24 @@ function AlarmsPage() {
                       {row.value != null ? row.value : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.status === "active" ? (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setAckTarget(row);
-                            form.reset({ id: row.id, note: "" });
-                          }}
-                        >
-                          Acknowledge
-                        </Button>
-                      ) : row.acknowledge_note ? (
-                        <span className="text-xs text-muted-foreground">
-                          {row.acknowledge_note}
-                        </span>
-                      ) : null}
+                      <div className="flex items-center justify-end gap-2">
+                        <ThreadLink entityType="scada_alarm" entityId={row.id} label="Thread" />
+                        {row.status === "active" ? (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setAckTarget(row);
+                              form.reset({ id: row.id, note: "" });
+                            }}
+                          >
+                            Acknowledge
+                          </Button>
+                        ) : row.acknowledge_note ? (
+                          <span className="text-xs text-muted-foreground">
+                            {row.acknowledge_note}
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

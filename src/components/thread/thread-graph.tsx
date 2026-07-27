@@ -20,13 +20,7 @@ interface Positioned extends GraphNode {
   y: number;
 }
 
-export function ThreadGraph({
-  graph,
-  className,
-}: {
-  graph: EntityGraph;
-  className?: string;
-}) {
+export function ThreadGraph({ graph, className }: { graph: EntityGraph; className?: string }) {
   const { placed, width, height, index } = useMemo(() => {
     const byDepth = new Map<number, GraphNode[]>();
     for (const n of graph.nodes) {
@@ -38,7 +32,10 @@ export function ThreadGraph({
     const tallest = Math.max(1, ...depths.map((d) => byDepth.get(d)!.length));
     const placed: Positioned[] = [];
     depths.forEach((d, col) => {
-      const list = byDepth.get(d)!.slice().sort((a, b) => a.entity_type.localeCompare(b.entity_type));
+      const list = byDepth
+        .get(d)!
+        .slice()
+        .sort((a, b) => a.entity_type.localeCompare(b.entity_type));
       const offset = (tallest - list.length) / 2;
       list.forEach((n, row) => {
         placed.push({
@@ -117,7 +114,10 @@ export function ThreadGraph({
       </svg>
       <div className="mt-2 flex flex-wrap gap-2 px-1">
         {placed
-          .filter((n) => !(n.entity_type === graph.root.entity_type && n.entity_id === graph.root.entity_id))
+          .filter(
+            (n) =>
+              !(n.entity_type === graph.root.entity_type && n.entity_id === graph.root.entity_id),
+          )
           .map((n) => (
             <Link
               key={`link-${n.entity_type}:${n.entity_id}`}

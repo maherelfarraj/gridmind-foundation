@@ -76,10 +76,7 @@ async function safe<T>(fn: () => Promise<T | null>): Promise<T | null> {
 }
 
 /** Attach human labels to graph nodes. Unknown or deleted rows keep a short id. */
-export async function labelNodes(
-  context: AuthContext,
-  nodes: GraphNode[],
-): Promise<GraphNode[]> {
+export async function labelNodes(context: AuthContext, nodes: GraphNode[]): Promise<GraphNode[]> {
   const byType = new Map<string, string[]>();
   for (const n of nodes) {
     if (!LABELS[n.entity_type]) continue;
@@ -175,10 +172,7 @@ export async function loadImpactsForEntity(
   return rows;
 }
 
-export async function loadImpactById(
-  context: AuthContext,
-  id: string,
-): Promise<ImpactRow | null> {
+export async function loadImpactById(context: AuthContext, id: string): Promise<ImpactRow | null> {
   const { data, error } = await context.supabase
     .from("impact_assessments")
     .select("*")

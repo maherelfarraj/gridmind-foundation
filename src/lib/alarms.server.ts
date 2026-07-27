@@ -155,7 +155,11 @@ export async function evaluateAlarmRules(
 
   let raised = 0;
   if (toRaise.length) {
-    const { data: inserted, error, count } = await admin
+    const {
+      data: inserted,
+      error,
+      count,
+    } = await admin
       .from("scada_alarms")
       .insert(toRaise as never, { count: "exact" })
       .select("id, project_id, scada_asset_id, severity, message");

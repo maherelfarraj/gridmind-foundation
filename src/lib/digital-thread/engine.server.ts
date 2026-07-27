@@ -98,7 +98,11 @@ async function equipmentTagOf(ctx: ResolveCtx): Promise<string | null> {
   const id = await alarmEquipment(ctx);
   if (!id) return null;
   const row = await safe(async () => {
-    const { data } = await ctx.db.from("equipment_registry").select("tag").eq("id", id).maybeSingle();
+    const { data } = await ctx.db
+      .from("equipment_registry")
+      .select("tag")
+      .eq("id", id)
+      .maybeSingle();
     return (data as { tag: string } | null) ?? null;
   });
   ctx.equipmentTag = row?.tag ?? null;
@@ -267,7 +271,8 @@ export async function emitThreadEvent(
       .maybeSingle();
     return (data as { id: string; company_id: string; name: string } | null) ?? null;
   });
-  if (!project) return { assessmentId: null, impacts: [], notified: 0, skipped: "project_not_found" };
+  if (!project)
+    return { assessmentId: null, impacts: [], notified: 0, skipped: "project_not_found" };
 
   const ctx: ResolveCtx = {
     db,
@@ -395,24 +400,22 @@ export async function emitThreadEvent(
     });
     if (!linked) {
       await safe(async () => {
-        await db
-          .from("entity_links")
-          .upsert(
-            {
-              company_id: project.company_id,
-              project_id: project.id,
-              source_type: input.sourceType,
-              source_id: input.sourceId,
-              link_type: i.link_type,
-              target_type: i.entity_type,
-              target_id: i.entity_id,
-              metadata: { project_id: project.id, area: i.area, action: i.action },
-            },
-            {
-              onConflict: "company_id,source_type,source_id,link_type,target_type,target_id",
-              ignoreDuplicates: true,
-            },
-          );
+        await db.from("entity_links").upsert(
+          {
+            company_id: project.company_id,
+            project_id: project.id,
+            source_type: input.sourceType,
+            source_id: input.sourceId,
+            link_type: i.link_type,
+            target_type: i.entity_type,
+            target_id: i.entity_id,
+            metadata: { project_id: project.id, area: i.area, action: i.action },
+          },
+          {
+            onConflict: "company_id,source_type,source_id,link_type,target_type,target_id",
+            ignoreDuplicates: true,
+          },
+        );
         return true;
       });
     }
