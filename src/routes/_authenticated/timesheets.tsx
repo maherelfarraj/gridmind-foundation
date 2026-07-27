@@ -275,7 +275,6 @@ function TimesheetsPage() {
             ) : null}
           </div>
         }
-
       />
 
       <WeekPicker weekStart={weekStart} onChange={setWeekStart} />
