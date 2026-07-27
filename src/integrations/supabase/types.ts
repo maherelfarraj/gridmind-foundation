@@ -17589,6 +17589,10 @@ export type Database = {
         Args: { p_export_type: string; p_project_id: string }
         Returns: undefined
       }
+      assert_finance_period_open: {
+        Args: { p_company_id: string; p_date: string }
+        Returns: undefined
+      }
       assert_no_open_hold_point: {
         Args: { p_cwp_id: string }
         Returns: undefined
@@ -17616,6 +17620,26 @@ export type Database = {
           p_updated_documents?: Json
         }
         Returns: string
+      }
+      close_finance_period: {
+        Args: { p_company_id: string; p_period_month: string }
+        Returns: {
+          close_checklist: Json
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          period_month: string
+          status: Database["public"]["Enums"]["finance_period_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "finance_periods"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       compute_next_run: {
         Args: {
@@ -17877,6 +17901,26 @@ export type Database = {
         Returns: string
       }
       redeem_invite: { Args: { p_token: string }; Returns: string }
+      reopen_finance_period: {
+        Args: { p_company_id: string; p_period_month: string }
+        Returns: {
+          close_checklist: Json
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          period_month: string
+          status: Database["public"]["Enums"]["finance_period_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "finance_periods"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reserve_material: {
         Args: {
           p_company_id: string

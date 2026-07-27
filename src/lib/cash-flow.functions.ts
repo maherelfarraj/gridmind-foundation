@@ -1,5 +1,6 @@
 // P-077 — Cash-flow server functions with FX-at-entry immutability.
 import { createServerFn } from "@tanstack/react-start";
+import { assertPeriodOpen } from "@/lib/finance/periods";
 
 import {
   attachSupabaseAuth,
@@ -185,6 +186,7 @@ export const createCashFlow = createServerFn({ method: "POST" })
     const project = await loadProject(context, data.projectId);
     const baseCurrency = await loadBaseCurrency(context, project.id);
     const period = normalizePeriod(data.period);
+    await assertPeriodOpen(context.supabase, project.company_id, period);
 
     const fxRate = await resolveFxRate(context, data.currencyCode, baseCurrency, period);
     const amountBase = Number((data.amount * fxRate).toFixed(2));
@@ -244,12 +246,17 @@ export const voidCashFlow = createServerFn({ method: "POST" })
       httpError(403, "forbidden", "Only finance admins can void cash-flow entries.");
     const { data: existing, error: exErr } = await context.supabase
       .from("cash_flows")
-      .select("id, project_id, voided")
+      .select("id, project_id, period, company_id, voided")
       .eq("id", data.id)
       .maybeSingle();
     if (exErr) throw exErr;
     if (!existing) httpError(404, "not_found");
     if ((existing as any).voided) httpError(409, "already_voided");
+    await assertPeriodOpen(
+      context.supabase,
+      (existing as any).company_id,
+      (existing as any).period,
+    );
 
     const { data: updated, error } = await context.supabase
       .from("cash_flows")

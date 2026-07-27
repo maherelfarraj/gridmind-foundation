@@ -1,6 +1,7 @@
 // P-080 — Invoices server functions: list / detail / mark-paid (with 3WM guard) /
 // milestone billing. Extends P-079's read-only getInvoice.
 import { createServerFn } from "@tanstack/react-start";
+import { assertPeriodOpen } from "@/lib/finance/periods";
 import { z } from "zod";
 
 import {
@@ -264,6 +265,11 @@ export const markInvoicePaid = createServerFn({ method: "POST" })
     const invoice = toRow(cur);
     if (invoice.status === "paid") httpError(400, "already_paid");
     if (invoice.status === "cancelled") httpError(400, "cancelled");
+    await assertPeriodOpen(
+      context.supabase,
+      (cur as { company_id: string }).company_id,
+      data.paid_at ?? new Date().toISOString().slice(0, 10),
+    );
 
     if (invoice.direction === "payable") {
       const { data: matches, error: mErr } = await context.supabase
@@ -327,6 +333,9 @@ export const billMilestone = createServerFn({ method: "POST" })
       requireSupabaseAuth(context);
       if (!(await hasAnyRole(context, FINANCE_ROLES))) httpError(403, "forbidden");
       const companyId = await currentCompanyId(context as AuthContext & { user: { id: string } });
+
+      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
+
 
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")

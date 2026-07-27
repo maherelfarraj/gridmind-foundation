@@ -392,10 +392,12 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/finance/alerts",
         icon: BellRing,
       },
-
-
-
-
+      {
+        moduleKey: "planning_budget",
+        label: "Period close",
+        url: "/finance/periods",
+        icon: CalendarClock,
+      },
 
       {
         moduleKey: "planning_budget",

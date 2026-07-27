@@ -6,6 +6,7 @@ import { z } from "zod";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { toCsv } from "@/lib/csv";
 import { assertExportAllowed } from "@/lib/export-guard";
+import { assertPeriodOpen } from "@/lib/finance/periods";
 import {
   ListPaymentsSchema,
   MarkInvoiceSentSchema,
@@ -14,6 +15,7 @@ import {
   invoiceBalance,
   paymentMethodLabel,
   reconciliationLabel,
+  todayIso,
 } from "@/lib/payments.rules";
 import {
   FINANCE_ROLES,
@@ -66,6 +68,7 @@ export const recordPayment = createServerFn({ method: "POST" })
       const roles = invoice.direction === "payable" ? PAYABLE_PAYMENT_ROLES : FINANCE_ROLES;
       if (!(await hasAnyRole(context, roles))) httpError(403, "forbidden");
 
+      await assertPeriodOpen(context.supabase, invoice.company_id, data.payment_date);
       assertPaymentAllowed(invoice, data.amount);
       await assertMatchNotBlocked(context, invoice);
 
@@ -120,6 +123,11 @@ export const voidPayment = createServerFn({ method: "POST" })
     if (!pRaw) httpError(404, "payment_not_found");
     const payment = toPaymentRow(pRaw as Record<string, unknown>);
     if (payment.record_status === "voided") httpError(422, "already_voided");
+    await assertPeriodOpen(
+      context.supabase,
+      (pRaw as { company_id: string }).company_id,
+      payment.payment_date,
+    );
 
     const { error: vErr } = await context.supabase
       .from("payments")
@@ -156,6 +164,7 @@ export const markInvoiceSent = createServerFn({ method: "POST" })
     if (invoice.status !== "approved") {
       httpError(422, "invalid_transition", "Only approved invoices can be marked as sent.");
     }
+    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso());
     const { error } = await context.supabase
       .from("invoices")
       .update({ status: "sent" } as never)
