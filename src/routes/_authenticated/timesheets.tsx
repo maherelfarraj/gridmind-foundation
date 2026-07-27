@@ -1,6 +1,6 @@
 // P-228 — Weekly timesheet capture, mobile-first at 390px.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarClock, CloudOff, RefreshCw, Send, Timer } from "lucide-react";
