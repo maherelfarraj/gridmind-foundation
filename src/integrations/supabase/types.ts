@@ -4965,6 +4965,145 @@ export type Database = {
           },
         ]
       }
+      esg_activities: {
+        Row: {
+          act_number: string
+          category: Database["public"]["Enums"]["esg_factor_category"]
+          company_id: string
+          created_at: string
+          entered_by: string | null
+          evidence_path: string | null
+          id: string
+          metadata: Json
+          notes: string | null
+          period_month: string
+          project_id: string
+          quantity: number
+          source: string
+          source_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          act_number: string
+          category: Database["public"]["Enums"]["esg_factor_category"]
+          company_id: string
+          created_at?: string
+          entered_by?: string | null
+          evidence_path?: string | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          period_month: string
+          project_id: string
+          quantity: number
+          source?: string
+          source_id?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          act_number?: string
+          category?: Database["public"]["Enums"]["esg_factor_category"]
+          company_id?: string
+          created_at?: string
+          entered_by?: string | null
+          evidence_path?: string | null
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          period_month?: string
+          project_id?: string
+          quantity?: number
+          source?: string
+          source_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_activities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "esg_activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_counters: {
+        Row: {
+          company_id: string
+          next_activity_seq: number
+        }
+        Insert: {
+          company_id: string
+          next_activity_seq?: number
+        }
+        Update: {
+          company_id?: string
+          next_activity_seq?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_emission_factors: {
+        Row: {
+          category: Database["public"]["Enums"]["esg_factor_category"]
+          company_id: string | null
+          created_at: string
+          factor_source: string
+          id: string
+          kg_co2e_per_unit: number
+          notes: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["esg_factor_category"]
+          company_id?: string | null
+          created_at?: string
+          factor_source?: string
+          id?: string
+          kg_co2e_per_unit: number
+          notes?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["esg_factor_category"]
+          company_id?: string | null
+          created_at?: string
+          factor_source?: string
+          id?: string
+          kg_co2e_per_unit?: number
+          notes?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_emission_factors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_counters: {
         Row: {
           company_id: string
@@ -19173,6 +19312,22 @@ export type Database = {
         | "pcs"
         | "switchgear"
         | "other"
+      esg_factor_category:
+        | "fuel_diesel"
+        | "fuel_petrol"
+        | "fuel_lpg"
+        | "electricity_grid"
+        | "electricity_generator"
+        | "transport_road"
+        | "transport_air"
+        | "transport_sea"
+        | "materials_concrete"
+        | "materials_steel"
+        | "materials_cable"
+        | "waste_general"
+        | "waste_hazardous"
+        | "waste_recyclable"
+        | "other"
       estimate_rate_type:
         | "material"
         | "labor"
@@ -19940,6 +20095,23 @@ export const Constants = {
         "battery_rack",
         "pcs",
         "switchgear",
+        "other",
+      ],
+      esg_factor_category: [
+        "fuel_diesel",
+        "fuel_petrol",
+        "fuel_lpg",
+        "electricity_grid",
+        "electricity_generator",
+        "transport_road",
+        "transport_air",
+        "transport_sea",
+        "materials_concrete",
+        "materials_steel",
+        "materials_cable",
+        "waste_general",
+        "waste_hazardous",
+        "waste_recyclable",
         "other",
       ],
       estimate_rate_type: [

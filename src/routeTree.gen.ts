@@ -109,6 +109,7 @@ import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/
 import { Route as AuthenticatedFieldDeliveriesRouteImport } from './routes/_authenticated/field.deliveries'
 import { Route as AuthenticatedEstimatingRatesRouteImport } from './routes/_authenticated/estimating.rates'
 import { Route as AuthenticatedEstimatingIdRouteImport } from './routes/_authenticated/estimating.$id'
+import { Route as AuthenticatedEsgActivityRouteImport } from './routes/_authenticated/esg.activity'
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
@@ -798,6 +799,12 @@ const AuthenticatedEstimatingIdRoute =
   AuthenticatedEstimatingIdRouteImport.update({
     id: '/estimating/$id',
     path: '/estimating/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEsgActivityRoute =
+  AuthenticatedEsgActivityRouteImport.update({
+    id: '/esg/activity',
+    path: '/esg/activity',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEngineeringPvLibraryRoute =
@@ -1599,6 +1606,7 @@ export interface FileRoutesByFullPath {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/esg/activity': typeof AuthenticatedEsgActivityRoute
   '/estimating/$id': typeof AuthenticatedEstimatingIdRoute
   '/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
@@ -1823,6 +1831,7 @@ export interface FileRoutesByTo {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/esg/activity': typeof AuthenticatedEsgActivityRoute
   '/estimating/$id': typeof AuthenticatedEstimatingIdRoute
   '/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
@@ -2043,6 +2052,7 @@ export interface FileRoutesById {
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/_authenticated/esg/activity': typeof AuthenticatedEsgActivityRoute
   '/_authenticated/estimating/$id': typeof AuthenticatedEstimatingIdRoute
   '/_authenticated/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/_authenticated/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
@@ -2271,6 +2281,7 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/esg/activity'
     | '/estimating/$id'
     | '/estimating/rates'
     | '/field/deliveries'
@@ -2495,6 +2506,7 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/esg/activity'
     | '/estimating/$id'
     | '/estimating/rates'
     | '/field/deliveries'
@@ -2714,6 +2726,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/engineering/pv-library'
+    | '/_authenticated/esg/activity'
     | '/_authenticated/estimating/$id'
     | '/_authenticated/estimating/rates'
     | '/_authenticated/field/deliveries'
@@ -3641,6 +3654,13 @@ declare module '@tanstack/react-router' {
       path: '/estimating/$id'
       fullPath: '/estimating/$id'
       preLoaderRoute: typeof AuthenticatedEstimatingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/esg/activity': {
+      id: '/_authenticated/esg/activity'
+      path: '/esg/activity'
+      fullPath: '/esg/activity'
+      preLoaderRoute: typeof AuthenticatedEsgActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/engineering/pv-library': {
@@ -5011,6 +5031,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
+  AuthenticatedEsgActivityRoute: typeof AuthenticatedEsgActivityRoute
   AuthenticatedEstimatingIdRoute: typeof AuthenticatedEstimatingIdRoute
   AuthenticatedEstimatingRatesRoute: typeof AuthenticatedEstimatingRatesRoute
   AuthenticatedFieldDeliveriesRoute: typeof AuthenticatedFieldDeliveriesRoute
@@ -5138,6 +5159,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedEngineeringPvLibraryRoute:
     AuthenticatedEngineeringPvLibraryRoute,
+  AuthenticatedEsgActivityRoute: AuthenticatedEsgActivityRoute,
   AuthenticatedEstimatingIdRoute: AuthenticatedEstimatingIdRoute,
   AuthenticatedEstimatingRatesRoute: AuthenticatedEstimatingRatesRoute,
   AuthenticatedFieldDeliveriesRoute: AuthenticatedFieldDeliveriesRoute,
@@ -5321,13 +5343,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
