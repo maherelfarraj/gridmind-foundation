@@ -1,5 +1,6 @@
 // P-079 — Pay applications server functions (createServerFn + zod + audit).
 import { createServerFn } from "@tanstack/react-start";
+import { assertPeriodOpen } from "@/lib/finance/periods";
 import { z } from "zod";
 
 import {
@@ -361,6 +362,7 @@ export const certifyPayApplication = createServerFn({ method: "POST" })
     const row = toRow(cur);
     if (row.status !== "draft")
       httpError(400, "not_draft", "Only draft pay applications can be certified.");
+    await assertPeriodOpen(context.supabase, (cur as { company_id: string }).company_id, row.period_end);
     try {
       validateCertifyInput(row.lines);
     } catch (e) {
@@ -416,6 +418,7 @@ export const approvePayApplication = createServerFn({ method: "POST" })
     if (row.status !== "certified") {
       httpError(400, "not_certified", "Only certified pay applications can be approved.");
     }
+    await assertPeriodOpen(context.supabase, (cur as { company_id: string }).company_id, row.period_end);
     const { data: cRaw, error: cErr } = await context.supabase
       .from("contracts")
       .select("*")
@@ -523,6 +526,7 @@ export const generatePayAppInvoice = createServerFn({ method: "POST" })
         httpError(400, "not_approved", "Only approved pay applications can be invoiced.");
       }
       if (row.invoice_id) httpError(400, "already_invoiced");
+      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
 
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")
