@@ -5,6 +5,18 @@ import { hasAnyRole, httpError } from "@/lib/payments.server";
 import { computeEstimate, type MarginInput } from "@/lib/estimating/buildup";
 import { proposalLinesFromEstimate, sumLineTotals } from "@/lib/estimating/convert";
 import {
+  actualsByType,
+  meanAbsoluteVariance,
+  variancePct,
+  type PoForComparison,
+  type PoLineLike,
+} from "@/lib/estimating/comparison";
+import {
+  sortRevisionsDesc,
+  type RevisionLine,
+  type RevisionSummary,
+} from "@/lib/estimating/revision-diff";
+import {
   ESTIMATE_APPROVAL_ENTITY,
   ESTIMATE_APPROVAL_RULE_KEY,
   ESTIMATE_WRITE_ROLES,
@@ -507,5 +519,328 @@ export async function linkEstimateToProposal(
     if (error) console.warn("[estimating] entity_link skipped:", error.message);
   } catch (err) {
     console.warn("[estimating] entity_link skipped:", err);
+  }
+}
+
+/* ------------------------------------------- comparison + revisions (P-213) */
+
+/**
+ * Run a source query and degrade to `null` when the object is missing
+ * (42P01 / PostgREST schema-cache miss) so one absent table never fails the
+ * whole comparison.
+ */
+export async function guardedSource<T>(run: () => Promise<T>): Promise<T | null> {
+  try {
+    return await run();
+  } catch (err) {
+    const e = err as { code?: string; message?: string };
+    const code = e?.code ?? "";
+    const msg = (e?.message ?? "").toLowerCase();
+    if (
+      code === "42P01" ||
+      code === "PGRST205" ||
+      code === "PGRST200" ||
+      msg.includes("does not exist") ||
+      msg.includes("schema cache")
+    ) {
+      console.warn("[estimating] comparison source unavailable:", e?.message ?? code);
+      return null;
+    }
+    throw err;
+  }
+}
+
+/** Non-draft, non-cancelled POs on the project with their jsonb lines. */
+export async function loadProjectPos(
+  ctx: AuthContext,
+  projectId: string,
+): Promise<PoForComparison[] | null> {
+  return guardedSource(async () => {
+    const { data, error } = await ctx.supabase
+      .from("purchase_orders")
+      .select("id, status, total_amount, lines")
+      .eq("project_id", projectId)
+      .not("status", "in", "(draft,cancelled)")
+      .limit(1000);
+    if (error) throw error;
+    return ((data ?? []) as unknown as PoRecord[]).map((po) => ({
+      id: po.id,
+      total: Number(po.total_amount ?? 0),
+      lines: Array.isArray(po.lines) ? (po.lines as PoLineLike[]) : [],
+    }));
+  });
+}
+
+interface PoRecord {
+  id: string;
+  status: string;
+  total_amount: number | string | null;
+  lines: unknown;
+}
+
+/** Matched/approved invoice amounts keyed by PO id. */
+export async function loadInvoicedByPo(
+  ctx: AuthContext,
+  poIds: readonly string[],
+): Promise<Record<string, number> | null> {
+  if (poIds.length === 0) return {};
+  return guardedSource(async () => {
+    const { data, error } = await ctx.supabase
+      .from("three_way_matches")
+      .select("po_id, invoice_amount, status")
+      .in("po_id", poIds as string[])
+      .in("status", ["matched", "approved_with_variance"])
+      .limit(2000);
+    if (error) throw error;
+    const out: Record<string, number> = {};
+    for (const row of (data ?? []) as unknown as Array<{
+      po_id: string;
+      invoice_amount: number | string | null;
+    }>) {
+      out[row.po_id] = (out[row.po_id] ?? 0) + Number(row.invoice_amount ?? 0);
+    }
+    return out;
+  });
+}
+
+/** Σ labour hours × rate on completed work orders for the project. */
+export async function loadLaborActuals(
+  ctx: AuthContext,
+  projectId: string,
+): Promise<number | null> {
+  return guardedSource(async () => {
+    const { data, error } = await ctx.supabase
+      .from("work_orders")
+      .select("id, labor, status")
+      .eq("project_id", projectId)
+      .in("status", ["completed", "closed"])
+      .limit(2000);
+    if (error) throw error;
+    let total = 0;
+    for (const row of (data ?? []) as unknown as Array<{ labor: unknown }>) {
+      const labor = Array.isArray(row.labor) ? row.labor : [];
+      for (const l of labor as Array<{ hours?: number | string; rate?: number | string }>) {
+        total += (Number(l?.hours ?? 0) || 0) * (Number(l?.rate ?? 0) || 0);
+      }
+    }
+    return Math.round(total * 100) / 100;
+  });
+}
+
+const REVISION_COLUMNS = `${ESTIMATE_COLUMNS}, supersedes_id, submitted_at, created_by`;
+
+/** Walk the supersedes_id chain backwards and forwards from one estimate. */
+export async function loadRevisionChain(
+  ctx: AuthContext,
+  estimateId: string,
+): Promise<{ summaries: RevisionSummary[]; lines: Record<string, RevisionLine[]> }> {
+  const seen = new Map<string, Record<string, unknown>>();
+
+  const fetchById = async (id: string) => {
+    const { data, error } = await ctx.supabase
+      .from("estimates")
+      .select(REVISION_COLUMNS)
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw error;
+    return (data ?? null) as Record<string, unknown> | null;
+  };
+  const fetchSuccessor = async (id: string) => {
+    const { data, error } = await ctx.supabase
+      .from("estimates")
+      .select(REVISION_COLUMNS)
+      .eq("supersedes_id", id)
+      .limit(1);
+    if (error) throw error;
+    return ((data ?? [])[0] ?? null) as Record<string, unknown> | null;
+  };
+
+  let cursor: Record<string, unknown> | null = await fetchById(estimateId);
+  while (cursor && !seen.has(cursor.id as string) && seen.size < 40) {
+    seen.set(cursor.id as string, cursor);
+    const prev = cursor.supersedes_id as string | null;
+    cursor = prev ? await fetchById(prev) : null;
+  }
+  let forward: Record<string, unknown> | null = await fetchSuccessor(estimateId);
+  while (forward && !seen.has(forward.id as string) && seen.size < 40) {
+    seen.set(forward.id as string, forward);
+    forward = await fetchSuccessor(forward.id as string);
+  }
+
+  const ids = [...seen.keys()];
+  const actors = await loadActorNames(
+    ctx,
+    [...seen.values()].map((r) => (r.created_by as string | null) ?? null),
+  );
+
+  const summaries: RevisionSummary[] = [...seen.values()].map((r) => ({
+    id: r.id as string,
+    estimate_number: (r.estimate_number as string | null) ?? null,
+    revision: Number(r.revision ?? 1),
+    status: String(r.status ?? "draft"),
+    currency_code: String(r.currency_code ?? "USD"),
+    direct_cost: Number(r.direct_cost ?? 0),
+    subtotal: Number(r.subtotal ?? 0),
+    total_price: Number(r.total_price ?? 0),
+    escalation_pct: Number(r.escalation_pct ?? 0),
+    contingency_pct: Number(r.contingency_pct ?? 0),
+    overhead_pct: Number(r.overhead_pct ?? 0),
+    profit_pct: Number(r.profit_pct ?? 0),
+    priced_at: (r.priced_at as string | null) ?? null,
+    submitted_at: (r.submitted_at as string | null) ?? null,
+    supersedes_id: (r.supersedes_id as string | null) ?? null,
+    actor: actors[(r.created_by as string | null) ?? ""] ?? null,
+  }));
+
+  const lines: Record<string, RevisionLine[]> = {};
+  for (const id of ids) {
+    lines[id] = (await loadLines(ctx, id)).map((l) => ({
+      id: l.id,
+      line_type: l.line_type,
+      description: l.description,
+      qty: Number(l.qty),
+      uom: l.uom,
+      unit_rate: Number(l.unit_rate),
+      amount: Number(l.amount),
+      source_bom_line_id: l.source_bom_line_id,
+    }));
+  }
+  return { summaries: sortRevisionsDesc(summaries), lines };
+}
+
+async function loadActorNames(
+  ctx: AuthContext,
+  ids: readonly (string | null)[],
+): Promise<Record<string, string>> {
+  const unique = [...new Set(ids.filter((i): i is string => !!i))];
+  if (unique.length === 0) return {};
+  const { data, error } = await ctx.supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", unique);
+  if (error) return {};
+  const out: Record<string, string> = {};
+  for (const p of (data ?? []) as unknown as Array<{
+    id: string;
+    full_name: string | null;
+    email: string | null;
+  }>) {
+    out[p.id] = p.full_name ?? p.email ?? "—";
+  }
+  return out;
+}
+
+/**
+ * Copy header + all lines into a fresh draft at revision + 1 and mark the
+ * source estimate superseded. Returns the new estimate id.
+ */
+export async function cloneEstimateAsRevision(
+  ctx: AuthContext,
+  args: { companyId: string; estimate: EstimateRow },
+): Promise<{ id: string; revision: number; lines_copied: number }> {
+  const { estimate } = args;
+  const revision = Number(estimate.revision ?? 1) + 1;
+
+  const { data: created, error } = await ctx.supabase
+    .from("estimates")
+    .insert({
+      company_id: args.companyId,
+      project_id: estimate.project_id,
+      opportunity_id: estimate.opportunity_id,
+      bom_snapshot_id: estimate.bom_snapshot_id,
+      title: estimate.title,
+      currency_code: estimate.currency_code,
+      revision,
+      supersedes_id: estimate.id,
+      status: "draft",
+      escalation_pct: estimate.escalation_pct,
+      contingency_pct: estimate.contingency_pct,
+      overhead_pct: estimate.overhead_pct,
+      profit_pct: estimate.profit_pct,
+      direct_cost: estimate.direct_cost,
+      subtotal: estimate.subtotal,
+      total_price: estimate.total_price,
+      approval_instance_id: null,
+      submitted_at: null,
+      submitted_by: null,
+      approved_at: null,
+      approved_by: null,
+      priced_at: null,
+      rejection_comment: null,
+      converted_proposal_id: null,
+      converted_at: null,
+      converted_by: null,
+    } as never)
+    .select("id")
+    .single();
+  if (error) throw error;
+  const newId = (created as { id: string }).id;
+
+  const sourceLines = await loadLines(ctx, estimate.id);
+  if (sourceLines.length > 0) {
+    const { error: lineErr } = await ctx.supabase.from("estimate_lines").insert(
+      sourceLines.map((l) => ({
+        company_id: args.companyId,
+        estimate_id: newId,
+        line_type: l.line_type,
+        description: l.description,
+        qty: l.qty,
+        uom: l.uom,
+        unit_rate: l.unit_rate,
+        amount: l.amount,
+        rate_library_id: l.rate_library_id,
+        source_bom_line_id: l.source_bom_line_id,
+        sort_order: l.sort_order,
+        notes: l.notes,
+      })) as never,
+    );
+    if (lineErr) {
+      // Roll the header back so a failed copy never leaves a half revision.
+      await ctx.supabase.from("estimates").delete().eq("id", newId);
+      throw lineErr;
+    }
+  }
+
+  await patchEstimate(ctx, estimate.id, { status: "superseded" });
+  return { id: newId, revision, lines_copied: sourceLines.length };
+}
+
+/**
+ * Mean absolute variance of the project's priced estimates vs actuals.
+ * Fully guarded: returns null when no priced estimate has actuals.
+ */
+export async function projectEstimateAccuracy(
+  ctx: AuthContext,
+  projectId: string,
+): Promise<number | null> {
+  try {
+    const { data, error } = await ctx.supabase
+      .from("estimates")
+      .select("id, total_price, direct_cost, status")
+      .eq("project_id", projectId)
+      .eq("status", "priced")
+      .limit(200);
+    if (error) throw error;
+    const priced = (data ?? []) as unknown as Array<{ id: string; direct_cost: number | string }>;
+    if (priced.length === 0) return null;
+
+    const pos = await loadProjectPos(ctx, projectId);
+    if (!pos) return null;
+    const invoiced = await loadInvoicedByPo(
+      ctx,
+      pos.map((p) => p.id),
+    );
+    const labor = await loadLaborActuals(ctx, projectId);
+    if (invoiced == null && labor == null) return null;
+    const actualRows = actualsByType(pos, invoiced ?? {}, labor ?? 0);
+    const actualTotal = Object.values(actualRows).reduce((s, v) => s + v, 0);
+    if (actualTotal <= 0) return null;
+
+    return meanAbsoluteVariance(
+      priced.map((e) => variancePct(Number(e.direct_cost ?? 0), actualTotal)),
+    );
+  } catch (err) {
+    console.warn("[estimating] accuracy unavailable:", err);
+    return null;
   }
 }

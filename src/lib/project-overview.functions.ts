@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { projectEstimateAccuracy } from "@/lib/estimating.server";
 
 const input = z.object({ project_id: z.string().uuid() });
 
@@ -24,6 +25,8 @@ export type ProjectOverviewKpis = {
   open_risks: number;
   top_risk_score: number | null;
   next_milestone: { name: string; date: string | null; kind: "task" | "gate" } | null;
+  /** P-213 — mean absolute variance of priced estimates vs actuals (%). */
+  estimate_accuracy_pct: number | null;
 };
 
 const OPEN_RFI_STATUSES = ["open", "draft", "routed", "in_review", "answered"];
@@ -122,6 +125,9 @@ export const getProjectOverviewKpis = createServerFn({ method: "GET" })
       daysToCod = Math.round((target - todayUtc) / 86_400_000);
     }
 
+    // P-213 — guarded; any missing actuals source degrades this to null.
+    const estimateAccuracy = await projectEstimateAccuracy(context, proj.id);
+
     const risks = (risksRes.data ?? []) as Array<{ score: number | null }>;
     const nextTask = (taskRes.data ?? [])[0] as
       | { name: string; end_date: string | null }
@@ -139,6 +145,7 @@ export const getProjectOverviewKpis = createServerFn({ method: "GET" })
       open_risks: risks.length,
       top_risk_score:
         risks.length === 0 ? null : Math.max(...risks.map((r) => Number(r.score ?? 0))),
+      estimate_accuracy_pct: estimateAccuracy,
       next_milestone: nextTask
         ? { name: nextTask.name, date: nextTask.end_date, kind: "task" }
         : nextGate
