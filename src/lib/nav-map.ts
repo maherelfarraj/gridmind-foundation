@@ -63,6 +63,7 @@ import {
   Workflow,
   Zap,
   type LucideIcon,
+  Wallet,
 } from "lucide-react";
 import type { ModuleKey } from "./permissions";
 
@@ -363,6 +364,13 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/finance/payments",
         icon: Receipt,
       },
+      {
+        moduleKey: "planning_budget",
+        label: "Receivables",
+        url: "/finance/receivables",
+        icon: Wallet,
+      },
+
       {
         moduleKey: "planning_budget",
         label: "Debit notes",
