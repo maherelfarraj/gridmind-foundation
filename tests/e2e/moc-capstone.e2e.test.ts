@@ -29,6 +29,7 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
     userId?: string;
     poId?: string;
     vendorId?: string;
+    ruleId?: string;
     crId?: string;
     crNumber?: string;
     assessmentId?: string | null;
@@ -72,6 +73,28 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
     if (projErr || !proj) throw projErr ?? new Error("project insert failed");
     state.projectId = (proj as { id: string }).id;
 
+    // MOC approvals need a rule + chain step held by the fixture admin.
+    const { data: rule, error: ruleErr } = await svc
+      .from("approval_rules")
+      .insert({
+        company_id: co.id,
+        rule_key: "moc_default",
+        name: "MOC default",
+        entity_type: "change_request",
+        is_active: true,
+      } as never)
+      .select("id")
+      .single();
+    if (ruleErr || !rule) throw ruleErr ?? new Error("approval rule insert failed");
+    state.ruleId = (rule as { id: string }).id;
+    const { error: stepErr } = await svc.from("approval_chain_steps").insert({
+      company_id: co.id,
+      rule_id: state.ruleId,
+      step_order: 1,
+      role: "project_admin",
+    } as never);
+    if (stepErr) throw stepErr;
+
     const { data: vendor, error: vendErr } = await svc
       .from("vendors")
       .insert({ company_id: co.id, name: `P192 vendor ${suffix}` } as never)
@@ -109,6 +132,8 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
       "notifications",
       "purchase_orders",
       "vendors",
+      "approval_chain_steps",
+      "approval_rules",
       "projects",
       "user_roles",
       "profiles",
