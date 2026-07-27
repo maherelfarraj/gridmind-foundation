@@ -15,6 +15,7 @@ import {
   startApprovalSchema,
   toggleRuleSchema,
 } from "@/lib/approvals.rules";
+import { settlePoAfterDecision } from "@/lib/po-approval.server";
 import { settleAfterDecision } from "@/lib/scada-actions.server";
 
 function httpError(status: number, code: string, message?: string): never {
@@ -276,6 +277,8 @@ export const decideApproval = createServerFn({ method: "POST" })
     if (error) throw error;
     // P-176 — settle any SCADA event action bound to this approval instance.
     await settleAfterDecision(context, data.approval_id);
+    // Day 2 — settle any purchase order bound to this approval instance.
+    await settlePoAfterDecision(context, data.approval_id);
     return { ok: true };
   });
 

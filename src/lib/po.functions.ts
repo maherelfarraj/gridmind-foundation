@@ -8,6 +8,11 @@ import {
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
 import {
+  PO_APPROVAL_ENTITY,
+  PO_APPROVAL_RULE_KEY,
+  poRequiresApproval,
+} from "@/lib/po-approval.rules";
+import {
   PO_STATUSES,
   buildPoLinesFromAwards,
   computePoTotals,
@@ -436,6 +441,14 @@ export const generatePosFromAwards = createServerFn({ method: "POST" })
             po_number: (inserted as any).po_number,
             total_amount: (inserted as any).total_amount,
           });
+          await audit(context, "po.generate", "purchase_orders", (inserted as any).id, {
+            rfq_id: data.rfqId,
+            po_number: (inserted as any).po_number,
+            vendor_id: vendorId,
+            vendor_name: vendor?.name ?? null,
+            total_amount: (inserted as any).total_amount,
+            currency_code: (rfq as any).currency_code,
+          });
           break;
         }
         if ((error as any).code === "23505" && attempt === 0) {
@@ -535,12 +548,26 @@ export const submitPoForApproval = createServerFn({ method: "POST" })
     const threshold = Number((co as any)?.po_approval_threshold ?? 0);
     const total = Number((po as any).total_amount ?? 0);
 
-    if (total > threshold) {
+    if (poRequiresApproval(total, threshold)) {
+      // The dollar gate triggers; the P-111 engine owns the decision.
+      const { data: instanceId, error: rpcErr } = await context.supabase.rpc(
+        "start_approval_instance",
+        {
+          p_rule_key: PO_APPROVAL_RULE_KEY,
+          p_entity_type: PO_APPROVAL_ENTITY,
+          p_entity_id: data.poId,
+          p_amount: total,
+          p_metadata: { note: data.note ?? null, threshold } as never,
+        },
+      );
+      if (rpcErr) throw rpcErr;
+
       const { error } = await context.supabase
         .from("purchase_orders")
         .update({
           status: "pending_approval" as PoStatus,
           approval_note: data.note ?? null,
+          approval_instance_id: (instanceId as string | null) ?? null,
         } as any)
         .eq("id", data.poId);
       if (error) {
@@ -551,6 +578,7 @@ export const submitPoForApproval = createServerFn({ method: "POST" })
         total_amount: total,
         threshold,
         outcome: "pending_approval",
+        approval_instance_id: (instanceId as string | null) ?? null,
       });
       return { status: "pending_approval", auto_approved: false };
     }
@@ -577,6 +605,18 @@ export const submitPoForApproval = createServerFn({ method: "POST" })
     return { status: "approved", auto_approved: true };
   });
 
+/** The engine owns the decision while an instance is open — no manual bypass. */
+async function assertNoOpenPoInstance(context: AuthContext, poId: string): Promise<void> {
+  const { data } = await context.supabase
+    .from("approval_instances")
+    .select("id, status")
+    .eq("entity_type", PO_APPROVAL_ENTITY)
+    .eq("entity_id", poId)
+    .in("status", ["pending", "in_progress"])
+    .maybeSingle();
+  if (data) httpError(409, "approval_instance_open", "Decide this PO in the approvals inbox.");
+}
+
 export const approvePo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -601,6 +641,7 @@ export const approvePo = createServerFn({ method: "POST" })
     if (pErr) throw pErr;
     if (!po) httpError(404, "po_not_found");
     if ((po as any).status !== "pending_approval") httpError(409, "po_not_pending");
+    await assertNoOpenPoInstance(context, data.poId);
 
     const now = new Date().toISOString();
     const { error } = await context.supabase
@@ -645,6 +686,7 @@ export const rejectPo = createServerFn({ method: "POST" })
     if (pErr) throw pErr;
     if (!po) httpError(404, "po_not_found");
     if ((po as any).status !== "pending_approval") httpError(409, "po_not_pending");
+    await assertNoOpenPoInstance(context, data.poId);
 
     const { error } = await context.supabase
       .from("purchase_orders")
