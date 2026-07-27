@@ -147,13 +147,44 @@ function ChangeDetailPage() {
       updated_documents?: string[];
       updated_asbuilts?: string[];
     }) => transitionFn({ data: { id, ...input } }),
-    onSuccess: (_r, input) => {
+    onSuccess: async (_r, input) => {
       toast.success(`Change request moved to ${input.to}`);
       setCloseOpen(false);
+      if (input.to === "approved") {
+        try {
+          const res = await generateTasksFn({ data: { id } });
+          toast.success(`${res.created} implementation task(s) generated`);
+          setTab("tasks");
+        } catch (e) {
+          toast.error((e as Error).message || "Could not generate implementation tasks");
+        }
+      }
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message || "Transition rejected"),
   });
+
+  const closeMutation = useMutation({
+    mutationFn: (input: {
+      closure_notes: string;
+      updated_documents: string[];
+      updated_asbuilts: string[];
+    }) => closeFn({ data: { id, ...input } }),
+    onSuccess: () => {
+      toast.success("Change closed");
+      setCloseOpen(false);
+      void invalidate();
+    },
+    onError: (e: Error) => {
+      const open = parseOpenTasksError(e.message ?? "");
+      toast.error(
+        open !== null
+          ? `${open} implementation task(s) still pending — resolve them before closing.`
+          : e.message || "Could not close the change",
+      );
+    },
+  });
+
 
   const decideMutation = useMutation({
     mutationFn: (input: { decision: "approved" | "rejected"; comment?: string }) =>
