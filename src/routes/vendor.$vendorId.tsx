@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatDate, formatMoney } from "@/lib/format";
 import { deriveVendorOverview, vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
 import {
   getVendorPortalDeliveries,
@@ -106,7 +106,7 @@ function VendorDashboard() {
     );
   }
 
-  const overview = deriveVendorOverview(pos.data ?? [], deliveries.data ?? []);
+  const overview = deriveVendorOverview(pos.data ?? []);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -116,8 +116,8 @@ function VendorDashboard() {
       />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiTile label="Open purchase orders" value={String(overview.openPoCount)} />
-        <KpiTile label="Pending acknowledgments" value={String(overview.pendingAckCount)} />
+        <KpiTile label="Open purchase orders" value={String(overview.openPos)} />
+        <KpiTile label="Pending acknowledgments" value={String(overview.pendingAcknowledgments)} />
         <KpiTile
           label="Next required by"
           value={overview.nextRequiredBy ? formatDate(overview.nextRequiredBy) : "—"}
@@ -166,7 +166,7 @@ function VendorDashboard() {
                       {p.required_by_date ? formatDate(p.required_by_date) : "—"}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {formatCurrency(Number(p.total_amount ?? 0), p.currency_code)}
+                      {formatMoney(Number(p.total_amount ?? 0), p.currency_code)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -249,10 +249,10 @@ function VendorDashboard() {
                     <TableCell>{inv.issue_date ? formatDate(inv.issue_date) : "—"}</TableCell>
                     <TableCell>{inv.due_date ? formatDate(inv.due_date) : "—"}</TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {formatCurrency(Number(inv.amount ?? 0), inv.currency_code)}
+                      {formatMoney(Number(inv.amount ?? 0), inv.currency_code)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {formatCurrency(Number(inv.paid_amount ?? 0), inv.currency_code)}
+                      {formatMoney(Number(inv.paid_amount ?? 0), inv.currency_code)}
                     </TableCell>
                   </TableRow>
                 ))}
