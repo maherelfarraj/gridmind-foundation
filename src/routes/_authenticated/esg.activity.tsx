@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { CarbonTotalsCard } from "@/components/esg/carbon-totals-card";
 import { CsvImportDialog } from "@/components/esg/csv-import-dialog";
 import {
   ManualActivityDialog,
@@ -56,6 +57,8 @@ import {
   listEsgFactors,
   signEsgEvidenceUrl,
 } from "@/lib/esg/activity.functions";
+import { computeEsgReport, getEsgReport } from "@/lib/esg/carbon.functions";
+import type { ReportTotals } from "@/lib/esg/carbon";
 import {
   currentMonthKey,
   ESG_CATEGORY_LABEL,
@@ -136,6 +139,19 @@ function EsgActivityPage() {
     enabled: Boolean(activeProject),
   });
 
+  const periodFrom = `${month}-01`;
+  const periodTo = firstOfNextMonthMinusDay(month);
+  const reportFn = useServerFn(getEsgReport);
+  const report = useQuery({
+    queryKey: ["esg", "report", activeProject, month],
+    queryFn: () =>
+      reportFn({
+        data: { project_id: activeProject, period_from: periodFrom, period_to: periodTo },
+      }) as Promise<{ status: string; totals: ReportTotals; row_count: number } | null>,
+    enabled: Boolean(activeProject),
+  });
+  const computeFn = useServerFn(computeEsgReport);
+
   const fuelFn = useServerFn(importEquipmentFuel);
   const wasteFn = useServerFn(importWasteActivities);
   const deleteFn = useServerFn(deleteEsgActivity);
@@ -165,6 +181,22 @@ function EsgActivityPage() {
         `${kind === "fuel" ? "Equipment fuel" : "Waste"} import — ${res.created} created, ${res.skipped} skipped`,
       );
       refresh();
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function computeReport() {
+    if (!activeProject) return;
+    setBusy("report");
+    try {
+      await computeFn({
+        data: { project_id: activeProject, period_from: periodFrom, period_to: periodTo },
+      });
+      toast.success("Carbon report recomputed");
+      void qc.invalidateQueries({ queryKey: ["esg", "report", activeProject, month] });
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
@@ -237,6 +269,15 @@ function EsgActivityPage() {
             </div>
           ) : null
         }
+      />
+
+      <CarbonTotalsCard
+        totals={report.data?.totals ?? null}
+        rowCount={report.data?.row_count ?? 0}
+        status={report.data?.status}
+        busy={busy === "report"}
+        canCompute={canManage && Boolean(activeProject)}
+        onCompute={() => void computeReport()}
       />
 
       <Card>
@@ -411,6 +452,12 @@ function EsgActivityPage() {
       />
     </div>
   );
+}
+
+function firstOfNextMonthMinusDay(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  const end = new Date(Date.UTC(y, m, 0));
+  return end.toISOString().slice(0, 10);
 }
 
 function ImportButton({
