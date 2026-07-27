@@ -18,6 +18,10 @@ import {
   type CashTrendPoint,
   type FinanceAccessLevel,
 } from "@/lib/finance-cockpit.rules";
+import {
+  summarizeExpiringBonds,
+  type ExpiringBondsSummary,
+} from "@/lib/finance/bond-expiry";
 import { hasAnyRole } from "@/lib/payments.server";
 
 /** Postgres/PostgREST codes meaning "this table isn't in the schema". */
@@ -84,6 +88,7 @@ export interface FinanceCockpitData {
   pending_approvals: CockpitTile<{ count: number }>;
   co_exposure: CockpitTile<{ co_amount: number; contract_value: number; pct: number | null }>;
   sla_credits: CockpitTile<{ total: number; count: number }>;
+  bonds_expiring_30: CockpitTile<ExpiringBondsSummary>;
   cash_trend: CockpitTile<CashTrendPoint[]>;
   activity: CockpitTile<ActivityRow[]>;
 }
@@ -95,7 +100,7 @@ export async function loadFinanceCockpit(ctx: AuthContext): Promise<FinanceCockp
   const trend = trendRange(today, 6);
   const base_currency = await resolveBaseCurrency(ctx);
 
-  const [payments, payApps, budgets, approvals, changeOrders, contracts, slas, flows, logs] =
+  const [payments, payApps, budgets, approvals, changeOrders, contracts, slas, flows, bonds, logs] =
     await Promise.all([
       safeRows<{ direction: string; amount_base: number | null }>(() =>
         ctx.supabase
@@ -142,6 +147,13 @@ export async function loadFinanceCockpit(ctx: AuthContext): Promise<FinanceCockp
           .select("period, direction, kind, amount_base, voided")
           .gte("period", trend.start)
           .lte("period", trend.end),
+      ),
+      safeRows<{ expiry_date: string | null; amount: number | null; currency_code: string }>(() =>
+        ctx.supabase
+          .from("bond_instruments")
+          .select("expiry_date, amount, currency_code")
+          .in("status", ["active", "expiring_soon"])
+          .not("expiry_date", "is", null),
       ),
       safeRows<Record<string, unknown>>(() =>
         ctx.supabase
@@ -215,6 +227,7 @@ export async function loadFinanceCockpit(ctx: AuthContext): Promise<FinanceCockp
             count: slas.length,
           },
     ),
+    bonds_expiring_30: tile(bonds === null ? null : summarizeExpiringBonds(bonds, today, 30)),
     cash_trend: tile(flows === null ? null : aggregateCashTrend(flows, months)),
     activity: tile(logs === null ? null : logs.map(toActivityRow)),
   };
