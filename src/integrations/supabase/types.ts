@@ -5256,6 +5256,140 @@ export type Database = {
           },
         ]
       }
+      finance_alert_rules: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          notify_role: Database["public"]["Enums"]["app_role"]
+          rule_type: Database["public"]["Enums"]["finance_alert_rule_type"]
+          threshold: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          rule_type: Database["public"]["Enums"]["finance_alert_rule_type"]
+          threshold?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          rule_type?: Database["public"]["Enums"]["finance_alert_rule_type"]
+          threshold?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_alert_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_alert_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_date: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          message: string
+          metadata: Json
+          rule_id: string
+          severity: string
+          status: Database["public"]["Enums"]["finance_alert_status"]
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_date?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          message: string
+          metadata?: Json
+          rule_id: string
+          severity?: string
+          status?: Database["public"]["Enums"]["finance_alert_status"]
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_date?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          rule_id?: string
+          severity?: string
+          status?: Database["public"]["Enums"]["finance_alert_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_alerts_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_alerts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_alerts_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "finance_alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       finance_periods: {
         Row: {
           close_checklist: Json
@@ -18058,6 +18192,12 @@ export type Database = {
         | "partially_delivered"
         | "rejected"
       field_equipment_status: "on_site" | "standby" | "off_hired" | "breakdown"
+      finance_alert_rule_type:
+        | "overdue_invoice_days"
+        | "ar_aging_threshold"
+        | "unbilled_certified_value"
+        | "payment_unmatched_days"
+      finance_alert_status: "open" | "acknowledged" | "dismissed"
       finance_period_status: "open" | "closing" | "closed"
       gov_doc_status:
         | "draft"
@@ -18764,6 +18904,13 @@ export const Constants = {
         "rejected",
       ],
       field_equipment_status: ["on_site", "standby", "off_hired", "breakdown"],
+      finance_alert_rule_type: [
+        "overdue_invoice_days",
+        "ar_aging_threshold",
+        "unbilled_certified_value",
+        "payment_unmatched_days",
+      ],
+      finance_alert_status: ["open", "acknowledged", "dismissed"],
       finance_period_status: ["open", "closing", "closed"],
       gov_doc_status: [
         "draft",
