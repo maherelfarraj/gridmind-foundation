@@ -102,6 +102,7 @@ import { Route as AuthenticatedConstructionProductivityRouteImport } from './rou
 import { Route as AuthenticatedConstructionLookAheadRouteImport } from './routes/_authenticated/construction.look-ahead'
 import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_authenticated/construction.cwp'
 import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
+import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
 import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
@@ -741,6 +742,12 @@ const AuthenticatedConstructionBaselineCompareRoute =
   AuthenticatedConstructionBaselineCompareRouteImport.update({
     id: '/construction/baseline-compare',
     path: '/construction/baseline-compare',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedChangesDashboardRoute =
+  AuthenticatedChangesDashboardRouteImport.update({
+    id: '/changes/dashboard',
+    path: '/changes/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedChangesIdRoute = AuthenticatedChangesIdRouteImport.update({
@@ -1481,6 +1488,7 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1689,6 +1697,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1893,6 +1902,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
+  '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/_authenticated/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/_authenticated/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -2105,6 +2115,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/health'
     | '/changes/$id'
+    | '/changes/dashboard'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2313,6 +2324,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/admin/health'
     | '/changes/$id'
+    | '/changes/dashboard'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2516,6 +2528,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
     | '/_authenticated/changes/$id'
+    | '/_authenticated/changes/dashboard'
     | '/_authenticated/construction/baseline-compare'
     | '/_authenticated/construction/cwp'
     | '/_authenticated/construction/look-ahead'
@@ -3384,6 +3397,13 @@ declare module '@tanstack/react-router' {
       path: '/construction/baseline-compare'
       fullPath: '/construction/baseline-compare'
       preLoaderRoute: typeof AuthenticatedConstructionBaselineCompareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/dashboard': {
+      id: '/_authenticated/changes/dashboard'
+      path: '/changes/dashboard'
+      fullPath: '/changes/dashboard'
+      preLoaderRoute: typeof AuthenticatedChangesDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/changes/$id': {
@@ -4668,6 +4688,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedChangesIdRoute: typeof AuthenticatedChangesIdRoute
+  AuthenticatedChangesDashboardRoute: typeof AuthenticatedChangesDashboardRoute
   AuthenticatedConstructionBaselineCompareRoute: typeof AuthenticatedConstructionBaselineCompareRoute
   AuthenticatedConstructionCwpRoute: typeof AuthenticatedConstructionCwpRoute
   AuthenticatedConstructionLookAheadRoute: typeof AuthenticatedConstructionLookAheadRoute
@@ -4778,6 +4799,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedChangesIdRoute: AuthenticatedChangesIdRoute,
+  AuthenticatedChangesDashboardRoute: AuthenticatedChangesDashboardRoute,
   AuthenticatedConstructionBaselineCompareRoute:
     AuthenticatedConstructionBaselineCompareRoute,
   AuthenticatedConstructionCwpRoute: AuthenticatedConstructionCwpRoute,
