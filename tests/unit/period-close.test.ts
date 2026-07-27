@@ -102,7 +102,8 @@ describe("close checklist", () => {
 describe("period closed error", () => {
   it("is a typed 409 that enforcement code can detect", () => {
     const err = periodClosedError("2026-02-14");
-    expect(err.status).toBe(409);
+    expect(err.statusCode).toBe(409);
+    expect(err.code).toBe("finance_period_closed");
     expect(isPeriodClosedError(err)).toBe(true);
     expect(err.message).toContain("2026-02");
   });
