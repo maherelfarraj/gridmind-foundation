@@ -45,12 +45,20 @@ import {
 import { invoiceErrorMessage } from "@/lib/invoices.query";
 
 const FormSchema = z.object({
-  amount: z.coerce.number().finite().gt(0, "Amount must be greater than zero"),
-  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Required"),
+  // Explicit coercion: an empty/blank input must read as "Required", never as NaN
+  // silently failing a z.coerce.number() with no message the operator can see.
+  amount: z
+    .union([z.string(), z.number()])
+    .transform((v) => (typeof v === "string" ? v.trim() : v))
+    .refine((v) => v !== "" && Number.isFinite(Number(v)), "Enter a valid amount")
+    .transform((v) => Number(v))
+    .refine((n) => n > 0, "Amount must be greater than zero"),
+  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date (YYYY-MM-DD)"),
   method: z.enum(PAYMENT_METHODS),
   bank_reference: z.string().max(120).optional(),
   notes: z.string().max(2000).optional(),
 });
+
 type FormValues = z.input<typeof FormSchema>;
 
 function fmt(n: number, currency: string) {
@@ -88,6 +96,8 @@ export function RecordPaymentDialog({
   });
 
   const watched = form.watch("amount");
+  const formError = form.formState.errors.root?.message;
+
   const balanceAfter = useMemo(() => {
     const amt = Number(watched);
     if (!Number.isFinite(amt)) return balance;
@@ -139,11 +149,38 @@ export function RecordPaymentDialog({
           </div>
         )}
 
+        {formError && (
+          <div
+            className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            {formError}
+          </div>
+        )}
+
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={form.handleSubmit(
+              (values) => {
+                form.clearErrors("root");
+                mutation.mutate(values);
+              },
+              // A resolver rejection must never be silent: if no field message is
+              // rendered, surface the raw issue list at form level.
+              (errors) => {
+                const messages = Object.entries(errors)
+                  .filter(([name]) => name !== "root")
+                  .map(([name, e]) => `${name}: ${(e as { message?: string })?.message ?? "invalid"}`);
+                form.setError("root", {
+                  message: messages.length
+                    ? `Check the highlighted fields — ${messages.join("; ")}`
+                    : "The form could not be validated. Please review your entries.",
+                });
+              },
+            )}
           >
+
             <FormField
               control={form.control}
               name="amount"
