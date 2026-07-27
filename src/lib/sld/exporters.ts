@@ -335,7 +335,7 @@ export function fromJson(input: unknown): ExportGraph {
   if (!parsed.success) {
     throw new SldImportError(
       "invalid_document",
-      "This file is not a GridMind SLD export (expected format \"gridmind-sld\").",
+      'This file is not a GridMind SLD export (expected format "gridmind-sld").',
     );
   }
   const doc = parsed.data;

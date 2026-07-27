@@ -3,11 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import {
-  closeChangeSchema,
-  substitutionSchema,
-  taskStatusSchema,
-} from "@/lib/moc.exec.rules";
+import { closeChangeSchema, substitutionSchema, taskStatusSchema } from "@/lib/moc.exec.rules";
 import {
   blockingChanges,
   closeChange,
@@ -80,7 +76,10 @@ export const getChangeControlStatus = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const blocked = await underChangeControl(context, data.entityType, data.entityId);
     if (!blocked) return { blocked: false, changes: [] };
-    return { blocked: true, changes: await blockingChanges(context, data.entityType, data.entityId) };
+    return {
+      blocked: true,
+      changes: await blockingChanges(context, data.entityType, data.entityId),
+    };
   });
 
 export const getVendorSubstitution = createServerFn({ method: "GET" })

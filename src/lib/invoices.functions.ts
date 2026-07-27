@@ -336,7 +336,6 @@ export const billMilestone = createServerFn({ method: "POST" })
 
       await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
 
-
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")
         .select("*")

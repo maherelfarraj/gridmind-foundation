@@ -49,7 +49,6 @@ export function isPeriodClosedError(err: unknown): boolean {
   return typeof m === "string" && m.includes(PERIOD_CLOSED_PREFIX);
 }
 
-
 /** Missing RPC / table (not yet migrated) must never block a mutation. */
 function isMissingObject(err: unknown): boolean {
   const code = (err as { code?: string } | null)?.code;

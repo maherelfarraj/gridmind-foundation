@@ -141,11 +141,7 @@ export function refinePvEquipment(
   const e = value.electrical ?? {};
   const l = value.limits ?? {};
 
-  if (
-    e.voc_v != null &&
-    l.max_system_voltage_v != null &&
-    e.voc_v >= l.max_system_voltage_v
-  ) {
+  if (e.voc_v != null && l.max_system_voltage_v != null && e.voc_v >= l.max_system_voltage_v) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["electrical", "voc_v"],

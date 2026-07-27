@@ -4,7 +4,9 @@ import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/r
 import type { CivilFeatureRow } from "@/lib/civil.functions";
 
 export function civilFeaturesQueryOptions(
-  fn: (opts: { data: { projectId: string; surfaceId?: string | null } }) => Promise<CivilFeatureRow[]>,
+  fn: (opts: {
+    data: { projectId: string; surfaceId?: string | null };
+  }) => Promise<CivilFeatureRow[]>,
   projectId: string,
 ) {
   return {

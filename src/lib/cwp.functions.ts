@@ -26,7 +26,6 @@ import {
 import { isForwardCwpTransition } from "@/lib/quality.rules";
 import { assertNoOpenHoldPoint } from "@/lib/quality.server";
 
-
 export const listWorkPackages = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((raw: unknown) => z.object({ projectId: z.string().uuid() }).parse(raw))

@@ -362,7 +362,11 @@ export const certifyPayApplication = createServerFn({ method: "POST" })
     const row = toRow(cur);
     if (row.status !== "draft")
       httpError(400, "not_draft", "Only draft pay applications can be certified.");
-    await assertPeriodOpen(context.supabase, (cur as { company_id: string }).company_id, row.period_end);
+    await assertPeriodOpen(
+      context.supabase,
+      (cur as { company_id: string }).company_id,
+      row.period_end,
+    );
     try {
       validateCertifyInput(row.lines);
     } catch (e) {
@@ -418,7 +422,11 @@ export const approvePayApplication = createServerFn({ method: "POST" })
     if (row.status !== "certified") {
       httpError(400, "not_certified", "Only certified pay applications can be approved.");
     }
-    await assertPeriodOpen(context.supabase, (cur as { company_id: string }).company_id, row.period_end);
+    await assertPeriodOpen(
+      context.supabase,
+      (cur as { company_id: string }).company_id,
+      row.period_end,
+    );
     const { data: cRaw, error: cErr } = await context.supabase
       .from("contracts")
       .select("*")

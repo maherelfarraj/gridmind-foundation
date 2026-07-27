@@ -3,11 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import {
-  PV_CATEGORIES,
-  pvEquipmentSchema,
-  type PvEquipmentRow,
-} from "@/lib/pv-library.schemas";
+import { PV_CATEGORIES, pvEquipmentSchema, type PvEquipmentRow } from "@/lib/pv-library.schemas";
 import {
   auditPvLibrary,
   canWritePvLibrary,

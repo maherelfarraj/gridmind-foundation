@@ -193,13 +193,19 @@ export async function computeQuantityProgressFor(
     .eq("project_id", projectId);
   if (cErr) throw cErr;
 
-  const packages = ((cwps ?? []) as Array<{
-    id: string;
-    discipline: string;
-    weight: number | string;
-    progress_pct: number | string;
-    status: string;
-  }>).map((c) => ({ ...c, weight: Number(c.weight ?? 0), progress_pct: Number(c.progress_pct ?? 0) }));
+  const packages = (
+    (cwps ?? []) as Array<{
+      id: string;
+      discipline: string;
+      weight: number | string;
+      progress_pct: number | string;
+      status: string;
+    }>
+  ).map((c) => ({
+    ...c,
+    weight: Number(c.weight ?? 0),
+    progress_pct: Number(c.progress_pct ?? 0),
+  }));
 
   let updated = 0;
   const next = packages.map((c) => {
@@ -265,12 +271,14 @@ export async function buildProductivity(
     .lte("report_date", to);
   if (error) throw error;
 
-  const reports = ((dprs ?? []) as Array<{
-    id: string;
-    report_date: string;
-    quantities: unknown;
-    total_manpower: number | string;
-  }>).filter((d) => Number(d.total_manpower ?? 0) >= minCrew);
+  const reports = (
+    (dprs ?? []) as Array<{
+      id: string;
+      report_date: string;
+      quantities: unknown;
+      total_manpower: number | string;
+    }>
+  ).filter((d) => Number(d.total_manpower ?? 0) >= minCrew);
 
   const dprIds = reports.map((d) => d.id);
   let logs: Array<{ dpr_id: string; trade: string; hours: number | string }> = [];
@@ -312,7 +320,9 @@ export async function buildProductivity(
       const groups = new Map<string, number>();
       for (const q of list) {
         const key =
-          dimension === "area" ? (q.area ?? "unassigned") : (q.discipline ?? "general") || "general";
+          dimension === "area"
+            ? (q.area ?? "unassigned")
+            : (q.discipline ?? "general") || "general";
         groups.set(key, (groups.get(key) ?? 0) + (Number(q.quantity) || 0));
       }
       if (groups.size === 0) groups.set("unassigned", 0);

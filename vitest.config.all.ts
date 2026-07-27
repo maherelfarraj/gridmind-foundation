@@ -13,6 +13,7 @@ export default defineConfig({
     include: [
       "tests/unit/**/*.test.ts",
       "tests/unit/**/*.test.tsx",
+      "tests/bonds/**/*.test.ts",
       "tests/api/**/*.test.ts",
       "tests/rls/**/*.test.ts",
       "tests/e2e/**/*.test.ts",

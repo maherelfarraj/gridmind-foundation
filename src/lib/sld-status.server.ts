@@ -359,10 +359,7 @@ export async function issueForConstruction(context: any, snap: GovernanceSnapsho
     const existing = Array.isArray(openRelease.revision_snapshot)
       ? openRelease.revision_snapshot
       : [];
-    const merged = [
-      ...existing.filter((e: any) => e?.drawing_id !== drawing.id),
-      snapshotEntry,
-    ];
+    const merged = [...existing.filter((e: any) => e?.drawing_id !== drawing.id), snapshotEntry];
     const { error } = await context.supabase
       .from("ifc_releases")
       .update({ revision_snapshot: merged } as any)

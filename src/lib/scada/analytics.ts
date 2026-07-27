@@ -58,7 +58,9 @@ export interface Interval {
 }
 
 function normalize(intervals: Interval[]): Interval[] {
-  const valid = intervals.filter((i) => Number.isFinite(i.start) && Number.isFinite(i.end) && i.end > i.start);
+  const valid = intervals.filter(
+    (i) => Number.isFinite(i.start) && Number.isFinite(i.end) && i.end > i.start,
+  );
   const sorted = [...valid].sort((a, b) => a.start - b.start);
   const merged: Interval[] = [];
   for (const cur of sorted) {
@@ -327,7 +329,11 @@ export function performanceRatio(
   nameplateKw: number | null | undefined,
 ): number | null {
   if (actualKwh == null || irradianceKwhM2 == null || nameplateKw == null) return null;
-  if (!Number.isFinite(actualKwh) || !Number.isFinite(irradianceKwhM2) || !Number.isFinite(nameplateKw))
+  if (
+    !Number.isFinite(actualKwh) ||
+    !Number.isFinite(irradianceKwhM2) ||
+    !Number.isFinite(nameplateKw)
+  )
     return null;
   if (irradianceKwhM2 <= 0 || nameplateKw <= 0) return null;
   const reference = (irradianceKwhM2 * nameplateKw) / G_STC_KW_M2;
@@ -517,7 +523,9 @@ export function compareToGuarantee(
     const guaranteed = Number((Number(terms.annual_energy_mwh) * fraction).toFixed(3));
     const a = actual.energyKwh == null ? null : Number((actual.energyKwh / 1000).toFixed(3));
     const margin =
-      a == null || guaranteed <= 0 ? null : Number((((a - guaranteed) / guaranteed) * 100).toFixed(3));
+      a == null || guaranteed <= 0
+        ? null
+        : Number((((a - guaranteed) / guaranteed) * 100).toFixed(3));
     checks.push({
       metric: "energy",
       label: "Energy delivered",
@@ -551,7 +559,9 @@ export function expectedDailyKwhFromMonthlyProfile(
   if (!monthlyMwh || monthlyMwh.length < 12) return null;
   const value = monthlyMwh[day.getUTCMonth()];
   if (value == null || !Number.isFinite(value)) return null;
-  const daysInMonth = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth() + 1, 0)).getUTCDate();
+  const daysInMonth = new Date(
+    Date.UTC(day.getUTCFullYear(), day.getUTCMonth() + 1, 0),
+  ).getUTCDate();
   return Number(((Number(value) * 1000) / daysInMonth).toFixed(3));
 }
 

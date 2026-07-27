@@ -95,9 +95,7 @@ export function normalizeEquivalence(raw: unknown): EquivalenceRow[] {
     const parsed = equivalenceRowSchema.safeParse(entry);
     if (parsed.success) index.set(parsed.data.item, parsed.data);
   }
-  return EQUIVALENCE_ITEMS.map(
-    (item) => index.get(item) ?? { item, checked: false, note: "" },
-  );
+  return EQUIVALENCE_ITEMS.map((item) => index.get(item) ?? { item, checked: false, note: "" });
 }
 
 /** All five canonical items must be checked before a substitution may be submitted. */

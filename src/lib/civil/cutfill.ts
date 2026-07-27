@@ -76,7 +76,8 @@ export function buildDesignPlane(model: DesignModel, cells: Cell[]): DesignPlane
   const hasFlat = flat != null && Number.isFinite(Number(flat));
 
   const e0 =
-    model.design_reference_easting != null && Number.isFinite(Number(model.design_reference_easting))
+    model.design_reference_easting != null &&
+    Number.isFinite(Number(model.design_reference_easting))
       ? Number(model.design_reference_easting)
       : meanE;
   const n0 =

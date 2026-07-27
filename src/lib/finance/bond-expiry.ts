@@ -114,3 +114,6 @@ export function summarizeExpiringBonds(
       .sort((a, b) => b.amount - a.amount),
   };
 }
+
+/** Alias used by the P-206 boundary tests — same rule as materializedStatus. */
+export const bondStatusForDays = materializedStatus;

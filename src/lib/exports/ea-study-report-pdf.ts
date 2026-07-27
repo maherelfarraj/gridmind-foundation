@@ -78,7 +78,9 @@ export function buildEaStudyReportPdf(payload: EaReportPayload, theme: ExportThe
       [
         "Project",
         sanitize(
-          payload.projectCode ? `${payload.projectName} (${payload.projectCode})` : payload.projectName,
+          payload.projectCode
+            ? `${payload.projectName} (${payload.projectCode})`
+            : payload.projectName,
         ),
       ],
       ["Standards referenced", sanitize(payload.standardsRef.join(", ") || "—")],

@@ -3,7 +3,13 @@
 import type { ElevationGrid } from "@/lib/terrain/grid";
 import { valueAt } from "@/lib/terrain/grid";
 
-import { pointInGeometry, ringBBox, polygonRings, roundTo, type GeoJsonGeometry } from "@/lib/civil/geom";
+import {
+  pointInGeometry,
+  ringBBox,
+  polygonRings,
+  roundTo,
+  type GeoJsonGeometry,
+} from "@/lib/civil/geom";
 
 export const DEFAULT_MAX_SLOPE_PCT = 10;
 /** Blocks between warn_ratio·tolerance and tolerance are flagged "warn". */

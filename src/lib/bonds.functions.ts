@@ -28,6 +28,16 @@ import {
   type BondRow,
 } from "@/lib/bonds.rules";
 import {
+  guardActivate,
+  guardCancel,
+  guardCreateClaim,
+  guardReleaseRule,
+  guardReturn,
+  guardRenew,
+  guardRequestRelease,
+  guardResolveClaim,
+} from "@/lib/bonds.guards";
+import {
   BONDS_BUCKET,
   assertBondWrite,
   bondsCompanyId,
@@ -36,6 +46,7 @@ import {
   insertBond,
   insertClaim,
   insertRenewal,
+  raiseGuard,
   latestReleaseApproval,
   loadBond,
   loadClaim,
@@ -168,15 +179,7 @@ export const activateBondInstrument = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertBondWrite(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (instrument.status !== "draft") {
-      httpError(409, "invalid_transition", "Only a draft instrument can be activated.");
-    }
-    const blockers = activationBlockers(instrument);
-    if (blockers.length > 0) {
-      httpError(409, "activation_blocked", "This instrument is not ready to activate.", {
-        blockers,
-      });
-    }
+    raiseGuard(guardActivate(instrument));
     await setBondStatus(context, instrument.id, "active");
     await audit(context, "bond.activated", "bond_instruments", instrument.id, {
       instrument_id: instrument.id,
@@ -263,15 +266,8 @@ export const createBondClaim = createServerFn({ method: "POST" })
     await assertBondWrite(context);
     const companyId = await bondsCompanyId(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (data.amount > instrument.amount) {
-      httpError(422, "claim_exceeds_instrument", "Claim exceeds instrument amount.", {
-        instrument_amount: instrument.amount,
-      });
-    }
     const claims = await loadClaims(context, instrument.id);
-    if (claims.some((c) => OPEN_CLAIM_STATUSES.includes(c.status as never))) {
-      httpError(409, "claim_already_open", "An open claim already exists on this instrument.");
-    }
+    raiseGuard(guardCreateClaim(instrument, claims, data.amount));
     const claim = await insertClaim(context, companyId, data);
     await audit(context, "bond.claim_created", "bond_claims", claim.id, {
       claim_id: claim.id,
@@ -319,25 +315,9 @@ export const resolveBondClaim = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertBondWrite(context);
     const claim = await loadClaim(context, data.claim_id);
-    if (!OPEN_CLAIM_STATUSES.includes(claim.status as never)) {
-      httpError(409, "invalid_transition", "This claim is already resolved.");
-    }
     const instrument = await loadBond(context, claim.instrument_id);
-    if (data.outcome === "paid") {
-      const claims = await loadClaims(context, instrument.id);
-      const already = paidTotal(claims.filter((c) => c.id !== claim.id));
-      if (already + claim.amount > instrument.amount) {
-        httpError(
-          422,
-          "paid_exceeds_instrument",
-          "Paid claims would exceed the instrument amount.",
-          {
-            instrument_amount: instrument.amount,
-            paid_total: already,
-          },
-        );
-      }
-    }
+    const others = (await loadClaims(context, instrument.id)).filter((c) => c.id !== claim.id);
+    raiseGuard(guardResolveClaim(instrument, claim, others, data.outcome));
     const terminal = TERMINAL_CLAIM_STATUSES.includes(data.outcome as never);
     await updateClaim(context, claim.id, {
       status: data.outcome,
@@ -365,26 +345,16 @@ export const requestBondRelease = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertBondWrite(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (isTerminalBondStatus(instrument.status)) {
-      httpError(409, "terminal_status", "This instrument is closed; no further transitions.");
-    }
-    if (!RELEASABLE_STATUSES.includes(instrument.effective_status)) {
-      httpError(409, "invalid_transition", "Only live or lapsed instruments can be released.");
-    }
     const existing = await latestReleaseApproval(context, instrument.id);
-    if (existing?.status === "pending") {
-      httpError(409, "release_pending", "A release approval is already pending.");
-    }
+    raiseGuard(guardRequestRelease(instrument, existing?.status === "pending"));
     const instanceId = await startBondRelease(
       context,
       instrument.id,
       instrument.amount,
       data.reason,
     );
-    if (!instanceId) {
-      // No silent self-approval for legal-financial instruments.
-      httpError(409, "no_release_rule", "Release requires the bond_release approval rule.");
-    }
+    // No silent self-approval for legal-financial instruments.
+    raiseGuard(guardReleaseRule(instanceId));
     await audit(context, "bond.release_requested", "bond_instruments", instrument.id, {
       instrument_id: instrument.id,
       approval_instance_id: instanceId,
@@ -445,19 +415,7 @@ export const returnBondInstrument = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertBondWrite(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (instrument.instrument_type !== "bid_bond") {
-      httpError(409, "not_a_bid_bond", "Only bid bonds can be returned.");
-    }
-    if (isTerminalBondStatus(instrument.status)) {
-      httpError(409, "terminal_status", "This instrument is closed; no further transitions.");
-    }
-    if (
-      !RETURNABLE_STATUSES.includes(
-        instrument.effective_status === "expiring_soon" ? "active" : instrument.effective_status,
-      )
-    ) {
-      httpError(409, "invalid_transition", "Only live or lapsed bid bonds can be returned.");
-    }
+    raiseGuard(guardReturn(instrument));
     await patchBond(context, instrument.id, {
       status: "returned",
       status_reason: data.reason,
@@ -477,9 +435,7 @@ export const cancelBondInstrument = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     await assertBondWrite(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (isTerminalBondStatus(instrument.status)) {
-      httpError(409, "terminal_status", "This instrument is closed; no further transitions.");
-    }
+    raiseGuard(guardCancel(instrument));
     await patchBond(context, instrument.id, {
       status: "cancelled",
       status_reason: data.reason,
@@ -504,17 +460,7 @@ export const renewBondInstrument = createServerFn({ method: "POST" })
     await assertBondWrite(context);
     const companyId = await bondsCompanyId(context);
     const instrument = await loadBond(context, data.instrument_id);
-    if (isTerminalBondStatus(instrument.status)) {
-      httpError(409, "terminal_status", "This instrument is closed; no further transitions.");
-    }
-    if (!RENEWABLE_STATUSES.includes(instrument.effective_status)) {
-      httpError(409, "invalid_transition", "Only live or lapsed instruments can be renewed.");
-    }
-    if (instrument.expiry_date && data.new_expiry <= instrument.expiry_date) {
-      httpError(422, "expiry_not_forward", "New expiry must be after the current expiry", {
-        current_expiry: instrument.expiry_date,
-      });
-    }
+    raiseGuard(guardRenew(instrument, data.new_expiry));
     await insertRenewal(context, companyId, {
       instrument_id: instrument.id,
       previous_expiry: instrument.expiry_date,
