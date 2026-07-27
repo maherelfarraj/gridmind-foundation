@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 
+import { ContractProjectSelect } from "@/components/finance/contract-project-select";
 import { upsertContract } from "@/lib/contracts.functions";
 import {
   contractsAccessQueryOptions,
