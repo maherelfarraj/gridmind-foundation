@@ -164,13 +164,39 @@ function VendorDeliveries() {
     },
   });
 
-  if (memberships.isLoading || pos.isLoading) return <VendorTableSkeleton />;
+  if (memberships.isLoading || pos.isLoading) return <VendorTableSkeleton rows={5} />;
   if (pos.error) {
-    return <VendorStateCard code={vendorPortalErrorCode(pos.error)} />;
+    const code = vendorPortalErrorCode(pos.error);
+    return code === "vendor_portal_access_denied" ? (
+      <VendorStateCard
+        icon={Lock}
+        title="Access expired or revoked"
+        description="Your access to this vendor account is no longer active. Please contact your EPC representative."
+      />
+    ) : code?.endsWith("_not_exposed") ? (
+      <VendorStateCard
+        icon={Lock}
+        title="Not shared with you"
+        description="Your EPC contact hasn’t shared delivery scheduling with your account."
+      />
+    ) : (
+      <VendorStateCard
+        title="Couldn’t load deliveries"
+        description="Something went wrong. Please try again."
+        onRetry={() => void pos.refetch()}
+      />
+    );
   }
   if (membership && !membership.exposure.deliveries) {
-    return <VendorStateCard code="deliveries_not_exposed" />;
+    return (
+      <VendorStateCard
+        icon={Lock}
+        title="Not shared with you"
+        description="Your EPC contact hasn’t shared delivery scheduling with your account."
+      />
+    );
   }
+
 
   const openPos = (pos.data ?? []).filter((p) => p.status !== "closed" && p.status !== "cancelled");
 
