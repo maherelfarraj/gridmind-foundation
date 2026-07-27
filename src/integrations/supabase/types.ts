@@ -8168,6 +8168,133 @@ export type Database = {
           },
         ]
       }
+      leave_balances: {
+        Row: {
+          annual_entitlement_days: number
+          annual_used_days: number
+          company_id: string
+          created_at: string
+          id: string
+          sick_used_days: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_entitlement_days?: number
+          annual_used_days?: number
+          company_id: string
+          created_at?: string
+          id?: string
+          sick_used_days?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_entitlement_days?: number
+          annual_used_days?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          sick_used_days?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          approver_id: string | null
+          attachment_path: string | null
+          company_id: string
+          created_at: string
+          date_from: string
+          date_to: string
+          days: number
+          decided_at: string | null
+          decision_comment: string | null
+          id: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          reason: string | null
+          request_number: string | null
+          status: Database["public"]["Enums"]["leave_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approver_id?: string | null
+          attachment_path?: string | null
+          company_id: string
+          created_at?: string
+          date_from: string
+          date_to: string
+          days?: number
+          decided_at?: string | null
+          decision_comment?: string | null
+          id?: string
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          reason?: string | null
+          request_number?: string | null
+          status?: Database["public"]["Enums"]["leave_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approver_id?: string | null
+          attachment_path?: string | null
+          company_id?: string
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          days?: number
+          decided_at?: string | null
+          decision_comment?: string | null
+          id?: string
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          reason?: string | null
+          request_number?: string | null
+          status?: Database["public"]["Enums"]["leave_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lender_dd_items: {
         Row: {
           category: string
@@ -10508,6 +10635,7 @@ export type Database = {
           avatar_url: string | null
           company_id: string
           created_at: string
+          default_hourly_rate: number | null
           email: string | null
           full_name: string | null
           id: string
@@ -10518,6 +10646,7 @@ export type Database = {
           avatar_url?: string | null
           company_id: string
           created_at?: string
+          default_hourly_rate?: number | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -10528,6 +10657,7 @@ export type Database = {
           avatar_url?: string | null
           company_id?: string
           created_at?: string
+          default_hourly_rate?: number | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -17062,6 +17192,216 @@ export type Database = {
           },
         ]
       }
+      timesheet_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timesheet_entries: {
+        Row: {
+          activity: Database["public"]["Enums"]["timesheet_activity"]
+          company_id: string
+          created_at: string
+          cwp_id: string | null
+          hourly_rate: number | null
+          hours: number
+          id: string
+          notes: string | null
+          project_id: string | null
+          source_leave_request_id: string | null
+          timesheet_id: string
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          activity?: Database["public"]["Enums"]["timesheet_activity"]
+          company_id: string
+          created_at?: string
+          cwp_id?: string | null
+          hourly_rate?: number | null
+          hours?: number
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          source_leave_request_id?: string | null
+          timesheet_id: string
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          activity?: Database["public"]["Enums"]["timesheet_activity"]
+          company_id?: string
+          created_at?: string
+          cwp_id?: string | null
+          hourly_rate?: number | null
+          hours?: number
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          source_leave_request_id?: string | null
+          timesheet_id?: string
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_cwp_fk"
+            columns: ["cwp_id"]
+            isOneToOne: false
+            referencedRelation: "construction_work_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_leave_fk"
+            columns: ["source_leave_request_id"]
+            isOneToOne: false
+            referencedRelation: "leave_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheet_entries_timesheet_id_fkey"
+            columns: ["timesheet_id"]
+            isOneToOne: false
+            referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timesheets: {
+        Row: {
+          approval_instance_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          project_id: string | null
+          status: Database["public"]["Enums"]["timesheet_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          timesheet_number: string | null
+          total_overtime_hours: number
+          total_regular_hours: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["timesheet_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          timesheet_number?: string | null
+          total_overtime_hours?: number
+          total_regular_hours?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["timesheet_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          timesheet_number?: string | null
+          total_overtime_hours?: number
+          total_regular_hours?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheets_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       toolbox_talk_attendance: {
         Row: {
           attended: boolean
@@ -19244,6 +19584,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: string
       }
+      next_timesheet_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
+      }
       portal_assert_access: {
         Args: { p_project_id: string }
         Returns: {
@@ -19911,6 +20255,8 @@ export type Database = {
         | "partner"
         | "other"
       lead_status: "new" | "working" | "qualified" | "unqualified" | "converted"
+      leave_request_status: "pending" | "approved" | "rejected" | "cancelled"
+      leave_type: "annual" | "sick" | "unpaid" | "travel"
       look_ahead_status: "draft" | "published" | "locked"
       match_status:
         | "pending"
@@ -20163,6 +20509,19 @@ export type Database = {
         | "waiting_client"
         | "resolved"
         | "closed"
+      timesheet_activity:
+        | "regular"
+        | "overtime"
+        | "travel"
+        | "leave_annual"
+        | "leave_sick"
+        | "leave_unpaid"
+      timesheet_status:
+        | "draft"
+        | "submitted"
+        | "in_review"
+        | "approved"
+        | "rejected"
       tq_status: "draft" | "submitted" | "answered" | "closed" | "void"
       transmittal_direction: "outgoing" | "incoming"
       vendor_portal_actor: "vendor" | "internal" | "system"
@@ -20715,6 +21074,8 @@ export const Constants = {
         "other",
       ],
       lead_status: ["new", "working", "qualified", "unqualified", "converted"],
+      leave_request_status: ["pending", "approved", "rejected", "cancelled"],
+      leave_type: ["annual", "sick", "unpaid", "travel"],
       look_ahead_status: ["draft", "published", "locked"],
       match_status: [
         "pending",
@@ -20995,6 +21356,21 @@ export const Constants = {
         "waiting_client",
         "resolved",
         "closed",
+      ],
+      timesheet_activity: [
+        "regular",
+        "overtime",
+        "travel",
+        "leave_annual",
+        "leave_sick",
+        "leave_unpaid",
+      ],
+      timesheet_status: [
+        "draft",
+        "submitted",
+        "in_review",
+        "approved",
+        "rejected",
       ],
       tq_status: ["draft", "submitted", "answered", "closed", "void"],
       transmittal_direction: ["outgoing", "incoming"],
