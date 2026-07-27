@@ -27,7 +27,12 @@ export async function guarded<T>(label: string, fn: () => Promise<T>, fallback: 
   } catch (err) {
     if (isMissingObject(err)) {
       console.warn(
-        JSON.stringify({ scope: "timesheet-reports", label, degraded: true, code: (err as { code?: string }).code }),
+        JSON.stringify({
+          scope: "timesheet-reports",
+          label,
+          degraded: true,
+          code: (err as { code?: string }).code,
+        }),
       );
       return fallback;
     }
@@ -150,10 +155,7 @@ export async function loadProjectNames(
 ): Promise<Record<string, string>> {
   const ids = [...new Set(projectIds.filter(Boolean))];
   if (!ids.length) return {};
-  const { data, error } = await client
-    .from("projects")
-    .select("id, name, code")
-    .in("id", ids);
+  const { data, error } = await client.from("projects").select("id, name, code").in("id", ids);
   if (error) throw error;
   const map: Record<string, string> = {};
   for (const p of (data ?? []) as Array<{
@@ -167,7 +169,10 @@ export async function loadProjectNames(
 }
 
 export async function countBacklog(client: Client, projectId?: string | null): Promise<number> {
-  let q = client.from("timesheets").select("id", { count: "exact", head: true }).eq("status", "in_review");
+  let q = client
+    .from("timesheets")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "in_review");
   if (projectId) q = q.eq("project_id", projectId);
   const { count, error } = await q;
   if (error) throw error;

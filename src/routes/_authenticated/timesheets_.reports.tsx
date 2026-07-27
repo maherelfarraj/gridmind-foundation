@@ -259,8 +259,8 @@ function ReportsPage() {
           {data.missing_rate_rows > 0 ? (
             <div className="inline-flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground">
               <AlertTriangle className="size-4 text-warning" />
-              {numFmt.format(data.missing_rate_rows)} rows have no hourly rate — excluded from
-              labor cost.
+              {numFmt.format(data.missing_rate_rows)} rows have no hourly rate — excluded from labor
+              cost.
             </div>
           ) : null}
 
