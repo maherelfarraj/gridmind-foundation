@@ -11,7 +11,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatMoney } from "@/lib/format";
 import { AGE_BUCKETS, changeTypeMeta, heatClass, OPEN_STATUSES } from "@/lib/moc.rules";
 import { getMocDashboard } from "@/lib/moc.functions";

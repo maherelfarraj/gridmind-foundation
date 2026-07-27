@@ -174,9 +174,7 @@ export const addChangeEvidence = createServerFn({ method: "POST" })
 
 export const signChangeEvidenceUrl = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ path: z.string().min(3).max(400) }).parse(raw),
-  )
+  .inputValidator((raw: unknown) => z.object({ path: z.string().min(3).max(400) }).parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     await assertInternal(context);

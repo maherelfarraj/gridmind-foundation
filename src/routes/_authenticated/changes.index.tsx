@@ -31,7 +31,14 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney, formatRelative } from "@/lib/format";
 import {
@@ -42,11 +49,7 @@ import {
   type CrStatus,
   type DatePreset,
 } from "@/lib/moc.rules";
-import {
-  createChangeRequest,
-  listChangeProjects,
-  listChangeRequests,
-} from "@/lib/moc.functions";
+import { createChangeRequest, listChangeProjects, listChangeRequests } from "@/lib/moc.functions";
 
 export const Route = createFileRoute("/_authenticated/changes/")({
   validateSearch: (raw: Record<string, unknown>) => ({

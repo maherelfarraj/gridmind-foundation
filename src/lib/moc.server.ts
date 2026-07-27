@@ -59,10 +59,7 @@ export async function auditMoc(
   }
 }
 
-async function nameMap(
-  context: AuthContext,
-  ids: string[],
-): Promise<Map<string, string | null>> {
+async function nameMap(context: AuthContext, ids: string[]): Promise<Map<string, string | null>> {
   const unique = Array.from(new Set(ids.filter(Boolean)));
   if (unique.length === 0) return new Map();
   const { data } = await context.supabase
@@ -129,9 +126,7 @@ async function projectNames(
   const unique = Array.from(new Set(ids.filter((v): v is string => Boolean(v))));
   if (unique.length === 0) return new Map();
   const { data } = await context.supabase.from("projects").select("id, name").in("id", unique);
-  return new Map(
-    ((data ?? []) as Array<{ id: string; name: string }>).map((p) => [p.id, p.name]),
-  );
+  return new Map(((data ?? []) as Array<{ id: string; name: string }>).map((p) => [p.id, p.name]));
 }
 
 export async function listChanges(
@@ -296,10 +291,7 @@ function asStringList(json: Json | null): string[] {
   return json.map((v) => String(v));
 }
 
-export async function getChangeDetail(
-  context: AuthContext,
-  id: string,
-): Promise<ChangeDetail> {
+export async function getChangeDetail(context: AuthContext, id: string): Promise<ChangeDetail> {
   const { data, error } = await context.supabase
     .from("change_requests")
     .select("*")
@@ -625,10 +617,7 @@ export async function loadDashboard(context: AuthContext): Promise<MocDashboard>
   };
 }
 
-export async function openChangeCount(
-  context: AuthContext,
-  companyId: string,
-): Promise<number> {
+export async function openChangeCount(context: AuthContext, companyId: string): Promise<number> {
   const { count, error } = await context.supabase
     .from("change_requests")
     .select("id", { count: "exact", head: true })

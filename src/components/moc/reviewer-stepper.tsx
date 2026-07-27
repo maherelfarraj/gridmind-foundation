@@ -17,7 +17,9 @@ function slaBadge(due: string | null) {
     <StatusBadge
       status={overdue ? "overdue" : within24 ? "due_soon" : "scheduled"}
       label={
-        overdue ? `+${formatDistanceToNow(dueDate)} overdue` : `${formatDistanceToNow(dueDate)} left`
+        overdue
+          ? `+${formatDistanceToNow(dueDate)} overdue`
+          : `${formatDistanceToNow(dueDate)} left`
       }
       icon={Clock}
     />
@@ -54,7 +56,9 @@ export function ReviewerStepper({
               <p className="text-sm font-medium text-foreground">
                 Step {step.step_order}
                 {step.role ? (
-                  <span className="ml-2 text-muted-foreground">{step.role.replaceAll("_", " ")}</span>
+                  <span className="ml-2 text-muted-foreground">
+                    {step.role.replaceAll("_", " ")}
+                  </span>
                 ) : null}
               </p>
               {isCurrent ? <StatusBadge status="in_progress" label="Current step" /> : null}

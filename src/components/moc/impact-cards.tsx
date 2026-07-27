@@ -47,9 +47,7 @@ export function draftToPayload(draft: ImpactDraft) {
 }
 
 function NotAssessed() {
-  return (
-    <p className="rounded-md bg-accent/15 px-2 py-1 text-xs text-accent">Not assessed</p>
-  );
+  return <p className="rounded-md bg-accent/15 px-2 py-1 text-xs text-accent">Not assessed</p>;
 }
 
 function ImpactCard({

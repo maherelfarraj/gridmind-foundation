@@ -217,7 +217,16 @@ function ChangeDetailPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <Button variant="ghost" size="sm" onClick={() => void navigate({ to: "/changes", search: { status: undefined, type: undefined, project: undefined } })}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() =>
+          void navigate({
+            to: "/changes",
+            search: { status: undefined, type: undefined, project: undefined },
+          })
+        }
+      >
         <ArrowLeft className="mr-1 size-4" aria-hidden />
         Back to register
       </Button>
@@ -397,7 +406,9 @@ function ChangeDetailPage() {
           {cr.closure_notes ? (
             <Card className="space-y-2 p-4">
               <h2 className="text-sm font-medium text-foreground">Closure</h2>
-              <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.closure_notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                {cr.closure_notes}
+              </p>
             </Card>
           ) : null}
         </TabsContent>
@@ -457,9 +468,7 @@ function ChangeDetailPage() {
                       {formatDateTime(entry.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {entry.actor_name ?? "System"}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{entry.actor_name ?? "System"}</p>
                 </li>
               ))}
             </ul>
