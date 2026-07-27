@@ -17,6 +17,8 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { VendorForm } from "@/components/procurement/vendor-form";
 import { VendorCertifications } from "@/components/procurement/vendor-certifications";
+import { VendorPortalAccess } from "@/components/procurement/vendor-portal-access";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getVendor,
   getVendorWriteAccess,
@@ -114,24 +116,38 @@ function VendorDetail() {
         }
       />
 
-      <Card>
-        <CardContent className="p-6">
-          <VendorForm
-            initial={vendor}
-            submitting={update.isPending}
-            submitLabel="Save changes"
-            disabled={!canWrite}
-            onSubmit={(input) => update.mutate(input)}
-          />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="details">
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="portal">Portal access</TabsTrigger>
+        </TabsList>
 
-      <VendorCertifications
-        vendorId={vendor.id}
-        companyId={vendor.company_id}
-        certifications={vendor.certifications}
-        canWrite={canWrite}
-      />
+        <TabsContent value="details" className="mt-4 space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <VendorForm
+                initial={vendor}
+                submitting={update.isPending}
+                submitLabel="Save changes"
+                disabled={!canWrite}
+                onSubmit={(input) => update.mutate(input)}
+              />
+            </CardContent>
+          </Card>
+
+          <VendorCertifications
+            vendorId={vendor.id}
+            companyId={vendor.company_id}
+            certifications={vendor.certifications}
+            canWrite={canWrite}
+          />
+        </TabsContent>
+
+        <TabsContent value="portal" className="mt-4">
+          <VendorPortalAccess vendorId={vendor.id} canWrite={canWrite} />
+        </TabsContent>
+      </Tabs>
+
     </div>
   );
 }
