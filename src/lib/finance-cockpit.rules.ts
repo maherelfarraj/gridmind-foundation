@@ -44,6 +44,9 @@ export const COCKPIT_FORMULAS = {
     "Σ change_orders.amount (status in approved, incorporated) ÷ Σ contracts.value (status in signed, active) × 100. Source: change_orders, contracts.",
   sla_credits:
     "Σ sla_records.credit_amount for open (unresolved) records created in the current period. Source: sla_records.",
+  bonds_expiring_30:
+    "count + Σ amount of bond_instruments where status in ('active','expiring_soon') and expiry_date − current_date ≤ 30, summed per currency (never converted). Source: bond_instruments.",
+
   aging_chart:
     "Aging buckets from the same getArAging pass used by /finance/receivables: current (≤0d), 1-30, 31-60, 61-90, 90+.",
   cash_trend:
