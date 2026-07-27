@@ -3,7 +3,10 @@
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { hasAnyRole, httpError } from "@/lib/payments.server";
 import { computeEstimate, type MarginInput } from "@/lib/estimating/buildup";
+import { proposalLinesFromEstimate, sumLineTotals } from "@/lib/estimating/convert";
 import {
+  ESTIMATE_APPROVAL_ENTITY,
+  ESTIMATE_APPROVAL_RULE_KEY,
   ESTIMATE_WRITE_ROLES,
   RATE_WRITE_ROLES,
   bomLinesToEstimateLines,
@@ -299,4 +302,210 @@ export async function persistBuildup(
     .eq("id", estimateId);
   if (error) throw error;
   return { result, lines };
+}
+
+/* --------------------------------------------- approval + convert (P-212) */
+
+export interface EstimateApprovalSnapshot {
+  id: string;
+  status: string;
+  current_step: number;
+  sla_due_at: string | null;
+  requested_at: string | null;
+}
+
+/** Latest approval instance for an estimate, or null when never submitted. */
+export async function loadEstimateApproval(
+  ctx: AuthContext,
+  estimateId: string,
+): Promise<EstimateApprovalSnapshot | null> {
+  const { data, error } = await ctx.supabase
+    .from("approval_instances")
+    .select("id, status, current_step, sla_due_at, requested_at")
+    .eq("entity_type", ESTIMATE_APPROVAL_ENTITY)
+    .eq("entity_id", estimateId)
+    .order("requested_at", { ascending: false })
+    .limit(1);
+  if (error) throw error;
+  const row = (data ?? [])[0] as
+    | {
+        id: string;
+        status: string;
+        current_step: number | null;
+        sla_due_at: string | null;
+        requested_at: string | null;
+      }
+    | undefined;
+  if (!row) return null;
+  return {
+    id: row.id,
+    status: row.status,
+    current_step: row.current_step ?? 1,
+    sla_due_at: row.sla_due_at,
+    requested_at: row.requested_at,
+  };
+}
+
+/** Opens the engineering_admin → finance_admin chain via the P-111 engine. */
+export async function startEstimateApproval(
+  ctx: AuthContext,
+  estimate: EstimateRow,
+): Promise<string | null> {
+  const { data, error } = await ctx.supabase.rpc("start_approval_instance", {
+    p_rule_key: ESTIMATE_APPROVAL_RULE_KEY,
+    p_entity_type: ESTIMATE_APPROVAL_ENTITY,
+    p_entity_id: estimate.id,
+    p_amount: estimate.total_price as never,
+    p_metadata: {
+      estimate_number: estimate.estimate_number,
+      project_id: estimate.project_id,
+    } as never,
+  });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+
+/** Latest decision comment on the instance, for surfacing a rejection. */
+export async function loadDecisionComment(
+  ctx: AuthContext,
+  instanceId: string,
+): Promise<string | null> {
+  const { data, error } = await ctx.supabase
+    .from("approvals")
+    .select("comment, decided_at")
+    .eq("instance_id", instanceId)
+    .not("decided_at", "is", null)
+    .order("decided_at", { ascending: false })
+    .limit(1);
+  if (error) return null;
+  const row = (data ?? [])[0] as { comment: string | null } | undefined;
+  return row?.comment ?? null;
+}
+
+/** Patch arbitrary workflow columns on an estimate (columns added by 0086). */
+export async function patchEstimate(
+  ctx: AuthContext,
+  estimateId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await ctx.supabase
+    .from("estimates")
+    .update(patch as never)
+    .eq("id", estimateId);
+  if (error) throw error;
+}
+
+export interface EstimateConversionState {
+  approval_instance_id: string | null;
+  converted_proposal_id: string | null;
+  submitted_at: string | null;
+  approved_at: string | null;
+  rejection_comment: string | null;
+}
+
+export async function loadConversionState(
+  ctx: AuthContext,
+  estimateId: string,
+): Promise<EstimateConversionState> {
+  const { data, error } = await ctx.supabase
+    .from("estimates")
+    .select(
+      "approval_instance_id, converted_proposal_id, submitted_at, approved_at, rejection_comment",
+    )
+    .eq("id", estimateId)
+    .maybeSingle();
+  if (error) throw error;
+  const row = (data ?? null) as unknown as EstimateConversionState | null;
+  return (
+    row ?? {
+      approval_instance_id: null,
+      converted_proposal_id: null,
+      submitted_at: null,
+      approved_at: null,
+      rejection_comment: null,
+    }
+  );
+}
+
+/**
+ * Create the draft proposal + line items from an approved estimate. Returns
+ * the new proposal id. Totals are recomputed server-side from the lines.
+ */
+export async function createProposalFromEstimate(
+  ctx: AuthContext,
+  args: {
+    companyId: string;
+    estimate: EstimateRow;
+    opportunityId: string;
+    lines: EstimateLineRow[];
+  },
+): Promise<{ proposalId: string; lineCount: number }> {
+  const { estimate } = args;
+  const buildup = computeEstimate(args.lines, marginsOf(estimate));
+  const drafts = proposalLinesFromEstimate(args.lines, buildup);
+  if (Math.abs(sumLineTotals(drafts) - buildup.subtotal) > 0.01) {
+    httpError(409, "conversion_unbalanced", "Generated proposal lines do not reconcile.");
+  }
+
+  const { data: created, error } = await ctx.supabase
+    .from("proposals")
+    .insert({
+      company_id: args.companyId,
+      opportunity_id: args.opportunityId,
+      project_id: estimate.project_id,
+      title: estimate.title,
+      version: 1,
+      status: "draft",
+      currency_code: estimate.currency_code,
+      subtotal: buildup.subtotal,
+      margin_pct: Number(estimate.profit_pct) || 0,
+      contingency_pct: Number(estimate.contingency_pct) || 0,
+      total: buildup.total_price,
+    } as never)
+    .select("id")
+    .single();
+  if (error) throw error;
+  const proposalId = (created as { id: string }).id;
+
+  if (drafts.length > 0) {
+    const { error: lineErr } = await ctx.supabase.from("proposal_line_items").insert(
+      drafts.map((d) => ({
+        company_id: args.companyId,
+        proposal_id: proposalId,
+        sort_order: d.sort_order,
+        category: d.category,
+        description: d.description,
+        qty: d.qty,
+        unit: d.unit,
+        unit_price: d.unit_price,
+        line_total: d.line_total,
+      })) as never,
+    );
+    if (lineErr) throw lineErr;
+  }
+  return { proposalId, lineCount: drafts.length };
+}
+
+/**
+ * Best-effort digital-thread link. Missing table (0077) or a CHECK violation
+ * is logged and swallowed — a link must never block the conversion.
+ */
+export async function linkEstimateToProposal(
+  ctx: AuthContext,
+  args: { companyId: string; projectId: string | null; estimateId: string; proposalId: string },
+): Promise<void> {
+  try {
+    const { error } = await ctx.supabase.from("entity_links").insert({
+      company_id: args.companyId,
+      project_id: args.projectId,
+      source_type: "estimate",
+      source_id: args.estimateId,
+      link_type: "derives",
+      target_type: "proposal",
+      target_id: args.proposalId,
+    } as never);
+    if (error) console.warn("[estimating] entity_link skipped:", error.message);
+  } catch (err) {
+    console.warn("[estimating] entity_link skipped:", err);
+  }
 }
