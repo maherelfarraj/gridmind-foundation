@@ -240,13 +240,14 @@ function ReportsPage() {
               icon={BarChart3}
               status={data.kpis.overtime_pct > 20 ? "warning" : "good"}
             />
-            <KpiTile
-              label="Approval backlog"
-              value={numFmt.format(data.kpis.backlog_count)}
-              hint={data.formulas.backlog}
-              icon={Inbox}
-              href="/approvals?entity=timesheet"
-            />
+            <Link to="/approvals" search={{ entity: "timesheet" }} className="block">
+              <KpiTile
+                label="Approval backlog"
+                value={numFmt.format(data.kpis.backlog_count)}
+                hint={data.formulas.backlog}
+                icon={Inbox}
+              />
+            </Link>
             <KpiTile
               label="Leave days YTD"
               value={numFmt.format(data.kpis.leave_days_ytd)}
