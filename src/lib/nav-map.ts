@@ -394,6 +394,12 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         moduleKey: "planning_budget",
+        label: "Bonds & guarantees",
+        url: "/finance/bonds",
+        icon: ShieldCheck,
+      },
+      {
+        moduleKey: "planning_budget",
         label: "Period close",
         url: "/finance/periods",
         icon: CalendarClock,

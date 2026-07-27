@@ -97,6 +97,7 @@ import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_auth
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
 import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
+import { Route as AuthenticatedFinanceBondsRouteImport } from './routes/_authenticated/finance.bonds'
 import { Route as AuthenticatedFinanceAlertsRouteImport } from './routes/_authenticated/finance.alerts'
 import { Route as AuthenticatedFieldWorkFrontsRouteImport } from './routes/_authenticated/field.work-fronts'
 import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_authenticated/field.sync-status'
@@ -720,6 +721,12 @@ const AuthenticatedFinanceContractsRoute =
   AuthenticatedFinanceContractsRouteImport.update({
     id: '/finance/contracts',
     path: '/finance/contracts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceBondsRoute =
+  AuthenticatedFinanceBondsRouteImport.update({
+    id: '/finance/bonds',
+    path: '/finance/bonds',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFinanceAlertsRoute =
@@ -1557,6 +1564,7 @@ export interface FileRoutesByFullPath {
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
+  '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1774,6 +1782,7 @@ export interface FileRoutesByTo {
   '/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
+  '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1987,6 +1996,7 @@ export interface FileRoutesById {
   '/_authenticated/field/sync-status': typeof AuthenticatedFieldSyncStatusRoute
   '/_authenticated/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/_authenticated/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
+  '/_authenticated/finance/bonds': typeof AuthenticatedFinanceBondsRoute
   '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -2208,6 +2218,7 @@ export interface FileRouteTypes {
     | '/field/sync-status'
     | '/field/work-fronts'
     | '/finance/alerts'
+    | '/finance/bonds'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2425,6 +2436,7 @@ export interface FileRouteTypes {
     | '/field/sync-status'
     | '/field/work-fronts'
     | '/finance/alerts'
+    | '/finance/bonds'
     | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/invoices'
@@ -2637,6 +2649,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/sync-status'
     | '/_authenticated/field/work-fronts'
     | '/_authenticated/finance/alerts'
+    | '/_authenticated/finance/bonds'
     | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/invoices'
@@ -3466,6 +3479,13 @@ declare module '@tanstack/react-router' {
       path: '/finance/contracts'
       fullPath: '/finance/contracts'
       preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/bonds': {
+      id: '/_authenticated/finance/bonds'
+      path: '/finance/bonds'
+      fullPath: '/finance/bonds'
+      preLoaderRoute: typeof AuthenticatedFinanceBondsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/alerts': {
@@ -4862,6 +4882,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldSyncStatusRoute: typeof AuthenticatedFieldSyncStatusRoute
   AuthenticatedFieldWorkFrontsRoute: typeof AuthenticatedFieldWorkFrontsRoute
   AuthenticatedFinanceAlertsRoute: typeof AuthenticatedFinanceAlertsRoute
+  AuthenticatedFinanceBondsRoute: typeof AuthenticatedFinanceBondsRoute
   AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
@@ -4985,6 +5006,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldSyncStatusRoute: AuthenticatedFieldSyncStatusRoute,
   AuthenticatedFieldWorkFrontsRoute: AuthenticatedFieldWorkFrontsRoute,
   AuthenticatedFinanceAlertsRoute: AuthenticatedFinanceAlertsRoute,
+  AuthenticatedFinanceBondsRoute: AuthenticatedFinanceBondsRoute,
   AuthenticatedFinanceContractsRoute:
     AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
