@@ -145,7 +145,6 @@ export const getBondInstrument = createServerFn({ method: "GET" })
     };
   });
 
-
 export const createBondInstrument = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => CreateBondSchema.parse(input))
@@ -550,11 +549,7 @@ export const uploadBondRenewalDocument = createServerFn({ method: "POST" })
     await assertBondWrite(context);
     const companyId = await bondsCompanyId(context);
     const instrument = await loadBond(context, data.instrument_id);
-    const path = bondDocumentPath(
-      companyId,
-      instrument.id,
-      `${Date.now()}-${data.filename}`,
-    );
+    const path = bondDocumentPath(companyId, instrument.id, `${Date.now()}-${data.filename}`);
     const { error } = await context.supabase.storage
       .from(BONDS_BUCKET)
       .upload(path, decodeBase64(data.content_base64), {

@@ -414,8 +414,7 @@ export const INSURANCE_TYPES = [
 export type InsuranceType = (typeof INSURANCE_TYPES)[number];
 
 export const INSURANCE_EMPTY_STATE: Record<InsuranceType, string> = {
-  insurance_car_ear:
-    "No active CAR/EAR policy — required before mobilization on most contracts",
+  insurance_car_ear: "No active CAR/EAR policy — required before mobilization on most contracts",
   insurance_pi: "No active PI policy — required before mobilization on most contracts",
   insurance_pl: "No active PL policy — required before mobilization on most contracts",
   workmen_comp:
@@ -483,4 +482,3 @@ export function coverageByType(rows: BondRow[], currency: string): CoverageBar[]
     }))
     .sort((a, b) => b.amount - a.amount);
 }
-

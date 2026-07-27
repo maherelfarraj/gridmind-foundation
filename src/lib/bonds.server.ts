@@ -315,7 +315,6 @@ export async function insertRenewal(
   if (error) throw error;
 }
 
-
 export interface ClaimRow {
   id: string;
   claim_number: string | null;

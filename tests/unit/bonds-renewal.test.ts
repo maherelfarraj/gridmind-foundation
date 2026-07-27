@@ -45,12 +45,8 @@ const ID = "11111111-1111-4111-8111-111111111111";
 describe("renewal validation", () => {
   it("rejects a new expiry that is not after the current expiry", () => {
     const schema = renewBondSchemaFor("2026-12-01");
-    expect(
-      schema.safeParse({ instrument_id: ID, new_expiry: "2026-12-01" }).success,
-    ).toBe(false);
-    expect(
-      schema.safeParse({ instrument_id: ID, new_expiry: "2026-11-01" }).success,
-    ).toBe(false);
+    expect(schema.safeParse({ instrument_id: ID, new_expiry: "2026-12-01" }).success).toBe(false);
+    expect(schema.safeParse({ instrument_id: ID, new_expiry: "2026-11-01" }).success).toBe(false);
   });
 
   it("accepts a forward expiry with optional premium and notes", () => {

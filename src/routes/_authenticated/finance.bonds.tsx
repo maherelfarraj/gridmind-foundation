@@ -304,27 +304,26 @@ function BondsPage() {
         </div>
       </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant={insuranceOnly ? "default" : "outline"}
-            aria-pressed={insuranceOnly}
-            onClick={() => setInsuranceOnly((v) => !v)}
-          >
-            Insurance
-          </Button>
-          {insuranceOnly ? (
-            <span className="text-xs text-muted-foreground">
-              CAR/EAR, professional indemnity, public liability and workmen&rsquo;s compensation
-              only
-            </span>
-          ) : null}
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant={insuranceOnly ? "default" : "outline"}
+          aria-pressed={insuranceOnly}
+          onClick={() => setInsuranceOnly((v) => !v)}
+        >
+          Insurance
+        </Button>
+        {insuranceOnly ? (
+          <span className="text-xs text-muted-foreground">
+            CAR/EAR, professional indemnity, public liability and workmen&rsquo;s compensation only
+          </span>
+        ) : null}
+      </div>
 
-        {insuranceOnly ? <InsuranceSummaryCards rows={rows} /> : null}
+      {insuranceOnly ? <InsuranceSummaryCards rows={rows} /> : null}
 
-        <CoverageByTypeChart rows={rows} />
+      <CoverageByTypeChart rows={rows} />
 
       {registerQ.isPending ? (
         <div className="space-y-2">

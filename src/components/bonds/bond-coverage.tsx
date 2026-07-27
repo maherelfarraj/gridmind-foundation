@@ -1,6 +1,14 @@
 // P-205 — Insurance coverage summary cards + coverage-by-type breakdown chart.
 import { useMemo, useState } from "react";
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -93,10 +101,7 @@ export function InsuranceSummaryCards({ rows }: { rows: BondRow[] }) {
 }
 
 export function CoverageByTypeChart({ rows }: { rows: BondRow[] }) {
-  const currencies = useMemo(
-    () => [...new Set(rows.map((r) => r.currency_code))].sort(),
-    [rows],
-  );
+  const currencies = useMemo(() => [...new Set(rows.map((r) => r.currency_code))].sort(), [rows]);
   const [currency, setCurrency] = useState<string | null>(null);
   const active = currency && currencies.includes(currency) ? currency : (currencies[0] ?? "");
   const bars = useMemo(() => coverageByType(rows, active), [rows, active]);
@@ -129,12 +134,7 @@ export function CoverageByTypeChart({ rows }: { rows: BondRow[] }) {
         <div className="w-full" style={{ height: Math.max(160, bars.length * 40) }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={bars} layout="vertical" margin={{ left: 8, right: 16 }}>
-              <XAxis
-                type="number"
-                className="fill-muted-foreground"
-                tick={{ fontSize: 11 }}
-                hide
-              />
+              <XAxis type="number" className="fill-muted-foreground" tick={{ fontSize: 11 }} hide />
               <YAxis
                 type="category"
                 dataKey="label"

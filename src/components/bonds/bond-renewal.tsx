@@ -22,11 +22,7 @@ import {
   type BondDetailResult,
 } from "@/lib/bonds.functions";
 import { bondErrorMessage } from "@/lib/bonds.query";
-import {
-  RENEWABLE_STATUSES,
-  isTerminalBondStatus,
-  renewBondSchemaFor,
-} from "@/lib/bonds.rules";
+import { RENEWABLE_STATUSES, isTerminalBondStatus, renewBondSchemaFor } from "@/lib/bonds.rules";
 
 function money(amount: number, currency: string) {
   try {
@@ -207,11 +203,7 @@ export function BondRenewalSection({ detail }: { detail: BondDetailResult }) {
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="renew-notes">Notes</Label>
-              <Textarea
-                id="renew-notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
+              <Textarea id="renew-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </div>
