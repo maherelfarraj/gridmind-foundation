@@ -13,7 +13,11 @@ const PROJECT = {
 
 type Rows = Record<string, unknown[]>;
 
-function makeDb(rows: Rows, rpcResults: Record<string, unknown> = {}, opts: { throwOn?: string } = {}) {
+function makeDb(
+  rows: Rows,
+  rpcResults: Record<string, unknown> = {},
+  opts: { throwOn?: string } = {},
+) {
   const calls = {
     rpc: [] as Array<{ name: string; args: any }>,
     inserts: [] as Array<{ table: string; payload: any }>,
@@ -82,7 +86,12 @@ describe("emitThreadEvent — blueprint §8 fan-out", () => {
     );
     const res = await emitThreadEvent(
       { supabase: db as never },
-      { event: "module_changed", sourceType: "project", sourceId: PROJECT.id, projectId: PROJECT.id },
+      {
+        event: "module_changed",
+        sourceType: "project",
+        sourceId: PROJECT.id,
+        projectId: PROJECT.id,
+      },
     );
     expect(areasOf(res)).toEqual([
       "stringing",
@@ -101,7 +110,12 @@ describe("emitThreadEvent — blueprint §8 fan-out", () => {
     );
     const res = await emitThreadEvent(
       { supabase: db as never },
-      { event: "inverter_changed", sourceType: "project", sourceId: PROJECT.id, projectId: PROJECT.id },
+      {
+        event: "inverter_changed",
+        sourceType: "project",
+        sourceId: PROJECT.id,
+        projectId: PROJECT.id,
+      },
     );
     expect(areasOf(res)).toEqual([
       "sld",
@@ -137,10 +151,7 @@ describe("emitThreadEvent — blueprint §8 fan-out", () => {
   });
 
   it("asbuilt_approved targets the equipment registry", async () => {
-    const { db } = makeDb(
-      { ...baseRows },
-      { create_impact_assessment: "a4", link_entities: "ok" },
-    );
+    const { db } = makeDb({ ...baseRows }, { create_impact_assessment: "a4", link_entities: "ok" });
     const res = await emitThreadEvent(
       { supabase: db as never },
       {
@@ -221,7 +232,12 @@ describe("emitThreadEvent — invariants", () => {
     const { db, calls } = makeDb(baseRows, { create_impact_assessment: "a6" });
     const res = await emitThreadEvent(
       { supabase: db as never },
-      { event: "module_changed", sourceType: "project", sourceId: PROJECT.id, projectId: PROJECT.id },
+      {
+        event: "module_changed",
+        sourceType: "project",
+        sourceId: PROJECT.id,
+        projectId: PROJECT.id,
+      },
     );
     expect(res.impacts).toHaveLength(5);
     expect(res.impacts.every((i) => i.entity_id === null)).toBe(true);
@@ -246,7 +262,12 @@ describe("emitThreadEvent — invariants", () => {
     const { db: empty } = makeDb({});
     const missing = await emitThreadEvent(
       { supabase: empty as never },
-      { event: "module_changed", sourceType: "project", sourceId: PROJECT.id, projectId: PROJECT.id },
+      {
+        event: "module_changed",
+        sourceType: "project",
+        sourceId: PROJECT.id,
+        projectId: PROJECT.id,
+      },
     );
     expect(missing.skipped).toBe("project_not_found");
   });

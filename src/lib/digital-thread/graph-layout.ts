@@ -100,7 +100,10 @@ export function buildGraphLayers(
   const depthKeys = Array.from(byDepth.keys()).sort((a, b) => a - b);
   const layers = depthKeys.map((depth) => ({
     depth,
-    nodes: byDepth.get(depth)!.slice().sort((a, b) => a.entity_type.localeCompare(b.entity_type)),
+    nodes: byDepth
+      .get(depth)!
+      .slice()
+      .sort((a, b) => a.entity_type.localeCompare(b.entity_type)),
   }));
 
   const tallest = Math.max(1, ...layers.map((l) => l.nodes.length));

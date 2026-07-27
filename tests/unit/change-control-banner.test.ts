@@ -70,9 +70,9 @@ describe("is_under_change_control — FALSE paths", () => {
 
   it("is FALSE for another entity and for another tenant's CR", () => {
     expect(isUnderChangeControl(input({ entityId: "po-other" }))).toBe(false);
-    expect(
-      isUnderChangeControl(input({ changeRequests: [cr({ company_id: "co-b" })] })),
-    ).toBe(false);
+    expect(isUnderChangeControl(input({ changeRequests: [cr({ company_id: "co-b" })] }))).toBe(
+      false,
+    );
     expect(isUnderChangeControl(input({ changeRequests: [] }))).toBe(false);
   });
 

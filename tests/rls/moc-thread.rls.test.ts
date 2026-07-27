@@ -95,7 +95,10 @@ describe.skipIf(!up)("P-192 MOC + digital-thread RLS isolation", () => {
     });
 
     it(`external viewer reads zero rows from ${table}`, async () => {
-      const { data } = await f.viewer.client.from(table as never).select("id").limit(50);
+      const { data } = await f.viewer.client
+        .from(table as never)
+        .select("id")
+        .limit(50);
       expect(data ?? []).toHaveLength(0);
     });
   }

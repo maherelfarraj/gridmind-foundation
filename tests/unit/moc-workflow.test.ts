@@ -27,13 +27,16 @@ describe("submit_change_request", () => {
       ok: false,
       error: "description_and_reason_required",
     });
-    expect(
-      canSubmitChangeRequest({ status: "draft", description: "d", reason: "r" }).ok,
-    ).toBe(true);
+    expect(canSubmitChangeRequest({ status: "draft", description: "d", reason: "r" }).ok).toBe(
+      true,
+    );
   });
 
   it("is idempotent once the CR has left draft", () => {
-    expect(canSubmitChangeRequest({ status: "assessment" })).toEqual({ ok: true, idempotent: true });
+    expect(canSubmitChangeRequest({ status: "assessment" })).toEqual({
+      ok: true,
+      idempotent: true,
+    });
   });
 
   it("numbers change requests per company as CR-0007", () => {
@@ -143,16 +146,19 @@ describe("transition_change_request — truth table", () => {
       ok: false,
       error: "forbidden",
     });
-    expect(evaluateTransition({ from: "draft", to: "cancelled", isOriginator: true }).ok).toBe(true);
+    expect(evaluateTransition({ from: "draft", to: "cancelled", isOriginator: true }).ok).toBe(
+      true,
+    );
     expect(
       evaluateTransition({ from: "assessment", to: "cancelled", isCompanyAdmin: true }).ok,
     ).toBe(true);
   });
 
   it("fails closed for non-members and unauthenticated callers", () => {
-    expect(
-      evaluateTransition({ from: "draft", to: "assessment", authenticated: false }),
-    ).toEqual({ ok: false, error: "not_authenticated" });
+    expect(evaluateTransition({ from: "draft", to: "assessment", authenticated: false })).toEqual({
+      ok: false,
+      error: "not_authenticated",
+    });
     expect(evaluateTransition({ from: "draft", to: "assessment", isMember: false })).toEqual({
       ok: false,
       error: "forbidden",

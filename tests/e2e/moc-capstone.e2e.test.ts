@@ -259,7 +259,9 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
         .update({
           status: "done",
           done_at: new Date().toISOString(),
-          evidence: [{ note: "Completed in capstone run", by: state.userId, at: new Date().toISOString() }],
+          evidence: [
+            { note: "Completed in capstone run", by: state.userId, at: new Date().toISOString() },
+          ],
         } as never)
         .eq("id", t.id);
     }

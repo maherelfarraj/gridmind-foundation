@@ -14,7 +14,6 @@ function typeLabel(t: string) {
 export function ThreadGraph({ graph, className }: { graph: EntityGraph; className?: string }) {
   const { placed, width, height, index } = useMemo(() => layoutForGraph(graph), [graph]);
 
-
   if (graph.nodes.length === 0) return null;
 
   return (

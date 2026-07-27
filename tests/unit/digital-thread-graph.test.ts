@@ -65,9 +65,7 @@ describe("buildGraphLayers — 17-step chain", () => {
 
     expect(layout.layers).toHaveLength(17);
     expect(layout.placed).toHaveLength(17);
-    expect(layout.layers.map((l) => l.depth)).toEqual(
-      Array.from({ length: 17 }, (_, i) => i),
-    );
+    expect(layout.layers.map((l) => l.depth)).toEqual(Array.from({ length: 17 }, (_, i) => i));
     expect(layout.layers.at(-1)!.nodes[0].entity_type).toBe("warranty_claim");
     // Columns advance left → right, one node per column.
     const xs = layout.placed.map((p) => p.x);
@@ -94,10 +92,31 @@ describe("buildGraphLayers — resilience", () => {
       { entity_type: "rfq", entity_id: "c", label: "C", depth: 2 },
     ] as GraphNode[];
     const edges = [
-      { id: "1", source_type: "layout", source_id: "a", target_type: "bom", target_id: "b", link_type: "impacts" },
-      { id: "2", source_type: "bom", source_id: "b", target_type: "rfq", target_id: "c", link_type: "impacts" },
+      {
+        id: "1",
+        source_type: "layout",
+        source_id: "a",
+        target_type: "bom",
+        target_id: "b",
+        link_type: "impacts",
+      },
+      {
+        id: "2",
+        source_type: "bom",
+        source_id: "b",
+        target_type: "rfq",
+        target_id: "c",
+        link_type: "impacts",
+      },
       // closes the loop back to the root
-      { id: "3", source_type: "rfq", source_id: "c", target_type: "layout", target_id: "a", link_type: "impacts" },
+      {
+        id: "3",
+        source_type: "rfq",
+        source_id: "c",
+        target_type: "layout",
+        target_id: "a",
+        link_type: "impacts",
+      },
     ] as GraphEdge[];
 
     const layout = buildGraphLayers(nodes, edges, { entity_type: "layout", entity_id: "a" });
@@ -115,8 +134,22 @@ describe("buildGraphLayers — resilience", () => {
       { ...dup, label: "B (copy)" },
     ];
     const edges = [
-      { id: "1", source_type: "layout", source_id: "a", target_type: "bom", target_id: "b", link_type: "impacts" },
-      { id: "2", source_type: "layout", source_id: "a", target_type: "ghost", target_id: "zz", link_type: "impacts" },
+      {
+        id: "1",
+        source_type: "layout",
+        source_id: "a",
+        target_type: "bom",
+        target_id: "b",
+        link_type: "impacts",
+      },
+      {
+        id: "2",
+        source_type: "layout",
+        source_id: "a",
+        target_type: "ghost",
+        target_id: "zz",
+        link_type: "impacts",
+      },
     ] as GraphEdge[];
 
     const layout = buildGraphLayers(nodes, edges, { entity_type: "layout", entity_id: "a" });
