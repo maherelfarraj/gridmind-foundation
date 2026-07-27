@@ -17513,6 +17513,143 @@ export type Database = {
           },
         ]
       }
+      vendor_portal_events: {
+        Row: {
+          actor_id: string | null
+          actor_type: Database["public"]["Enums"]["vendor_portal_actor"]
+          company_id: string
+          created_at: string
+          event: string
+          id: string
+          ip: string | null
+          membership_id: string | null
+          metadata: Json
+          user_agent: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type?: Database["public"]["Enums"]["vendor_portal_actor"]
+          company_id: string
+          created_at?: string
+          event: string
+          id?: string
+          ip?: string | null
+          membership_id?: string | null
+          metadata?: Json
+          user_agent?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: Database["public"]["Enums"]["vendor_portal_actor"]
+          company_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          ip?: string | null
+          membership_id?: string | null
+          metadata?: Json
+          user_agent?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_portal_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_portal_events_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_portal_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_portal_memberships: {
+        Row: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          exposure: Json
+          id: string
+          invite_id: string | null
+          invited_by: string | null
+          last_seen_at: string | null
+          status: Database["public"]["Enums"]["vendor_portal_status"]
+          updated_at: string
+          user_id: string | null
+          vendor_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          exposure?: Json
+          id?: string
+          invite_id?: string | null
+          invited_by?: string | null
+          last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["vendor_portal_status"]
+          updated_at?: string
+          user_id?: string | null
+          vendor_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          exposure?: Json
+          id?: string
+          invite_id?: string | null
+          invited_by?: string | null
+          last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["vendor_portal_status"]
+          updated_at?: string
+          user_id?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_portal_memberships_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_portal_memberships_invite_fk"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_portal_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_portal_memberships_vendor_fk"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_scorecards: {
         Row: {
           company_id: string
@@ -19185,6 +19322,55 @@ export type Database = {
         Args: { p_id: string; p_payload?: Json; p_to: string }
         Returns: Json
       }
+      vendor_portal_assert_access: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          exposure: Json
+          id: string
+          invite_id: string | null
+          invited_by: string | null
+          last_seen_at: string | null
+          status: Database["public"]["Enums"]["vendor_portal_status"]
+          updated_at: string
+          user_id: string | null
+          vendor_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vendor_portal_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      vendor_portal_get_pos: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          currency_code: string
+          id: string
+          issued_at: string
+          lines: Json
+          po_number: string
+          required_by_date: string
+          status: string
+          total_amount: number
+        }[]
+      }
+      vendor_portal_write_event: {
+        Args: {
+          p_company_id?: string
+          p_event: string
+          p_ip?: string
+          p_metadata?: Json
+          p_user_agent?: string
+          p_vendor_id: string
+        }
+        Returns: string
+      }
       verify_api_key: {
         Args: { p_raw_key: string }
         Returns: {
@@ -19230,6 +19416,7 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
+        | "vendor_viewer"
       ar_reminder_channel: "email" | "phone" | "letter" | "other" | "portal"
       ar_reminder_status: "sent" | "responded" | "escalated"
       asset_node_type:
@@ -19812,6 +19999,8 @@ export type Database = {
         | "closed"
       tq_status: "draft" | "submitted" | "answered" | "closed" | "void"
       transmittal_direction: "outgoing" | "incoming"
+      vendor_portal_actor: "vendor" | "internal" | "system"
+      vendor_portal_status: "invited" | "active" | "suspended" | "revoked"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
       warranty_claim_status:
         | "draft"
@@ -19995,6 +20184,7 @@ export const Constants = {
         "client_viewer",
         "investor_viewer",
         "lender_viewer",
+        "vendor_viewer",
       ],
       ar_reminder_channel: ["email", "phone", "letter", "other", "portal"],
       ar_reminder_status: ["sent", "responded", "escalated"],
@@ -20642,6 +20832,8 @@ export const Constants = {
       ],
       tq_status: ["draft", "submitted", "answered", "closed", "void"],
       transmittal_direction: ["outgoing", "incoming"],
+      vendor_portal_actor: ["vendor", "internal", "system"],
+      vendor_portal_status: ["invited", "active", "suspended", "revoked"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
       warranty_claim_status: [
         "draft",
