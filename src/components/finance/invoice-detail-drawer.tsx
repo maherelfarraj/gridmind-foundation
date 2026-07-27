@@ -64,6 +64,7 @@ export function InvoiceDetailDrawer({
   const qc = useQueryClient();
   const payFn = useServerFn(markInvoicePaid);
   const sendFn = useServerFn(markInvoiceSent);
+  const approveFn = useServerFn(approveInvoice);
   const [payOpen, setPayOpen] = useState(false);
   const access = useQuery(paymentsAccessQueryOptions());
   const detail = useQuery({
