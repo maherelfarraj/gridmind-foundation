@@ -1,58 +1,19 @@
 // P-188 — Depth-columned SVG graph viewer for the digital thread.
+// Layout maths live in @/lib/digital-thread/graph-layout (pure, unit-tested).
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
-import type { EntityGraph, GraphNode } from "@/lib/digital-thread/thread.server";
-
-const COL_W = 240;
-const ROW_H = 56;
-const NODE_W = 196;
-const NODE_H = 40;
-const PAD = 24;
+import { layoutForGraph, NODE_H, NODE_W } from "@/lib/digital-thread/graph-layout";
+import type { EntityGraph } from "@/lib/digital-thread/thread.server";
 
 function typeLabel(t: string) {
   return t.replaceAll("_", " ");
 }
 
-interface Positioned extends GraphNode {
-  x: number;
-  y: number;
-}
-
 export function ThreadGraph({ graph, className }: { graph: EntityGraph; className?: string }) {
-  const { placed, width, height, index } = useMemo(() => {
-    const byDepth = new Map<number, GraphNode[]>();
-    for (const n of graph.nodes) {
-      const list = byDepth.get(n.depth) ?? [];
-      list.push(n);
-      byDepth.set(n.depth, list);
-    }
-    const depths = Array.from(byDepth.keys()).sort((a, b) => a - b);
-    const tallest = Math.max(1, ...depths.map((d) => byDepth.get(d)!.length));
-    const placed: Positioned[] = [];
-    depths.forEach((d, col) => {
-      const list = byDepth
-        .get(d)!
-        .slice()
-        .sort((a, b) => a.entity_type.localeCompare(b.entity_type));
-      const offset = (tallest - list.length) / 2;
-      list.forEach((n, row) => {
-        placed.push({
-          ...n,
-          x: PAD + col * COL_W,
-          y: PAD + (row + offset) * ROW_H,
-        });
-      });
-    });
-    const index = new Map(placed.map((p) => [`${p.entity_type}:${p.entity_id}`, p]));
-    return {
-      placed,
-      index,
-      width: PAD * 2 + Math.max(1, depths.length) * COL_W,
-      height: PAD * 2 + tallest * ROW_H,
-    };
-  }, [graph]);
+  const { placed, width, height, index } = useMemo(() => layoutForGraph(graph), [graph]);
+
 
   if (graph.nodes.length === 0) return null;
 
