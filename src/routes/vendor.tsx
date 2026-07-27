@@ -7,7 +7,6 @@ import { ShieldCheck, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserMenu } from "@/components/user-menu";
-import { Button } from "@/components/ui/button";
 import { listMyVendorMemberships } from "@/lib/vendor-portal.functions";
 
 export const Route = createFileRoute("/vendor")({
@@ -122,28 +121,6 @@ function VendorMfaBanner() {
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-    </div>
-  );
-}
-
-export function VendorPortalErrorCard({
-  title,
-  description,
-  onRetry,
-}: {
-  title: string;
-  description: string;
-  onRetry?: () => void;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-8 text-center">
-      <h2 className="font-display text-lg font-semibold text-foreground">{title}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-      {onRetry ? (
-        <Button className="mt-4" variant="outline" onClick={onRetry}>
-          Try again
-        </Button>
-      ) : null}
     </div>
   );
 }
