@@ -402,7 +402,12 @@ function ChangeDetailPage() {
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.reason}</p>
           </Card>
 
+          {cr.change_type === "vendor_substitution" ? (
+            <VendorSubstitution changeRequestId={id} editable={editable} />
+          ) : null}
+
           <ImpactCards cr={cr} editable={editable} draft={draft} onChange={setDraft} />
+
 
           <Card className="space-y-3 p-4">
             <h2 className="text-sm font-medium text-foreground">Affected systems</h2>
