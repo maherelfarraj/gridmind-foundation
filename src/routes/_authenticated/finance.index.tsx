@@ -370,6 +370,39 @@ function FinanceCockpitPage() {
             </span>
           }
         />
+
+        <Link to="/finance/bonds" search={{ expiring: 30 }} className="block">
+          <KpiTile
+            isLoading={isLoading}
+            icon={ShieldAlert}
+            label="Bonds expiring ≤ 30 d"
+            value={
+              data?.bonds_expiring_30.available
+                ? formatNumber(data.bonds_expiring_30.value!.count)
+                : NA
+            }
+            status={
+              data?.bonds_expiring_30.value?.count ? ("bad" as KpiStatus) : ("neutral" as KpiStatus)
+            }
+            hint={
+              <span className="flex items-center gap-1.5">
+                {data?.bonds_expiring_30.available
+                  ? data.bonds_expiring_30.value!.per_currency.length > 0
+                    ? data.bonds_expiring_30
+                        .value!.per_currency.map((c) =>
+                          new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency: c.currency_code,
+                          }).format(c.amount),
+                        )
+                        .join(" · ")
+                    : "No instruments expiring"
+                  : "Bonds module not installed"}
+                <FormulaInfo text={COCKPIT_FORMULAS.bonds_expiring_30} />
+              </span>
+            }
+          />
+        </Link>
       </div>
 
       {/* Aging mini-chart */}

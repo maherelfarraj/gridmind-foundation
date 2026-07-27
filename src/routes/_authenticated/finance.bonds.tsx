@@ -96,6 +96,10 @@ export const Route = createFileRoute("/_authenticated/finance/bonds")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { expiring?: number } => {
+    const raw = Number(search.expiring);
+    return Number.isFinite(raw) && raw > 0 ? { expiring: raw } : {};
+  },
   component: BondsPage,
 });
 
@@ -152,10 +156,17 @@ function BondsPage() {
     [type, status, project, issuer],
   );
 
+  const { expiring } = Route.useSearch();
   const registerQ = useQuery(bondsRegisterQueryOptions(filters));
   const exportFn = useServerFn(exportBondsCsv);
   const data = registerQ.data;
-  const rows = data?.rows ?? [];
+  const allRows = data?.rows ?? [];
+  const rows =
+    expiring === undefined
+      ? allRows
+      : allRows.filter(
+          (r) => r.days_to_expiry !== null && r.days_to_expiry >= 0 && r.days_to_expiry <= expiring,
+        );
   const kpis = data?.kpis;
 
   async function handleExport() {
