@@ -47,6 +47,8 @@ import {
   loadSnapshotOptions,
   recomputeDirectCost,
   todayIso,
+  type EstimateApprovalSnapshot,
+  type EstimateConversionState,
   type EstimateLineRow,
   type EstimateRow,
   type OpportunityOption,
