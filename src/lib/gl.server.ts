@@ -38,11 +38,7 @@ export async function canWriteGl(ctx: AuthContext): Promise<boolean> {
 
 export async function assertGlWrite(ctx: AuthContext): Promise<void> {
   if (!(await canWriteGl(ctx))) {
-    httpError(
-      403,
-      "forbidden",
-      "Only finance admins or company admins can generate GL exports.",
-    );
+    httpError(403, "forbidden", "Only finance admins or company admins can generate GL exports.");
   }
 }
 
@@ -428,11 +424,7 @@ export async function supersedePriorRuns(
   return ((data ?? []) as { run_number: string }[]).map((r) => r.run_number);
 }
 
-export async function uploadCsv(
-  ctx: AuthContext,
-  path: string,
-  csv: string,
-): Promise<void> {
+export async function uploadCsv(ctx: AuthContext, path: string, csv: string): Promise<void> {
   const bytes = new TextEncoder().encode(csv);
   const { error } = await ctx.supabase.storage.from(GL_BUCKET).upload(path, bytes, {
     contentType: "text/csv; charset=utf-8",

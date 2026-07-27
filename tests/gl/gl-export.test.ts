@@ -17,7 +17,10 @@ import {
   type GlSourceEvent,
 } from "@/lib/gl.rules";
 
-function mapping(event: GlSourceEvent["event_type"], overrides: Partial<GlMapping> = {}): GlMapping {
+function mapping(
+  event: GlSourceEvent["event_type"],
+  overrides: Partial<GlMapping> = {},
+): GlMapping {
   return {
     event_type: event,
     debit_account_code: "1200",
@@ -69,12 +72,12 @@ describe("mapping resolution", () => {
       enabled: true,
     };
     expect(UpdateGlMappingSchema.safeParse(base).success).toBe(true);
-    expect(
-      UpdateGlMappingSchema.safeParse({ ...base, debit_account_code: "210" }).success,
-    ).toBe(false);
-    expect(
-      UpdateGlMappingSchema.safeParse({ ...base, debit_account_code: "21-00" }).success,
-    ).toBe(false);
+    expect(UpdateGlMappingSchema.safeParse({ ...base, debit_account_code: "210" }).success).toBe(
+      false,
+    );
+    expect(UpdateGlMappingSchema.safeParse({ ...base, debit_account_code: "21-00" }).success).toBe(
+      false,
+    );
     expect(
       UpdateGlMappingSchema.safeParse({ ...base, credit_account_code: "12345678901" }).success,
     ).toBe(false);
@@ -107,7 +110,13 @@ describe("journal emission", () => {
       }),
     ];
     const result = buildJournal(
-      [event({ event_type: "payment_received", source_type: "payment", source_number: "PAY-0007" })],
+      [
+        event({
+          event_type: "payment_received",
+          source_type: "payment",
+          source_number: "PAY-0007",
+        }),
+      ],
       mappings,
       "USD",
     );

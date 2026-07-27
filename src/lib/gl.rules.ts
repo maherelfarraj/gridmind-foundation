@@ -37,12 +37,7 @@ export const SOURCE_TABLE: Record<GlEventType, string> = {
 };
 
 /** Statuses that make a source eligible for the ledger. */
-export const RECEIVABLE_INVOICE_STATUSES = [
-  "approved",
-  "sent",
-  "partially_paid",
-  "paid",
-] as const;
+export const RECEIVABLE_INVOICE_STATUSES = ["approved", "sent", "partially_paid", "paid"] as const;
 export const PAYABLE_INVOICE_STATUSES = ["approved"] as const;
 export const PAYMENT_RECORD_STATUSES = ["recorded"] as const;
 export const PAY_APP_STATUSES = ["approved"] as const;

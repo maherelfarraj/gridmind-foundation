@@ -143,12 +143,7 @@ export const generateGlExport = createServerFn({ method: "POST" })
       generated_by: context.user!.id,
     });
     await insertLines(context, companyId, run.id, journal.lines);
-    const superseded = await supersedePriorRuns(
-      context,
-      data.period_from,
-      data.period_to,
-      run.id,
-    );
+    const superseded = await supersedePriorRuns(context, data.period_from, data.period_to, run.id);
 
     await audit(context, "gl.export_generated", "gl_export_run", run.id, {
       run_number: run.run_number,
@@ -182,10 +177,7 @@ export const downloadGlExport = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => RunIdSchema.parse(input))
   .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{ run_number: string; file_path: string; csv: string }> => {
+    async ({ data, context }): Promise<{ run_number: string; file_path: string; csv: string }> => {
       requireSupabaseAuth(context);
       await assertGlWrite(context);
       const companyId = await glCompanyId(context);
@@ -258,9 +250,7 @@ export const updateGlMapping = createServerFn({ method: "POST" })
         .eq("id", (existing as { id: string }).id);
       if (error) throw error;
     } else {
-      const { error } = await context.supabase
-        .from("gl_account_mappings")
-        .insert(values as never);
+      const { error } = await context.supabase.from("gl_account_mappings").insert(values as never);
       if (error) throw error;
     }
 
