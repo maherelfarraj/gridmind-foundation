@@ -114,8 +114,10 @@ function FinancePeriodsPage() {
 
   const reopenMutation = useMutation({
     mutationFn: (input: { period_month: string; reason: string }) => reopenFn({ data: input }),
-    onSuccess: () => {
-      toast.success("Period reopened. The reason is recorded in the audit log.");
+    onSuccess: (_r, input) => {
+      toast.success(
+        `${monthLabel(input.period_month)} reopened. The reason is recorded in the audit log.`,
+      );
       setReopenTarget(null);
       setReopenReason("");
       invalidate();
@@ -268,7 +270,33 @@ function FinancePeriodsPage() {
                 })
               }
             >
-              Reopen period
+              Reopen {reopenTarget ? monthLabel(reopenTarget) : "period"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={closeTarget !== null} onOpenChange={(o) => !o && setCloseTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Close {closeTarget ? monthLabel(closeTarget) : ""}?
+            </DialogTitle>
+            <DialogDescription>
+              Closing {closeTarget ? monthLabel(closeTarget) : "this month"} locks every financial
+              posting dated inside it. Later postings are rejected with a 409 until the month is
+              reopened with a recorded reason.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCloseTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={closeMutation.isPending}
+              onClick={() => closeTarget && closeMutation.mutate(closeTarget)}
+            >
+              Close {closeTarget ? monthLabel(closeTarget) : "period"}
             </Button>
           </DialogFooter>
         </DialogContent>
