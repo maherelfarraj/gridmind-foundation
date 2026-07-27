@@ -10,6 +10,7 @@ import {
   DeleteEstimateLineSchema,
   DeleteRateSchema,
   EstimateIdSchema,
+  EstimateComparisonSchema,
   ImportRateLibrarySchema,
   ListEstimatesSchema,
   MarkEstimatePricedSchema,
@@ -22,10 +23,28 @@ import {
 } from "@/lib/estimating.rules";
 import { validateForPricing } from "@/lib/estimating/buildup";
 import {
+  COMPARISON_FORMULAS,
+  buildComparisonRows,
+  committedByType,
+  actualsByType,
+  estimatedByType,
+  type ComparisonRow,
+} from "@/lib/estimating/comparison";
+import {
+  canCreateRevision,
+  type RevisionLine,
+  type RevisionSummary,
+} from "@/lib/estimating/revision-diff";
+import {
   assertDraft,
   assertEstimateWrite,
   assertRateWrite,
   canWriteEstimates,
+  cloneEstimateAsRevision,
+  loadInvoicedByPo,
+  loadLaborActuals,
+  loadProjectPos,
+  loadRevisionChain,
   canWriteRates,
   estimatingCompanyId,
   createProposalFromEstimate,
@@ -598,3 +617,102 @@ export const convertEstimateToProposal = createServerFn({ method: "POST" })
     });
     return { proposal_id: proposalId, lines: lineCount };
   });
+
+/* ------------------------------ comparison + revisions (P-213) */
+
+export interface EstimateComparison {
+  available: boolean;
+  currency_code: string;
+  rows: ComparisonRow[];
+  total: ComparisonRow;
+  sources: { committed: boolean; actuals: boolean; labor: boolean };
+  formulas: readonly string[];
+}
+
+export const getEstimateComparison = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => EstimateComparisonSchema.parse(input))
+  .handler(async ({ data, context }): Promise<EstimateComparison> => {
+    requireSupabaseAuth(context);
+    const estimate = await loadEstimate(context, data.estimate_id);
+    const lines = await loadLines(context, estimate.id);
+    const estimated = estimatedByType(lines);
+
+    if (!estimate.project_id) {
+      return {
+        available: false,
+        currency_code: estimate.currency_code,
+        ...buildComparisonRows({ estimated, committed: null, actuals: null }),
+        sources: { committed: false, actuals: false, labor: false },
+        formulas: COMPARISON_FORMULAS,
+      };
+    }
+
+    const pos = await loadProjectPos(context, estimate.project_id);
+    const invoiced = pos ? await loadInvoicedByPo(context, pos.map((p) => p.id)) : null;
+    const labor = await loadLaborActuals(context, estimate.project_id);
+
+    const committed = pos ? committedByType(pos) : null;
+    const actuals =
+      invoiced == null && labor == null
+        ? null
+        : actualsByType(pos ?? [], invoiced ?? {}, labor ?? 0);
+
+    return {
+      available: true,
+      currency_code: estimate.currency_code,
+      ...buildComparisonRows({ estimated, committed, actuals }),
+      sources: { committed: pos != null, actuals: invoiced != null, labor: labor != null },
+      formulas: COMPARISON_FORMULAS,
+    };
+  });
+
+export interface EstimateRevisions {
+  can_write: boolean;
+  current_id: string;
+  revisions: RevisionSummary[];
+  lines: Record<string, RevisionLine[]>;
+}
+
+export const getEstimateRevisions = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => EstimateComparisonSchema.parse(input))
+  .handler(async ({ data, context }): Promise<EstimateRevisions> => {
+    requireSupabaseAuth(context);
+    const [chain, canWrite] = await Promise.all([
+      loadRevisionChain(context, data.estimate_id),
+      canWriteEstimates(context),
+    ]);
+    return {
+      can_write: canWrite,
+      current_id: data.estimate_id,
+      revisions: chain.summaries,
+      lines: chain.lines,
+    };
+  });
+
+export const createEstimateRevision = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => EstimateComparisonSchema.parse(input))
+  .handler(
+    async ({ data, context }): Promise<{ id: string; revision: number; lines_copied: number }> => {
+      requireSupabaseAuth(context);
+      await assertEstimateWrite(context);
+      const estimate = await loadEstimate(context, data.estimate_id);
+      if (!canCreateRevision(estimate.status)) {
+        httpError(
+          409,
+          "estimate_not_revisable",
+          "Only approved or priced estimates can be revised.",
+        );
+      }
+      const companyId = await estimatingCompanyId(context);
+      const created = await cloneEstimateAsRevision(context, { companyId, estimate });
+      await audit(context, "estimate.revision_created", "estimates", created.id, {
+        from_estimate_id: estimate.id,
+        to_estimate_id: created.id,
+        revision: created.revision,
+      });
+      return created;
+    },
+  );

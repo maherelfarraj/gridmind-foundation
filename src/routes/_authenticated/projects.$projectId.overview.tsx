@@ -7,6 +7,7 @@ import {
   CalendarClock,
   MessageSquareWarning,
   Milestone,
+  Target,
   ShieldCheck,
   Wallet,
   Zap,
@@ -132,6 +133,34 @@ function OverviewTab() {
           icon={kpis?.open_rfis ? MessageSquareWarning : Milestone}
           isLoading={isLoading}
           status={(kpis?.open_rfis ?? 0) > 0 ? "warning" : "neutral"}
+        />
+        <KpiTile
+          label="Estimate accuracy"
+          value={
+            kpis?.estimate_accuracy_pct == null
+              ? "—"
+              : `${formatNumber(kpis.estimate_accuracy_pct, { maximumFractionDigits: 1 })}%`
+          }
+          hint={
+            <Link
+              to="/estimating"
+              search={{ project: projectId, status: "priced" }}
+              title="Mean absolute variance of priced estimates vs actuals"
+            >
+              Mean absolute variance of priced estimates vs actuals
+            </Link>
+          }
+          icon={Target}
+          isLoading={isLoading}
+          status={
+            kpis?.estimate_accuracy_pct == null
+              ? "neutral"
+              : kpis.estimate_accuracy_pct > 10
+                ? "bad"
+                : kpis.estimate_accuracy_pct > 5
+                  ? "warning"
+                  : "good"
+          }
         />
       </div>
 

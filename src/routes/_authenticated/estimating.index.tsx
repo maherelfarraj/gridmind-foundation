@@ -30,6 +30,13 @@ import type { EstimateRow } from "@/lib/estimating.server";
 import { formatMoney } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/estimating/")({
+  // P-213 — deep links from the project accuracy tile: ?project=<id>&status=priced
+  validateSearch: (search: Record<string, unknown>): { project?: string; status?: string } => {
+    const out: { project?: string; status?: string } = {};
+    if (typeof search.project === "string") out.project = search.project;
+    if (typeof search.status === "string") out.status = search.status;
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "Estimating register — GridMind EPC" },
@@ -54,8 +61,9 @@ const ALL = "__all__";
 
 function EstimatingRegisterPage() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState(ALL);
-  const [projectId, setProjectId] = useState(ALL);
+  const search = Route.useSearch();
+  const [status, setStatus] = useState(search.status ?? ALL);
+  const [projectId, setProjectId] = useState(search.project ?? ALL);
   const [q, setQ] = useState("");
 
   const query = useQuery(
