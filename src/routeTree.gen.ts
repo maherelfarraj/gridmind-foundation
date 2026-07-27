@@ -102,6 +102,7 @@ import { Route as AuthenticatedConstructionProductivityRouteImport } from './rou
 import { Route as AuthenticatedConstructionLookAheadRouteImport } from './routes/_authenticated/construction.look-ahead'
 import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_authenticated/construction.cwp'
 import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
+import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
@@ -742,6 +743,11 @@ const AuthenticatedConstructionBaselineCompareRoute =
     path: '/construction/baseline-compare',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChangesIdRoute = AuthenticatedChangesIdRouteImport.update({
+  id: '/changes/$id',
+  path: '/changes/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminHealthRoute =
   AuthenticatedAdminHealthRouteImport.update({
     id: '/health',
@@ -1474,6 +1480,7 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1681,6 +1688,7 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -1884,6 +1892,7 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
   '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
   '/_authenticated/construction/cwp': typeof AuthenticatedConstructionCwpRoute
   '/_authenticated/construction/look-ahead': typeof AuthenticatedConstructionLookAheadRoute
@@ -2095,6 +2104,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/admin/tenants'
     | '/admin/health'
+    | '/changes/$id'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2302,6 +2312,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/portal'
     | '/admin/health'
+    | '/changes/$id'
     | '/construction/baseline-compare'
     | '/construction/cwp'
     | '/construction/look-ahead'
@@ -2504,6 +2515,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
+    | '/_authenticated/changes/$id'
     | '/_authenticated/construction/baseline-compare'
     | '/_authenticated/construction/cwp'
     | '/_authenticated/construction/look-ahead'
@@ -3372,6 +3384,13 @@ declare module '@tanstack/react-router' {
       path: '/construction/baseline-compare'
       fullPath: '/construction/baseline-compare'
       preLoaderRoute: typeof AuthenticatedConstructionBaselineCompareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/changes/$id': {
+      id: '/_authenticated/changes/$id'
+      path: '/changes/$id'
+      fullPath: '/changes/$id'
+      preLoaderRoute: typeof AuthenticatedChangesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/health': {
@@ -4648,6 +4667,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedChangesIdRoute: typeof AuthenticatedChangesIdRoute
   AuthenticatedConstructionBaselineCompareRoute: typeof AuthenticatedConstructionBaselineCompareRoute
   AuthenticatedConstructionCwpRoute: typeof AuthenticatedConstructionCwpRoute
   AuthenticatedConstructionLookAheadRoute: typeof AuthenticatedConstructionLookAheadRoute
@@ -4757,6 +4777,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedChangesIdRoute: AuthenticatedChangesIdRoute,
   AuthenticatedConstructionBaselineCompareRoute:
     AuthenticatedConstructionBaselineCompareRoute,
   AuthenticatedConstructionCwpRoute: AuthenticatedConstructionCwpRoute,
