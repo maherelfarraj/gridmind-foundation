@@ -90,7 +90,7 @@ export function EstimateApprovalCard({ detail }: { detail: EstimateDetail }) {
             <span>Converted to a proposal.</span>
             <Button variant="link" className="h-auto p-0" asChild>
               <Link
-                to="/crm/proposals/$proposalId"
+                to="/proposals/$proposalId"
                 params={{ proposalId: conversion.converted_proposal_id }}
               >
                 Open proposal
