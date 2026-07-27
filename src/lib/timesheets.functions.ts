@@ -82,8 +82,14 @@ export const saveClockMetadata = createServerFn({ method: "POST" })
         clock: z.record(
           isoDate,
           z.object({
-            start: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
-            end: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
+            start: z
+              .string()
+              .regex(/^\d{2}:\d{2}$/)
+              .nullable(),
+            end: z
+              .string()
+              .regex(/^\d{2}:\d{2}$/)
+              .nullable(),
           }),
         ),
       })

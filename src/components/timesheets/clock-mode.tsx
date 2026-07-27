@@ -10,7 +10,11 @@ import { isWeekend, weekDays } from "@/lib/timesheets/week";
 import { cn } from "@/lib/utils";
 
 const hoursFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
-const dayFmt = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
+const dayFmt = new Intl.DateTimeFormat("en-GB", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+});
 
 export function ClockMode({
   weekStart,

@@ -42,8 +42,7 @@ export function TimesheetGrid({
     days.map((d) => ({ work_date: d, activity: r.activity, hours: r.hours[d] ?? 0 })),
   );
   const totals = computeWeeklyTotals(flat);
-  const perDay = (day: string) =>
-    rows.reduce((sum, r) => sum + (Number(r.hours[day]) || 0), 0);
+  const perDay = (day: string) => rows.reduce((sum, r) => sum + (Number(r.hours[day]) || 0), 0);
 
   return (
     <>
@@ -94,10 +93,7 @@ export function TimesheetGrid({
                     </button>
                   </td>
                   {days.map((d) => (
-                    <td
-                      key={d}
-                      className={cn("p-1 text-center", isWeekend(d) && "bg-muted/40")}
-                    >
+                    <td key={d} className={cn("p-1 text-center", isWeekend(d) && "bg-muted/40")}>
                       <div className="flex items-center justify-center gap-1">
                         <Button
                           type="button"
@@ -172,8 +168,8 @@ export function TimesheetGrid({
                   </Tooltip>
                 </span>
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  {hoursFmt.format(totals.regular)} regular ·{" "}
-                  {hoursFmt.format(totals.overtime)} overtime
+                  {hoursFmt.format(totals.regular)} regular · {hoursFmt.format(totals.overtime)}{" "}
+                  overtime
                 </span>
               </td>
               {days.map((d) => (

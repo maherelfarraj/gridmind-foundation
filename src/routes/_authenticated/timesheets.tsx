@@ -152,7 +152,9 @@ function TimesheetsPage() {
     }
     if (next.hours != null && clockRow) {
       mutateRows((prev) =>
-        prev.map((r) => (r.key === clockRow.key ? { ...r, hours: { ...r.hours, [day]: next.hours! } } : r)),
+        prev.map((r) =>
+          r.key === clockRow.key ? { ...r, hours: { ...r.hours, [day]: next.hours! } } : r,
+        ),
       );
     }
   };
@@ -187,7 +189,9 @@ function TimesheetsPage() {
   });
 
   const totals = computeWeeklyTotals(
-    rows.flatMap((r) => days.map((d) => ({ work_date: d, activity: r.activity, hours: r.hours[d] ?? 0 }))),
+    rows.flatMap((r) =>
+      days.map((d) => ({ work_date: d, activity: r.activity, hours: r.hours[d] ?? 0 })),
+    ),
   );
 
   return (
@@ -268,7 +272,10 @@ function TimesheetsPage() {
                     mutateRows((prev) => {
                       const key = rowKey(project_id, cwp_id, activity);
                       if (prev.some((r) => r.key === key)) return prev;
-                      return [...prev, { key, project_id, cwp_id, activity, notes: null, hours: {} }];
+                      return [
+                        ...prev,
+                        { key, project_id, cwp_id, activity, notes: null, hours: {} },
+                      ];
                     })
                   }
                 />
@@ -296,7 +303,9 @@ function TimesheetsPage() {
                   projectLabel={projectLabel}
                   onCellChange={(key, day, hours) =>
                     mutateRows((prev) =>
-                      prev.map((r) => (r.key === key ? { ...r, hours: { ...r.hours, [day]: hours } } : r)),
+                      prev.map((r) =>
+                        r.key === key ? { ...r, hours: { ...r.hours, [day]: hours } } : r,
+                      ),
                     )
                   }
                   onNotesChange={(key, notes) =>
@@ -304,7 +313,9 @@ function TimesheetsPage() {
                   }
                   onRemoveRow={(key) =>
                     mutateRows((prev) =>
-                      prev.map((r) => (r.key === key ? { ...r, hours: {} } : r)).filter((r) => r.key !== key),
+                      prev
+                        .map((r) => (r.key === key ? { ...r, hours: {} } : r))
+                        .filter((r) => r.key !== key),
                     )
                   }
                 />

@@ -20,11 +20,7 @@ export interface GridRow {
   hours: Record<string, number>;
 }
 
-export function rowKey(
-  project_id: string | null,
-  cwp_id: string | null,
-  activity: string,
-): string {
+export function rowKey(project_id: string | null, cwp_id: string | null, activity: string): string {
   return `${project_id ?? "-"}|${cwp_id ?? "-"}|${activity}`;
 }
 
