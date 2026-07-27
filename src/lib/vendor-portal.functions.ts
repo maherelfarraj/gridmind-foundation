@@ -527,3 +527,76 @@ export const acknowledgePo = createServerFn({ method: "POST" })
     if (error) throw httpError(error.message, 403);
     return { ok: true };
   });
+
+// ---------------------------------------------------------------------------
+// P-224 — vendor-proposed delivery windows
+// ---------------------------------------------------------------------------
+
+export interface VendorLineEtaRow {
+  po_id: string;
+  po_line_no: number | null;
+  item_description: string;
+  site_need_date: string | null;
+  current_eta: string | null;
+  eta_confirmed: boolean;
+  status: string;
+  notes: string | null;
+  updated_at: string | null;
+}
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
+
+const proposeDeliveryInput = z.object({
+  vendorId: z.string().uuid(),
+  poId: z.string().uuid(),
+  poIssueDate: isoDate.nullable().optional(),
+  lines: z
+    .array(
+      z.object({
+        line_no: z.number().int().min(1).max(9999),
+        proposed_date: isoDate,
+        proposed_qty: z.number().nonnegative().nullable().optional(),
+        note: z.string().trim().max(500).nullable().optional(),
+      }),
+    )
+    .min(1, "lines_required")
+    .max(200),
+});
+
+export type ProposeDeliveryInput = z.infer<typeof proposeDeliveryInput>;
+
+/** Per-line ETA / confirmation state for the vendor's own POs. */
+export const getVendorPortalLineEtas = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => vendorIdInput.parse(raw))
+  .handler(async ({ context, data }): Promise<VendorLineEtaRow[]> => {
+    requireSupabaseAuth(context);
+    await vendorGate(context, data.vendorId);
+    const { data: rows, error } = await context.supabase.rpc("vendor_portal_get_line_etas", {
+      p_vendor_id: data.vendorId,
+    });
+    if (error) throw httpError(error.message, 403);
+    return (rows ?? []) as unknown as VendorLineEtaRow[];
+  });
+
+/** Vendor proposes delivery dates per PO line — never confirms them. */
+export const proposeDelivery = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => proposeDeliveryInput.parse(raw))
+  .handler(async ({ context, data }): Promise<{ updated: number }> => {
+    requireSupabaseAuth(context);
+    await vendorGate(context, data.vendorId);
+
+    if (data.poIssueDate) {
+      for (const l of data.lines) {
+        if (l.proposed_date < data.poIssueDate) throw httpError("proposed_date_before_issue", 400);
+      }
+    }
+
+    const { data: n, error } = await context.supabase.rpc("vendor_portal_propose_delivery", {
+      p_po_id: data.poId,
+      p_lines: data.lines as unknown as Json,
+    });
+    if (error) throw httpError(error.message, 403);
+    return { updated: Number(n ?? 0) };
+  });

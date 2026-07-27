@@ -19404,6 +19404,20 @@ export type Database = {
           status: string
         }[]
       }
+      vendor_portal_get_line_etas: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          current_eta: string
+          eta_confirmed: boolean
+          item_description: string
+          notes: string
+          po_id: string
+          po_line_no: number
+          site_need_date: string
+          status: string
+          updated_at: string
+        }[]
+      }
       vendor_portal_get_pos: { Args: { p_vendor_id: string }; Returns: Json }
       vendor_portal_my_memberships: {
         Args: never
@@ -19420,6 +19434,10 @@ export type Database = {
           vendor_id: string
           vendor_name: string
         }[]
+      }
+      vendor_portal_propose_delivery: {
+        Args: { p_lines: Json; p_po_id: string }
+        Returns: number
       }
       vendor_portal_write_event: {
         Args: {

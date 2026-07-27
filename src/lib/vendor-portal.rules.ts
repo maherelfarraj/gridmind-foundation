@@ -233,12 +233,14 @@ export function countdownLabel(
 }
 
 export interface PoLine {
+  line_no: number;
   description: string;
   spec: string | null;
   quantity: number;
   uom: string | null;
   unit_price: number;
   amount: number;
+  site_need_date: string | null;
 }
 
 function num(v: unknown): number {
@@ -249,17 +251,68 @@ function num(v: unknown): number {
 /** Normalize the PO `lines` jsonb payload into display rows. */
 export function parsePoLines(raw: unknown): PoLine[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((entry) => {
+  return raw.map((entry, i) => {
     const l = (entry ?? {}) as Record<string, unknown>;
     const quantity = num(l.quantity ?? l.qty);
     const unitPrice = num(l.unit_price ?? l.unitPrice ?? l.rate);
+    const lineNo = Number(l.line_no ?? l.lineNo);
     return {
+      line_no: Number.isFinite(lineNo) && lineNo > 0 ? lineNo : i + 1,
       description: String(l.description ?? l.item ?? l.name ?? "Line item"),
       spec: (l.spec as string | null) ?? (l.specification as string | null) ?? null,
       quantity,
       uom: (l.uom as string | null) ?? (l.unit as string | null) ?? null,
       unit_price: unitPrice,
       amount: l.amount != null ? num(l.amount) : quantity * unitPrice,
+      site_need_date: (l.site_need_date as string | null) ?? null,
     };
   });
 }
+
+// ---------------------------------------------------------------------------
+// P-224 — vendor-proposed delivery windows
+// ---------------------------------------------------------------------------
+
+export const VENDOR_PROPOSED_PREFIX = "Vendor-proposed";
+export const COUNTER_PROPOSED_PREFIX = "Counter-proposed by procurement — ";
+
+/** True when an expediting note was written by a vendor proposal. */
+export function isVendorProposedNote(notes: string | null | undefined): boolean {
+  return typeof notes === "string" && notes.trimStart().startsWith(VENDOR_PROPOSED_PREFIX);
+}
+
+/** True when an expediting note was written by a procurement counter-proposal. */
+export function isCounterProposedNote(notes: string | null | undefined): boolean {
+  return typeof notes === "string" && notes.trimStart().startsWith(COUNTER_PROPOSED_PREFIX);
+}
+
+export function counterProposedNote(comment: string): string {
+  return `${COUNTER_PROPOSED_PREFIX}${comment.trim()}`;
+}
+
+export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Client-side mirror of the RPC guard: a proposed date must be a valid ISO
+ * date and never earlier than the PO issue date. Returns an error code or null.
+ */
+export function validateProposedDate(
+  proposedDate: string | null | undefined,
+  poIssueDate: string | null | undefined,
+): "proposed_date_required" | "proposed_date_invalid" | "proposed_date_before_issue" | null {
+  if (!proposedDate) return "proposed_date_required";
+  if (!ISO_DATE_RE.test(proposedDate)) return "proposed_date_invalid";
+  if (!poIssueDate) return null;
+  const issue = poIssueDate.slice(0, 10);
+  if (!ISO_DATE_RE.test(issue)) return null;
+  return proposedDate < issue ? "proposed_date_before_issue" : null;
+}
+
+export const PROPOSE_DELIVERY_ERRORS: Record<string, string> = {
+  proposed_date_required: "Pick a proposed delivery date.",
+  proposed_date_invalid: "Enter a valid date (YYYY-MM-DD).",
+  proposed_date_before_issue: "Date cannot be before the PO issue date.",
+  line_not_on_po: "That line does not exist on this purchase order.",
+  lines_required: "Add at least one line to propose.",
+  deliveries_not_exposed: "Delivery scheduling is not shared with your account.",
+};

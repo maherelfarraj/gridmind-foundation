@@ -436,3 +436,147 @@ export const deleteExpediting = createServerFn({ method: "POST" })
     await audit(context, "expediting.update", data.id, { deleted: true });
     return { ok: true };
   });
+
+// ---------------------------------------------------------------------------
+// P-224 — vendor-proposed ETA confirmation / counter-proposal
+// ---------------------------------------------------------------------------
+
+async function assertProcurementWrite(context: AuthContext): Promise<void> {
+  const flags = await hasAnyRole(context, [
+    "procurement_admin",
+    "procurement_officer",
+    "company_admin",
+  ]);
+  if (!Object.values(flags).some(Boolean)) httpError(403, "forbidden_role");
+}
+
+/** Notify the vendor portal user(s) for a PO and log an internal portal event. */
+async function notifyVendorOfEtaDecision(
+  context: AuthContext,
+  row: any,
+  event: string,
+  title: string,
+  body: string,
+): Promise<void> {
+  const { data: po } = await context.supabase
+    .from("purchase_orders")
+    .select("id, po_number, vendor_id, company_id")
+    .eq("id", row.po_id)
+    .maybeSingle();
+  const vendorId = (po as any)?.vendor_id as string | undefined;
+  if (!vendorId) return;
+
+  try {
+    await context.supabase.rpc("vendor_portal_write_event", {
+      p_vendor_id: vendorId,
+      p_event: event,
+      p_metadata: {
+        po_id: row.po_id,
+        po_number: (po as any)?.po_number ?? null,
+        po_line_no: row.po_line_no,
+        current_eta: row.current_eta,
+      } as any,
+      p_company_id: row.company_id,
+    });
+  } catch {
+    /* best-effort */
+  }
+
+  const { data: members } = await context.supabase
+    .from("vendor_portal_memberships")
+    .select("user_id, status")
+    .eq("vendor_id", vendorId)
+    .eq("status", "active");
+  const userIds = ((members ?? []) as any[]).map((m) => m.user_id).filter(Boolean);
+  if (userIds.length === 0) return;
+
+  await context.supabase.from("notifications").insert(
+    userIds.map((uid: string) => ({
+      company_id: row.company_id,
+      user_id: uid,
+      type: "expediting",
+      title,
+      body,
+      link: `/vendor/${vendorId}/deliveries`,
+      metadata: { po_id: row.po_id, po_line_no: row.po_line_no } as any,
+    })) as any,
+  );
+}
+
+export const confirmEta = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
+    requireSupabaseAuth(context);
+    await assertProcurementWrite(context);
+    const current = await loadRow(context, data.id);
+    if (!current.current_eta) httpError(400, "no_eta_to_confirm");
+
+    const status = await recomputeStatus(context, { ...current, eta_confirmed: true });
+    const { data: upd, error } = await context.supabase
+      .from("expediting_logs")
+      .update({ eta_confirmed: true, status } as any)
+      .eq("id", data.id)
+      .select("id, status")
+      .maybeSingle();
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+
+    await audit(context, "expediting.eta_confirmed", data.id, {
+      current_eta: current.current_eta,
+      status,
+    });
+    await notifyVendorOfEtaDecision(
+      context,
+      current,
+      "expediting.eta_confirmed",
+      "Delivery ETA confirmed",
+      `Procurement confirmed ${current.current_eta} for ${current.item_description}.`,
+    );
+
+    return { id: (upd as any).id as string, status: (upd as any).status as ExpeditingStatus };
+  });
+
+export const counterProposeEta = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        eta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD"),
+        comment: z.string().trim().min(1).max(1000),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ id: string; status: ExpeditingStatus }> => {
+    requireSupabaseAuth(context);
+    await assertProcurementWrite(context);
+    const current = await loadRow(context, data.id);
+    const notes = `Counter-proposed by procurement — ${data.comment.trim()}`;
+    const merged = { ...current, current_eta: data.eta, eta_confirmed: false, notes };
+    const status = await recomputeStatus(context, merged);
+
+    const { data: upd, error } = await context.supabase
+      .from("expediting_logs")
+      .update({ current_eta: data.eta, eta_confirmed: false, notes, status } as any)
+      .eq("id", data.id)
+      .select("id, status")
+      .maybeSingle();
+    if (error) {
+      if ((error as any).code === "42501") httpError(403, "forbidden");
+      throw error;
+    }
+
+    await audit(context, "expediting.eta_countered", data.id, { eta: data.eta, status });
+    await notifyVendorOfEtaDecision(
+      context,
+      merged,
+      "expediting.eta_countered",
+      "Procurement counter-proposed a delivery date",
+      `${current.item_description}: procurement proposes ${data.eta}. ${data.comment.trim()}`,
+    );
+
+    return { id: (upd as any).id as string, status: (upd as any).status as ExpeditingStatus };
+  });
