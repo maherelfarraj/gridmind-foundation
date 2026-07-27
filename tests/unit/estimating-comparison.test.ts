@@ -5,6 +5,7 @@ import {
   buildComparisonRows,
   classifyPoLine,
   committedByType,
+  estimatedByType,
   meanAbsoluteVariance,
   variancePct,
   varianceTone,
@@ -67,13 +68,12 @@ describe("variance", () => {
 describe("comparison rows", () => {
   it("reconciles estimated per type and degrades missing sources to null", () => {
     const { rows, total } = buildComparisonRows({
-      lines: [
+      estimated: estimatedByType([
         { line_type: "material", amount: 1000 },
         { line_type: "labor", amount: 500 },
-      ],
-      pos: null,
-      invoicedByPo: null,
-      laborActuals: null,
+      ]),
+      committed: null,
+      actuals: null,
     });
     const material = rows.find((r) => r.line_type === "material")!;
     expect(material.estimated).toBe(1000);
