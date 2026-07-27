@@ -365,6 +365,13 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         moduleKey: "planning_budget",
+        label: "Receivables",
+        url: "/finance/receivables",
+        icon: Wallet,
+      },
+
+      {
+        moduleKey: "planning_budget",
         label: "Debit notes",
         url: "/finance/debit-notes",
         icon: Scale,
