@@ -66,7 +66,8 @@ export const Route = createFileRoute("/_authenticated/finance/reconciliation")({
       { property: "og:title", content: "Bank reconciliation — GridMind EPC" },
       {
         property: "og:description",
-        content: "Monthly payment matching with statement references, bulk actions and audit trail.",
+        content:
+          "Monthly payment matching with statement references, bulk actions and audit trail.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -126,7 +127,9 @@ function ReconciliationPage() {
   const bulk = useMutation({
     mutationFn: bulkFn,
     onSuccess: (res) => {
-      toast.success(`${res.updated} payment(s) marked ${reconStatusLabel(res.status).toLowerCase()}`);
+      toast.success(
+        `${res.updated} payment(s) marked ${reconStatusLabel(res.status).toLowerCase()}`,
+      );
       setSelected([]);
       setBulkPrefix("");
       setBulkNote("");
@@ -177,10 +180,7 @@ function ReconciliationPage() {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="recon-direction">Direction</Label>
-          <Select
-            value={direction}
-            onValueChange={(v) => setDirection(v as typeof direction)}
-          >
+          <Select value={direction} onValueChange={(v) => setDirection(v as typeof direction)}>
             <SelectTrigger id="recon-direction" className="w-40">
               <SelectValue />
             </SelectTrigger>

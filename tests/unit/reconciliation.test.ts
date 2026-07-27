@@ -90,10 +90,9 @@ describe("filters", () => {
     expect(filterReconRows(rows, { status: "all", direction: "all" })).toHaveLength(4);
     expect(filterReconRows(rows, { status: "matched", direction: "all" })).toHaveLength(1);
     expect(filterReconRows(rows, { status: "excluded", direction: "all" })).toHaveLength(1);
-    expect(filterReconRows(rows, { status: "all", direction: "payable" }).map((r) => r.id)).toEqual([
-      "2",
-      "3",
-    ]);
+    expect(filterReconRows(rows, { status: "all", direction: "payable" }).map((r) => r.id)).toEqual(
+      ["2", "3"],
+    );
   });
 });
 
@@ -105,12 +104,15 @@ describe("schemas", () => {
       false,
     );
     expect(
-      ReconcilePaymentSchema.safeParse({ payment_id: id, status: "excluded", note: "personal card" })
-        .success,
+      ReconcilePaymentSchema.safeParse({
+        payment_id: id,
+        status: "excluded",
+        note: "personal card",
+      }).success,
     ).toBe(true);
-    expect(
-      BulkReconcileSchema.safeParse({ payment_ids: [id], status: "excluded" }).success,
-    ).toBe(false);
+    expect(BulkReconcileSchema.safeParse({ payment_ids: [id], status: "excluded" }).success).toBe(
+      false,
+    );
     expect(
       BulkReconcileSchema.safeParse({ payment_ids: [id], status: "excluded", note: "n/a funds" })
         .success,

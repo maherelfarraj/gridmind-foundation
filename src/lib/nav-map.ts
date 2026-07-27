@@ -5,6 +5,7 @@
 // their module/role gating. Project-scoped destinations use a `:projectId`
 // placeholder and are only rendered when a project is in scope.
 import {
+  Landmark,
   Activity,
   AlertTriangle,
   Atom,
@@ -373,9 +374,9 @@ export const NAV_GROUPS: NavGroup[] = [
 
       {
         moduleKey: "planning_budget",
-        label: "Payments",
+        label: "Bank reconciliation",
         url: "/finance/reconciliation",
-        icon: Receipt,
+        icon: Landmark,
       },
       {
         moduleKey: "planning_budget",

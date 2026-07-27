@@ -38,10 +38,7 @@ export function assertCanReconcile(access: ReconAccess, direction: string): void
 }
 
 /** All recorded + voided payments in the month, with invoice/project labels. */
-export async function loadMonthPayments(
-  ctx: AuthContext,
-  month: string,
-): Promise<PaymentRow[]> {
+export async function loadMonthPayments(ctx: AuthContext, month: string): Promise<PaymentRow[]> {
   const { from, to } = monthRange(month);
   const { data, error } = await ctx.supabase
     .from("payments")
