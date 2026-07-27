@@ -448,20 +448,29 @@ function ExpeditingRowUI({
   onPatch,
   onLogContact,
   onDelete,
+  onConfirmEta,
+  onCounterPropose,
 }: {
   row: ExpeditingRow;
   canWrite: boolean;
   onPatch: (patch: Record<string, unknown>) => void;
   onLogContact: () => void;
   onDelete: () => void;
+  onConfirmEta: () => void;
+  onCounterPropose: (eta: string, comment: string) => void;
 }) {
   const [eta, setEta] = useState(row.current_eta ?? "");
+  const [counterOpen, setCounterOpen] = useState(false);
+  const [counterEta, setCounterEta] = useState(row.current_eta ?? "");
+  const [counterComment, setCounterComment] = useState("");
+  const vendorProposed = isVendorProposedNote(row.notes) && !row.eta_confirmed;
 
   const commitEta = () => {
     const next = eta.trim() === "" ? null : eta;
     if (next === row.current_eta) return;
     onPatch({ current_eta: next });
   };
+
 
   return (
     <TableRow>
