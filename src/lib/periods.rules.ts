@@ -14,6 +14,19 @@ export const PeriodMonthSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 export const ClosePeriodSchema = z.object({ period_month: PeriodMonthSchema });
 export type ClosePeriodInput = z.infer<typeof ClosePeriodSchema>;
 
+/** Reopening a closed month is a governed act: the reason is mandatory and audited. */
+export const REOPEN_REASON_MIN = 10;
+export const ReopenPeriodSchema = z.object({
+  period_month: PeriodMonthSchema,
+  reason: z
+    .string()
+    .trim()
+    .min(REOPEN_REASON_MIN, "Reason must be at least 10 characters — it is written to the audit log.")
+    .max(500),
+});
+export type ReopenPeriodInput = z.infer<typeof ReopenPeriodSchema>;
+
+
 export const SaveChecklistSchema = z.object({
   period_month: PeriodMonthSchema,
   unbilled_reviewed: z.boolean(),

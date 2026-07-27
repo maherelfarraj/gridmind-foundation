@@ -8,7 +8,16 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+
 import { KpiTile } from "@/components/ui/kpi-tile";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -31,7 +40,13 @@ import {
   saveFinancePeriodChecklist,
 } from "@/lib/periods.functions";
 import { financePeriodsQueryOptions, periodComparisonQueryOptions } from "@/lib/periods.query";
-import { monthLabel, periodStatusTone, type PeriodStatus } from "@/lib/periods.rules";
+import {
+  REOPEN_REASON_MIN,
+  monthLabel,
+  periodStatusTone,
+  type PeriodStatus,
+} from "@/lib/periods.rules";
+
 import type { PeriodListRow } from "@/lib/periods.server";
 
 export const Route = createFileRoute("/_authenticated/finance/periods")({
@@ -90,14 +105,20 @@ function FinancePeriodsPage() {
     onError: (e: Error) => toast.error(e.message || "Could not close the period."),
   });
 
+  const [reopenTarget, setReopenTarget] = useState<string | null>(null);
+  const [reopenReason, setReopenReason] = useState("");
+
   const reopenMutation = useMutation({
-    mutationFn: (period_month: string) => reopenFn({ data: { period_month } }),
+    mutationFn: (input: { period_month: string; reason: string }) => reopenFn({ data: input }),
     onSuccess: () => {
-      toast.success("Period reopened.");
+      toast.success("Period reopened. The reason is recorded in the audit log.");
+      setReopenTarget(null);
+      setReopenReason("");
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message || "Could not reopen the period."),
   });
+
 
   const checklistMutation = useMutation({
     mutationFn: (input: { period_month: string; unbilled_reviewed: boolean; note?: string }) =>
@@ -167,7 +188,11 @@ function FinancePeriodsPage() {
             busy={closeMutation.isPending || reopenMutation.isPending}
             onSelect={setSelected}
             onClose={(m) => closeMutation.mutate(m)}
-            onReopen={(m) => reopenMutation.mutate(m)}
+            onReopen={(m) => {
+              setReopenReason("");
+              setReopenTarget(m);
+            }}
+
           />
         </TabsContent>
 
@@ -204,9 +229,50 @@ function FinancePeriodsPage() {
           />
         </TabsContent>
       </Tabs>
+
+      <Dialog open={reopenTarget !== null} onOpenChange={(o) => !o && setReopenTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Reopen {reopenTarget ? monthLabel(reopenTarget) : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Reopening a closed month is a governed act. The reason below is written to the audit
+              log with your name and the time.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reopen-reason">Reason (required, min 10 characters)</Label>
+            <Textarea
+              id="reopen-reason"
+              value={reopenReason}
+              placeholder="e.g. Late supplier credit note must be posted into July before the audit pack is issued."
+              onChange={(e) => setReopenReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReopenTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={reopenReason.trim().length < REOPEN_REASON_MIN || reopenMutation.isPending}
+              onClick={() =>
+                reopenTarget &&
+                reopenMutation.mutate({
+                  period_month: reopenTarget,
+                  reason: reopenReason.trim(),
+                })
+              }
+            >
+              Reopen period
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
 function statusLabel(status: PeriodStatus) {
   return status === "closed" ? "Closed" : status === "closing" ? "Closing" : "Open";
