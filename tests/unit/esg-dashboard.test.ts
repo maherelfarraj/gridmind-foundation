@@ -61,7 +61,13 @@ const factors: CarbonFactor[] = [
 
 const activities: CarbonActivity[] = [
   { id: "1", category: "fuel_diesel", quantity: 1000, unit: "L", period_month: "2026-01-01" },
-  { id: "2", category: "electricity_grid", quantity: 2000, unit: "kWh", period_month: "2026-02-01" },
+  {
+    id: "2",
+    category: "electricity_grid",
+    quantity: 2000,
+    unit: "kWh",
+    period_month: "2026-02-01",
+  },
   { id: "3", category: "waste_general", quantity: 500, unit: "kg", period_month: "2026-02-01" },
   { id: "4", category: "materials_steel", quantity: 3, unit: "t", period_month: "2026-02-01" },
 ];
@@ -119,10 +125,7 @@ describe("buildDashboard", () => {
     });
     const donutSum = d.scope_share.reduce((s, p) => s + p.kg, 0);
     const barSum = d.by_category.reduce((s, p) => s + p.kg, 0);
-    const trendSum = d.monthly.reduce(
-      (s, m) => s + m.scope_1_kg + m.scope_2_kg + m.scope_3_kg,
-      0,
-    );
+    const trendSum = d.monthly.reduce((s, m) => s + m.scope_1_kg + m.scope_2_kg + m.scope_3_kg, 0);
     expect(donutSum).toBeCloseTo(d.gross_kg, 6);
     expect(barSum).toBeCloseTo(d.gross_kg, 6);
     expect(trendSum).toBeCloseTo(d.gross_kg, 6);

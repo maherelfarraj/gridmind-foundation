@@ -46,13 +46,7 @@ export const getEsgDashboard = createServerFn({ method: "GET" })
         data.period_from,
         data.period_to,
       ),
-      loadWasteSummary(
-        context.supabase,
-        companyId,
-        projectId,
-        data.period_from,
-        data.period_to,
-      ),
+      loadWasteSummary(context.supabase, companyId, projectId, data.period_from, data.period_to),
       loadTrir(context.supabase, companyId, projectId, data.period_from, data.period_to),
     ]);
 
@@ -71,9 +65,7 @@ export const getEsgDashboard = createServerFn({ method: "GET" })
 
     const months = monthKeysBetween(data.period_from, data.period_to);
     const avoidedByMonth = monthlyAvoidedKg(scopedKwh, factors);
-    const meteredKwh = scopedKwh
-      ? Object.values(scopedKwh).reduce((s, v) => s + v, 0)
-      : null;
+    const meteredKwh = scopedKwh ? Object.values(scopedKwh).reduce((s, v) => s + v, 0) : null;
     const portfolioTotalKwh = portfolioKwh
       ? Object.values(portfolioKwh).reduce((s, v) => s + v, 0)
       : projectId
@@ -90,11 +82,7 @@ export const getEsgDashboard = createServerFn({ method: "GET" })
 
     const renewableMwh = kwhToMwh(meteredKwh);
     const portfolioMwh = kwhToMwh(portfolioTotalKwh);
-    const share = renewableShare(
-      renewableMwh,
-      portfolioMwh,
-      projectId ? projects.length : 1,
-    );
+    const share = renewableShare(renewableMwh, portfolioMwh, projectId ? projects.length : 1);
     const diversion = waste.available
       ? diversionRate(waste.recyclable_kg, waste.total_kg)
       : { pct: null, reason: "table_missing" as const };

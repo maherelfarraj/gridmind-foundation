@@ -71,7 +71,10 @@ export async function enteredByNames(
 ): Promise<Record<string, string>> {
   const ids = Array.from(new Set(rows.map((r) => r.entered_by).filter(Boolean))) as string[];
   if (ids.length === 0) return {};
-  const { data, error } = await client.from("profiles").select("id, full_name, email").in("id", ids);
+  const { data, error } = await client
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", ids);
   if (error) return {};
   const out: Record<string, string> = {};
   for (const p of (data ?? []) as Array<{ id: string; full_name: string | null; email: string }>) {
@@ -139,7 +142,11 @@ export async function insertActivities(
 
 /** Load a row and refuse mutation when it did not come from manual entry. */
 export async function loadManualActivity(client: Client, id: string): Promise<ActivityRow> {
-  const { data, error } = await client.from("esg_activities").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await client
+    .from("esg_activities")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   if (!data) httpError(404, "not_found", "Activity row not found");
   const row = data as unknown as ActivityRow;

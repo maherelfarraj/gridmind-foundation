@@ -15,8 +15,7 @@ export const ESG_DASHBOARD_EMPTY =
 
 export const ESG_TOOLTIP = {
   scope_1: "Σ activity × factor, fuel categories (esg_activities × esg_emission_factors)",
-  scope_2:
-    "Σ activity × factor, purchased electricity (esg_activities × esg_emission_factors)",
+  scope_2: "Σ activity × factor, purchased electricity (esg_activities × esg_emission_factors)",
   scope_3:
     "Σ activity × factor, transport / materials / waste (esg_activities × esg_emission_factors)",
   avoided: "Avoided = metered kWh × grid factor (scada_telemetry × esg_emission_factors)",
@@ -127,16 +126,11 @@ export function categoryTotals(rows: readonly ComputedRow[]): CategoryPoint[] {
   for (const row of rows) {
     map.set(row.category, (map.get(row.category) ?? 0) + row.co2e_kg);
   }
-  return [...map.entries()]
-    .map(([category, kg]) => ({ category, kg }))
-    .sort((a, b) => b.kg - a.kg);
+  return [...map.entries()].map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg);
 }
 
 /** kg CO2e per MWh generated; null when there is no metered energy. */
-export function carbonIntensity(
-  totals: EmissionTotals,
-  meteredKwh: number | null,
-): number | null {
+export function carbonIntensity(totals: EmissionTotals, meteredKwh: number | null): number | null {
   if (meteredKwh === null) return null;
   const mwh = meteredKwh / 1000;
   if (mwh <= 0) return null;

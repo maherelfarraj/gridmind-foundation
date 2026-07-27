@@ -61,9 +61,7 @@ export function CarbonTotalsCard({
       </CardHeader>
       <CardContent>
         {!totals ? (
-          <p className="text-muted-foreground text-sm">
-            No report computed for this period yet.
-          </p>
+          <p className="text-muted-foreground text-sm">No report computed for this period yet.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <Metric
@@ -84,9 +82,7 @@ export function CarbonTotalsCard({
             <Metric
               label="Avoided"
               formula={ESG_FORMULA_TOOLTIP.avoided}
-              value={
-                totals.avoided_kg === null ? "n/a" : formatKgCo2e(totals.avoided_kg)
-              }
+              value={totals.avoided_kg === null ? "n/a" : formatKgCo2e(totals.avoided_kg)}
               hint={totals.note === "no_metered_data" ? "No metered data" : undefined}
             />
             <Metric

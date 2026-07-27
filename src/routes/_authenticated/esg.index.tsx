@@ -26,12 +26,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { errorMessage } from "@/lib/dpr-query";
 import type { EsgDashboardData } from "@/lib/esg/dashboard.functions";
 import { getEsgDashboard } from "@/lib/esg/dashboard.functions";
-import {
-  ESG_DASHBOARD_EMPTY,
-  ESG_TOOLTIP,
-  fmtIntensity,
-  fmtKg,
-} from "@/lib/esg/dashboard.rules";
+import { ESG_DASHBOARD_EMPTY, ESG_TOOLTIP, fmtIntensity, fmtKg } from "@/lib/esg/dashboard.rules";
 
 export const Route = createFileRoute("/_authenticated/esg/")({
   head: () => ({
@@ -45,7 +40,8 @@ export const Route = createFileRoute("/_authenticated/esg/")({
       { property: "og:title", content: "ESG dashboard — GridMind EPC" },
       {
         property: "og:description",
-        content: "Scope 1/2/3 emissions, avoided emissions and lender indicators for your portfolio.",
+        content:
+          "Scope 1/2/3 emissions, avoided emissions and lender indicators for your portfolio.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -125,12 +121,7 @@ function EsgDashboardPage() {
         </div>
         <div className="space-y-1">
           <Label htmlFor="esg-from">From</Label>
-          <Input
-            id="esg-from"
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
+          <Input id="esg-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
         <div className="space-y-1">
           <Label htmlFor="esg-to">To</Label>
@@ -140,10 +131,7 @@ function EsgDashboardPage() {
 
       {q.isError ? (
         <Card className="p-6">
-          <EmptyState
-            title="Could not load ESG data"
-            description={errorMessage(q.error)}
-          />
+          <EmptyState title="Could not load ESG data" description={errorMessage(q.error)} />
         </Card>
       ) : q.isPending || !d ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -105,9 +105,7 @@ export function ScopeDonut({ data }: { data: ScopeSharePoint[] }) {
 }
 
 export function MonthlyTrend({ data }: { data: MonthPoint[] }) {
-  const empty = data.every(
-    (d) => d.scope_1_kg + d.scope_2_kg + d.scope_3_kg <= 0 && !d.avoided_kg,
-  );
+  const empty = data.every((d) => d.scope_1_kg + d.scope_2_kg + d.scope_3_kg <= 0 && !d.avoided_kg);
   return (
     <ChartCard title="Monthly trend" formula={ESG_TOOLTIP.trend} empty={empty}>
       <ResponsiveContainer width="100%" height="100%">
