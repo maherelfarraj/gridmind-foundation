@@ -41,6 +41,13 @@ import { decideApproval } from "@/lib/approvals.inbox.functions";
 import { getEntityThread } from "@/lib/digital-thread/thread.functions";
 import { formatDateTime } from "@/lib/format";
 import { evidencePath, unassessedAreas, type AffectedSystem } from "@/lib/moc.rules";
+import { parseOpenTasksError } from "@/lib/moc.exec.rules";
+import {
+  closeChangeRequest,
+  generateImplementationTasks,
+  listImplementationTasks,
+} from "@/lib/moc.exec.functions";
+
 import {
   addChangeEvidence,
   getChangeRequest,
