@@ -17872,7 +17872,7 @@ export type Database = {
         | "client_viewer"
         | "investor_viewer"
         | "lender_viewer"
-      ar_reminder_channel: "email" | "phone" | "letter" | "other"
+      ar_reminder_channel: "email" | "phone" | "letter" | "other" | "portal"
       ar_reminder_status: "sent" | "responded" | "escalated"
       asset_node_type:
         | "plant"
@@ -18559,7 +18559,7 @@ export const Constants = {
         "investor_viewer",
         "lender_viewer",
       ],
-      ar_reminder_channel: ["email", "phone", "letter", "other"],
+      ar_reminder_channel: ["email", "phone", "letter", "other", "portal"],
       ar_reminder_status: ["sent", "responded", "escalated"],
       asset_node_type: [
         "plant",
