@@ -138,7 +138,6 @@ function FinancePeriodsPage() {
       <PageHeader
         title="Period close"
         description="Lock a finance month once its checklist is clean, then compare it against the prior month."
-        icon={CalendarClock}
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -148,7 +147,7 @@ function FinancePeriodsPage() {
           label="Open blockers"
           value={String(blockers)}
           icon={blockers === 0 ? CheckCircle2 : CircleAlert}
-          tone={blockers === 0 ? "success" : "attention"}
+          status={blockers === 0 ? "good" : "warning"}
         />
       </div>
 
@@ -256,7 +255,7 @@ function PeriodRegister(props: {
             >
               <TableCell className="font-medium">{monthLabel(r.period_month)}</TableCell>
               <TableCell>
-                <StatusBadge tone={periodStatusTone(r.status)} label={statusLabel(r.status)} />
+                <StatusBadge status={r.status} tone={periodStatusTone(r.status)} label={statusLabel(r.status)} />
               </TableCell>
               <TableCell>
                 {r.status === "closed" ? "—" : blockers === 0 ? "Ready to close" : blockers}
@@ -343,7 +342,8 @@ function ChecklistPanel(props: {
               <div className="flex items-center gap-2">
                 <p className="font-medium">{item.label}</p>
                 <StatusBadge
-                  tone={item.pass ? "success" : "attention"}
+                  status={item.pass ? "clear" : "blocking"}
+                  tone={item.pass ? "positive" : "attention"}
                   label={item.pass ? "Clear" : "Blocking"}
                 />
               </div>

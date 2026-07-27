@@ -224,8 +224,8 @@ export function comparisonLines(
   ];
 }
 
-export function periodStatusTone(status: PeriodStatus): "success" | "attention" | "active" {
-  if (status === "closed") return "success";
+export function periodStatusTone(status: PeriodStatus): "positive" | "attention" | "active" {
+  if (status === "closed") return "positive";
   if (status === "closing") return "attention";
   return "active";
 }
