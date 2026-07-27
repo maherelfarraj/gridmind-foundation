@@ -129,7 +129,7 @@ describe("forecast", () => {
     ];
     const f = forecastByMonth(rows, TODAY);
     expect(f.map((m) => m.month)).toEqual(["2026-07", "2026-09"]);
-    expect(f[0].expected).toBeCloseTo(1000 * AGING_WEIGHTS.d90_plus, 2);
+    expect(f[0].expected).toBeCloseTo(1000 * AGING_WEIGHTS.d61_90, 2);
     expect(f[1].expected).toBeCloseTo(1000 * AGING_WEIGHTS.current, 2);
   });
 });
