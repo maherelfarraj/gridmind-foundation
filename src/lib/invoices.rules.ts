@@ -121,3 +121,21 @@ export function milestoneLabelFor(
   const clean = description.length > 60 ? `${description.slice(0, 57)}…` : description;
   return `SOV #${sovLineNo} — ${clean} @${cappedPct}%`;
 }
+
+/** Default payment terms (calendar days) applied when an invoice is raised. */
+export const DEFAULT_NET_TERMS_DAYS = 30;
+
+/**
+ * Due date for a receivable invoice: issue date + net terms.
+ * Without a due date the AR aging and overdue-invoice watchdog rules can never
+ * classify an invoice, so every creation path must set one.
+ */
+export function defaultDueDate(
+  issueDate: string,
+  netDays: number = DEFAULT_NET_TERMS_DAYS,
+): string {
+  const d = new Date(`${issueDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) throw new Error("invalid issue date");
+  d.setUTCDate(d.getUTCDate() + Math.max(0, Math.trunc(netDays)));
+  return d.toISOString().slice(0, 10);
+}
