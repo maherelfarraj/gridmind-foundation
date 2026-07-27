@@ -206,7 +206,7 @@ function FinanceAlertsPage() {
                       <TableRow key={a.id}>
                         <TableCell className="whitespace-nowrap">{a.alert_date}</TableCell>
                         <TableCell>
-                          <StatusBadge tone={severityTone(a.severity)} label={a.severity} />
+                          <StatusBadge status={a.severity} tone={severityTone(a.severity)} />
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-muted-foreground">
                           {a.rule_type ? ruleTypeLabel(a.rule_type as FinanceAlertRuleType) : "—"}
@@ -214,7 +214,7 @@ function FinanceAlertsPage() {
                         <TableCell>{a.message}</TableCell>
                         <TableCell className="text-muted-foreground">{a.entity_type}</TableCell>
                         <TableCell>
-                          <StatusBadge tone={alertStatusTone(a.status)} label={a.status} />
+                          <StatusBadge status={a.status} tone={alertStatusTone(a.status)} />
                         </TableCell>
                         <TableCell className="space-x-2 text-right">
                           <Button
