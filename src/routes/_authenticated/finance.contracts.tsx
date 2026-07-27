@@ -269,7 +269,7 @@ function ContractRowView({ row }: { row: ContractRow }) {
   );
 }
 
-const CreateFormSchema = ContractUpsertSchema.omit({ id: true, project_id: true });
+const CreateFormSchema = ContractUpsertSchema.omit({ id: true });
 type CreateFormValues = z.infer<typeof CreateFormSchema>;
 
 function NewContractDialog({ onDone }: { onDone: () => void }) {
