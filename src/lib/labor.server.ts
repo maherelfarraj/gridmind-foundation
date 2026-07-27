@@ -47,7 +47,7 @@ export async function loadReportEntries(
   let sheetQuery = client
     .from("timesheets")
     .select("id, user_id, week_start, status")
-    .in("status", statuses as string[]);
+    .in("status", statuses as unknown as never[]);
   if (filters.user_id) sheetQuery = sheetQuery.eq("user_id", filters.user_id);
   const sheets = await sheetQuery.limit(5000);
   if (sheets.error) throw sheets.error;
@@ -147,16 +147,16 @@ export async function loadProjectNames(
   if (!ids.length) return {};
   const { data, error } = await client
     .from("projects")
-    .select("id, name, project_code")
+    .select("id, name, code")
     .in("id", ids);
   if (error) throw error;
   const map: Record<string, string> = {};
   for (const p of (data ?? []) as Array<{
     id: string;
     name: string | null;
-    project_code: string | null;
+    code: string | null;
   }>) {
-    map[p.id] = p.name?.trim() || p.project_code || p.id;
+    map[p.id] = p.name?.trim() || p.code || p.id;
   }
   return map;
 }
