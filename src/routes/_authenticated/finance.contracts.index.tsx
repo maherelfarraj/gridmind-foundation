@@ -59,7 +59,7 @@ import {
 } from "@/lib/contracts.rules";
 import { downloadCsv, toCsv } from "@/lib/csv";
 
-export const Route = createFileRoute("/_authenticated/finance/contracts")({
+export const Route = createFileRoute("/_authenticated/finance/contracts/")({
   head: () => ({
     meta: [
       { title: "Contracts — GridMind EPC" },

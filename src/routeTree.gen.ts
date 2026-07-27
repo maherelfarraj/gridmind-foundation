@@ -112,7 +112,6 @@ import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_auth
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
 import { Route as AuthenticatedFinanceGlExportRouteImport } from './routes/_authenticated/finance.gl-export'
 import { Route as AuthenticatedFinanceDebitNotesRouteImport } from './routes/_authenticated/finance.debit-notes'
-import { Route as AuthenticatedFinanceContractsRouteImport } from './routes/_authenticated/finance.contracts'
 import { Route as AuthenticatedFinanceBondsRouteImport } from './routes/_authenticated/finance.bonds'
 import { Route as AuthenticatedFinanceAlertsRouteImport } from './routes/_authenticated/finance.alerts'
 import { Route as AuthenticatedFieldWorkFrontsRouteImport } from './routes/_authenticated/field.work-fronts'
@@ -149,6 +148,7 @@ import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
 import { Route as AuthenticatedOmScadaIndexRouteImport } from './routes/_authenticated/om.scada.index'
 import { Route as AuthenticatedHseIncidentsIndexRouteImport } from './routes/_authenticated/hse.incidents.index'
+import { Route as AuthenticatedFinanceContractsIndexRouteImport } from './routes/_authenticated/finance.contracts.index'
 import { Route as AuthenticatedFieldTransmittalsIndexRouteImport } from './routes/_authenticated/field.transmittals.index'
 import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/_authenticated/field.submittals.index'
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
@@ -826,12 +826,6 @@ const AuthenticatedFinanceDebitNotesRoute =
     path: '/finance/debit-notes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedFinanceContractsRoute =
-  AuthenticatedFinanceContractsRouteImport.update({
-    id: '/finance/contracts',
-    path: '/finance/contracts',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedFinanceBondsRoute =
   AuthenticatedFinanceBondsRouteImport.update({
     id: '/finance/bonds',
@@ -1043,6 +1037,12 @@ const AuthenticatedHseIncidentsIndexRoute =
   AuthenticatedHseIncidentsIndexRouteImport.update({
     id: '/hse/incidents/',
     path: '/hse/incidents/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFinanceContractsIndexRoute =
+  AuthenticatedFinanceContractsIndexRouteImport.update({
+    id: '/finance/contracts/',
+    path: '/finance/contracts/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldTransmittalsIndexRoute =
@@ -1331,9 +1331,9 @@ const AuthenticatedFinanceGlExportMappingsRoute =
   } as any)
 const AuthenticatedFinanceContractsContractIdRoute =
   AuthenticatedFinanceContractsContractIdRouteImport.update({
-    id: '/$contractId',
-    path: '/$contractId',
-    getParentRoute: () => AuthenticatedFinanceContractsRoute,
+    id: '/finance/contracts/$contractId',
+    path: '/finance/contracts/$contractId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFieldTransmittalsNewRoute =
   AuthenticatedFieldTransmittalsNewRouteImport.update({
@@ -1732,7 +1732,6 @@ export interface FileRoutesByFullPath {
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
-  '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/gl-export': typeof AuthenticatedFinanceGlExportRouteWithChildren
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -1873,6 +1872,7 @@ export interface FileRoutesByFullPath {
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
   '/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
+  '/finance/contracts/': typeof AuthenticatedFinanceContractsIndexRoute
   '/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/om/scada/': typeof AuthenticatedOmScadaIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
@@ -1972,7 +1972,6 @@ export interface FileRoutesByTo {
   '/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/finance/bonds': typeof AuthenticatedFinanceBondsRoute
-  '/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/finance/gl-export': typeof AuthenticatedFinanceGlExportRouteWithChildren
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -2106,6 +2105,7 @@ export interface FileRoutesByTo {
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
   '/field/submittals': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/field/transmittals': typeof AuthenticatedFieldTransmittalsIndexRoute
+  '/finance/contracts': typeof AuthenticatedFinanceContractsIndexRoute
   '/hse/incidents': typeof AuthenticatedHseIncidentsIndexRoute
   '/om/scada': typeof AuthenticatedOmScadaIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
@@ -2210,7 +2210,6 @@ export interface FileRoutesById {
   '/_authenticated/field/work-fronts': typeof AuthenticatedFieldWorkFrontsRoute
   '/_authenticated/finance/alerts': typeof AuthenticatedFinanceAlertsRoute
   '/_authenticated/finance/bonds': typeof AuthenticatedFinanceBondsRoute
-  '/_authenticated/finance/contracts': typeof AuthenticatedFinanceContractsRouteWithChildren
   '/_authenticated/finance/debit-notes': typeof AuthenticatedFinanceDebitNotesRoute
   '/_authenticated/finance/gl-export': typeof AuthenticatedFinanceGlExportRouteWithChildren
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
@@ -2351,6 +2350,7 @@ export interface FileRoutesById {
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
   '/_authenticated/field/submittals/': typeof AuthenticatedFieldSubmittalsIndexRoute
   '/_authenticated/field/transmittals/': typeof AuthenticatedFieldTransmittalsIndexRoute
+  '/_authenticated/finance/contracts/': typeof AuthenticatedFinanceContractsIndexRoute
   '/_authenticated/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/_authenticated/om/scada/': typeof AuthenticatedOmScadaIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
@@ -2456,7 +2456,6 @@ export interface FileRouteTypes {
     | '/field/work-fronts'
     | '/finance/alerts'
     | '/finance/bonds'
-    | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/gl-export'
     | '/finance/invoices'
@@ -2597,6 +2596,7 @@ export interface FileRouteTypes {
     | '/field/mobilization/'
     | '/field/submittals/'
     | '/field/transmittals/'
+    | '/finance/contracts/'
     | '/hse/incidents/'
     | '/om/scada/'
     | '/procurement/matches/'
@@ -2696,7 +2696,6 @@ export interface FileRouteTypes {
     | '/field/work-fronts'
     | '/finance/alerts'
     | '/finance/bonds'
-    | '/finance/contracts'
     | '/finance/debit-notes'
     | '/finance/gl-export'
     | '/finance/invoices'
@@ -2830,6 +2829,7 @@ export interface FileRouteTypes {
     | '/field/mobilization'
     | '/field/submittals'
     | '/field/transmittals'
+    | '/finance/contracts'
     | '/hse/incidents'
     | '/om/scada'
     | '/procurement/matches'
@@ -2933,7 +2933,6 @@ export interface FileRouteTypes {
     | '/_authenticated/field/work-fronts'
     | '/_authenticated/finance/alerts'
     | '/_authenticated/finance/bonds'
-    | '/_authenticated/finance/contracts'
     | '/_authenticated/finance/debit-notes'
     | '/_authenticated/finance/gl-export'
     | '/_authenticated/finance/invoices'
@@ -3074,6 +3073,7 @@ export interface FileRouteTypes {
     | '/_authenticated/field/mobilization/'
     | '/_authenticated/field/submittals/'
     | '/_authenticated/field/transmittals/'
+    | '/_authenticated/finance/contracts/'
     | '/_authenticated/hse/incidents/'
     | '/_authenticated/om/scada/'
     | '/_authenticated/procurement/matches/'
@@ -3885,13 +3885,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceDebitNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/finance/contracts': {
-      id: '/_authenticated/finance/contracts'
-      path: '/finance/contracts'
-      fullPath: '/finance/contracts'
-      preLoaderRoute: typeof AuthenticatedFinanceContractsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/finance/bonds': {
       id: '/_authenticated/finance/bonds'
       path: '/finance/bonds'
@@ -4142,6 +4135,13 @@ declare module '@tanstack/react-router' {
       path: '/hse/incidents'
       fullPath: '/hse/incidents/'
       preLoaderRoute: typeof AuthenticatedHseIncidentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/contracts/': {
+      id: '/_authenticated/finance/contracts/'
+      path: '/finance/contracts'
+      fullPath: '/finance/contracts/'
+      preLoaderRoute: typeof AuthenticatedFinanceContractsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/transmittals/': {
@@ -4482,10 +4482,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/finance/contracts/$contractId': {
       id: '/_authenticated/finance/contracts/$contractId'
-      path: '/$contractId'
+      path: '/finance/contracts/$contractId'
       fullPath: '/finance/contracts/$contractId'
       preLoaderRoute: typeof AuthenticatedFinanceContractsContractIdRouteImport
-      parentRoute: typeof AuthenticatedFinanceContractsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/field/transmittals/new': {
       id: '/_authenticated/field/transmittals/new'
@@ -4932,21 +4932,6 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedFinanceContractsRouteChildren {
-  AuthenticatedFinanceContractsContractIdRoute: typeof AuthenticatedFinanceContractsContractIdRoute
-}
-
-const AuthenticatedFinanceContractsRouteChildren: AuthenticatedFinanceContractsRouteChildren =
-  {
-    AuthenticatedFinanceContractsContractIdRoute:
-      AuthenticatedFinanceContractsContractIdRoute,
-  }
-
-const AuthenticatedFinanceContractsRouteWithChildren =
-  AuthenticatedFinanceContractsRoute._addFileChildren(
-    AuthenticatedFinanceContractsRouteChildren,
-  )
-
 interface AuthenticatedFinanceGlExportRouteChildren {
   AuthenticatedFinanceGlExportMappingsRoute: typeof AuthenticatedFinanceGlExportMappingsRoute
 }
@@ -5377,7 +5362,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldWorkFrontsRoute: typeof AuthenticatedFieldWorkFrontsRoute
   AuthenticatedFinanceAlertsRoute: typeof AuthenticatedFinanceAlertsRoute
   AuthenticatedFinanceBondsRoute: typeof AuthenticatedFinanceBondsRoute
-  AuthenticatedFinanceContractsRoute: typeof AuthenticatedFinanceContractsRouteWithChildren
   AuthenticatedFinanceDebitNotesRoute: typeof AuthenticatedFinanceDebitNotesRoute
   AuthenticatedFinanceGlExportRoute: typeof AuthenticatedFinanceGlExportRouteWithChildren
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
@@ -5450,6 +5434,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldSubmittalsIdRoute: typeof AuthenticatedFieldSubmittalsIdRoute
   AuthenticatedFieldTransmittalsIdRoute: typeof AuthenticatedFieldTransmittalsIdRoute
   AuthenticatedFieldTransmittalsNewRoute: typeof AuthenticatedFieldTransmittalsNewRoute
+  AuthenticatedFinanceContractsContractIdRoute: typeof AuthenticatedFinanceContractsContractIdRoute
   AuthenticatedHseIncidentsIdRoute: typeof AuthenticatedHseIncidentsIdRoute
   AuthenticatedHseIncidentsNewRoute: typeof AuthenticatedHseIncidentsNewRoute
   AuthenticatedOmScadaActionRulesRoute: typeof AuthenticatedOmScadaActionRulesRoute
@@ -5473,6 +5458,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFieldMobilizationIndexRoute: typeof AuthenticatedFieldMobilizationIndexRoute
   AuthenticatedFieldSubmittalsIndexRoute: typeof AuthenticatedFieldSubmittalsIndexRoute
   AuthenticatedFieldTransmittalsIndexRoute: typeof AuthenticatedFieldTransmittalsIndexRoute
+  AuthenticatedFinanceContractsIndexRoute: typeof AuthenticatedFinanceContractsIndexRoute
   AuthenticatedHseIncidentsIndexRoute: typeof AuthenticatedHseIncidentsIndexRoute
   AuthenticatedOmScadaIndexRoute: typeof AuthenticatedOmScadaIndexRoute
   AuthenticatedQaqcInspectionsIndexRoute: typeof AuthenticatedQaqcInspectionsIndexRoute
@@ -5510,8 +5496,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldWorkFrontsRoute: AuthenticatedFieldWorkFrontsRoute,
   AuthenticatedFinanceAlertsRoute: AuthenticatedFinanceAlertsRoute,
   AuthenticatedFinanceBondsRoute: AuthenticatedFinanceBondsRoute,
-  AuthenticatedFinanceContractsRoute:
-    AuthenticatedFinanceContractsRouteWithChildren,
   AuthenticatedFinanceDebitNotesRoute: AuthenticatedFinanceDebitNotesRoute,
   AuthenticatedFinanceGlExportRoute:
     AuthenticatedFinanceGlExportRouteWithChildren,
@@ -5604,6 +5588,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFieldTransmittalsIdRoute: AuthenticatedFieldTransmittalsIdRoute,
   AuthenticatedFieldTransmittalsNewRoute:
     AuthenticatedFieldTransmittalsNewRoute,
+  AuthenticatedFinanceContractsContractIdRoute:
+    AuthenticatedFinanceContractsContractIdRoute,
   AuthenticatedHseIncidentsIdRoute: AuthenticatedHseIncidentsIdRoute,
   AuthenticatedHseIncidentsNewRoute: AuthenticatedHseIncidentsNewRoute,
   AuthenticatedOmScadaActionRulesRoute: AuthenticatedOmScadaActionRulesRoute,
@@ -5632,6 +5618,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedFieldSubmittalsIndexRoute,
   AuthenticatedFieldTransmittalsIndexRoute:
     AuthenticatedFieldTransmittalsIndexRoute,
+  AuthenticatedFinanceContractsIndexRoute:
+    AuthenticatedFinanceContractsIndexRoute,
   AuthenticatedHseIncidentsIndexRoute: AuthenticatedHseIncidentsIndexRoute,
   AuthenticatedOmScadaIndexRoute: AuthenticatedOmScadaIndexRoute,
   AuthenticatedQaqcInspectionsIndexRoute:
