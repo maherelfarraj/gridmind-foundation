@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, CloudOff, RefreshCw, Send, Timer } from "lucide-react";
+import { CalendarClock, CloudOff, Palmtree, RefreshCw, Send, Timer } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddRowDialog } from "@/components/timesheets/add-row-dialog";
