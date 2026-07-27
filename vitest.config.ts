@@ -28,7 +28,7 @@ export default defineConfig({
     ],
     exclude: [
       "tests/api/**",
-      "tests/rls/**/!(estimating).rls.test.ts",
+      "tests/rls/**/!(estimating|timesheets).rls.test.ts",
 
       "tests/e2e/**",
       "node_modules/**",
