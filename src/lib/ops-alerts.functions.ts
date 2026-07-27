@@ -91,7 +91,7 @@ export const actOnOpsAlert = createServerFn({ method: "POST" })
     const status = data.action === "acknowledge" ? "acknowledged" : "dismissed";
     const { data: existing, error: readErr } = await supabaseAdmin
       .from("ops_alerts")
-      .select("id")
+      .select("id, company_id")
       .eq("id", data.alert_id)
       .maybeSingle();
     if (readErr) throw readErr;
@@ -113,13 +113,16 @@ export const actOnOpsAlert = createServerFn({ method: "POST" })
       .eq("id", data.alert_id);
     if (error) throw error;
 
-    await supabaseAdmin.from("audit_logs").insert({
-      actor_id: context.user.id,
-      action: `ops_alert.${data.action}`,
-      entity_type: "ops_alerts",
-      entity_id: data.alert_id,
-      metadata: { to: status },
-    });
+    if (existing.company_id) {
+      await supabaseAdmin.from("audit_logs").insert({
+        actor_id: context.user.id,
+        company_id: existing.company_id,
+        action: `ops_alert.${data.action}`,
+        entity: "ops_alerts",
+        entity_id: data.alert_id,
+        metadata: { to: status },
+      });
+    }
 
     return { status };
   });
@@ -151,13 +154,16 @@ export const saveOpsAlertRule = createServerFn({ method: "POST" })
     if (error) throw error;
 
     const id = (row as { id: string }).id;
-    await supabaseAdmin.from("audit_logs").insert({
-      actor_id: context.user.id,
-      action: "ops_alert_rule.save",
-      entity_type: "ops_alert_rules",
-      entity_id: id,
-      metadata: { rule_type: data.rule_type, enabled: data.enabled, notify_role: data.notify_role },
-    });
+    if (data.company_id) {
+      await supabaseAdmin.from("audit_logs").insert({
+        actor_id: context.user.id,
+        company_id: data.company_id,
+        action: "ops_alert_rule.save",
+        entity: "ops_alert_rules",
+        entity_id: id,
+        metadata: { rule_type: data.rule_type, enabled: data.enabled, notify_role: data.notify_role },
+      });
+    }
 
     return { id };
   });
