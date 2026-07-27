@@ -351,10 +351,19 @@ function ChangeDetailPage() {
               </Button>
             ) : null}
             {cr.status === "implementing" ? (
-              <Button disabled={evidence.length === 0} onClick={() => setCloseOpen(true)}>
+              <Button
+                disabled={evidence.length === 0 || pendingTasks > 0}
+                title={
+                  pendingTasks > 0
+                    ? `${pendingTasks} implementation task(s) still pending`
+                    : undefined
+                }
+                onClick={() => setCloseOpen(true)}
+              >
                 Close change
               </Button>
             ) : null}
+
             {(cr.status === "draft" || cr.status === "assessment") &&
             (data.isAdmin || cr.originator_id) ? (
               <Button
