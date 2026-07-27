@@ -4965,6 +4965,240 @@ export type Database = {
           },
         ]
       }
+      estimate_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_lines: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          description: string
+          estimate_id: string
+          id: string
+          line_type: Database["public"]["Enums"]["estimate_rate_type"]
+          notes: string | null
+          qty: number
+          rate_library_id: string | null
+          sort_order: number
+          source_bom_line_id: string | null
+          unit_rate: number
+          uom: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          company_id: string
+          created_at?: string
+          description: string
+          estimate_id: string
+          id?: string
+          line_type: Database["public"]["Enums"]["estimate_rate_type"]
+          notes?: string | null
+          qty?: number
+          rate_library_id?: string | null
+          sort_order?: number
+          source_bom_line_id?: string | null
+          unit_rate?: number
+          uom: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          description?: string
+          estimate_id?: string
+          id?: string
+          line_type?: Database["public"]["Enums"]["estimate_rate_type"]
+          notes?: string | null
+          qty?: number
+          rate_library_id?: string | null
+          sort_order?: number
+          source_bom_line_id?: string | null
+          unit_rate?: number
+          uom?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_lines_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_lines_rate_library_id_fkey"
+            columns: ["rate_library_id"]
+            isOneToOne: false
+            referencedRelation: "rate_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          approval_instance_id: string | null
+          bom_snapshot_id: string | null
+          company_id: string
+          contingency_pct: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          direct_cost: number
+          escalation_pct: number
+          estimate_number: string | null
+          id: string
+          opportunity_id: string | null
+          overhead_pct: number
+          profit_pct: number
+          project_id: string
+          revision: number
+          status: Database["public"]["Enums"]["estimate_status"]
+          subtotal: number
+          supersedes_id: string | null
+          title: string
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          bom_snapshot_id?: string | null
+          company_id: string
+          contingency_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          direct_cost?: number
+          escalation_pct?: number
+          estimate_number?: string | null
+          id?: string
+          opportunity_id?: string | null
+          overhead_pct?: number
+          profit_pct?: number
+          project_id: string
+          revision?: number
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          supersedes_id?: string | null
+          title: string
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          bom_snapshot_id?: string | null
+          company_id?: string
+          contingency_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          direct_cost?: number
+          escalation_pct?: number
+          estimate_number?: string | null
+          id?: string
+          opportunity_id?: string | null
+          overhead_pct?: number
+          profit_pct?: number
+          project_id?: string
+          revision?: number
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          supersedes_id?: string | null
+          title?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_bom_snapshot_id_fkey"
+            columns: ["bom_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "bom_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "estimates_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_action_log: {
         Row: {
           action_type: Database["public"]["Enums"]["event_action_type"]
@@ -12467,6 +12701,82 @@ export type Database = {
           },
         ]
       }
+      rate_library: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          id: string
+          name: string
+          notes: string | null
+          rate_type: Database["public"]["Enums"]["estimate_rate_type"]
+          supplier: string | null
+          unit_rate: number
+          uom: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          id?: string
+          name: string
+          notes?: string | null
+          rate_type: Database["public"]["Enums"]["estimate_rate_type"]
+          supplier?: string | null
+          unit_rate?: number
+          uom: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          rate_type?: Database["public"]["Enums"]["estimate_rate_type"]
+          supplier?: string | null
+          unit_rate?: number
+          uom?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_library_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_library_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_library_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       rate_limit_buckets: {
         Row: {
           capacity: number
@@ -18415,6 +18725,10 @@ export type Database = {
         Returns: number
       }
       next_cr_number: { Args: { p_company_id: string }; Returns: string }
+      next_estimate_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
+      }
       next_gl_number: {
         Args: { p_company_id: string; p_kind: string }
         Returns: number
@@ -18804,6 +19118,18 @@ export type Database = {
         | "pcs"
         | "switchgear"
         | "other"
+      estimate_rate_type:
+        | "material"
+        | "labor"
+        | "plant"
+        | "subcontract"
+        | "other"
+      estimate_status:
+        | "draft"
+        | "in_review"
+        | "approved"
+        | "priced"
+        | "superseded"
       event_action_status:
         | "pending_approval"
         | "approved"
@@ -19560,6 +19886,20 @@ export const Constants = {
         "pcs",
         "switchgear",
         "other",
+      ],
+      estimate_rate_type: [
+        "material",
+        "labor",
+        "plant",
+        "subcontract",
+        "other",
+      ],
+      estimate_status: [
+        "draft",
+        "in_review",
+        "approved",
+        "priced",
+        "superseded",
       ],
       event_action_status: [
         "pending_approval",
