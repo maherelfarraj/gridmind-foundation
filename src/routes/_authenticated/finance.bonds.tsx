@@ -6,6 +6,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Download, Plus, Search, ShieldCheck, Siren, Timer } from "lucide-react";
 import { toast } from "sonner";
 
+import { CoverageByTypeChart, InsuranceSummaryCards } from "@/components/bonds/bond-coverage";
+import { BondRenewalSection } from "@/components/bonds/bond-renewal";
 import { BondWorkflowSections } from "@/components/bonds/bond-workflow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -900,20 +902,7 @@ function InstrumentDrawer({
 
             <BondWorkflowSections detail={d} />
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Renewals</h3>
-              {d.renewals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No renewals recorded.</p>
-              ) : (
-                <ul className="space-y-1 text-sm">
-                  {d.renewals.map((r) => (
-                    <li key={r.id}>
-                      {r.previous_expiry ?? "—"} → {r.new_expiry ?? "—"}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            <BondRenewalSection detail={d} />
           </div>
         )}
       </SheetContent>
