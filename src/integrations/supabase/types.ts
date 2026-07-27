@@ -19322,6 +19322,7 @@ export type Database = {
         Args: { p_id: string; p_payload?: Json; p_to: string }
         Returns: Json
       }
+      vendor_portal_accept_invites: { Args: never; Returns: number }
       vendor_portal_assert_access: {
         Args: { p_vendor_id: string }
         Returns: {
@@ -19347,6 +19348,46 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      vendor_portal_get_deliveries: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          carrier: string
+          delivered_at: string
+          expected_date: string
+          id: string
+          notes: string
+          po_number: string
+          reference: string
+          status: string
+        }[]
+      }
+      vendor_portal_get_documents: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          category: string
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          id: string
+          mime_type: string
+          storage_path: string
+          title: string
+        }[]
+      }
+      vendor_portal_get_invoices: {
+        Args: { p_vendor_id: string }
+        Returns: {
+          amount: number
+          currency_code: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          paid_amount: number
+          paid_at: string
+          status: string
+        }[]
+      }
       vendor_portal_get_pos: {
         Args: { p_vendor_id: string }
         Returns: {
@@ -19358,6 +19399,22 @@ export type Database = {
           required_by_date: string
           status: string
           total_amount: number
+        }[]
+      }
+      vendor_portal_my_memberships: {
+        Args: never
+        Returns: {
+          accepted_at: string
+          company_id: string
+          company_name: string
+          expires_at: string
+          exposure: Json
+          id: string
+          last_seen_at: string
+          logo_url: string
+          status: string
+          vendor_id: string
+          vendor_name: string
         }[]
       }
       vendor_portal_write_event: {

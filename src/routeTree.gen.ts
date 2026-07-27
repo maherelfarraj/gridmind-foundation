@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
@@ -238,6 +239,11 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRo
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
 
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -1591,6 +1597,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
+  '/vendor': typeof VendorRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1818,6 +1825,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
+  '/vendor': typeof VendorRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -2039,6 +2047,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
+  '/vendor': typeof VendorRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -2269,6 +2278,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/design-system'
     | '/portal'
+    | '/vendor'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -2496,6 +2506,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/design-system'
+    | '/vendor'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -2716,6 +2727,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/design-system'
     | '/portal'
+    | '/vendor'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
     | '/(auth)/reset-password'
@@ -2947,6 +2959,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PortalRoute: typeof PortalRouteWithChildren
+  VendorRoute: typeof VendorRoute
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
@@ -2968,6 +2981,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -5343,6 +5363,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
   PortalRoute: PortalRouteWithChildren,
+  VendorRoute: VendorRoute,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
