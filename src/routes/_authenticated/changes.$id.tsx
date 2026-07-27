@@ -607,11 +607,11 @@ function ChangeDetailPage() {
               disabled={
                 closureNotes.trim().length === 0 ||
                 evidence.length === 0 ||
-                transitionMutation.isPending
+                pendingTasks > 0 ||
+                closeMutation.isPending
               }
               onClick={() =>
-                transitionMutation.mutate({
-                  to: "closed",
+                closeMutation.mutate({
                   closure_notes: closureNotes.trim(),
                   updated_documents: updatedDocs
                     .split("\n")
@@ -624,6 +624,7 @@ function ChangeDetailPage() {
                 })
               }
             >
+
               Close change
             </Button>
           </DialogFooter>
