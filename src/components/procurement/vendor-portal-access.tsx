@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { VendorPortalEvents } from "@/components/procurement/vendor-portal-events";
 import { formatDate, formatDateTime } from "@/lib/format";
 import {
   DEFAULT_VENDOR_EXPOSURE,
@@ -48,7 +49,6 @@ import {
 } from "@/lib/vendor-portal.rules";
 import {
   inviteVendorContact,
-  listVendorPortalEvents,
   listVendorPortalMembers,
   reactivateVendorPortalMember,
   revokeVendorPortalMember,
@@ -71,7 +71,6 @@ export function VendorPortalAccess({
 }) {
   const qc = useQueryClient();
   const membersFn = useServerFn(listVendorPortalMembers);
-  const eventsFn = useServerFn(listVendorPortalEvents);
   const suspendFn = useServerFn(suspendVendorPortalMember);
   const revokeFn = useServerFn(revokeVendorPortalMember);
   const reactivateFn = useServerFn(reactivateVendorPortalMember);
@@ -80,10 +79,6 @@ export function VendorPortalAccess({
   const members = useQuery({
     queryKey: ["vendor-portal", "members", vendorId],
     queryFn: () => membersFn({ data: { vendorId } }),
-  });
-  const events = useQuery({
-    queryKey: ["vendor-portal", "events", vendorId],
-    queryFn: () => eventsFn({ data: { vendorId } }),
   });
 
   const invalidate = () => {
@@ -232,32 +227,7 @@ export function VendorPortalAccess({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent portal activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {events.isLoading ? (
-            <div className="h-16 animate-pulse rounded-md bg-muted" />
-          ) : (events.data ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">No portal activity yet.</p>
-          ) : (
-            <ul className="space-y-2">
-              {(events.data ?? []).map((e) => (
-                <li key={e.id} className="flex items-center gap-3 text-sm">
-                  <span className="w-40 shrink-0 text-xs text-muted-foreground">
-                    {formatDateTime(e.created_at)}
-                  </span>
-                  <span className="text-foreground">{e.event.replace("vendor_portal.", "")}</span>
-                  <Badge variant="outline" className="ml-auto capitalize">
-                    {e.actor_type}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <VendorPortalEvents vendorId={vendorId} canExport={canWrite} />
 
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>

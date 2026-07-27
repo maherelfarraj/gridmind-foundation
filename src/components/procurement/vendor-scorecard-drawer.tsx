@@ -96,12 +96,7 @@ export function VendorScorecardDrawer({ row, periodStart, periodEnd, onOpenChang
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: "0.75rem" }} />
-                      <Line
-                        type="monotone"
-                        dataKey="OTD"
-                        stroke="var(--primary)"
-                        strokeWidth={2}
-                      />
+                      <Line type="monotone" dataKey="OTD" stroke="var(--primary)" strokeWidth={2} />
                       <Line
                         type="monotone"
                         dataKey="Quality"

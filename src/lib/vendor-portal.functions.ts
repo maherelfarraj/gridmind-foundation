@@ -111,8 +111,39 @@ export interface VendorPortalEventRow {
   id: string;
   event: string;
   actor_type: string;
+  actor_id: string | null;
+  actor_email: string | null;
   metadata: Json;
   created_at: string;
+}
+
+export interface VendorPortalEventPage {
+  rows: VendorPortalEventRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** P-226 — events viewer page size and CSV export ceiling. */
+export const EVENTS_PAGE_SIZE = 50;
+export const EVENTS_EXPORT_LIMIT = 5000;
+
+function csvCell(value: unknown): string {
+  const s =
+    value === null || value === undefined
+      ? ""
+      : typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value);
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+export function toEventsCsv(rows: readonly VendorPortalEventRow[]): string {
+  const header = ["Time", "Event", "Actor type", "Actor email", "Metadata"];
+  const lines = rows.map((r) =>
+    [r.created_at, r.event, r.actor_type, r.actor_email ?? "", r.metadata].map(csvCell).join(","),
+  );
+  return [header.map(csvCell).join(","), ...lines].join("\n");
 }
 
 const vendorIdInput = z.object({ vendorId: z.string().uuid() });
@@ -265,19 +296,96 @@ export const listVendorPortalMembers = createServerFn({ method: "POST" })
     }));
   });
 
+const eventsQueryInput = z.object({
+  vendorId: z.string().uuid(),
+  events: z.array(z.string().max(120)).max(30).optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
+  page: z.number().int().min(0).max(500).default(0),
+  pageSize: z.number().int().min(1).max(200).default(EVENTS_PAGE_SIZE),
+});
+
+function applyEventFilters<T extends { eq: unknown }>(
+  query: T,
+  data: z.infer<typeof eventsQueryInput>,
+): T {
+  let q = query as unknown as {
+    eq: (c: string, v: unknown) => unknown;
+    in: (c: string, v: unknown[]) => unknown;
+    gte: (c: string, v: unknown) => unknown;
+    lte: (c: string, v: unknown) => unknown;
+  };
+  q = q.eq("vendor_id", data.vendorId) as typeof q;
+  if (data.events?.length) q = q.in("event", data.events) as typeof q;
+  if (data.from) q = q.gte("created_at", data.from) as typeof q;
+  if (data.to) q = q.lte("created_at", data.to) as typeof q;
+  return q as unknown as T;
+}
+
+/** Actor email comes from the linked membership (events store no email column). */
+const EVENT_COLUMNS =
+  "id, event, actor_type, actor_id, metadata, created_at, membership:vendor_portal_memberships(email)";
+
+function mapEventRows(rows: unknown): VendorPortalEventRow[] {
+  return ((rows ?? []) as Array<Record<string, unknown>>).map((r) => {
+    const membership = r.membership as { email?: string } | null;
+    return {
+      id: String(r.id),
+      event: String(r.event),
+      actor_type: String(r.actor_type),
+      actor_id: (r.actor_id as string | null) ?? null,
+      actor_email: membership?.email ?? null,
+      metadata: (r.metadata ?? {}) as Json,
+      created_at: String(r.created_at),
+    };
+  });
+}
+
 export const listVendorPortalEvents = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) => vendorIdInput.parse(raw))
-  .handler(async ({ context, data }): Promise<VendorPortalEventRow[]> => {
+  .inputValidator((raw: unknown) => eventsQueryInput.parse(raw))
+  .handler(async ({ context, data }): Promise<VendorPortalEventPage> => {
     requireSupabaseAuth(context);
-    const { data: rows, error } = await context.supabase
+    await assertVendorPortalAdmin(context);
+    const fromIdx = data.page * data.pageSize;
+    const base = context.supabase
       .from("vendor_portal_events")
-      .select("id, event, actor_type, metadata, created_at")
-      .eq("vendor_id", data.vendorId)
+      .select(EVENT_COLUMNS, { count: "exact" });
+    const {
+      data: rows,
+      error,
+      count,
+    } = await applyEventFilters(base, data)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .range(fromIdx, fromIdx + data.pageSize - 1);
     if (error) throw error;
-    return (rows ?? []) as VendorPortalEventRow[];
+    return {
+      rows: mapEventRows(rows),
+      total: count ?? 0,
+      page: data.page,
+      pageSize: data.pageSize,
+    };
+  });
+
+export const exportVendorPortalEvents = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => eventsQueryInput.parse(raw))
+  .handler(async ({ context, data }): Promise<{ csv: string; rowCount: number }> => {
+    requireSupabaseAuth(context);
+    await assertVendorPortalAdmin(context);
+    const base = context.supabase.from("vendor_portal_events").select(EVENT_COLUMNS);
+    const { data: rows, error } = await applyEventFilters(base, data)
+      .order("created_at", { ascending: false })
+      .limit(EVENTS_EXPORT_LIMIT);
+    if (error) throw error;
+    const list = mapEventRows(rows);
+    const csv = toEventsCsv(list);
+    await writeAuditLog(context, "vendor_portal.events_exported", data.vendorId, {
+      vendor_id: data.vendorId,
+      row_count: list.length,
+      filters: { events: data.events ?? null, from: data.from ?? null, to: data.to ?? null },
+    });
+    return { csv, rowCount: list.length };
   });
 
 const inviteInput = z.object({

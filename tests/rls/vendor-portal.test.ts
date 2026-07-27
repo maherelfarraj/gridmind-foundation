@@ -6,6 +6,22 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import {
+  COMPANY_A,
+  createPortalHarness,
+  makeMembership,
+  makePo,
+  PO_A,
+  PO_B,
+  PO_CROSS_TENANT,
+  USER_INTERNAL,
+  USER_VENDOR_A,
+  USER_VENDOR_B,
+  VENDOR_A,
+  VENDOR_B,
+} from "../vendor-portal/fixtures";
+import { type Actor, eventsAcl, membershipsAcl } from "../vendor-portal/policy-store";
+
 const MIGRATIONS = join(process.cwd(), "supabase/migrations");
 const sql = readdirSync(MIGRATIONS)
   .filter((n) => n.endsWith(".sql"))
@@ -24,7 +40,9 @@ function policies(table: string) {
 describe("vendor portal RLS (offline policy parse)", () => {
   it("adds vendor_viewer to app_role and widens is_external_viewer", () => {
     expect(sql).toMatch(/alter type public\.app_role add value if not exists 'vendor_viewer'/i);
-    const fn = sql.match(/create or replace function public\.is_external_viewer[\s\S]*?\$function\$;/i);
+    const fn = sql.match(
+      /create or replace function public\.is_external_viewer[\s\S]*?\$function\$;/i,
+    );
     expect(fn).toBeTruthy();
     for (const role of ["client_viewer", "investor_viewer", "lender_viewer", "vendor_viewer"]) {
       expect(fn![0]).toContain(role);
@@ -37,9 +55,7 @@ describe("vendor portal RLS (offline policy parse)", () => {
     expect(sql).toMatch(
       /create unique index if not exists vendor_portal_memberships_uk[\s\S]*?\(company_id, vendor_id, email\)/i,
     );
-    expect(sql).toMatch(
-      /alter table public\.vendor_portal_memberships enable row level security/i,
-    );
+    expect(sql).toMatch(/alter table public\.vendor_portal_memberships enable row level security/i);
   });
 
   it("membership SELECT is own-row or internal non-external member; writes are admin-only", () => {
@@ -104,13 +120,135 @@ describe("vendor portal RLS (offline policy parse)", () => {
   });
 
   it("portal RPCs are executable by authenticated only", () => {
-    for (const fn of [
-      "vendor_portal_assert_access\\(uuid\\)",
-      "vendor_portal_get_pos\\(uuid\\)",
-    ]) {
-      expect(sql).toMatch(new RegExp(`revoke all on function public\\.${fn} from public, anon`, "i"));
-      expect(sql).toMatch(new RegExp(`grant execute on function public\\.${fn} to authenticated`, "i"));
+    for (const fn of ["vendor_portal_assert_access\\(uuid\\)", "vendor_portal_get_pos\\(uuid\\)"]) {
+      expect(sql).toMatch(
+        new RegExp(`revoke all on function public\\.${fn} from public, anon`, "i"),
+      );
+      expect(sql).toMatch(
+        new RegExp(`grant execute on function public\\.${fn} to authenticated`, "i"),
+      );
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// P-226 — executable assertions against the in-memory policy store.
+// ---------------------------------------------------------------------------
+
+const OTHER_COMPANY = "bbbbbbbb-0000-4000-8000-000000000001";
+
+const procurementAdmin: Actor = {
+  userId: USER_INTERNAL,
+  companyId: COMPANY_A,
+  roles: ["procurement_admin"],
+};
+const companyAdmin: Actor = { ...procurementAdmin, roles: ["company_admin"] };
+const engineer: Actor = { ...procurementAdmin, roles: ["engineer"] };
+const financeAdmin: Actor = { ...procurementAdmin, roles: ["finance_admin"] };
+const otherTenantAdmin: Actor = {
+  userId: "user-other-tenant",
+  companyId: OTHER_COMPANY,
+  roles: ["procurement_admin", "company_admin"],
+};
+const vendorUser: Actor = {
+  userId: USER_VENDOR_A,
+  companyId: COMPANY_A,
+  roles: ["vendor_viewer"],
+  external: true,
+};
+
+const membershipRows = [
+  { id: "mem-a", company_id: COMPANY_A, user_id: USER_VENDOR_A, vendor_id: VENDOR_A },
+  { id: "mem-b", company_id: COMPANY_A, user_id: USER_VENDOR_B, vendor_id: VENDOR_B },
+  { id: "mem-x", company_id: OTHER_COMPANY, user_id: "user-x", vendor_id: VENDOR_A },
+];
+const eventRows = [
+  { id: "evt-1", company_id: COMPANY_A, vendor_id: VENDOR_A },
+  { id: "evt-2", company_id: OTHER_COMPANY, vendor_id: VENDOR_A },
+];
+
+describe("cross-tenant isolation (policy store)", () => {
+  it("memberships: another tenant's admin sees zero rows from this company", () => {
+    const visible = membershipsAcl.visible(otherTenantAdmin, membershipRows);
+    expect(visible.map((r) => r.id)).toEqual(["mem-x"]);
+  });
+
+  it("events: another tenant's admin sees zero of this company's events", () => {
+    expect(eventsAcl.visible(otherTenantAdmin, eventRows).map((r) => r.id)).toEqual(["evt-2"]);
+    expect(eventsAcl.visible(procurementAdmin, eventRows).map((r) => r.id)).toEqual(["evt-1"]);
+  });
+
+  it("a vendor user sees only their own membership row", () => {
+    const visible = membershipsAcl.visible(vendorUser, membershipRows);
+    expect(visible.map((r) => r.id)).toEqual(["mem-a"]);
+  });
+
+  it("internal non-external members read their company's memberships", () => {
+    expect(membershipsAcl.visible(engineer, membershipRows).map((r) => r.id)).toEqual([
+      "mem-a",
+      "mem-b",
+    ]);
+  });
+});
+
+describe("events SELECT scope", () => {
+  it("is denied to vendors and to non-procurement internal roles", () => {
+    for (const actor of [vendorUser, engineer, financeAdmin]) {
+      expect(eventsAcl.can(actor, "select", { company_id: COMPANY_A }).allowed).toBe(false);
+    }
+    expect(eventsAcl.can(procurementAdmin, "select", { company_id: COMPANY_A }).allowed).toBe(true);
+    expect(eventsAcl.can(companyAdmin, "select", { company_id: COMPANY_A }).allowed).toBe(true);
+  });
+});
+
+describe("membership writes", () => {
+  for (const action of ["insert", "update", "delete"] as const) {
+    it(`${action}: only procurement_admin / company_admin in the same company`, () => {
+      const row = { company_id: COMPANY_A, user_id: USER_VENDOR_A };
+      expect(membershipsAcl.can(procurementAdmin, action, row).allowed).toBe(true);
+      expect(membershipsAcl.can(companyAdmin, action, row).allowed).toBe(true);
+      for (const actor of [engineer, financeAdmin, vendorUser, otherTenantAdmin]) {
+        expect(membershipsAcl.can(actor, action, row).allowed).toBe(false);
+      }
+    });
+  }
+});
+
+describe("vendor-scoped PO isolation through the RPC", () => {
+  const harnessOpts = {
+    memberships: [
+      makeMembership(),
+      makeMembership({ id: "mem-b", vendor_id: VENDOR_B, user_id: USER_VENDOR_B }),
+    ],
+    pos: [
+      makePo(),
+      makePo({ id: PO_B, vendor_id: VENDOR_B, po_number: "PO-0002" }),
+      makePo({ id: PO_CROSS_TENANT, company_id: OTHER_COMPANY, po_number: "PO-XT" }),
+    ],
+  };
+
+  it("vendor A's membership can only ever return vendor A's POs", () => {
+    const h = createPortalHarness(harnessOpts);
+    const rows = h.rpc.getPos(VENDOR_A);
+    expect(rows.map((p) => p.id)).toEqual([PO_A]);
+    expect(rows.every((p) => p.vendor_id === VENDOR_A && p.company_id === COMPANY_A)).toBe(true);
+  });
+
+  it("a query simulating vendor B's vendor_id returns an empty set for vendor A's data", () => {
+    const h = createPortalHarness({
+      ...harnessOpts,
+      memberships: [makeMembership({ id: "mem-b", vendor_id: VENDOR_B, user_id: USER_VENDOR_A })],
+    });
+    const rows = h.rpc.getPos(VENDOR_B);
+    expect(rows.filter((p) => p.vendor_id === VENDOR_A)).toEqual([]);
+  });
+
+  it("a forged p_vendor_id raises vendor_portal_access_denied", () => {
+    const h = createPortalHarness(harnessOpts);
+    expect(() => h.rpc.getPos(VENDOR_B)).toThrow("vendor_portal_access_denied");
+    expect(() => h.rpc.getPos("00000000-0000-4000-8000-000000000000")).toThrow(
+      "vendor_portal_access_denied",
+    );
   });
 });
 
