@@ -6,9 +6,10 @@ import {
   aggregatePerPerson,
   aggregatePerProject,
   buildDisciplineMatrix,
-  computeReportKpis,
+  computeKpis,
   monthRange,
-  payrollRows,
+  buildPayrollRows,
+  PAYROLL_COLUMNS,
   resolveRate,
   type RateContext,
   type ReportEntry,
@@ -49,7 +50,7 @@ describe("resolveRate", () => {
   });
 });
 
-describe("computeReportKpis", () => {
+describe("computeKpis", () => {
   const entries = [
     entry({ id: "a", hours: 10 }),
     entry({ id: "b", activity: "overtime", hours: 2 }),
@@ -57,19 +58,19 @@ describe("computeReportKpis", () => {
   ];
 
   it("sums hours and computes overtime percentage", () => {
-    const kpis = computeReportKpis(entries, { backlogCount: 3, year: 2026 });
+    const kpis = computeKpis({ entries, backlogCount: 3, leaveDaysYtd: 1 });
     expect(kpis.total_hours).toBe(20);
     expect(kpis.overtime_pct).toBeCloseTo(10, 5);
     expect(kpis.backlog_count).toBe(3);
   });
 
   it("counts leave days YTD from leave activities", () => {
-    const kpis = computeReportKpis(entries, { backlogCount: 0, year: 2026 });
+    const kpis = computeKpis({ entries, backlogCount: 0, leaveDaysYtd: 1 });
     expect(kpis.leave_days_ytd).toBe(1);
   });
 
   it("returns zero overtime percentage with no hours", () => {
-    expect(computeReportKpis([], { backlogCount: 0, year: 2026 }).overtime_pct).toBe(0);
+    expect(computeKpis({ entries: [], backlogCount: 0, leaveDaysYtd: 0 }).overtime_pct).toBe(0);
   });
 });
 
@@ -115,13 +116,13 @@ describe("buildDisciplineMatrix", () => {
   });
 });
 
-describe("payrollRows", () => {
+describe("buildPayrollRows", () => {
   it("emits the exact payroll column set for approved rows", () => {
-    const rows = payrollRows([entry({ hourly_rate: 20, hours: 5 })], ctx, {
+    const rows = buildPayrollRows([entry({ hourly_rate: 20, hours: 5 })], ctx, {
       people: { u1: "Sara" },
       projects: { p1: "East Amman" },
     });
-    expect(Object.keys(rows[0])).toEqual([
+    expect(PAYROLL_COLUMNS).toEqual([
       "employee",
       "week_start",
       "project",
@@ -131,8 +132,22 @@ describe("payrollRows", () => {
       "cost",
       "approval_status",
     ]);
-    expect(rows[0].cost).toBe(100);
-    expect(rows[0].employee).toBe("Sara");
+    expect(rows[0]).toEqual([
+      "Sara",
+      "2026-07-05",
+      "East Amman",
+      "regular",
+      5,
+      20,
+      100,
+      "approved",
+    ]);
+  });
+
+  it("leaves rate and cost blank when no rate resolves", () => {
+    const rows = buildPayrollRows([entry({ user_id: "u2" })], ctx, { people: {}, projects: {} });
+    expect(rows[0][5]).toBe("");
+    expect(rows[0][6]).toBe("");
   });
 });
 
