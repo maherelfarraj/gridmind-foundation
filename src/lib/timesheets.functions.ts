@@ -178,12 +178,7 @@ export const submitTimesheet = createServerFn({ method: "POST" })
       };
     }
 
-    const routing = await routeTimesheetApproval(
-      context.supabase,
-      sheet,
-      totals,
-      context.user!.id,
-    );
+    const routing = await routeTimesheetApproval(context.supabase, sheet, totals, context.user!.id);
 
     const finalStatus = routing.instanceId ? "in_review" : "submitted";
     const { error: linkErr } = await context.supabase
@@ -263,9 +258,7 @@ export const getTimesheetApprovalSummary = createServerFn({ method: "GET" })
     const entries = await listEntries(context.supabase, sheet.id);
     const totals = submissionTotals(entries);
     const breakdown = hoursByProject(entries);
-    const projectIds = breakdown
-      .map((b) => b.project_id)
-      .filter((id): id is string => Boolean(id));
+    const projectIds = breakdown.map((b) => b.project_id).filter((id): id is string => Boolean(id));
     let names: Record<string, string> = {};
     if (projectIds.length > 0) {
       const { data: rows } = await context.supabase

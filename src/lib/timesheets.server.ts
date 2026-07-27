@@ -384,10 +384,11 @@ async function repointStepOne(
   for (const r of (currentRows ?? []) as Array<{ approver_id: string }>) current.add(r.approver_id);
   if (wanted.size === current.size && [...wanted].every((u) => current.has(u))) return;
 
-  const del = await client.from("approvals").delete().eq("instance_id", instanceId).eq(
-    "step_order",
-    1,
-  );
+  const del = await client
+    .from("approvals")
+    .delete()
+    .eq("instance_id", instanceId)
+    .eq("step_order", 1);
   if (del.error) throw del.error;
   const insert = await client.from("approvals").insert(
     holders.map((h) => ({
