@@ -42,7 +42,9 @@ describe("leave tables", () => {
         new RegExp(`alter table public\\.${table}[\\s\\S]{0,80}enable row level security`, "i"),
       );
       const policies = [
-        ...leaveSql.matchAll(new RegExp(`create policy[\\s\\S]*?on public\\.${table}[\\s\\S]*?;`, "gi")),
+        ...leaveSql.matchAll(
+          new RegExp(`create policy[\\s\\S]*?on public\\.${table}[\\s\\S]*?;`, "gi"),
+        ),
       ].map((m) => m[0]);
       expect(policies.length).toBeGreaterThan(0);
       for (const p of policies) {

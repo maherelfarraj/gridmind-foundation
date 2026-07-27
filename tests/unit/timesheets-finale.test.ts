@@ -19,7 +19,12 @@ import {
 } from "@/lib/timesheets/leave";
 import { TIMESHEET_POLICY } from "@/lib/timesheets/policy";
 import { aggregateLaborActuals, resolveRate, type ReportEntry } from "@/lib/timesheets/reports";
-import { clockHours, computeWeeklyTotals, dailyTotal, splitDailyHours } from "@/lib/timesheets/split";
+import {
+  clockHours,
+  computeWeeklyTotals,
+  dailyTotal,
+  splitDailyHours,
+} from "@/lib/timesheets/split";
 import {
   chooseApprovalRoute,
   collectNotes,
@@ -237,9 +242,7 @@ describe("leave policy math", () => {
       sick_used_days: 2,
     });
     expect(summary).toMatchObject({ entitlement: 21, annualUsed: 5, remaining: 16, sickUsed: 2 });
-    expect(summariseBalance(null).entitlement).toBe(
-      TIMESHEET_POLICY.defaultAnnualEntitlementDays,
-    );
+    expect(summariseBalance(null).entitlement).toBe(TIMESHEET_POLICY.defaultAnnualEntitlementDays);
   });
 
   it("writes attachments company-UUID-first and rejects escapes", () => {
