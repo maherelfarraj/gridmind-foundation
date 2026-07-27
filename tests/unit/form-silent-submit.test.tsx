@@ -12,7 +12,8 @@ vi.mock("@tanstack/react-start", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useServerFn: () => serverCalls,
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const toastError = vi.fn();
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: (...a: unknown[]) => toastError(...a) } }));
 
 const saveMutate = vi.fn();
 vi.mock("@/lib/proposal-query", () => ({
@@ -75,7 +76,7 @@ describe("RecordPaymentDialog", () => {
     // eslint-disable-next-line no-console
     console.log("CALLS>>", serverCalls.mock.calls.length, JSON.stringify(serverCalls.mock.calls[0]));
     // eslint-disable-next-line no-console
-    console.log("HTML>>", document.body.innerHTML.replace(/<[^>]+>/g, "|").slice(0, 1200));
+    console.log("TOAST>>", toastError.mock.calls.length, JSON.stringify(toastError.mock.calls));
     expect(serverCalls).not.toHaveBeenCalled();
   });
 });
