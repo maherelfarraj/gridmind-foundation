@@ -22,6 +22,7 @@ import {
   recentMonths,
   type ChecklistItem,
   type PeriodAccess,
+  type PeriodChecklistState,
   type PeriodRow,
   type PeriodStatus,
   type PeriodTotals,
@@ -124,7 +125,7 @@ export async function loadPeriods(ctx: AuthContext, companyId: string): Promise<
       closed_by: r.closed_by,
       closed_by_name: r.closed_by ? (names.get(r.closed_by) ?? "—") : null,
       closed_at: r.closed_at,
-      close_checklist: (r.close_checklist as Record<string, unknown>) ?? {},
+      close_checklist: (r.close_checklist as PeriodChecklistState) ?? {},
     })),
     ...synthetic,
   ].sort((a, b) => b.period_month.localeCompare(a.period_month));
@@ -171,7 +172,7 @@ export async function checklistFor(
     unbilledContracts(ctx, companyId, end),
   ]);
 
-  const checklist = (period.close_checklist ?? {}) as { unbilled_reviewed?: boolean };
+  const checklist: PeriodChecklistState = period.close_checklist ?? {};
   return buildChecklist({
     blocked_matches: matches?.length ?? 0,
     unmatched_payments: payments?.length ?? 0,

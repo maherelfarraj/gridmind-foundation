@@ -26,6 +26,13 @@ export type ComparePeriodsInput = z.infer<typeof ComparePeriodsSchema>;
 
 export type PeriodStatus = "open" | "closing" | "closed";
 
+export interface PeriodChecklistState {
+  unbilled_reviewed?: boolean;
+  note?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+}
+
 export interface PeriodRow {
   id: string | null;
   period_month: string;
@@ -33,7 +40,7 @@ export interface PeriodRow {
   closed_by: string | null;
   closed_by_name: string | null;
   closed_at: string | null;
-  close_checklist: Record<string, unknown>;
+  close_checklist: PeriodChecklistState;
 }
 
 // ---------------------------------------------------------------------------
