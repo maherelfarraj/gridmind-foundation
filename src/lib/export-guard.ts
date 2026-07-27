@@ -21,6 +21,7 @@ export type ExportType =
   | "civil_geojson"
   | "civil_kml"
   | "wip_report"
+  | "gl_export"
   | "csv";
 
 export interface ExportLockedError extends Error {
