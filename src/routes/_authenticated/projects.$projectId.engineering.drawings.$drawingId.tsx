@@ -6,6 +6,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DrawingDetail, DrawingDetailSkeleton } from "@/components/engineering/drawing-detail";
+import { ThreadLink } from "@/components/thread/thread-link";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/drawings/$drawingId",
@@ -34,9 +35,14 @@ export const Route = createFileRoute(
 function DetailPage() {
   const { projectId, drawingId } = Route.useParams();
   return (
-    <Suspense fallback={<DrawingDetailSkeleton />}>
-      <DrawingDetail drawingId={drawingId} projectId={projectId} />
-    </Suspense>
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <ThreadLink entityType="drawing" entityId={drawingId} />
+      </div>
+      <Suspense fallback={<DrawingDetailSkeleton />}>
+        <DrawingDetail drawingId={drawingId} projectId={projectId} />
+      </Suspense>
+    </div>
   );
 }
 

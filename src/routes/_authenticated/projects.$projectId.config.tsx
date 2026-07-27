@@ -5,6 +5,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArchetypeConfigForm } from "@/components/projects/config/archetype-config-form";
+import { ThreadLink } from "@/components/thread/thread-link";
 import { archetypeConfigsQueryOptions } from "@/lib/archetype-configs-query";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
 import { ARCHETYPE_CONFIG_MAP, CONFIG_LABELS } from "@/lib/schemas/archetype-configs";
@@ -37,6 +38,9 @@ function ConfigTab() {
 
   return (
     <Tabs defaultValue={first} className="flex flex-col gap-4">
+      <div className="flex justify-end">
+        <ThreadLink entityType="project" entityId={projectId} label="View change impacts" />
+      </div>
       <TabsList className="flex flex-wrap gap-1 bg-transparent p-0">
         {sections.map((key) => (
           <TabsTrigger
