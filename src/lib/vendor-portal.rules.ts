@@ -51,6 +51,10 @@ export type VendorPortalErrorCode =
   | "vendor_portal_invoices_not_exposed"
   | "vendor_portal_documents_not_exposed"
   | "vendor_portal_rate_limited"
+  | "comment_required"
+  | "invalid_decision"
+  | "po_not_found"
+  | "po_not_acknowledgeable"
   | "unknown";
 
 const KNOWN_CODES: VendorPortalErrorCode[] = [
@@ -60,15 +64,17 @@ const KNOWN_CODES: VendorPortalErrorCode[] = [
   "vendor_portal_invoices_not_exposed",
   "vendor_portal_documents_not_exposed",
   "vendor_portal_rate_limited",
+  "comment_required",
+  "invalid_decision",
+  "po_not_found",
+  "po_not_acknowledgeable",
 ];
 
 /** Map a Postgres/RPC error into a typed vendor portal error code. */
 export function vendorPortalErrorCode(err: unknown): VendorPortalErrorCode {
   const msg =
     err && typeof err === "object"
-      ? String(
-          (err as { message?: unknown }).message ?? (err as { code?: unknown }).code ?? "",
-        )
+      ? String((err as { message?: unknown }).message ?? (err as { code?: unknown }).code ?? "")
       : String(err ?? "");
   for (const code of KNOWN_CODES) {
     if (msg.includes(code)) return code;
@@ -94,6 +100,14 @@ export function vendorPortalErrorMessage(code: VendorPortalErrorCode): string {
       return "Documents are not shared with your account";
     case "vendor_portal_rate_limited":
       return "Too many requests — please slow down";
+    case "comment_required":
+      return "A comment is required for this decision";
+    case "invalid_decision":
+      return "That acknowledgment choice isn’t valid";
+    case "po_not_found":
+      return "Purchase order not found";
+    case "po_not_acknowledgeable":
+      return "This purchase order can no longer be acknowledged";
     default:
       return "Something went wrong loading your portal data";
   }
@@ -148,4 +162,104 @@ export function exposureDiff(
     if (before[k] !== after[k]) out[k] = { before: before[k], after: after[k] };
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// P-223 — Purchase order acknowledgment helpers
+// ---------------------------------------------------------------------------
+
+/** Ordered lifecycle used by the vendor-facing status stepper. */
+export const PO_STATUS_STEPS = ["issued", "partially_received", "received", "closed"] as const;
+export type PoStatusStep = (typeof PO_STATUS_STEPS)[number];
+
+export const PO_STATUS_LABELS: Record<PoStatusStep, string> = {
+  issued: "Issued",
+  partially_received: "Partially received",
+  received: "Received",
+  closed: "Closed",
+};
+
+export type AcknowledgmentStatus = "accepted" | "accepted_with_comments" | "rejected";
+
+export const ACKNOWLEDGMENT_LABELS: Record<AcknowledgmentStatus, string> = {
+  accepted: "Accepted",
+  accepted_with_comments: "Accepted with comments",
+  rejected: "Rejected",
+};
+
+/** A PO can only be acknowledged while it is still open for receipt. */
+export function isAcknowledgeable(status: string): boolean {
+  return status === "issued" || status === "partially_received";
+}
+
+/** True when the vendor decision requires a comment. */
+export function requiresComment(decision: AcknowledgmentStatus): boolean {
+  return decision === "accepted_with_comments" || decision === "rejected";
+}
+
+/** Client-side mirror of the RPC's comment guard. */
+export function validateAcknowledgment(
+  decision: AcknowledgmentStatus,
+  comment: string | null | undefined,
+): { ok: true } | { ok: false; code: "comment_required" } {
+  if (requiresComment(decision) && !(comment ?? "").trim()) {
+    return { ok: false, code: "comment_required" };
+  }
+  return { ok: true };
+}
+
+export interface CountdownChip {
+  days: number;
+  overdue: boolean;
+  label: string;
+}
+
+/** Countdown chip for a required-by date (whole days, UTC-safe). */
+export function countdownLabel(
+  requiredBy: string | null | undefined,
+  now: Date = new Date(),
+): CountdownChip | null {
+  if (!requiredBy) return null;
+  const target = new Date(requiredBy);
+  if (Number.isNaN(target.getTime())) return null;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const days = Math.ceil((target.getTime() - now.getTime()) / dayMs);
+  if (days < 0) {
+    const late = Math.abs(days);
+    return { days, overdue: true, label: `${late} day${late === 1 ? "" : "s"} overdue` };
+  }
+  if (days === 0) return { days, overdue: false, label: "Due today" };
+  return { days, overdue: false, label: `In ${days} day${days === 1 ? "" : "s"}` };
+}
+
+export interface PoLine {
+  description: string;
+  spec: string | null;
+  quantity: number;
+  uom: string | null;
+  unit_price: number;
+  amount: number;
+}
+
+function num(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Normalize the PO `lines` jsonb payload into display rows. */
+export function parsePoLines(raw: unknown): PoLine[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((entry) => {
+    const l = (entry ?? {}) as Record<string, unknown>;
+    const quantity = num(l.quantity ?? l.qty);
+    const unitPrice = num(l.unit_price ?? l.unitPrice ?? l.rate);
+    return {
+      description: String(l.description ?? l.item ?? l.name ?? "Line item"),
+      spec: (l.spec as string | null) ?? (l.specification as string | null) ?? null,
+      quantity,
+      uom: (l.uom as string | null) ?? (l.unit as string | null) ?? null,
+      unit_price: unitPrice,
+      amount: l.amount != null ? num(l.amount) : quantity * unitPrice,
+    };
+  });
 }

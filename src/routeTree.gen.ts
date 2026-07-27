@@ -28,6 +28,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as VendorVendorIdIndexRouteImport } from './routes/vendor.$vendorId.index'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedFinanceIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedEstimatingIndexRouteImport } from './routes/_authenticated/estimating.index'
 import { Route as AuthenticatedEsgIndexRouteImport } from './routes/_authenticated/esg.index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
+import { Route as VendorVendorIdPosRouteImport } from './routes/vendor.$vendorId.pos'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
@@ -334,6 +336,11 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
+const VendorVendorIdIndexRoute = VendorVendorIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorVendorIdRoute,
+} as any)
 const AuthenticatedProposalsIndexRoute =
   AuthenticatedProposalsIndexRouteImport.update({
     id: '/proposals/',
@@ -374,6 +381,11 @@ const AuthenticatedChangesIndexRoute =
     path: '/changes/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const VendorVendorIdPosRoute = VendorVendorIdPosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
+  getParentRoute: () => VendorVendorIdRoute,
+} as any)
 const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -1619,7 +1631,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -1712,6 +1724,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/esg/': typeof AuthenticatedEsgIndexRoute
   '/estimating/': typeof AuthenticatedEstimatingIndexRoute
@@ -1719,6 +1732,7 @@ export interface FileRoutesByFullPath {
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -1848,7 +1862,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
@@ -1934,6 +1947,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/esg': typeof AuthenticatedEsgIndexRoute
   '/estimating': typeof AuthenticatedEstimatingIndexRoute
@@ -1941,6 +1955,7 @@ export interface FileRoutesByTo {
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId': typeof VendorVendorIdIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -2072,7 +2087,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -2165,6 +2180,7 @@ export interface FileRoutesById {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/esg/': typeof AuthenticatedEsgIndexRoute
   '/_authenticated/estimating/': typeof AuthenticatedEstimatingIndexRoute
@@ -2172,6 +2188,7 @@ export interface FileRoutesById {
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/_authenticated/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -2398,6 +2415,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/changes/'
     | '/esg/'
     | '/estimating/'
@@ -2405,6 +2423,7 @@ export interface FileRouteTypes {
     | '/hse/'
     | '/projects/'
     | '/proposals/'
+    | '/vendor/$vendorId/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/field/dpr/$dprId'
@@ -2534,7 +2553,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
-    | '/vendor/$vendorId'
     | '/portal'
     | '/vendor'
     | '/admin/health'
@@ -2620,6 +2638,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/changes'
     | '/esg'
     | '/estimating'
@@ -2627,6 +2646,7 @@ export interface FileRouteTypes {
     | '/hse'
     | '/projects'
     | '/proposals'
+    | '/vendor/$vendorId'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/field/dpr/$dprId'
@@ -2850,6 +2870,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/_authenticated/changes/'
     | '/_authenticated/esg/'
     | '/_authenticated/estimating/'
@@ -2857,6 +2878,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
+    | '/vendor/$vendorId/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
     | '/_authenticated/field/dpr/$dprId'
@@ -3136,6 +3158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/vendor/$vendorId/': {
+      id: '/vendor/$vendorId/'
+      path: '/'
+      fullPath: '/vendor/$vendorId/'
+      preLoaderRoute: typeof VendorVendorIdIndexRouteImport
+      parentRoute: typeof VendorVendorIdRoute
+    }
     '/_authenticated/proposals/': {
       id: '/_authenticated/proposals/'
       path: '/proposals'
@@ -3184,6 +3213,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/changes/'
       preLoaderRoute: typeof AuthenticatedChangesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/vendor/$vendorId/pos': {
+      id: '/vendor/$vendorId/pos'
+      path: '/pos'
+      fullPath: '/vendor/$vendorId/pos'
+      preLoaderRoute: typeof VendorVendorIdPosRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/portal/projects/$projectId': {
       id: '/portal/projects/$projectId'
@@ -5392,13 +5428,27 @@ const PortalRouteChildren: PortalRouteChildren = {
 const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
+interface VendorVendorIdRouteChildren {
+  VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
+  VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
+}
+
+const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
+  VendorVendorIdPosRoute: VendorVendorIdPosRoute,
+  VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
+}
+
+const VendorVendorIdRouteWithChildren = VendorVendorIdRoute._addFileChildren(
+  VendorVendorIdRouteChildren,
+)
+
 interface VendorRouteChildren {
-  VendorVendorIdRoute: typeof VendorVendorIdRoute
+  VendorVendorIdRoute: typeof VendorVendorIdRouteWithChildren
   VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
-  VendorVendorIdRoute: VendorVendorIdRoute,
+  VendorVendorIdRoute: VendorVendorIdRouteWithChildren,
   VendorIndexRoute: VendorIndexRoute,
 }
 

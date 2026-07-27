@@ -20,6 +20,11 @@ import {
   type DataTableColumn,
 } from "@/components/ui/data-table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
+import {
+  AcknowledgmentChip,
+  AwaitingAcknowledgmentChip,
+} from "@/components/vendor-portal/acknowledgment-chip";
+import { isAcknowledgeable, type AcknowledgmentStatus } from "@/lib/vendor-portal.rules";
 import { PageHeader } from "@/components/ui/page-header";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -113,6 +118,24 @@ function PosIndex() {
       cell: (r) => <span className="text-muted-foreground">{r.project_name ?? "—"}</span>,
     },
     { id: "status", header: "Status", cell: (r) => <PoStatusBadge status={r.status} /> },
+    {
+      id: "ack",
+      header: "Vendor ack",
+      hideBelow: "lg",
+      cell: (r) =>
+        r.acknowledgment_status ? (
+          <AcknowledgmentChip
+            status={r.acknowledgment_status as AcknowledgmentStatus}
+            at={r.acknowledged_at}
+            note={r.acknowledgment_note}
+            by={r.acknowledged_by_email}
+          />
+        ) : isAcknowledgeable(r.status) ? (
+          <AwaitingAcknowledgmentChip />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
     {
       id: "total",
       header: "Total",

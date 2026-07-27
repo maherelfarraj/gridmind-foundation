@@ -32,6 +32,11 @@ import {
 } from "@/components/ui/table";
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
 import { PoStatusStepper } from "@/components/procurement/po-status-stepper";
+import {
+  AcknowledgmentChip,
+  AwaitingAcknowledgmentChip,
+} from "@/components/vendor-portal/acknowledgment-chip";
+import { isAcknowledgeable, type AcknowledgmentStatus } from "@/lib/vendor-portal.rules";
 import { PageHeader } from "@/components/ui/page-header";
 import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
 import { useUnderChangeControl } from "@/hooks/use-change-control";
@@ -151,6 +156,44 @@ function PoDetail() {
       </div>
 
       <PoStatusStepper status={po.status} />
+
+      {po.acknowledgment_status === "rejected" && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm"
+        >
+          <p className="font-medium text-destructive">Rejected by the vendor</p>
+          <p className="mt-1 text-muted-foreground">
+            {po.acknowledgment_note ?? "No reason provided."}
+          </p>
+        </div>
+      )}
+
+      <section className="rounded-md border border-border p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="font-display text-sm font-semibold">Acknowledgment</h2>
+          {po.acknowledgment_status ? (
+            <AcknowledgmentChip
+              status={po.acknowledgment_status as AcknowledgmentStatus}
+              at={po.acknowledged_at}
+            />
+          ) : isAcknowledgeable(po.status) ? (
+            <AwaitingAcknowledgmentChip />
+          ) : (
+            <span className="text-sm text-muted-foreground">Not applicable</span>
+          )}
+        </div>
+        {po.acknowledged_at && (
+          <dl className="mt-3 grid grid-cols-3 gap-y-2 text-sm">
+            <dt className="text-muted-foreground">Acknowledged</dt>
+            <dd className="col-span-2">{format(new Date(po.acknowledged_at), "PPp")}</dd>
+            <dt className="text-muted-foreground">By</dt>
+            <dd className="col-span-2">{po.acknowledged_by_email ?? "Vendor contact"}</dd>
+            <dt className="text-muted-foreground">Comment</dt>
+            <dd className="col-span-2">{po.acknowledgment_note ?? "—"}</dd>
+          </dl>
+        )}
+      </section>
 
       {/* action strip */}
       <section className="rounded-md border border-border p-4 space-y-4">

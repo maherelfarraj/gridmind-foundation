@@ -11950,6 +11950,10 @@ export type Database = {
       }
       purchase_orders: {
         Row: {
+          acknowledged_at: string | null
+          acknowledged_by_email: string | null
+          acknowledgment_note: string | null
+          acknowledgment_status: string | null
           approval_note: string | null
           approved_at: string | null
           approved_by: string | null
@@ -11979,6 +11983,10 @@ export type Database = {
           vendor_id: string
         }
         Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by_email?: string | null
+          acknowledgment_note?: string | null
+          acknowledgment_status?: string | null
           approval_note?: string | null
           approved_at?: string | null
           approved_by?: string | null
@@ -12008,6 +12016,10 @@ export type Database = {
           vendor_id: string
         }
         Update: {
+          acknowledged_at?: string | null
+          acknowledged_by_email?: string | null
+          acknowledgment_note?: string | null
+          acknowledgment_status?: string | null
           approval_note?: string | null
           approved_at?: string | null
           approved_by?: string | null
@@ -19323,6 +19335,10 @@ export type Database = {
         Returns: Json
       }
       vendor_portal_accept_invites: { Args: never; Returns: number }
+      vendor_portal_acknowledge_po: {
+        Args: { p_comment?: string; p_decision: string; p_po_id: string }
+        Returns: undefined
+      }
       vendor_portal_assert_access: {
         Args: { p_vendor_id: string }
         Returns: {
@@ -19388,19 +19404,7 @@ export type Database = {
           status: string
         }[]
       }
-      vendor_portal_get_pos: {
-        Args: { p_vendor_id: string }
-        Returns: {
-          currency_code: string
-          id: string
-          issued_at: string
-          lines: Json
-          po_number: string
-          required_by_date: string
-          status: string
-          total_amount: number
-        }[]
-      }
+      vendor_portal_get_pos: { Args: { p_vendor_id: string }; Returns: Json }
       vendor_portal_my_memberships: {
         Args: never
         Returns: {
