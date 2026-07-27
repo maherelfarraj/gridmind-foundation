@@ -54,7 +54,11 @@ import {
   exportBondsCsv,
   uploadBondDocument,
 } from "@/lib/bonds.functions";
-import { bondDetailQueryOptions, bondErrorMessage, bondsRegisterQueryOptions } from "@/lib/bonds.query";
+import {
+  bondDetailQueryOptions,
+  bondErrorMessage,
+  bondsRegisterQueryOptions,
+} from "@/lib/bonds.query";
 import {
   BENEFICIARY_TYPES,
   BOND_STATUSES,
@@ -845,9 +849,7 @@ function InstrumentDrawer({
               ) : (
                 <p className="text-sm text-muted-foreground">No document uploaded yet.</p>
               )}
-              {d.can_write ? (
-                <Input type="file" disabled={busy} onChange={handleUpload} />
-              ) : null}
+              {d.can_write ? <Input type="file" disabled={busy} onChange={handleUpload} /> : null}
             </section>
 
             {d.can_write && d.instrument.status === "draft" ? (

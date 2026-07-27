@@ -46,7 +46,11 @@ function row(p: Partial<BondRow>): BondRow {
   };
   const merged = { ...base, ...p };
   const days = daysToExpiry(merged.expiry_date, TODAY);
-  return { ...merged, days_to_expiry: days, effective_status: effectiveStatus(merged.status, days) };
+  return {
+    ...merged,
+    days_to_expiry: days,
+    effective_status: effectiveStatus(merged.status, days),
+  };
 }
 
 describe("bond countdown", () => {
