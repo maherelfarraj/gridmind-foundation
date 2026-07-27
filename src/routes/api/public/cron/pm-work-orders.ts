@@ -10,7 +10,7 @@
  *     'cron-pm-work-orders', '*\/15 * * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/pm-work-orders',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/pm-work-orders',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -25,7 +25,7 @@ import { generatePmWorkOrders } from "@/lib/pm-plans.server";
 
 const ROUTE = "cron:pm-work-orders";
 
-export const Route = createFileRoute("/api/cron/pm-work-orders")({
+export const Route = createFileRoute("/api/public/cron/pm-work-orders")({
   server: {
     handlers: {
       POST: async ({ request }) => {

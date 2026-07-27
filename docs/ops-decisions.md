@@ -15,7 +15,7 @@ do not silently edit historical entries.
 | Metric | Warn | Critical | Notes |
 | ------ | ---- | -------- | ----- |
 | Memory usage | > 80% | — | Sustained over a rolling window, not instantaneous spikes |
-| Disk usage | > 70% | — | Correlate with `/api/cron/storage-check` results |
+| Disk usage | > 70% | — | Correlate with `/api/public/cron/storage-check` results |
 | DB connections | > 45 | > 60 | See `docs/ops-runbook.md` §4.3 for mitigation |
 | WAL size | > 1 GB | — | Correlate with PITR archiving health (`docs/pitr-runbook.md`) |
 | Rollback rate | > 100 / hr | — | Application-level transaction rollbacks; investigate query patterns |

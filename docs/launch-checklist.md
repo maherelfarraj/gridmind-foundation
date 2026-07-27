@@ -75,7 +75,7 @@ The public-hook guard ships in `warn` mode so integrators can be onboarded witho
 ## 3 — Backup & Retention Verification
 
 - [ ] Latest PITR drill in `docs/pitr-runbook.md` completed **< 35 days ago** with **Result = PASS** recorded in the drill log
-- [ ] `/api/cron/storage-check` green: **no `ops.storage_check_failed` rows in the last 7 days**
+- [ ] `/api/public/cron/storage-check` green: **no `ops.storage_check_failed` rows in the last 7 days**
   ```sql
   select count(*) from public.audit_logs
    where action = 'ops.storage_check_failed'

@@ -17,7 +17,7 @@
  *     'cron-audit-retention', '17 3 * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/audit-retention',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/audit-retention',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -37,7 +37,7 @@ type RetentionRow = {
   deleted_count: number | string;
 };
 
-export const Route = createFileRoute("/api/cron/audit-retention")({
+export const Route = createFileRoute("/api/public/cron/audit-retention")({
   server: {
     handlers: {
       POST: async ({ request }) => {

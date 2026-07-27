@@ -1,7 +1,7 @@
 /**
  * P-203 — Bond expiry engine: pure helpers (no I/O, unit-tested by P-206).
  *
- * The daily cron (src/routes/api/cron/bond-expiry.ts) materializes instrument
+ * The daily cron (src/routes/api/public/cron/bond-expiry.ts) materializes instrument
  * status from these functions and emits threshold notifications. Everything in
  * here is deterministic given (expiry_date, today).
  */

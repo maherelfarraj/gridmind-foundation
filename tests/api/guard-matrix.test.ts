@@ -141,7 +141,7 @@ function signedHeaders(
 const ECHO_URL = `${DEV_SERVER_URL}/api/public/hooks/echo`;
 const ECHO_NOSIG_URL = `${DEV_SERVER_URL}/api/public/hooks/echo?nosig=1`;
 const ECHO_BURST_URL = `${DEV_SERVER_URL}/api/public/hooks/echo?burst=1`;
-const CRON_URL = `${DEV_SERVER_URL}/api/cron/approval-escalations`;
+const CRON_URL = `${DEV_SERVER_URL}/api/public/cron/approval-escalations`;
 
 const SERVER_MODE: "warn" | "block" =
   (process.env.PUBLIC_HOOK_ENFORCE ?? "block").toLowerCase() === "warn" ? "warn" : "block";

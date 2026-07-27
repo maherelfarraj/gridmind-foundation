@@ -74,7 +74,7 @@ export function makeClaim(overrides: Partial<ClaimFixture> = {}): ClaimFixture {
 }
 
 // ---------------------------------------------------------------------------
-// Expiry cron harness — mirrors src/routes/api/cron/bond-expiry.ts
+// Expiry cron harness — mirrors src/routes/api/public/cron/bond-expiry.ts
 // ---------------------------------------------------------------------------
 
 export interface ExpiryRunResult {

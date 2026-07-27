@@ -12,7 +12,7 @@
  *     'cron-bond-expiry', '17 6 * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/bond-expiry',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/bond-expiry',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -61,7 +61,7 @@ interface InstrumentRow {
   status: string;
 }
 
-export const Route = createFileRoute("/api/cron/bond-expiry")({
+export const Route = createFileRoute("/api/public/cron/bond-expiry")({
   server: {
     handlers: {
       POST: async ({ request }) => {

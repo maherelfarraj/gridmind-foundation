@@ -11,7 +11,7 @@
  *     'cron-finance-alerts', '17 6 * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/finance-alerts',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/finance-alerts',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -35,7 +35,7 @@ function skipped(reason: string): Response {
   return Response.json({ skipped: true, reason }, { status: 200 });
 }
 
-export const Route = createFileRoute("/api/cron/finance-alerts")({
+export const Route = createFileRoute("/api/public/cron/finance-alerts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
