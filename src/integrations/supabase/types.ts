@@ -19570,6 +19570,36 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_get_db_health: {
+        Args: never
+        Returns: {
+          connections_max: number
+          connections_used: number
+          db_size_mb: number
+          rollback_rate: number
+          wal_size_mb: number
+          xact_commit: number
+          xact_rollback: number
+        }[]
+      }
+      admin_get_slow_queries: {
+        Args: never
+        Returns: {
+          calls: number
+          max_ms: number
+          mean_ms: number
+          query: string
+          total_ms: number
+        }[]
+      }
+      admin_get_table_sizes: {
+        Args: never
+        Returns: {
+          schema_name: string
+          table_name: string
+          total_mb: number
+        }[]
+      }
       approve_change_order: {
         Args: { p_co_id: string; p_note?: string }
         Returns: Json
