@@ -17,6 +17,7 @@ import {
   type AnonPeekResult,
 } from "@/lib/invites.functions";
 import { linkAcceptedPortalInvites } from "@/lib/portal.functions";
+import { acceptVendorPortalInvites } from "@/lib/vendor-portal.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -320,6 +321,7 @@ function SignedInAccept({ token }: { token: string }) {
   const peekFn = useServerFn(peekInvite);
   const redeemFn = useServerFn(redeemInviteRpc);
   const linkPortalFn = useServerFn(linkAcceptedPortalInvites);
+  const acceptVendorFn = useServerFn(acceptVendorPortalInvites);
 
   const peek = useQuery({
     queryKey: ["invite-peek", token],
@@ -336,13 +338,21 @@ function SignedInAccept({ token }: { token: string }) {
       } catch {
         // Non-fatal — main invite acceptance already succeeded.
       }
-      return res;
+      // P-222 — activate vendor portal memberships for vendor_viewer invites.
+      let isVendor = false;
+      try {
+        const vendorRes = await acceptVendorFn();
+        isVendor = vendorRes.activated > 0;
+      } catch {
+        // Non-fatal — main invite acceptance already succeeded.
+      }
+      return { ...res, isVendor };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success("Invitation accepted");
       queryClient.invalidateQueries();
       router.invalidate();
-      navigate({ to: "/dashboard", replace: true });
+      navigate({ to: res.isVendor ? "/vendor" : "/dashboard", replace: true });
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Could not accept invite");

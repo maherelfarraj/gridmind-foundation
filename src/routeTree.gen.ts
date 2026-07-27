@@ -9,13 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as VendorVendorIdRouteImport } from './routes/vendor.$vendorId'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -238,6 +241,11 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringStudiesStudyTypeNewRo
 import { Route as AuthenticatedProjectsProjectIdEngineeringIfcReleaseReleaseIdCertificateRouteImport } from './routes/_authenticated/projects.$projectId.engineering.ifc-release.$releaseId.certificate'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTestsTestIdExecuteRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.tests.$testId.execute'
 
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -266,10 +274,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VendorIndexRoute = VendorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorRoute,
+} as any)
 const PortalIndexRoute = PortalIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PortalRoute,
+} as any)
+const VendorVendorIdRoute = VendorVendorIdRouteImport.update({
+  id: '/$vendorId',
+  path: '/$vendorId',
+  getParentRoute: () => VendorRoute,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
@@ -1591,6 +1609,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
+  '/vendor': typeof VendorRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1600,7 +1619,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal/': typeof PortalIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
@@ -1827,7 +1848,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal': typeof PortalIndexRoute
+  '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2039,6 +2062,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
+  '/vendor': typeof VendorRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -2048,7 +2072,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal/': typeof PortalIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
@@ -2269,6 +2295,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/design-system'
     | '/portal'
+    | '/vendor'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -2278,7 +2305,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal/'
+    | '/vendor/'
     | '/admin/tenants'
     | '/admin/health'
     | '/changes/$id'
@@ -2505,7 +2534,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal'
+    | '/vendor'
     | '/admin/health'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2716,6 +2747,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/design-system'
     | '/portal'
+    | '/vendor'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
     | '/(auth)/reset-password'
@@ -2725,7 +2757,9 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal/'
+    | '/vendor/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
     | '/_authenticated/changes/$id'
@@ -2947,6 +2981,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PortalRoute: typeof PortalRouteWithChildren
+  VendorRoute: typeof VendorRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
@@ -2968,6 +3003,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -3010,12 +3052,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vendor/': {
+      id: '/vendor/'
+      path: '/'
+      fullPath: '/vendor/'
+      preLoaderRoute: typeof VendorIndexRouteImport
+      parentRoute: typeof VendorRoute
+    }
     '/portal/': {
       id: '/portal/'
       path: '/'
       fullPath: '/portal/'
       preLoaderRoute: typeof PortalIndexRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/vendor/$vendorId': {
+      id: '/vendor/$vendorId'
+      path: '/$vendorId'
+      fullPath: '/vendor/$vendorId'
+      preLoaderRoute: typeof VendorVendorIdRouteImport
+      parentRoute: typeof VendorRoute
     }
     '/share/$token': {
       id: '/share/$token'
@@ -5336,6 +5392,19 @@ const PortalRouteChildren: PortalRouteChildren = {
 const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
+interface VendorRouteChildren {
+  VendorVendorIdRoute: typeof VendorVendorIdRoute
+  VendorIndexRoute: typeof VendorIndexRoute
+}
+
+const VendorRouteChildren: VendorRouteChildren = {
+  VendorVendorIdRoute: VendorVendorIdRoute,
+  VendorIndexRoute: VendorIndexRoute,
+}
+
+const VendorRouteWithChildren =
+  VendorRoute._addFileChildren(VendorRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
@@ -5343,6 +5412,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
   PortalRoute: PortalRouteWithChildren,
+  VendorRoute: VendorRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
