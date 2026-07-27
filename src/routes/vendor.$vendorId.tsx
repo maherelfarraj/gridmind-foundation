@@ -43,7 +43,11 @@ export const Route = createFileRoute("/vendor/$vendorId")({
   component: VendorDashboard,
 });
 
-function useVendorQuery<T>(key: string, vendorId: string, fn: (a: { data: { vendorId: string } }) => Promise<T>) {
+function useVendorQuery<T>(
+  key: string,
+  vendorId: string,
+  fn: (a: { data: { vendorId: string } }) => Promise<T>,
+) {
   return useQuery({
     queryKey: ["vendor-portal", key, vendorId],
     queryFn: () => fn({ data: { vendorId } }),

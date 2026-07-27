@@ -354,13 +354,10 @@ export const inviteVendorContact = createServerFn({ method: "POST" })
       }
 
       const membershipId = (inserted as { id: string }).id;
-      await writePortalEvent(
-        context,
-        data.vendorId,
-        companyId,
-        "vendor_portal.member_invited",
-        { email: data.email, expires_at: expiresAt },
-      );
+      await writePortalEvent(context, data.vendorId, companyId, "vendor_portal.member_invited", {
+        email: data.email,
+        expires_at: expiresAt,
+      });
       await writeAuditLog(context, "vendor_portal.member_invited", membershipId, {
         vendor_id: data.vendorId,
         company_id: companyId,
