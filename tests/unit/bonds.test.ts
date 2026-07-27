@@ -147,7 +147,7 @@ describe("bond creation + activation", () => {
 
   it("stores documents company-UUID first", () => {
     expect(bondDocumentPath("comp", "inst", "../evil path.pdf")).toBe(
-      "comp/bonds/inst/.._evil_path.pdf",
+      "comp/bonds/inst/evil_path.pdf",
     );
   });
 });
