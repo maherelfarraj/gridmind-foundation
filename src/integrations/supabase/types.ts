@@ -1412,6 +1412,166 @@ export type Database = {
           },
         ]
       }
+      change_requests: {
+        Row: {
+          affected_systems: Json
+          approval_instance_id: string | null
+          approved_at: string | null
+          change_type: string
+          closed_at: string | null
+          closed_by: string | null
+          closure_notes: string | null
+          company_id: string
+          contract_impact: string | null
+          cost_impact: number | null
+          cost_impact_notes: string | null
+          cr_number: string
+          created_at: string
+          created_by: string | null
+          description: string
+          energy_yield_impact: string | null
+          hse_impact: string | null
+          id: string
+          implementation_evidence: Json
+          implemented_at: string | null
+          metadata: Json
+          originator_id: string | null
+          project_id: string | null
+          reason: string
+          rejected_at: string | null
+          rejection_reason: string | null
+          required_reviewers: Json
+          schedule_impact_days: number | null
+          schedule_impact_notes: string | null
+          status: string
+          submitted_at: string | null
+          technical_impact: string | null
+          title: string
+          updated_asbuilts: Json
+          updated_at: string
+          updated_documents: Json
+        }
+        Insert: {
+          affected_systems?: Json
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          change_type: string
+          closed_at?: string | null
+          closed_by?: string | null
+          closure_notes?: string | null
+          company_id: string
+          contract_impact?: string | null
+          cost_impact?: number | null
+          cost_impact_notes?: string | null
+          cr_number: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          energy_yield_impact?: string | null
+          hse_impact?: string | null
+          id?: string
+          implementation_evidence?: Json
+          implemented_at?: string | null
+          metadata?: Json
+          originator_id?: string | null
+          project_id?: string | null
+          reason?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          required_reviewers?: Json
+          schedule_impact_days?: number | null
+          schedule_impact_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          technical_impact?: string | null
+          title: string
+          updated_asbuilts?: Json
+          updated_at?: string
+          updated_documents?: Json
+        }
+        Update: {
+          affected_systems?: Json
+          approval_instance_id?: string | null
+          approved_at?: string | null
+          change_type?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          closure_notes?: string | null
+          company_id?: string
+          contract_impact?: string | null
+          cost_impact?: number | null
+          cost_impact_notes?: string | null
+          cr_number?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          energy_yield_impact?: string | null
+          hse_impact?: string | null
+          id?: string
+          implementation_evidence?: Json
+          implemented_at?: string | null
+          metadata?: Json
+          originator_id?: string | null
+          project_id?: string | null
+          reason?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          required_reviewers?: Json
+          schedule_impact_days?: number | null
+          schedule_impact_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          technical_impact?: string | null
+          title?: string
+          updated_asbuilts?: Json
+          updated_at?: string
+          updated_documents?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_requests_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_originator_id_fkey"
+            columns: ["originator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_requests_project_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       civil_features: {
         Row: {
           company_id: string
@@ -5665,6 +5825,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "impact_assessments_cr_fk"
+            columns: ["change_request_id"]
+            isOneToOne: false
+            referencedRelation: "change_requests"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "impact_assessments_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -7507,6 +7674,29 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moc_counters: {
+        Row: {
+          company_id: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moc_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -17137,6 +17327,7 @@ export type Database = {
           policyname: string
         }[]
       }
+      next_cr_number: { Args: { p_company_id: string }; Returns: string }
       next_sld_drawing_number: {
         Args: { p_project_id: string }
         Returns: string
@@ -17236,6 +17427,7 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      submit_change_request: { Args: { p_id: string }; Returns: Json }
       submit_pv_layout: {
         Args: { p_layout_id: string }
         Returns: {
@@ -17262,6 +17454,10 @@ export type Database = {
         }
       }
       sync_export_locks: { Args: { p_project_id: string }; Returns: number }
+      transition_change_request: {
+        Args: { p_id: string; p_payload?: Json; p_to: string }
+        Returns: Json
+      }
       verify_api_key: {
         Args: { p_raw_key: string }
         Returns: {
