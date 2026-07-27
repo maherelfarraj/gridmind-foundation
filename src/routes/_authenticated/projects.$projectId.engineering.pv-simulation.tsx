@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDistanceToNowStrict } from "date-fns";
 import { AlertTriangle, BadgeCheck, GitCompare, Info, Play, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
 
 import {
@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FormErrorSummary } from "@/components/ui/form-error-summary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -81,30 +82,54 @@ const DEFAULT_EFF_CURVE = [
   { loadFraction: 1, effPct: 98 },
 ];
 
+// Human messages: a blank or out-of-range entry must read as an instruction the
+// operator can act on, never as a bare zod default they never see.
+const num = (label: string, min: number, max: number, unit = "") =>
+  z.coerce
+    .number({ message: `${label} must be a number` })
+    .min(min, `${label} must be ${min}–${max}${unit}`)
+    .max(max, `${label} must be ${min}–${max}${unit}`);
+
 const formSchema = z.object({
-  name: z.string().min(1, "Name the run").max(120),
-  tiltDeg: z.coerce.number().min(0).max(90),
-  azimuthDeg: z.coerce.number().min(-180).max(180),
-  albedo: z.coerce.number().min(0).max(1),
+  name: z.string().min(1, "Name the run").max(120, "Run name must be 120 characters or fewer"),
+  tiltDeg: num("Tilt", 0, 90, "°"),
+  azimuthDeg: num("Azimuth", -180, 180, "°"),
+  albedo: num("Albedo", 0, 1),
   tracker: z.enum(["fixed", "single_axis"]),
-  gcr: z.coerce.number().min(0.05).max(0.95),
-  arrayDcKwp: z.coerce.number().positive(),
-  inverterAcKw: z.coerce.number().positive(),
-  moduleNoctC: z.coerce.number().min(20).max(70),
-  modulePmaxPctPerC: z.coerce.number().min(-1).max(0),
-  mismatchPct: z.coerce.number().min(0).max(20),
-  dcWiringLossPct: z.coerce.number().min(0).max(20),
-  transformerLossPct: z.coerce.number().min(0).max(10),
-  mvCollectionLossPct: z.coerce.number().min(0).max(10),
-  gridAvailabilityPct: z.coerce.number().min(0).max(100),
-  plantAvailabilityPct: z.coerce.number().min(0).max(100),
-  gridLimitKw: z.string(),
-  degradationYear1Pct: z.coerce.number().min(0).max(20),
-  auxiliaryLoadKw: z.coerce.number().min(0),
+  gcr: num("GCR", 0.05, 0.95),
+  arrayDcKwp: z.coerce
+    .number({ message: "Array DC must be a number" })
+    .positive("Array DC must be greater than zero"),
+  inverterAcKw: z.coerce
+    .number({ message: "Inverter AC must be a number" })
+    .positive("Inverter AC must be greater than zero"),
+  moduleNoctC: num("Module NOCT", 20, 70, "°C"),
+  modulePmaxPctPerC: num("Pmax temperature coefficient", -1, 0, "%/°C"),
+  mismatchPct: num("Mismatch loss", 0, 20, "%"),
+  dcWiringLossPct: num("DC wiring loss", 0, 20, "%"),
+  transformerLossPct: num("Transformer loss", 0, 10, "%"),
+  mvCollectionLossPct: num("MV collection loss", 0, 10, "%"),
+  gridAvailabilityPct: num("Grid availability", 0, 100, "%"),
+  plantAvailabilityPct: num("Plant availability", 0, 100, "%"),
+  gridLimitKw: z
+    .string()
+    .refine(
+      (v) => v.trim() === "" || Number.isFinite(Number(v)),
+      "Grid limit must be a number, or leave it blank for no limit",
+    ),
+  degradationYear1Pct: num("Year-1 degradation", 0, 20, "%"),
+  auxiliaryLoadKw: z.coerce
+    .number({ message: "Auxiliary load must be a number" })
+    .min(0, "Auxiliary load must be 0 or more"),
   bessEnabled: z.boolean(),
-  bessRoundTripPct: z.coerce.number().min(50).max(100),
-  bessThroughputFraction: z.coerce.number().min(0).max(1),
-  sigmaPct: z.string(),
+  bessRoundTripPct: num("BESS round-trip efficiency", 50, 100, "%"),
+  bessThroughputFraction: num("BESS throughput fraction", 0, 1),
+  sigmaPct: z
+    .string()
+    .refine(
+      (v) => v.trim() === "" || Number.isFinite(Number(v)),
+      "Sigma must be a number, or leave it blank for the model default",
+    ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -177,6 +202,11 @@ function NumberField({
   source?: string;
   overridden?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
+  // Every numeric input owns an error slot: a resolver rejection on this field
+  // must be visible next to the input, not swallowed into a dead submit button.
+  const ctx = useFormContext();
+  const raw = rest.name ? ctx?.formState.errors?.[rest.name] : undefined;
+  const error = typeof raw?.message === "string" ? raw.message : undefined;
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-2">
@@ -185,7 +215,14 @@ function NumberField({
         </Label>
         <SourceTag source={source} overridden={overridden} />
       </div>
-      <Input id={rest.name} type="number" step="any" {...rest} />
+      <Input
+        id={rest.name}
+        type="number"
+        step="any"
+        aria-invalid={error ? true : undefined}
+        {...rest}
+      />
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -347,194 +384,210 @@ function PvSimulationPage() {
                   </div>
                 </div>
 
-                <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-xs">
-                      Run name
-                    </Label>
-                    <Input id="name" {...form.register("name")} />
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <NumberField
-                      label="Tilt (°)"
-                      source={sources.tilt_deg}
-                      overridden={isOverridden("tiltDeg")}
-                      {...form.register("tiltDeg")}
-                    />
-                    <NumberField
-                      label="Azimuth (° from south)"
-                      source={sources.azimuth_deg}
-                      overridden={isOverridden("azimuthDeg")}
-                      {...form.register("azimuthDeg")}
-                    />
-                    <NumberField
-                      label="Albedo"
-                      source={sources.albedo}
-                      overridden={isOverridden("albedo")}
-                      {...form.register("albedo")}
-                    />
+                <FormProvider {...form}>
+                  <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="space-y-1.5">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <Label className="text-xs">Mounting</Label>
-                        <SourceTag source={sources.tracker} overridden={isOverridden("tracker")} />
-                      </div>
-                      <Select
-                        value={values.tracker}
-                        onValueChange={(v) =>
-                          form.setValue("tracker", v as FormValues["tracker"], {
-                            shouldDirty: true,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed">Fixed tilt</SelectItem>
-                          <SelectItem value="single_axis">Single-axis tracker</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="name" className="text-xs">
+                        Run name
+                      </Label>
+                      <Input
+                        id="name"
+                        aria-invalid={form.formState.errors.name ? true : undefined}
+                        {...form.register("name")}
+                      />
+                      {form.formState.errors.name ? (
+                        <p className="text-xs text-destructive">
+                          {form.formState.errors.name.message}
+                        </p>
+                      ) : null}
                     </div>
-                    <NumberField
-                      label="GCR (shading)"
-                      source={sources.gcr}
-                      overridden={isOverridden("gcr")}
-                      {...form.register("gcr")}
-                    />
-                    <NumberField
-                      label="Array DC (kWp)"
-                      source={sources.array_dc_kwp}
-                      overridden={isOverridden("arrayDcKwp")}
-                      {...form.register("arrayDcKwp")}
-                    />
-                    <NumberField
-                      label="Inverter AC (kW)"
-                      source={sources.inverter_ac_kw}
-                      overridden={isOverridden("inverterAcKw")}
-                      {...form.register("inverterAcKw")}
-                    />
-                    <NumberField
-                      label="DC wiring loss (%)"
-                      source={sources.dc_wiring_loss_pct}
-                      overridden={isOverridden("dcWiringLossPct")}
-                      {...form.register("dcWiringLossPct")}
-                    />
-                    <NumberField
-                      label="Module NOCT (°C)"
-                      source="library.module"
-                      overridden={isOverridden("moduleNoctC")}
-                      {...form.register("moduleNoctC")}
-                    />
-                    <NumberField
-                      label="Pmax coefficient (%/°C)"
-                      source="library.module"
-                      overridden={isOverridden("modulePmaxPctPerC")}
-                      {...form.register("modulePmaxPctPerC")}
-                    />
-                    <NumberField
-                      label="Mismatch (%)"
-                      overridden={isOverridden("mismatchPct")}
-                      {...form.register("mismatchPct")}
-                    />
-                    <NumberField
-                      label="Transformer loss (%)"
-                      overridden={isOverridden("transformerLossPct")}
-                      {...form.register("transformerLossPct")}
-                    />
-                    <NumberField
-                      label="MV collection loss (%)"
-                      overridden={isOverridden("mvCollectionLossPct")}
-                      {...form.register("mvCollectionLossPct")}
-                    />
-                    <NumberField
-                      label="Grid availability (%)"
-                      overridden={isOverridden("gridAvailabilityPct")}
-                      {...form.register("gridAvailabilityPct")}
-                    />
-                    <NumberField
-                      label="Plant availability (%)"
-                      overridden={isOverridden("plantAvailabilityPct")}
-                      {...form.register("plantAvailabilityPct")}
-                    />
-                    <div className="space-y-1.5">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <Label className="text-xs" htmlFor="gridLimitKw">
-                          Export limit / curtailment (kW)
-                        </Label>
-                        <SourceTag
-                          source={sources.grid_limit_kw}
-                          overridden={isOverridden("gridLimitKw")}
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <NumberField
+                        label="Tilt (°)"
+                        source={sources.tilt_deg}
+                        overridden={isOverridden("tiltDeg")}
+                        {...form.register("tiltDeg")}
+                      />
+                      <NumberField
+                        label="Azimuth (° from south)"
+                        source={sources.azimuth_deg}
+                        overridden={isOverridden("azimuthDeg")}
+                        {...form.register("azimuthDeg")}
+                      />
+                      <NumberField
+                        label="Albedo"
+                        source={sources.albedo}
+                        overridden={isOverridden("albedo")}
+                        {...form.register("albedo")}
+                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <Label className="text-xs">Mounting</Label>
+                          <SourceTag
+                            source={sources.tracker}
+                            overridden={isOverridden("tracker")}
+                          />
+                        </div>
+                        <Select
+                          value={values.tracker}
+                          onValueChange={(v) =>
+                            form.setValue("tracker", v as FormValues["tracker"], {
+                              shouldDirty: true,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="fixed">Fixed tilt</SelectItem>
+                            <SelectItem value="single_axis">Single-axis tracker</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <NumberField
+                        label="GCR (shading)"
+                        source={sources.gcr}
+                        overridden={isOverridden("gcr")}
+                        {...form.register("gcr")}
+                      />
+                      <NumberField
+                        label="Array DC (kWp)"
+                        source={sources.array_dc_kwp}
+                        overridden={isOverridden("arrayDcKwp")}
+                        {...form.register("arrayDcKwp")}
+                      />
+                      <NumberField
+                        label="Inverter AC (kW)"
+                        source={sources.inverter_ac_kw}
+                        overridden={isOverridden("inverterAcKw")}
+                        {...form.register("inverterAcKw")}
+                      />
+                      <NumberField
+                        label="DC wiring loss (%)"
+                        source={sources.dc_wiring_loss_pct}
+                        overridden={isOverridden("dcWiringLossPct")}
+                        {...form.register("dcWiringLossPct")}
+                      />
+                      <NumberField
+                        label="Module NOCT (°C)"
+                        source="library.module"
+                        overridden={isOverridden("moduleNoctC")}
+                        {...form.register("moduleNoctC")}
+                      />
+                      <NumberField
+                        label="Pmax coefficient (%/°C)"
+                        source="library.module"
+                        overridden={isOverridden("modulePmaxPctPerC")}
+                        {...form.register("modulePmaxPctPerC")}
+                      />
+                      <NumberField
+                        label="Mismatch (%)"
+                        overridden={isOverridden("mismatchPct")}
+                        {...form.register("mismatchPct")}
+                      />
+                      <NumberField
+                        label="Transformer loss (%)"
+                        overridden={isOverridden("transformerLossPct")}
+                        {...form.register("transformerLossPct")}
+                      />
+                      <NumberField
+                        label="MV collection loss (%)"
+                        overridden={isOverridden("mvCollectionLossPct")}
+                        {...form.register("mvCollectionLossPct")}
+                      />
+                      <NumberField
+                        label="Grid availability (%)"
+                        overridden={isOverridden("gridAvailabilityPct")}
+                        {...form.register("gridAvailabilityPct")}
+                      />
+                      <NumberField
+                        label="Plant availability (%)"
+                        overridden={isOverridden("plantAvailabilityPct")}
+                        {...form.register("plantAvailabilityPct")}
+                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <Label className="text-xs" htmlFor="gridLimitKw">
+                            Export limit / curtailment (kW)
+                          </Label>
+                          <SourceTag
+                            source={sources.grid_limit_kw}
+                            overridden={isOverridden("gridLimitKw")}
+                          />
+                        </div>
+                        <Input
+                          id="gridLimitKw"
+                          type="number"
+                          step="any"
+                          placeholder="Unlimited"
+                          {...form.register("gridLimitKw")}
                         />
                       </div>
-                      <Input
-                        id="gridLimitKw"
-                        type="number"
-                        step="any"
-                        placeholder="Unlimited"
-                        {...form.register("gridLimitKw")}
+                      <NumberField
+                        label="Degradation year 1 (%)"
+                        source="library.module"
+                        overridden={isOverridden("degradationYear1Pct")}
+                        {...form.register("degradationYear1Pct")}
                       />
-                    </div>
-                    <NumberField
-                      label="Degradation year 1 (%)"
-                      source="library.module"
-                      overridden={isOverridden("degradationYear1Pct")}
-                      {...form.register("degradationYear1Pct")}
-                    />
-                    <NumberField
-                      label="Auxiliary load (kW)"
-                      overridden={isOverridden("auxiliaryLoadKw")}
-                      {...form.register("auxiliaryLoadKw")}
-                    />
-                    <NumberField
-                      label="BESS round-trip (%)"
-                      source={sources.bess}
-                      disabled={!values.bessEnabled}
-                      overridden={isOverridden("bessRoundTripPct")}
-                      {...form.register("bessRoundTripPct")}
-                    />
-                    <NumberField
-                      label="BESS throughput fraction"
-                      source={sources.bess}
-                      disabled={!values.bessEnabled}
-                      overridden={isOverridden("bessThroughputFraction")}
-                      {...form.register("bessThroughputFraction")}
-                    />
-                    <div className="space-y-1.5">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <Label className="text-xs" htmlFor="sigmaPct">
-                          Interannual variability σ (%)
-                        </Label>
-                        <SourceTag source="optional" />
+                      <NumberField
+                        label="Auxiliary load (kW)"
+                        overridden={isOverridden("auxiliaryLoadKw")}
+                        {...form.register("auxiliaryLoadKw")}
+                      />
+                      <NumberField
+                        label="BESS round-trip (%)"
+                        source={sources.bess}
+                        disabled={!values.bessEnabled}
+                        overridden={isOverridden("bessRoundTripPct")}
+                        {...form.register("bessRoundTripPct")}
+                      />
+                      <NumberField
+                        label="BESS throughput fraction"
+                        source={sources.bess}
+                        disabled={!values.bessEnabled}
+                        overridden={isOverridden("bessThroughputFraction")}
+                        {...form.register("bessThroughputFraction")}
+                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <Label className="text-xs" htmlFor="sigmaPct">
+                            Interannual variability σ (%)
+                          </Label>
+                          <SourceTag source="optional" />
+                        </div>
+                        <Input
+                          id="sigmaPct"
+                          type="number"
+                          step="any"
+                          placeholder="Empty → P-scenarios disabled"
+                          {...form.register("sigmaPct")}
+                        />
                       </div>
-                      <Input
-                        id="sigmaPct"
-                        type="number"
-                        step="any"
-                        placeholder="Empty → P-scenarios disabled"
-                        {...form.register("sigmaPct")}
-                      />
                     </div>
-                  </div>
 
-                  {!pf?.bess.configured ? (
-                    <p className="text-xs text-muted-foreground">
-                      BESS inputs are disabled — no battery entry is configured for this project.
-                    </p>
-                  ) : null}
-
-                  <div className="flex items-center gap-3">
-                    <Button type="submit" disabled={!canWrite || run.isPending}>
-                      <Play className="size-4" aria-hidden />
-                      {run.isPending ? "Running…" : "Run simulation"}
-                    </Button>
-                    {!canWrite ? (
-                      <span className="text-xs text-muted-foreground">
-                        Read-only — engineering roles can run simulations.
-                      </span>
+                    {!pf?.bess.configured ? (
+                      <p className="text-xs text-muted-foreground">
+                        BESS inputs are disabled — no battery entry is configured for this project.
+                      </p>
                     ) : null}
-                  </div>
-                </form>
+
+                    <FormErrorSummary errors={form.formState.errors} />
+
+                    <div className="flex items-center gap-3">
+                      <Button type="submit" disabled={!canWrite || run.isPending}>
+                        <Play className="size-4" aria-hidden />
+                        {run.isPending ? "Running…" : "Run simulation"}
+                      </Button>
+                      {!canWrite ? (
+                        <span className="text-xs text-muted-foreground">
+                          Read-only — engineering roles can run simulations.
+                        </span>
+                      ) : null}
+                    </div>
+                  </form>
+                </FormProvider>
               </CardContent>
             </Card>
           </TabsContent>

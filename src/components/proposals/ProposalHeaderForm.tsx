@@ -6,6 +6,7 @@ import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FormErrorSummary } from "@/components/ui/form-error-summary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,11 +22,20 @@ import type { ProposalDetail } from "@/lib/proposal.functions";
 
 const CURRENCIES = ["USD", "EUR", "AED", "JOD", "MAD", "CNY"];
 
+const pct = (label: string) =>
+  z.coerce
+    .number({ message: `${label} must be a number` })
+    .min(0, `${label} must be 0–100%`)
+    .max(100, `${label} must be 0–100%`);
+
 const schema = z.object({
-  title: z.string().min(1, "Required").max(200),
-  currency_code: z.string().min(3).max(3),
-  contingency_pct: z.coerce.number().min(0).max(100),
-  margin_pct: z.coerce.number().min(0).max(100),
+  title: z
+    .string()
+    .min(1, "Enter a proposal title")
+    .max(200, "Title must be 200 characters or fewer"),
+  currency_code: z.string().min(3, "Pick a currency").max(3, "Pick a currency"),
+  contingency_pct: pct("Contingency"),
+  margin_pct: pct("Margin"),
   valid_until: z.string().nullable(),
   notes: z.string().nullable(),
 });
@@ -157,6 +167,10 @@ export function ProposalHeaderForm({
               setValueAs: (v) => (v ? v : null),
             })}
           />
+        </div>
+
+        <div className="sm:col-span-2">
+          <FormErrorSummary errors={errors} />
         </div>
 
         {!readOnly && (

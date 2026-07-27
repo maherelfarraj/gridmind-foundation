@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FormErrorSummary } from "@/components/ui/form-error-summary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -33,7 +34,10 @@ const schema = z.object({
   azimuth: z.coerce.number().min(0, "Azimuth must be 0–360°").max(360, "Azimuth must be 0–360°"),
   gcr: z.coerce.number().min(0.1, "GCR must be 0.1–1").max(1, "GCR must be 0.1–1"),
   tracking: z.enum(["fixed", "single_axis"]),
-  latitude: z.coerce.number().min(-90, "Latitude must be −90–90").max(90, "Latitude must be −90–90"),
+  latitude: z.coerce
+    .number()
+    .min(-90, "Latitude must be −90–90")
+    .max(90, "Latitude must be −90–90"),
   module_w: z.coerce.number().positive("Module power must be greater than zero"),
   inverter: z.string().max(120),
   loss_soiling: fraction("Soiling loss"),
@@ -46,9 +50,11 @@ const schema = z.object({
     .number()
     .min(0, "Year-1 degradation must be 0–10%")
     .max(10, "Year-1 degradation must be 0–10%"),
-  p90_sigma: z.coerce.number().min(0, "P90 sigma must be 0–0.3").max(0.3, "P90 sigma must be 0–0.3"),
+  p90_sigma: z.coerce
+    .number()
+    .min(0, "P90 sigma must be 0–0.3")
+    .max(0.3, "P90 sigma must be 0–0.3"),
 });
-
 
 type FormValues = z.infer<typeof schema>;
 
@@ -205,10 +211,10 @@ export function ArrayConfigForm({
         <div className="sm:col-span-3 mt-2 border-t border-border pt-3">
           <h4 className="mb-2 text-sm font-semibold">Losses (fraction)</h4>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="Soiling">
+            <Field label="Soiling" error={errors.loss_soiling?.message}>
               <Input type="number" step="0.01" disabled={readOnly} {...register("loss_soiling")} />
             </Field>
-            <Field label="Temperature">
+            <Field label="Temperature" error={errors.loss_temperature?.message}>
               <Input
                 type="number"
                 step="0.01"
@@ -216,16 +222,16 @@ export function ArrayConfigForm({
                 {...register("loss_temperature")}
               />
             </Field>
-            <Field label="Mismatch">
+            <Field label="Mismatch" error={errors.loss_mismatch?.message}>
               <Input type="number" step="0.01" disabled={readOnly} {...register("loss_mismatch")} />
             </Field>
-            <Field label="Wiring">
+            <Field label="Wiring" error={errors.loss_wiring?.message}>
               <Input type="number" step="0.01" disabled={readOnly} {...register("loss_wiring")} />
             </Field>
-            <Field label="Inverter">
+            <Field label="Inverter" error={errors.loss_inverter?.message}>
               <Input type="number" step="0.01" disabled={readOnly} {...register("loss_inverter")} />
             </Field>
-            <Field label="Availability">
+            <Field label="Availability" error={errors.loss_availability?.message}>
               <Input
                 type="number"
                 step="0.01"
@@ -242,6 +248,10 @@ export function ArrayConfigForm({
         <Field label="P90 sigma" error={errors.p90_sigma?.message}>
           <Input type="number" step="0.01" disabled={readOnly} {...register("p90_sigma")} />
         </Field>
+
+        <div className="sm:col-span-3">
+          <FormErrorSummary errors={errors} />
+        </div>
 
         {!readOnly && (
           <div className="sm:col-span-3 flex justify-end">
