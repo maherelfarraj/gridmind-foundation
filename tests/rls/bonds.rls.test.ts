@@ -92,7 +92,15 @@ describe.skipIf(!up)("P-201 bonds & guarantees RLS isolation", () => {
         .from(table as never)
         .delete()
         .eq("id", planted[table]);
-      expect(error).not.toBeNull();
+      // With no DELETE policy PostgREST reports success while affecting zero
+      // rows, so survival of the row — not the error — is the real assertion.
+      const { data } = await f.B.client
+        .from(table as never)
+        .select("id")
+        .eq("id", planted[table])
+        .maybeSingle();
+      expect(error === null || error !== null).toBe(true);
+      expect((data as { id?: string } | null)?.id).toBe(planted[table]);
     });
   }
 
