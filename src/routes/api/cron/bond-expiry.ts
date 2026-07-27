@@ -130,7 +130,9 @@ export const Route = createFileRoute("/api/cron/bond-expiry")({
               if (isMissingTable(updRes.error)) return skipped("bond_instruments_missing");
               return Response.json({ error: "status_update_failed" }, { status: 500 });
             }
-            const updatedIds = new Set(((updRes.data ?? []) as Array<{ id: string }>).map((r) => r.id));
+            const updatedIds = new Set(
+              ((updRes.data ?? []) as Array<{ id: string }>).map((r) => r.id),
+            );
             if (target === "expired") {
               expiredCount += updatedIds.size;
               totalExpired += updatedIds.size;
@@ -175,10 +177,12 @@ export const Route = createFileRoute("/api/cron/bond-expiry")({
               return Response.json({ error: "notification_read_failed" }, { status: 500 });
             }
             const seen = new Set(
-              ((existingRes.data ?? []) as Array<{
-                user_id: string;
-                metadata: { bond_fingerprint?: string } | null;
-              }>).map((n) => `${n.metadata?.bond_fingerprint ?? ""}|${n.user_id}`),
+              (
+                (existingRes.data ?? []) as Array<{
+                  user_id: string;
+                  metadata: { bond_fingerprint?: string } | null;
+                }>
+              ).map((n) => `${n.metadata?.bond_fingerprint ?? ""}|${n.user_id}`),
             );
 
             const roles = [...new Set(candidates.flatMap((c) => rolesForThreshold(c.threshold)))];

@@ -18,10 +18,7 @@ import {
   type CashTrendPoint,
   type FinanceAccessLevel,
 } from "@/lib/finance-cockpit.rules";
-import {
-  summarizeExpiringBonds,
-  type ExpiringBondsSummary,
-} from "@/lib/finance/bond-expiry";
+import { summarizeExpiringBonds, type ExpiringBondsSummary } from "@/lib/finance/bond-expiry";
 import { hasAnyRole } from "@/lib/payments.server";
 
 /** Postgres/PostgREST codes meaning "this table isn't in the schema". */

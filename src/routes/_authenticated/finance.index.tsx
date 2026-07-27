@@ -382,9 +382,7 @@ function FinanceCockpitPage() {
                 : NA
             }
             status={
-              data?.bonds_expiring_30.value?.count
-                ? ("bad" as KpiStatus)
-                : ("neutral" as KpiStatus)
+              data?.bonds_expiring_30.value?.count ? ("bad" as KpiStatus) : ("neutral" as KpiStatus)
             }
             hint={
               <span className="flex items-center gap-1.5">
@@ -406,7 +404,6 @@ function FinanceCockpitPage() {
           />
         </Link>
       </div>
-
 
       {/* Aging mini-chart */}
       <Card className="space-y-4 p-5">
