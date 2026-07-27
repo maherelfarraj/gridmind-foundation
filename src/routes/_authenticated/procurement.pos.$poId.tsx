@@ -33,6 +33,8 @@ import {
 import { PoStatusBadge } from "@/components/procurement/po-status-badge";
 import { PoStatusStepper } from "@/components/procurement/po-status-stepper";
 import { PageHeader } from "@/components/ui/page-header";
+import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
+import { useUnderChangeControl } from "@/hooks/use-change-control";
 import { getPo, getPoApprovalThreshold, getPoWriteAccess } from "@/lib/po.functions";
 import {
   poApprovalThresholdQueryOptions,
@@ -97,6 +99,7 @@ function PoDetail() {
   const approve = useApprovePo(poId);
   const reject = useRejectPo(poId);
   const issue = useIssuePo(poId);
+  const changeControl = useUnderChangeControl("purchase_order", poId);
   const download = useDownloadPoPdf(poId);
   const createLink = useCreatePoShareLink(poId);
   const revokeLink = useRevokePoShareLink(poId);
@@ -142,6 +145,7 @@ function PoDetail() {
           </div>
         }
       />
+      <UnderChangeControlBanner entityType="purchase_order" entityId={poId} />
       <div className="-mt-2">
         <PoStatusBadge status={po.status} />
       </div>
@@ -221,7 +225,15 @@ function PoDetail() {
               {po.approved_at ? `Approved ${format(new Date(po.approved_at), "PPp")}` : "Approved."}
               {po.approval_note ? ` · ${po.approval_note}` : ""}
             </div>
-            <Button onClick={() => issue.mutate()} disabled={issue.isPending}>
+            <Button
+              onClick={() => issue.mutate()}
+              disabled={issue.isPending || changeControl.blocked}
+              title={
+                changeControl.blocked
+                  ? "Under change control — resolve the open change request first"
+                  : undefined
+              }
+            >
               <Send className="mr-2 h-4 w-4" />
               {issue.isPending ? "Issuing…" : "Issue PO"}
             </Button>

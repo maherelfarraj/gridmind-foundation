@@ -17,6 +17,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page-header";
+import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
+import { useUnderChangeControl } from "@/hooks/use-change-control";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RfqBidStatusBadge, RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
 import { InviteVendorDialog } from "@/components/procurement/invite-vendor-dialog";
@@ -93,7 +95,17 @@ function RfqDetail() {
           canAuthor && rfq.status === "draft" ? (
             <Button
               onClick={() => issue.mutate()}
-              disabled={issue.isPending || rfq.lines.length === 0 || inviteCount === 0}
+              disabled={
+                issue.isPending ||
+                rfq.lines.length === 0 ||
+                inviteCount === 0 ||
+                changeControl.blocked
+              }
+              title={
+                changeControl.blocked
+                  ? "Under change control — resolve the open change request first"
+                  : undefined
+              }
             >
               <Send className="mr-2 h-4 w-4" />
               {issue.isPending ? "Issuing…" : "Issue RFQ"}
@@ -101,6 +113,8 @@ function RfqDetail() {
           ) : undefined
         }
       />
+
+      <UnderChangeControlBanner entityType="rfq" entityId={rfqId} />
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
