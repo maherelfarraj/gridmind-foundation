@@ -1,7 +1,7 @@
 // P-200 — Period close I/O helpers (kept out of *.functions.ts).
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { AGING_BUCKETS, type AgingBucketKey } from "@/lib/finance/aging-weights";
-import { WIP_THRESHOLD_BASE } from "@/lib/finance/wip-thresholds";
+import { UNDER_BILLED_THRESHOLD_PCT } from "@/lib/finance/wip-thresholds";
 import { assertPeriodOpen, periodMonth } from "@/lib/finance/periods";
 import { balanceOf, bucketFor, daysPastDue, isAgingEligible } from "@/lib/ar-aging.rules";
 import { safeRows } from "@/lib/finance-cockpit.server";
@@ -188,12 +188,12 @@ async function unbilledContracts(
   asOf: string,
 ): Promise<number> {
   const contracts =
-    (await safeRows<{ id: string }>(() =>
+    (await safeRows<{ id: string; contract_value: number | null }>(() =>
       ctx.supabase
         .from("contracts")
-        .select("id")
+        .select("id, contract_value")
         .eq("company_id", companyId)
-        .in("status", WIP_CONTRACT_STATUSES as unknown as string[]),
+        .in("status", WIP_CONTRACT_STATUSES as never),
     )) ?? [];
   if (contracts.length === 0) return 0;
   const ids = contracts.map((c) => c.id);
@@ -204,7 +204,7 @@ async function unbilledContracts(
         .from("pay_applications")
         .select("contract_id, total_certified")
         .in("contract_id", ids)
-        .in("status", EARNED_PAY_APP_STATUSES as unknown as string[])
+        .in("status", EARNED_PAY_APP_STATUSES as never)
         .lte("period_end", asOf),
     ),
     safeRows<{ contract_id: string | null; amount: number | null }>(() =>
@@ -213,7 +213,7 @@ async function unbilledContracts(
         .select("contract_id, amount")
         .in("contract_id", ids)
         .eq("direction", "receivable")
-        .in("status", BILLED_INVOICE_STATUSES as unknown as string[])
+        .in("status", BILLED_INVOICE_STATUSES as never)
         .lte("issue_date", asOf),
     ),
   ]);
@@ -226,8 +226,12 @@ async function unbilledContracts(
     if (!i.contract_id) continue;
     billed.set(i.contract_id, (billed.get(i.contract_id) ?? 0) + Number(i.amount ?? 0));
   }
-  return ids.filter((id) => (earned.get(id) ?? 0) - (billed.get(id) ?? 0) >= WIP_THRESHOLD_BASE)
-    .length;
+  return contracts.filter((c) => {
+    const wip = (earned.get(c.id) ?? 0) - (billed.get(c.id) ?? 0);
+    const value = Number(c.contract_value ?? 0);
+    if (wip <= 0) return false;
+    return value <= 0 || wip / value > UNDER_BILLED_THRESHOLD_PCT;
+  }).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +323,7 @@ export async function totalsFor(
         .select("contract_id, amount")
         .eq("company_id", companyId)
         .eq("direction", "receivable")
-        .in("status", BILLED_INVOICE_STATUSES as unknown as string[])
+        .in("status", BILLED_INVOICE_STATUSES as never)
         .gte("issue_date", start)
         .lte("issue_date", end),
     ),
@@ -374,7 +378,7 @@ async function companyWip(ctx: AuthContext, companyId: string, asOf: string): Pr
         .from("contracts")
         .select("id")
         .eq("company_id", companyId)
-        .in("status", WIP_CONTRACT_STATUSES as unknown as string[]),
+        .in("status", WIP_CONTRACT_STATUSES as never),
     )) ?? [];
   if (contracts.length === 0) return 0;
   const ids = contracts.map((c) => c.id);
@@ -385,7 +389,7 @@ async function companyWip(ctx: AuthContext, companyId: string, asOf: string): Pr
         .from("pay_applications")
         .select("total_certified")
         .in("contract_id", ids)
-        .in("status", EARNED_PAY_APP_STATUSES as unknown as string[])
+        .in("status", EARNED_PAY_APP_STATUSES as never)
         .lte("period_end", asOf),
     ),
     safeRows<{ amount: number | null }>(() =>
@@ -394,7 +398,7 @@ async function companyWip(ctx: AuthContext, companyId: string, asOf: string): Pr
         .select("amount")
         .in("contract_id", ids)
         .eq("direction", "receivable")
-        .in("status", BILLED_INVOICE_STATUSES as unknown as string[])
+        .in("status", BILLED_INVOICE_STATUSES as never)
         .lte("issue_date", asOf),
     ),
   ]);
