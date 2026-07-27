@@ -1,7 +1,7 @@
 // P-200 — Period close server functions.
 import { createServerFn } from "@tanstack/react-start";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   ClosePeriodSchema,
   ComparePeriodsSchema,
@@ -29,8 +29,9 @@ import {
 import { httpError } from "@/lib/payments.server";
 
 export const getFinancePeriods = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .handler(async ({ context }) => {
+    requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
     assertPeriodRead(access);
     const companyId = await periodCompanyId(context);
@@ -45,9 +46,10 @@ export const getFinancePeriods = createServerFn({ method: "GET" })
   });
 
 export const closeFinancePeriod = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((d: unknown) => ClosePeriodSchema.parse(d))
   .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
     assertPeriodWrite(access);
     const companyId = await periodCompanyId(context);
@@ -66,9 +68,10 @@ export const closeFinancePeriod = createServerFn({ method: "POST" })
   });
 
 export const reopenFinancePeriod = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((d: unknown) => ClosePeriodSchema.parse(d))
   .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
     if (access !== "reopen") {
       httpError(403, "forbidden", "Only company admins can reopen a closed period.");
@@ -79,9 +82,10 @@ export const reopenFinancePeriod = createServerFn({ method: "POST" })
   });
 
 export const saveFinancePeriodChecklist = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((d: unknown) => SaveChecklistSchema.parse(d))
   .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
     assertPeriodWrite(access);
     const companyId = await periodCompanyId(context);
@@ -90,9 +94,10 @@ export const saveFinancePeriodChecklist = createServerFn({ method: "POST" })
   });
 
 export const getPeriodComparison = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([attachSupabaseAuth])
   .inputValidator((d: unknown) => ComparePeriodsSchema.parse(d))
   .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
     assertPeriodRead(access);
     const companyId = await periodCompanyId(context);
