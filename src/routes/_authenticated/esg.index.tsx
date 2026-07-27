@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Factory, Flame, Gauge, Leaf, Plug, Truck, Info } from "lucide-react";
 
 import { CategoryBar, MonthlyTrend, ScopeDonut } from "@/components/esg/dashboard-charts";
+import { EsgReportDrawer } from "@/components/esg/report-drawer";
 import { LenderIndicatorsCard } from "@/components/esg/lender-indicators-card";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -100,6 +101,13 @@ function EsgDashboardPage() {
       <PageHeader
         title="ESG dashboard"
         description="Emissions, avoided carbon and lender-ready indicators for the selected period."
+        actions={
+          <EsgReportDrawer
+            projectId={projectId === ALL ? null : projectId}
+            periodFrom={from}
+            periodTo={to}
+          />
+        }
       />
 
       <Card className="flex flex-wrap items-end gap-4 p-4">

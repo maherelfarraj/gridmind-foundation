@@ -22,6 +22,7 @@ export type ExportType =
   | "civil_kml"
   | "wip_report"
   | "gl_export"
+  | "esg_report"
   | "csv";
 
 export interface ExportLockedError extends Error {
