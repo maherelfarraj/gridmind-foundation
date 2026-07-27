@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useSldCadWorkspace } from "@/lib/sld-cad-query";
+import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId",
@@ -56,7 +57,12 @@ function SldCadPage() {
 function Workspace() {
   const { drawingId } = Route.useParams();
   const { data } = useSuspenseQuery(useSldCadWorkspace(drawingId));
-  return <SldCadWorkspaceView data={data} />;
+  return (
+    <div className="space-y-3">
+      <UnderChangeControlBanner entityType="sld_drawing" entityId={drawingId} />
+      <SldCadWorkspaceView data={data} />
+    </div>
+  );
 }
 
 function CanvasSkeleton() {

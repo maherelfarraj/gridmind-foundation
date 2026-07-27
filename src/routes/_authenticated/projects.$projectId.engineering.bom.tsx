@@ -24,6 +24,7 @@ import {
 import { BomHeader } from "@/components/engineering/bom-header";
 import { BomTable } from "@/components/engineering/bom-table";
 import { BOM_CATEGORY_LABEL } from "@/lib/calculators/bom";
+import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/bom")({
   head: () => ({
@@ -103,6 +104,7 @@ function BomWorkspace({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
+      <UnderChangeControlBanner entityType="bom_snapshot" entityId={selectedId ?? null} />
       <BomHeader
         snapshots={snapshots}
         selectedId={selectedId}
