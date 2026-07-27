@@ -233,12 +233,14 @@ export function countdownLabel(
 }
 
 export interface PoLine {
+  line_no: number;
   description: string;
   spec: string | null;
   quantity: number;
   uom: string | null;
   unit_price: number;
   amount: number;
+  site_need_date: string | null;
 }
 
 function num(v: unknown): number {
@@ -249,20 +251,24 @@ function num(v: unknown): number {
 /** Normalize the PO `lines` jsonb payload into display rows. */
 export function parsePoLines(raw: unknown): PoLine[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((entry) => {
+  return raw.map((entry, i) => {
     const l = (entry ?? {}) as Record<string, unknown>;
     const quantity = num(l.quantity ?? l.qty);
     const unitPrice = num(l.unit_price ?? l.unitPrice ?? l.rate);
+    const lineNo = Number(l.line_no ?? l.lineNo);
     return {
+      line_no: Number.isFinite(lineNo) && lineNo > 0 ? lineNo : i + 1,
       description: String(l.description ?? l.item ?? l.name ?? "Line item"),
       spec: (l.spec as string | null) ?? (l.specification as string | null) ?? null,
       quantity,
       uom: (l.uom as string | null) ?? (l.unit as string | null) ?? null,
       unit_price: unitPrice,
       amount: l.amount != null ? num(l.amount) : quantity * unitPrice,
+      site_need_date: (l.site_need_date as string | null) ?? null,
     };
   });
 }
+
 
 // ---------------------------------------------------------------------------
 // P-224 — vendor-proposed delivery windows
