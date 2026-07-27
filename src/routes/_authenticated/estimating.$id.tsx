@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ChevronDown, ChevronUp, Lock, Plus, Table2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { MarginWaterfallCard } from "@/components/estimating/margin-waterfall-card";
 import { RatePickerButton } from "@/components/estimating/rate-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -236,7 +237,7 @@ function EstimateBody({
       />
 
       <Card>
-        <CardContent className="grid gap-4 p-4 sm:grid-cols-4">
+        <CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
           <Field label="Project">
             {project ? (
               <Link
@@ -269,6 +270,11 @@ function EstimateBody({
           <Field label="Direct cost">
             <span className="text-lg font-semibold tabular-nums text-foreground">
               {formatMoney(directCost, currency, { maximumFractionDigits: 2 })}
+            </span>
+          </Field>
+          <Field label="Bid price">
+            <span className="text-lg font-semibold tabular-nums text-foreground">
+              {formatMoney(estimate.total_price, currency, { maximumFractionDigits: 2 })}
             </span>
           </Field>
         </CardContent>
@@ -486,6 +492,20 @@ function EstimateBody({
           </div>
         </div>
       )}
+
+      <MarginWaterfallCard
+        estimateId={estimate.id}
+        currency={currency}
+        status={estimate.status}
+        canWrite={detail.can_write}
+        lines={lines.map((l) => ({ qty: l.qty, unit_rate: l.unit_rate }))}
+        margins={{
+          escalation_pct: Number(estimate.escalation_pct) || 0,
+          contingency_pct: Number(estimate.contingency_pct) || 0,
+          overhead_pct: Number(estimate.overhead_pct) || 0,
+          profit_pct: Number(estimate.profit_pct) || 0,
+        }}
+      />
     </div>
   );
 }
