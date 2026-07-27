@@ -40,7 +40,11 @@ export const SOURCE_TABLE: Record<GlEventType, string> = {
 export const RECEIVABLE_INVOICE_STATUSES = ["approved", "sent", "partially_paid", "paid"] as const;
 export const PAYABLE_INVOICE_STATUSES = ["approved"] as const;
 export const PAYMENT_RECORD_STATUSES = ["recorded"] as const;
-export const PAY_APP_STATUSES = ["approved"] as const;
+// A pay app keeps its retention obligation after it is billed, so "invoiced"
+// stays ledger-eligible — otherwise retention silently drops out of the journal
+// the moment the certificate becomes an invoice.
+export const PAY_APP_STATUSES = ["approved", "invoiced"] as const;
+
 export const CHANGE_ORDER_STATUSES = ["approved"] as const;
 export const DEBIT_NOTE_STATUSES = ["issued"] as const;
 

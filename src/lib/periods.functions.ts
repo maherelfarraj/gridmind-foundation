@@ -4,6 +4,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   ClosePeriodSchema,
+  ReopenPeriodSchema,
+
   ComparePeriodsSchema,
   SaveChecklistSchema,
   canClose,
@@ -69,7 +71,7 @@ export const closeFinancePeriod = createServerFn({ method: "POST" })
 
 export const reopenFinancePeriod = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((d: unknown) => ClosePeriodSchema.parse(d))
+  .inputValidator((d: unknown) => ReopenPeriodSchema.parse(d))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
     const access = await resolvePeriodAccess(context);
@@ -77,9 +79,10 @@ export const reopenFinancePeriod = createServerFn({ method: "POST" })
       httpError(403, "forbidden", "Only company admins can reopen a closed period.");
     }
     const companyId = await periodCompanyId(context);
-    await reopenPeriod(context, companyId, data.period_month);
+    await reopenPeriod(context, companyId, data.period_month, data.reason);
     return { ok: true };
   });
+
 
 export const saveFinancePeriodChecklist = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])

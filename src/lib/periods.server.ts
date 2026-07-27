@@ -257,14 +257,19 @@ export async function reopenPeriod(
   ctx: AuthContext,
   companyId: string,
   month: string,
+  reason: string,
 ): Promise<void> {
   const { error } = await ctx.supabase.rpc("reopen_finance_period", {
     p_company_id: companyId,
     p_period_month: monthStart(month),
   } as never);
   if (error) httpError(403, "forbidden", error.message);
-  await audit(ctx, "period.reopen", "finance_periods", null, { period_month: monthStart(month) });
+  await audit(ctx, "period.reopen", "finance_periods", null, {
+    period_month: monthStart(month),
+    reason,
+  });
 }
+
 
 export async function saveChecklist(
   ctx: AuthContext,
