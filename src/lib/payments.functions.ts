@@ -8,10 +8,12 @@ import { toCsv } from "@/lib/csv";
 import { assertExportAllowed } from "@/lib/export-guard";
 import { assertPeriodOpen } from "@/lib/finance/periods";
 import {
+  ApproveInvoiceSchema,
   ListPaymentsSchema,
   MarkInvoiceSentSchema,
   RecordPaymentSchema,
   VoidPaymentSchema,
+  canApproveInvoice,
   invoiceBalance,
   paymentMethodLabel,
   reconciliationLabel,
