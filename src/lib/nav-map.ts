@@ -18,6 +18,7 @@ import {
   Building2,
   Calculator,
   CalendarClock,
+  Clock,
   CalendarRange,
   ClipboardCheck,
   ClipboardList,
