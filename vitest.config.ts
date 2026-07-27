@@ -16,6 +16,8 @@ export default defineConfig({
       "tests/bonds/**/*.test.ts",
       "tests/estimating/**/*.test.ts",
       "tests/gl/**/*.test.ts",
+      "tests/esg/**/*.test.ts",
+      "tests/rls/esg-carbon.test.ts",
       "tests/rls/bonds.test.ts",
       "tests/rls/estimating.rls.test.ts",
       "tests/rls/gl.test.ts",
