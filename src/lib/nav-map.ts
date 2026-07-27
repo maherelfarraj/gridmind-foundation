@@ -7,6 +7,7 @@
 import {
   BellRing,
   Landmark,
+  Library,
   Activity,
   AlertTriangle,
   Atom,
@@ -14,6 +15,7 @@ import {
   BarChart3,
   Boxes,
   Building2,
+  Calculator,
   CalendarClock,
   CalendarRange,
   ClipboardCheck,
@@ -390,6 +392,18 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Finance alerts",
         url: "/finance/alerts",
         icon: BellRing,
+      },
+      {
+        moduleKey: "planning_budget",
+        label: "Estimating",
+        url: "/estimating",
+        icon: Calculator,
+      },
+      {
+        moduleKey: "planning_budget",
+        label: "Rate library",
+        url: "/estimating/rates",
+        icon: Library,
       },
       {
         moduleKey: "planning_budget",

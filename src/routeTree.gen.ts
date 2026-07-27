@@ -29,6 +29,7 @@ import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as AuthenticatedFinanceIndexRouteImport } from './routes/_authenticated/finance.index'
+import { Route as AuthenticatedEstimatingIndexRouteImport } from './routes/_authenticated/estimating.index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
@@ -106,6 +107,8 @@ import { Route as AuthenticatedFieldSyncStatusRouteImport } from './routes/_auth
 import { Route as AuthenticatedFieldReportsRouteImport } from './routes/_authenticated/field.reports'
 import { Route as AuthenticatedFieldDisciplineBoardRouteImport } from './routes/_authenticated/field.discipline-board'
 import { Route as AuthenticatedFieldDeliveriesRouteImport } from './routes/_authenticated/field.deliveries'
+import { Route as AuthenticatedEstimatingRatesRouteImport } from './routes/_authenticated/estimating.rates'
+import { Route as AuthenticatedEstimatingIdRouteImport } from './routes/_authenticated/estimating.$id'
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
@@ -332,6 +335,12 @@ const AuthenticatedFinanceIndexRoute =
   AuthenticatedFinanceIndexRouteImport.update({
     id: '/finance/',
     path: '/finance/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEstimatingIndexRoute =
+  AuthenticatedEstimatingIndexRouteImport.update({
+    id: '/estimating/',
+    path: '/estimating/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedChangesIndexRoute =
@@ -777,6 +786,18 @@ const AuthenticatedFieldDeliveriesRoute =
   AuthenticatedFieldDeliveriesRouteImport.update({
     id: '/field/deliveries',
     path: '/field/deliveries',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEstimatingRatesRoute =
+  AuthenticatedEstimatingRatesRouteImport.update({
+    id: '/estimating/rates',
+    path: '/estimating/rates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEstimatingIdRoute =
+  AuthenticatedEstimatingIdRouteImport.update({
+    id: '/estimating/$id',
+    path: '/estimating/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEngineeringPvLibraryRoute =
@@ -1578,6 +1599,8 @@ export interface FileRoutesByFullPath {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/estimating/$id': typeof AuthenticatedEstimatingIdRoute
+  '/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
@@ -1655,6 +1678,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
+  '/estimating/': typeof AuthenticatedEstimatingIndexRoute
   '/finance/': typeof AuthenticatedFinanceIndexRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -1799,6 +1823,8 @@ export interface FileRoutesByTo {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/estimating/$id': typeof AuthenticatedEstimatingIdRoute
+  '/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/field/reports': typeof AuthenticatedFieldReportsRoute
@@ -1870,6 +1896,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
+  '/estimating': typeof AuthenticatedEstimatingIndexRoute
   '/finance': typeof AuthenticatedFinanceIndexRoute
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -2016,6 +2043,8 @@ export interface FileRoutesById {
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
+  '/_authenticated/estimating/$id': typeof AuthenticatedEstimatingIdRoute
+  '/_authenticated/estimating/rates': typeof AuthenticatedEstimatingRatesRoute
   '/_authenticated/field/deliveries': typeof AuthenticatedFieldDeliveriesRoute
   '/_authenticated/field/discipline-board': typeof AuthenticatedFieldDisciplineBoardRoute
   '/_authenticated/field/reports': typeof AuthenticatedFieldReportsRoute
@@ -2093,6 +2122,7 @@ export interface FileRoutesById {
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
+  '/_authenticated/estimating/': typeof AuthenticatedEstimatingIndexRoute
   '/_authenticated/finance/': typeof AuthenticatedFinanceIndexRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -2241,6 +2271,8 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/estimating/$id'
+    | '/estimating/rates'
     | '/field/deliveries'
     | '/field/discipline-board'
     | '/field/reports'
@@ -2318,6 +2350,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/changes/'
+    | '/estimating/'
     | '/finance/'
     | '/hse/'
     | '/projects/'
@@ -2462,6 +2495,8 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/engineering/pv-library'
+    | '/estimating/$id'
+    | '/estimating/rates'
     | '/field/deliveries'
     | '/field/discipline-board'
     | '/field/reports'
@@ -2533,6 +2568,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/changes'
+    | '/estimating'
     | '/finance'
     | '/hse'
     | '/projects'
@@ -2678,6 +2714,8 @@ export interface FileRouteTypes {
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/engineering/pv-library'
+    | '/_authenticated/estimating/$id'
+    | '/_authenticated/estimating/rates'
     | '/_authenticated/field/deliveries'
     | '/_authenticated/field/discipline-board'
     | '/_authenticated/field/reports'
@@ -2755,6 +2793,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
     | '/_authenticated/changes/'
+    | '/_authenticated/estimating/'
     | '/_authenticated/finance/'
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
@@ -3042,6 +3081,13 @@ declare module '@tanstack/react-router' {
       path: '/finance'
       fullPath: '/finance/'
       preLoaderRoute: typeof AuthenticatedFinanceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estimating/': {
+      id: '/_authenticated/estimating/'
+      path: '/estimating'
+      fullPath: '/estimating/'
+      preLoaderRoute: typeof AuthenticatedEstimatingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/changes/': {
@@ -3581,6 +3627,20 @@ declare module '@tanstack/react-router' {
       path: '/field/deliveries'
       fullPath: '/field/deliveries'
       preLoaderRoute: typeof AuthenticatedFieldDeliveriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estimating/rates': {
+      id: '/_authenticated/estimating/rates'
+      path: '/estimating/rates'
+      fullPath: '/estimating/rates'
+      preLoaderRoute: typeof AuthenticatedEstimatingRatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estimating/$id': {
+      id: '/_authenticated/estimating/$id'
+      path: '/estimating/$id'
+      fullPath: '/estimating/$id'
+      preLoaderRoute: typeof AuthenticatedEstimatingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/engineering/pv-library': {
@@ -4951,6 +5011,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
+  AuthenticatedEstimatingIdRoute: typeof AuthenticatedEstimatingIdRoute
+  AuthenticatedEstimatingRatesRoute: typeof AuthenticatedEstimatingRatesRoute
   AuthenticatedFieldDeliveriesRoute: typeof AuthenticatedFieldDeliveriesRoute
   AuthenticatedFieldDisciplineBoardRoute: typeof AuthenticatedFieldDisciplineBoardRoute
   AuthenticatedFieldReportsRoute: typeof AuthenticatedFieldReportsRoute
@@ -5016,6 +5078,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
   AuthenticatedSettingsWebhooksRoute: typeof AuthenticatedSettingsWebhooksRoute
   AuthenticatedChangesIndexRoute: typeof AuthenticatedChangesIndexRoute
+  AuthenticatedEstimatingIndexRoute: typeof AuthenticatedEstimatingIndexRoute
   AuthenticatedFinanceIndexRoute: typeof AuthenticatedFinanceIndexRoute
   AuthenticatedHseIndexRoute: typeof AuthenticatedHseIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -5075,6 +5138,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedEngineeringPvLibraryRoute:
     AuthenticatedEngineeringPvLibraryRoute,
+  AuthenticatedEstimatingIdRoute: AuthenticatedEstimatingIdRoute,
+  AuthenticatedEstimatingRatesRoute: AuthenticatedEstimatingRatesRoute,
   AuthenticatedFieldDeliveriesRoute: AuthenticatedFieldDeliveriesRoute,
   AuthenticatedFieldDisciplineBoardRoute:
     AuthenticatedFieldDisciplineBoardRoute,
@@ -5159,6 +5224,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
   AuthenticatedSettingsWebhooksRoute: AuthenticatedSettingsWebhooksRoute,
   AuthenticatedChangesIndexRoute: AuthenticatedChangesIndexRoute,
+  AuthenticatedEstimatingIndexRoute: AuthenticatedEstimatingIndexRoute,
   AuthenticatedFinanceIndexRoute: AuthenticatedFinanceIndexRoute,
   AuthenticatedHseIndexRoute: AuthenticatedHseIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
