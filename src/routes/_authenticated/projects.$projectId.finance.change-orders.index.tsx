@@ -55,7 +55,7 @@ import {
   type ChangeOrderStatus,
 } from "@/lib/change-orders.rules";
 
-export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/change-orders")({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/finance/change-orders/")({
   head: () => ({
     meta: [
       { title: "Change orders — GridMind EPC" },

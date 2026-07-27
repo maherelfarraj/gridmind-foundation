@@ -33,7 +33,7 @@ import {
 import { glErrorInfo, glWorkspaceQueryOptions } from "@/lib/gl.query";
 import { GL_EVENT_LABELS, type GlEventType, type GlLine } from "@/lib/gl.rules";
 
-export const Route = createFileRoute("/_authenticated/finance/gl-export")({
+export const Route = createFileRoute("/_authenticated/finance/gl-export/")({
   head: () => ({
     meta: [
       { title: "GL export — GridMind EPC" },
