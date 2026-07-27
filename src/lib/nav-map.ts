@@ -396,7 +396,7 @@ export const NAV_GROUPS: NavGroup[] = [
         moduleKey: "planning_budget",
         label: "Period close",
         url: "/finance/periods",
-        icon: CalendarCheck,
+        icon: CalendarClock,
       },
 
       {
