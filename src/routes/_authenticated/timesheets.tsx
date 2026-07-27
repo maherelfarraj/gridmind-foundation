@@ -1,9 +1,9 @@
 // P-228 — Weekly timesheet capture, mobile-first at 390px.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, CloudOff, RefreshCw, Send, Timer } from "lucide-react";
+import { CalendarClock, CloudOff, Palmtree, RefreshCw, Send, Timer } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddRowDialog } from "@/components/timesheets/add-row-dialog";
@@ -242,30 +242,38 @@ function TimesheetsPage() {
         title="Weekly timesheets"
         description="Book crew hours per project and work package. Overtime splits automatically."
         actions={
-          sheet ? (
-            <div className="flex items-center gap-2">
-              <StatusBadge status={sheet.status} />
-              <Button
-                size="sm"
-                disabled={readOnly || submit.isPending || rows.length === 0}
-                onClick={() => submit.mutate()}
-              >
-                <Send className="mr-1 h-4 w-4" />
-                Submit week
-              </Button>
-              {sheet.approval_instance_id ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/timesheets/leave">
+                <Palmtree className="mr-1 h-4 w-4" />
+                Leave
+              </Link>
+            </Button>
+            {sheet ? (
+              <>
+                <StatusBadge status={sheet.status} />
                 <Button
                   size="sm"
-                  variant="outline"
-                  disabled={check.isPending}
-                  onClick={() => check.mutate()}
+                  disabled={readOnly || submit.isPending || rows.length === 0}
+                  onClick={() => submit.mutate()}
                 >
-                  <RefreshCw className="mr-1 h-4 w-4" />
-                  Check approval
+                  <Send className="mr-1 h-4 w-4" />
+                  Submit week
                 </Button>
-              ) : null}
-            </div>
-          ) : null
+                {sheet.approval_instance_id ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={check.isPending}
+                    onClick={() => check.mutate()}
+                  >
+                    <RefreshCw className="mr-1 h-4 w-4" />
+                    Check approval
+                  </Button>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         }
       />
 
