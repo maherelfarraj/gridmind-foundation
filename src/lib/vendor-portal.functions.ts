@@ -52,7 +52,12 @@ export interface VendorPoRow {
   issued_at: string | null;
   required_by_date: string | null;
   total_amount: number;
+  delivery_address: string | null;
   lines: Json;
+  acknowledged_at: string | null;
+  acknowledgment_status: "accepted" | "accepted_with_comments" | "rejected" | null;
+  acknowledgment_note: string | null;
+  acknowledged_by_email: string | null;
 }
 
 export interface VendorDeliveryRow {
@@ -155,7 +160,7 @@ export const getVendorPortalPos = createServerFn({ method: "POST" })
       p_vendor_id: data.vendorId,
     });
     if (error) throw httpError(error.message, 403);
-    return (rows ?? []) as VendorPoRow[];
+    return (rows ?? []) as unknown as VendorPoRow[];
   });
 
 export const getVendorPortalDeliveries = createServerFn({ method: "POST" })
@@ -490,5 +495,35 @@ export const updateVendorPortalExposure = createServerFn({ method: "POST" })
       after: data.exposure,
       changed: diff,
     });
+    return { ok: true };
+  });
+
+const acknowledgeInput = z.object({
+  vendorId: z.string().uuid(),
+  poId: z.string().uuid(),
+  decision: z.enum(["accepted", "accepted_with_comments", "rejected"]),
+  comment: z.string().trim().max(2000).optional(),
+});
+
+export const acknowledgePo = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => acknowledgeInput.parse(raw))
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    requireSupabaseAuth(context);
+    await vendorGate(context, data.vendorId);
+
+    if (
+      (data.decision === "rejected" || data.decision === "accepted_with_comments") &&
+      !(data.comment ?? "").trim()
+    ) {
+      throw httpError("comment_required", 400);
+    }
+
+    const { error } = await context.supabase.rpc("vendor_portal_acknowledge_po", {
+      p_po_id: data.poId,
+      p_decision: data.decision,
+      p_comment: data.comment ?? null,
+    });
+    if (error) throw httpError(error.message, 403);
     return { ok: true };
   });
