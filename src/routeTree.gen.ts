@@ -18,6 +18,7 @@ import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as VendorVendorIdRouteImport } from './routes/vendor.$vendorId'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -282,6 +283,11 @@ const PortalIndexRoute = PortalIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PortalRoute,
+} as any)
+const VendorVendorIdRoute = VendorVendorIdRouteImport.update({
+  id: '/$vendorId',
+  path: '/$vendorId',
+  getParentRoute: () => VendorRoute,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
@@ -1613,6 +1619,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -1841,6 +1848,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
@@ -2064,6 +2072,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -2296,6 +2305,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal/'
     | '/vendor/'
     | '/admin/tenants'
@@ -2524,6 +2534,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal'
     | '/vendor'
     | '/admin/health'
@@ -2746,6 +2757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/po/$token'
     | '/share/$token'
+    | '/vendor/$vendorId'
     | '/portal/'
     | '/vendor/'
     | '/_authenticated/admin/tenants'
@@ -3053,6 +3065,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/'
       preLoaderRoute: typeof PortalIndexRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/vendor/$vendorId': {
+      id: '/vendor/$vendorId'
+      path: '/$vendorId'
+      fullPath: '/vendor/$vendorId'
+      preLoaderRoute: typeof VendorVendorIdRouteImport
+      parentRoute: typeof VendorRoute
     }
     '/share/$token': {
       id: '/share/$token'
@@ -5374,10 +5393,12 @@ const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
 interface VendorRouteChildren {
+  VendorVendorIdRoute: typeof VendorVendorIdRoute
   VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
+  VendorVendorIdRoute: VendorVendorIdRoute,
   VendorIndexRoute: VendorIndexRoute,
 }
 
