@@ -155,10 +155,42 @@ export async function evaluateAlarmRules(
 
   let raised = 0;
   if (toRaise.length) {
-    const { error, count } = await admin
+    const { data: inserted, error, count } = await admin
       .from("scada_alarms")
-      .insert(toRaise as never, { count: "exact" });
-    if (!error) raised = count ?? toRaise.length;
+      .insert(toRaise as never, { count: "exact" })
+      .select("id, project_id, scada_asset_id, severity, message");
+    if (!error) {
+      raised = count ?? toRaise.length;
+      // P-188 — digital thread: each newly raised alarm fans out to O&M areas
+      // as a recommendation-only impact assessment.
+      const { emitThreadEvent } = await import("@/lib/digital-thread/engine.server");
+      for (const a of (inserted ?? []) as Array<{
+        id: string;
+        project_id: string;
+        scada_asset_id: string | null;
+        severity: string;
+        message: string;
+      }>) {
+        try {
+          await emitThreadEvent(
+            { supabase: admin as never },
+            {
+              event: "scada_alarm_raised",
+              sourceType: "scada_alarm",
+              sourceId: a.id,
+              projectId: a.project_id,
+              payload: {
+                scadaAssetId: a.scada_asset_id,
+                severity: a.severity,
+                summary: a.message,
+              },
+            },
+          );
+        } catch {
+          // The thread is advisory: a failure here must never block ingestion.
+        }
+      }
+    }
   }
   let cleared = 0;
   if (toClear.length) {
