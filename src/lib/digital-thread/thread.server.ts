@@ -2,6 +2,8 @@
 // Server-only helpers; the thin server functions live in thread.functions.ts.
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
 export interface GraphNode {
   entity_type: string;
   entity_id: string;
@@ -17,7 +19,7 @@ export interface GraphEdge {
   link_type: string;
   target_type: string;
   target_id: string;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, JsonValue> | null;
 }
 
 export interface EntityGraph {
@@ -35,7 +37,7 @@ export interface ImpactRow {
   summary: string | null;
   severity: string;
   status: string;
-  impacts: Array<Record<string, unknown>>;
+  impacts: Array<Record<string, JsonValue>>;
   project_id: string | null;
   created_at: string;
   acknowledged_at: string | null;
