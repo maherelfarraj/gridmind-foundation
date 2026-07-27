@@ -11,6 +11,7 @@ import {
   submitDpr,
   upsertDprHeader,
 } from "@/lib/dpr.functions";
+import { submitTimesheet } from "@/lib/timesheets.functions";
 import {
   recordUtilityWitness,
   reopenCommissioningTest,
@@ -56,4 +57,5 @@ export function registerDefaultDispatchers() {
     recordUtilityWitness({ data: p as any }),
   );
   registerDispatcher("commissioning", "reopen", (p) => reopenCommissioningTest({ data: p as any }));
+  registerDispatcher("timesheet", "submit", (p) => submitTimesheet({ data: p as any }));
 }

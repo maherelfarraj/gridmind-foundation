@@ -21,6 +21,7 @@ import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as VendorVendorIdRouteImport } from './routes/vendor.$vendorId'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
+import { Route as AuthenticatedTimesheetsRouteImport } from './routes/_authenticated/timesheets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -303,6 +304,11 @@ const PoTokenRoute = PoTokenRouteImport.update({
   id: '/po/$token',
   path: '/po/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTimesheetsRoute = AuthenticatedTimesheetsRouteImport.update({
+  id: '/timesheets',
+  path: '/timesheets',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -1648,6 +1654,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
@@ -1882,6 +1889,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
@@ -2110,6 +2118,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
@@ -2348,6 +2357,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
+    | '/timesheets'
     | '/po/$token'
     | '/share/$token'
     | '/vendor/$vendorId'
@@ -2582,6 +2592,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
+    | '/timesheets'
     | '/po/$token'
     | '/share/$token'
     | '/portal'
@@ -2809,6 +2820,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/approvals'
     | '/_authenticated/dashboard'
+    | '/_authenticated/timesheets'
     | '/po/$token'
     | '/share/$token'
     | '/vendor/$vendorId'
@@ -3145,6 +3157,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/po/$token'
       preLoaderRoute: typeof PoTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/timesheets': {
+      id: '/_authenticated/timesheets'
+      path: '/timesheets'
+      fullPath: '/timesheets'
+      preLoaderRoute: typeof AuthenticatedTimesheetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -5191,6 +5210,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedTimesheetsRoute: typeof AuthenticatedTimesheetsRoute
   AuthenticatedChangesIdRoute: typeof AuthenticatedChangesIdRoute
   AuthenticatedChangesDashboardRoute: typeof AuthenticatedChangesDashboardRoute
   AuthenticatedConstructionBaselineCompareRoute: typeof AuthenticatedConstructionBaselineCompareRoute
@@ -5316,6 +5336,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedTimesheetsRoute: AuthenticatedTimesheetsRoute,
   AuthenticatedChangesIdRoute: AuthenticatedChangesIdRoute,
   AuthenticatedChangesDashboardRoute: AuthenticatedChangesDashboardRoute,
   AuthenticatedConstructionBaselineCompareRoute:

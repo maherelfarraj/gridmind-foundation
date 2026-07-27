@@ -18,6 +18,7 @@ import {
   Building2,
   Calculator,
   CalendarClock,
+  Clock,
   CalendarRange,
   ClipboardCheck,
   ClipboardList,
@@ -515,6 +516,7 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/field/deliveries",
         icon: Truck,
       },
+      { moduleKey: "field_qaqc", label: "Timesheets", url: "/timesheets", icon: Clock },
       { moduleKey: "field_qaqc", label: "Weekly report", url: "/field/reports", icon: FileDown },
       { moduleKey: "field_qaqc", label: "HSE", url: "/hse", icon: Shield },
       {
