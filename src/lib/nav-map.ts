@@ -370,6 +370,13 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/finance/payments",
         icon: Receipt,
       },
+
+      {
+        moduleKey: "planning_budget",
+        label: "Payments",
+        url: "/finance/reconciliation",
+        icon: Receipt,
+      },
       {
         moduleKey: "planning_budget",
         label: "Receivables",
