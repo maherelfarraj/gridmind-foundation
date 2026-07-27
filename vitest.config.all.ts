@@ -16,6 +16,8 @@ export default defineConfig({
       "tests/bonds/**/*.test.ts",
       "tests/gl/**/*.test.ts",
       "tests/esg/**/*.test.ts",
+      "tests/vendor-portal/**/*.test.ts",
+
       "tests/api/**/*.test.ts",
       "tests/rls/**/*.test.ts",
       "tests/e2e/**/*.test.ts",
