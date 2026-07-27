@@ -84,6 +84,8 @@ export interface EstimateDetail {
   lines: EstimateLineRow[];
   project: ProjectOption | null;
   opportunity: OpportunityOption | null;
+  approval: EstimateApprovalSnapshot | null;
+  conversion: EstimateConversionState;
 }
 
 export const getEstimateDetail = createServerFn({ method: "GET" })
@@ -93,21 +95,27 @@ export const getEstimateDetail = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const id = data.id;
 
-    const [estimate, lines, projects, opportunities, canWrite] = await Promise.all([
-      loadEstimate(context, id),
-      loadLines(context, id),
-      loadProjectOptions(context),
-      loadOpportunityOptions(context),
-      canWriteEstimates(context),
-    ]);
+    const [estimate, lines, projects, opportunities, canWrite, approval, conversion] =
+      await Promise.all([
+        loadEstimate(context, id),
+        loadLines(context, id),
+        loadProjectOptions(context),
+        loadOpportunityOptions(context),
+        canWriteEstimates(context),
+        loadEstimateApproval(context, id),
+        loadConversionState(context, id),
+      ]);
     return {
       can_write: canWrite,
       estimate,
       lines,
       project: projects.find((p) => p.id === estimate.project_id) ?? null,
       opportunity: opportunities.find((o) => o.id === estimate.opportunity_id) ?? null,
+      approval,
+      conversion,
     };
   });
+
 
 export const createEstimate = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
