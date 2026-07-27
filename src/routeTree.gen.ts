@@ -16,6 +16,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as PoTokenRouteImport } from './routes/po.$token'
@@ -271,6 +272,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const VendorIndexRoute = VendorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorRoute,
 } as any)
 const PortalIndexRoute = PortalIndexRouteImport.update({
   id: '/',
@@ -1597,7 +1603,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
-  '/vendor': typeof VendorRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1608,6 +1614,7 @@ export interface FileRoutesByFullPath {
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
@@ -1825,7 +1832,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
-  '/vendor': typeof VendorRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -1836,6 +1842,7 @@ export interface FileRoutesByTo {
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal': typeof PortalIndexRoute
+  '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2047,7 +2054,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/design-system': typeof DesignSystemRoute
   '/portal': typeof PortalRouteWithChildren
-  '/vendor': typeof VendorRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -2058,6 +2065,7 @@ export interface FileRoutesById {
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/portal/': typeof PortalIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
@@ -2289,6 +2297,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/share/$token'
     | '/portal/'
+    | '/vendor/'
     | '/admin/tenants'
     | '/admin/health'
     | '/changes/$id'
@@ -2506,7 +2515,6 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/design-system'
-    | '/vendor'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -2517,6 +2525,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/share/$token'
     | '/portal'
+    | '/vendor'
     | '/admin/health'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2738,6 +2747,7 @@ export interface FileRouteTypes {
     | '/po/$token'
     | '/share/$token'
     | '/portal/'
+    | '/vendor/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
     | '/_authenticated/changes/$id'
@@ -2959,7 +2969,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PortalRoute: typeof PortalRouteWithChildren
-  VendorRoute: typeof VendorRoute
+  VendorRoute: typeof VendorRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
@@ -3029,6 +3039,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/vendor/': {
+      id: '/vendor/'
+      path: '/'
+      fullPath: '/vendor/'
+      preLoaderRoute: typeof VendorIndexRouteImport
+      parentRoute: typeof VendorRoute
     }
     '/portal/': {
       id: '/portal/'
@@ -5356,6 +5373,17 @@ const PortalRouteChildren: PortalRouteChildren = {
 const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
+interface VendorRouteChildren {
+  VendorIndexRoute: typeof VendorIndexRoute
+}
+
+const VendorRouteChildren: VendorRouteChildren = {
+  VendorIndexRoute: VendorIndexRoute,
+}
+
+const VendorRouteWithChildren =
+  VendorRoute._addFileChildren(VendorRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
@@ -5363,7 +5391,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   DesignSystemRoute: DesignSystemRoute,
   PortalRoute: PortalRouteWithChildren,
-  VendorRoute: VendorRoute,
+  VendorRoute: VendorRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
