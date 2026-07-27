@@ -86,7 +86,12 @@ describe("edge cases", () => {
   });
 
   it("rounds per line before summing", () => {
-    expect(directCostOf([{ qty: 3, unit_rate: 1.115 }, { qty: 1, unit_rate: 0.005 }])).toBe(3.36);
+    expect(
+      directCostOf([
+        { qty: 3, unit_rate: 1.115 },
+        { qty: 1, unit_rate: 0.005 },
+      ]),
+    ).toBe(3.36);
   });
 });
 
@@ -138,7 +143,10 @@ describe("validateForPricing", () => {
   });
 
   it("rejects a zero total price", () => {
-    const v = validateForPricing([{ id: "l1", description: "Free", qty: 2, unit_rate: 0 }], M(5, 5, 5, 5));
+    const v = validateForPricing(
+      [{ id: "l1", description: "Free", qty: 2, unit_rate: 0 }],
+      M(5, 5, 5, 5),
+    );
     expect(v.ok).toBe(false);
     expect(v.result.total_price).toBe(0);
   });

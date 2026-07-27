@@ -85,9 +85,7 @@ export const ZERO_MARGINS: MarginInput = {
 
 /** Σ round2(qty × unit_rate) — same per-line rounding the line grid persists. */
 export function directCostOf(lines: readonly BuildupLineInput[]): number {
-  return round2(
-    (lines ?? []).reduce((acc, l) => acc + round2(num(l.qty) * num(l.unit_rate)), 0),
-  );
+  return round2((lines ?? []).reduce((acc, l) => acc + round2(num(l.qty) * num(l.unit_rate)), 0));
 }
 
 /**
@@ -154,8 +152,7 @@ export function computeEstimate(
     formula: `${fmt(subtotal)} × ${pctLabel(pcts.profit_pct)} = ${fmt(profitAmount)}`,
   });
 
-  const combined =
-    pcts.escalation_pct + pcts.contingency_pct + pcts.overhead_pct + pcts.profit_pct;
+  const combined = pcts.escalation_pct + pcts.contingency_pct + pcts.overhead_pct + pcts.profit_pct;
   const warnings: string[] = [];
   if (combined > MARGIN_WARNING_THRESHOLD) warnings.push(MARGIN_WARNING_MESSAGE);
 
