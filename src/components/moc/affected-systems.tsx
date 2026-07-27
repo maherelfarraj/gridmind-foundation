@@ -21,7 +21,7 @@ export function entityHref(entityType: string, entityId: string): string | null 
   if (!UUID_RE.test(entityId)) return null;
   switch (entityType) {
     case "purchase_order":
-      return `/procurement/orders/${entityId}`;
+      return `/procurement/pos/${entityId}`;
     case "rfq":
       return `/procurement/rfqs/${entityId}`;
     case "drawing":
