@@ -5065,34 +5065,46 @@ export type Database = {
           category: Database["public"]["Enums"]["esg_factor_category"]
           company_id: string | null
           created_at: string
+          factor_code: string
           factor_source: string
           id: string
           kg_co2e_per_unit: number
           notes: string | null
+          scope: string
           unit: string
           updated_at: string
+          valid_from: string
+          valid_to: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["esg_factor_category"]
           company_id?: string | null
           created_at?: string
+          factor_code: string
           factor_source?: string
           id?: string
           kg_co2e_per_unit: number
           notes?: string | null
+          scope: string
           unit: string
           updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["esg_factor_category"]
           company_id?: string | null
           created_at?: string
+          factor_code?: string
           factor_source?: string
           id?: string
           kg_co2e_per_unit?: number
           notes?: string | null
+          scope?: string
           unit?: string
           updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -5100,6 +5112,75 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_reports: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          methodology_note: string | null
+          period_from: string
+          period_to: string
+          project_id: string
+          row_count: number
+          status: string
+          totals: Json
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          methodology_note?: string | null
+          period_from: string
+          period_to: string
+          project_id: string
+          row_count?: number
+          status?: string
+          totals?: Json
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          methodology_note?: string | null
+          period_from?: string
+          period_to?: string
+          project_id?: string
+          row_count?: number
+          status?: string
+          totals?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "esg_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
