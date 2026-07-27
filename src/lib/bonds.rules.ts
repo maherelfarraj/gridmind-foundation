@@ -379,3 +379,108 @@ export const BondReasonSchema = z.object({
   reason,
 });
 export type BondReasonInput = z.infer<typeof BondReasonSchema>;
+
+// ---------------------------------------------------------------------------
+// P-205 — renewals + insurance view + coverage by type
+// ---------------------------------------------------------------------------
+
+/** Renewal is allowed while the instrument is live or lapsed. */
+export const RENEWABLE_STATUSES: readonly BondStatus[] = ["active", "expiring_soon", "expired"];
+
+export const RenewBondSchema = z.object({
+  instrument_id: z.string().uuid(),
+  new_expiry: isoDate,
+  premium_amount: z.number().finite().min(0).optional(),
+  document_path: z.string().trim().max(400).optional(),
+  notes: z.string().trim().max(2000).optional(),
+});
+export type RenewBondInput = z.infer<typeof RenewBondSchema>;
+
+/** Client-side refinement: the new expiry must move the instrument forward. */
+export function renewBondSchemaFor(currentExpiry: string | null) {
+  return RenewBondSchema.refine((v) => !currentExpiry || v.new_expiry > currentExpiry, {
+    path: ["new_expiry"],
+    message: "New expiry must be after the current expiry",
+  });
+}
+
+/** The four insurance instrument types surfaced by the Insurance preset. */
+export const INSURANCE_TYPES = [
+  "insurance_car_ear",
+  "insurance_pi",
+  "insurance_pl",
+  "workmen_comp",
+] as const;
+export type InsuranceType = (typeof INSURANCE_TYPES)[number];
+
+export const INSURANCE_EMPTY_STATE: Record<InsuranceType, string> = {
+  insurance_car_ear:
+    "No active CAR/EAR policy — required before mobilization on most contracts",
+  insurance_pi: "No active PI policy — required before mobilization on most contracts",
+  insurance_pl: "No active PL policy — required before mobilization on most contracts",
+  workmen_comp:
+    "No active workmen's compensation policy — required before mobilization on most contracts",
+};
+
+export function isInsuranceType(t: string): t is InsuranceType {
+  return (INSURANCE_TYPES as readonly string[]).includes(t);
+}
+
+export interface InsuranceSummary {
+  instrument_type: InsuranceType;
+  active_count: number;
+  coverage: CoverageSlice[];
+  nearest_expiry: string | null;
+  nearest_days: number | null;
+  issuers: string[];
+  policies: { id: string; instrument_number: string; document_path: string | null }[];
+}
+
+/** Per-insurance-type coverage summary; active + expiring_soon only. */
+export function insuranceSummaries(rows: BondRow[]): InsuranceSummary[] {
+  return INSURANCE_TYPES.map((t) => {
+    const active = rows.filter(
+      (r) => r.instrument_type === t && COVERAGE_STATUSES.includes(r.effective_status),
+    );
+    const withExpiry = active.filter((r) => r.days_to_expiry !== null);
+    withExpiry.sort((a, b) => (a.days_to_expiry ?? 0) - (b.days_to_expiry ?? 0));
+    const nearest = withExpiry[0] ?? null;
+    return {
+      instrument_type: t,
+      active_count: active.length,
+      coverage: coverageByCurrency(active),
+      nearest_expiry: nearest?.expiry_date ?? null,
+      nearest_days: nearest?.days_to_expiry ?? null,
+      issuers: [...new Set(active.map((r) => r.issuer_name))].sort(),
+      policies: active.map((r) => ({
+        id: r.id,
+        instrument_number: r.instrument_number,
+        document_path: r.document_path,
+      })),
+    };
+  });
+}
+
+export interface CoverageBar {
+  instrument_type: string;
+  label: string;
+  amount: number;
+}
+
+/** Σ amount per instrument_type for active coverage in one currency. */
+export function coverageByType(rows: BondRow[], currency: string): CoverageBar[] {
+  const map = new Map<string, number>();
+  for (const r of rows) {
+    if (!COVERAGE_STATUSES.includes(r.effective_status)) continue;
+    if (r.currency_code !== currency) continue;
+    map.set(r.instrument_type, (map.get(r.instrument_type) ?? 0) + Number(r.amount ?? 0));
+  }
+  return [...map.entries()]
+    .map(([instrument_type, amount]) => ({
+      instrument_type,
+      label: instrumentTypeLabel(instrument_type),
+      amount,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
