@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { audit, httpError } from "@/lib/payments.server";
 import {
+  ConvertEstimateSchema,
   CreateEstimateSchema,
   DeleteEstimateLineSchema,
   DeleteRateSchema,
@@ -13,6 +14,7 @@ import {
   ListEstimatesSchema,
   MarkEstimatePricedSchema,
   SaveEstimateMarginsSchema,
+  SubmitEstimateSchema,
   ReorderEstimateLinesSchema,
   UpsertEstimateLineSchema,
   UpsertRateSchema,
@@ -26,8 +28,15 @@ import {
   canWriteEstimates,
   canWriteRates,
   estimatingCompanyId,
+  createProposalFromEstimate,
   importBomSnapshot,
+  linkEstimateToProposal,
+  patchEstimate,
+  startEstimateApproval,
   loadEstimate,
+  loadConversionState,
+  loadDecisionComment,
+  loadEstimateApproval,
   loadEstimates,
   loadLines,
   loadOpportunityOptions,
@@ -38,6 +47,8 @@ import {
   loadSnapshotOptions,
   recomputeDirectCost,
   todayIso,
+  type EstimateApprovalSnapshot,
+  type EstimateConversionState,
   type EstimateLineRow,
   type EstimateRow,
   type OpportunityOption,
@@ -75,6 +86,8 @@ export interface EstimateDetail {
   lines: EstimateLineRow[];
   project: ProjectOption | null;
   opportunity: OpportunityOption | null;
+  approval: EstimateApprovalSnapshot | null;
+  conversion: EstimateConversionState;
 }
 
 export const getEstimateDetail = createServerFn({ method: "GET" })
@@ -84,19 +97,24 @@ export const getEstimateDetail = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const id = data.id;
 
-    const [estimate, lines, projects, opportunities, canWrite] = await Promise.all([
-      loadEstimate(context, id),
-      loadLines(context, id),
-      loadProjectOptions(context),
-      loadOpportunityOptions(context),
-      canWriteEstimates(context),
-    ]);
+    const [estimate, lines, projects, opportunities, canWrite, approval, conversion] =
+      await Promise.all([
+        loadEstimate(context, id),
+        loadLines(context, id),
+        loadProjectOptions(context),
+        loadOpportunityOptions(context),
+        canWriteEstimates(context),
+        loadEstimateApproval(context, id),
+        loadConversionState(context, id),
+      ]);
     return {
       can_write: canWrite,
       estimate,
       lines,
       project: projects.find((p) => p.id === estimate.project_id) ?? null,
       opportunity: opportunities.find((o) => o.id === estimate.opportunity_id) ?? null,
+      approval,
+      conversion,
     };
   });
 
@@ -434,3 +452,149 @@ export const markEstimatePriced = createServerFn({ method: "POST" })
       return { total_price: check.result.total_price, priced_at: pricedAt };
     },
   );
+
+/* --------------------------------------------- approval + convert (P-212) */
+
+export interface EstimateApprovalResult {
+  status: string;
+  approval_instance_id: string | null;
+  approval_status: string | null;
+  current_step: number | null;
+  comment?: string | null;
+}
+
+export const submitEstimateForReview = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => SubmitEstimateSchema.parse(input))
+  .handler(async ({ data, context }): Promise<EstimateApprovalResult> => {
+    requireSupabaseAuth(context);
+    await assertEstimateWrite(context);
+    const estimate = await assertDraft(context, data.estimate_id);
+    if (!(Number(estimate.total_price) > 0)) {
+      httpError(422, "estimate_not_priceable", "Price the estimate before submitting it.");
+    }
+    const instanceId = await startEstimateApproval(context, estimate);
+    if (!instanceId) {
+      httpError(409, "approval_rule_missing", "Estimate approval rule is not configured.");
+    }
+    const submittedAt = new Date().toISOString();
+    await patchEstimate(context, estimate.id, {
+      status: "in_review",
+      approval_instance_id: instanceId,
+      submitted_at: submittedAt,
+      submitted_by: context.user!.id,
+      rejection_comment: null,
+    });
+    await audit(context, "estimate.submitted", "estimates", estimate.id, {
+      estimate_id: estimate.id,
+      approval_instance_id: instanceId,
+      total_price: estimate.total_price,
+    });
+    const snapshot = await loadEstimateApproval(context, estimate.id);
+    return {
+      status: "in_review",
+      approval_instance_id: instanceId as string,
+      approval_status: snapshot?.status ?? "pending",
+      current_step: snapshot?.current_step ?? 1,
+    };
+  });
+
+export const checkEstimateApproval = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => SubmitEstimateSchema.parse(input))
+  .handler(async ({ data, context }): Promise<EstimateApprovalResult> => {
+    requireSupabaseAuth(context);
+    const estimate = await loadEstimate(context, data.estimate_id);
+    const snapshot = await loadEstimateApproval(context, estimate.id);
+    if (!snapshot) {
+      return {
+        status: estimate.status,
+        approval_instance_id: null,
+        approval_status: null,
+        current_step: null,
+      };
+    }
+
+    let status: string = estimate.status;
+    let comment: string | null = null;
+
+    if (estimate.status === "in_review" && snapshot.status === "approved") {
+      status = "approved";
+      await patchEstimate(context, estimate.id, {
+        status,
+        approved_at: new Date().toISOString(),
+        approved_by: context.user!.id,
+      });
+      await audit(context, "estimate.approved", "estimates", estimate.id, {
+        estimate_id: estimate.id,
+        approval_instance_id: snapshot.id,
+      });
+    } else if (estimate.status === "in_review" && snapshot.status === "rejected") {
+      status = "draft";
+      comment = await loadDecisionComment(context, snapshot.id);
+      await patchEstimate(context, estimate.id, { status, rejection_comment: comment });
+      await audit(context, "estimate.rejected", "estimates", estimate.id, {
+        estimate_id: estimate.id,
+        approval_instance_id: snapshot.id,
+        comment,
+      });
+    }
+
+    return {
+      status,
+      approval_instance_id: snapshot.id,
+      approval_status: snapshot.status,
+      current_step: snapshot.current_step,
+      comment,
+    };
+  });
+
+export const convertEstimateToProposal = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => ConvertEstimateSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ proposal_id: string; lines: number }> => {
+    requireSupabaseAuth(context);
+    await assertEstimateWrite(context);
+    const estimate = await loadEstimate(context, data.estimate_id);
+    if (estimate.status !== "approved") {
+      httpError(409, "estimate_not_approved", "Only approved estimates can be converted.");
+    }
+    const state = await loadConversionState(context, estimate.id);
+    if (state.converted_proposal_id) {
+      httpError(409, "already_converted", "This estimate has already been converted.");
+    }
+    const opportunityId = data.opportunity_id ?? estimate.opportunity_id;
+    if (!opportunityId) {
+      httpError(422, "opportunity_required", "Select an opportunity to convert into a proposal.");
+    }
+
+    const companyId = await estimatingCompanyId(context);
+    const lines = await loadLines(context, estimate.id);
+    const { proposalId, lineCount } = await createProposalFromEstimate(context, {
+      companyId,
+      estimate,
+      opportunityId: opportunityId as string,
+      lines,
+    });
+
+    const convertedAt = new Date().toISOString();
+    await patchEstimate(context, estimate.id, {
+      status: "priced",
+      priced_at: estimate.priced_at ?? convertedAt,
+      converted_proposal_id: proposalId,
+      converted_at: convertedAt,
+      converted_by: context.user!.id,
+    });
+    await audit(context, "estimate.converted", "estimates", estimate.id, {
+      estimate_id: estimate.id,
+      proposal_id: proposalId,
+      total_price: estimate.total_price,
+    });
+    await linkEstimateToProposal(context, {
+      companyId,
+      projectId: estimate.project_id,
+      estimateId: estimate.id,
+      proposalId,
+    });
+    return { proposal_id: proposalId, lines: lineCount };
+  });

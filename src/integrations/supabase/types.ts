@@ -5070,9 +5070,14 @@ export type Database = {
       estimates: {
         Row: {
           approval_instance_id: string | null
+          approved_at: string | null
+          approved_by: string | null
           bom_snapshot_id: string | null
           company_id: string
           contingency_pct: number
+          converted_at: string | null
+          converted_by: string | null
+          converted_proposal_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -5085,8 +5090,11 @@ export type Database = {
           priced_at: string | null
           profit_pct: number
           project_id: string
+          rejection_comment: string | null
           revision: number
           status: Database["public"]["Enums"]["estimate_status"]
+          submitted_at: string | null
+          submitted_by: string | null
           subtotal: number
           supersedes_id: string | null
           title: string
@@ -5095,9 +5103,14 @@ export type Database = {
         }
         Insert: {
           approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           bom_snapshot_id?: string | null
           company_id: string
           contingency_pct?: number
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_proposal_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -5110,8 +5123,11 @@ export type Database = {
           priced_at?: string | null
           profit_pct?: number
           project_id: string
+          rejection_comment?: string | null
           revision?: number
           status?: Database["public"]["Enums"]["estimate_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
           subtotal?: number
           supersedes_id?: string | null
           title: string
@@ -5120,9 +5136,14 @@ export type Database = {
         }
         Update: {
           approval_instance_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           bom_snapshot_id?: string | null
           company_id?: string
           contingency_pct?: number
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_proposal_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -5135,8 +5156,11 @@ export type Database = {
           priced_at?: string | null
           profit_pct?: number
           project_id?: string
+          rejection_comment?: string | null
           revision?: number
           status?: Database["public"]["Enums"]["estimate_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
           subtotal?: number
           supersedes_id?: string | null
           title?: string
@@ -5152,6 +5176,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "estimates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "estimates_bom_snapshot_id_fkey"
             columns: ["bom_snapshot_id"]
             isOneToOne: false
@@ -5163,6 +5194,20 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_converted_by_fkey"
+            columns: ["converted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_converted_proposal_id_fkey"
+            columns: ["converted_proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
             referencedColumns: ["id"]
           },
           {
@@ -5191,6 +5236,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {

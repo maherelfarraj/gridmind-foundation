@@ -269,3 +269,16 @@ export const SaveEstimateMarginsSchema = z.object({
 export type SaveEstimateMarginsInput = z.infer<typeof SaveEstimateMarginsSchema>;
 
 export const MarkEstimatePricedSchema = z.object({ estimate_id: uuid });
+
+/* --------------------------------------------- approval + convert (P-212) */
+
+export const ESTIMATE_APPROVAL_RULE_KEY = "estimate_approval";
+export const ESTIMATE_APPROVAL_ENTITY = "estimate";
+
+export const SubmitEstimateSchema = z.object({ estimate_id: uuid });
+
+export const ConvertEstimateSchema = z.object({
+  estimate_id: uuid,
+  opportunity_id: optionalUuid,
+});
+export type ConvertEstimateInput = z.infer<typeof ConvertEstimateSchema>;

@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ChevronDown, ChevronUp, Lock, Plus, Table2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { EstimateApprovalCard } from "@/components/estimating/approval-actions-card";
 import { MarginWaterfallCard } from "@/components/estimating/margin-waterfall-card";
 import { RatePickerButton } from "@/components/estimating/rate-picker";
 import { Badge } from "@/components/ui/badge";
@@ -279,6 +280,8 @@ function EstimateBody({
           </Field>
         </CardContent>
       </Card>
+
+      <EstimateApprovalCard detail={detail} />
 
       {!editable ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
