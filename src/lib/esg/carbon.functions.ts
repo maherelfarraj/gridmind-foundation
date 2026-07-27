@@ -47,18 +47,8 @@ export const computeEsgReport = createServerFn({ method: "POST" })
 
     const [factors, activities, meteredKwh] = await Promise.all([
       loadCarbonFactors(context.supabase, companyId),
-      loadPeriodActivities(
-        context.supabase,
-        data.project_id,
-        data.period_from,
-        data.period_to,
-      ),
-      sumMeteredEnergyKwh(
-        context.supabase,
-        data.project_id,
-        data.period_from,
-        data.period_to,
-      ),
+      loadPeriodActivities(context.supabase, data.project_id, data.period_from, data.period_to),
+      sumMeteredEnergyKwh(context.supabase, data.project_id, data.period_from, data.period_to),
     ]);
 
     const emissions = computeEmissions(activities, factors);
@@ -66,10 +56,8 @@ export const computeEsgReport = createServerFn({ method: "POST" })
     const avoided =
       meteredKwh === null
         ? null
-        : computeAvoided(
-            meteredKwh,
-            gridFactor?.kg_co2e_per_unit ?? DEFAULT_GRID_FACTOR_KG_PER_KWH,
-          ).avoided_kg;
+        : computeAvoided(meteredKwh, gridFactor?.kg_co2e_per_unit ?? DEFAULT_GRID_FACTOR_KG_PER_KWH)
+            .avoided_kg;
 
     const totals = buildReportTotals({
       totals: emissions.totals,
@@ -107,7 +95,11 @@ export const computeEsgReport = createServerFn({ method: "POST" })
             factor_code: gridFactor.factor_code,
             factor_source: gridFactor.factor_source,
           }
-        : { kg_co2e_per_unit: DEFAULT_GRID_FACTOR_KG_PER_KWH, factor_code: "JO-GRID-DEFAULT", factor_source: "Jordan default" },
+        : {
+            kg_co2e_per_unit: DEFAULT_GRID_FACTOR_KG_PER_KWH,
+            factor_code: "JO-GRID-DEFAULT",
+            factor_source: "Jordan default",
+          },
       methodology_note: ESG_METHODOLOGY_NOTE,
     };
   });

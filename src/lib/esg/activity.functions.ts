@@ -56,7 +56,10 @@ export const listEsgActivities = createServerFn({ method: "GET" })
     requireSupabaseAuth(context);
     const rows = await loadActivities(context.supabase, data.projectId, data.month);
     const names = await enteredByNames(context.supabase, rows);
-    return rows.map((r) => ({ ...r, entered_by_name: r.entered_by ? (names[r.entered_by] ?? null) : null }));
+    return rows.map((r) => ({
+      ...r,
+      entered_by_name: r.entered_by ? (names[r.entered_by] ?? null) : null,
+    }));
   });
 
 /* ------------------------------ manual entry ------------------------------ */
@@ -276,7 +279,10 @@ export const importActivityCsv = createServerFn({ method: "POST" })
     z
       .object({
         projectId: z.string().uuid(),
-        rows: z.array(csvRowSchema.extend({ hash: z.string().min(4).max(32) })).min(1).max(500),
+        rows: z
+          .array(csvRowSchema.extend({ hash: z.string().min(4).max(32) }))
+          .min(1)
+          .max(500),
       })
       .parse(raw),
   )

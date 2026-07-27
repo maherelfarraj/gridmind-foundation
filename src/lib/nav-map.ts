@@ -562,6 +562,7 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Shield,
       },
       { moduleKey: "field_qaqc", label: "Waste tracking", url: "/hse/waste", icon: Truck },
+      { moduleKey: "field_qaqc", label: "ESG dashboard", url: "/esg", icon: Leaf },
       { moduleKey: "field_qaqc", label: "ESG activity", url: "/esg/activity", icon: Leaf },
 
       { moduleKey: "field_qaqc", label: "HSE audits", url: "/hse/audits", icon: ClipboardCheck },
