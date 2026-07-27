@@ -6,6 +6,12 @@
 // in a destructive toast.
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  currentActorId,
+  periodBlockedAuditRow,
+  writeBlockedAudit,
+} from "@/lib/blocked-audit";
+
 export const PERIOD_CLOSED_PREFIX = "finance_period_closed";
 
 /** Month key (YYYY-MM) of an ISO date. */
@@ -63,6 +69,7 @@ export async function assertPeriodOpen(
   supabase: SupabaseClient,
   companyId: string | null | undefined,
   date: string | null | undefined,
+  audit?: { entity?: string; entityId?: string | null },
 ): Promise<void> {
   if (!companyId || !date) return;
   const { error } = await supabase.rpc("assert_finance_period_open", {
@@ -70,7 +77,20 @@ export async function assertPeriodOpen(
     p_date: date,
   } as never);
   if (!error) return;
-  if (isPeriodClosedError(error)) throw periodClosedError(date);
+  if (isPeriodClosedError(error)) {
+    // Day 7 — blocked-attempt audit. Exactly one row, then the same typed 409.
+    await writeBlockedAudit(
+      supabase,
+      periodBlockedAuditRow({
+        companyId,
+        actorId: await currentActorId(supabase),
+        attemptedDate: date,
+        entity: audit?.entity ?? "finance_periods",
+        entityId: audit?.entityId ?? null,
+      }),
+    );
+    throw periodClosedError(date);
+  }
   if (isMissingObject(error)) return;
   throw error;
 }

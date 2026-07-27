@@ -209,7 +209,7 @@ export function AppSidebar() {
                     const url = resolveUrl(item.url, projectId);
                     const Icon = item.icon;
                     return (
-                      <SidebarMenuItem key={`nav:${group.key}:${url}`}>
+                      <SidebarMenuItem key={`nav:${group.key}:${url}:${item.label}`}>
                         <SidebarMenuButton asChild isActive={isActive(url)} tooltip={item.label}>
                           <a href={url} className="flex items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />

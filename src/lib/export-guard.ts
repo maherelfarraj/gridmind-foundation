@@ -7,6 +7,12 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  currentActorId,
+  exportBlockedAuditRow,
+  writeBlockedAudit,
+} from "@/lib/blocked-audit";
+
 export type ExportType =
   | "proposal_pdf"
   | "proposal_pptx"
@@ -75,6 +81,24 @@ export async function assertExportAllowed(
   if (code === "42P01" || code === "42883") return; // migration not applied yet
 
   if (isPgMessage(error, "export_locked:")) {
+    // Day 7 — blocked-attempt audit. Exactly one row, then the same typed 423.
+    const { data: proj } = await supabase
+      .from("projects")
+      .select("company_id")
+      .eq("id", projectId)
+      .maybeSingle();
+    const companyId = (proj as { company_id?: string } | null)?.company_id;
+    if (companyId) {
+      await writeBlockedAudit(
+        supabase,
+        exportBlockedAuditRow({
+          companyId,
+          actorId: await currentActorId(supabase),
+          projectId,
+          exportType,
+        }),
+      );
+    }
     const err = new Error("Export blocked: approval pending") as ExportLockedError;
     err.statusCode = 423;
     err.code = "export_locked";
