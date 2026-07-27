@@ -33,7 +33,7 @@ interface Policy {
 
 function parsePolicies(): Policy[] {
   const re =
-    /create policy\s+\w+\s+on\s+public\.(timesheets|timesheet_entries|leave_requests|leave_balances)\s+for\s+(select|insert|update|delete)([\s\S]*?);\n/gi;
+    /create policy\s+\w+\s+on\s+public\.(timesheets|timesheet_entries|leave_requests|leave_balances)\s+for\s+(select|insert|update|delete)([\s\S]*?);/gi;
   const out: Policy[] = [];
   for (const m of sql.matchAll(re)) {
     const body = m[3];
