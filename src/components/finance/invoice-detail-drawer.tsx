@@ -15,7 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { PaymentHistory } from "@/components/finance/payment-history";
+import { RecordPaymentDialog } from "@/components/finance/record-payment-dialog";
 import { markInvoicePaid } from "@/lib/invoices.functions";
+import { markInvoiceSent } from "@/lib/payments.functions";
+import { paymentsAccessQueryOptions } from "@/lib/payments.query";
+import { FORMULAS, acceptsPayment } from "@/lib/payments.rules";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react";
 import {
   invoiceDetailQueryOptions,
   invoiceErrorCode,
@@ -36,6 +43,8 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
   submitted: "secondary",
   under_review: "secondary",
   approved: "secondary",
+  sent: "secondary",
+  partially_paid: "secondary",
   paid: "default",
   disputed: "destructive",
   cancelled: "outline",
@@ -54,6 +63,9 @@ export function InvoiceDetailDrawer({
 }) {
   const qc = useQueryClient();
   const payFn = useServerFn(markInvoicePaid);
+  const sendFn = useServerFn(markInvoiceSent);
+  const [payOpen, setPayOpen] = useState(false);
+  const access = useQuery(paymentsAccessQueryOptions());
   const detail = useQuery({
     ...invoiceDetailQueryOptions(invoiceId ?? "00000000-0000-0000-0000-000000000000"),
     enabled: Boolean(invoiceId) && open,
@@ -75,7 +87,18 @@ export function InvoiceDetailDrawer({
     },
   });
 
+  const sendMutation = useMutation({
+    mutationFn: () => sendFn({ data: { invoice_id: invoiceId! } }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["invoices"] });
+      toast.success("Invoice marked as sent");
+    },
+    onError: (err) => toast.error(invoiceErrorMessage(err)),
+  });
+
   const d = detail.data;
+  const canRecord =
+    d?.invoice.direction === "payable" ? Boolean(access.data?.canPayable) : Boolean(access.data?.canFinance);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -122,9 +145,19 @@ export function InvoiceDetailDrawer({
               <div>
                 <dt className="text-xs text-muted-foreground">Status</dt>
                 <dd>
-                  <Badge variant={STATUS_VARIANT[d.invoice.status] ?? "outline"}>
-                    {invoiceStatusLabel(d.invoice.status)}
-                  </Badge>
+                  <span className="flex flex-wrap items-center gap-1">
+                    <Badge variant={STATUS_VARIANT[d.invoice.status] ?? "outline"}>
+                      {invoiceStatusLabel(d.invoice.status)}
+                    </Badge>
+                    {d.invoice.overdue && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="destructive">Overdue</Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>{FORMULAS.overdue}</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </span>
                 </dd>
               </div>
               <div>
@@ -137,6 +170,25 @@ export function InvoiceDetailDrawer({
                 <dt className="text-xs text-muted-foreground">Tax</dt>
                 <dd className="font-mono tabular-nums">
                   {fmt(d.invoice.tax_amount, d.invoice.currency_code)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Paid</dt>
+                <dd className="font-mono tabular-nums">
+                  {fmt(d.invoice.paid_amount, d.invoice.currency_code)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Balance</dt>
+                <dd>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-mono tabular-nums">
+                        {fmt(d.invoice.balance, d.invoice.currency_code)}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{FORMULAS.balance}</TooltipContent>
+                  </Tooltip>
                 </dd>
               </div>
               <div>
@@ -210,6 +262,42 @@ export function InvoiceDetailDrawer({
                 </div>
               </div>
             )}
+
+            <PaymentHistory
+              invoiceId={d.invoice.id}
+              currency={d.invoice.currency_code}
+              canVoid={Boolean(access.data?.canFinance)}
+            />
+
+            <div className="flex flex-wrap gap-2 border-t pt-4">
+              {d.invoice.status === "approved" && (
+                <Button
+                  variant="outline"
+                  disabled={!canWrite || sendMutation.isPending}
+                  onClick={() => sendMutation.mutate()}
+                >
+                  Mark sent
+                </Button>
+              )}
+              {acceptsPayment(d.invoice.status) && (
+                <Button
+                  disabled={!canRecord || d.payment_release_blocked}
+                  onClick={() => setPayOpen(true)}
+                >
+                  Record payment
+                </Button>
+              )}
+            </div>
+
+            <RecordPaymentDialog
+              open={payOpen}
+              onOpenChange={setPayOpen}
+              invoiceId={d.invoice.id}
+              invoiceNumber={d.invoice.invoice_number}
+              currency={d.invoice.currency_code}
+              balance={d.invoice.balance}
+              blocked={d.payment_release_blocked}
+            />
 
             {d.invoice.direction === "payable" && d.invoice.status !== "paid" && (
               <div className="border-t pt-4">
