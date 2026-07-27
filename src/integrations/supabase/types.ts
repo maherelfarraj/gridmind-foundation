@@ -7701,6 +7701,76 @@ export type Database = {
           },
         ]
       }
+      moc_implementation_tasks: {
+        Row: {
+          change_request_id: string
+          company_id: string
+          created_at: string
+          done_at: string | null
+          done_by: string | null
+          entity_id: string | null
+          entity_type: string | null
+          evidence: Json
+          id: string
+          owner_role: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          change_request_id: string
+          company_id: string
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          evidence?: Json
+          id?: string
+          owner_role?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          change_request_id?: string
+          company_id?: string
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          evidence?: Json
+          id?: string
+          owner_role?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moc_implementation_tasks_change_request_id_fkey"
+            columns: ["change_request_id"]
+            isOneToOne: false
+            referencedRelation: "change_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moc_implementation_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moc_implementation_tasks_done_by_fkey"
+            columns: ["done_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_access_rules: {
         Row: {
           company_id: string
@@ -17126,6 +17196,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      close_change_request: {
+        Args: {
+          p_closure_notes: string
+          p_id: string
+          p_updated_asbuilts?: Json
+          p_updated_documents?: Json
+        }
+        Returns: string
+      }
       compute_next_run: {
         Args: {
           p_day_of_month: number
@@ -17247,6 +17326,10 @@ export type Database = {
         }[]
       }
       escalate_overdue_approvals: { Args: never; Returns: number }
+      generate_implementation_tasks: {
+        Args: { p_change_request_id: string }
+        Returns: number
+      }
       get_entity_graph: {
         Args: { p_depth?: number; p_entity_id: string; p_entity_type: string }
         Returns: Json
@@ -17301,6 +17384,10 @@ export type Database = {
         Returns: boolean
       }
       is_external_viewer: { Args: never; Returns: boolean }
+      is_under_change_control: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: boolean
+      }
       link_entities: {
         Args: {
           p_company_id: string
