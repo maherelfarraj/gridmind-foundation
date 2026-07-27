@@ -49,6 +49,11 @@ export interface PoRow {
   pdf_path: string | null;
   share_token: string | null;
   share_token_expires_at: string | null;
+  acknowledged_at: string | null;
+  acknowledged_by: string | null;
+  acknowledged_by_email: string | null;
+  acknowledgment_status: "accepted" | "accepted_with_comments" | "rejected" | null;
+  acknowledgment_note: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -123,6 +128,11 @@ function toPoRow(r: any): PoRow {
     pdf_path: r.pdf_path,
     share_token: r.share_token ?? null,
     share_token_expires_at: r.share_token_expires_at ?? null,
+    acknowledged_at: r.acknowledged_at ?? null,
+    acknowledged_by: r.acknowledged_by ?? null,
+    acknowledged_by_email: r.acknowledged_by_email ?? null,
+    acknowledgment_status: r.acknowledgment_status ?? null,
+    acknowledgment_note: r.acknowledgment_note ?? null,
     created_at: r.created_at,
     updated_at: r.updated_at,
   };
