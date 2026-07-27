@@ -529,7 +529,6 @@ export const renewBondInstrument = createServerFn({ method: "POST" })
       status: "active",
     };
     if (data.document_path) patch.document_path = data.document_path;
-    if (data.premium_amount !== undefined) patch.premium_pct = instrument.premium_pct;
     await patchBond(context, instrument.id, patch);
     await audit(context, "bond.renewed", "bond_instruments", instrument.id, {
       instrument_id: instrument.id,
@@ -540,4 +539,28 @@ export const renewBondInstrument = createServerFn({ method: "POST" })
       after: { status: "active", expiry_date: data.new_expiry },
     });
     return { ok: true };
+  });
+
+/** Uploads a renewal document without attaching it to the instrument yet. */
+export const uploadBondRenewalDocument = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => UploadBondDocSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true; path: string }> => {
+    requireSupabaseAuth(context);
+    await assertBondWrite(context);
+    const companyId = await bondsCompanyId(context);
+    const instrument = await loadBond(context, data.instrument_id);
+    const path = bondDocumentPath(
+      companyId,
+      instrument.id,
+      `${Date.now()}-${data.filename}`,
+    );
+    const { error } = await context.supabase.storage
+      .from(BONDS_BUCKET)
+      .upload(path, decodeBase64(data.content_base64), {
+        contentType: data.content_type || "application/octet-stream",
+        upsert: true,
+      });
+    if (error) throw error;
+    return { ok: true, path };
   });
