@@ -250,6 +250,15 @@ function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: 
               <Label>Counterparty</Label>
               <Input disabled={!canWrite} {...form.register("counterparty")} />
             </div>
+            <div className="space-y-1">
+              <Label>Project</Label>
+              <ContractProjectSelect
+                disabled={!canWrite}
+                value={form.watch("project_id") ?? null}
+                onChange={(id) => form.setValue("project_id", id)}
+              />
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <Label>Type</Label>
