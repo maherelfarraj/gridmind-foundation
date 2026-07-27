@@ -98,13 +98,17 @@ function FinancePeriodsPage() {
 
   const closeMutation = useMutation({
     mutationFn: (period_month: string) => closeFn({ data: { period_month } }),
-    onSuccess: () => {
-      toast.success("Period closed. Postings in that month are now locked.");
+    onSuccess: (_r, period_month) => {
+      toast.success(
+        `${monthLabel(period_month)} closed. Postings in that month are now locked.`,
+      );
+      setCloseTarget(null);
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message || "Could not close the period."),
   });
 
+  const [closeTarget, setCloseTarget] = useState<string | null>(null);
   const [reopenTarget, setReopenTarget] = useState<string | null>(null);
   const [reopenReason, setReopenReason] = useState("");
 
@@ -187,7 +191,7 @@ function FinancePeriodsPage() {
             canReopen={canReopen}
             busy={closeMutation.isPending || reopenMutation.isPending}
             onSelect={setSelected}
-            onClose={(m) => closeMutation.mutate(m)}
+            onClose={(m) => setCloseTarget(m)}
             onReopen={(m) => {
               setReopenReason("");
               setReopenTarget(m);
