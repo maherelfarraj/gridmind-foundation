@@ -103,73 +103,22 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const now = new Date();
 
-    // Slow queries from pg_stat_statements (view lives in extensions schema).
     const { data: slowRows, error: slowErr } = await supabaseAdmin.rpc(
-      "exec_sql",
-      {
-        sql: `
-          SELECT LEFT(query, 200) AS query,
-                 calls,
-                 ROUND(mean_exec_time::numeric, 2) AS mean_ms,
-                 ROUND(total_exec_time::numeric, 2) AS total_ms,
-                 ROUND(max_exec_time::numeric, 2) AS max_ms
-          FROM extensions.pg_stat_statements
-          WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
-            AND query NOT LIKE '%pg_stat_statements%'
-          ORDER BY total_exec_time DESC
-          LIMIT 10;
-        `,
-      },
+      "admin_get_slow_queries",
     );
     if (slowErr) throw slowErr;
 
-    // DB health snapshot from pg_stat_database + pg_database_size.
     const { data: healthRows, error: healthErr } = await supabaseAdmin.rpc(
-      "exec_sql",
-      {
-        sql: `
-          SELECT
-            (SELECT count(*) FROM pg_stat_activity) AS connections_used,
-            (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') AS connections_max,
-            ROUND(pg_database_size(current_database()) / 1024.0 / 1024.0, 2) AS db_size_mb,
-            ROUND(
-              (SELECT sum(pg_total_relation_size(c.oid)) FROM pg_class c
-               JOIN pg_namespace n ON n.oid = c.relnamespace
-               WHERE n.nspname = 'pg_wal') / 1024.0 / 1024.0,
-              2
-            ) AS wal_size_mb,
-            xact_commit,
-            xact_rollback,
-            CASE WHEN xact_commit + xact_rollback > 0
-              THEN ROUND((xact_rollback::numeric / (xact_commit + xact_rollback)) * 100, 2)
-              ELSE 0
-            END AS rollback_rate
-          FROM pg_stat_database
-          WHERE datname = current_database();
-        `,
-      },
+      "admin_get_db_health",
     );
     if (healthErr) throw healthErr;
 
-    // Top 20 tables by size in the public schema.
     const { data: tableRows, error: tableErr } = await supabaseAdmin.rpc(
-      "exec_sql",
-      {
-        sql: `
-          SELECT n.nspname AS schema_name,
-                 c.relname AS table_name,
-                 ROUND(pg_total_relation_size(c.oid) / 1024.0 / 1024.0, 2) AS total_mb
-          FROM pg_class c
-          JOIN pg_namespace n ON n.oid = c.relnamespace
-          WHERE n.nspname = 'public'
-          ORDER BY pg_total_relation_size(c.oid) DESC
-          LIMIT 20;
-        `,
-      },
+      "admin_get_table_sizes",
     );
     if (tableErr) throw tableErr;
 
-    const rawSlow = (slowRows ?? []) as Array<{
+    const rawSlow = ((slowRows ?? []) as unknown[]) as Array<{
       query: string;
       calls: number;
       mean_ms: number;
