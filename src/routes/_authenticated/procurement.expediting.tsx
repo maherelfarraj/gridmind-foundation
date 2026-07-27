@@ -371,6 +371,11 @@ function ExpeditingPage() {
                       onPatch={(patch) => updateMutation.mutate({ id: r.id, patch })}
                       onLogContact={() => contactMutation.mutate(r.id)}
                       onDelete={() => deleteMutation.mutate(r.id)}
+                      onConfirmEta={() => confirmMutation.mutate(r.id)}
+                      onCounterPropose={(eta, comment) =>
+                        counterMutation.mutate({ id: r.id, eta, comment })
+                      }
+
                     />
                   ))}
                 </TableBody>
