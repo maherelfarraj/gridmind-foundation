@@ -17,6 +17,7 @@ import {
   type PoStatus,
 } from "@/lib/po-rules";
 import type { RfqLine } from "@/lib/rfq-rules";
+import { assertNotUnderChangeControl } from "@/lib/moc.exec.server";
 
 // ---------------------------------------------------------------------------
 // row types
@@ -767,9 +768,18 @@ async function generateAndStorePoPdf(context: AuthContext, poId: string): Promis
 
 export const issuePo = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ poId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        poId: z.string().uuid(),
+        overrideReason: z.string().trim().max(1000).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }): Promise<{ ok: true; pdfPath: string }> => {
     requireSupabaseAuth(context);
+    // P-191 — an open change request freezes this order (admins may override).
+    await assertNotUnderChangeControl(context, "purchase_order", data.poId, data.overrideReason);
     const { data: po, error: pErr } = await context.supabase
       .from("purchase_orders")
       .select("id, status")

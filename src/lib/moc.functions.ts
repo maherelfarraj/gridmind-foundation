@@ -10,7 +10,9 @@ import {
   transitionSchema,
   updateImpactsSchema,
 } from "@/lib/moc.rules";
+import { assertSubstitutionReady } from "@/lib/moc.exec.server";
 import {
+
   assertInternal,
   auditMoc,
   getChangeDetail,
@@ -111,10 +113,12 @@ export const submitChangeRequest = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
     await assertInternal(context);
+    await assertSubstitutionReady(context, data.id);
     const { data: result, error } = await context.supabase.rpc("submit_change_request", {
       p_id: data.id,
     });
     if (error) httpError(400, error.message, error.message);
+
     await auditMoc(context, "moc.submitted", data.id, {});
     return { result };
   });

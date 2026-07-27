@@ -20,6 +20,7 @@ import {
   type RfqLine,
   type RfqStatus,
 } from "@/lib/rfq-rules";
+import { assertNotUnderChangeControl } from "@/lib/moc.exec.server";
 
 // ---------------------------------------------------------------------------
 // row types
@@ -468,10 +469,19 @@ export const removeRfqInvite = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const issueRfq = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        rfqId: z.string().uuid(),
+        overrideReason: z.string().trim().max(1000).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }): Promise<{ rfq_number: string }> => {
     requireSupabaseAuth(context);
     const companyId = await currentCompanyId(context);
+    // P-191 — an open change request freezes this package (admins may override).
+    await assertNotUnderChangeControl(context, "rfq", data.rfqId, data.overrideReason);
 
     const { data: rfq, error: rfqErr } = await context.supabase
       .from("rfqs")

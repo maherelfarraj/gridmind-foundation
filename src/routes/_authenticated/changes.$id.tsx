@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { AffectedSystems } from "@/components/moc/affected-systems";
 import { ChangeTypeBadge } from "@/components/moc/change-type-badge";
+import { ImplementationTasks } from "@/components/moc/implementation-tasks";
+import { VendorSubstitution } from "@/components/moc/vendor-substitution";
 import {
   ImpactCards,
   draftToPayload,
@@ -15,6 +17,7 @@ import {
   type ImpactDraft,
 } from "@/components/moc/impact-cards";
 import { ReviewerStepper } from "@/components/moc/reviewer-stepper";
+
 import { ThreadGraph } from "@/components/thread/thread-graph";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -38,6 +41,13 @@ import { decideApproval } from "@/lib/approvals.inbox.functions";
 import { getEntityThread } from "@/lib/digital-thread/thread.functions";
 import { formatDateTime } from "@/lib/format";
 import { evidencePath, unassessedAreas, type AffectedSystem } from "@/lib/moc.rules";
+import { parseOpenTasksError } from "@/lib/moc.exec.rules";
+import {
+  closeChangeRequest,
+  generateImplementationTasks,
+  listImplementationTasks,
+} from "@/lib/moc.exec.functions";
+
 import {
   addChangeEvidence,
   getChangeRequest,
@@ -71,6 +81,9 @@ function ChangeDetailPage() {
   const addEvidenceFn = useServerFn(addChangeEvidence);
   const signUrlFn = useServerFn(signChangeEvidenceUrl);
   const fetchThread = useServerFn(getEntityThread);
+  const generateTasksFn = useServerFn(generateImplementationTasks);
+  const closeFn = useServerFn(closeChangeRequest);
+  const listTasksFn = useServerFn(listImplementationTasks);
 
   const detail = useQuery({
     queryKey: ["moc", "detail", id],
@@ -86,6 +99,14 @@ function ChangeDetailPage() {
   const [updatedDocs, setUpdatedDocs] = useState("");
   const [updatedAsbuilts, setUpdatedAsbuilts] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [tab, setTab] = useState("overview");
+
+  const taskList = useQuery({
+    queryKey: ["moc", "tasks", id],
+    queryFn: () => listTasksFn({ data: { id } }),
+  });
+  const pendingTasks = (taskList.data?.rows ?? []).filter((t) => t.status === "pending").length;
+
 
   const cr = detail.data?.cr;
   useEffect(() => {
@@ -126,13 +147,44 @@ function ChangeDetailPage() {
       updated_documents?: string[];
       updated_asbuilts?: string[];
     }) => transitionFn({ data: { id, ...input } }),
-    onSuccess: (_r, input) => {
+    onSuccess: async (_r, input) => {
       toast.success(`Change request moved to ${input.to}`);
       setCloseOpen(false);
+      if (input.to === "approved") {
+        try {
+          const res = await generateTasksFn({ data: { id } });
+          toast.success(`${res.created} implementation task(s) generated`);
+          setTab("tasks");
+        } catch (e) {
+          toast.error((e as Error).message || "Could not generate implementation tasks");
+        }
+      }
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message || "Transition rejected"),
   });
+
+  const closeMutation = useMutation({
+    mutationFn: (input: {
+      closure_notes: string;
+      updated_documents: string[];
+      updated_asbuilts: string[];
+    }) => closeFn({ data: { id, ...input } }),
+    onSuccess: () => {
+      toast.success("Change closed");
+      setCloseOpen(false);
+      void invalidate();
+    },
+    onError: (e: Error) => {
+      const open = parseOpenTasksError(e.message ?? "");
+      toast.error(
+        open !== null
+          ? `${open} implementation task(s) still pending — resolve them before closing.`
+          : e.message || "Could not close the change",
+      );
+    },
+  });
+
 
   const decideMutation = useMutation({
     mutationFn: (input: { decision: "approved" | "rejected"; comment?: string }) =>
@@ -299,10 +351,19 @@ function ChangeDetailPage() {
               </Button>
             ) : null}
             {cr.status === "implementing" ? (
-              <Button disabled={evidence.length === 0} onClick={() => setCloseOpen(true)}>
+              <Button
+                disabled={evidence.length === 0 || pendingTasks > 0}
+                title={
+                  pendingTasks > 0
+                    ? `${pendingTasks} implementation task(s) still pending`
+                    : undefined
+                }
+                onClick={() => setCloseOpen(true)}
+              >
                 Close change
               </Button>
             ) : null}
+
             {(cr.status === "draft" || cr.status === "assessment") &&
             (data.isAdmin || cr.originator_id) ? (
               <Button
@@ -324,7 +385,7 @@ function ChangeDetailPage() {
         </div>
       ) : null}
 
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="thread">Digital thread</TabsTrigger>
@@ -341,7 +402,12 @@ function ChangeDetailPage() {
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.reason}</p>
           </Card>
 
+          {cr.change_type === "vendor_substitution" ? (
+            <VendorSubstitution changeRequestId={id} editable={editable} />
+          ) : null}
+
           <ImpactCards cr={cr} editable={editable} draft={draft} onChange={setDraft} />
+
 
           <Card className="space-y-3 p-4">
             <h2 className="text-sm font-medium text-foreground">Affected systems</h2>
@@ -427,13 +493,12 @@ function ChangeDetailPage() {
           ) : null}
         </TabsContent>
 
-        <TabsContent value="tasks" className="space-y-3 pt-4">
-          {cr.updated_documents.length === 0 && cr.updated_asbuilts.length === 0 ? (
-            <EmptyState
-              title="No implementation tasks recorded"
-              description="Updated documents and as-builts are captured when the change is closed."
-            />
-          ) : (
+        <TabsContent value="tasks" className="space-y-4 pt-4">
+          <ImplementationTasks
+            changeRequestId={id}
+            canEdit={cr.status === "approved" || cr.status === "implementing"}
+          />
+          {cr.updated_documents.length > 0 || cr.updated_asbuilts.length > 0 ? (
             <Card className="space-y-3 p-4">
               <h2 className="text-sm font-medium text-foreground">Updated documents</h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
@@ -449,8 +514,9 @@ function ChangeDetailPage() {
                 ))}
               </ul>
             </Card>
-          )}
+          ) : null}
         </TabsContent>
+
 
         <TabsContent value="audit" className="space-y-3 pt-4">
           <div className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
@@ -541,11 +607,11 @@ function ChangeDetailPage() {
               disabled={
                 closureNotes.trim().length === 0 ||
                 evidence.length === 0 ||
-                transitionMutation.isPending
+                pendingTasks > 0 ||
+                closeMutation.isPending
               }
               onClick={() =>
-                transitionMutation.mutate({
-                  to: "closed",
+                closeMutation.mutate({
                   closure_notes: closureNotes.trim(),
                   updated_documents: updatedDocs
                     .split("\n")
@@ -558,6 +624,7 @@ function ChangeDetailPage() {
                 })
               }
             >
+
               Close change
             </Button>
           </DialogFooter>
