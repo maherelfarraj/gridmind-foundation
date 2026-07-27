@@ -142,10 +142,6 @@ Modules in scope include CRM, Engineering, Procurement, Finance, Field, QA/QC, *
 
 ---
 
-_Once the table is fully signed, proceed with the DNS cutover to **gridmindepc.com** per the operations runbook._
-
----
-
 ## 7 — Day 2 Observability Sign-off
 
 Confirm the operational dashboards and controls that back `docs/ops-runbook.md` and
@@ -157,7 +153,6 @@ Confirm the operational dashboards and controls that back `docs/ops-runbook.md` 
 - [ ] `/admin/slo` reviewed — SLO targets from `docs/ops-decisions.md` are tracking and not in breach
 - [ ] Cron audit logging confirmed for all scheduled jobs (`escalations`, `pm-work-orders`, `scheduled-reports`, `audit-retention`, `webhook-dispatch`) — each has recent `audit_logs` rows
 - [ ] Access review completed — admin/service-role access limited to authorized personnel, on-call escalation contacts in `docs/ops-runbook.md` §2 are current
-
 
 ---
 

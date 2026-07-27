@@ -132,6 +132,7 @@ import { Route as AuthenticatedConstructionCwpRouteImport } from './routes/_auth
 import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './routes/_authenticated/construction.baseline-compare'
 import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
 import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
+import { Route as AuthenticatedAdminSloRouteImport } from './routes/_authenticated/admin.slo'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
@@ -940,6 +941,11 @@ const AuthenticatedChangesIdRoute = AuthenticatedChangesIdRouteImport.update({
   path: '/changes/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminSloRoute = AuthenticatedAdminSloRouteImport.update({
+  id: '/slo',
+  path: '/slo',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminHealthRoute =
   AuthenticatedAdminHealthRouteImport.update({
     id: '/health',
@@ -1682,6 +1688,7 @@ export interface FileRoutesByFullPath {
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -1918,6 +1925,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -2152,6 +2160,7 @@ export interface FileRoutesById {
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
+  '/_authenticated/admin/slo': typeof AuthenticatedAdminSloRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
   '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
   '/_authenticated/construction/baseline-compare': typeof AuthenticatedConstructionBaselineCompareRoute
@@ -2394,6 +2403,7 @@ export interface FileRouteTypes {
     | '/vendor/'
     | '/admin/tenants'
     | '/admin/health'
+    | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
     | '/construction/baseline-compare'
@@ -2630,6 +2640,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/vendor'
     | '/admin/health'
+    | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
     | '/construction/baseline-compare'
@@ -2863,6 +2874,7 @@ export interface FileRouteTypes {
     | '/vendor/'
     | '/_authenticated/admin/tenants'
     | '/_authenticated/admin/health'
+    | '/_authenticated/admin/slo'
     | '/_authenticated/changes/$id'
     | '/_authenticated/changes/dashboard'
     | '/_authenticated/construction/baseline-compare'
@@ -3974,6 +3986,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChangesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/slo': {
+      id: '/_authenticated/admin/slo'
+      path: '/slo'
+      fullPath: '/admin/slo'
+      preLoaderRoute: typeof AuthenticatedAdminSloRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/health': {
       id: '/_authenticated/admin/health'
       path: '/health'
@@ -4834,12 +4853,14 @@ const AuthenticatedAdminTenantsRouteRouteWithChildren =
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminTenantsRouteRoute: typeof AuthenticatedAdminTenantsRouteRouteWithChildren
   AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
+  AuthenticatedAdminSloRoute: typeof AuthenticatedAdminSloRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminTenantsRouteRoute:
     AuthenticatedAdminTenantsRouteRouteWithChildren,
   AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
+  AuthenticatedAdminSloRoute: AuthenticatedAdminSloRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
