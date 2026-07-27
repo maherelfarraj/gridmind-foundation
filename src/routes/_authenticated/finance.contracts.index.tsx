@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 
+import { ContractProjectSelect } from "@/components/finance/contract-project-select";
 import { upsertContract } from "@/lib/contracts.functions";
 import {
   contractsAccessQueryOptions,
@@ -58,7 +59,7 @@ import {
 } from "@/lib/contracts.rules";
 import { downloadCsv, toCsv } from "@/lib/csv";
 
-export const Route = createFileRoute("/_authenticated/finance/contracts")({
+export const Route = createFileRoute("/_authenticated/finance/contracts/")({
   head: () => ({
     meta: [
       { title: "Contracts — GridMind EPC" },
@@ -269,7 +270,7 @@ function ContractRowView({ row }: { row: ContractRow }) {
   );
 }
 
-const CreateFormSchema = ContractUpsertSchema.omit({ id: true, project_id: true });
+const CreateFormSchema = ContractUpsertSchema.omit({ id: true });
 type CreateFormValues = z.infer<typeof CreateFormSchema>;
 
 function NewContractDialog({ onDone }: { onDone: () => void }) {
@@ -279,6 +280,7 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
     resolver: zodResolver(CreateFormSchema),
     defaultValues: {
       title: "",
+      project_id: null,
       contract_type: "epc",
       counterparty: "",
       value: undefined,
@@ -312,6 +314,14 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
           <Label>Title</Label>
           <Input {...form.register("title")} placeholder="Wind Farm Alpha — EPC" />
         </div>
+        <div className="space-y-1">
+          <Label>Project</Label>
+          <ContractProjectSelect
+            value={form.watch("project_id") ?? null}
+            onChange={(id) => form.setValue("project_id", id)}
+          />
+        </div>
+
         <div className="space-y-1">
           <Label>Counterparty</Label>
           <Input {...form.register("counterparty")} placeholder="Acme Renewables Inc." />

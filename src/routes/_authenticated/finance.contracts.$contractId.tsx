@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ContractProjectSelect } from "@/components/finance/contract-project-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -196,7 +197,7 @@ function ContractDetail() {
 // ---------------------------------------------------------------------------
 // Overview
 // ---------------------------------------------------------------------------
-const OverviewFormSchema = ContractUpsertSchema.omit({ id: true, project_id: true });
+const OverviewFormSchema = ContractUpsertSchema.omit({ id: true });
 type OverviewFormValues = z.infer<typeof OverviewFormSchema>;
 
 function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: boolean }) {
@@ -213,6 +214,7 @@ function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: 
     resolver: zodResolver(OverviewFormSchema),
     defaultValues: {
       title: contract.title,
+      project_id: contract.project_id ?? null,
       contract_type: contract.contract_type,
       counterparty: contract.counterparty,
       status: contract.status,
@@ -249,6 +251,15 @@ function OverviewTab({ contract, canWrite }: { contract: ContractRow; canWrite: 
               <Label>Counterparty</Label>
               <Input disabled={!canWrite} {...form.register("counterparty")} />
             </div>
+            <div className="space-y-1">
+              <Label>Project</Label>
+              <ContractProjectSelect
+                disabled={!canWrite}
+                value={form.watch("project_id") ?? null}
+                onChange={(id) => form.setValue("project_id", id)}
+              />
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <Label>Type</Label>

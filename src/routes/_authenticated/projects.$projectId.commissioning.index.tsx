@@ -65,7 +65,7 @@ import {
   type CommissioningTestType,
 } from "@/lib/commissioning.functions";
 
-export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning")({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/commissioning/")({
   head: () => ({
     meta: [
       { title: "Commissioning — GridMind EPC" },
