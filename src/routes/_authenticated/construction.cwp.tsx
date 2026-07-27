@@ -30,6 +30,8 @@ import {
   type CwpCardRow,
 } from "@/lib/controls.functions";
 import { CWP_STATUSES, type CwpStatus } from "@/lib/cwp.rules";
+import { typedErrorMessage } from "@/lib/typed-error";
+
 
 export const Route = createFileRoute("/_authenticated/construction/cwp")({
   head: () => ({
@@ -96,10 +98,11 @@ function CwpBoardPage() {
       );
       return { prev };
     },
-    onError: (_e, _v, ctx) => {
+    onError: (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(boardKey, ctx.prev);
-      toast.error("Status change failed — reverted");
+      toast.error(typedErrorMessage(e, "Status change failed — reverted"));
     },
+
     onSuccess: (_d, v) => toast.success(`Moved to ${STATUS_LABEL[v.status]}`),
     onSettled: () => void qc.invalidateQueries({ queryKey: boardKey }),
   });
