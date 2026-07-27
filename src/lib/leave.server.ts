@@ -141,9 +141,11 @@ export async function applyBalance(
   }
 
   const next = Math.round((Number(existing[column]) + days) * 100) / 100;
+  const patch =
+    column === "annual_used_days" ? { annual_used_days: next } : { sick_used_days: next };
   const { data, error } = await client
     .from("leave_balances")
-    .update({ [column]: next })
+    .update(patch)
     .eq("id", existing.id)
     .select(BALANCE_COLS)
     .single();
