@@ -118,7 +118,6 @@ export const getEstimateDetail = createServerFn({ method: "GET" })
     };
   });
 
-
 export const createEstimate = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) => CreateEstimateSchema.parse(input))

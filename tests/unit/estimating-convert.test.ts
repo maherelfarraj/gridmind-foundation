@@ -58,7 +58,10 @@ describe("proposalLinesFromEstimate", () => {
 
   it("uses lot quantities of 1 and skips zero stages", () => {
     expect(drafts.every((d) => d.qty === 1 && d.unit === "lot")).toBe(true);
-    const zero = proposalLinesFromEstimate(lines, computeEstimate(lines, { ...margins, escalation_pct: 0 }));
+    const zero = proposalLinesFromEstimate(
+      lines,
+      computeEstimate(lines, { ...margins, escalation_pct: 0 }),
+    );
     expect(zero.some((d) => d.description === "Escalation")).toBe(false);
   });
 });
