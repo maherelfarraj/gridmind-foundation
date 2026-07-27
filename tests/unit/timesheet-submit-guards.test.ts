@@ -81,8 +81,8 @@ describe("summary math", () => {
   it("breaks hours down per project, largest first", () => {
     expect(hoursByProject(entries)).toEqual([
       { project_id: "p1", hours: 14 },
-      { project_id: "p2", hours: 2 },
       { project_id: null, hours: 3 },
+      { project_id: "p2", hours: 2 },
     ]);
   });
 
