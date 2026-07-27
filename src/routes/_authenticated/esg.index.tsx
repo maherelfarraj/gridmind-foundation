@@ -160,39 +160,39 @@ function EsgDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <KpiTile
               icon={Flame}
-              label={<TileLabel label="Scope 1" formula={ESG_TOOLTIP.scope_1} /> as never}
+              label={<TileLabel label="Scope 1" formula={ESG_TOOLTIP.scope_1} />}
               value={fmtKg(d.totals.scope_1_kg)}
               hint="Direct fuel combustion"
             />
             <KpiTile
               icon={Plug}
-              label={<TileLabel label="Scope 2" formula={ESG_TOOLTIP.scope_2} /> as never}
+              label={<TileLabel label="Scope 2" formula={ESG_TOOLTIP.scope_2} />}
               value={fmtKg(d.totals.scope_2_kg)}
               hint="Purchased electricity"
             />
             <KpiTile
               icon={Truck}
-              label={<TileLabel label="Scope 3" formula={ESG_TOOLTIP.scope_3} /> as never}
+              label={<TileLabel label="Scope 3" formula={ESG_TOOLTIP.scope_3} />}
               value={fmtKg(d.totals.scope_3_kg)}
               hint="Transport, materials, waste"
             />
             <KpiTile
               icon={Leaf}
-              label={<TileLabel label="Avoided emissions" formula={ESG_TOOLTIP.avoided} /> as never}
+              label={<TileLabel label="Avoided emissions" formula={ESG_TOOLTIP.avoided} />}
               value={fmtKg(d.avoided_kg)}
               status={d.avoided_kg ? "good" : "neutral"}
               hint={d.telemetry_available ? "Metered renewable output" : "No metered data"}
             />
             <KpiTile
               icon={Factory}
-              label={<TileLabel label="Net emissions" formula={ESG_TOOLTIP.net} /> as never}
+              label={<TileLabel label="Net emissions" formula={ESG_TOOLTIP.net} />}
               value={fmtKg(d.net_kg)}
               status={d.net_negative ? "good" : "bad"}
               delta={d.net_negative ? <Badge variant="secondary">net-negative</Badge> : undefined}
             />
             <KpiTile
               icon={Gauge}
-              label={<TileLabel label="Carbon intensity" formula={ESG_TOOLTIP.intensity} /> as never}
+              label={<TileLabel label="Carbon intensity" formula={ESG_TOOLTIP.intensity} />}
               value={fmtIntensity(d.intensity)}
               hint="Gross emissions per MWh generated"
             />

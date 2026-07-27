@@ -30,7 +30,7 @@ const DELTA_TONE: Record<KpiStatus, string> = {
 };
 
 export interface KpiTileProps {
-  label: string;
+  label: ReactNode;
   value: ReactNode;
   hint?: ReactNode;
   icon?: LucideIcon;
