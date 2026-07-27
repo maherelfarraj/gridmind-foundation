@@ -5,7 +5,9 @@
 // their module/role gating. Project-scoped destinations use a `:projectId`
 // placeholder and are only rendered when a project is in scope.
 import {
+  BellRing,
   Landmark,
+
   Activity,
   AlertTriangle,
   Atom,
