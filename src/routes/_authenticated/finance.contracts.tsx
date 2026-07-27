@@ -313,6 +313,14 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
           <Input {...form.register("title")} placeholder="Wind Farm Alpha — EPC" />
         </div>
         <div className="space-y-1">
+          <Label>Project</Label>
+          <ContractProjectSelect
+            value={form.watch("project_id") ?? null}
+            onChange={(id) => form.setValue("project_id", id)}
+          />
+        </div>
+
+        <div className="space-y-1">
           <Label>Counterparty</Label>
           <Input {...form.register("counterparty")} placeholder="Acme Renewables Inc." />
         </div>
