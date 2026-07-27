@@ -88,6 +88,7 @@ import { Route as AuthenticatedHseEnvironmentalRouteImport } from './routes/_aut
 import { Route as AuthenticatedHseEmergencyRouteImport } from './routes/_authenticated/hse.emergency'
 import { Route as AuthenticatedHseCompetencyRouteImport } from './routes/_authenticated/hse.competency'
 import { Route as AuthenticatedHseAuditsRouteImport } from './routes/_authenticated/hse.audits'
+import { Route as AuthenticatedFinanceRevenueRecognitionRouteImport } from './routes/_authenticated/finance.revenue-recognition'
 import { Route as AuthenticatedFinanceReceivablesRouteImport } from './routes/_authenticated/finance.receivables'
 import { Route as AuthenticatedFinancePaymentsRouteImport } from './routes/_authenticated/finance.payments'
 import { Route as AuthenticatedFinanceInvoicesRouteImport } from './routes/_authenticated/finance.invoices'
@@ -664,6 +665,12 @@ const AuthenticatedHseAuditsRoute = AuthenticatedHseAuditsRouteImport.update({
   path: '/hse/audits',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFinanceRevenueRecognitionRoute =
+  AuthenticatedFinanceRevenueRecognitionRouteImport.update({
+    id: '/finance/revenue-recognition',
+    path: '/finance/revenue-recognition',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFinanceReceivablesRoute =
   AuthenticatedFinanceReceivablesRouteImport.update({
     id: '/finance/receivables',
@@ -1527,6 +1534,7 @@ export interface FileRoutesByFullPath {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
+  '/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
   '/hse/audits': typeof AuthenticatedHseAuditsRoute
   '/hse/competency': typeof AuthenticatedHseCompetencyRoute
   '/hse/emergency': typeof AuthenticatedHseEmergencyRoute
@@ -1739,6 +1747,7 @@ export interface FileRoutesByTo {
   '/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
+  '/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
   '/hse/audits': typeof AuthenticatedHseAuditsRoute
   '/hse/competency': typeof AuthenticatedHseCompetencyRoute
   '/hse/emergency': typeof AuthenticatedHseEmergencyRoute
@@ -1947,6 +1956,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/invoices': typeof AuthenticatedFinanceInvoicesRoute
   '/_authenticated/finance/payments': typeof AuthenticatedFinancePaymentsRoute
   '/_authenticated/finance/receivables': typeof AuthenticatedFinanceReceivablesRoute
+  '/_authenticated/finance/revenue-recognition': typeof AuthenticatedFinanceRevenueRecognitionRoute
   '/_authenticated/hse/audits': typeof AuthenticatedHseAuditsRoute
   '/_authenticated/hse/competency': typeof AuthenticatedHseCompetencyRoute
   '/_authenticated/hse/emergency': typeof AuthenticatedHseEmergencyRoute
@@ -2163,6 +2173,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/finance/payments'
     | '/finance/receivables'
+    | '/finance/revenue-recognition'
     | '/hse/audits'
     | '/hse/competency'
     | '/hse/emergency'
@@ -2375,6 +2386,7 @@ export interface FileRouteTypes {
     | '/finance/invoices'
     | '/finance/payments'
     | '/finance/receivables'
+    | '/finance/revenue-recognition'
     | '/hse/audits'
     | '/hse/competency'
     | '/hse/emergency'
@@ -2582,6 +2594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/invoices'
     | '/_authenticated/finance/payments'
     | '/_authenticated/finance/receivables'
+    | '/_authenticated/finance/revenue-recognition'
     | '/_authenticated/hse/audits'
     | '/_authenticated/hse/competency'
     | '/_authenticated/hse/emergency'
@@ -3338,6 +3351,13 @@ declare module '@tanstack/react-router' {
       path: '/hse/audits'
       fullPath: '/hse/audits'
       preLoaderRoute: typeof AuthenticatedHseAuditsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/finance/revenue-recognition': {
+      id: '/_authenticated/finance/revenue-recognition'
+      path: '/finance/revenue-recognition'
+      fullPath: '/finance/revenue-recognition'
+      preLoaderRoute: typeof AuthenticatedFinanceRevenueRecognitionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/finance/receivables': {
@@ -4766,6 +4786,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceInvoicesRoute: typeof AuthenticatedFinanceInvoicesRoute
   AuthenticatedFinancePaymentsRoute: typeof AuthenticatedFinancePaymentsRoute
   AuthenticatedFinanceReceivablesRoute: typeof AuthenticatedFinanceReceivablesRoute
+  AuthenticatedFinanceRevenueRecognitionRoute: typeof AuthenticatedFinanceRevenueRecognitionRoute
   AuthenticatedHseAuditsRoute: typeof AuthenticatedHseAuditsRoute
   AuthenticatedHseCompetencyRoute: typeof AuthenticatedHseCompetencyRoute
   AuthenticatedHseEmergencyRoute: typeof AuthenticatedHseEmergencyRoute
@@ -4886,6 +4907,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceInvoicesRoute: AuthenticatedFinanceInvoicesRoute,
   AuthenticatedFinancePaymentsRoute: AuthenticatedFinancePaymentsRoute,
   AuthenticatedFinanceReceivablesRoute: AuthenticatedFinanceReceivablesRoute,
+  AuthenticatedFinanceRevenueRecognitionRoute:
+    AuthenticatedFinanceRevenueRecognitionRoute,
   AuthenticatedHseAuditsRoute: AuthenticatedHseAuditsRoute,
   AuthenticatedHseCompetencyRoute: AuthenticatedHseCompetencyRoute,
   AuthenticatedHseEmergencyRoute: AuthenticatedHseEmergencyRoute,

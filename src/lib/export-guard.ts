@@ -20,6 +20,7 @@ export type ExportType =
   | "ea_study_report"
   | "civil_geojson"
   | "civil_kml"
+  | "wip_report"
   | "csv";
 
 export interface ExportLockedError extends Error {
