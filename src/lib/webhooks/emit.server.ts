@@ -17,7 +17,7 @@
 //
 // Emission itself is fire-and-forget: we insert `webhook_deliveries` rows
 // with status='pending' and rely on the cron dispatcher
-// (`/api/cron/webhook-dispatch`) to sign, POST, and retry.
+// (`/api/public/cron/webhook-dispatch`) to sign, POST, and retry.
 import { createServiceRoleClient } from "@/integrations/supabase/admin";
 import { isExportableTable } from "@/lib/public-api/export-allowlist";
 

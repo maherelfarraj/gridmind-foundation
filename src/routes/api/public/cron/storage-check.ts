@@ -13,7 +13,7 @@
  *     'cron-storage-check', '7 4 * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/storage-check',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/storage-check',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -47,7 +47,7 @@ type LooseRpc = (
   args?: Record<string, unknown>,
 ) => Promise<{ data: unknown; error: { message: string } | null }>;
 
-export const Route = createFileRoute("/api/cron/storage-check")({
+export const Route = createFileRoute("/api/public/cron/storage-check")({
   server: {
     handlers: {
       POST: async ({ request }) => {

@@ -89,9 +89,9 @@ Fill in before go-live; keep current. Do not store secrets here.
    ```
 3. Verify `CRON_APIKEY` / `SUPABASE_ANON_KEY` used by pg_cron has not expired or rotated without
    updating the scheduler.
-4. Manually trigger the affected endpoint once (e.g. `/api/cron/audit-retention`) to confirm the
+4. Manually trigger the affected endpoint once (e.g. `/api/public/cron/audit-retention`) to confirm the
    handler itself is healthy, then re-check pg_cron's schedule registration.
-5. If the handler errors, check application logs for the specific `src/routes/api/cron/*.ts` handler.
+5. If the handler errors, check application logs for the specific `src/routes/api/public/cron/*.ts` handler.
 6. Re-register the pg_cron schedule if it was dropped; do not change job intervals without Operations
    Owner approval.
 
@@ -118,7 +118,7 @@ or WAL > 1GB.
       and now() - state_change > interval '10 minutes';
    ```
 4. For WAL growth, check replication slots and PITR archiving are not stalled (see `docs/pitr-runbook.md`).
-5. For disk > 70%, check `/api/cron/storage-check` results and audit log retention job status; do not
+5. For disk > 70%, check `/api/public/cron/storage-check` results and audit log retention job status; do not
    manually delete data outside retention policy.
 6. If sustained saturation persists after mitigation, escalate to Database Owner and consider a
    maintenance-window scale-up.
@@ -127,7 +127,7 @@ or WAL > 1GB.
 
 **Signal:** SCADA ingestion cron stale, or `/admin/health` shows a telemetry freshness alert.
 
-1. Confirm the ingestion cron (`/api/cron/ingestion-retry` or equivalent) last ran successfully.
+1. Confirm the ingestion cron (`/api/public/cron/ingestion-retry` or equivalent) last ran successfully.
 2. Check for a gap in telemetry timestamps:
    ```sql
    select site_id, max(recorded_at) as last_reading
@@ -138,7 +138,7 @@ or WAL > 1GB.
 3. Determine if the gap is source-side (SCADA/gateway offline) or platform-side (ingestion handler
    failing). Check ingestion retry logs and dead-letter entries if present.
 4. If source-side, notify the field engineering team to check gateway connectivity on affected sites.
-5. If platform-side, re-run `/api/cron/ingestion-retry` manually and monitor for backfill.
+5. If platform-side, re-run `/api/public/cron/ingestion-retry` manually and monitor for backfill.
 6. Once resumed, verify no duplicate or out-of-order readings were introduced.
 
 ### 4.5 Finance Alert Storm

@@ -12,7 +12,7 @@
  *     'cron-scheduled-reports', '*\/15 * * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/scheduled-reports',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/scheduled-reports',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -57,7 +57,7 @@ async function renderPdfBase64(schedule: {
   return doc.output("datauristring").split(",")[1] ?? "";
 }
 
-export const Route = createFileRoute("/api/cron/scheduled-reports")({
+export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
   server: {
     handlers: {
       POST: async ({ request }) => {

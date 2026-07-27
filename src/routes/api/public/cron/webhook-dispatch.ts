@@ -22,7 +22,7 @@
  *     'cron-webhook-dispatch', '* / 5 * * * *'  -- (no spaces around slash)
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/webhook-dispatch',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/webhook-dispatch',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -59,7 +59,7 @@ interface DeliveryRow {
   attempts: number;
 }
 
-export const Route = createFileRoute("/api/cron/webhook-dispatch")({
+export const Route = createFileRoute("/api/public/cron/webhook-dispatch")({
   server: {
     handlers: {
       POST: async ({ request }) => {

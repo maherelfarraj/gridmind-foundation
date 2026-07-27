@@ -13,7 +13,7 @@
  *     'cron-ingestion-retry', '*\/5 * * * *',
  *     $$
  *     select net.http_post(
- *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/cron/ingestion-retry',
+ *       url:='https://project--0671c0d2-16e7-4644-aade-de901a28fb95.lovable.app/api/public/cron/ingestion-retry',
  *       headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
  *       body:='{}'::jsonb
  *     );
@@ -28,7 +28,7 @@ import { processIngestionRetries } from "@/lib/scada-retry.server";
 
 const ROUTE = "cron:ingestion-retry";
 
-export const Route = createFileRoute("/api/cron/ingestion-retry")({
+export const Route = createFileRoute("/api/public/cron/ingestion-retry")({
   server: {
     handlers: {
       POST: async ({ request }) => {
