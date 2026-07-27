@@ -193,7 +193,10 @@ function InvoicesPage() {
                     {r.milestone_label ?? "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{invoiceStatusLabel(r.status)}</Badge>
+                    <span className="flex flex-wrap items-center gap-1">
+                      <Badge variant="outline">{invoiceStatusLabel(r.status)}</Badge>
+                      {r.overdue && <Badge variant="destructive">Overdue</Badge>}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
                     {fmt(r.amount, r.currency_code)}

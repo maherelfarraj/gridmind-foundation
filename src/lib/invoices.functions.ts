@@ -20,6 +20,7 @@ import {
   type InvoiceDirection,
   type InvoiceStatus,
 } from "@/lib/invoices.rules";
+import { invoiceBalance, isOverdue, todayIso } from "@/lib/payments.rules";
 
 const FINANCE_ROLES = ["finance_admin", "company_admin"] as const;
 
@@ -86,6 +87,11 @@ export interface InvoiceRow {
   project_id: string | null;
   vendor_id: string | null;
   created_at: string;
+  paid_amount: number;
+  last_payment_at: string | null;
+  /** Computed in the query layer — never stored. */
+  balance: number;
+  overdue: boolean;
 }
 
 function toRow(r: any): InvoiceRow {
@@ -106,6 +112,23 @@ function toRow(r: any): InvoiceRow {
     project_id: r.project_id ?? null,
     vendor_id: r.vendor_id ?? null,
     created_at: r.created_at,
+    paid_amount: Number(r.paid_amount ?? 0),
+    last_payment_at: r.last_payment_at ?? null,
+    balance: invoiceBalance({
+      amount: Number(r.amount ?? 0),
+      tax_amount: Number(r.tax_amount ?? 0),
+      paid_amount: Number(r.paid_amount ?? 0),
+    }),
+    overdue: isOverdue(
+      {
+        amount: Number(r.amount ?? 0),
+        tax_amount: Number(r.tax_amount ?? 0),
+        paid_amount: Number(r.paid_amount ?? 0),
+        status: r.status,
+        due_date: r.due_date ?? null,
+      },
+      todayIso(),
+    ),
   };
 }
 
