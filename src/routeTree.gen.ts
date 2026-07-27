@@ -28,6 +28,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as VendorVendorIdIndexRouteImport } from './routes/vendor.$vendorId.index'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
@@ -333,6 +334,11 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
+} as any)
+const VendorVendorIdIndexRoute = VendorVendorIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorVendorIdRoute,
 } as any)
 const AuthenticatedProposalsIndexRoute =
   AuthenticatedProposalsIndexRouteImport.update({
@@ -1619,7 +1625,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -1719,6 +1725,7 @@ export interface FileRoutesByFullPath {
   '/hse/': typeof AuthenticatedHseIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -1848,7 +1855,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
   '/portal': typeof PortalIndexRoute
   '/vendor': typeof VendorIndexRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
@@ -1941,6 +1947,7 @@ export interface FileRoutesByTo {
   '/hse': typeof AuthenticatedHseIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId': typeof VendorVendorIdIndexRoute
   '/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -2072,7 +2079,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
-  '/vendor/$vendorId': typeof VendorVendorIdRoute
+  '/vendor/$vendorId': typeof VendorVendorIdRouteWithChildren
   '/portal/': typeof PortalIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/_authenticated/admin/tenants': typeof AuthenticatedAdminTenantsRouteRouteWithChildren
@@ -2172,6 +2179,7 @@ export interface FileRoutesById {
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
+  '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
   '/_authenticated/admin/tenants/$companyId': typeof AuthenticatedAdminTenantsCompanyIdRoute
   '/_authenticated/crm/opportunities/$opportunityId': typeof AuthenticatedCrmOpportunitiesOpportunityIdRoute
   '/_authenticated/field/dpr/$dprId': typeof AuthenticatedFieldDprDprIdRoute
@@ -2405,6 +2413,7 @@ export interface FileRouteTypes {
     | '/hse/'
     | '/projects/'
     | '/proposals/'
+    | '/vendor/$vendorId/'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/field/dpr/$dprId'
@@ -2534,7 +2543,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/po/$token'
     | '/share/$token'
-    | '/vendor/$vendorId'
     | '/portal'
     | '/vendor'
     | '/admin/health'
@@ -2627,6 +2635,7 @@ export interface FileRouteTypes {
     | '/hse'
     | '/projects'
     | '/proposals'
+    | '/vendor/$vendorId'
     | '/admin/tenants/$companyId'
     | '/crm/opportunities/$opportunityId'
     | '/field/dpr/$dprId'
@@ -2857,6 +2866,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hse/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
+    | '/vendor/$vendorId/'
     | '/_authenticated/admin/tenants/$companyId'
     | '/_authenticated/crm/opportunities/$opportunityId'
     | '/_authenticated/field/dpr/$dprId'
@@ -3135,6 +3145,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
+    }
+    '/vendor/$vendorId/': {
+      id: '/vendor/$vendorId/'
+      path: '/'
+      fullPath: '/vendor/$vendorId/'
+      preLoaderRoute: typeof VendorVendorIdIndexRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/_authenticated/proposals/': {
       id: '/_authenticated/proposals/'
@@ -5392,13 +5409,25 @@ const PortalRouteChildren: PortalRouteChildren = {
 const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
+interface VendorVendorIdRouteChildren {
+  VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
+}
+
+const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
+  VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
+}
+
+const VendorVendorIdRouteWithChildren = VendorVendorIdRoute._addFileChildren(
+  VendorVendorIdRouteChildren,
+)
+
 interface VendorRouteChildren {
-  VendorVendorIdRoute: typeof VendorVendorIdRoute
+  VendorVendorIdRoute: typeof VendorVendorIdRouteWithChildren
   VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
-  VendorVendorIdRoute: VendorVendorIdRoute,
+  VendorVendorIdRoute: VendorVendorIdRouteWithChildren,
   VendorIndexRoute: VendorIndexRoute,
 }
 
