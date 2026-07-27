@@ -7,6 +7,7 @@ import { ShieldCheck, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserMenu } from "@/components/user-menu";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { listMyVendorMemberships } from "@/lib/vendor-portal.functions";
 
 export const Route = createFileRoute("/vendor")({
@@ -36,13 +37,15 @@ export const Route = createFileRoute("/vendor")({
 
 function VendorPortalLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <VendorTopBar />
-      <VendorMfaBanner />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
+    <TooltipProvider delayDuration={200}>
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <VendorTopBar />
+        <VendorMfaBanner />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
 
