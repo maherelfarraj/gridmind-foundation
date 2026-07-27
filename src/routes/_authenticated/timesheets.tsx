@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarClock, CloudOff, Send, Timer } from "lucide-react";
+import { CalendarClock, CloudOff, RefreshCw, Send, Timer } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddRowDialog } from "@/components/timesheets/add-row-dialog";
@@ -22,10 +22,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
 import { enqueueMutation } from "@/lib/offline/queue";
 import {
+  checkTimesheetApproval,
   getMyHourlyRate,
   getOrCreateTimesheet,
   listTimesheetProjects,
   saveClockMetadata,
+  resubmitTimesheet,
   submitTimesheet,
   upsertTimesheetEntries,
 } from "@/lib/timesheets.functions";
@@ -63,6 +65,7 @@ function TimesheetsPage() {
   const [rows, setRows] = useState<GridRow[]>([]);
   const [clockMode, setClockMode] = useState(false);
   const [queued, setQueued] = useState(false);
+  const [decisionComment, setDecisionComment] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const days = useMemo(() => weekDays(weekStart), [weekStart]);
@@ -188,6 +191,40 @@ function TimesheetsPage() {
     onError: (e: unknown) => toast.error((e as Error).message || "Could not submit"),
   });
 
+  // ── Decision watcher / rejection recovery ────────────────────────────────
+  const checkFn = useServerFn(checkTimesheetApproval);
+  const check = useMutation({
+    mutationFn: async () => (sheet ? checkFn({ data: { timesheetId: sheet.id } }) : null),
+    onSuccess: (res) => {
+      if (!res) return;
+      setDecisionComment(res.comment ?? null);
+      if (res.changed) {
+        toast.success(`Timesheet ${res.status}`);
+        void qc.invalidateQueries({ queryKey: ["timesheets", "week", weekStart] });
+      } else {
+        toast.info(`Still ${res.status.replace("_", " ")}`);
+      }
+    },
+    onError: (e: unknown) => toast.error((e as Error).message || "Could not check approval"),
+  });
+
+  const reopenFn = useServerFn(resubmitTimesheet);
+  const reopen = useMutation({
+    mutationFn: async () => (sheet ? reopenFn({ data: { timesheetId: sheet.id } }) : null),
+    onSuccess: () => {
+      setDecisionComment(null);
+      toast.success("Reopened as draft — your hours are intact");
+      void qc.invalidateQueries({ queryKey: ["timesheets", "week", weekStart] });
+    },
+    onError: (e: unknown) => toast.error((e as Error).message || "Could not reopen"),
+  });
+
+  // Pull the verdict automatically whenever an in-review week is opened.
+  useEffect(() => {
+    if (sheet && sheet.approval_instance_id && sheet.status === "in_review") check.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheet?.id, sheet?.status]);
+
   const totals = computeWeeklyTotals(
     rows.flatMap((r) =>
       days.map((d) => ({ work_date: d, activity: r.activity, hours: r.hours[d] ?? 0 })),
@@ -211,6 +248,17 @@ function TimesheetsPage() {
                 <Send className="mr-1 h-4 w-4" />
                 Submit week
               </Button>
+              {sheet.approval_instance_id ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={check.isPending}
+                  onClick={() => check.mutate()}
+                >
+                  <RefreshCw className="mr-1 h-4 w-4" />
+                  Check approval
+                </Button>
+              ) : null}
             </div>
           ) : null
         }
@@ -223,6 +271,27 @@ function TimesheetsPage() {
           <CardContent className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
             <CloudOff className="h-4 w-4" />
             Queued — will submit when online.
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {sheet?.status === "rejected" ? (
+        <Card className="border-destructive/50 bg-destructive/10">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div className="min-w-0 space-y-1">
+              <p className="text-sm font-medium text-destructive">This week was rejected</p>
+              <p className="text-sm text-destructive/90">
+                {decisionComment ? `“${decisionComment}”` : "Check with your approver for details."}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={reopen.isPending}
+              onClick={() => reopen.mutate()}
+            >
+              Resubmit
+            </Button>
           </CardContent>
         </Card>
       ) : null}
