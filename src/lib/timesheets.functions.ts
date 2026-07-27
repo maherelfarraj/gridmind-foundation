@@ -16,11 +16,20 @@ import {
   listEntries,
   loadTimesheet,
   RATE_ADMIN_ROLES,
+  routeTimesheetApproval,
+  syncTimesheetDecision,
   TIMESHEET_ADMIN_ROLES,
   writeAuditLog,
 } from "@/lib/timesheets.server";
 import type { TimesheetMetadata } from "@/lib/timesheets.server";
-import { TIMESHEET_ACTIVITIES } from "@/lib/timesheets/policy";
+import { TIMESHEET_ACTIVITIES, TIMESHEET_POLICY } from "@/lib/timesheets/policy";
+import {
+  collectNotes,
+  hoursByProject,
+  isOvertimeFlagged,
+  submissionTotals,
+  validateSubmission,
+} from "@/lib/timesheets/submit-guards";
 import { isMonday } from "@/lib/timesheets/week";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
@@ -123,34 +132,173 @@ export const submitTimesheet = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const sheet = await loadTimesheet(context.supabase, data.timesheetId);
     await assertCanEdit(context.supabase, sheet, context.user!.id);
-    // Idempotent: a queued retry of an already-submitted week is a no-op.
+    // Idempotent: a queued retry of an already-submitted week is a no-op and
+    // start_approval_instance returns the same open instance.
     if (sheet.status !== "draft") {
-      return { ok: true, alreadySubmitted: true, status: sheet.status };
+      if (sheet.status === "rejected") {
+        httpError(409, "timesheet_rejected", "Resubmit this week to send it for approval again.");
+      }
+      return {
+        ok: true,
+        alreadySubmitted: true,
+        status: sheet.status,
+        approvalInstanceId: sheet.approval_instance_id,
+      };
     }
+
     const entries = await listEntries(context.supabase, sheet.id);
-    if (entries.length === 0) httpError(422, "empty_timesheet", "Add hours before submitting.");
-    if (entries.some((e) => e.hours < 0 || e.hours > 24)) {
-      httpError(422, "invalid_hours", "Hours must be between 0 and 24.");
-    }
+    const violation = validateSubmission(entries, sheet.week_start);
+    if (violation) httpError(422, violation.code, violation.message);
+
+    // Totals are always the server recomputation, never the client's number.
     const recomputed = await applyCells(context.supabase, sheet, []);
-    const { error } = await context.supabase
+    const totals = { regular: recomputed.regular, overtime: recomputed.overtime };
+
+    const submitted = await context.supabase
       .from("timesheets")
       .update({
         status: "submitted",
         submitted_at: new Date().toISOString(),
         submitted_by: context.user!.id,
+        total_regular_hours: totals.regular,
+        total_overtime_hours: totals.overtime,
       })
       .eq("id", sheet.id)
-      .eq("status", "draft");
-    if (error) throw error;
+      .eq("status", "draft")
+      .select("id");
+    if (submitted.error) throw submitted.error;
+    // Lost the race with a concurrent submit → the other call owns the routing.
+    if ((submitted.data ?? []).length === 0) {
+      const fresh = await loadTimesheet(context.supabase, sheet.id);
+      return {
+        ok: true,
+        alreadySubmitted: true,
+        status: fresh.status,
+        approvalInstanceId: fresh.approval_instance_id,
+      };
+    }
+
+    const routing = await routeTimesheetApproval(
+      context.supabase,
+      sheet,
+      totals,
+      context.user!.id,
+    );
+
+    const finalStatus = routing.instanceId ? "in_review" : "submitted";
+    const { error: linkErr } = await context.supabase
+      .from("timesheets")
+      .update({
+        approval_instance_id: routing.instanceId,
+        status: finalStatus as never,
+      })
+      .eq("id", sheet.id);
+    if (linkErr) throw linkErr;
+
     await writeAuditLog(context.supabase, "timesheet.submitted", "timesheets", sheet.id, {
       week_start: sheet.week_start,
       timesheet_number: sheet.timesheet_number,
-      regular: recomputed.regular,
-      overtime: recomputed.overtime,
+      totals,
+      approval_instance_id: routing.instanceId,
+      routing_mode: routing.mode,
       client_idempotency_key: data.clientIdempotencyKey ?? null,
     });
-    return { ok: true, alreadySubmitted: false, status: "submitted" };
+
+    return {
+      ok: true,
+      alreadySubmitted: false,
+      status: finalStatus,
+      approvalInstanceId: routing.instanceId,
+      routingMode: routing.mode,
+    };
+  });
+
+/** Decision watcher: pulls the instance verdict onto the timesheet. */
+export const checkTimesheetApproval = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ timesheetId: z.string().uuid() }).parse(raw))
+  .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
+    const sheet = await loadTimesheet(context.supabase, data.timesheetId);
+    await assertCanEdit(context.supabase, sheet, context.user!.id);
+    const result = await syncTimesheetDecision(context.supabase, sheet);
+    return result;
+  });
+
+/** Unlock a rejected week back to draft, keeping every entry intact. */
+export const resubmitTimesheet = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ timesheetId: z.string().uuid() }).parse(raw))
+  .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
+    const sheet = await loadTimesheet(context.supabase, data.timesheetId);
+    await assertCanEdit(context.supabase, sheet, context.user!.id);
+    if (sheet.status !== "rejected") {
+      httpError(409, "not_rejected", "Only a rejected timesheet can be reopened.");
+    }
+    const { error } = await context.supabase
+      .from("timesheets")
+      .update({
+        status: "draft" as never,
+        approval_instance_id: null,
+        submitted_at: null,
+        submitted_by: null,
+      })
+      .eq("id", sheet.id);
+    if (error) throw error;
+    await writeAuditLog(context.supabase, "timesheet.reopened", "timesheets", sheet.id, {
+      week_start: sheet.week_start,
+      previous_instance_id: sheet.approval_instance_id,
+    });
+    return { ok: true, status: "draft" as const };
+  });
+
+/** Weekly summary card rendered inside the P-112 approval inbox. */
+export const getTimesheetApprovalSummary = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ timesheetId: z.string().uuid() }).parse(raw))
+  .handler(async ({ context, data }) => {
+    requireSupabaseAuth(context);
+    const sheet = await loadTimesheet(context.supabase, data.timesheetId);
+    const entries = await listEntries(context.supabase, sheet.id);
+    const totals = submissionTotals(entries);
+    const breakdown = hoursByProject(entries);
+    const projectIds = breakdown
+      .map((b) => b.project_id)
+      .filter((id): id is string => Boolean(id));
+    let names: Record<string, string> = {};
+    if (projectIds.length > 0) {
+      const { data: rows } = await context.supabase
+        .from("projects")
+        .select("id, name, code")
+        .in("id", projectIds);
+      names = Object.fromEntries(
+        ((rows ?? []) as Array<{ id: string; name: string; code: string | null }>).map((p) => [
+          p.id,
+          p.code ? `${p.code} — ${p.name}` : p.name,
+        ]),
+      );
+    }
+    const owner = await context.supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", sheet.user_id)
+      .maybeSingle();
+    return {
+      timesheetId: sheet.id,
+      timesheetNumber: sheet.timesheet_number,
+      weekStart: sheet.week_start,
+      status: sheet.status,
+      employeeName: (owner.data as { full_name: string | null } | null)?.full_name ?? null,
+      totals: { regular: totals.regular, overtime: totals.overtime },
+      overtimeFlagged: isOvertimeFlagged(totals.overtime),
+      overtimeThreshold: TIMESHEET_POLICY.overtimeWeeklyFlagThreshold,
+      byProject: breakdown.map((b) => ({
+        ...b,
+        label: b.project_id ? (names[b.project_id] ?? "Project") : "Unassigned",
+      })),
+      notes: collectNotes(entries),
+    };
   });
 
 export const listTimesheetProjects = createServerFn({ method: "GET" })
