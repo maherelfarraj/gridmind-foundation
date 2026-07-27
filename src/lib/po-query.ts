@@ -16,6 +16,8 @@ import {
   listPos,
   listRfqAwards,
   rejectPo,
+  rfqHasPos,
+
   revokePoShareLink,
   setPoApprovalThreshold,
   submitPoForApproval,
@@ -104,6 +106,18 @@ export function rfqAwardsQueryOptions(
     staleTime: 15_000,
   });
 }
+
+export function rfqHasPosQueryOptions(
+  fn: ReturnType<typeof useServerFn<typeof rfqHasPos>>,
+  rfqId: string,
+) {
+  return queryOptions({
+    queryKey: ["rfq-has-pos", rfqId],
+    queryFn: () => fn({ data: { rfqId } }),
+    staleTime: 15_000,
+  });
+}
+
 
 // ---------------------------------------------------------------------------
 // mutations

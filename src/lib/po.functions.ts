@@ -276,36 +276,30 @@ export const unawardRfqLine = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ awardId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    const { data: award, error: aErr } = await context.supabase
-      .from("rfq_line_awards")
-      .select("id, rfq_id, line_no")
-      .eq("id", data.awardId)
-      .maybeSingle();
-    if (aErr) throw aErr;
-    if (!award) httpError(404, "award_not_found");
 
-    // Block if any PO already references this RFQ (award is embedded in a PO).
-    const { count, error: cErr } = await context.supabase
-      .from("purchase_orders")
-      .select("id", { count: "exact", head: true })
-      .eq("rfq_id", (award as any).rfq_id);
-    if (cErr) throw cErr;
-    if ((count ?? 0) > 0)
-      httpError(409, "award_locked", "POs already exist for this RFQ — cannot unaward.");
-
-    const { error } = await context.supabase
-      .from("rfq_line_awards")
-      .delete()
-      .eq("id", data.awardId);
+    // Single transactional RPC: deletes the award row AND reverts the bid
+    // status in one statement, so award-row and bid.status can never drift.
+    const { data: result, error } = await (context.supabase as any).rpc("rfq_unaward_line", {
+      p_award_id: data.awardId,
+    });
     if (error) {
-      if ((error as any).code === "42501") httpError(403, "forbidden");
+      const msg = String((error as any).message ?? "");
+      if (msg.includes("award_not_found")) httpError(404, "award_not_found");
+      if (msg.includes("award_locked"))
+        httpError(409, "award_locked", "POs already exist for this RFQ — cannot unaward.");
+      if (msg.includes("forbidden") || (error as any).code === "42501")
+        httpError(403, "forbidden");
       throw error;
     }
+
     await audit(context, "rfq.unaward", "rfq_line_awards", data.awardId, {
-      rfq_id: (award as any).rfq_id,
-      line_no: (award as any).line_no,
+      rfq_id: (result as any)?.rfq_id ?? null,
+      line_no: (result as any)?.line_no ?? null,
+      bid_id: (result as any)?.bid_id ?? null,
+      bid_reverted: (result as any)?.bid_reverted ?? false,
     });
     return { ok: true };
+
   });
 
 // ---------------------------------------------------------------------------
@@ -1084,5 +1078,20 @@ export const listRfqAwards = createServerFn({ method: "GET" })
     },
   );
 
+/** True when at least one PO already references this RFQ (awards become locked). */
+export const rfqHasPos = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ rfqId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ hasPos: boolean; count: number }> => {
+    requireSupabaseAuth(context);
+    const { count, error } = await context.supabase
+      .from("purchase_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("rfq_id", data.rfqId);
+    if (error) throw error;
+    return { hasPos: (count ?? 0) > 0, count: count ?? 0 };
+  });
+
 // re-exports for UI
 export { PO_STATUSES };
+

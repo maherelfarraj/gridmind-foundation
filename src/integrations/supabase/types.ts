@@ -19981,6 +19981,7 @@ export type Database = {
         Returns: string
       }
       resolve_share_link: { Args: { p_token_hash: string }; Returns: Json }
+      rfq_unaward_line: { Args: { p_award_id: string }; Returns: Json }
       save_pv_layout_blocks: {
         Args: { p_blocks: Json; p_layout_id: string; p_totals?: Json }
         Returns: number
