@@ -1,6 +1,8 @@
 // P-198 — Bank reconciliation lite: pure rules, schemas and month math.
 import { z } from "zod";
 
+import type { StatusTone } from "@/components/ui/status-badge";
+
 export const RECONCILIATION_STATUSES = ["unmatched", "matched", "partial", "excluded"] as const;
 export type ReconStatus = (typeof RECONCILIATION_STATUSES)[number];
 
@@ -36,16 +38,16 @@ export function reconStatusLabel(s: ReconStatus): string {
   }
 }
 
-export function reconStatusTone(s: ReconStatus): "success" | "warning" | "neutral" | "info" {
+export function reconStatusTone(s: ReconStatus): StatusTone {
   switch (s) {
     case "matched":
-      return "success";
+      return "positive";
     case "partial":
-      return "warning";
+      return "attention";
     case "excluded":
-      return "neutral";
+      return "inactive";
     default:
-      return "info";
+      return "active";
   }
 }
 
