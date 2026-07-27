@@ -133,6 +133,7 @@ import { Route as AuthenticatedConstructionBaselineCompareRouteImport } from './
 import { Route as AuthenticatedChangesDashboardRouteImport } from './routes/_authenticated/changes.dashboard'
 import { Route as AuthenticatedChangesIdRouteImport } from './routes/_authenticated/changes.$id'
 import { Route as AuthenticatedAdminSloRouteImport } from './routes/_authenticated/admin.slo'
+import { Route as AuthenticatedAdminPerformanceRouteImport } from './routes/_authenticated/admin.performance'
 import { Route as AuthenticatedAdminOpsAlertsRouteImport } from './routes/_authenticated/admin.ops-alerts'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
@@ -948,6 +949,12 @@ const AuthenticatedAdminSloRoute = AuthenticatedAdminSloRouteImport.update({
   path: '/slo',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminPerformanceRoute =
+  AuthenticatedAdminPerformanceRouteImport.update({
+    id: '/performance',
+    path: '/performance',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminOpsAlertsRoute =
   AuthenticatedAdminOpsAlertsRouteImport.update({
     id: '/ops-alerts',
@@ -1704,6 +1711,7 @@ export interface FileRoutesByFullPath {
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -1943,6 +1951,7 @@ export interface FileRoutesByTo {
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/admin/slo': typeof AuthenticatedAdminSloRoute
   '/changes/$id': typeof AuthenticatedChangesIdRoute
   '/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2180,6 +2189,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/admin/ops-alerts': typeof AuthenticatedAdminOpsAlertsRoute
+  '/_authenticated/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/_authenticated/admin/slo': typeof AuthenticatedAdminSloRoute
   '/_authenticated/changes/$id': typeof AuthenticatedChangesIdRoute
   '/_authenticated/changes/dashboard': typeof AuthenticatedChangesDashboardRoute
@@ -2425,6 +2435,7 @@ export interface FileRouteTypes {
     | '/admin/feedback'
     | '/admin/health'
     | '/admin/ops-alerts'
+    | '/admin/performance'
     | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2664,6 +2675,7 @@ export interface FileRouteTypes {
     | '/admin/feedback'
     | '/admin/health'
     | '/admin/ops-alerts'
+    | '/admin/performance'
     | '/admin/slo'
     | '/changes/$id'
     | '/changes/dashboard'
@@ -2900,6 +2912,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/feedback'
     | '/_authenticated/admin/health'
     | '/_authenticated/admin/ops-alerts'
+    | '/_authenticated/admin/performance'
     | '/_authenticated/admin/slo'
     | '/_authenticated/changes/$id'
     | '/_authenticated/changes/dashboard'
@@ -4019,6 +4032,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSloRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/performance': {
+      id: '/_authenticated/admin/performance'
+      path: '/performance'
+      fullPath: '/admin/performance'
+      preLoaderRoute: typeof AuthenticatedAdminPerformanceRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/ops-alerts': {
       id: '/_authenticated/admin/ops-alerts'
       path: '/ops-alerts'
@@ -4895,6 +4915,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
   AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
   AuthenticatedAdminOpsAlertsRoute: typeof AuthenticatedAdminOpsAlertsRoute
+  AuthenticatedAdminPerformanceRoute: typeof AuthenticatedAdminPerformanceRoute
   AuthenticatedAdminSloRoute: typeof AuthenticatedAdminSloRoute
 }
 
@@ -4904,6 +4925,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
   AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
   AuthenticatedAdminOpsAlertsRoute: AuthenticatedAdminOpsAlertsRoute,
+  AuthenticatedAdminPerformanceRoute: AuthenticatedAdminPerformanceRoute,
   AuthenticatedAdminSloRoute: AuthenticatedAdminSloRoute,
 }
 
