@@ -136,7 +136,15 @@ function VendorDashboard() {
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pos" className="mt-4">
+        <TabsContent value="pos" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/vendor/$vendorId/pos" params={{ vendorId }}>
+                Open PO workspace
+              </Link>
+            </Button>
+          </div>
+
           {pos.isLoading || pos.error ? (
             <TabState loading={pos.isLoading} error={pos.error} />
           ) : (pos.data ?? []).length === 0 ? (
