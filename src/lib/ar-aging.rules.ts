@@ -15,9 +15,13 @@ export const REMINDER_CHANNELS = ["email", "letter", "phone", "portal", "other"]
 export type ReminderChannel = (typeof REMINDER_CHANNELS)[number];
 
 export function reminderChannelLabel(c: ReminderChannel): string {
-  return { email: "Email", letter: "Letter", phone: "Phone", portal: "Client portal", other: "Other" }[
-    c
-  ];
+  return {
+    email: "Email",
+    letter: "Letter",
+    phone: "Phone",
+    portal: "Client portal",
+    other: "Other",
+  }[c];
 }
 
 export const GetArAgingSchema = z.object({
@@ -77,7 +81,11 @@ export interface AgingInvoiceRow extends AgingInvoiceInput {
 const CENT = 100;
 const round2 = (n: number) => Math.round(n * CENT) / CENT;
 
-export function balanceOf(inv: { amount: number; tax_amount: number; paid_amount: number }): number {
+export function balanceOf(inv: {
+  amount: number;
+  tax_amount: number;
+  paid_amount: number;
+}): number {
   return round2(
     (Math.round(inv.amount * CENT) +
       Math.round(inv.tax_amount * CENT) -
@@ -204,9 +212,7 @@ export function totalOf(buckets: BucketSums): number {
 }
 
 export function overdueOf(buckets: BucketSums): number {
-  return round2(
-    AGING_BUCKETS.filter((b) => b !== "current").reduce((s, b) => s + buckets[b], 0),
-  );
+  return round2(AGING_BUCKETS.filter((b) => b !== "current").reduce((s, b) => s + buckets[b], 0));
 }
 
 /** expected cash = Σ balance × weight(bucket) — weights live in aging-weights.ts. */
@@ -255,7 +261,11 @@ function addDaysIso(iso: string, days: number): string {
  * Overdue balances are expected in the current month (collection effort now);
  * not-yet-due balances land in their due month, capped at today + 90 days.
  */
-export function forecastByMonth(rows: AgingInvoiceRow[], today: string, horizonDays = 90): ForecastMonth[] {
+export function forecastByMonth(
+  rows: AgingInvoiceRow[],
+  today: string,
+  horizonDays = 90,
+): ForecastMonth[] {
   const horizon = addDaysIso(today, horizonDays);
   const map = new Map<string, ForecastMonth>();
   for (const r of rows) {

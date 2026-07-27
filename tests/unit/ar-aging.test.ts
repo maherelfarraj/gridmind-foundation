@@ -49,9 +49,9 @@ describe("balance + eligibility", () => {
     expect(isAgingEligible({ ...inv(), direction: "payable" } as never)).toBe(false);
     expect(isAgingEligible({ ...inv({ status: "draft" }) } as never)).toBe(false);
     expect(isAgingEligible({ ...inv({ paid_amount: 1000 }) } as never)).toBe(false);
-    expect(isAgingEligible({ ...inv({ status: "partially_paid", paid_amount: 400 }) } as never)).toBe(
-      true,
-    );
+    expect(
+      isAgingEligible({ ...inv({ status: "partially_paid", paid_amount: 400 }) } as never),
+    ).toBe(true);
   });
 });
 
@@ -93,7 +93,13 @@ describe("grouping and expected cash", () => {
     toAgingRow(inv({ id: "a", due_date: "2026-07-30" }), TODAY), // current 1000
     toAgingRow(inv({ id: "b", due_date: "2026-07-01", client_name: "NEPCO" }), TODAY), // 26d
     toAgingRow(
-      inv({ id: "c", due_date: "2026-01-01", client_name: "Other", project_id: "p2", project_name: "Zarqa" }),
+      inv({
+        id: "c",
+        due_date: "2026-01-01",
+        client_name: "Other",
+        project_id: "p2",
+        project_name: "Zarqa",
+      }),
       TODAY,
     ), // 90+
   ];
@@ -102,7 +108,11 @@ describe("grouping and expected cash", () => {
     const byClient = groupByClient(rows);
     expect(byClient.map((g) => g.label)).toEqual(["NEPCO", "Other"]);
     expect(byClient[0].total).toBe(2000);
-    expect(groupByProject(rows).map((g) => g.label).sort()).toEqual(["East Amman", "Zarqa"]);
+    expect(
+      groupByProject(rows)
+        .map((g) => g.label)
+        .sort(),
+    ).toEqual(["East Amman", "Zarqa"]);
   });
 
   it("totals, overdue and probability-weighted expected cash", () => {
@@ -116,7 +126,9 @@ describe("grouping and expected cash", () => {
   });
 
   it("labels missing clients as Unlinked", () => {
-    expect(groupByClient([toAgingRow(inv({ client_name: null }), TODAY)])[0].label).toBe("Unlinked");
+    expect(groupByClient([toAgingRow(inv({ client_name: null }), TODAY)])[0].label).toBe(
+      "Unlinked",
+    );
   });
 });
 

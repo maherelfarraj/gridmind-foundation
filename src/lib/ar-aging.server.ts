@@ -14,10 +14,7 @@ export const AR_WRITE_ROLES = ["finance_admin", "company_admin"] as const;
 const DEFAULT_BASE_CURRENCY = "USD";
 
 /** Mirrors public.finance_base_currency(): project override, else company default. */
-export async function resolveBaseCurrency(
-  ctx: AuthContext,
-  projectId?: string,
-): Promise<string> {
+export async function resolveBaseCurrency(ctx: AuthContext, projectId?: string): Promise<string> {
   if (!projectId) return DEFAULT_BASE_CURRENCY;
   const { data, error } = await ctx.supabase
     .from("project_financial_config")

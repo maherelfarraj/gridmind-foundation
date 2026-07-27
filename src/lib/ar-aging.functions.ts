@@ -105,7 +105,12 @@ export const sendArReminder = createServerFn({ method: "POST" })
       .maybeSingle();
     if (invErr) throw invErr;
     if (!inv) httpError(404, "invoice_not_found", "Invoice not found.");
-    const invoice = inv as { id: string; company_id: string; invoice_number: string; direction: string };
+    const invoice = inv as {
+      id: string;
+      company_id: string;
+      invoice_number: string;
+      direction: string;
+    };
     if (invoice.direction !== "receivable") {
       httpError(422, "not_receivable", "Reminders apply to receivable invoices only.");
     }

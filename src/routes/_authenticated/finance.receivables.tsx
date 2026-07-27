@@ -73,7 +73,8 @@ function ReceivablesPage() {
   const exportCsv = useServerFn(exportArAgingCsv);
 
   const base = data?.base_currency ?? "USD";
-  const groups: AgingGroup[] = groupBy === "client" ? (data?.by_client ?? []) : (data?.by_project ?? []);
+  const groups: AgingGroup[] =
+    groupBy === "client" ? (data?.by_client ?? []) : (data?.by_project ?? []);
   const invoicesById = useMemo(() => {
     const m = new Map<string, AgingInvoiceRow>();
     for (const r of data?.invoices ?? []) m.set(r.id, r);
@@ -161,8 +162,18 @@ function ReceivablesPage() {
                   cursor={{ className: "fill-muted/40" }}
                   formatter={(v: number) => formatMoney(v, base)}
                 />
-                <Bar dataKey="balance" name="Balance" className="fill-primary" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expected" name="Expected" className="fill-accent" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="balance"
+                  name="Balance"
+                  className="fill-primary"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="expected"
+                  name="Expected"
+                  className="fill-accent"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
