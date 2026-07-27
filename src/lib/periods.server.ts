@@ -68,10 +68,12 @@ export async function periodCompanyId(ctx: AuthContext): Promise<string> {
 export async function ensureCurrentPeriods(ctx: AuthContext, companyId: string): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
   const months = [periodMonth(today), recentMonths(today, 2)[1]];
-  await ctx.supabase.from("finance_periods").upsert(
-    months.map((m) => ({ company_id: companyId, period_month: m, status: "open" })) as never,
-    { onConflict: "company_id,period_month", ignoreDuplicates: true },
-  );
+  await ctx.supabase
+    .from("finance_periods")
+    .upsert(
+      months.map((m) => ({ company_id: companyId, period_month: m, status: "open" })) as never,
+      { onConflict: "company_id,period_month", ignoreDuplicates: true },
+    );
 }
 
 interface RawPeriod {

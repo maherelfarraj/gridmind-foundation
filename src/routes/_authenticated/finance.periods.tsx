@@ -255,7 +255,11 @@ function PeriodRegister(props: {
             >
               <TableCell className="font-medium">{monthLabel(r.period_month)}</TableCell>
               <TableCell>
-                <StatusBadge status={r.status} tone={periodStatusTone(r.status)} label={statusLabel(r.status)} />
+                <StatusBadge
+                  status={r.status}
+                  tone={periodStatusTone(r.status)}
+                  label={statusLabel(r.status)}
+                />
               </TableCell>
               <TableCell>
                 {r.status === "closed" ? "—" : blockers === 0 ? "Ready to close" : blockers}
