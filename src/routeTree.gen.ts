@@ -45,15 +45,6 @@ import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.pro
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
 import { Route as ApiPublicHealthzRouteImport } from './routes/api/public/healthz'
-import { Route as ApiCronWebhookDispatchRouteImport } from './routes/api/cron/webhook-dispatch'
-import { Route as ApiCronStorageCheckRouteImport } from './routes/api/cron/storage-check'
-import { Route as ApiCronScheduledReportsRouteImport } from './routes/api/cron/scheduled-reports'
-import { Route as ApiCronPmWorkOrdersRouteImport } from './routes/api/cron/pm-work-orders'
-import { Route as ApiCronIngestionRetryRouteImport } from './routes/api/cron/ingestion-retry'
-import { Route as ApiCronFinanceAlertsRouteImport } from './routes/api/cron/finance-alerts'
-import { Route as ApiCronBondExpiryRouteImport } from './routes/api/cron/bond-expiry'
-import { Route as ApiCronAuditRetentionRouteImport } from './routes/api/cron/audit-retention'
-import { Route as ApiCronApprovalEscalationsRouteImport } from './routes/api/cron/approval-escalations'
 import { Route as AuthenticatedTimesheetsReportsRouteImport } from './routes/_authenticated/timesheets_.reports'
 import { Route as AuthenticatedTimesheetsLeaveRouteImport } from './routes/_authenticated/timesheets_.leave'
 import { Route as AuthenticatedSettingsWebhooksRouteImport } from './routes/_authenticated/settings.webhooks'
@@ -158,6 +149,15 @@ import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/p
 import { Route as ApiPublicHooksPingRouteImport } from './routes/api/public/hooks/ping'
 import { Route as ApiPublicHooksEventsRouteImport } from './routes/api/public/hooks/events'
 import { Route as ApiPublicHooksEchoRouteImport } from './routes/api/public/hooks/echo'
+import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
+import { Route as ApiPublicCronStorageCheckRouteImport } from './routes/api/public/cron/storage-check'
+import { Route as ApiPublicCronScheduledReportsRouteImport } from './routes/api/public/cron/scheduled-reports'
+import { Route as ApiPublicCronPmWorkOrdersRouteImport } from './routes/api/public/cron/pm-work-orders'
+import { Route as ApiPublicCronIngestionRetryRouteImport } from './routes/api/public/cron/ingestion-retry'
+import { Route as ApiPublicCronFinanceAlertsRouteImport } from './routes/api/public/cron/finance-alerts'
+import { Route as ApiPublicCronBondExpiryRouteImport } from './routes/api/public/cron/bond-expiry'
+import { Route as ApiPublicCronAuditRetentionRouteImport } from './routes/api/public/cron/audit-retention'
+import { Route as ApiPublicCronApprovalEscalationsRouteImport } from './routes/api/public/cron/approval-escalations'
 import { Route as AuthenticatedThreadEntityTypeEntityIdRouteImport } from './routes/_authenticated/thread.$entityType.$entityId'
 import { Route as AuthenticatedQaqcPunchWalkRouteImport } from './routes/_authenticated/qaqc.punch.walk'
 import { Route as AuthenticatedQaqcPunchIdRouteImport } from './routes/_authenticated/qaqc.punch.$id'
@@ -438,52 +438,6 @@ const ApiPublicHealthzRoute = ApiPublicHealthzRouteImport.update({
   path: '/api/public/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronWebhookDispatchRoute = ApiCronWebhookDispatchRouteImport.update({
-  id: '/api/cron/webhook-dispatch',
-  path: '/api/cron/webhook-dispatch',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronStorageCheckRoute = ApiCronStorageCheckRouteImport.update({
-  id: '/api/cron/storage-check',
-  path: '/api/cron/storage-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronScheduledReportsRoute = ApiCronScheduledReportsRouteImport.update({
-  id: '/api/cron/scheduled-reports',
-  path: '/api/cron/scheduled-reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronPmWorkOrdersRoute = ApiCronPmWorkOrdersRouteImport.update({
-  id: '/api/cron/pm-work-orders',
-  path: '/api/cron/pm-work-orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronIngestionRetryRoute = ApiCronIngestionRetryRouteImport.update({
-  id: '/api/cron/ingestion-retry',
-  path: '/api/cron/ingestion-retry',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronFinanceAlertsRoute = ApiCronFinanceAlertsRouteImport.update({
-  id: '/api/cron/finance-alerts',
-  path: '/api/cron/finance-alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronBondExpiryRoute = ApiCronBondExpiryRouteImport.update({
-  id: '/api/cron/bond-expiry',
-  path: '/api/cron/bond-expiry',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronAuditRetentionRoute = ApiCronAuditRetentionRouteImport.update({
-  id: '/api/cron/audit-retention',
-  path: '/api/cron/audit-retention',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronApprovalEscalationsRoute =
-  ApiCronApprovalEscalationsRouteImport.update({
-    id: '/api/cron/approval-escalations',
-    path: '/api/cron/approval-escalations',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedTimesheetsReportsRoute =
   AuthenticatedTimesheetsReportsRouteImport.update({
     id: '/timesheets_/reports',
@@ -1096,6 +1050,59 @@ const ApiPublicHooksEchoRoute = ApiPublicHooksEchoRouteImport.update({
   path: '/api/public/hooks/echo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronWebhookDispatchRoute =
+  ApiPublicCronWebhookDispatchRouteImport.update({
+    id: '/api/public/cron/webhook-dispatch',
+    path: '/api/public/cron/webhook-dispatch',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronStorageCheckRoute =
+  ApiPublicCronStorageCheckRouteImport.update({
+    id: '/api/public/cron/storage-check',
+    path: '/api/public/cron/storage-check',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronScheduledReportsRoute =
+  ApiPublicCronScheduledReportsRouteImport.update({
+    id: '/api/public/cron/scheduled-reports',
+    path: '/api/public/cron/scheduled-reports',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronPmWorkOrdersRoute =
+  ApiPublicCronPmWorkOrdersRouteImport.update({
+    id: '/api/public/cron/pm-work-orders',
+    path: '/api/public/cron/pm-work-orders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronIngestionRetryRoute =
+  ApiPublicCronIngestionRetryRouteImport.update({
+    id: '/api/public/cron/ingestion-retry',
+    path: '/api/public/cron/ingestion-retry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronFinanceAlertsRoute =
+  ApiPublicCronFinanceAlertsRouteImport.update({
+    id: '/api/public/cron/finance-alerts',
+    path: '/api/public/cron/finance-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronBondExpiryRoute = ApiPublicCronBondExpiryRouteImport.update({
+  id: '/api/public/cron/bond-expiry',
+  path: '/api/public/cron/bond-expiry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronAuditRetentionRoute =
+  ApiPublicCronAuditRetentionRouteImport.update({
+    id: '/api/public/cron/audit-retention',
+    path: '/api/public/cron/audit-retention',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronApprovalEscalationsRoute =
+  ApiPublicCronApprovalEscalationsRouteImport.update({
+    id: '/api/public/cron/approval-escalations',
+    path: '/api/public/cron/approval-escalations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedThreadEntityTypeEntityIdRoute =
   AuthenticatedThreadEntityTypeEntityIdRouteImport.update({
     id: '/thread/$entityType/$entityId',
@@ -1786,15 +1793,6 @@ export interface FileRoutesByFullPath {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/timesheets/leave': typeof AuthenticatedTimesheetsLeaveRoute
   '/timesheets/reports': typeof AuthenticatedTimesheetsReportsRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
-  '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
-  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
-  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
-  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
-  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
-  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
-  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -1858,6 +1856,15 @@ export interface FileRoutesByFullPath {
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
+  '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
+  '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
+  '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
+  '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
+  '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -2020,15 +2027,6 @@ export interface FileRoutesByTo {
   '/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/timesheets/leave': typeof AuthenticatedTimesheetsLeaveRoute
   '/timesheets/reports': typeof AuthenticatedTimesheetsReportsRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
-  '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
-  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
-  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
-  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
-  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
-  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
-  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -2091,6 +2089,15 @@ export interface FileRoutesByTo {
   '/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
+  '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
+  '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
+  '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
+  '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
+  '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -2264,15 +2271,6 @@ export interface FileRoutesById {
   '/_authenticated/settings/webhooks': typeof AuthenticatedSettingsWebhooksRoute
   '/_authenticated/timesheets_/leave': typeof AuthenticatedTimesheetsLeaveRoute
   '/_authenticated/timesheets_/reports': typeof AuthenticatedTimesheetsReportsRoute
-  '/api/cron/approval-escalations': typeof ApiCronApprovalEscalationsRoute
-  '/api/cron/audit-retention': typeof ApiCronAuditRetentionRoute
-  '/api/cron/bond-expiry': typeof ApiCronBondExpiryRoute
-  '/api/cron/finance-alerts': typeof ApiCronFinanceAlertsRoute
-  '/api/cron/ingestion-retry': typeof ApiCronIngestionRetryRoute
-  '/api/cron/pm-work-orders': typeof ApiCronPmWorkOrdersRoute
-  '/api/cron/scheduled-reports': typeof ApiCronScheduledReportsRoute
-  '/api/cron/storage-check': typeof ApiCronStorageCheckRoute
-  '/api/cron/webhook-dispatch': typeof ApiCronWebhookDispatchRoute
   '/api/public/healthz': typeof ApiPublicHealthzRoute
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
@@ -2336,6 +2334,15 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/punch/$id': typeof AuthenticatedQaqcPunchIdRoute
   '/_authenticated/qaqc/punch/walk': typeof AuthenticatedQaqcPunchWalkRoute
   '/_authenticated/thread/$entityType/$entityId': typeof AuthenticatedThreadEntityTypeEntityIdRoute
+  '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
+  '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
+  '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
+  '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
+  '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
+  '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
   '/api/public/hooks/echo': typeof ApiPublicHooksEchoRoute
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
@@ -2510,15 +2517,6 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/timesheets/leave'
     | '/timesheets/reports'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/audit-retention'
-    | '/api/cron/bond-expiry'
-    | '/api/cron/finance-alerts'
-    | '/api/cron/ingestion-retry'
-    | '/api/cron/pm-work-orders'
-    | '/api/cron/scheduled-reports'
-    | '/api/cron/storage-check'
-    | '/api/cron/webhook-dispatch'
     | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -2582,6 +2580,15 @@ export interface FileRouteTypes {
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/thread/$entityType/$entityId'
+    | '/api/public/cron/approval-escalations'
+    | '/api/public/cron/audit-retention'
+    | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/ingestion-retry'
+    | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/scheduled-reports'
+    | '/api/public/cron/storage-check'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -2744,15 +2751,6 @@ export interface FileRouteTypes {
     | '/settings/webhooks'
     | '/timesheets/leave'
     | '/timesheets/reports'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/audit-retention'
-    | '/api/cron/bond-expiry'
-    | '/api/cron/finance-alerts'
-    | '/api/cron/ingestion-retry'
-    | '/api/cron/pm-work-orders'
-    | '/api/cron/scheduled-reports'
-    | '/api/cron/storage-check'
-    | '/api/cron/webhook-dispatch'
     | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -2815,6 +2813,15 @@ export interface FileRouteTypes {
     | '/qaqc/punch/$id'
     | '/qaqc/punch/walk'
     | '/thread/$entityType/$entityId'
+    | '/api/public/cron/approval-escalations'
+    | '/api/public/cron/audit-retention'
+    | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/ingestion-retry'
+    | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/scheduled-reports'
+    | '/api/public/cron/storage-check'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -2987,15 +2994,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/webhooks'
     | '/_authenticated/timesheets_/leave'
     | '/_authenticated/timesheets_/reports'
-    | '/api/cron/approval-escalations'
-    | '/api/cron/audit-retention'
-    | '/api/cron/bond-expiry'
-    | '/api/cron/finance-alerts'
-    | '/api/cron/ingestion-retry'
-    | '/api/cron/pm-work-orders'
-    | '/api/cron/scheduled-reports'
-    | '/api/cron/storage-check'
-    | '/api/cron/webhook-dispatch'
     | '/api/public/healthz'
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
@@ -3059,6 +3057,15 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/punch/$id'
     | '/_authenticated/qaqc/punch/walk'
     | '/_authenticated/thread/$entityType/$entityId'
+    | '/api/public/cron/approval-escalations'
+    | '/api/public/cron/audit-retention'
+    | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/ingestion-retry'
+    | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/scheduled-reports'
+    | '/api/public/cron/storage-check'
+    | '/api/public/cron/webhook-dispatch'
     | '/api/public/hooks/echo'
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
@@ -3141,18 +3148,18 @@ export interface RootRouteChildren {
   VendorRoute: typeof VendorRouteWithChildren
   PoTokenRoute: typeof PoTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
-  ApiCronApprovalEscalationsRoute: typeof ApiCronApprovalEscalationsRoute
-  ApiCronAuditRetentionRoute: typeof ApiCronAuditRetentionRoute
-  ApiCronBondExpiryRoute: typeof ApiCronBondExpiryRoute
-  ApiCronFinanceAlertsRoute: typeof ApiCronFinanceAlertsRoute
-  ApiCronIngestionRetryRoute: typeof ApiCronIngestionRetryRoute
-  ApiCronPmWorkOrdersRoute: typeof ApiCronPmWorkOrdersRoute
-  ApiCronScheduledReportsRoute: typeof ApiCronScheduledReportsRoute
-  ApiCronStorageCheckRoute: typeof ApiCronStorageCheckRoute
-  ApiCronWebhookDispatchRoute: typeof ApiCronWebhookDispatchRoute
   ApiPublicHealthzRoute: typeof ApiPublicHealthzRoute
   ApiWebhooksCalendarRoute: typeof ApiWebhooksCalendarRoute
   ApiWebhooksEsignRoute: typeof ApiWebhooksEsignRoute
+  ApiPublicCronApprovalEscalationsRoute: typeof ApiPublicCronApprovalEscalationsRoute
+  ApiPublicCronAuditRetentionRoute: typeof ApiPublicCronAuditRetentionRoute
+  ApiPublicCronBondExpiryRoute: typeof ApiPublicCronBondExpiryRoute
+  ApiPublicCronFinanceAlertsRoute: typeof ApiPublicCronFinanceAlertsRoute
+  ApiPublicCronIngestionRetryRoute: typeof ApiPublicCronIngestionRetryRoute
+  ApiPublicCronPmWorkOrdersRoute: typeof ApiPublicCronPmWorkOrdersRoute
+  ApiPublicCronScheduledReportsRoute: typeof ApiPublicCronScheduledReportsRoute
+  ApiPublicCronStorageCheckRoute: typeof ApiPublicCronStorageCheckRoute
+  ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
   ApiPublicHooksEchoRoute: typeof ApiPublicHooksEchoRoute
   ApiPublicHooksEventsRoute: typeof ApiPublicHooksEventsRoute
   ApiPublicHooksPingRoute: typeof ApiPublicHooksPingRoute
@@ -3411,69 +3418,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/healthz'
       fullPath: '/api/public/healthz'
       preLoaderRoute: typeof ApiPublicHealthzRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/webhook-dispatch': {
-      id: '/api/cron/webhook-dispatch'
-      path: '/api/cron/webhook-dispatch'
-      fullPath: '/api/cron/webhook-dispatch'
-      preLoaderRoute: typeof ApiCronWebhookDispatchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/storage-check': {
-      id: '/api/cron/storage-check'
-      path: '/api/cron/storage-check'
-      fullPath: '/api/cron/storage-check'
-      preLoaderRoute: typeof ApiCronStorageCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/scheduled-reports': {
-      id: '/api/cron/scheduled-reports'
-      path: '/api/cron/scheduled-reports'
-      fullPath: '/api/cron/scheduled-reports'
-      preLoaderRoute: typeof ApiCronScheduledReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/pm-work-orders': {
-      id: '/api/cron/pm-work-orders'
-      path: '/api/cron/pm-work-orders'
-      fullPath: '/api/cron/pm-work-orders'
-      preLoaderRoute: typeof ApiCronPmWorkOrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/ingestion-retry': {
-      id: '/api/cron/ingestion-retry'
-      path: '/api/cron/ingestion-retry'
-      fullPath: '/api/cron/ingestion-retry'
-      preLoaderRoute: typeof ApiCronIngestionRetryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/finance-alerts': {
-      id: '/api/cron/finance-alerts'
-      path: '/api/cron/finance-alerts'
-      fullPath: '/api/cron/finance-alerts'
-      preLoaderRoute: typeof ApiCronFinanceAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/bond-expiry': {
-      id: '/api/cron/bond-expiry'
-      path: '/api/cron/bond-expiry'
-      fullPath: '/api/cron/bond-expiry'
-      preLoaderRoute: typeof ApiCronBondExpiryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/audit-retention': {
-      id: '/api/cron/audit-retention'
-      path: '/api/cron/audit-retention'
-      fullPath: '/api/cron/audit-retention'
-      preLoaderRoute: typeof ApiCronAuditRetentionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/approval-escalations': {
-      id: '/api/cron/approval-escalations'
-      path: '/api/cron/approval-escalations'
-      fullPath: '/api/cron/approval-escalations'
-      preLoaderRoute: typeof ApiCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/timesheets_/reports': {
@@ -4202,6 +4146,69 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/echo'
       fullPath: '/api/public/hooks/echo'
       preLoaderRoute: typeof ApiPublicHooksEchoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/webhook-dispatch': {
+      id: '/api/public/cron/webhook-dispatch'
+      path: '/api/public/cron/webhook-dispatch'
+      fullPath: '/api/public/cron/webhook-dispatch'
+      preLoaderRoute: typeof ApiPublicCronWebhookDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/storage-check': {
+      id: '/api/public/cron/storage-check'
+      path: '/api/public/cron/storage-check'
+      fullPath: '/api/public/cron/storage-check'
+      preLoaderRoute: typeof ApiPublicCronStorageCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/scheduled-reports': {
+      id: '/api/public/cron/scheduled-reports'
+      path: '/api/public/cron/scheduled-reports'
+      fullPath: '/api/public/cron/scheduled-reports'
+      preLoaderRoute: typeof ApiPublicCronScheduledReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/pm-work-orders': {
+      id: '/api/public/cron/pm-work-orders'
+      path: '/api/public/cron/pm-work-orders'
+      fullPath: '/api/public/cron/pm-work-orders'
+      preLoaderRoute: typeof ApiPublicCronPmWorkOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/ingestion-retry': {
+      id: '/api/public/cron/ingestion-retry'
+      path: '/api/public/cron/ingestion-retry'
+      fullPath: '/api/public/cron/ingestion-retry'
+      preLoaderRoute: typeof ApiPublicCronIngestionRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/finance-alerts': {
+      id: '/api/public/cron/finance-alerts'
+      path: '/api/public/cron/finance-alerts'
+      fullPath: '/api/public/cron/finance-alerts'
+      preLoaderRoute: typeof ApiPublicCronFinanceAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/bond-expiry': {
+      id: '/api/public/cron/bond-expiry'
+      path: '/api/public/cron/bond-expiry'
+      fullPath: '/api/public/cron/bond-expiry'
+      preLoaderRoute: typeof ApiPublicCronBondExpiryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/audit-retention': {
+      id: '/api/public/cron/audit-retention'
+      path: '/api/public/cron/audit-retention'
+      fullPath: '/api/public/cron/audit-retention'
+      preLoaderRoute: typeof ApiPublicCronAuditRetentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/approval-escalations': {
+      id: '/api/public/cron/approval-escalations'
+      path: '/api/public/cron/approval-escalations'
+      fullPath: '/api/public/cron/approval-escalations'
+      preLoaderRoute: typeof ApiPublicCronApprovalEscalationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/thread/$entityType/$entityId': {
@@ -5626,18 +5633,18 @@ const rootRouteChildren: RootRouteChildren = {
   VendorRoute: VendorRouteWithChildren,
   PoTokenRoute: PoTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
-  ApiCronApprovalEscalationsRoute: ApiCronApprovalEscalationsRoute,
-  ApiCronAuditRetentionRoute: ApiCronAuditRetentionRoute,
-  ApiCronBondExpiryRoute: ApiCronBondExpiryRoute,
-  ApiCronFinanceAlertsRoute: ApiCronFinanceAlertsRoute,
-  ApiCronIngestionRetryRoute: ApiCronIngestionRetryRoute,
-  ApiCronPmWorkOrdersRoute: ApiCronPmWorkOrdersRoute,
-  ApiCronScheduledReportsRoute: ApiCronScheduledReportsRoute,
-  ApiCronStorageCheckRoute: ApiCronStorageCheckRoute,
-  ApiCronWebhookDispatchRoute: ApiCronWebhookDispatchRoute,
   ApiPublicHealthzRoute: ApiPublicHealthzRoute,
   ApiWebhooksCalendarRoute: ApiWebhooksCalendarRoute,
   ApiWebhooksEsignRoute: ApiWebhooksEsignRoute,
+  ApiPublicCronApprovalEscalationsRoute: ApiPublicCronApprovalEscalationsRoute,
+  ApiPublicCronAuditRetentionRoute: ApiPublicCronAuditRetentionRoute,
+  ApiPublicCronBondExpiryRoute: ApiPublicCronBondExpiryRoute,
+  ApiPublicCronFinanceAlertsRoute: ApiPublicCronFinanceAlertsRoute,
+  ApiPublicCronIngestionRetryRoute: ApiPublicCronIngestionRetryRoute,
+  ApiPublicCronPmWorkOrdersRoute: ApiPublicCronPmWorkOrdersRoute,
+  ApiPublicCronScheduledReportsRoute: ApiPublicCronScheduledReportsRoute,
+  ApiPublicCronStorageCheckRoute: ApiPublicCronStorageCheckRoute,
+  ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,
   ApiPublicHooksEchoRoute: ApiPublicHooksEchoRoute,
   ApiPublicHooksEventsRoute: ApiPublicHooksEventsRoute,
   ApiPublicHooksPingRoute: ApiPublicHooksPingRoute,
