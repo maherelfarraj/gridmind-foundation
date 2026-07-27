@@ -36,6 +36,7 @@ import { Route as AuthenticatedFinanceIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedEstimatingIndexRouteImport } from './routes/_authenticated/estimating.index'
 import { Route as AuthenticatedEsgIndexRouteImport } from './routes/_authenticated/esg.index'
 import { Route as AuthenticatedChangesIndexRouteImport } from './routes/_authenticated/changes.index'
+import { Route as VendorVendorIdPosRouteImport } from './routes/vendor.$vendorId.pos'
 import { Route as PortalProjectsProjectIdRouteImport } from './routes/portal.projects.$projectId'
 import { Route as ApiWebhooksEsignRouteImport } from './routes/api/webhooks/esign'
 import { Route as ApiWebhooksCalendarRouteImport } from './routes/api/webhooks/calendar'
@@ -380,6 +381,11 @@ const AuthenticatedChangesIndexRoute =
     path: '/changes/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const VendorVendorIdPosRoute = VendorVendorIdPosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
+  getParentRoute: () => VendorVendorIdRoute,
+} as any)
 const PortalProjectsProjectIdRoute = PortalProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -1718,6 +1724,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes/': typeof AuthenticatedChangesIndexRoute
   '/esg/': typeof AuthenticatedEsgIndexRoute
   '/estimating/': typeof AuthenticatedEstimatingIndexRoute
@@ -1940,6 +1947,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/changes': typeof AuthenticatedChangesIndexRoute
   '/esg': typeof AuthenticatedEsgIndexRoute
   '/estimating': typeof AuthenticatedEstimatingIndexRoute
@@ -2172,6 +2180,7 @@ export interface FileRoutesById {
   '/api/webhooks/calendar': typeof ApiWebhooksCalendarRoute
   '/api/webhooks/esign': typeof ApiWebhooksEsignRoute
   '/portal/projects/$projectId': typeof PortalProjectsProjectIdRoute
+  '/vendor/$vendorId/pos': typeof VendorVendorIdPosRoute
   '/_authenticated/changes/': typeof AuthenticatedChangesIndexRoute
   '/_authenticated/esg/': typeof AuthenticatedEsgIndexRoute
   '/_authenticated/estimating/': typeof AuthenticatedEstimatingIndexRoute
@@ -2406,6 +2415,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/changes/'
     | '/esg/'
     | '/estimating/'
@@ -2628,6 +2638,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/changes'
     | '/esg'
     | '/estimating'
@@ -2859,6 +2870,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/calendar'
     | '/api/webhooks/esign'
     | '/portal/projects/$projectId'
+    | '/vendor/$vendorId/pos'
     | '/_authenticated/changes/'
     | '/_authenticated/esg/'
     | '/_authenticated/estimating/'
@@ -3201,6 +3213,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/changes/'
       preLoaderRoute: typeof AuthenticatedChangesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/vendor/$vendorId/pos': {
+      id: '/vendor/$vendorId/pos'
+      path: '/pos'
+      fullPath: '/vendor/$vendorId/pos'
+      preLoaderRoute: typeof VendorVendorIdPosRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/portal/projects/$projectId': {
       id: '/portal/projects/$projectId'
@@ -5410,10 +5429,12 @@ const PortalRouteWithChildren =
   PortalRoute._addFileChildren(PortalRouteChildren)
 
 interface VendorVendorIdRouteChildren {
+  VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
   VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
 }
 
 const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
+  VendorVendorIdPosRoute: VendorVendorIdPosRoute,
   VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
 }
 
