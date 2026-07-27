@@ -321,7 +321,49 @@ export async function emitThreadEvent(
     return (data as string | null) ?? null;
   });
 
-  if (!assessmentId) {
+  // Fallback for actorless (service-role) callers: the guarded RPC requires an
+  // auth.uid() company membership, so ingestion paths insert directly instead.
+  const finalId =
+    assessmentId ??
+    (await safe(async () => {
+      const { data: open } = await db
+        .from("impact_assessments")
+        .select("id")
+        .eq("company_id", project.company_id)
+        .eq("event_type", input.event)
+        .eq("source_type", input.sourceType)
+        .eq("source_id", input.sourceId)
+        .eq("status", "open")
+        .limit(1)
+        .maybeSingle();
+      const existing = (open as { id: string } | null)?.id ?? null;
+      if (existing) return existing;
+      const { data, error } = await db
+        .from("impact_assessments")
+        .insert({
+          company_id: project.company_id,
+          project_id: project.id,
+          event_type: input.event,
+          source_type: input.sourceType,
+          source_id: input.sourceId,
+          title: `${spec.title} — ${project.name}`,
+          summary,
+          severity: spec.severity,
+          impacts: impacts.map(({ area, entity_type, entity_id, action }) => ({
+            area,
+            entity_type,
+            entity_id,
+            action,
+          })),
+          metadata: { project_id: project.id, ...(input.payload ?? {}) },
+        })
+        .select("id")
+        .single();
+      if (error) return null;
+      return (data as { id: string }).id;
+    }));
+
+  if (!finalId) {
     return {
       assessmentId: null,
       impacts: impacts.map(({ area, entity_type, entity_id, action }) => ({
@@ -360,11 +402,11 @@ export async function emitThreadEvent(
     roles,
     `${spec.title} — impact assessment`,
     summary,
-    `/thread/impact_assessment/${assessmentId}`,
+    `/thread/impact_assessment/${finalId}`,
   );
 
   return {
-    assessmentId,
+    assessmentId: finalId,
     impacts: impacts.map(({ area, entity_type, entity_id, action }) => ({
       area,
       entity_type,
