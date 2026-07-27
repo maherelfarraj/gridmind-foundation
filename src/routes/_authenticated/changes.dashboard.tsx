@@ -37,8 +37,11 @@ function MocDashboardPage() {
     queryFn: () => fetchDashboard(),
   });
 
-  const goto = (search: Record<string, string>) =>
-    void navigate({ to: "/changes", search });
+  const goto = (search: { status?: string; type?: string; project?: string }) =>
+    void navigate({
+      to: "/changes",
+      search: { status: search.status, type: search.type, project: search.project },
+    });
 
   if (query.isPending) {
     return (

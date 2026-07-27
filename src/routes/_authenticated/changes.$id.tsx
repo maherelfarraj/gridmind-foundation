@@ -217,7 +217,7 @@ function ChangeDetailPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <Button variant="ghost" size="sm" onClick={() => void navigate({ to: "/changes" })}>
+      <Button variant="ghost" size="sm" onClick={() => void navigate({ to: "/changes", search: {} })}>
         <ArrowLeft className="mr-1 size-4" aria-hidden />
         Back to register
       </Button>
