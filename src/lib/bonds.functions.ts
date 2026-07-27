@@ -121,10 +121,19 @@ export const getBondInstrument = createServerFn({ method: "GET" })
         .createSignedUrl(instrument.document_path, 600);
       document_url = signed?.signedUrl ?? null;
     }
+    const renewalsWithDocs = await Promise.all(
+      renewals.map(async (r) => {
+        if (!r.document_path) return { ...r, document_url: null };
+        const { data: signed } = await context.supabase.storage
+          .from(BONDS_BUCKET)
+          .createSignedUrl(r.document_path, 600);
+        return { ...r, document_url: signed?.signedUrl ?? null };
+      }),
+    );
     return {
       instrument,
       claims,
-      renewals,
+      renewals: renewalsWithDocs,
       timeline,
       document_url,
       can_write,
@@ -132,6 +141,7 @@ export const getBondInstrument = createServerFn({ method: "GET" })
       release_approval,
     };
   });
+
 
 export const createBondInstrument = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
