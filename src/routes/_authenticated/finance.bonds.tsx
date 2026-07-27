@@ -6,6 +6,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Download, Plus, Search, ShieldCheck, Siren, Timer } from "lucide-react";
 import { toast } from "sonner";
 
+import { CoverageByTypeChart, InsuranceSummaryCards } from "@/components/bonds/bond-coverage";
+import { BondRenewalSection } from "@/components/bonds/bond-renewal";
 import { BondWorkflowSections } from "@/components/bonds/bond-workflow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +73,7 @@ import {
   countdownLabel,
   countdownTone,
   instrumentTypeLabel,
+  isInsuranceType,
   titleize,
   type BondRow,
   type CountdownTone,
@@ -144,6 +147,7 @@ function BondsPage() {
   const [status, setStatus] = useState("all");
   const [project, setProject] = useState("all");
   const [issuer, setIssuer] = useState("");
+  const [insuranceOnly, setInsuranceOnly] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -162,12 +166,15 @@ function BondsPage() {
   const exportFn = useServerFn(exportBondsCsv);
   const data = registerQ.data;
   const allRows = data?.rows ?? [];
-  const rows =
+  const expiryFiltered =
     expiring === undefined
       ? allRows
       : allRows.filter(
           (r) => r.days_to_expiry !== null && r.days_to_expiry >= 0 && r.days_to_expiry <= expiring,
         );
+  const rows = insuranceOnly
+    ? expiryFiltered.filter((r) => isInsuranceType(r.instrument_type))
+    : expiryFiltered;
   const kpis = data?.kpis;
 
   async function handleExport() {
@@ -296,6 +303,27 @@ function BondsPage() {
           />
         </div>
       </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant={insuranceOnly ? "default" : "outline"}
+          aria-pressed={insuranceOnly}
+          onClick={() => setInsuranceOnly((v) => !v)}
+        >
+          Insurance
+        </Button>
+        {insuranceOnly ? (
+          <span className="text-xs text-muted-foreground">
+            CAR/EAR, professional indemnity, public liability and workmen&rsquo;s compensation only
+          </span>
+        ) : null}
+      </div>
+
+      {insuranceOnly ? <InsuranceSummaryCards rows={rows} /> : null}
+
+      <CoverageByTypeChart rows={rows} />
 
       {registerQ.isPending ? (
         <div className="space-y-2">
@@ -900,20 +928,7 @@ function InstrumentDrawer({
 
             <BondWorkflowSections detail={d} />
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Renewals</h3>
-              {d.renewals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No renewals recorded.</p>
-              ) : (
-                <ul className="space-y-1 text-sm">
-                  {d.renewals.map((r) => (
-                    <li key={r.id}>
-                      {r.previous_expiry ?? "—"} → {r.new_expiry ?? "—"}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            <BondRenewalSection detail={d} />
           </div>
         )}
       </SheetContent>

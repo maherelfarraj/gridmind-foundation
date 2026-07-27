@@ -11,6 +11,8 @@ import {
   CreateClaimSchema,
   OPEN_CLAIM_STATUSES,
   RELEASABLE_STATUSES,
+  RENEWABLE_STATUSES,
+  RenewBondSchema,
   RETURNABLE_STATUSES,
   ResolveClaimSchema,
   TERMINAL_CLAIM_STATUSES,
@@ -33,6 +35,7 @@ import {
   decodeBase64,
   insertBond,
   insertClaim,
+  insertRenewal,
   latestReleaseApproval,
   loadBond,
   loadClaim,
@@ -121,10 +124,19 @@ export const getBondInstrument = createServerFn({ method: "GET" })
         .createSignedUrl(instrument.document_path, 600);
       document_url = signed?.signedUrl ?? null;
     }
+    const renewalsWithDocs = await Promise.all(
+      renewals.map(async (r) => {
+        if (!r.document_path) return { ...r, document_url: null };
+        const { data: signed } = await context.supabase.storage
+          .from(BONDS_BUCKET)
+          .createSignedUrl(r.document_path, 600);
+        return { ...r, document_url: signed?.signedUrl ?? null };
+      }),
+    );
     return {
       instrument,
       claims,
-      renewals,
+      renewals: renewalsWithDocs,
       timeline,
       document_url,
       can_write,
@@ -478,4 +490,72 @@ export const cancelBondInstrument = createServerFn({ method: "POST" })
       after: { status: "cancelled", status_reason: data.reason },
     });
     return { ok: true };
+  });
+
+// ---------------------------------------------------------------------------
+// P-205 — renewal
+// ---------------------------------------------------------------------------
+
+export const renewBondInstrument = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => RenewBondSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    requireSupabaseAuth(context);
+    await assertBondWrite(context);
+    const companyId = await bondsCompanyId(context);
+    const instrument = await loadBond(context, data.instrument_id);
+    if (isTerminalBondStatus(instrument.status)) {
+      httpError(409, "terminal_status", "This instrument is closed; no further transitions.");
+    }
+    if (!RENEWABLE_STATUSES.includes(instrument.effective_status)) {
+      httpError(409, "invalid_transition", "Only live or lapsed instruments can be renewed.");
+    }
+    if (instrument.expiry_date && data.new_expiry <= instrument.expiry_date) {
+      httpError(422, "expiry_not_forward", "New expiry must be after the current expiry", {
+        current_expiry: instrument.expiry_date,
+      });
+    }
+    await insertRenewal(context, companyId, {
+      instrument_id: instrument.id,
+      previous_expiry: instrument.expiry_date,
+      new_expiry: data.new_expiry,
+      premium_amount: data.premium_amount,
+      document_path: data.document_path,
+      notes: data.notes,
+    });
+    const patch: Record<string, unknown> = {
+      expiry_date: data.new_expiry,
+      status: "active",
+    };
+    if (data.document_path) patch.document_path = data.document_path;
+    await patchBond(context, instrument.id, patch);
+    await audit(context, "bond.renewed", "bond_instruments", instrument.id, {
+      instrument_id: instrument.id,
+      previous_expiry: instrument.expiry_date,
+      new_expiry: data.new_expiry,
+      premium_amount: data.premium_amount ?? null,
+      before: { status: instrument.status, expiry_date: instrument.expiry_date },
+      after: { status: "active", expiry_date: data.new_expiry },
+    });
+    return { ok: true };
+  });
+
+/** Uploads a renewal document without attaching it to the instrument yet. */
+export const uploadBondRenewalDocument = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => UploadBondDocSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true; path: string }> => {
+    requireSupabaseAuth(context);
+    await assertBondWrite(context);
+    const companyId = await bondsCompanyId(context);
+    const instrument = await loadBond(context, data.instrument_id);
+    const path = bondDocumentPath(companyId, instrument.id, `${Date.now()}-${data.filename}`);
+    const { error } = await context.supabase.storage
+      .from(BONDS_BUCKET)
+      .upload(path, decodeBase64(data.content_base64), {
+        contentType: data.content_type || "application/octet-stream",
+        upsert: true,
+      });
+    if (error) throw error;
+    return { ok: true, path };
   });
