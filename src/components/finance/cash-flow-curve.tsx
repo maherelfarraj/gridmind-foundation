@@ -31,27 +31,27 @@ export function CashFlowCurve(props: { pivot: PivotResult; baseCurrency: string 
         <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
           <defs>
             <linearGradient id="cfActualFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="cfForecastFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--muted-foreground)" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="var(--muted-foreground)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="period" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="period" stroke="var(--muted-foreground)" fontSize={12} />
           <YAxis
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--muted-foreground)"
             fontSize={12}
             tickFormatter={(v) => formatter.format(Number(v))}
             width={90}
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(var(--popover))",
-              border: "1px solid hsl(var(--border))",
-              color: "hsl(var(--popover-foreground))",
+              background: "var(--popover)",
+              border: "1px solid var(--border)",
+              color: "var(--popover-foreground)",
               borderRadius: 8,
             }}
             formatter={(value: number) => formatter.format(value)}
@@ -61,7 +61,7 @@ export function CashFlowCurve(props: { pivot: PivotResult; baseCurrency: string 
             type="monotone"
             dataKey="forecastCum"
             name="Forecast (cumulative)"
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--muted-foreground)"
             strokeDasharray="4 4"
             fill="url(#cfForecastFill)"
             strokeWidth={2}
@@ -70,7 +70,7 @@ export function CashFlowCurve(props: { pivot: PivotResult; baseCurrency: string 
             type="monotone"
             dataKey="actualCum"
             name="Actual (cumulative)"
-            stroke="hsl(var(--primary))"
+            stroke="var(--primary)"
             fill="url(#cfActualFill)"
             strokeWidth={2}
           />

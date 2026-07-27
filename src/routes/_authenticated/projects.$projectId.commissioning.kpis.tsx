@@ -259,10 +259,10 @@ function PunchClosureTile({ data }: { data: CommissioningKpisPayload }) {
               dataKey="closed"
               stackId="s"
               name="Closed"
-              fill="hsl(var(--muted-foreground) / 0.6)"
+              fill="var(--muted-foreground)"
               radius={[0, 0, 0, 0]}
             />
-            <Bar dataKey="open" stackId="s" name="Open" fill="hsl(var(--destructive))" />
+            <Bar dataKey="open" stackId="s" name="Open" fill="var(--destructive)" />
           </BarChart>
         </ResponsiveContainer>
       </div>

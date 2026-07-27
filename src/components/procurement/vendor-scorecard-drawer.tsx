@@ -89,8 +89,8 @@ export function VendorScorecardDrawer({ row, periodStart, periodEnd, onOpenChang
                       <YAxis domain={[0, 100]} className="text-xs" />
                       <RTooltip
                         contentStyle={{
-                          background: "hsl(var(--popover))",
-                          border: "1px solid hsl(var(--border))",
+                          background: "var(--popover)",
+                          border: "1px solid var(--border)",
                           borderRadius: "0.5rem",
                           fontSize: "0.75rem",
                         }}
@@ -99,19 +99,19 @@ export function VendorScorecardDrawer({ row, periodStart, periodEnd, onOpenChang
                       <Line
                         type="monotone"
                         dataKey="OTD"
-                        stroke="hsl(var(--primary))"
+                        stroke="var(--primary)"
                         strokeWidth={2}
                       />
                       <Line
                         type="monotone"
                         dataKey="Quality"
-                        stroke="hsl(var(--chart-2, var(--accent)))"
+                        stroke="var(--chart-2))"
                         strokeWidth={2}
                       />
                       <Line
                         type="monotone"
                         dataKey="Responsiveness"
-                        stroke="hsl(var(--chart-3, var(--muted-foreground)))"
+                        stroke="var(--chart-3))"
                         strokeWidth={2}
                       />
                     </LineChart>

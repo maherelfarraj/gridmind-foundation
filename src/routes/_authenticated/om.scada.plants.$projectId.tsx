@@ -131,33 +131,33 @@ function PlantBody({ data }: { data: PlantDetailPayload }) {
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.perInverter}>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                   <XAxis
                     dataKey="name"
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="var(--muted-foreground)"
                     tick={{ fontSize: 11 }}
                   />
                   <YAxis
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="var(--muted-foreground)"
                     tick={{ fontSize: 11 }}
                     label={{
                       value: "kW",
                       angle: -90,
                       position: "insideLeft",
-                      fill: "hsl(var(--muted-foreground))",
+                      fill: "var(--muted-foreground)",
                       fontSize: 11,
                     }}
                   />
                   <Tooltip
                     contentStyle={{
-                      background: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      color: "hsl(var(--popover-foreground))",
+                      background: "var(--popover)",
+                      border: "1px solid var(--border)",
+                      color: "var(--popover-foreground)",
                       fontSize: 12,
                     }}
                     formatter={(v: number) => [`${v.toFixed(1)} kW`, "AC power"]}
                   />
-                  <Bar dataKey="currentKw" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="currentKw" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

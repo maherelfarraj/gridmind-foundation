@@ -222,9 +222,9 @@ function PerformanceWorkspace() {
                 <YAxis fontSize={11} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                 <Tooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
                 <Legend />
-                <ReferenceLine y={80} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                <Bar dataKey="contract" name="Contract PR" fill="hsl(var(--muted-foreground))" />
-                <Bar dataKey="measured" name="Measured PR" fill="hsl(var(--primary))" />
+                <ReferenceLine y={80} stroke="var(--muted-foreground)" strokeDasharray="4 4" />
+                <Bar dataKey="contract" name="Contract PR" fill="var(--muted-foreground)" />
+                <Bar dataKey="measured" name="Measured PR" fill="var(--primary)" />
               </BarChart>
             </ResponsiveContainer>
           </div>

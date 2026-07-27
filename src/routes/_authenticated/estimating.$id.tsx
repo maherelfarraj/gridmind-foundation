@@ -279,12 +279,18 @@ function EstimateBody({
           </Field>
           <Field label="Direct cost">
             <span className="text-lg font-semibold tabular-nums text-foreground">
-              {formatMoney(directCost, currency, { maximumFractionDigits: 2 })}
+              {formatMoney(directCost, currency, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
           </Field>
           <Field label="Bid price">
             <span className="text-lg font-semibold tabular-nums text-foreground">
-              {formatMoney(estimate.total_price, currency, { maximumFractionDigits: 2 })}
+              {formatMoney(estimate.total_price, currency, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
           </Field>
         </CardContent>

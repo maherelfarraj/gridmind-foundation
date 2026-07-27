@@ -98,20 +98,20 @@ export function YieldComparison({ scenarios }: { scenarios: YieldScenarioRow[] }
         <CardContent style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={p50Data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  background: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: 6,
-                  color: "hsl(var(--popover-foreground))",
+                  color: "var(--popover-foreground)",
                 }}
               />
               <Legend />
-              <Bar dataKey="P50" fill="hsl(var(--primary))" />
-              <Bar dataKey="P90" fill="hsl(var(--muted-foreground))" />
+              <Bar dataKey="P50" fill="var(--primary)" />
+              <Bar dataKey="P90" fill="var(--muted-foreground)" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -124,15 +124,15 @@ export function YieldComparison({ scenarios }: { scenarios: YieldScenarioRow[] }
         <CardContent style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={lossData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  background: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: 6,
-                  color: "hsl(var(--popover-foreground))",
+                  color: "var(--popover-foreground)",
                 }}
               />
               <Legend />
@@ -141,7 +141,7 @@ export function YieldComparison({ scenarios }: { scenarios: YieldScenarioRow[] }
                   key={k}
                   dataKey={k}
                   stackId="loss"
-                  fill={`hsl(var(--chart-${(i % 5) + 1}, var(--primary)))`}
+                  fill={`var(--chart-${(i % 5) + 1})`}
                 />
               ))}
             </BarChart>

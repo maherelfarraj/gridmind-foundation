@@ -226,18 +226,18 @@ function LcoeTab() {
           <div className="h-64 w-full">
             <ResponsiveContainer>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={12} />
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
-                    color: "hsl(var(--popover-foreground))",
+                    background: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    color: "var(--popover-foreground)",
                     borderRadius: 6,
                   }}
                 />
-                <Bar dataKey="LCOE" fill="hsl(var(--primary))" radius={4} />
+                <Bar dataKey="LCOE" fill="var(--primary)" radius={4} />
               </BarChart>
             </ResponsiveContainer>
           </div>
