@@ -280,6 +280,7 @@ function NewContractDialog({ onDone }: { onDone: () => void }) {
     resolver: zodResolver(CreateFormSchema),
     defaultValues: {
       title: "",
+      project_id: null,
       contract_type: "epc",
       counterparty: "",
       value: undefined,
