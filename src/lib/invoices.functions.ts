@@ -384,7 +384,8 @@ export const billMilestone = createServerFn({ method: "POST" })
           status: "draft",
           amount: comp.amount,
           currency_code: contract.currency_code ?? "USD",
-          issue_date: new Date().toISOString().slice(0, 10),
+          issue_date: issueDate,
+          due_date: defaultDueDate(issueDate),
           milestone_label: milestoneLabelFor(line.line_no, line.description, comp.cappedPct),
           created_by: context.user!.id,
         } as any)
