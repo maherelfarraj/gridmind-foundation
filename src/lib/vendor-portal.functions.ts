@@ -522,7 +522,7 @@ export const acknowledgePo = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("vendor_portal_acknowledge_po", {
       p_po_id: data.poId,
       p_decision: data.decision,
-      p_comment: data.comment ?? null,
+      p_comment: data.comment,
     });
     if (error) throw httpError(error.message, 403);
     return { ok: true };
