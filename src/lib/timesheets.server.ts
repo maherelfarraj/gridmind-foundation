@@ -62,6 +62,15 @@ export async function writeAuditLog(
   }
 }
 
+export interface ClockDay {
+  start: string | null;
+  end: string | null;
+}
+
+export interface TimesheetMetadata {
+  clock?: Record<string, ClockDay>;
+}
+
 export interface TimesheetRow {
   id: string;
   company_id: string;
@@ -73,7 +82,7 @@ export interface TimesheetRow {
   total_regular_hours: number;
   total_overtime_hours: number;
   submitted_at: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: TimesheetMetadata | null;
 }
 
 export interface EntryRow {

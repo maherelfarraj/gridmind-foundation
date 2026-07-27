@@ -19,6 +19,7 @@ import {
   TIMESHEET_ADMIN_ROLES,
   writeAuditLog,
 } from "@/lib/timesheets.server";
+import type { TimesheetMetadata } from "@/lib/timesheets.server";
 import { TIMESHEET_ACTIVITIES } from "@/lib/timesheets/policy";
 import { isMonday } from "@/lib/timesheets/week";
 
@@ -93,7 +94,7 @@ export const saveClockMetadata = createServerFn({ method: "POST" })
     const sheet = await loadTimesheet(context.supabase, data.timesheetId);
     await assertCanEdit(context.supabase, sheet, context.user!.id);
     assertDraft(sheet);
-    const metadata = { ...(sheet.metadata ?? {}), clock: data.clock };
+    const metadata: TimesheetMetadata = { ...(sheet.metadata ?? {}), clock: data.clock };
     const { error } = await context.supabase
       .from("timesheets")
       .update({ metadata: metadata as never })
