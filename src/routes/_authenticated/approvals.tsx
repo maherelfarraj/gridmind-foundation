@@ -36,6 +36,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { TimesheetApprovalCard } from "@/components/timesheets/approval-summary-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -86,6 +87,8 @@ function entityLink(row: InboxRow): string | null {
       return `/procurement/contracts/${row.entity_id}`;
     case "change_order":
       return `/finance/change-orders/${row.entity_id}`;
+    case "timesheet":
+      return "/timesheets";
     case "project_phase_gate":
       return `/projects/${row.entity_id}`;
     default:
@@ -209,6 +212,7 @@ function DecideDialog({
     onSuccess: () => {
       toast.success("Approval recorded");
       qc.invalidateQueries({ queryKey: ["approvals"] });
+      qc.invalidateQueries({ queryKey: ["timesheets"] });
       setComment("");
       onOpenChange(false);
       onDone();
@@ -346,6 +350,10 @@ function ApprovalDetailDrawer({
                 </a>
               )}
             </div>
+
+            {detail.entity_type === "timesheet" && (
+              <TimesheetApprovalCard timesheetId={detail.entity_id} />
+            )}
 
             <div>
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
