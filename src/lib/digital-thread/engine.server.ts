@@ -4,7 +4,9 @@
 // Recommendation-only: nothing here mutates a downstream module's records.
 import { IMPACT_MAP, type ImpactSpec, type ThreadEvent } from "@/lib/digital-thread/impact-map";
 
-type Db = { from: (t: string) => any; rpc: (n: string, a: Record<string, unknown>) => any };
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Structurally loose so both the generated and admin clients satisfy it.
+type Db = { from: (t: any) => any; rpc: (n: any, a: any) => any };
 
 export interface ThreadContext {
   supabase: Db;
