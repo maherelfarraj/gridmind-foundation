@@ -155,7 +155,9 @@ describe("P-227 timesheets — draft gating on entries", () => {
   });
 
   it("owners can only self-update timesheets while draft", () => {
-    expect(find("timesheets", "update").body).toContain("user_id = auth.uid() and status = 'draft'");
+    expect(find("timesheets", "update").body).toContain(
+      "user_id = auth.uid() and status = 'draft'",
+    );
     expect(find("timesheets", "delete").body).toContain("status = 'draft'");
   });
 });
@@ -181,9 +183,7 @@ describe("P-227 leave requests & balances", () => {
   it("leave_balances writes are admin-only — a plain member UPDATE is denied", () => {
     const p = find("leave_balances", "update");
     expect(p.ownerScoped).toBe(false);
-    expect(p.roles.sort()).toEqual(
-      ["company_admin", "construction_admin", "project_admin"].sort(),
-    );
+    expect(p.roles.sort()).toEqual(["company_admin", "construction_admin", "project_admin"].sort());
     expect(find("leave_balances", "insert").ownerScoped).toBe(false);
   });
 });
@@ -191,7 +191,9 @@ describe("P-227 leave requests & balances", () => {
 describe("P-227 schema invariants", () => {
   it("week_start is Monday-only and unique per person per week", () => {
     expect(sql).toContain("check (extract(isodow from week_start) = 1)");
-    expect(sql).toContain("constraint timesheets_unique_week unique (company_id, user_id, week_start)");
+    expect(sql).toContain(
+      "constraint timesheets_unique_week unique (company_id, user_id, week_start)",
+    );
   });
 
   it("entry hours are bounded and one slot per day/project/activity", () => {
@@ -202,12 +204,16 @@ describe("P-227 schema invariants", () => {
   });
 
   it("TS-#### and LR-#### numbering fires on insert", () => {
-    expect(sql).toContain("'TS-' || lpad(public.next_timesheet_number(new.company_id, 'timesheet')::text, 4, '0')");
+    expect(sql).toContain(
+      "'TS-' || lpad(public.next_timesheet_number(new.company_id, 'timesheet')::text, 4, '0')",
+    );
     expect(sql).toContain(
       "'LR-' || lpad(public.next_timesheet_number(new.company_id, 'leave_request')::text, 4, '0')",
     );
     expect(sql).toMatch(/create trigger timesheets_number_trg before insert on public\.timesheets/);
-    expect(sql).toMatch(/create trigger leave_requests_number_trg before insert on public\.leave_requests/);
+    expect(sql).toMatch(
+      /create trigger leave_requests_number_trg before insert on public\.leave_requests/,
+    );
   });
 
   it("the work-package FK is added conditionally via to_regclass", () => {
@@ -216,7 +222,9 @@ describe("P-227 schema invariants", () => {
   });
 
   it("profiles gains the labor-cost fallback rate", () => {
-    expect(sql).toContain("alter table public.profiles add column if not exists default_hourly_rate");
+    expect(sql).toContain(
+      "alter table public.profiles add column if not exists default_hourly_rate",
+    );
   });
 
   it("all four tables carry set_updated_at triggers", () => {
