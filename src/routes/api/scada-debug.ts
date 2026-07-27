@@ -21,22 +21,19 @@ export const Route = createFileRoute("/api/scada-debug")({
         });
 
         const now = new Date();
-        const { data: telemetry } = await supabase
+        const { data: telemetry, error } = await supabase
           .from("scada_telemetry")
           .select("scada_asset_id, ts, metric, value")
           .order("ts", { ascending: false })
           .limit(20);
 
-        const { data: dbNow } = await supabase.rpc("now" as any);
-        const { data: dbNowQuery } = await supabase.from("scada_telemetry").select("now()").limit(1).maybeSingle();
+        if (error) throw error;
 
         return Response.json({
           serverNow: now.toISOString(),
           serverNowMs: now.getTime(),
           telemetryCount: telemetry?.length ?? 0,
           latestTelemetry: telemetry?.[0] ?? null,
-          dbNow,
-          dbNowQuery,
         });
       },
     },
