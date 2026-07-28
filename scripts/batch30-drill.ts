@@ -21,11 +21,7 @@ import {
   grnDraftPayload,
   type GrnLine,
 } from "../src/lib/grn-rules";
-import {
-  assertInvoicePath,
-  computeVariances,
-  deriveMatchStatus,
-} from "../src/lib/match-rules";
+import { assertInvoicePath, computeVariances, deriveMatchStatus } from "../src/lib/match-rules";
 import {
   acceptsPayment,
   invoiceBalance,
@@ -84,7 +80,12 @@ async function main() {
       uom: "m",
       qty_ordered: 40000,
       qty_received: 20000,
-      lot_ids: ["PSC-DRUM-2026-0001", "PSC-DRUM-2026-0002", "PSC-DRUM-2026-0003", "PSC-DRUM-2026-0004"],
+      lot_ids: [
+        "PSC-DRUM-2026-0001",
+        "PSC-DRUM-2026-0002",
+        "PSC-DRUM-2026-0003",
+        "PSC-DRUM-2026-0004",
+      ],
       condition: "partial",
       defect_notes: "Partial shipment — 40 of 80 drums delivered; balance ETA per expediting log.",
     },
@@ -116,7 +117,9 @@ async function main() {
     "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==",
     "base64",
   );
-  await db.storage.from("photos").upload(photoPath, jpeg, { contentType: "image/jpeg", upsert: true });
+  await db.storage
+    .from("photos")
+    .upload(photoPath, jpeg, { contentType: "image/jpeg", upsert: true });
 
   const status = deriveGrnStatus(lines);
   const defects = countDefects(lines);
@@ -239,7 +242,10 @@ async function main() {
     });
 
     const expectedAmount = invLines.reduce(
-      (s, l) => s + Number(grnQty.get(l.po_line_no) ?? 0) * (poLines.find((p) => p.po_line_no === l.po_line_no)?.unit_price ?? 0),
+      (s, l) =>
+        s +
+        Number(grnQty.get(l.po_line_no) ?? 0) *
+          (poLines.find((p) => p.po_line_no === l.po_line_no)?.unit_price ?? 0),
       0,
     );
     const variances = computeVariances({
@@ -356,7 +362,9 @@ async function main() {
       .from("three_way_matches")
       .select("id, payment_release_blocked")
       .eq("invoice_id", invoiceId);
-    const blockedIds = (data ?? []).filter((m: any) => m.payment_release_blocked).map((m: any) => m.id);
+    const blockedIds = (data ?? [])
+      .filter((m: any) => m.payment_release_blocked)
+      .map((m: any) => m.id);
     if (blockedIds.length > 0) {
       await audit(actor, "invoice.pay_blocked", "invoices", invoiceId, {
         blocked_match_ids: blockedIds,
@@ -393,7 +401,12 @@ async function main() {
   const after = statusAfterPayment(payInv, 41000);
   await db
     .from("invoices")
-    .update({ status: after, paid_amount: 41000, last_payment_at: new Date().toISOString(), paid_at: after === "paid" ? "2026-08-03" : null })
+    .update({
+      status: after,
+      paid_amount: 41000,
+      last_payment_at: new Date().toISOString(),
+      paid_at: after === "paid" ? "2026-08-03" : null,
+    })
     .eq("id", clean.inv.id);
   await audit(FINANCE, "payment.record", "payments", pay!.id, {
     invoice_id: clean.inv.id,
@@ -422,7 +435,12 @@ async function main() {
     throw new Error("EXPECTED 422 — guard did not fire");
   } catch (e: any) {
     if (e.code !== "payment_release_blocked") throw e;
-    blockedError = { statusCode: e.statusCode, code: e.code, message: e.message, blocked_match_ids: e.blocked_match_ids };
+    blockedError = {
+      statusCode: e.statusCode,
+      code: e.code,
+      message: e.message,
+      blocked_match_ids: e.blocked_match_ids,
+    };
   }
   log("P-234 typed 422 at release", blockedError);
 
@@ -435,7 +453,10 @@ async function main() {
   const l1 = (etas ?? []).find((e: any) => e.po_line_no === 1)!;
   const l3 = (etas ?? []).find((e: any) => e.po_line_no === 3)!;
 
-  await db.from("expediting_logs").update({ eta_confirmed: true, status: "on_track" }).eq("id", l1.id);
+  await db
+    .from("expediting_logs")
+    .update({ eta_confirmed: true, status: "on_track" })
+    .eq("id", l1.id);
   await audit(BUYER, "expediting.eta_confirmed", "expediting_logs", l1.id, {
     po_number: po!.po_number,
     po_line_no: 1,
@@ -484,7 +505,11 @@ async function main() {
   log("P-236 ETA", {
     line1: { eta_confirmed: true, eta: l1.current_eta },
     line3: { counter_eta: counterEta, eta_confirmed: false },
-    finance_admin_denied: { status: 403, code: "forbidden_role", roles: (financeRoles ?? []).map((r: any) => r.role) },
+    finance_admin_denied: {
+      status: 403,
+      code: "forbidden_role",
+      roles: (financeRoles ?? []).map((r: any) => r.role),
+    },
   });
 
   log("DONE");
