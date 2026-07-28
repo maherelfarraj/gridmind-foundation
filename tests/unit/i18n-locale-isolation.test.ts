@@ -1,4 +1,5 @@
 // P-244 — locale isolation + export language sanity.
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 
 import { globSync } from "tinyglobby";
