@@ -40,6 +40,7 @@ export const ERROR_KEY_MAP: Record<string, string> = {
   line_not_on_subcontract: "portalMod.errors.line_not_on_subcontract",
   message_required: "portalMod.errors.message_required",
   po_required: "portalMod.errors.po_required",
+  compliance_insurance_expired: "portalMod.errors.compliance_insurance_expired",
 };
 
 export const UNKNOWN_ERROR_KEY = "financeMod.errors.unknown";

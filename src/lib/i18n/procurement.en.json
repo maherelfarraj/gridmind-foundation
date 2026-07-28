@@ -395,7 +395,8 @@
   "payment_release_blocked": "Payment release is blocked by an unresolved three-way match variance.",
   "gps_outside_geofence": "Your location is outside the site geofence.",
   "approval_instance_open": "An approval is already in progress for this record.",
-  "unknown": "Something went wrong. Please try again."
+  "unknown": "Something went wrong. Please try again.",
+  "compliance_insurance_expired": "Mandatory insurance has expired for this subcontractor — renew it before submitting claims."
  },
  "subcontracts": {
   "title": "Subcontracts",
@@ -478,6 +479,45 @@
    "under_review": "Under review",
    "certified": "Certified",
    "rejected": "Rejected"
+  },
+  "compliance": {
+   "title": "Compliance documents",
+   "add": "Add document",
+   "empty": "No compliance documents",
+   "emptyHint": "Record insurance, licences, safety certificates and performance bonds with their expiry dates.",
+   "docType": "Document type",
+   "docTitle": "Title",
+   "issueDate": "Issued",
+   "expiryDate": "Expires",
+   "mandatory": "Mandatory",
+   "remove": "Remove document",
+   "derivedHint": "Validity is derived from the expiry date: valid, expiring within 30 days, or expired.",
+   "blocked": "Mandatory insurance has expired — progress claims are blocked on this subcontract until it is renewed.",
+   "expiringBadge": "{{count}} expiring",
+   "expiredBadge": "{{count}} expired",
+   "types": {
+    "insurance": "Insurance",
+    "license": "Licence",
+    "safety_cert": "Safety certificate",
+    "performance_bond": "Performance bond"
+   },
+   "status": {
+    "valid": "Valid",
+    "expiring_soon": "Expiring soon",
+    "expired": "Expired"
+   }
+  },
+  "scorecard": {
+   "title": "Subcontractor scorecard",
+   "composite": "Composite score",
+   "claimAccuracy": "Claim accuracy",
+   "safety": "Safety",
+   "quality": "Quality",
+   "onTime": "On-time claims",
+   "recompute": "Recompute",
+   "empty": "No scorecard yet",
+   "emptyHint": "Compute a period to score claim accuracy, safety, quality and on-time submission.",
+   "period": "Period {{start}} → {{end}}"
   }
  }
 }

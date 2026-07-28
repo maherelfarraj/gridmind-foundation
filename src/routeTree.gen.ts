@@ -162,6 +162,7 @@ import { Route as ApiPublicCronScheduledReportsRouteImport } from './routes/api/
 import { Route as ApiPublicCronPmWorkOrdersRouteImport } from './routes/api/public/cron/pm-work-orders'
 import { Route as ApiPublicCronIngestionRetryRouteImport } from './routes/api/public/cron/ingestion-retry'
 import { Route as ApiPublicCronFinanceAlertsRouteImport } from './routes/api/public/cron/finance-alerts'
+import { Route as ApiPublicCronComplianceExpiryRouteImport } from './routes/api/public/cron/compliance-expiry'
 import { Route as ApiPublicCronBondExpiryRouteImport } from './routes/api/public/cron/bond-expiry'
 import { Route as ApiPublicCronAuditRetentionRouteImport } from './routes/api/public/cron/audit-retention'
 import { Route as ApiPublicCronApprovalEscalationsRouteImport } from './routes/api/public/cron/approval-escalations'
@@ -1136,6 +1137,12 @@ const ApiPublicCronFinanceAlertsRoute =
     path: '/api/public/cron/finance-alerts',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronComplianceExpiryRoute =
+  ApiPublicCronComplianceExpiryRouteImport.update({
+    id: '/api/public/cron/compliance-expiry',
+    path: '/api/public/cron/compliance-expiry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronBondExpiryRoute = ApiPublicCronBondExpiryRouteImport.update({
   id: '/api/public/cron/bond-expiry',
   path: '/api/public/cron/bond-expiry',
@@ -1925,6 +1932,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
   '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
@@ -2166,6 +2174,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
   '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
@@ -2420,6 +2429,7 @@ export interface FileRoutesById {
   '/api/public/cron/approval-escalations': typeof ApiPublicCronApprovalEscalationsRoute
   '/api/public/cron/audit-retention': typeof ApiPublicCronAuditRetentionRoute
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
+  '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
@@ -2675,6 +2685,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/approval-escalations'
     | '/api/public/cron/audit-retention'
     | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
@@ -2916,6 +2927,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/approval-escalations'
     | '/api/public/cron/audit-retention'
     | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
@@ -3169,6 +3181,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/approval-escalations'
     | '/api/public/cron/audit-retention'
     | '/api/public/cron/bond-expiry'
+    | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
@@ -3268,6 +3281,7 @@ export interface RootRouteChildren {
   ApiPublicCronApprovalEscalationsRoute: typeof ApiPublicCronApprovalEscalationsRoute
   ApiPublicCronAuditRetentionRoute: typeof ApiPublicCronAuditRetentionRoute
   ApiPublicCronBondExpiryRoute: typeof ApiPublicCronBondExpiryRoute
+  ApiPublicCronComplianceExpiryRoute: typeof ApiPublicCronComplianceExpiryRoute
   ApiPublicCronFinanceAlertsRoute: typeof ApiPublicCronFinanceAlertsRoute
   ApiPublicCronIngestionRetryRoute: typeof ApiPublicCronIngestionRetryRoute
   ApiPublicCronPmWorkOrdersRoute: typeof ApiPublicCronPmWorkOrdersRoute
@@ -4351,6 +4365,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/finance-alerts'
       fullPath: '/api/public/cron/finance-alerts'
       preLoaderRoute: typeof ApiPublicCronFinanceAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/compliance-expiry': {
+      id: '/api/public/cron/compliance-expiry'
+      path: '/api/public/cron/compliance-expiry'
+      fullPath: '/api/public/cron/compliance-expiry'
+      preLoaderRoute: typeof ApiPublicCronComplianceExpiryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/bond-expiry': {
@@ -5852,6 +5873,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronApprovalEscalationsRoute: ApiPublicCronApprovalEscalationsRoute,
   ApiPublicCronAuditRetentionRoute: ApiPublicCronAuditRetentionRoute,
   ApiPublicCronBondExpiryRoute: ApiPublicCronBondExpiryRoute,
+  ApiPublicCronComplianceExpiryRoute: ApiPublicCronComplianceExpiryRoute,
   ApiPublicCronFinanceAlertsRoute: ApiPublicCronFinanceAlertsRoute,
   ApiPublicCronIngestionRetryRoute: ApiPublicCronIngestionRetryRoute,
   ApiPublicCronPmWorkOrdersRoute: ApiPublicCronPmWorkOrdersRoute,

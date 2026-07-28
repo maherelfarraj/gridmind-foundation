@@ -83,7 +83,6 @@ function PortfolioPage() {
         actions={<ExportExecReportButton />}
       />
 
-
       <KpiGrid columns={6} label={t("portfolioMod.title")}>
         <KpiTile
           label={t("portfolioMod.kpi.activeProjects")}

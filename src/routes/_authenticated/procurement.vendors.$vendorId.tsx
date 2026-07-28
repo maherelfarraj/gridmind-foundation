@@ -19,6 +19,8 @@ import { VendorForm } from "@/components/procurement/vendor-form";
 import { VendorDocumentExchange } from "@/components/procurement/vendor-document-exchange";
 import { VendorCertifications } from "@/components/procurement/vendor-certifications";
 import { VendorPortalAccess } from "@/components/procurement/vendor-portal-access";
+import { CompliancePanel } from "@/components/procurement/compliance-panel";
+import { SubScorecardPanel } from "@/components/procurement/sub-scorecard-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getVendor,
@@ -122,6 +124,7 @@ function VendorDetail() {
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="portal">Portal access</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance &amp; score</TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="mt-4 space-y-6">
@@ -151,6 +154,12 @@ function VendorDetail() {
 
         <TabsContent value="documents" className="mt-4">
           <VendorDocumentExchange vendorId={vendor.id} canWrite={canWrite} />
+        </TabsContent>
+
+        {/* P-260 — one vendor, both lenses: subcontract compliance + scorecard. */}
+        <TabsContent value="compliance" className="mt-4 grid gap-6 lg:grid-cols-2">
+          <CompliancePanel vendorId={vendor.id} canWrite={canWrite} />
+          <SubScorecardPanel vendorId={vendor.id} canWrite={canWrite} />
         </TabsContent>
       </Tabs>
     </div>

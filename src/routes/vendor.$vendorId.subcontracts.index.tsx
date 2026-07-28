@@ -29,9 +29,12 @@ import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   createSubComplianceUpload,
+  getMyScorecard,
+  listMyCompliance,
   listSubPortalSubcontracts,
   submitSubComplianceDocument,
 } from "@/lib/sub-portal.functions";
+import { complianceStatus, scoreTrend } from "@/lib/sub-compliance.rules";
 import { validateUploadFile, VENDOR_DOC_ALLOWED_MIME } from "@/lib/vendor-uploads.rules";
 
 export const Route = createFileRoute("/vendor/$vendorId/subcontracts/")({
@@ -155,7 +158,14 @@ function SubPortalListPage() {
         </CardContent>
       </Card>
 
-      <ComplianceUploadCard vendorId={vendorId} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <MyComplianceCard vendorId={vendorId} />
+        <MyScoreCard vendorId={vendorId} />
+      </div>
+
+      <div className="mt-6">
+        <ComplianceUploadCard vendorId={vendorId} />
+      </div>
     </div>
   );
 }
@@ -252,6 +262,119 @@ function ComplianceUploadCard({ vendorId }: { vendorId: string }) {
             {t("portalMod.sub.complianceUpload")}
           </Button>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** P-260 — the sub sees their own compliance validity, nothing about peers. */
+function MyComplianceCard({ vendorId }: { vendorId: string }) {
+  const { t } = useI18n();
+  const listFn = useServerFn(listMyCompliance);
+  const { data = [] } = useQuery({
+    queryKey: ["sub-portal", "compliance", vendorId],
+    queryFn: () => listFn({ data: { vendorId } }),
+    retry: false,
+  });
+
+  const blocked = data.some(
+    (d) =>
+      d.mandatory && d.doc_type === "insurance" && complianceStatus(d.expiry_date) === "expired",
+  );
+
+  const statusLabel = (expiry: string) => {
+    const st = complianceStatus(expiry);
+    if (st === "expired") return t("portalMod.sub.complianceExpired");
+    if (st === "expiring_soon") return t("portalMod.sub.complianceExpiringSoon");
+    return t("portalMod.sub.complianceValid");
+  };
+  const statusTone = (expiry: string) => {
+    const st = complianceStatus(expiry);
+    if (st === "expired") return "destructive" as const;
+    if (st === "expiring_soon") return "secondary" as const;
+    return "outline" as const;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FileCheck2 className="size-4" aria-hidden />
+          {t("portalMod.sub.complianceStatusTitle")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">{t("portalMod.sub.complianceStatusDesc")}</p>
+        {blocked ? (
+          <p className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-foreground">
+            {t("portalMod.sub.complianceBlocked")}
+          </p>
+        ) : null}
+        {data.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("portalMod.sub.complianceNone")}</p>
+        ) : (
+          <ul className="space-y-2">
+            {data.map((d) => (
+              <li key={d.id} className="flex items-center justify-between gap-3 text-sm">
+                <span>
+                  {d.title}
+                  <span className="ms-2 text-xs text-muted-foreground">
+                    {t("portalMod.sub.complianceExpiresOn", { date: d.expiry_date })}
+                  </span>
+                </span>
+                <Badge variant={statusTone(d.expiry_date)}>{statusLabel(d.expiry_date)}</Badge>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Composite only — no component breakdown, no peer comparison. */
+function MyScoreCard({ vendorId }: { vendorId: string }) {
+  const { t } = useI18n();
+  const scoreFn = useServerFn(getMyScorecard);
+  const { data } = useQuery({
+    queryKey: ["sub-portal", "scorecard", vendorId],
+    queryFn: () => scoreFn({ data: { vendorId } }),
+    retry: false,
+  });
+  const trend = scoreTrend(data?.composite ?? null, data?.prior_composite ?? null);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <HardHat className="size-4" aria-hidden />
+          {t("portalMod.sub.scoreTitle")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm text-muted-foreground">{t("portalMod.sub.scoreDesc")}</p>
+        {!data || data.composite == null ? (
+          <p className="text-sm text-muted-foreground">{t("portalMod.sub.scoreNone")}</p>
+        ) : (
+          <>
+            <p className="font-mono text-3xl">{data.composite}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("portalMod.sub.scorePeriod", {
+                start: data.period_start,
+                end: data.period_end,
+              })}
+            </p>
+            {trend ? (
+              <p className="text-xs text-muted-foreground">
+                {trend.direction === "up"
+                  ? t("portalMod.sub.scoreTrendUp", { delta: Math.abs(trend.delta) })
+                  : trend.direction === "down"
+                    ? t("portalMod.sub.scoreTrendDown", { delta: Math.abs(trend.delta) })
+                    : t("portalMod.sub.scoreTrendFlat")}
+              </p>
+            ) : null}
+          </>
+        )}
       </CardContent>
     </Card>
   );
