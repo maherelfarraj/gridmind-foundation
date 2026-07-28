@@ -5,6 +5,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Boxes, Coins, FileSignature, Gauge, TrendingUp, Wallet } from "lucide-react";
 
+import { CashCurveSection } from "@/components/portfolio/cash-curve-section";
 import { GateRail } from "@/components/portfolio/gate-rail";
 import { ProjectCard } from "@/components/portfolio/project-card";
 import { Card } from "@/components/ui/card";
@@ -162,6 +163,8 @@ function PortfolioPage() {
           </div>
         )}
       </section>
+
+      <CashCurveSection baseCurrency={currency} />
 
       {projects.length > 0 ? <GateRail projects={projects} /> : null}
     </div>

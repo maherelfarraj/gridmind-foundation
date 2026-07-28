@@ -6,6 +6,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import type { CashMovement, ProjectCurveRow } from "@/lib/portfolio/cash-curve.rules";
 import type { EvmAggregate } from "@/lib/portfolio/portfolio.rules";
 
 export interface PortfolioKpis {
@@ -126,4 +127,40 @@ export const getPortfolioCashCurve = createServerFn({ method: "POST" })
     });
     if (error) throw error;
     return (rows ?? []) as unknown as PortfolioCashCurveRow[];
+  });
+
+// P-253 — Per-project contribution to the consolidated curve.
+export const getPortfolioCashCurveProjects = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        back: z.number().int().min(0).max(60).default(12),
+        forward: z.number().int().min(0).max(60).default(6),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<ProjectCurveRow[]> => {
+    requireSupabaseAuth(context);
+    const { data: rows, error } = await context.supabase.rpc("portfolio_cash_curve_projects", {
+      p_back: data.back,
+      p_forward: data.forward,
+    });
+    if (error) throw error;
+    return (rows ?? []) as unknown as ProjectCurveRow[];
+  });
+
+// P-253 — Month drill: every cash movement in one month, across projects.
+export const getPortfolioCashMonth = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ month: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<CashMovement[]> => {
+    requireSupabaseAuth(context);
+    const { data: rows, error } = await context.supabase.rpc("portfolio_cash_month", {
+      p_month: data.month,
+    });
+    if (error) throw error;
+    return (rows ?? []) as unknown as CashMovement[];
   });

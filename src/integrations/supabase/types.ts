@@ -20032,6 +20032,42 @@ export type Database = {
           month: string
         }[]
       }
+      portfolio_cash_curve_projects: {
+        Args: { p_back?: number; p_forward?: number }
+        Returns: {
+          actual_inflow: number
+          actual_net: number
+          actual_outflow: number
+          base_currency: string
+          forecast_inflow: number
+          forecast_net: number
+          forecast_outflow: number
+          month: string
+          project_code: string
+          project_id: string
+          project_name: string
+        }[]
+      }
+      portfolio_cash_month: {
+        Args: { p_month: string }
+        Returns: {
+          amount: number
+          amount_base: number
+          base_currency: string
+          category: string
+          currency_code: string
+          direction: string
+          id: string
+          kind: string
+          notes: string
+          period: string
+          project_code: string
+          project_id: string
+          project_name: string
+          reference_id: string
+          reference_type: string
+        }[]
+      }
       portfolio_gates: {
         Args: never
         Returns: {
