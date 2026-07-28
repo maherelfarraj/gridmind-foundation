@@ -281,11 +281,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          {showPublicHeader && <Header />}
-          <Outlet />
-          <Toaster />
-        </AuthProvider>
+        <LocaleProvider>
+          <AuthProvider>
+            {showPublicHeader && <Header />}
+            <Outlet />
+            <Toaster />
+          </AuthProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
