@@ -65,6 +65,7 @@ interface RawInvoice {
   project_id: string | null;
   projects: { name: string } | null;
   contracts: { counterparty: string } | null;
+  vendors: { name: string } | null;
 }
 
 export interface AgingDataset {
@@ -77,17 +78,18 @@ export interface AgingDataset {
 /** Load open receivables, attach client/project/reminder counts, and age them. */
 export async function loadAgingDataset(
   ctx: AuthContext,
-  filters: { project_id?: string },
+  filters: { project_id?: string; direction?: "receivable" | "payable" },
 ): Promise<AgingDataset> {
   const today = todayIso();
+  const direction = filters.direction ?? "receivable";
   const base = await resolveBaseCurrency(ctx, filters.project_id);
 
   let query = ctx.supabase
     .from("invoices")
     .select(
-      "id, invoice_number, status, direction, due_date, amount, tax_amount, paid_amount, currency_code, project_id, projects(name), contracts(counterparty)" as string,
+      "id, invoice_number, status, direction, due_date, amount, tax_amount, paid_amount, currency_code, project_id, projects(name), contracts(counterparty), vendors(name)" as string,
     )
-    .eq("direction", "receivable")
+    .eq("direction", direction)
     .in("status", ["approved", "sent", "partially_paid"])
     .limit(2000);
   if (filters.project_id) query = query.eq("project_id", filters.project_id);
@@ -95,13 +97,16 @@ export async function loadAgingDataset(
   if (error) throw error;
 
   const open = (data ?? []).filter((r) =>
-    isAgingEligible({
-      direction: r.direction,
-      status: r.status,
-      amount: Number(r.amount ?? 0),
-      tax_amount: Number(r.tax_amount ?? 0),
-      paid_amount: Number(r.paid_amount ?? 0),
-    }),
+    isAgingEligible(
+      {
+        direction: r.direction,
+        status: r.status,
+        amount: Number(r.amount ?? 0),
+        tax_amount: Number(r.tax_amount ?? 0),
+        paid_amount: Number(r.paid_amount ?? 0),
+      },
+      direction,
+    ),
   );
   if (open.length === 0) {
     return { rows: [], base_currency: base, today, fx_missing_currencies: [] };
@@ -134,7 +139,7 @@ export async function loadAgingDataset(
       fx_rate_to_base: rate,
       project_id: r.project_id,
       project_name: r.projects?.name ?? null,
-      client_name: r.contracts?.counterparty ?? null,
+      client_name: r.contracts?.counterparty ?? r.vendors?.name ?? null,
       reminder_count: counts.get(r.id) ?? 0,
     };
     return toAgingRow(input, today);

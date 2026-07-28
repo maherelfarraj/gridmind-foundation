@@ -119,14 +119,18 @@ export function bucketFor(days: number): AgingBucketKey {
   return "d90_plus";
 }
 
-export function isAgingEligible(inv: {
-  direction: string;
-  status: string;
-  amount: number;
-  tax_amount: number;
-  paid_amount: number;
-}): boolean {
-  if (inv.direction !== "receivable") return false;
+export function isAgingEligible(
+  inv: {
+    direction: string;
+    status: string;
+    amount: number;
+    tax_amount: number;
+    paid_amount: number;
+  },
+  // P-261: the same aging engine serves payables (subcontractor AP invoices).
+  direction: "receivable" | "payable" = "receivable",
+): boolean {
+  if (inv.direction !== direction) return false;
   if (!(AGING_ELIGIBLE_STATUSES as readonly string[]).includes(inv.status)) return false;
   return balanceOf(inv) > 0.005;
 }

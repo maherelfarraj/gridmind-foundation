@@ -1,6 +1,7 @@
 // P-195 — TanStack Query options for AR aging & collections.
 import { queryOptions } from "@tanstack/react-query";
 
+import { getApAging } from "@/lib/ap-aging.functions";
 import { getArAccess, getArAging, listInvoiceReminders } from "@/lib/ar-aging.functions";
 import type { GetArAgingInput } from "@/lib/ar-aging.rules";
 
@@ -25,5 +26,14 @@ export function invoiceRemindersQueryOptions(invoiceId: string) {
     queryKey: ["ar-reminders", invoiceId],
     queryFn: () => listInvoiceReminders({ data: { invoice_id: invoiceId } }),
     staleTime: 5_000,
+  });
+}
+
+// P-261 — AP aging (payables incl. subcontractor invoices).
+export function apAgingQueryOptions(filters: { project_id?: string } = {}) {
+  return queryOptions({
+    queryKey: ["ap-aging", filters],
+    queryFn: () => getApAging({ data: filters }),
+    staleTime: 30_000,
   });
 }
