@@ -90,6 +90,10 @@ function entityLink(row: InboxRow): string | null {
       return `/finance/change-orders/${row.entity_id}`;
     case "timesheet":
       return "/timesheets";
+    // P-258 — subcontract progress claims certify from the claim workspace.
+    case "subcontract_claim":
+      return `/procurement/subcontracts/claims/${row.entity_id}`;
+
     case "project_phase_gate":
       return `/projects/${row.entity_id}`;
     default:
