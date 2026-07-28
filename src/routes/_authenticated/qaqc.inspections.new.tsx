@@ -36,6 +36,8 @@ import {
   type InspectionInput,
   type QaqcAttachment,
 } from "@/lib/qaqc.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/qaqc/inspections/new")({
@@ -56,6 +58,7 @@ export const Route = createFileRoute("/_authenticated/qaqc/inspections/new")({
 });
 
 function NewInspectionPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const projectsQuery = useQuery(qaqcProjectsQueryOptions());
@@ -83,11 +86,11 @@ function NewInspectionPage() {
   const createMut = useMutation({
     mutationFn: (payload: InspectionInput) => createInspection({ data: payload as any }),
     onSuccess: async (row) => {
-      toast.success(`Inspection ${row.inspection_number} created`);
+      toast.success(t("fieldMod.qaqc.inspection.inspectionCreated", { number: row.inspection_number }));
       await qc.invalidateQueries({ queryKey: ["qaqc"] });
       navigate({ to: "/qaqc/inspections/$id", params: { id: row.id } });
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const handleUpload = async (file: File) => {
@@ -138,9 +141,9 @@ function NewInspectionPage() {
           to="/qaqc/inspections"
           className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft size={12} /> Back to inspections
+          <ArrowLeft size={12} /> {t("fieldMod.qaqc.inspection.backToInspections")}
         </Link>
-        <PageHeader title="New inspection" description="Log a new quality-control inspection." />
+        <PageHeader title={t("fieldMod.qaqc.inspection.title")} description={t("fieldMod.qaqc.inspection.description")} />
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -211,7 +214,7 @@ function NewInspectionPage() {
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="date">Inspection date</Label>
-              <Input id="date" type="date" {...form.register("inspectionDate")} />
+              <Input id="date" type="date" dir="ltr" {...form.register("inspectionDate")} />
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
               <Label>Inspector</Label>
@@ -320,10 +323,10 @@ function NewInspectionPage() {
             variant="ghost"
             onClick={() => navigate({ to: "/qaqc/inspections" })}
           >
-            <X size={14} aria-hidden /> Cancel
+            <X size={14} aria-hidden /> {t("fieldMod.common.cancel")}
           </Button>
-          <Button type="submit" disabled={createMut.isPending} className="ml-auto">
-            {createMut.isPending ? "Saving…" : "Log inspection"}
+          <Button type="submit" disabled={createMut.isPending} className="ms-auto">
+            {createMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.qaqc.inspection.logInspection")}
           </Button>
         </div>
       </form>

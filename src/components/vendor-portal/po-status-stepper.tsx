@@ -1,7 +1,9 @@
 // P-223 — Compact PO lifecycle stepper for the vendor portal.
-import { PO_STATUS_LABELS, PO_STATUS_STEPS } from "@/lib/vendor-portal.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { PO_STATUS_STEPS } from "@/lib/vendor-portal.rules";
 
 export function PoStatusStepper({ status }: { status: string }) {
+  const { t } = useI18n();
   const activeIndex = PO_STATUS_STEPS.indexOf(status as (typeof PO_STATUS_STEPS)[number]);
 
   if (activeIndex === -1) {
@@ -25,7 +27,7 @@ export function PoStatusStepper({ status }: { status: string }) {
                     : "bg-muted/50 text-muted-foreground"
               }`}
             >
-              {PO_STATUS_LABELS[step]}
+              {t(`portalMod.statuses.${step}`)}
             </span>
             {index < PO_STATUS_STEPS.length - 1 ? (
               <span aria-hidden className={`h-px w-4 ${done ? "bg-foreground/40" : "bg-border"}`} />

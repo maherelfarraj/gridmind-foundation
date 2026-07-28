@@ -34,13 +34,17 @@ export function OfflineBadge() {
           variant="ghost"
           size="sm"
           className="h-8 px-2 text-xs"
-          aria-label={t("chrome.queueAria", { pending, failed })}
+          aria-label={t("fieldMod.offline.pendingBadge", { count: pending })}
+          title={t("fieldMod.offline.pendingBadge", { count: pending })}
         >
           <Link to="/field/sync-status">
             {pending > 0 && (
               <span className="inline-flex items-center gap-1">
                 <CloudUpload className="h-3.5 w-3.5" aria-hidden />
-                {pending}
+                <span aria-hidden>{pending}</span>
+                <span className="sr-only">
+                  {t("fieldMod.offline.pendingBadge", { count: pending })}
+                </span>
               </span>
             )}
             {failed > 0 && (

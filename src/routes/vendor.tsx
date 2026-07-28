@@ -7,6 +7,7 @@ import { ShieldCheck, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserMenu } from "@/components/user-menu";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { listMyVendorMemberships } from "@/lib/vendor-portal.functions";
 
@@ -50,6 +51,7 @@ function VendorPortalLayout() {
 }
 
 function VendorTopBar() {
+  const { t } = useI18n();
   const listFn = useServerFn(listMyVendorMemberships);
   const q = useQuery({
     queryKey: ["vendor-portal", "memberships"],
@@ -72,7 +74,7 @@ function VendorTopBar() {
           to="/vendor"
           className="font-display text-lg font-semibold tracking-tight text-foreground"
         >
-          {brand?.company_name ?? "GridMind"} Vendor Portal
+          {brand?.company_name ?? t("portalMod.topbar.brandFallback")} {t("portalMod.topbar.brandSuffix")}
         </Link>
         <div className="ml-auto flex items-center gap-3">
           <UserMenu />
@@ -83,6 +85,7 @@ function VendorTopBar() {
 }
 
 function VendorMfaBanner() {
+  const { t } = useI18n();
   const [enrolled, setEnrolled] = useState<boolean | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -109,12 +112,10 @@ function VendorMfaBanner() {
     <div className="border-b border-accent/40 bg-accent/20">
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-6 py-2 text-sm">
         <ShieldCheck className="h-4 w-4 text-accent-foreground" aria-hidden />
-        <span className="text-accent-foreground">
-          For your security, enable two-factor authentication on your account.
-        </span>
+        <span className="text-accent-foreground">{t("portalMod.topbar.mfaBanner")}</span>
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label={t("portalMod.topbar.dismiss")}
           onClick={() => {
             window.localStorage.setItem("vendor-portal-mfa-banner-dismissed", "1");
             setDismissed(true);

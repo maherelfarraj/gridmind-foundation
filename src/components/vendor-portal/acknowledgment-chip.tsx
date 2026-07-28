@@ -4,7 +4,8 @@ import { Check, MessageSquare, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateTime } from "@/lib/format";
-import { ACKNOWLEDGMENT_LABELS, type AcknowledgmentStatus } from "@/lib/vendor-portal.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import type { AcknowledgmentStatus } from "@/lib/vendor-portal.rules";
 
 const ICONS = {
   accepted: Check,
@@ -29,11 +30,12 @@ export function AcknowledgmentChip({
   note?: string | null;
   by?: string | null;
 }) {
+  const { t } = useI18n();
   const Icon = ICONS[status];
   const chip = (
     <Badge variant={VARIANTS[status]} className="gap-1">
       <Icon className="h-3 w-3" />
-      {ACKNOWLEDGMENT_LABELS[status]}
+      {t(`portalMod.acknowledgment.${status}`)}
     </Badge>
   );
 
@@ -55,9 +57,10 @@ export function AcknowledgmentChip({
 
 /** Chip used when a PO is still awaiting the vendor's acknowledgment. */
 export function AwaitingAcknowledgmentChip() {
+  const { t } = useI18n();
   return (
     <Badge variant="outline" className="text-muted-foreground">
-      Awaiting acknowledgment
+      {t("portalMod.acknowledgment.awaiting")}
     </Badge>
   );
 }

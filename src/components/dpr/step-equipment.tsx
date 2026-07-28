@@ -30,8 +30,10 @@ import {
   equipmentUtilization,
   type EquipmentStatus,
 } from "@/lib/field-exec.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: boolean }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listFn = useServerFn(listEquipmentRecords);
   const saveFn = useServerFn(upsertEquipmentRecord);
@@ -62,7 +64,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
         },
       }),
     onSuccess: () => {
-      toast.success("Equipment logged");
+      toast.success(t("fieldMod.dpr.equipment.equipmentLogged"));
       setTag("");
       setDescription("");
       setOperator("");
@@ -76,7 +78,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
   const remove = useMutation({
     mutationFn: (id: string) => delFn({ data: { id, dprId: header.id } }),
     onSuccess: () => {
-      toast.success("Entry removed");
+      toast.success(t("fieldMod.dpr.equipment.entryRemoved"));
       invalidate();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -91,10 +93,10 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between gap-2 text-base">
             <span className="flex items-center gap-2">
-              <Truck className="h-4 w-4" aria-hidden /> Equipment on site
+              <Truck className="h-4 w-4" aria-hidden /> {t("fieldMod.dpr.equipment.title")}
             </span>
             <span className="text-xs font-normal text-muted-foreground">
-              {list.length} units · {utilization}% utilization
+              {t("fieldMod.dpr.equipment.unitsUtilization", { units: list.length, utilization })}
             </span>
           </CardTitle>
         </CardHeader>
@@ -107,8 +109,8 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
             <EmptyState
               compact
               icon={Truck}
-              title="No equipment logged"
-              description="Record plant and equipment hours for this shift."
+              title={t("fieldMod.dpr.equipment.noEquipment")}
+              description={t("fieldMod.dpr.equipment.noEquipmentDescription")}
             />
           ) : (
             <ul className="divide-y divide-border rounded-md border border-border">
@@ -134,7 +136,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
                       type="button"
                       size="icon"
                       variant="ghost"
-                      aria-label={`Remove ${r.equipment_tag}`}
+                      aria-label={t("fieldMod.dpr.equipment.removeEquipment", { tag: r.equipment_tag })}
                       onClick={() => remove.mutate(r.id)}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -150,11 +152,11 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
       {!readOnly && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Log equipment</CardTitle>
+            <CardTitle className="text-base">{t("fieldMod.dpr.equipment.logEquipment")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label htmlFor="eq-tag">Equipment tag</Label>
+              <Label htmlFor="eq-tag">{t("fieldMod.dpr.equipment.equipmentTag")}</Label>
               <Input
                 id="eq-tag"
                 value={tag}
@@ -163,7 +165,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="eq-desc">Description</Label>
+              <Label htmlFor="eq-desc">{t("fieldMod.dpr.equipment.description")}</Label>
               <Input
                 id="eq-desc"
                 value={description}
@@ -172,7 +174,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="eq-status">Status</Label>
+              <Label htmlFor="eq-status">{t("fieldMod.dpr.equipment.status")}</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as EquipmentStatus)}>
                 <SelectTrigger id="eq-status">
                   <SelectValue />
@@ -187,10 +189,11 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="eq-hours">Hours (0–24)</Label>
+              <Label htmlFor="eq-hours">{t("fieldMod.dpr.equipment.hoursRange")}</Label>
               <Input
                 id="eq-hours"
                 type="number"
+                dir="ltr"
                 min={0}
                 max={24}
                 step="0.5"
@@ -199,14 +202,15 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="eq-op">Operator</Label>
+              <Label htmlFor="eq-op">{t("fieldMod.dpr.equipment.operator")}</Label>
               <Input id="eq-op" value={operator} onChange={(e) => setOperator(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="eq-fuel">Fuel (litres)</Label>
+              <Label htmlFor="eq-fuel">{t("fieldMod.dpr.equipment.fuelLitres")}</Label>
               <Input
                 id="eq-fuel"
                 type="number"
+                dir="ltr"
                 min={0}
                 step="1"
                 value={fuel}
@@ -220,7 +224,7 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
                 disabled={!tag.trim() || save.isPending}
                 onClick={() => save.mutate()}
               >
-                <Plus className="mr-2 h-4 w-4" aria-hidden /> Add equipment log
+                <Plus className="me-2 h-4 w-4" aria-hidden /> {t("fieldMod.dpr.equipment.addEquipmentLog")}
               </Button>
             </div>
           </CardContent>

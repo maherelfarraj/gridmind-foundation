@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
 import { listMyVendorMemberships } from "@/lib/vendor-portal.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/vendor/")({
   head: () => ({
@@ -32,6 +33,7 @@ function statusVariant(status: string) {
 }
 
 function VendorIndex() {
+  const { t } = useI18n();
   const listFn = useServerFn(listMyVendorMemberships);
   const q = useQuery({
     queryKey: ["vendor-portal", "memberships"],
@@ -41,23 +43,23 @@ function VendorIndex() {
   return (
     <div className="page-shell mx-auto max-w-4xl px-6 py-8">
       <PageHeader
-        title="Your vendor accounts"
-        description="Open a vendor account to see purchase orders, deliveries, invoices and documents."
+        title={t("portalMod.accountPicker.title")}
+        description={t("portalMod.accountPicker.description")}
       />
 
       {q.isLoading ? (
         <VendorTableSkeleton />
       ) : q.error ? (
         <VendorStateCard
-          title="Couldn’t load your accounts"
-          description="Something went wrong reaching the portal. Please try again."
+          title={t("portalMod.accountPicker.loadErrorTitle")}
+          description={t("portalMod.accountPicker.loadErrorDesc")}
           onRetry={() => void q.refetch()}
         />
       ) : (q.data ?? []).length === 0 ? (
         <EmptyState
           icon={Building2}
-          title="No vendor portal memberships"
-          description="No vendor portal memberships — ask your EPC contact for an invite."
+          title={t("portalMod.accountPicker.emptyTitle")}
+          description={t("portalMod.accountPicker.emptyDesc")}
         />
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -66,21 +68,22 @@ function VendorIndex() {
               <>
                 <div className="min-w-0">
                   <div className="truncate font-medium text-foreground">
-                    {m.vendor_name ?? "Vendor"}
+                    {m.vendor_name ?? t("portalMod.accountPicker.vendorFallback")}
                   </div>
                   <div className="mt-1 truncate text-xs text-muted-foreground">
                     {m.company_name ?? "—"}
                   </div>
                   {m.last_seen_at ? (
                     <div className="mt-1 text-[11px] text-muted-foreground">
-                      Last opened{" "}
-                      {formatDistanceToNow(new Date(m.last_seen_at), { addSuffix: true })}
+                      {t("portalMod.accountPicker.lastOpened", {
+                        time: formatDistanceToNow(new Date(m.last_seen_at), { addSuffix: true }),
+                      })}
                     </div>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={statusVariant(m.status)} className="capitalize">
-                    {m.status}
+                    {t(`portalMod.accountPicker.status.${m.status}`)}
                   </Badge>
                   {m.status === "active" ? (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />

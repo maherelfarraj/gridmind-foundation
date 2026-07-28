@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { PROPOSE_DELIVERY_ERRORS, vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { translateError } from "@/lib/i18n/error-keys";
+import { vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
 import {
   getVendorPortalLineEtas,
   proposeDelivery,
@@ -28,6 +30,7 @@ export function useVendorLineEtas(vendorId: string) {
 }
 
 export function useProposeDelivery(vendorId: string, onDone?: () => void) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const proposeFn = useServerFn(proposeDelivery);
   const etasKey = ["vendor-portal", "line-etas", vendorId] as const;
@@ -66,12 +69,10 @@ export function useProposeDelivery(vendorId: string, onDone?: () => void) {
     onError: (e, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(etasKey, ctx.prev);
       const code = vendorPortalErrorCode(e);
-      toast.error(PROPOSE_DELIVERY_ERRORS[code as string] ?? "Could not submit your proposal");
+      toast.error(translateError(t, code, t("portalMod.propose.errorToast")));
     },
     onSuccess: (res) => {
-      toast.success(
-        `Proposed delivery for ${res.updated} line${res.updated === 1 ? "" : "s"} — awaiting procurement confirmation`,
-      );
+      toast.success(t("portalMod.propose.successToast", { count: res.updated }));
       onDone?.();
     },
     onSettled: () => {

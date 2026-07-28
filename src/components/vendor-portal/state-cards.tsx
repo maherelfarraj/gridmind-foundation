@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export function VendorStateCard({
   icon: Icon = ShieldAlert,
@@ -15,6 +16,7 @@ export function VendorStateCard({
   description: string;
   onRetry?: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-8 text-center">
       <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
@@ -22,7 +24,7 @@ export function VendorStateCard({
       <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       {onRetry ? (
         <Button variant="outline" onClick={onRetry}>
-          Try again
+          {t("common.tryAgain")}
         </Button>
       ) : null}
     </div>
