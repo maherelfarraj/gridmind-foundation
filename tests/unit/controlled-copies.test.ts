@@ -110,7 +110,7 @@ describe("captions and typed 409", () => {
 
   it("parses doc_not_current with the offered current revision", () => {
     const parsed = parseDocNotCurrent({
-      message: 'doc_not_current',
+      message: "doc_not_current",
       details: "0f6d5c2e-1111-4222-8333-444455556666",
     });
     expect(parsed?.code).toBe("doc_not_current");

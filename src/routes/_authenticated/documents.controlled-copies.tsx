@@ -64,10 +64,18 @@ function ControlledCopiesPage() {
       </div>
 
       <div className="flex gap-2">
-        <Button size="sm" variant={onlyDue ? "outline" : "default"} onClick={() => setOnlyDue(false)}>
+        <Button
+          size="sm"
+          variant={onlyDue ? "outline" : "default"}
+          onClick={() => setOnlyDue(false)}
+        >
           {t("engMod.copies.filterAll")}
         </Button>
-        <Button size="sm" variant={onlyDue ? "default" : "outline"} onClick={() => setOnlyDue(true)}>
+        <Button
+          size="sm"
+          variant={onlyDue ? "default" : "outline"}
+          onClick={() => setOnlyDue(true)}
+        >
           {t("engMod.copies.filterDue")}
         </Button>
       </div>
@@ -146,15 +154,7 @@ function ControlledCopiesPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone?: "danger";
-}) {
+function StatCard({ label, value, tone }: { label: string; value: number; tone?: "danger" }) {
   return (
     <Card>
       <CardContent className="py-4">

@@ -117,9 +117,7 @@ export const recallControlledCopy = createServerFn({ method: "POST" })
 
 export const getControlledCopyQueue = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((raw: unknown) =>
-    z.object({ onlyDue: z.boolean().optional() }).parse(raw ?? {}),
-  )
+  .inputValidator((raw: unknown) => z.object({ onlyDue: z.boolean().optional() }).parse(raw ?? {}))
   .handler(async ({ data, context }): Promise<QueueRow[]> => {
     requireSupabaseAuth(context);
     const { data: rows, error } = await context.supabase.rpc("controlled_copy_queue", {

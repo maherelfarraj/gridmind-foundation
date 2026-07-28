@@ -90,7 +90,10 @@ export function summariseByHolder<T extends CopyLike & { holder_name?: string | 
   copies: T[],
   now: Date = new Date(),
 ): Array<{ holder: string; outstanding: number; due: number; overdue: number }> {
-  const map = new Map<string, { holder: string; outstanding: number; due: number; overdue: number }>();
+  const map = new Map<
+    string,
+    { holder: string; outstanding: number; due: number; overdue: number }
+  >();
   for (const c of copies) {
     const holder = holderLabel(c);
     const row = map.get(holder) ?? { holder, outstanding: 0, due: 0, overdue: 0 };
