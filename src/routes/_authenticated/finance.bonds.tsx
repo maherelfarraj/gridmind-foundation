@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Download, Plus, Search, ShieldCheck, Siren, Timer } from "lucide-react";
 import { toast } from "sonner";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { MoneyCell, Num } from "@/components/ui/num";
+
 import { CoverageByTypeChart, InsuranceSummaryCards } from "@/components/bonds/bond-coverage";
 import { BondRenewalSection } from "@/components/bonds/bond-renewal";
 import { BondWorkflowSections } from "@/components/bonds/bond-workflow";
@@ -143,6 +147,7 @@ function CountdownChip({ days }: { days: number | null }) {
 }
 
 function BondsPage() {
+  const { t } = useI18n();
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
   const [project, setProject] = useState("all");
@@ -182,23 +187,23 @@ function BondsPage() {
       const res = await exportFn({ data: filters });
       downloadCsv(res.filename, res.csv);
     } catch (err) {
-      toast.error(bondErrorMessage(err));
+      toast.error(translateError(t, errorCodeOf(err), bondErrorMessage(err)));
     }
   }
 
   return (
     <div className="page-shell">
       <PageHeader
-        title="Bonds & guarantees"
-        description="Bank guarantees, bonds and insurance instruments — coverage, expiries and claims."
+        title={t("financeMod.bonds.title")}
+        description={t("financeMod.bonds.subtitle")}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={rows.length === 0} onClick={handleExport}>
-              <Download className="mr-2 size-4" /> Export CSV
+              <Download className="me-2 size-4" /> {t("common.export")}
             </Button>
             {data?.can_write ? (
               <Button size="sm" onClick={() => setWizardOpen(true)}>
-                <Plus className="mr-2 size-4" /> New instrument
+                <Plus className="me-2 size-4" /> {t("financeMod.bonds.newInstrument")}
               </Button>
             ) : null}
           </div>
@@ -207,13 +212,15 @@ function BondsPage() {
 
       <KpiGrid>
         <KpiTile
-          label="Active coverage"
+          label={t("financeMod.bonds.activeCoverage")}
           icon={ShieldCheck}
           isLoading={registerQ.isPending}
           value={
-            kpis && kpis.coverage.length > 0
-              ? fmt(kpis.coverage[0].amount, kpis.coverage[0].currency_code)
-              : "—"
+            kpis && kpis.coverage.length > 0 ? (
+              <MoneyCell>{fmt(kpis.coverage[0].amount, kpis.coverage[0].currency_code)}</MoneyCell>
+            ) : (
+              "—"
+            )
           }
           hint={
             <span>
@@ -228,27 +235,27 @@ function BondsPage() {
           }
         />
         <KpiTile
-          label="Expiring ≤ 30 days"
+          label={t("financeMod.bonds.expiring30")}
           icon={Siren}
           status={kpis && kpis.expiring_30 > 0 ? "bad" : "neutral"}
           isLoading={registerQ.isPending}
-          value={kpis?.expiring_30 ?? 0}
+          value={<Num>{kpis?.expiring_30 ?? 0}</Num>}
           hint={<Formula text={FORMULAS.expiring30} />}
         />
         <KpiTile
-          label="Expiring ≤ 90 days"
+          label={t("financeMod.bonds.expiring90")}
           icon={Timer}
           status={kpis && kpis.expiring_90 > 0 ? "warning" : "neutral"}
           isLoading={registerQ.isPending}
-          value={kpis?.expiring_90 ?? 0}
+          value={<Num>{kpis?.expiring_90 ?? 0}</Num>}
           hint={<Formula text={FORMULAS.expiring90} />}
         />
         <KpiTile
-          label="Claims outstanding"
+          label={t("financeMod.bonds.claimsOutstanding")}
           icon={AlertTriangle}
           status={kpis && kpis.claims_outstanding > 0 ? "bad" : "neutral"}
           isLoading={registerQ.isPending}
-          value={kpis?.claims_outstanding ?? 0}
+          value={<Num>{kpis?.claims_outstanding ?? 0}</Num>}
           hint={<Formula text={FORMULAS.claims} />}
         />
       </KpiGrid>
@@ -256,23 +263,23 @@ function BondsPage() {
       <div className="flex flex-wrap items-center gap-2">
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className="w-56">
-            <SelectValue placeholder="Instrument type" />
+            <SelectValue placeholder={t("financeMod.bonds.instrumentType")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            {INSTRUMENT_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
-                {INSTRUMENT_TYPE_META[t].label}
+            <SelectItem value="all">{t("financeMod.bonds.allTypes")}</SelectItem>
+            {INSTRUMENT_TYPES.map((it) => (
+              <SelectItem key={it} value={it}>
+                {INSTRUMENT_TYPE_META[it].label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("common.status")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("financeMod.bonds.allStatuses")}</SelectItem>
             {BOND_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {titleize(s)}
@@ -282,10 +289,10 @@ function BondsPage() {
         </Select>
         <Select value={project} onValueChange={setProject}>
           <SelectTrigger className="w-56">
-            <SelectValue placeholder="Project" />
+            <SelectValue placeholder={t("common.project")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All projects</SelectItem>
+            <SelectItem value="all">{t("financeMod.bonds.allProjects")}</SelectItem>
             {(data?.projects ?? []).map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
@@ -294,10 +301,10 @@ function BondsPage() {
           </SelectContent>
         </Select>
         <div className="relative w-56">
-          <Search className="pointer-events-none absolute left-2 top-2.5 size-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-2 top-2.5 size-4 text-muted-foreground" />
           <Input
-            className="pl-8"
-            placeholder="Issuer"
+            className="ps-8"
+            placeholder={t("common.vendor")}
             value={issuer}
             onChange={(e) => setIssuer(e.target.value)}
           />
@@ -312,12 +319,10 @@ function BondsPage() {
           aria-pressed={insuranceOnly}
           onClick={() => setInsuranceOnly((v) => !v)}
         >
-          Insurance
+          {t("financeMod.bonds.insuranceOnly")}
         </Button>
         {insuranceOnly ? (
-          <span className="text-xs text-muted-foreground">
-            CAR/EAR, professional indemnity, public liability and workmen&rsquo;s compensation only
-          </span>
+          <span className="text-xs text-muted-foreground">{t("financeMod.bonds.insuranceHint")}</span>
         ) : null}
       </div>
 
@@ -334,30 +339,30 @@ function BondsPage() {
       ) : registerQ.isError ? (
         <EmptyState
           icon={AlertTriangle}
-          title="Could not load the register"
-          description={bondErrorMessage(registerQ.error)}
-          action={<Button onClick={() => registerQ.refetch()}>Retry</Button>}
+          title={t("financeMod.bonds.couldNotLoadRegister")}
+          description={translateError(t, errorCodeOf(registerQ.error), bondErrorMessage(registerQ.error))}
+          action={<Button onClick={() => registerQ.refetch()}>{t("common.retry")}</Button>}
         />
       ) : rows.length === 0 ? (
         <EmptyState
           icon={ShieldCheck}
-          title="No instruments yet"
-          description="Register your first bond, guarantee or insurance policy to start tracking coverage and expiries."
+          title={t("financeMod.bonds.noInstruments")}
+          description={t("financeMod.bonds.noInstrumentsDesc")}
         />
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Number</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Beneficiary</TableHead>
-                <TableHead>Issuer</TableHead>
-                <TableHead>Principal</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Expiry</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("financeMod.bonds.numberHeader")}</TableHead>
+                <TableHead>{t("financeMod.bonds.typeHeader")}</TableHead>
+                <TableHead>{t("financeMod.bonds.beneficiary")}</TableHead>
+                <TableHead>{t("financeMod.bonds.issuer")}</TableHead>
+                <TableHead>{t("financeMod.bonds.principal")}</TableHead>
+                <TableHead className="text-end">{t("common.amount")}</TableHead>
+                <TableHead>{t("financeMod.bonds.expiry")}</TableHead>
+                <TableHead>{t("common.project")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -378,8 +383,8 @@ function BondsPage() {
                   <TableCell>{r.beneficiary_name}</TableCell>
                   <TableCell>{r.issuer_name}</TableCell>
                   <TableCell>{r.principal_name ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {fmt(r.amount, r.currency_code)}
+                  <TableCell className="text-end">
+                    <MoneyCell>{fmt(r.amount, r.currency_code)}</MoneyCell>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
@@ -424,25 +429,6 @@ interface WizardProps {
   filters: ListBondsInput;
 }
 
-/** Wizard-field labels so a zod failure names the field the operator must fix. */
-const FIELD_LABELS: Record<string, string> = {
-  instrument_type: "Instrument type",
-  beneficiary_name: "Beneficiary name",
-  beneficiary_type: "Beneficiary type",
-  issuer_name: "Issuer name",
-  issuer_type: "Issuer type",
-  principal_name: "Principal",
-  amount: "Amount",
-  currency_code: "Currency",
-  premium_pct: "Premium %",
-  issue_date: "Issue date",
-  effective_date: "Effective date",
-  expiry_date: "Expiry date",
-  project_id: "Project",
-  contract_id: "Contract",
-  notes: "Notes",
-};
-
 const EMPTY_FORM = {
   instrument_type: "performance_bond",
   beneficiary_name: "",
@@ -468,14 +454,34 @@ function NewInstrumentWizard({
   currencies,
   projects,
   contracts,
-  filters,
+  filters: _filters,
 }: WizardProps) {
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const createFn = useServerFn(createBondInstrument);
   const qc = useQueryClient();
+
+  /** Wizard-field labels so a zod failure names the field the operator must fix. */
+  const FIELD_LABELS: Record<string, string> = {
+    instrument_type: t("financeMod.bonds.instrumentType"),
+    beneficiary_name: t("financeMod.bonds.beneficiaryName"),
+    beneficiary_type: t("financeMod.bonds.beneficiaryType"),
+    issuer_name: t("financeMod.bonds.issuerName"),
+    issuer_type: t("financeMod.bonds.issuerType"),
+    principal_name: t("financeMod.bonds.principal"),
+    amount: t("common.amount"),
+    currency_code: t("common.currency"),
+    premium_pct: t("financeMod.bonds.premiumPct"),
+    issue_date: t("financeMod.bonds.issueDate"),
+    effective_date: t("financeMod.bonds.effectiveDate"),
+    expiry_date: t("financeMod.bonds.expiryDate"),
+    project_id: t("common.project"),
+    contract_id: t("financeMod.bonds.contract"),
+    notes: t("common.notes"),
+  };
 
   // Currency is mandatory but has no sane empty state — default it to the
   // register's first currency so the wizard never fails on an invisible field.
@@ -514,7 +520,7 @@ function NewInstrumentWizard({
       const field = issue?.path?.[0];
       const label = typeof field === "string" ? (FIELD_LABELS[field] ?? titleize(field)) : null;
       setError(
-        issue ? `${label ? `${label}: ` : ""}${issue.message}` : "Check the form and try again.",
+        issue ? `${label ? `${label}: ` : ""}${issue.message}` : t("financeMod.bonds.checkFormError"),
       );
 
       return null;
@@ -529,48 +535,49 @@ function NewInstrumentWizard({
     setSaving(true);
     try {
       const res = await createFn({ data: payload });
-      toast.success(`${res.instrument.instrument_number} created as draft.`);
+      toast.success(t("financeMod.bonds.toastCreated", { number: res.instrument.instrument_number }));
       await qc.invalidateQueries({ queryKey: ["bonds"] });
       onOpenChange(false);
       setForm({ ...EMPTY_FORM });
       setStep(1);
     } catch (err) {
-      setError(bondErrorMessage(err));
+      setError(translateError(t, errorCodeOf(err), bondErrorMessage(err)));
     } finally {
       setSaving(false);
     }
   }
 
+  const stepDesc =
+    step === 1
+      ? t("financeMod.bonds.wizardStep1Desc")
+      : step === 2
+        ? t("financeMod.bonds.wizardStep2Desc")
+        : step === 3
+          ? t("financeMod.bonds.wizardStep3Desc")
+          : t("financeMod.bonds.wizardStep4Desc");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New instrument — step {step} of 4</DialogTitle>
-          <DialogDescription>
-            {step === 1
-              ? "Pick the instrument type."
-              : step === 2
-                ? "Who is protected, who issues it, and who it is for."
-                : step === 3
-                  ? "Commercial terms and validity dates."
-                  : "Link the instrument to a project and contract."}
-          </DialogDescription>
+          <DialogTitle>{t("financeMod.bonds.wizardTitle", { step })}</DialogTitle>
+          <DialogDescription>{stepDesc}</DialogDescription>
         </DialogHeader>
 
         {step === 1 ? (
           <div className="grid gap-2">
-            {INSTRUMENT_TYPES.map((t) => (
+            {INSTRUMENT_TYPES.map((it) => (
               <button
-                key={t}
+                key={it}
                 type="button"
-                onClick={() => set("instrument_type", t)}
-                className={`rounded-md border p-3 text-left text-sm transition-colors ${
-                  form.instrument_type === t ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                onClick={() => set("instrument_type", it)}
+                className={`rounded-md border p-3 text-start text-sm transition-colors ${
+                  form.instrument_type === it ? "border-primary bg-primary/5" : "hover:bg-muted/50"
                 }`}
               >
-                <span className="font-medium">{INSTRUMENT_TYPE_META[t].label}</span>
+                <span className="font-medium">{INSTRUMENT_TYPE_META[it].label}</span>
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  {INSTRUMENT_TYPE_META[t].description}
+                  {INSTRUMENT_TYPE_META[it].description}
                 </span>
               </button>
             ))}
@@ -580,7 +587,7 @@ function NewInstrumentWizard({
         {step === 2 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="ben">Beneficiary name</Label>
+              <Label htmlFor="ben">{t("financeMod.bonds.beneficiaryName")}</Label>
               <Input
                 id="ben"
                 value={form.beneficiary_name}
@@ -588,7 +595,7 @@ function NewInstrumentWizard({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label>Beneficiary type</Label>
+              <Label>{t("financeMod.bonds.beneficiaryType")}</Label>
               <Select
                 value={form.beneficiary_type}
                 onValueChange={(v) => set("beneficiary_type", v)}
@@ -606,7 +613,7 @@ function NewInstrumentWizard({
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="iss">Issuer name</Label>
+              <Label htmlFor="iss">{t("financeMod.bonds.issuerName")}</Label>
               <Input
                 id="iss"
                 value={form.issuer_name}
@@ -614,7 +621,7 @@ function NewInstrumentWizard({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label>Issuer type</Label>
+              <Label>{t("financeMod.bonds.issuerType")}</Label>
               <Select value={form.issuer_type} onValueChange={(v) => set("issuer_type", v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -629,10 +636,10 @@ function NewInstrumentWizard({
               </Select>
             </div>
             <div className="grid gap-1.5 sm:col-span-2">
-              <Label htmlFor="pri">Principal</Label>
+              <Label htmlFor="pri">{t("financeMod.bonds.principal")}</Label>
               <Input
                 id="pri"
-                placeholder="Who the bond is for — us or a counterparty"
+                placeholder={t("financeMod.bonds.principalPlaceholder")}
                 value={form.principal_name}
                 onChange={(e) => set("principal_name", e.target.value)}
               />
@@ -643,7 +650,7 @@ function NewInstrumentWizard({
         {step === 3 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="amt">Amount</Label>
+              <Label htmlFor="amt">{t("common.amount")}</Label>
               <Input
                 id="amt"
                 type="number"
@@ -654,10 +661,10 @@ function NewInstrumentWizard({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label>Currency</Label>
+              <Label>{t("financeMod.bonds.currency")}</Label>
               <Select value={form.currency_code} onValueChange={(v) => set("currency_code", v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue placeholder={t("financeMod.glExport.selectAllPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {currencies.map((c) => (
@@ -669,7 +676,7 @@ function NewInstrumentWizard({
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="prem">Premium %</Label>
+              <Label htmlFor="prem">{t("financeMod.bonds.premiumPct")}</Label>
               <Input
                 id="prem"
                 type="number"
@@ -685,10 +692,10 @@ function NewInstrumentWizard({
                 checked={form.auto_renew}
                 onCheckedChange={(v) => set("auto_renew", v)}
               />
-              <Label htmlFor="auto">Auto-renew</Label>
+              <Label htmlFor="auto">{t("financeMod.bonds.autoRenew")}</Label>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="d1">Issue date</Label>
+              <Label htmlFor="d1">{t("financeMod.bonds.issueDate")}</Label>
               <Input
                 id="d1"
                 type="date"
@@ -697,7 +704,7 @@ function NewInstrumentWizard({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="d2">Effective date</Label>
+              <Label htmlFor="d2">{t("financeMod.bonds.effectiveDate")}</Label>
               <Input
                 id="d2"
                 type="date"
@@ -706,7 +713,7 @@ function NewInstrumentWizard({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="d3">Expiry date</Label>
+              <Label htmlFor="d3">{t("financeMod.bonds.expiryDate")}</Label>
               <Input
                 id="d3"
                 type="date"
@@ -720,10 +727,10 @@ function NewInstrumentWizard({
         {step === 4 ? (
           <div className="grid gap-4">
             <div className="grid gap-1.5">
-              <Label>Project</Label>
+              <Label>{t("common.project")}</Label>
               <Select value={form.project_id} onValueChange={(v) => set("project_id", v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="No project" />
+                  <SelectValue placeholder={t("financeMod.bonds.noProject")} />
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((p) => (
@@ -735,10 +742,10 @@ function NewInstrumentWizard({
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label>Contract</Label>
+              <Label>{t("financeMod.bonds.contract")}</Label>
               <Select value={form.contract_id} onValueChange={(v) => set("contract_id", v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="No contract" />
+                  <SelectValue placeholder={t("financeMod.bonds.noContract")} />
                 </SelectTrigger>
                 <SelectContent>
                   {contracts
@@ -752,7 +759,7 @@ function NewInstrumentWizard({
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("common.notes")}</Label>
               <Textarea
                 id="notes"
                 value={form.notes}
@@ -770,13 +777,13 @@ function NewInstrumentWizard({
             disabled={step === 1}
             onClick={() => setStep((s) => Math.max(1, s - 1))}
           >
-            Back
+            {t("common.back")}
           </Button>
           {step < 4 ? (
-            <Button onClick={() => setStep((s) => s + 1)}>Next</Button>
+            <Button onClick={() => setStep((s) => s + 1)}>{t("common.next")}</Button>
           ) : (
             <Button disabled={saving} onClick={submit}>
-              {saving ? "Creating…" : "Create instrument"}
+              {saving ? t("financeMod.bonds.creating") : t("financeMod.bonds.createInstrument")}
             </Button>
           )}
         </DialogFooter>
@@ -795,6 +802,7 @@ function InstrumentDrawer({
   instrumentId: string | null;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const detailQ = useQuery(bondDetailQueryOptions(instrumentId));
   const activateFn = useServerFn(activateBondInstrument);
   const uploadFn = useServerFn(uploadBondDocument);
@@ -807,10 +815,10 @@ function InstrumentDrawer({
     setBusy(true);
     try {
       await activateFn({ data: { instrument_id: instrumentId } });
-      toast.success("Instrument activated.");
+      toast.success(t("financeMod.bonds.toastActivated"));
       await qc.invalidateQueries({ queryKey: ["bonds"] });
     } catch (err) {
-      toast.error(bondErrorMessage(err));
+      toast.error(translateError(t, errorCodeOf(err), bondErrorMessage(err)));
     } finally {
       setBusy(false);
     }
@@ -834,10 +842,10 @@ function InstrumentDrawer({
           content_type: file.type || undefined,
         },
       });
-      toast.success("Document uploaded.");
+      toast.success(t("financeMod.bonds.toastDocUploaded"));
       await qc.invalidateQueries({ queryKey: ["bonds"] });
     } catch (err) {
-      toast.error(bondErrorMessage(err));
+      toast.error(translateError(t, errorCodeOf(err), bondErrorMessage(err)));
     } finally {
       setBusy(false);
       e.target.value = "";
@@ -848,9 +856,9 @@ function InstrumentDrawer({
     <Sheet open={Boolean(instrumentId)} onOpenChange={(v) => !v && onClose()}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{d?.instrument.instrument_number ?? "Instrument"}</SheetTitle>
+          <SheetTitle>{d?.instrument.instrument_number ?? t("financeMod.bonds.bond")}</SheetTitle>
           <SheetDescription>
-            {d ? instrumentTypeLabel(d.instrument.instrument_type) : "Loading…"}
+            {d ? instrumentTypeLabel(d.instrument.instrument_type) : "…"}
           </SheetDescription>
         </SheetHeader>
 
@@ -864,52 +872,54 @@ function InstrumentDrawer({
           <div className="p-4">
             <EmptyState
               icon={AlertTriangle}
-              title="Could not load this instrument"
-              description={bondErrorMessage(detailQ.error)}
+              title={t("financeMod.bonds.couldNotLoadRegister")}
+              description={translateError(t, errorCodeOf(detailQ.error), bondErrorMessage(detailQ.error))}
             />
           </div>
         ) : (
           <div className="space-y-6 p-4">
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Amount</dt>
-                <dd className="tabular-nums">
-                  {fmt(d.instrument.amount, d.instrument.currency_code)}
+                <dt className="text-xs text-muted-foreground">{t("common.amount")}</dt>
+                <dd>
+                  <MoneyCell className="text-start">
+                    {fmt(d.instrument.amount, d.instrument.currency_code)}
+                  </MoneyCell>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Status</dt>
+                <dt className="text-xs text-muted-foreground">{t("common.status")}</dt>
                 <dd>
                   <StatusBadge status={d.instrument.effective_status} />
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Beneficiary</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.bonds.beneficiary")}</dt>
                 <dd>
                   {d.instrument.beneficiary_name} ({titleize(d.instrument.beneficiary_type)})
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Issuer</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.bonds.issuer")}</dt>
                 <dd>
                   {d.instrument.issuer_name} ({titleize(d.instrument.issuer_type)})
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Expiry</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.bonds.expiry")}</dt>
                 <dd className="flex items-center gap-2">
                   {d.instrument.expiry_date ?? "—"}
                   <CountdownChip days={d.instrument.days_to_expiry} />
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Auto-renew</dt>
-                <dd>{d.instrument.auto_renew ? "Yes" : "No"}</dd>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.bonds.autoRenew")}</dt>
+                <dd>{d.instrument.auto_renew ? t("common.yes") : t("common.no")}</dd>
               </div>
             </dl>
 
             <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Document</h3>
+              <h3 className="text-sm font-semibold">{t("financeMod.bonds.document")}</h3>
               {d.document_url ? (
                 <a
                   className="text-sm text-primary underline"
@@ -917,10 +927,10 @@ function InstrumentDrawer({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Download signed copy
+                  {t("financeMod.bonds.downloadSignedCopy")}
                 </a>
               ) : (
-                <p className="text-sm text-muted-foreground">No document uploaded yet.</p>
+                <p className="text-sm text-muted-foreground">{t("financeMod.bonds.noDocument")}</p>
               )}
               {d.can_write ? <Input type="file" disabled={busy} onChange={handleUpload} /> : null}
             </section>
@@ -928,10 +938,10 @@ function InstrumentDrawer({
             {d.can_write && d.instrument.status === "draft" ? (
               <section className="space-y-2">
                 <Button disabled={busy} onClick={handleActivate}>
-                  Activate instrument
+                  {t("financeMod.bonds.activateInstrument")}
                 </Button>
                 {d.activation_blockers.length > 0 ? (
-                  <ul className="list-disc pl-5 text-xs text-muted-foreground">
+                  <ul className="list-disc ps-5 text-xs text-muted-foreground">
                     {d.activation_blockers.map((b) => (
                       <li key={b}>{b}</li>
                     ))}
@@ -941,11 +951,11 @@ function InstrumentDrawer({
             ) : null}
 
             <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Lifecycle</h3>
+              <h3 className="text-sm font-semibold">{t("financeMod.bonds.lifecycle")}</h3>
               {d.timeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No events recorded yet.</p>
+                <p className="text-sm text-muted-foreground">{t("financeMod.bonds.noEvents")}</p>
               ) : (
-                <ol className="space-y-2 border-l pl-4 text-sm">
+                <ol className="space-y-2 border-s ps-4 text-sm">
                   {d.timeline.map((e, i) => (
                     <li key={`${e.at}-${i}`}>
                       <span className="font-medium">{e.label}</span>{" "}
