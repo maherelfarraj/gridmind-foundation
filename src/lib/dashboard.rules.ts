@@ -72,7 +72,10 @@ export function toActivityItem(row: RawActivityRow, now: Date = new Date()): Act
     id: row.id,
     actor: row.actor_name?.trim() || "System",
     action: humanizeAction(row.action),
+    actionKey: actionKeyOf(row.action),
     entity: humanizeEntity(row.entity),
+    entityKey: row.entity,
+
     when: relativeTime(row.created_at, now),
     created_at: row.created_at,
   };
