@@ -442,7 +442,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
   });
   await many("project_phase_gates", [
     gate(A, "A", "development", 1, "approved"),
-    gate(A, "A", "development", 2, "pending"),
+    gate(A, "A", "development", 2, "open"),
     gate(A, "A", "ntp", 3, "locked"),
     gate(B, "B", "development", 1, "approved"),
     gate(B, "B", "ntp", 2, "approved"),
@@ -450,7 +450,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
     gate(B, "B", "handover", 4, "approved"),
     gate(C, "C", "development", 1, "approved"),
     gate(C, "C", "ntp", 2, "approved"),
-    gate(C, "C", "cod", 3, "pending"),
+    gate(C, "C", "cod", 3, "open"),
   ]);
 
   // --------------------------------------------------------- HSE / DPR ----
