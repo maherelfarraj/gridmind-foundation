@@ -16625,6 +16625,421 @@ export type Database = {
           },
         ]
       }
+      subcontract_claim_lines: {
+        Row: {
+          claim_id: string
+          company_id: string
+          created_at: string
+          cumulative_pct: number
+          id: string
+          line_amount: number
+          previous_amount: number
+          previous_pct: number
+          subcontract_line_id: string
+          this_period_amount: number
+          this_period_pct: number
+          updated_at: string
+        }
+        Insert: {
+          claim_id: string
+          company_id: string
+          created_at?: string
+          cumulative_pct?: number
+          id?: string
+          line_amount?: number
+          previous_amount?: number
+          previous_pct?: number
+          subcontract_line_id: string
+          this_period_amount?: number
+          this_period_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          claim_id?: string
+          company_id?: string
+          created_at?: string
+          cumulative_pct?: number
+          id?: string
+          line_amount?: number
+          previous_amount?: number
+          previous_pct?: number
+          subcontract_line_id?: string
+          this_period_amount?: number
+          this_period_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_claim_lines_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "subcontract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claim_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claim_lines_subcontract_line_id_fkey"
+            columns: ["subcontract_line_id"]
+            isOneToOne: false
+            referencedRelation: "subcontract_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontract_claims: {
+        Row: {
+          approval_instance_id: string | null
+          certified_at: string | null
+          certified_by: string | null
+          claim_number: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          gross_to_date: number
+          id: string
+          invoice_id: string | null
+          net_payable: number
+          notes: string | null
+          period_end: string
+          period_start: string
+          previous_certified: number
+          rejection_reason: string | null
+          retention_amount: number
+          retention_released_amount: number
+          status: Database["public"]["Enums"]["subcontract_claim_status"]
+          subcontract_id: string
+          submitted_at: string | null
+          submitted_by: string | null
+          this_period_amount: number
+          updated_at: string
+        }
+        Insert: {
+          approval_instance_id?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          claim_number?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          gross_to_date?: number
+          id?: string
+          invoice_id?: string | null
+          net_payable?: number
+          notes?: string | null
+          period_end: string
+          period_start: string
+          previous_certified?: number
+          rejection_reason?: string | null
+          retention_amount?: number
+          retention_released_amount?: number
+          status?: Database["public"]["Enums"]["subcontract_claim_status"]
+          subcontract_id: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          this_period_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          approval_instance_id?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          claim_number?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          gross_to_date?: number
+          id?: string
+          invoice_id?: string | null
+          net_payable?: number
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          previous_certified?: number
+          rejection_reason?: string | null
+          retention_amount?: number
+          retention_released_amount?: number
+          status?: Database["public"]["Enums"]["subcontract_claim_status"]
+          subcontract_id?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          this_period_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_claims_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_certified_by_fkey"
+            columns: ["certified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claims_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontract_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontract_lines: {
+        Row: {
+          amount: number | null
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          line_no: number
+          notes: string | null
+          qty: number
+          subcontract_id: string
+          unit_price: number
+          uom: string | null
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          line_no: number
+          notes?: string | null
+          qty?: number
+          subcontract_id: string
+          unit_price?: number
+          uom?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          line_no?: number
+          notes?: string | null
+          qty?: number
+          subcontract_id?: string
+          unit_price?: number
+          uom?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_lines_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_lines_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontracts: {
+        Row: {
+          certified_to_date: number
+          company_id: string
+          contract_value: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          defects_liability_end: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          project_id: string
+          retention_held: number
+          retention_pct: number
+          retention_released: number
+          scope_summary: string | null
+          signed_document_path: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["subcontract_status"]
+          subcontract_number: string | null
+          title: string
+          updated_at: string
+          vendor_id: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          certified_to_date?: number
+          company_id: string
+          contract_value?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          defects_liability_end?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          retention_held?: number
+          retention_pct?: number
+          retention_released?: number
+          scope_summary?: string | null
+          signed_document_path?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["subcontract_status"]
+          subcontract_number?: string | null
+          title: string
+          updated_at?: string
+          vendor_id: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          certified_to_date?: number
+          company_id?: string
+          contract_value?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          defects_liability_end?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          retention_held?: number
+          retention_pct?: number
+          retention_released?: number
+          scope_summary?: string | null
+          signed_document_path?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["subcontract_status"]
+          subcontract_number?: string | null
+          title?: string
+          updated_at?: string
+          vendor_id?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "subcontracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submittals: {
         Row: {
           company_id: string
@@ -19834,6 +20249,10 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      ensure_subcontract_claim_rule: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
       entity_link_orphans: {
         Args: never
         Returns: {
@@ -19969,6 +20388,10 @@ export type Database = {
       next_sld_drawing_number: {
         Args: { p_project_id: string }
         Returns: string
+      }
+      next_subcontract_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
       }
       next_timesheet_number: {
         Args: { p_company_id: string; p_kind: string }
@@ -20206,6 +20629,18 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      sub_portal_has_seat: {
+        Args: { p_company_id: string; p_vendor_id: string }
+        Returns: boolean
+      }
+      subcontract_claim_recalc: {
+        Args: { p_claim_id: string }
+        Returns: undefined
+      }
+      subcontract_retention_sync: {
+        Args: { p_subcontract_id: string }
+        Returns: undefined
+      }
       submit_change_request: { Args: { p_id: string }; Returns: Json }
       submit_pv_layout: {
         Args: { p_layout_id: string }
@@ -20993,6 +21428,13 @@ export type Database = {
         | "as_built"
         | "superseded"
       slo_status: "ok" | "warn" | "breach"
+      subcontract_claim_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "certified"
+        | "rejected"
+      subcontract_status: "draft" | "active" | "complete" | "terminated"
       submittal_status:
         | "draft"
         | "submitted"
@@ -21856,6 +22298,14 @@ export const Constants = {
         "superseded",
       ],
       slo_status: ["ok", "warn", "breach"],
+      subcontract_claim_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "certified",
+        "rejected",
+      ],
+      subcontract_status: ["draft", "active", "complete", "terminated"],
       submittal_status: [
         "draft",
         "submitted",
