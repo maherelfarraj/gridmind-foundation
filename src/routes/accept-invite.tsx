@@ -18,6 +18,7 @@ import {
 } from "@/lib/invites.functions";
 import { linkAcceptedPortalInvites } from "@/lib/portal.functions";
 import { acceptVendorPortalInvites } from "@/lib/vendor-portal.functions";
+import { resolveLandingRoute } from "@/lib/portal-landing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -351,7 +352,13 @@ function SignedInAccept({ token }: { token: string }) {
       toast.success("Invitation accepted");
       queryClient.invalidateQueries();
       router.invalidate();
-      navigate({ to: res.isVendor ? "/vendor" : "/dashboard", replace: true });
+      if (res.isVendor) {
+        navigate({ to: "/vendor", replace: true });
+        return;
+      }
+      void resolveLandingRoute("/dashboard").then((target) =>
+        navigate({ to: target, replace: true }),
+      );
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Could not accept invite");

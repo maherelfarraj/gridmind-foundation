@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { resolveLandingRoute } from "@/lib/portal-landing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -53,7 +54,7 @@ function GoogleGlyph() {
 function LoginPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const redirectTo = search.redirect ?? "/dashboard";
+  const explicitRedirect = search.redirect;
   const [pending, setPending] = useState(false);
   const [oauthPending, setOauthPending] = useState(false);
   const form = useForm<Values>({
@@ -61,16 +62,25 @@ function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  const resolveTarget = async () => {
+    const landing = await resolveLandingRoute("/dashboard");
+    // External viewers never follow an internal deep-link redirect.
+    if (landing !== "/dashboard") return landing;
+    return explicitRedirect ?? "/dashboard";
+  };
+
   const onSubmit = async (values: Values) => {
     setPending(true);
     const { error } = await supabase.auth.signInWithPassword(values);
-    setPending(false);
     if (error) {
+      setPending(false);
       toast.error("Invalid email or password");
       return;
     }
+    const target = await resolveTarget();
+    setPending(false);
     toast.success("Welcome back");
-    navigate({ to: redirectTo, replace: true });
+    navigate({ to: target, replace: true });
   };
 
   const onGoogle = async () => {
@@ -84,7 +94,7 @@ function LoginPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: redirectTo, replace: true });
+    navigate({ to: await resolveTarget(), replace: true });
   };
 
   return (

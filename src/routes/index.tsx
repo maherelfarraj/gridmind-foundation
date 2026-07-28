@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveLandingRoute } from "@/lib/portal-landing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,14 +32,17 @@ function LandingPage() {
   const navigate = useNavigate();
   const [signedIn, setSignedIn] = useState(false);
 
+  const [landing, setLanding] = useState("/dashboard");
+
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active || !data.session) return;
+      const target = await resolveLandingRoute("/dashboard");
       if (!active) return;
-      if (data.session) {
-        setSignedIn(true);
-        navigate({ to: "/dashboard", replace: true });
-      }
+      setSignedIn(true);
+      setLanding(target);
+      navigate({ to: target, replace: true });
     });
     return () => {
       active = false;
@@ -62,8 +66,8 @@ function LandingPage() {
         </p>
 
         <Button asChild size="lg" className="mt-10">
-          <Link to={signedIn ? "/dashboard" : "/login"}>
-            {signedIn ? "Go to dashboard" : "Sign in"}
+          <Link to={signedIn ? landing : "/login"}>
+            {signedIn ? "Open your workspace" : "Sign in"}
           </Link>
         </Button>
 
