@@ -129,7 +129,7 @@ describe("match exceptions + summary", () => {
 
   it("summarizes the dashboard counters", () => {
     const counts = summarizeReceiving({
-      drafts: 2,
+      openReceipts: 2,
       matches,
       etas: [
         {
