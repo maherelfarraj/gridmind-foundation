@@ -299,7 +299,9 @@ function ReceivingEditor({
     lines,
     notes: notes.trim() ? notes.trim() : null,
     photos,
+    geo,
   };
+
 
   return (
     <div className="page-shell max-w-3xl pb-32">
