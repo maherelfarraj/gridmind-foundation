@@ -425,46 +425,33 @@ export const inviteVendorContact = createServerFn({ method: "POST" })
         .maybeSingle();
       if (existing) throw httpError("vendor_portal_member_exists", 409);
 
+      // create_invite creates the linked vendor_portal_memberships row so a
+      // vendor_viewer can never exist without portal access.
       const { data: token, error: invErr } = await context.supabase.rpc("create_invite", {
         p_company_id: companyId,
         p_email: data.email,
         p_role: "vendor_viewer",
-      });
+        p_vendor_id: data.vendorId,
+      } as never);
       if (invErr) throw invErr;
-
-      const { data: inviteRow } = await context.supabase
-        .from("invites")
-        .select("id")
-        .eq("company_id", companyId)
-        .eq("email", data.email)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
       const expiresAt = inviteExpiryDate(data.expiresInDays).toISOString();
       const exposure = { ...DEFAULT_VENDOR_EXPOSURE, ...(data.exposure ?? {}) };
 
       const { data: inserted, error: insErr } = await context.supabase
         .from("vendor_portal_memberships")
-        .insert({
-          company_id: companyId,
-          vendor_id: data.vendorId,
-          email: data.email,
-          status: "invited",
+        .update({
           exposure: exposure as unknown as Json,
-          invite_id: (inviteRow as { id?: string } | null)?.id ?? null,
           invited_by: context.user.id,
           expires_at: expiresAt,
         })
+        .eq("company_id", companyId)
+        .eq("vendor_id", data.vendorId)
+        .eq("email", data.email)
         .select("id")
         .single();
-      if (insErr) {
-        if (String(insErr.message).includes("vendor_portal_memberships_uk")) {
-          throw httpError("vendor_portal_member_exists", 409);
-        }
-        throw insErr;
-      }
+      if (insErr) throw insErr;
+
 
       const membershipId = (inserted as { id: string }).id;
       await writePortalEvent(context, data.vendorId, companyId, "vendor_portal.member_invited", {
