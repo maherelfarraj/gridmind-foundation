@@ -294,15 +294,27 @@ export const markInvoicePaid = createServerFn({ method: "POST" })
       }
     }
 
-    const paidAt = data.paid_at ? new Date(`${data.paid_at}T00:00:00Z`) : new Date();
+    // P-247: paid state is ledger-derived. Settle through the guarded RPC,
+    // which records the outstanding balance as a payment; the payments trigger
+    // then writes paid_amount / status / paid_at.
+    const { error: sErr } = await (context.supabase as any).rpc("invoice_settle_manual", {
+      p_invoice_id: data.id,
+      p_paid_at: data.paid_at ?? null,
+    });
+    if (sErr) {
+      const msg = String((sErr as { message?: string }).message ?? "");
+      if (msg.includes("forbidden")) httpError(403, "forbidden");
+      if (msg.includes("overpayment_blocked")) httpError(422, "overpayment_blocked");
+      throw sErr;
+    }
     const { data: upd, error: uErr } = await context.supabase
       .from("invoices")
-      .update({ status: "paid", paid_at: paidAt.toISOString() })
-      .eq("id", data.id)
       .select("*")
+      .eq("id", data.id)
       .maybeSingle();
     if (uErr) throw uErr;
     const row = toRow(upd);
+
     await audit(context, "invoice.pay", "invoices", row.id, {
       amount: row.amount,
       currency: row.currency_code,
