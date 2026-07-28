@@ -120,7 +120,7 @@ export const getReceivingDashboard = createServerFn({ method: "GET" })
 
     return {
       counts: summarizeReceiving({
-        drafts: open_receipts.filter((r) => r.status === "draft").length,
+        openReceipts: open_receipts.length,
         matches: allMatches,
         etas,
       }),
