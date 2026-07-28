@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { settleEntityForInstance } from "@/lib/approval-settle.server";
 import { audit, httpError } from "@/lib/payments.server";
 import {
   ConvertEstimateSchema,
