@@ -147,5 +147,14 @@
       "description": "Incidents, punch items, NCRs and hold points appear here as soon as they are raised."
     },
     "drill": "Open filtered list"
+  },
+  "export": {
+    "action": "Export executive report",
+    "pending": "Preparing report…",
+    "success": "Executive report downloaded",
+    "locked": "Export blocked while approvals are pending",
+    "forbidden": "Executive report requires finance or company admin access",
+    "failed": "Export failed",
+    "englishNote": "The report is issued in English for client and lender use."
   }
 }
