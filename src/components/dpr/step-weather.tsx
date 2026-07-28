@@ -26,6 +26,7 @@ import {
   type WeatherDelayRow,
 } from "@/lib/dpr.functions";
 import { WEATHER_DELAY_TYPES, type WeatherDelayType } from "@/lib/dpr.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 const DELAY_LABELS: Record<WeatherDelayType, string> = {
   rain: "Rain",
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export function StepWeather({ header, delays, readOnly }: Props) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const invalidate = () =>
     qc.invalidateQueries({
@@ -77,7 +79,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
         },
       }),
     onSuccess: () => {
-      toast.success("Weather saved");
+      toast.success(t("fieldMod.dpr.weather.weatherSaved"));
       invalidate();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -103,7 +105,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
         },
       }),
     onSuccess: () => {
-      toast.success("Delay logged");
+      toast.success(t("fieldMod.dpr.weather.delayLogged"));
       setLost("");
       setNote("");
       setStartTime("");
@@ -124,12 +126,12 @@ export function StepWeather({ header, delays, readOnly }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <CloudRain className="h-4 w-4" aria-hidden /> Site weather
+            <CloudRain className="h-4 w-4" aria-hidden /> {t("fieldMod.dpr.weather.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="w-summary">Summary</Label>
+            <Label htmlFor="w-summary">{t("fieldMod.dpr.weather.summary")}</Label>
             <Textarea
               id="w-summary"
               rows={2}
@@ -137,15 +139,16 @@ export function StepWeather({ header, delays, readOnly }: Props) {
               disabled={readOnly}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="e.g. Clear morning, dust picked up after 14:00"
+              placeholder={t("fieldMod.dpr.weather.summaryPlaceholder")}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="w-high">High °C</Label>
+              <Label htmlFor="w-high">{t("fieldMod.dpr.weather.high")}</Label>
               <Input
                 id="w-high"
                 type="number"
+                dir="ltr"
                 inputMode="decimal"
                 className="h-11"
                 disabled={readOnly}
@@ -154,10 +157,11 @@ export function StepWeather({ header, delays, readOnly }: Props) {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="w-low">Low °C</Label>
+              <Label htmlFor="w-low">{t("fieldMod.dpr.weather.low")}</Label>
               <Input
                 id="w-low"
                 type="number"
+                dir="ltr"
                 inputMode="decimal"
                 className="h-11"
                 disabled={readOnly}
@@ -174,7 +178,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
               disabled={saveHeader.isPending}
               onClick={() => saveHeader.mutate()}
             >
-              Save weather
+              {t("fieldMod.dpr.weather.saveWeather")}
             </Button>
           )}
         </CardContent>
@@ -182,11 +186,11 @@ export function StepWeather({ header, delays, readOnly }: Props) {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Weather delays</CardTitle>
+          <CardTitle className="text-base">{t("fieldMod.dpr.weather.delays")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {delays.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No delays logged.</p>
+            <p className="text-sm text-muted-foreground">{t("fieldMod.dpr.weather.noDelays")}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {delays.map((d) => (
@@ -214,7 +218,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                       className="h-11 w-11 shrink-0 text-destructive hover:text-destructive"
                       onClick={() => delMut.mutate(d.id)}
                       disabled={delMut.isPending}
-                      aria-label="Remove delay"
+                      aria-label={t("fieldMod.dpr.weather.removeDelay")}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
                     </Button>
@@ -227,11 +231,11 @@ export function StepWeather({ header, delays, readOnly }: Props) {
           {!readOnly && (
             <div className="rounded-md border border-dashed border-border p-3">
               <div className="mb-3 text-xs uppercase tracking-wide text-muted-foreground">
-                Log delay
+                {t("fieldMod.dpr.weather.logDelay")}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <Label>Type</Label>
+                  <Label>{t("fieldMod.dpr.weather.type")}</Label>
                   <Select value={type} onValueChange={(v) => setType(v as WeatherDelayType)}>
                     <SelectTrigger className="h-11">
                       <SelectValue />
@@ -246,10 +250,11 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                   </Select>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="w-lost">Lost hours</Label>
+                  <Label htmlFor="w-lost">{t("fieldMod.dpr.weather.lostHours")}</Label>
                   <Input
                     id="w-lost"
                     type="number"
+                    dir="ltr"
                     inputMode="decimal"
                     step="0.5"
                     min={0}
@@ -260,7 +265,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="w-start">Start</Label>
+                  <Label htmlFor="w-start">{t("fieldMod.dpr.weather.start")}</Label>
                   <Input
                     id="w-start"
                     type="time"
@@ -270,7 +275,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="w-end">End</Label>
+                  <Label htmlFor="w-end">{t("fieldMod.dpr.weather.end")}</Label>
                   <Input
                     id="w-end"
                     type="time"
@@ -281,7 +286,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                 </div>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
-                <Label htmlFor="w-note">Impact note</Label>
+                <Label htmlFor="w-note">{t("fieldMod.dpr.weather.impactNote")}</Label>
                 <Textarea
                   id="w-note"
                   rows={2}
@@ -297,7 +302,7 @@ export function StepWeather({ header, delays, readOnly }: Props) {
                 onClick={() => addMut.mutate()}
               >
                 <Plus className="mr-2 h-4 w-4" aria-hidden />
-                Add delay
+                {t("fieldMod.dpr.weather.addDelay")}
               </Button>
             </div>
           )}

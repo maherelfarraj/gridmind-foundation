@@ -19,6 +19,7 @@ vi.mock("@/lib/proposal-query", () => ({
   useSaveArrayConfig: () => ({ mutate: saveMutate, isPending: false }),
 }));
 
+import { LocaleProvider } from "@/lib/i18n/locale-provider";
 import { RecordPaymentDialog } from "@/components/finance/record-payment-dialog";
 import { ArrayConfigForm } from "@/components/proposals/ArrayConfigForm";
 
@@ -26,7 +27,9 @@ function wrap(ui: ReactNode) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
-      <TooltipProvider>{ui}</TooltipProvider>
+      <LocaleProvider>
+        <TooltipProvider>{ui}</TooltipProvider>
+      </LocaleProvider>
     </QueryClientProvider>,
   );
 }

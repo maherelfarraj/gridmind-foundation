@@ -43,14 +43,13 @@ describe("propose-delivery contract", () => {
   it("optimistic state is never confirmed and is labelled vendor-proposed", () => {
     expect(hook).toContain("eta_confirmed: false");
     expect(hook).toContain("Vendor-proposed");
-    expect(dialog).toContain("Proposed — pending buyer confirmation");
+    expect(dialog).toContain("portalMod.propose.pendingBuyerConfirmation");
     expect(dialog).not.toContain("eta_confirmed: true");
   });
 
   it("surfaces typed errors from the RPC", () => {
     expect(hook).toContain("vendorPortalErrorCode");
-    expect(hook).toContain("PROPOSE_DELIVERY_ERRORS");
-    expect(dialog).toContain("PROPOSE_DELIVERY_ERRORS");
+    expect(hook).toContain("translateError");
   });
 
   it("client-side guard mirrors the RPC issue-date rule", () => {

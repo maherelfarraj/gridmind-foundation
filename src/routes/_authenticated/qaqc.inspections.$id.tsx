@@ -25,6 +25,8 @@ import { AttachmentList } from "@/components/qaqc/attachment-list";
 import { QaqcResultBadge } from "@/components/qaqc/result-badge";
 import { errorMessage, inspectionDetailQueryOptions } from "@/lib/qaqc-query";
 import { updateInspection } from "@/lib/qaqc.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
 import {
   QAQC_DISCIPLINES,
   QAQC_DISCIPLINE_LABELS,
@@ -52,6 +54,7 @@ export const Route = createFileRoute("/_authenticated/qaqc/inspections/$id")({
 });
 
 function InspectionDetailPage() {
+  const { t } = useI18n();
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const detailQuery = useQuery(inspectionDetailQueryOptions(id));
@@ -98,7 +101,7 @@ function InspectionDetailPage() {
       toast.success("Inspection updated");
       await qc.invalidateQueries({ queryKey: ["qaqc"] });
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   if (detailQuery.isLoading) {
@@ -171,6 +174,12 @@ function InspectionDetailPage() {
           {i.project_name ?? "—"} · {i.inspection_date}
         </span>
       </div>
+
+      {updateMut.isError && errorCodeOf(updateMut.error) === "hold_point_open" ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {t("fieldMod.qaqc.holdPoint.open")}
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>

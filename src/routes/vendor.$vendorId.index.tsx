@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
 import { formatDate, formatMoney } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { deriveVendorOverview, vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
 import {
   getVendorPortalDeliveries,
@@ -57,14 +58,15 @@ function useVendorQuery<T>(
 }
 
 function TabState({ error, loading }: { error: unknown; loading: boolean }) {
+  const { t } = useI18n();
   if (loading) return <VendorTableSkeleton />;
   const code = vendorPortalErrorCode(error);
   if (code === "vendor_portal_access_denied") {
     return (
       <VendorStateCard
         icon={Lock}
-        title="Access expired or revoked"
-        description="Your access to this vendor account is no longer active. Please contact your EPC representative."
+        title={t("portalMod.dashboard.accessExpiredTitle")}
+        description={t("portalMod.dashboard.accessExpiredDesc")}
       />
     );
   }
@@ -72,20 +74,21 @@ function TabState({ error, loading }: { error: unknown; loading: boolean }) {
     return (
       <VendorStateCard
         icon={Lock}
-        title="Not shared with you"
-        description="Your EPC contact hasn’t shared this information with your account."
+        title={t("portalMod.dashboard.notSharedTitle")}
+        description={t("portalMod.dashboard.notSharedDesc")}
       />
     );
   }
   return (
     <VendorStateCard
-      title="Couldn’t load this tab"
-      description="Something went wrong. Please try again."
+      title={t("portalMod.dashboard.couldntLoadTabTitle")}
+      description={t("portalMod.dashboard.couldntLoadTabDesc")}
     />
   );
 }
 
 function VendorDashboard() {
+  const { t } = useI18n();
   const { vendorId } = Route.useParams();
   const membershipsFn = useServerFn(listMyVendorMemberships);
   const memberships = useQuery({
@@ -104,8 +107,8 @@ function VendorDashboard() {
       <div className="mx-auto max-w-6xl px-6 py-10">
         <VendorStateCard
           icon={Lock}
-          title="Access expired or revoked"
-          description="Your access to this vendor account is no longer active. Please contact your EPC representative."
+          title={t("portalMod.dashboard.accessExpiredTitle")}
+          description={t("portalMod.dashboard.accessExpiredDesc")}
         />
       </div>
     );
@@ -116,32 +119,36 @@ function VendorDashboard() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <PageHeader
-        title={membership?.vendor_name ?? "Vendor dashboard"}
-        description={membership?.company_name ? `Shared by ${membership.company_name}` : undefined}
+        title={membership?.vendor_name ?? t("portalMod.dashboard.titleFallback")}
+        description={
+          membership?.company_name
+            ? t("portalMod.dashboard.sharedBy", { company: membership.company_name })
+            : undefined
+        }
       />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiTile label="Open purchase orders" value={String(overview.openPos)} />
-        <KpiTile label="Pending acknowledgments" value={String(overview.pendingAcknowledgments)} />
+        <KpiTile label={t("portalMod.dashboard.kpiOpenPos")} value={String(overview.openPos)} />
+        <KpiTile label={t("portalMod.dashboard.kpiPendingAck")} value={String(overview.pendingAcknowledgments)} />
         <KpiTile
-          label="Next required by"
+          label={t("portalMod.dashboard.kpiNextRequiredBy")}
           value={overview.nextRequiredBy ? formatDate(overview.nextRequiredBy) : "—"}
         />
       </div>
 
       <Tabs defaultValue="pos">
         <TabsList>
-          <TabsTrigger value="pos">Purchase Orders</TabsTrigger>
-          <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="pos">{t("portalMod.dashboard.tabPos")}</TabsTrigger>
+          <TabsTrigger value="deliveries">{t("portalMod.dashboard.tabDeliveries")}</TabsTrigger>
+          <TabsTrigger value="invoices">{t("portalMod.dashboard.tabInvoices")}</TabsTrigger>
+          <TabsTrigger value="documents">{t("portalMod.dashboard.tabDocuments")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pos" className="mt-4 space-y-3">
           <div className="flex justify-end">
             <Button variant="outline" size="sm" asChild>
               <Link to="/vendor/$vendorId/pos" params={{ vendorId }}>
-                Open PO workspace
+                {t("portalMod.dashboard.openPoWorkspace")}
               </Link>
             </Button>
           </div>
@@ -151,18 +158,18 @@ function VendorDashboard() {
           ) : (pos.data ?? []).length === 0 ? (
             <EmptyState
               icon={PackageSearch}
-              title="No purchase orders"
-              description="Purchase orders issued to you will appear here."
+              title={t("portalMod.dashboard.noPosTitle")}
+              description={t("portalMod.dashboard.noPosDesc")}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>PO</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Issued</TableHead>
-                  <TableHead>Required by</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colPo")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colStatus")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colIssued")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colRequiredBy")}</TableHead>
+                  <TableHead className="text-right">{t("portalMod.dashboard.colValue")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -192,7 +199,7 @@ function VendorDashboard() {
           <div className="flex justify-end">
             <Button variant="outline" size="sm" asChild>
               <Link to="/vendor/$vendorId/deliveries" params={{ vendorId }}>
-                Propose delivery dates
+                {t("portalMod.dashboard.proposeDeliveryDates")}
               </Link>
             </Button>
           </div>
@@ -201,19 +208,19 @@ function VendorDashboard() {
           ) : (deliveries.data ?? []).length === 0 ? (
             <EmptyState
               icon={Inbox}
-              title="No deliveries"
-              description="Shipments linked to your purchase orders will appear here."
+              title={t("portalMod.dashboard.noDeliveriesTitle")}
+              description={t("portalMod.dashboard.noDeliveriesDesc")}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>PO</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Carrier</TableHead>
-                  <TableHead>Expected</TableHead>
-                  <TableHead>Delivered</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colReference")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colPo")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colStatus")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colCarrier")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colExpected")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colDelivered")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -240,7 +247,7 @@ function VendorDashboard() {
           <div className="flex justify-end">
             <Button variant="outline" size="sm" asChild>
               <Link to="/vendor/$vendorId/invoices" params={{ vendorId }}>
-                Submit an invoice
+                {t("portalMod.dashboard.submitAnInvoice")}
               </Link>
             </Button>
           </div>
@@ -249,19 +256,19 @@ function VendorDashboard() {
           ) : (invoices.data ?? []).length === 0 ? (
             <EmptyState
               icon={Receipt}
-              title="No invoices"
-              description="Invoices you have submitted will appear here."
+              title={t("portalMod.dashboard.noInvoicesTitle")}
+              description={t("portalMod.dashboard.noInvoicesDesc")}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Issued</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colInvoice")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colStatus")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colIssued")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colDue")}</TableHead>
+                  <TableHead className="text-right">{t("portalMod.dashboard.colAmount")}</TableHead>
+                  <TableHead className="text-right">{t("portalMod.dashboard.colPaid")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -292,7 +299,7 @@ function VendorDashboard() {
           <div className="flex justify-end">
             <Button variant="outline" size="sm" asChild>
               <Link to="/vendor/$vendorId/documents" params={{ vendorId }}>
-                Share a document
+                {t("portalMod.dashboard.shareADocument")}
               </Link>
             </Button>
           </div>
@@ -301,17 +308,17 @@ function VendorDashboard() {
           ) : (documents.data ?? []).length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="No documents"
-              description="Documents shared with your organisation will appear here."
+              title={t("portalMod.dashboard.noDocumentsTitle")}
+              description={t("portalMod.dashboard.noDocumentsDesc")}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>File</TableHead>
-                  <TableHead>Shared</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colTitle")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colCategory")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colFile")}</TableHead>
+                  <TableHead>{t("portalMod.dashboard.colShared")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

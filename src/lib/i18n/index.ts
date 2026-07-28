@@ -10,6 +10,10 @@ import financeAr from "./finance.ar.json";
 import financeEn from "./finance.en.json";
 import procurementAr from "./procurement.ar.json";
 import procurementEn from "./procurement.en.json";
+import portalAr from "./portal.ar.json";
+import portalEn from "./portal.en.json";
+import fieldAr from "./field.ar.json";
+import fieldEn from "./field.en.json";
 
 export type Locale = "en" | "ar";
 
@@ -20,8 +24,8 @@ export const LOCALE_STORAGE_KEY = "gridmind-locale";
 // P-241 — module catalogs live in their own files so parallel module passes
 // never collide; they merge under the `financeMod` / `procurementMod` roots.
 export const resources = {
-  en: { translation: { ...en, financeMod: financeEn, procurementMod: procurementEn } },
-  ar: { translation: { ...ar, financeMod: financeAr, procurementMod: procurementAr } },
+  en: { translation: { ...en, financeMod: financeEn, procurementMod: procurementEn, fieldMod: fieldEn, portalMod: portalEn } },
+  ar: { translation: { ...ar, financeMod: financeAr, procurementMod: procurementAr, fieldMod: fieldAr, portalMod: portalAr } },
 } as const;
 
 

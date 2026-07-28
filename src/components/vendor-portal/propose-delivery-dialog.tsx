@@ -21,8 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
-  PROPOSE_DELIVERY_ERRORS,
   isCounterProposedNote,
   parsePoLines,
   validateProposedDate,
@@ -52,24 +52,29 @@ export function issueDateOf(po: VendorPoRow): string | null {
 
 /** Never implies confirmation: a vendor proposal stays "pending buyer confirmation". */
 export function ConfirmationChip({ eta }: { eta: VendorLineEtaRow | undefined }) {
+  const { t } = useI18n();
   if (!eta?.current_eta) {
-    return <span className="text-xs text-muted-foreground">No ETA proposed</span>;
+    return <span className="text-xs text-muted-foreground">{t("portalMod.propose.noEtaProposed")}</span>;
   }
   if (eta.eta_confirmed) {
     return (
       <Badge variant="secondary" className="gap-1">
         <CheckCircle2 className="h-3 w-3" />
-        ETA confirmed
+        {t("portalMod.propose.etaConfirmed")}
       </Badge>
     );
   }
   if (isCounterProposedNote(eta.notes)) {
-    return <Badge className="bg-accent text-accent-foreground">Counter-proposed</Badge>;
+    return (
+      <Badge className="bg-accent text-accent-foreground">
+        {t("portalMod.propose.counterProposed")}
+      </Badge>
+    );
   }
   return (
     <Badge variant="outline" className="gap-1">
       <CalendarClock className="h-3 w-3" />
-      Proposed — pending buyer confirmation
+      {t("portalMod.propose.pendingBuyerConfirmation")}
     </Badge>
   );
 }
@@ -87,6 +92,7 @@ export function ProposeDeliveryDialog({
   onClose: () => void;
   onSubmit: (poId: string, poIssueDate: string | null, lines: ProposeLineInput[]) => void;
 }) {
+  const { t } = useI18n();
   const lines: PoLine[] = po ? parsePoLines(po.lines) : [];
   const issueDate = po ? issueDateOf(po) : null;
   const [draft, setDraft] = useState<Record<number, DraftRow>>({});
@@ -117,10 +123,10 @@ export function ProposeDeliveryDialog({
     <Dialog open={!!po} onOpenChange={(o) => (!o ? onClose() : undefined)}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Propose delivery dates — {po?.po_number}</DialogTitle>
+          <DialogTitle>{t("portalMod.propose.dialogTitle", { po: po?.po_number })}</DialogTitle>
           <DialogDescription>
-            Enter a proposed delivery date per line. Procurement reviews and confirms each ETA.
-            {issueDate ? ` Dates cannot be earlier than the PO issue date (${issueDate}).` : ""}
+            {t("portalMod.propose.dialogDescription")}
+            {issueDate ? t("portalMod.propose.issueDateNote", { date: issueDate }) : ""}
           </DialogDescription>
         </DialogHeader>
 
@@ -128,11 +134,11 @@ export function ProposeDeliveryDialog({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-14">Line</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="w-44">Proposed date</TableHead>
-                <TableHead className="w-28">Qty</TableHead>
-                <TableHead>Note</TableHead>
+                <TableHead className="w-14">{t("portalMod.propose.colLine")}</TableHead>
+                <TableHead>{t("portalMod.propose.colDescription")}</TableHead>
+                <TableHead className="w-44">{t("portalMod.propose.colProposedDate")}</TableHead>
+                <TableHead className="w-28">{t("portalMod.propose.colQty")}</TableHead>
+                <TableHead>{t("portalMod.propose.colNote")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,7 +156,7 @@ export function ProposeDeliveryDialog({
                         type="date"
                         min={issueDate ?? undefined}
                         value={row?.proposed_date ?? ""}
-                        aria-label={`Proposed date for line ${l.line_no}`}
+                        aria-label={t("portalMod.propose.proposedDateAriaLabel", { line: l.line_no })}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
@@ -169,7 +175,7 @@ export function ProposeDeliveryDialog({
                       />
                       {err ? (
                         <p className="pt-1 text-[10px] text-destructive">
-                          {PROPOSE_DELIVERY_ERRORS[err]}
+                          {t(`portalMod.errors.${err}`)}
                         </p>
                       ) : null}
                     </TableCell>
@@ -178,7 +184,7 @@ export function ProposeDeliveryDialog({
                         type="number"
                         min={0}
                         value={row?.proposed_qty ?? ""}
-                        aria-label={`Proposed quantity for line ${l.line_no}`}
+                        aria-label={t("portalMod.propose.proposedQtyAriaLabel", { line: l.line_no })}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
@@ -192,7 +198,7 @@ export function ProposeDeliveryDialog({
                       <Input
                         value={row?.note ?? ""}
                         maxLength={500}
-                        aria-label={`Note for line ${l.line_no}`}
+                        aria-label={t("portalMod.propose.noteAriaLabel", { line: l.line_no })}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
@@ -211,7 +217,7 @@ export function ProposeDeliveryDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
-            Cancel
+            {t("portalMod.propose.cancel")}
           </Button>
           <Button
             disabled={submitting || rows.length === 0 || !!firstError}
@@ -230,7 +236,7 @@ export function ProposeDeliveryDialog({
             }
           >
             {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Submit proposal
+            {t("portalMod.propose.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

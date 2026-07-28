@@ -31,6 +31,8 @@ import {
   incidentInput,
   type IncidentInput,
 } from "@/lib/hse.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
 
 export const Route = createFileRoute("/_authenticated/hse/incidents/new")({
   head: () => ({
@@ -59,6 +61,7 @@ function isoLocalToUtc(v: string): string {
 }
 
 function NewIncidentPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const projectsQuery = useQuery(hseProjectsQueryOptions());
@@ -90,11 +93,11 @@ function NewIncidentPage() {
   const createMut = useMutation({
     mutationFn: (payload: IncidentInput) => createIncident({ data: payload as any }),
     onSuccess: async (row) => {
-      toast.success(`Incident ${row.incident_number} logged`);
+      toast.success(t("fieldMod.hse.incident.incidentLogged", { number: row.incident_number }));
       await qc.invalidateQueries({ queryKey: ["hse"] });
       navigate({ to: "/hse/incidents/$id", params: { id: row.id } });
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const onSubmit = form.handleSubmit((values) => {
@@ -107,18 +110,18 @@ function NewIncidentPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Log incident"
-        description="Report an HSE incident within 24 hours of occurrence."
+        title={t("fieldMod.hse.incident.title")}
+        description={t("fieldMod.hse.incident.description")}
       />
 
       <div className="flex items-start gap-3 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
         <Info size={16} className="mt-0.5 text-primary" aria-hidden />
         <div>
           <div className="font-medium text-foreground">
-            Incidents must be logged within 24 hours of occurrence.
+            {t("fieldMod.hse.incident.banner")}
           </div>
           <div className="text-xs text-muted-foreground">
-            Late logs are flagged and reported in the HSE dashboard.
+            {t("fieldMod.hse.incident.bannerHint")}
           </div>
         </div>
       </div>
@@ -195,6 +198,7 @@ function NewIncidentPage() {
               <Input
                 id="occurredAt"
                 type="datetime-local"
+                dir="ltr"
                 value={localOccurred}
                 onChange={(e) => setLocalOccurred(e.target.value)}
                 required
@@ -329,10 +333,10 @@ function NewIncidentPage() {
 
         <div className="sticky bottom-0 flex gap-2 rounded-md border border-border bg-background/95 p-3 backdrop-blur">
           <Button type="button" variant="ghost" onClick={() => navigate({ to: "/hse/incidents" })}>
-            Cancel
+            {t("fieldMod.common.cancel")}
           </Button>
-          <Button type="submit" disabled={createMut.isPending} className="ml-auto">
-            {createMut.isPending ? "Saving…" : "Log incident"}
+          <Button type="submit" disabled={createMut.isPending} className="ms-auto">
+            {createMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.hse.incident.logIncident")}
           </Button>
         </div>
       </form>

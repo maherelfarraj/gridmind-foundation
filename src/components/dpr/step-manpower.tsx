@@ -19,6 +19,8 @@ import {
 import { dprDetailQueryOptions, errorMessage } from "@/lib/dpr-query";
 import { addManpowerRow, deleteManpowerRow, type ManpowerRow } from "@/lib/dpr.functions";
 import { sumManpower, TRADE_LABELS, TRADES, type Trade } from "@/lib/dpr.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { Num } from "@/components/ui/num";
 
 interface Props {
   dprId: string;
@@ -27,6 +29,7 @@ interface Props {
 }
 
 export function StepManpower({ dprId, rows, readOnly }: Props) {
+  const { t } = useI18n();
   const totals = sumManpower(rows);
   const qc = useQueryClient();
   const add = useServerFn(addManpowerRow);
@@ -52,7 +55,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
         },
       }),
     onSuccess: () => {
-      toast.success("Row added");
+      toast.success(t("fieldMod.dpr.manpower.rowAdded"));
       setContractor("");
       setHeadcount(1);
       setHours(8);
@@ -72,17 +75,17 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="h-4 w-4" aria-hidden /> Totals
+            <Users className="h-4 w-4" aria-hidden /> {t("fieldMod.dpr.manpower.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3">
-          <TotalTile label="Headcount" value={totals.totalManpower.toString()} />
-          <TotalTile label="Man-hours" value={totals.totalHours.toFixed(1)} />
+          <TotalTile label={t("fieldMod.dpr.manpower.headcount")} value={totals.totalManpower.toString()} />
+          <TotalTile label={t("fieldMod.dpr.manpower.manHours")} value={totals.totalHours.toFixed(1)} />
         </CardContent>
       </Card>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No manpower rows yet. Add trades below.</p>
+        <p className="text-sm text-muted-foreground">{t("fieldMod.dpr.manpower.noRows")}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((r) => (
@@ -96,8 +99,10 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                   {r.contractor ? ` · ${r.contractor}` : ""}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {r.headcount} × {Number(r.hours).toFixed(1)} h ={" "}
-                  {(Number(r.hours) * r.headcount).toFixed(1)} h
+                  <Num>
+                    {r.headcount} × {Number(r.hours).toFixed(1)} h ={" "}
+                    {(Number(r.hours) * r.headcount).toFixed(1)} h
+                  </Num>
                 </div>
               </div>
               {!readOnly && (
@@ -107,7 +112,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                   className="h-11 w-11 shrink-0 text-destructive hover:text-destructive"
                   disabled={delMut.isPending}
                   onClick={() => delMut.mutate(r.id)}
-                  aria-label="Remove row"
+                  aria-label={t("fieldMod.dpr.manpower.removeRow")}
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                 </Button>
@@ -120,12 +125,12 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
       {!readOnly && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add row</CardTitle>
+            <CardTitle className="text-base">{t("fieldMod.dpr.manpower.addRowTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="mp-trade">Trade</Label>
+                <Label htmlFor="mp-trade">{t("fieldMod.dpr.manpower.trade")}</Label>
                 <Select value={trade} onValueChange={(v) => setTrade(v as Trade)}>
                   <SelectTrigger id="mp-trade" className="h-11">
                     <SelectValue />
@@ -140,7 +145,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="mp-contractor">Contractor (optional)</Label>
+                <Label htmlFor="mp-contractor">{t("fieldMod.dpr.manpower.contractor")}</Label>
                 <Input
                   id="mp-contractor"
                   className="h-11"
@@ -152,7 +157,7 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label>Headcount</Label>
+                <Label>{t("fieldMod.dpr.manpower.headcount")}</Label>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
@@ -160,11 +165,12 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                     variant="outline"
                     className="h-11 w-11 shrink-0"
                     onClick={() => setHeadcount((n) => Math.max(0, n - 1))}
-                    aria-label="Decrease headcount"
+                    aria-label={t("fieldMod.dpr.manpower.decreaseHeadcount")}
                   >
                     <Minus className="h-4 w-4" aria-hidden />
                   </Button>
                   <Input
+                    dir="ltr"
                     inputMode="numeric"
                     className="h-11 text-center"
                     value={headcount}
@@ -176,17 +182,18 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
                     variant="outline"
                     className="h-11 w-11 shrink-0"
                     onClick={() => setHeadcount((n) => n + 1)}
-                    aria-label="Increase headcount"
+                    aria-label={t("fieldMod.dpr.manpower.increaseHeadcount")}
                   >
                     <Plus className="h-4 w-4" aria-hidden />
                   </Button>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="mp-hours">Hours per person</Label>
+                <Label htmlFor="mp-hours">{t("fieldMod.dpr.manpower.hoursPerPerson")}</Label>
                 <Input
                   id="mp-hours"
                   type="number"
+                  dir="ltr"
                   inputMode="decimal"
                   step="0.5"
                   min={0}
@@ -203,8 +210,8 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
               disabled={addMut.isPending || headcount <= 0 || hours <= 0}
               onClick={() => addMut.mutate()}
             >
-              <Plus className="mr-2 h-4 w-4" aria-hidden />
-              Add row
+              <Plus className="me-2 h-4 w-4" aria-hidden />
+              {t("fieldMod.dpr.manpower.addRow")}
             </Button>
           </CardContent>
         </Card>

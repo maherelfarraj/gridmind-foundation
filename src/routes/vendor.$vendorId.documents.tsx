@@ -15,7 +15,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime } from "@/lib/format";
-import { vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   createVendorDocUpload,
   listVendorExchangeDocuments,
@@ -26,7 +27,6 @@ import {
 import {
   validateUploadFile,
   VENDOR_DOC_ALLOWED_MIME,
-  VENDOR_UPLOAD_ERRORS,
   type VendorUploadErrorCode,
 } from "@/lib/vendor-uploads.rules";
 
@@ -46,6 +46,7 @@ export const Route = createFileRoute("/vendor/$vendorId/documents")({
 });
 
 function VendorDocumentsPage() {
+  const { t } = useI18n();
   const { vendorId } = Route.useParams();
   const qc = useQueryClient();
   const listFn = useServerFn(listVendorExchangeDocuments);
@@ -78,17 +79,17 @@ function VendorDocumentsPage() {
       return registerFn({ data: { vendorId, path: target.path, title: title.trim() } });
     },
     onSuccess: () => {
-      toast.success("Document shared with your buyer");
+      toast.success(t("portalMod.documents.successToast"));
       setTitle("");
       setFile(null);
       void qc.invalidateQueries({ queryKey: key });
     },
     onError: (err: unknown) => {
-      const code = err instanceof Error ? err.message : "";
+      const code = err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
       toast.error(
-        VENDOR_UPLOAD_ERRORS[code as VendorUploadErrorCode] ??
-          vendorPortalErrorCode(err) ??
-          "Could not share that document.",
+        code
+          ? translateError(t, code, t("portalMod.documents.genericErrorToast"))
+          : t("portalMod.documents.genericErrorToast"),
       );
     },
   });
@@ -96,7 +97,7 @@ function VendorDocumentsPage() {
   async function download(path: string) {
     const { url } = await signFn({ data: { vendorId, path } });
     if (!url) {
-      toast.error("Could not open that file.");
+      toast.error(t("portalMod.documents.couldntOpenFile"));
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
@@ -107,8 +108,8 @@ function VendorDocumentsPage() {
       <div className="space-y-6">
         <BackLink vendorId={vendorId} />
         <VendorStateCard
-          title="Documents are not shared with your account"
-          description="Ask your buyer contact to enable document exchange for this portal login."
+          title={t("portalMod.documents.notSharedTitle")}
+          description={t("portalMod.documents.notSharedDesc")}
         />
       </div>
     );
@@ -122,27 +123,27 @@ function VendorDocumentsPage() {
     <div className="space-y-6">
       <BackLink vendorId={vendorId} />
       <PageHeader
-        title="Documents"
-        description="Two-way exchange: send datasheets and certificates, and read what your buyer publishes to you."
+        title={t("portalMod.documents.title")}
+        description={t("portalMod.documents.description")}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Share a document</CardTitle>
+          <CardTitle className="text-base">{t("portalMod.documents.shareCardTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="doc-title">Title</Label>
+            <Label htmlFor="doc-title">{t("portalMod.documents.titleLabel")}</Label>
             <Input
               id="doc-title"
               value={title}
               maxLength={200}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Inverter datasheet rev C"
+              placeholder={t("portalMod.documents.titlePlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="doc-file">File (max 25 MB)</Label>
+            <Label htmlFor="doc-file">{t("portalMod.documents.fileLabel")}</Label>
             <Input
               id="doc-file"
               type="file"
@@ -152,26 +153,26 @@ function VendorDocumentsPage() {
           <div className="md:col-span-2">
             <Button onClick={() => upload.mutate()} disabled={upload.isPending || !file}>
               {upload.isPending ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
+                <Loader2 className="me-2 size-4 animate-spin" />
               ) : (
-                <Upload className="mr-2 size-4" />
+                <Upload className="me-2 size-4" />
               )}
-              Share with buyer
+              {t("portalMod.documents.shareButton")}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       <DocSection
-        title="Shared by us"
-        empty="You have not shared any documents yet."
+        title={t("portalMod.documents.sharedByUsTitle")}
+        empty={t("portalMod.documents.sharedByUsEmpty")}
         rows={submittals}
         loading={docs.isLoading}
         onDownload={download}
       />
       <DocSection
-        title="Shared with us"
-        empty="Nothing published to you yet."
+        title={t("portalMod.documents.sharedWithUsTitle")}
+        empty={t("portalMod.documents.sharedWithUsEmpty")}
         rows={published}
         loading={docs.isLoading}
         onDownload={download}
@@ -193,6 +194,7 @@ function DocSection({
   loading: boolean;
   onDownload: (path: string) => void | Promise<void>;
 }) {
+  const { t } = useI18n();
   return (
     <Card>
       <CardHeader>
@@ -202,7 +204,7 @@ function DocSection({
         {loading ? (
           <VendorTableSkeleton rows={2} />
         ) : rows.length === 0 ? (
-          <EmptyState icon={FileText} title="Nothing here yet" description={empty} />
+          <EmptyState icon={FileText} title={t("portalMod.documents.emptyGenericTitle")} description={empty} />
         ) : (
           <ul className="divide-y divide-border">
             {rows.map((doc) => (
@@ -210,7 +212,10 @@ function DocSection({
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{doc.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {doc.file_name ?? "file"} · {formatDateTime(doc.created_at)}
+                    {t("portalMod.documents.fileWithDate", {
+                      file: doc.file_name ?? "file",
+                      date: formatDateTime(doc.created_at),
+                    })}
                   </p>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => void onDownload(doc.storage_path)}>
@@ -226,13 +231,14 @@ function DocSection({
 }
 
 function BackLink({ vendorId }: { vendorId: string }) {
+  const { t } = useI18n();
   return (
     <Link
       to="/vendor/$vendorId"
       params={{ vendorId }}
       className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
     >
-      <ArrowLeft className="size-4" /> Back to portal
+      <ArrowLeft className="size-4" /> {t("portalMod.documents.backToPortal")}
     </Link>
   );
 }

@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MoneyCell } from "@/components/ui/num";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -31,7 +32,8 @@ import {
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, formatMoney } from "@/lib/format";
-import { vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { getVendorPortalPos } from "@/lib/vendor-portal.functions";
 import {
   createVendorInvoiceUpload,
@@ -42,7 +44,6 @@ import {
 import {
   validateUploadFile,
   VENDOR_INVOICE_MIME,
-  VENDOR_UPLOAD_ERRORS,
   type VendorUploadErrorCode,
 } from "@/lib/vendor-uploads.rules";
 
@@ -62,6 +63,7 @@ export const Route = createFileRoute("/vendor/$vendorId/invoices")({
 });
 
 function VendorInvoicesPage() {
+  const { t } = useI18n();
   const { vendorId } = Route.useParams();
   const qc = useQueryClient();
   const posFn = useServerFn(getVendorPortalPos);
@@ -130,18 +132,18 @@ function VendorInvoicesPage() {
       });
     },
     onSuccess: () => {
-      toast.success("Invoice submitted — queued for three-way match");
+      toast.success(t("portalMod.invoices.successToast"));
       setInvoiceNumber("");
       setAmount("");
       setFile(null);
       void qc.invalidateQueries({ queryKey: invoicesKey });
     },
     onError: (err: unknown) => {
-      const code = err instanceof Error ? err.message : "";
+      const code = err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
       toast.error(
-        VENDOR_UPLOAD_ERRORS[code as VendorUploadErrorCode] ??
-          vendorPortalErrorCode(err) ??
-          "Could not submit the invoice.",
+        code
+          ? translateError(t, code, t("portalMod.invoices.genericErrorToast"))
+          : t("portalMod.invoices.genericErrorToast"),
       );
     },
   });
@@ -150,7 +152,7 @@ function VendorInvoicesPage() {
     if (!path) return;
     const { url } = await signFn({ data: { vendorId, path } });
     if (!url) {
-      toast.error("Could not open that file.");
+      toast.error(t("portalMod.invoices.couldntOpenFile"));
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
@@ -161,8 +163,8 @@ function VendorInvoicesPage() {
       <div className="space-y-6">
         <BackLink vendorId={vendorId} />
         <VendorStateCard
-          title="Invoices are not shared with your account"
-          description="Ask your buyer contact to enable invoice access for this portal login."
+          title={t("portalMod.invoices.notSharedTitle")}
+          description={t("portalMod.invoices.notSharedDesc")}
         />
       </div>
     );
@@ -171,21 +173,18 @@ function VendorInvoicesPage() {
   return (
     <div className="space-y-6">
       <BackLink vendorId={vendorId} />
-      <PageHeader
-        title="Invoices"
-        description="Upload a PDF invoice against a purchase order. It lands straight in the buyer's three-way match queue."
-      />
+      <PageHeader title={t("portalMod.invoices.title")} description={t("portalMod.invoices.description")} />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Submit an invoice</CardTitle>
+          <CardTitle className="text-base">{t("portalMod.invoices.submitCardTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="po">Purchase order</Label>
+            <Label htmlFor="po">{t("portalMod.invoices.poLabel")}</Label>
             <Select value={poId} onValueChange={setPoId}>
               <SelectTrigger id="po">
-                <SelectValue placeholder="Select a PO" />
+                <SelectValue placeholder={t("portalMod.invoices.poPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {openPos.map((p) => (
@@ -197,17 +196,17 @@ function VendorInvoicesPage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="inv-no">Your invoice number</Label>
+            <Label htmlFor="inv-no">{t("portalMod.invoices.invoiceNumberLabel")}</Label>
             <Input
               id="inv-no"
               value={invoiceNumber}
               maxLength={120}
               onChange={(e) => setInvoiceNumber(e.target.value)}
-              placeholder="INV-2026-0142"
+              placeholder={t("portalMod.invoices.invoiceNumberPlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="inv-date">Invoice date</Label>
+            <Label htmlFor="inv-date">{t("portalMod.invoices.invoiceDateLabel")}</Label>
             <Input
               id="inv-date"
               type="date"
@@ -216,28 +215,29 @@ function VendorInvoicesPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount ({selectedPo?.currency_code ?? "—"})</Label>
+            <Label htmlFor="amount">
+              {t("portalMod.invoices.amountLabel", { currency: selectedPo?.currency_code ?? "—" })}
+            </Label>
             <Input
               id="amount"
               type="number"
               min="0"
               step="0.01"
+              dir="ltr"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="file">Invoice PDF (max 25 MB)</Label>
+            <Label htmlFor="file">{t("portalMod.invoices.fileLabel")}</Label>
             <Input
               id="file"
               type="file"
               accept="application/pdf"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
-            <p className="text-xs text-muted-foreground">
-              Files are scanned and stored privately. Only you and your buyer can open them.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("portalMod.invoices.fileHint")}</p>
           </div>
           <div className="md:col-span-2">
             <Button
@@ -245,11 +245,11 @@ function VendorInvoicesPage() {
               disabled={submit.isPending || !selectedPo || !file}
             >
               {submit.isPending ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
+                <Loader2 className="me-2 size-4 animate-spin" />
               ) : (
-                <Upload className="mr-2 size-4" />
+                <Upload className="me-2 size-4" />
               )}
-              Submit invoice
+              {t("portalMod.invoices.submitButton")}
             </Button>
           </div>
         </CardContent>
@@ -257,7 +257,7 @@ function VendorInvoicesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Your submitted invoices</CardTitle>
+          <CardTitle className="text-base">{t("portalMod.invoices.submittedCardTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {invoices.isLoading ? (
@@ -265,19 +265,19 @@ function VendorInvoicesPage() {
           ) : (invoices.data ?? []).length === 0 ? (
             <EmptyState
               icon={Receipt}
-              title="No invoices submitted yet"
-              description="Upload your first invoice above to start the match."
+              title={t("portalMod.invoices.emptyTitle")}
+              description={t("portalMod.invoices.emptyDesc")}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice</TableHead>
-                  <TableHead>PO</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Match status</TableHead>
-                  <TableHead className="text-right">File</TableHead>
+                  <TableHead>{t("portalMod.invoices.colInvoice")}</TableHead>
+                  <TableHead>{t("portalMod.invoices.colPo")}</TableHead>
+                  <TableHead>{t("portalMod.invoices.colDate")}</TableHead>
+                  <TableHead className="text-end">{t("portalMod.invoices.colAmount")}</TableHead>
+                  <TableHead>{t("portalMod.invoices.colMatchStatus")}</TableHead>
+                  <TableHead className="text-end">{t("portalMod.invoices.colFile")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -286,13 +286,13 @@ function VendorInvoicesPage() {
                     <TableCell className="font-medium">{row.vendor_invoice_number}</TableCell>
                     <TableCell>{row.po_number ?? "—"}</TableCell>
                     <TableCell>{formatDate(row.invoice_date)}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatMoney(row.invoice_amount, row.invoice_currency_code)}
+                    <TableCell className="text-end">
+                      <MoneyCell>{formatMoney(row.invoice_amount, row.invoice_currency_code)}</MoneyCell>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={row.status} label={row.status.replace(/_/g, " ")} />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -314,13 +314,14 @@ function VendorInvoicesPage() {
 }
 
 function BackLink({ vendorId }: { vendorId: string }) {
+  const { t } = useI18n();
   return (
     <Link
       to="/vendor/$vendorId"
       params={{ vendorId }}
       className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
     >
-      <ArrowLeft className="size-4" /> Back to portal
+      <ArrowLeft className="size-4" /> {t("portalMod.invoices.backToPortal")}
     </Link>
   );
 }
