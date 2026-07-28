@@ -1,501 +1,532 @@
 {
- "_module": "eng",
- "common": {
-  "all": "الكل",
-  "cancel": "إلغاء",
-  "create": "إنشاء",
-  "creating": "جارٍ الإنشاء…",
-  "open": "فتح",
-  "retry": "إعادة المحاولة",
-  "search": "بحث",
-  "loading": "جارٍ التحميل…",
-  "status": "الحالة",
-  "revision": "المراجعة",
-  "notSet": "—"
- },
- "projects": {
-  "title": "المشاريع",
-  "loading": "جارٍ التحميل…",
-  "count_one": "مشروع واحد",
-  "count_two": "مشروعان",
-  "count_few": "{{count}} مشاريع",
-  "count_many": "{{count}} مشروعاً",
-  "count_other": "{{count}} مشروع",
-  "matchingFilters": "مطابق للمرشِّحات",
-  "exportCsv": "تصدير CSV",
-  "exportSuccess": "تم تنزيل ملف CSV",
-  "exportFailed": "فشل التصدير",
-  "newProject": "مشروع جديد",
-  "searchPlaceholder": "ابحث بالاسم أو الرمز",
-  "searchAriaLabel": "ابحث عن المشاريع",
-  "filters": {
-   "phase": "المرحلة",
-   "archetype": "النمط",
-   "department": "القسم"
-  },
-  "card": {
-   "noCod": "لا يوجد تاريخ تشغيل تجاري",
-   "unassigned": "غير مُسند"
-  },
-  "empty": {
-   "filteredTitle": "لا توجد مشاريع مطابقة للمرشِّحات",
-   "filteredDesc": "عدّل المرشِّحات أعلاه أو امسحها لعرض المزيد من النتائج.",
-   "emptyTitle": "لا توجد مشاريع بعد",
-   "emptyDesc": "أنشئ مشروعك الأول لبدء التسليم المرحلي المُبوَّب."
-  },
-  "error": {
-   "title": "تعذّر تحميل المشاريع",
-   "fallback": "فشل تحميل المشاريع"
-  }
- },
- "drawings": {
-  "columns": {
-   "number": "الرقم",
-   "title": "العنوان",
-   "discipline": "التخصص",
-   "revision": "المراجعة",
-   "status": "الحالة",
-   "issued": "تاريخ الإصدار"
-  },
-  "searchPlaceholder": "ابحث بالرقم أو العنوان…",
-  "disciplinePlaceholder": "التخصص",
-  "allDisciplines": "كل التخصصات",
-  "statusPlaceholder": "الحالة",
-  "allStatuses": "كل الحالات",
-  "exportCsv": "CSV",
-  "locked": "مُقفل",
-  "open": "فتح",
-  "showing": "عرض {{shown}} من {{total}} مخطط.",
-  "empty": {
-   "title": "لا توجد مخططات بعد",
-   "description": "سجّل رقم مخطط وابدأ برفع المراجعات."
-  },
-  "newDrawing": {
-   "trigger": "مخطط جديد",
-   "title": "مخطط جديد",
-   "description": "سجّل رقم المخطط والعنوان والتخصص. يمكن رفع المراجعات لاحقاً.",
-   "numberLabel": "رقم المخطط",
-   "disciplineLabel": "التخصص",
-   "titleLabel": "العنوان"
-  },
-  "disciplineLabels": {
-   "civil": "مدني",
-   "structural": "إنشائي",
-   "electrical": "كهربائي",
-   "mechanical": "ميكانيكي",
-   "scada_controls": "سكادا/تحكم",
-   "survey": "مساحة",
-   "general": "عام"
-  },
-  "statusLabels": {
-   "draft": "مسودة",
-   "IFD": "IFD",
-   "IFC": "IFC",
-   "as_built": "كما نُفِّذ",
-   "superseded": "مُستبدَل"
-  }
- },
- "sld": {
-  "gallery": {
-   "title": "مخططات الخط الأحادي",
-   "empty": {
-    "title": "لا توجد مخططات خط أحادي بعد",
-    "description": "ارفع أول مخطط خط أحادي للبدء."
-   },
-   "revision": "مراجعة {{code}}",
-   "markup_one": "ملاحظة واحدة",
-   "markup_two": "ملاحظتان",
-   "markup_few": "{{count}} ملاحظات",
-   "markup_many": "{{count}} ملاحظة",
-   "markup_other": "{{count}} ملاحظة",
-   "newSld": {
-    "trigger": "مخطط خط أحادي جديد",
-    "title": "مخطط خط أحادي جديد",
-    "description": "تتم إضافة البادئة SLD- تلقائياً لرقم المخطط ليظهر في هذه المعرض.",
-    "numberLabel": "رقم المخطط",
-    "titleLabel": "العنوان",
-    "createButton": "إنشاء مخطط الخط الأحادي"
-   }
-  },
-  "canvas": {
-   "tools": {
-    "select": "أداة التحديد",
-    "pan": "أداة التحريك",
-    "connect": "أداة التوصيل",
-    "measure": "أداة القياس"
-   },
-   "connectionType": "نوع التوصيل",
-   "actions": {
-    "rotate": "تدوير 90°",
-    "mirror": "قلب أفقي",
-    "copy": "نسخ",
-    "paste": "لصق",
-    "group": "تجميع",
-    "ungroup": "إلغاء التجميع",
-    "delete": "حذف التحديد"
-   },
-   "align": {
-    "left": "محاذاة يسار",
-    "center": "محاذاة وسط",
-    "right": "محاذاة يمين",
-    "top": "محاذاة أعلى",
-    "middle": "محاذاة منتصف",
-    "bottom": "محاذاة أسفل"
-   },
-   "distribute": {
-    "horizontal": "توزيع أفقي",
-    "vertical": "توزيع رأسي",
-    "aria": "توزيع {{axis}}ly"
-   },
-   "status": {
-    "copyCursor": "نسخ إحداثيات المؤشر",
-    "copySelection": "نسخ موضع العنصر المحدد",
-    "cursor": "X/Y: {{value}} مم",
-    "zoom": "التكبير {{value}}%",
-    "snapOn": "الالتقاط تشغيل · {{grid}} مم",
-    "snapOff": "الالتقاط إيقاف",
-    "tool": "الأداة: {{tool}}",
-    "selectedCount_one": "عنصر واحد محدد",
-    "selectedCount_two": "عنصران محددان",
-    "selectedCount_few": "{{count}} عناصر محددة",
-    "selectedCount_many": "{{count}} عنصراً محدداً",
-    "selectedCount_other": "{{count}} عنصر محدد",
-    "measurement": "Δ {{distance}} (dx {{dx}}, dy {{dy}})",
-    "copiedToast": "تم نسخ {{text}}"
-   },
-   "connectionTypeLabels": {
-    "cable": "كابل",
-    "busbar": "قضيب توزيع",
-    "dc_string": "سلسلة تيار مستمر",
-    "earth": "أرضي",
-    "signal": "إشارة"
-   }
-  }
- },
- "pv": {
-  "layout": {
-   "title": "تخطيط الألواح الكهروضوئية",
-   "description": "ترتيب تلقائي للوحدات، فحوص المطابقة، وبدائل التخطيط.",
-   "noSiteConfig": {
-    "title": "لا توجد إعدادات موقع مفعّلة",
-    "description": "ارسم حدود الموقع وفعّل إعداداً في تبويب إعداد الموقع قبل ترتيب التخطيط."
-   },
-   "noModule": {
-    "title": "لا توجد وحدة كهروضوئية في المكتبة",
-    "description": "أضف وحدة نشطة واحدة على الأقل إلى مكتبة معدات الألواح الكهروضوئية لتحديد أحجام الجداول."
-   },
-   "arrangementParameters": "معاملات الترتيب",
-   "blockInspector": "فاحص الكتلة",
-   "optionComparison": "مقارنة الخيارات",
-   "savedLayouts": "التخطيطات المحفوظة",
-   "noSavedLayouts": {
-    "title": "لا توجد تخطيطات محفوظة",
-    "description": "احفظ أحد الخيارات أعلاه لبدء مسار الاعتماد."
-   },
-   "complianceTitle": "المطابقة",
-   "saveAsDraft": "حفظ {{name}} كمسودة",
-   "selectBlockPrompt": "اختر كتلة على لوحة الرسم.",
-   "blockType": "النوع: {{type}}",
-   "blockModules": "الوحدات: {{count}} — {{kwp}} كيلوواط ذروة",
-   "blockSlopeNone": "لا توجد بيانات تضاريس",
-   "blockSlope": "الميل: {{pct}}%",
-   "comparisonColumns": {
-    "option": "الخيار",
-    "dcKwp": "كيلوواط ذروة تيار مستمر",
-    "modules": "الوحدات",
-    "tables": "الجداول",
-    "usedArea": "المساحة المستخدمة (م²)",
-    "achievedGcr": "نسبة تغطية الأرض المحققة",
-    "warnings": "التحذيرات"
-   },
-   "savedColumns": {
-    "layout": "التخطيط",
-    "version": "الإصدار",
-    "dcKwp": "كيلوواط ذروة تيار مستمر",
+  "_module": "eng",
+  "common": {
+    "all": "الكل",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "creating": "جارٍ الإنشاء…",
+    "open": "فتح",
+    "retry": "إعادة المحاولة",
+    "search": "بحث",
+    "loading": "جارٍ التحميل…",
     "status": "الحالة",
-    "actions": "الإجراءات"
-   },
-   "actions": {
-    "submitForApproval": "إرسال للاعتماد",
-    "generateSld": "إنشاء مخطط خط أحادي",
-    "applyDecision": "تطبيق القرار"
-   },
-   "params": {
-    "gcr": "GCR",
-    "setbackM": "التراجع (م)",
-    "tiltDeg": "الميل (درجة)",
-    "azimuthDeg": "السمت (درجة)",
-    "modulesAcross": "الوحدات أفقيًا",
-    "modulesUp": "الوحدات رأسيًا",
-    "roadEveryNRows": "طريق كل N صف",
-    "roadWidthM": "عرض الطريق (م)"
-   },
-   "blockSlopeNoneFull": "الانحدار: لا توجد بيانات تضاريس"
+    "revision": "المراجعة",
+    "notSet": "—"
   },
-  "simulation": {
-   "title": "محاكاة إنتاج الطاقة",
-   "honestyLabel": "نموذج GridMind الشفاف — لم يُتحقق منه بعد مقابل الأدوات التجارية",
-   "description": "سلسلة فقد شفافة من 16 خطوة، سيناريوهات الاحتمالية، وخط أساس طاقة المشروع الخاضع لبوابة الاعتماد.",
-   "disclaimer": "لم يُتحقق من هذا النموذج مقابل PVsyst أو PlantPredict أو SAM أو أي محرك خارجي آخر. راجع سلسلة الفقد مقابل افتراضات تخصصك قبل اعتماد النتائج كأساس تمويلي.",
-   "loadError": {
-    "title": "تعذّر تحميل مساحة عمل المحاكاة",
-    "description": "أعد تحميل الصفحة أو تحقّق من وجود إعداد موقع مفعّل للمشروع."
-   },
-   "tabs": {
-    "inputSheet": "ورقة المدخلات",
-    "results": "النتائج",
-    "approval": "المراجعة والاعتماد",
-    "compare": "المقارنة"
-   },
-   "serverPrefilled": "مدخلات مُعبَّأة مسبقاً من الخادم",
-   "siteConfiguration": "إعداد الموقع",
-   "noActiveSiteConfig": "لا يوجد إعداد موقع مفعّل",
-   "approvedLayout": "التخطيط المعتمد",
-   "noneApproved": "لا يوجد تخطيط معتمد",
-   "stringing": "التسلسل الكهربائي (P-154)",
-   "strings": "سلسلة",
-   "runName": "اسم التشغيلة",
-   "mounting": "طريقة التركيب",
-   "fixedTilt": "ميل ثابت",
-   "singleAxisTracker": "متتبِّع أحادي المحور",
-   "resultsEmpty": {
-    "title": "لا توجد محاكاة بعد",
-    "description": "املأ ورقة المدخلات وشغّل النموذج الشفاف لعرض سلسلة الفقد."
-   },
-   "simulationLabel": "المحاكاة",
-   "baselineSuffix": " · خط الأساس",
-   "approval": {
-    "nothingToReview": {
-     "title": "لا يوجد شيء للمراجعة",
-     "description": "شغّل محاكاة أولاً، ثم أرسلها للاعتماد الهندسي."
+  "projects": {
+    "title": "المشاريع",
+    "loading": "جارٍ التحميل…",
+    "count_one": "مشروع واحد",
+    "count_two": "مشروعان",
+    "count_few": "{{count}} مشاريع",
+    "count_many": "{{count}} مشروعاً",
+    "count_other": "{{count}} مشروع",
+    "matchingFilters": "مطابق للمرشِّحات",
+    "exportCsv": "تصدير CSV",
+    "exportSuccess": "تم تنزيل ملف CSV",
+    "exportFailed": "فشل التصدير",
+    "newProject": "مشروع جديد",
+    "searchPlaceholder": "ابحث بالاسم أو الرمز",
+    "searchAriaLabel": "ابحث عن المشاريع",
+    "filters": {
+      "phase": "المرحلة",
+      "archetype": "النمط",
+      "department": "القسم"
     },
-    "approvalStatus": "حالة الاعتماد",
-    "notSubmitted": "لم يُرسَل",
-    "currentStep": "الخطوة الحالية",
-    "stepEngineeringAdmin": "الخطوة {{step}} · إدارة الهندسة",
-    "slaAge": "عمر اتفاقية مستوى الخدمة",
-    "submitForApproval": "إرسال للاعتماد",
-    "currentBaseline": "خط الأساس الحالي",
-    "setAsBaseline": "تعيين كخط أساس المشروع",
-    "baselineLocked": "يُفتح تعيين خط الأساس بعد اعتماد مثيل الاعتماد — يرفض الخادم أي محاولة سابقة لذلك."
-   },
-   "compare": {
-    "title": "مقارنة التشغيلات",
-    "needTwo": {
-     "title": "يلزم محاكاتان",
-     "description": "شغّل محاكاتين على الأقل لمقارنة الطاقة السنوية والإنتاجية ونسبة الأداء وكل خطوة فقد."
+    "card": {
+      "noCod": "لا يوجد تاريخ تشغيل تجاري",
+      "unassigned": "غير مُسند"
     },
-    "baselinePlaceholder": "التشغيلة المرجعية",
-    "comparePlaceholder": "المقارنة مع…",
-    "pickSecond": {
-     "title": "اختر محاكاة ثانية",
-     "description": "اختر تشغيلتين لعرض جدول الفروق."
+    "empty": {
+      "filteredTitle": "لا توجد مشاريع مطابقة للمرشِّحات",
+      "filteredDesc": "عدّل المرشِّحات أعلاه أو امسحها لعرض المزيد من النتائج.",
+      "emptyTitle": "لا توجد مشاريع بعد",
+      "emptyDesc": "أنشئ مشروعك الأول لبدء التسليم المرحلي المُبوَّب."
+    },
+    "error": {
+      "title": "تعذّر تحميل المشاريع",
+      "fallback": "فشل تحميل المشاريع"
     }
-   },
-   "form": {
-    "runButton": "تشغيل المحاكاة",
-    "running": "جارٍ التشغيل…",
-    "readOnlyNote": "للقراءة فقط — يمكن لأدوار الهندسة تشغيل المحاكاة.",
-    "bessDisabledNote": "مدخلات نظام تخزين البطاريات معطّلة — لا يوجد إدخال بطارية مُعدّ لهذا المشروع.",
-    "overridden": "مُتجاوَز",
-    "gridLimitLabel": "حد التصدير / التقليص (kW)"
-   },
-   "results": {
-    "pScenarios": "سيناريوهات P",
-    "inputs": "المدخلات",
-    "inputSources": "مصادر المدخلات",
-    "metric": "المؤشر",
-    "lossStep": "خطوة الفاقد"
-   }
-  }
- },
- "ea": {
-  "studies": {
-   "title": "الدراسات الكهربائية",
-   "description": "كل حساب هو سجل مرقّم ومُراجَع له مسار مراجعة خاص به.",
-   "loadError": {
-    "title": "تعذّر تحميل الدراسات",
-    "fallback": "خطأ غير متوقع"
-   },
-   "empty": {
-    "title": "لا توجد دراسات بعد — نفّذ أول حساب",
-    "description": "اختر نوع الدراسة لفتح مساحة العمل؛ تُحفظ النتائج والتحذيرات ونص المنهجية مع السجل."
-   },
-   "newStudy": "دراسة جديدة",
-   "filters": {
-    "studyTypeAria": "التصفية حسب نوع الدراسة",
-    "allStudyTypes": "كل أنواع الدراسات",
-    "statusAria": "التصفية حسب الحالة",
+  },
+  "drawings": {
+    "columns": {
+      "number": "الرقم",
+      "title": "العنوان",
+      "discipline": "التخصص",
+      "revision": "المراجعة",
+      "status": "الحالة",
+      "issued": "تاريخ الإصدار"
+    },
+    "searchPlaceholder": "ابحث بالرقم أو العنوان…",
+    "disciplinePlaceholder": "التخصص",
+    "allDisciplines": "كل التخصصات",
+    "statusPlaceholder": "الحالة",
     "allStatuses": "كل الحالات",
-    "draft": "مسودة",
-    "underReview": "قيد المراجعة",
-    "approved": "معتمد"
-   },
-   "gridCodeLink": "قائمة تدقيق كود الشبكة",
-   "columns": {
-    "study": "الدراسة",
-    "title": "العنوان",
-    "type": "النوع",
-    "rev": "المراجعة",
+    "exportCsv": "CSV",
+    "locked": "مُقفل",
+    "open": "فتح",
+    "showing": "عرض {{shown}} من {{total}} مخطط.",
+    "empty": {
+      "title": "لا توجد مخططات بعد",
+      "description": "سجّل رقم مخطط وابدأ برفع المراجعات."
+    },
+    "newDrawing": {
+      "trigger": "مخطط جديد",
+      "title": "مخطط جديد",
+      "description": "سجّل رقم المخطط والعنوان والتخصص. يمكن رفع المراجعات لاحقاً.",
+      "numberLabel": "رقم المخطط",
+      "disciplineLabel": "التخصص",
+      "titleLabel": "العنوان"
+    },
+    "disciplineLabels": {
+      "civil": "مدني",
+      "structural": "إنشائي",
+      "electrical": "كهربائي",
+      "mechanical": "ميكانيكي",
+      "scada_controls": "سكادا/تحكم",
+      "survey": "مساحة",
+      "general": "عام"
+    },
+    "statusLabels": {
+      "draft": "مسودة",
+      "IFD": "IFD",
+      "IFC": "IFC",
+      "as_built": "كما نُفِّذ",
+      "superseded": "مُستبدَل"
+    }
+  },
+  "sld": {
+    "gallery": {
+      "title": "مخططات الخط الأحادي",
+      "empty": {
+        "title": "لا توجد مخططات خط أحادي بعد",
+        "description": "ارفع أول مخطط خط أحادي للبدء."
+      },
+      "revision": "مراجعة {{code}}",
+      "markup_one": "ملاحظة واحدة",
+      "markup_two": "ملاحظتان",
+      "markup_few": "{{count}} ملاحظات",
+      "markup_many": "{{count}} ملاحظة",
+      "markup_other": "{{count}} ملاحظة",
+      "newSld": {
+        "trigger": "مخطط خط أحادي جديد",
+        "title": "مخطط خط أحادي جديد",
+        "description": "تتم إضافة البادئة SLD- تلقائياً لرقم المخطط ليظهر في هذه المعرض.",
+        "numberLabel": "رقم المخطط",
+        "titleLabel": "العنوان",
+        "createButton": "إنشاء مخطط الخط الأحادي"
+      }
+    },
+    "canvas": {
+      "tools": {
+        "select": "أداة التحديد",
+        "pan": "أداة التحريك",
+        "connect": "أداة التوصيل",
+        "measure": "أداة القياس"
+      },
+      "connectionType": "نوع التوصيل",
+      "actions": {
+        "rotate": "تدوير 90°",
+        "mirror": "قلب أفقي",
+        "copy": "نسخ",
+        "paste": "لصق",
+        "group": "تجميع",
+        "ungroup": "إلغاء التجميع",
+        "delete": "حذف التحديد"
+      },
+      "align": {
+        "left": "محاذاة يسار",
+        "center": "محاذاة وسط",
+        "right": "محاذاة يمين",
+        "top": "محاذاة أعلى",
+        "middle": "محاذاة منتصف",
+        "bottom": "محاذاة أسفل"
+      },
+      "distribute": {
+        "horizontal": "توزيع أفقي",
+        "vertical": "توزيع رأسي",
+        "aria": "توزيع {{axis}}ly"
+      },
+      "status": {
+        "copyCursor": "نسخ إحداثيات المؤشر",
+        "copySelection": "نسخ موضع العنصر المحدد",
+        "cursor": "X/Y: {{value}} مم",
+        "zoom": "التكبير {{value}}%",
+        "snapOn": "الالتقاط تشغيل · {{grid}} مم",
+        "snapOff": "الالتقاط إيقاف",
+        "tool": "الأداة: {{tool}}",
+        "selectedCount_one": "عنصر واحد محدد",
+        "selectedCount_two": "عنصران محددان",
+        "selectedCount_few": "{{count}} عناصر محددة",
+        "selectedCount_many": "{{count}} عنصراً محدداً",
+        "selectedCount_other": "{{count}} عنصر محدد",
+        "measurement": "Δ {{distance}} (dx {{dx}}, dy {{dy}})",
+        "copiedToast": "تم نسخ {{text}}"
+      },
+      "connectionTypeLabels": {
+        "cable": "كابل",
+        "busbar": "قضيب توزيع",
+        "dc_string": "سلسلة تيار مستمر",
+        "earth": "أرضي",
+        "signal": "إشارة"
+      }
+    }
+  },
+  "pv": {
+    "layout": {
+      "title": "تخطيط الألواح الكهروضوئية",
+      "description": "ترتيب تلقائي للوحدات، فحوص المطابقة، وبدائل التخطيط.",
+      "noSiteConfig": {
+        "title": "لا توجد إعدادات موقع مفعّلة",
+        "description": "ارسم حدود الموقع وفعّل إعداداً في تبويب إعداد الموقع قبل ترتيب التخطيط."
+      },
+      "noModule": {
+        "title": "لا توجد وحدة كهروضوئية في المكتبة",
+        "description": "أضف وحدة نشطة واحدة على الأقل إلى مكتبة معدات الألواح الكهروضوئية لتحديد أحجام الجداول."
+      },
+      "arrangementParameters": "معاملات الترتيب",
+      "blockInspector": "فاحص الكتلة",
+      "optionComparison": "مقارنة الخيارات",
+      "savedLayouts": "التخطيطات المحفوظة",
+      "noSavedLayouts": {
+        "title": "لا توجد تخطيطات محفوظة",
+        "description": "احفظ أحد الخيارات أعلاه لبدء مسار الاعتماد."
+      },
+      "complianceTitle": "المطابقة",
+      "saveAsDraft": "حفظ {{name}} كمسودة",
+      "selectBlockPrompt": "اختر كتلة على لوحة الرسم.",
+      "blockType": "النوع: {{type}}",
+      "blockModules": "الوحدات: {{count}} — {{kwp}} كيلوواط ذروة",
+      "blockSlopeNone": "لا توجد بيانات تضاريس",
+      "blockSlope": "الميل: {{pct}}%",
+      "comparisonColumns": {
+        "option": "الخيار",
+        "dcKwp": "كيلوواط ذروة تيار مستمر",
+        "modules": "الوحدات",
+        "tables": "الجداول",
+        "usedArea": "المساحة المستخدمة (م²)",
+        "achievedGcr": "نسبة تغطية الأرض المحققة",
+        "warnings": "التحذيرات"
+      },
+      "savedColumns": {
+        "layout": "التخطيط",
+        "version": "الإصدار",
+        "dcKwp": "كيلوواط ذروة تيار مستمر",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "actions": {
+        "submitForApproval": "إرسال للاعتماد",
+        "generateSld": "إنشاء مخطط خط أحادي",
+        "applyDecision": "تطبيق القرار"
+      },
+      "params": {
+        "gcr": "GCR",
+        "setbackM": "التراجع (م)",
+        "tiltDeg": "الميل (درجة)",
+        "azimuthDeg": "السمت (درجة)",
+        "modulesAcross": "الوحدات أفقيًا",
+        "modulesUp": "الوحدات رأسيًا",
+        "roadEveryNRows": "طريق كل N صف",
+        "roadWidthM": "عرض الطريق (م)"
+      },
+      "blockSlopeNoneFull": "الانحدار: لا توجد بيانات تضاريس"
+    },
+    "simulation": {
+      "title": "محاكاة إنتاج الطاقة",
+      "honestyLabel": "نموذج GridMind الشفاف — لم يُتحقق منه بعد مقابل الأدوات التجارية",
+      "description": "سلسلة فقد شفافة من 16 خطوة، سيناريوهات الاحتمالية، وخط أساس طاقة المشروع الخاضع لبوابة الاعتماد.",
+      "disclaimer": "لم يُتحقق من هذا النموذج مقابل PVsyst أو PlantPredict أو SAM أو أي محرك خارجي آخر. راجع سلسلة الفقد مقابل افتراضات تخصصك قبل اعتماد النتائج كأساس تمويلي.",
+      "loadError": {
+        "title": "تعذّر تحميل مساحة عمل المحاكاة",
+        "description": "أعد تحميل الصفحة أو تحقّق من وجود إعداد موقع مفعّل للمشروع."
+      },
+      "tabs": {
+        "inputSheet": "ورقة المدخلات",
+        "results": "النتائج",
+        "approval": "المراجعة والاعتماد",
+        "compare": "المقارنة"
+      },
+      "serverPrefilled": "مدخلات مُعبَّأة مسبقاً من الخادم",
+      "siteConfiguration": "إعداد الموقع",
+      "noActiveSiteConfig": "لا يوجد إعداد موقع مفعّل",
+      "approvedLayout": "التخطيط المعتمد",
+      "noneApproved": "لا يوجد تخطيط معتمد",
+      "stringing": "التسلسل الكهربائي (P-154)",
+      "strings": "سلسلة",
+      "runName": "اسم التشغيلة",
+      "mounting": "طريقة التركيب",
+      "fixedTilt": "ميل ثابت",
+      "singleAxisTracker": "متتبِّع أحادي المحور",
+      "resultsEmpty": {
+        "title": "لا توجد محاكاة بعد",
+        "description": "املأ ورقة المدخلات وشغّل النموذج الشفاف لعرض سلسلة الفقد."
+      },
+      "simulationLabel": "المحاكاة",
+      "baselineSuffix": " · خط الأساس",
+      "approval": {
+        "nothingToReview": {
+          "title": "لا يوجد شيء للمراجعة",
+          "description": "شغّل محاكاة أولاً، ثم أرسلها للاعتماد الهندسي."
+        },
+        "approvalStatus": "حالة الاعتماد",
+        "notSubmitted": "لم يُرسَل",
+        "currentStep": "الخطوة الحالية",
+        "stepEngineeringAdmin": "الخطوة {{step}} · إدارة الهندسة",
+        "slaAge": "عمر اتفاقية مستوى الخدمة",
+        "submitForApproval": "إرسال للاعتماد",
+        "currentBaseline": "خط الأساس الحالي",
+        "setAsBaseline": "تعيين كخط أساس المشروع",
+        "baselineLocked": "يُفتح تعيين خط الأساس بعد اعتماد مثيل الاعتماد — يرفض الخادم أي محاولة سابقة لذلك."
+      },
+      "compare": {
+        "title": "مقارنة التشغيلات",
+        "needTwo": {
+          "title": "يلزم محاكاتان",
+          "description": "شغّل محاكاتين على الأقل لمقارنة الطاقة السنوية والإنتاجية ونسبة الأداء وكل خطوة فقد."
+        },
+        "baselinePlaceholder": "التشغيلة المرجعية",
+        "comparePlaceholder": "المقارنة مع…",
+        "pickSecond": {
+          "title": "اختر محاكاة ثانية",
+          "description": "اختر تشغيلتين لعرض جدول الفروق."
+        }
+      },
+      "form": {
+        "runButton": "تشغيل المحاكاة",
+        "running": "جارٍ التشغيل…",
+        "readOnlyNote": "للقراءة فقط — يمكن لأدوار الهندسة تشغيل المحاكاة.",
+        "bessDisabledNote": "مدخلات نظام تخزين البطاريات معطّلة — لا يوجد إدخال بطارية مُعدّ لهذا المشروع.",
+        "overridden": "مُتجاوَز",
+        "gridLimitLabel": "حد التصدير / التقليص (kW)"
+      },
+      "results": {
+        "pScenarios": "سيناريوهات P",
+        "inputs": "المدخلات",
+        "inputSources": "مصادر المدخلات",
+        "metric": "المؤشر",
+        "lossStep": "خطوة الفاقد"
+      }
+    }
+  },
+  "ea": {
+    "studies": {
+      "title": "الدراسات الكهربائية",
+      "description": "كل حساب هو سجل مرقّم ومُراجَع له مسار مراجعة خاص به.",
+      "loadError": {
+        "title": "تعذّر تحميل الدراسات",
+        "fallback": "خطأ غير متوقع"
+      },
+      "empty": {
+        "title": "لا توجد دراسات بعد — نفّذ أول حساب",
+        "description": "اختر نوع الدراسة لفتح مساحة العمل؛ تُحفظ النتائج والتحذيرات ونص المنهجية مع السجل."
+      },
+      "newStudy": "دراسة جديدة",
+      "filters": {
+        "studyTypeAria": "التصفية حسب نوع الدراسة",
+        "allStudyTypes": "كل أنواع الدراسات",
+        "statusAria": "التصفية حسب الحالة",
+        "allStatuses": "كل الحالات",
+        "draft": "مسودة",
+        "underReview": "قيد المراجعة",
+        "approved": "معتمد"
+      },
+      "gridCodeLink": "قائمة تدقيق كود الشبكة",
+      "columns": {
+        "study": "الدراسة",
+        "title": "العنوان",
+        "type": "النوع",
+        "rev": "المراجعة",
+        "status": "الحالة",
+        "updated": "آخر تحديث"
+      },
+      "retry": "إعادة المحاولة",
+      "newStudyButton": "دراسة جديدة",
+      "newStudyDialog": {
+        "title": "دراسة جديدة",
+        "description": "اختر الحساب الذي تريد تنفيذه. الأنواع التي لا يوجد لها حاسبة مرتبطة تُفتح عبر أوراق عمل الحماية وكود الشبكة.",
+        "trackedInGridCode": "يُتابَع ضمن قائمة تدقيق كود الشبكة.",
+        "preparedThroughProtection": "يُحضَّر عبر أوراق عمل الحماية."
+      },
+      "noCalculator": {
+        "title": "لا توجد حاسبة لهذا النوع من الدراسات",
+        "description": "يُحضَّر هذا النوع من الدراسات عبر أوراق عمل الحماية أو قائمة تدقيق كود الشبكة.",
+        "backToStudies": "العودة إلى الدراسات"
+      },
+      "noWiredCalculator": {
+        "title": "لا توجد حاسبة مرتبطة بهذه الدراسة",
+        "description": "تُحرَّر جداول الحماية وقوائم تدقيق كود الشبكة في أوراق عملها الخاصة."
+      }
+    },
+    "workspace": {
+      "loadError": {
+        "title": "تعذّر تحميل هذه الدراسة",
+        "fallback": "خطأ غير متوقع"
+      },
+      "inputSheet": "ورقة المدخلات",
+      "results": "النتائج",
+      "noResults": {
+        "title": "لا توجد نتائج بعد",
+        "description": "املأ ورقة المدخلات واضغط على احسب."
+      },
+      "warnings": "التحذيرات",
+      "assumptions": "الافتراضات",
+      "titleLabel": "العنوان",
+      "calculate": "احسب",
+      "saveDraft": "حفظ المسودة",
+      "submitForReview": "إرسال للمراجعة الهندسية",
+      "approvedNotice": "معتمد — ابدأ مراجعة جديدة للتعديل.",
+      "underReviewNotice": "قيد المراجعة — استرجعه قبل التعديل.",
+      "revisions": "المراجعات",
+      "exportReport": "تصدير التقرير",
+      "newRevision": "مراجعة جديدة",
+      "stepOf": "الخطوة {{current}} من {{total}} · مراجعة المهندس ← اعتماد إدارة الهندسة",
+      "slaDue": "موعد اتفاقية مستوى الخدمة {{date}}",
+      "methodFormulas": "الطريقة والمعادلات",
+      "add": "إضافة",
+      "noAssumptions": "لا توجد افتراضات مُسجَّلة — احسب لعرض القيم الافتراضية للمحرك.",
+      "sourcePlaceholder": "المصدر",
+      "assumptionAria": "الافتراض {{index}}",
+      "assumptionSourceAria": "مصدر الافتراض {{index}}",
+      "removeAssumptionAria": "إزالة الافتراض {{index}}",
+      "standardsReferenced": "المعايير المرجعية: {{standards}}",
+      "revisionHistory": "سجل المراجعات",
+      "noSnapshots": "لا توجد لقطات مُسجَّلة بعد.",
+      "rev": "المراجعة {{revision}}",
+      "noChangeSummary": "لا يوجد ملخص تغييرات",
+      "inputs": "المدخلات",
+      "openRevisionTitle": "فتح مراجعة جديدة",
+      "openRevisionDesc": "تُحفظ لقطة من البيانات المعتمدة أولاً؛ ثم تُعاد الدراسة إلى حالة المسودة.",
+      "changeSummaryLabel": "ملخص التغيير (مطلوب)",
+      "cancel": "إلغاء",
+      "createRevision": "إنشاء مراجعة",
+      "noWarnings": "لا توجد تحذيرات من هذا التشغيل.",
+      "toasts": {
+        "checkInputSheet": "تحقّق من ورقة المدخلات: {{field}} — {{message}}",
+        "calculationComplete": "اكتمل الحساب",
+        "calculationFailed": "فشل الحساب",
+        "draftSaved": "تم حفظ المسودة",
+        "submittedForReview": "تم الإرسال للمراجعة الهندسية",
+        "revisionOpened": "تم فتح مراجعة جديدة كمسودة",
+        "reportStored": "تم حفظ التقرير باسم {{fileName}}",
+        "couldNotSave": "تعذّر حفظ الدراسة",
+        "couldNotSubmit": "تعذّر إرسال الدراسة",
+        "couldNotOpenRevision": "تعذّر فتح مراجعة",
+        "couldNotExport": "تعذّر تصدير التقرير — قد يكون المشروع مُقفلاً",
+        "incompleteInputSheet": "ورقة المدخلات غير مكتملة — أصلح الحقول أولاً."
+      }
+    }
+  },
+  "calculators": {
+    "sourceOverridden": "مُتجاوَز",
+    "addRow": "إضافة صف",
+    "noRowsYet": "لا توجد صفوف بعد — أضف صفاً واحداً على الأقل.",
+    "removeRow": "إزالة الصف {{index}}",
+    "add": "إضافة",
+    "noEntriesYet": "لا توجد إدخالات بعد.",
+    "removeEntry": "إزالة الإدخال {{index}}",
+    "overridden": "مُتجاوَز",
+    "categoryLabels": {
+      "modules": "الوحدات",
+      "inverters": "العاكسات",
+      "cables": "الكابلات",
+      "structures": "الهياكل والتركيب",
+      "transformers": "المحولات",
+      "bos": "توازن المنظومة",
+      "other": "أخرى"
+    },
+    "columns": {
+      "item": "البند",
+      "spec": "المواصفة",
+      "unit": "الوحدة",
+      "qty": "الكمية",
+      "bufferPct": "الهامش %",
+      "buffered": "بعد الهامش",
+      "unitCost": "تكلفة الوحدة"
+    },
+    "noBom": {
+      "title": "لا توجد قائمة مواد بعد",
+      "description": "أنشئ قائمة مواد أولية من إعداد النمط."
+    },
+    "generateBom": "إنشاء قائمة المواد",
+    "generating": "جارٍ الإنشاء…",
+    "errorFallback": "تعذر تحميل قائمة المواد.",
+    "bomHeader": {
+      "title": "قائمة المواد",
+      "exportCsv": "تصدير CSV",
+      "generate": "إنشاء",
+      "regenerate": "إعادة الإنشاء",
+      "generating": "جارٍ الإنشاء…",
+      "release": "إصدار",
+      "releasing": "جارٍ الإصدار…",
+      "addUnitCosts": "أضف تكلفة الوحدة",
+      "metrics": {
+        "version": "الإصدار",
+        "capacity": "السعة (ميغاواط ذروة تيار مستمر)",
+        "lineCount": "عدد البنود",
+        "estimatedTotal": "الإجمالي التقديري"
+      },
+      "statusLabels": {
+        "draft": "مسودة",
+        "released": "صادر",
+        "superseded": "مستبدل"
+      }
+    }
+  },
+  "projectDetail": {
+    "breadcrumbProjects": "المشاريع",
+    "loadError": {
+      "title": "تعذّر تحميل هذا المشروع",
+      "retry": "إعادة المحاولة",
+      "backToProjects": "العودة إلى المشاريع"
+    },
+    "notAvailable": {
+      "title": "المشروع غير متاح",
+      "description": "هذا المشروع غير موجود أو لا تملك صلاحية الوصول إليه."
+    },
+    "mobilization": {
+      "inProgress": "التعبئة: قيد التنفيذ",
+      "notStarted": "التعبئة: لم تبدأ"
+    },
+    "sectionsAriaLabel": "أقسام المشروع",
+    "unexpectedError": "خطأ غير متوقع.",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "gates": "البوابات",
+      "config": "الإعدادات",
+      "planning": "التخطيط",
+      "commissioning": "التشغيل التجريبي"
+    }
+  },
+  "docSearch": {
+    "title": "بحث في الوثائق",
+    "subtitle": "ابحث في سجل الوثائق الخاضعة للضبط",
+    "scopeLabel": "الوثائق الخاضعة للضبط",
+    "scopeNote": "يشمل البحث الوثائق المسجّلة فقط، وليس كل الملفات المخزّنة. تُفهرس ملفات PDF النصية بمحتواها، أما الصور وملفات CAD فتُطابق ببياناتها الوصفية فقط.",
+    "arabicNote": "يطابق البحث العربي الكلمات كما هي (بدون تجذير) — وهذا قيد معروف في محرك البحث النصي.",
+    "placeholder": "ابحث برقم الوثيقة أو العنوان أو الوسم أو المحتوى…",
+    "searchAction": "بحث",
+    "clear": "مسح",
+    "minLength": "اكتب حرفين على الأقل",
+    "noResults": "لا نتائج",
+    "noResultsHint": "جرّب رقم وثيقة أو وسمًا أو كلمات أقل.",
+    "results_one": "وثيقة واحدة",
+    "results_other": "{{count}} وثيقة",
+    "recent": "عمليات البحث الأخيرة",
+    "filters": "عوامل التصفية",
+    "project": "المشروع",
+    "docType": "النوع",
     "status": "الحالة",
-    "updated": "آخر تحديث"
-   },
-   "retry": "إعادة المحاولة",
-   "newStudyButton": "دراسة جديدة",
-   "newStudyDialog": {
-    "title": "دراسة جديدة",
-    "description": "اختر الحساب الذي تريد تنفيذه. الأنواع التي لا يوجد لها حاسبة مرتبطة تُفتح عبر أوراق عمل الحماية وكود الشبكة.",
-    "trackedInGridCode": "يُتابَع ضمن قائمة تدقيق كود الشبكة.",
-    "preparedThroughProtection": "يُحضَّر عبر أوراق عمل الحماية."
-   },
-   "noCalculator": {
-    "title": "لا توجد حاسبة لهذا النوع من الدراسات",
-    "description": "يُحضَّر هذا النوع من الدراسات عبر أوراق عمل الحماية أو قائمة تدقيق كود الشبكة.",
-    "backToStudies": "العودة إلى الدراسات"
-   },
-   "noWiredCalculator": {
-    "title": "لا توجد حاسبة مرتبطة بهذه الدراسة",
-    "description": "تُحرَّر جداول الحماية وقوائم تدقيق كود الشبكة في أوراق عملها الخاصة."
-   }
-  },
-  "workspace": {
-   "loadError": {
-    "title": "تعذّر تحميل هذه الدراسة",
-    "fallback": "خطأ غير متوقع"
-   },
-   "inputSheet": "ورقة المدخلات",
-   "results": "النتائج",
-   "noResults": {
-    "title": "لا توجد نتائج بعد",
-    "description": "املأ ورقة المدخلات واضغط على احسب."
-   },
-   "warnings": "التحذيرات",
-   "assumptions": "الافتراضات",
-   "titleLabel": "العنوان",
-   "calculate": "احسب",
-   "saveDraft": "حفظ المسودة",
-   "submitForReview": "إرسال للمراجعة الهندسية",
-   "approvedNotice": "معتمد — ابدأ مراجعة جديدة للتعديل.",
-   "underReviewNotice": "قيد المراجعة — استرجعه قبل التعديل.",
-   "revisions": "المراجعات",
-   "exportReport": "تصدير التقرير",
-   "newRevision": "مراجعة جديدة",
-   "stepOf": "الخطوة {{current}} من {{total}} · مراجعة المهندس ← اعتماد إدارة الهندسة",
-   "slaDue": "موعد اتفاقية مستوى الخدمة {{date}}",
-   "methodFormulas": "الطريقة والمعادلات",
-   "add": "إضافة",
-   "noAssumptions": "لا توجد افتراضات مُسجَّلة — احسب لعرض القيم الافتراضية للمحرك.",
-   "sourcePlaceholder": "المصدر",
-   "assumptionAria": "الافتراض {{index}}",
-   "assumptionSourceAria": "مصدر الافتراض {{index}}",
-   "removeAssumptionAria": "إزالة الافتراض {{index}}",
-   "standardsReferenced": "المعايير المرجعية: {{standards}}",
-   "revisionHistory": "سجل المراجعات",
-   "noSnapshots": "لا توجد لقطات مُسجَّلة بعد.",
-   "rev": "المراجعة {{revision}}",
-   "noChangeSummary": "لا يوجد ملخص تغييرات",
-   "inputs": "المدخلات",
-   "openRevisionTitle": "فتح مراجعة جديدة",
-   "openRevisionDesc": "تُحفظ لقطة من البيانات المعتمدة أولاً؛ ثم تُعاد الدراسة إلى حالة المسودة.",
-   "changeSummaryLabel": "ملخص التغيير (مطلوب)",
-   "cancel": "إلغاء",
-   "createRevision": "إنشاء مراجعة",
-   "noWarnings": "لا توجد تحذيرات من هذا التشغيل.",
-   "toasts": {
-    "checkInputSheet": "تحقّق من ورقة المدخلات: {{field}} — {{message}}",
-    "calculationComplete": "اكتمل الحساب",
-    "calculationFailed": "فشل الحساب",
-    "draftSaved": "تم حفظ المسودة",
-    "submittedForReview": "تم الإرسال للمراجعة الهندسية",
-    "revisionOpened": "تم فتح مراجعة جديدة كمسودة",
-    "reportStored": "تم حفظ التقرير باسم {{fileName}}",
-    "couldNotSave": "تعذّر حفظ الدراسة",
-    "couldNotSubmit": "تعذّر إرسال الدراسة",
-    "couldNotOpenRevision": "تعذّر فتح مراجعة",
-    "couldNotExport": "تعذّر تصدير التقرير — قد يكون المشروع مُقفلاً",
-    "incompleteInputSheet": "ورقة المدخلات غير مكتملة — أصلح الحقول أولاً."
-   }
+    "discipline": "التخصص",
+    "retentionClass": "فئة الحفظ",
+    "dateFrom": "مسجلة من",
+    "dateTo": "مسجلة حتى",
+    "all": "الكل",
+    "contentIndexed": "المحتوى مفهرس",
+    "metadataOnly": "بيانات وصفية فقط",
+    "revision": "مراجعة {{rev}}",
+    "openDocument": "فتح",
+    "failed": "فشل البحث",
+    "searching": "جارٍ البحث…"
   }
- },
- "calculators": {
-  "sourceOverridden": "مُتجاوَز",
-  "addRow": "إضافة صف",
-  "noRowsYet": "لا توجد صفوف بعد — أضف صفاً واحداً على الأقل.",
-  "removeRow": "إزالة الصف {{index}}",
-  "add": "إضافة",
-  "noEntriesYet": "لا توجد إدخالات بعد.",
-  "removeEntry": "إزالة الإدخال {{index}}",
-  "overridden": "مُتجاوَز",
-  "categoryLabels": {
-   "modules": "الوحدات",
-   "inverters": "العاكسات",
-   "cables": "الكابلات",
-   "structures": "الهياكل والتركيب",
-   "transformers": "المحولات",
-   "bos": "توازن المنظومة",
-   "other": "أخرى"
-  },
-  "columns": {
-   "item": "البند",
-   "spec": "المواصفة",
-   "unit": "الوحدة",
-   "qty": "الكمية",
-   "bufferPct": "الهامش %",
-   "buffered": "بعد الهامش",
-   "unitCost": "تكلفة الوحدة"
-  },
-  "noBom": {
-   "title": "لا توجد قائمة مواد بعد",
-   "description": "أنشئ قائمة مواد أولية من إعداد النمط."
-  },
-  "generateBom": "إنشاء قائمة المواد",
-  "generating": "جارٍ الإنشاء…",
-  "errorFallback": "تعذر تحميل قائمة المواد.",
-  "bomHeader": {
-   "title": "قائمة المواد",
-   "exportCsv": "تصدير CSV",
-   "generate": "إنشاء",
-   "regenerate": "إعادة الإنشاء",
-   "generating": "جارٍ الإنشاء…",
-   "release": "إصدار",
-   "releasing": "جارٍ الإصدار…",
-   "addUnitCosts": "أضف تكلفة الوحدة",
-   "metrics": {
-    "version": "الإصدار",
-    "capacity": "السعة (ميغاواط ذروة تيار مستمر)",
-    "lineCount": "عدد البنود",
-    "estimatedTotal": "الإجمالي التقديري"
-   },
-   "statusLabels": {
-    "draft": "مسودة",
-    "released": "صادر",
-    "superseded": "مستبدل"
-   }
-  }
- },
- "projectDetail": {
-  "breadcrumbProjects": "المشاريع",
-  "loadError": {
-   "title": "تعذّر تحميل هذا المشروع",
-   "retry": "إعادة المحاولة",
-   "backToProjects": "العودة إلى المشاريع"
-  },
-  "notAvailable": {
-   "title": "المشروع غير متاح",
-   "description": "هذا المشروع غير موجود أو لا تملك صلاحية الوصول إليه."
-  },
-  "mobilization": {
-   "inProgress": "التعبئة: قيد التنفيذ",
-   "notStarted": "التعبئة: لم تبدأ"
-  },
-  "sectionsAriaLabel": "أقسام المشروع",
-  "unexpectedError": "خطأ غير متوقع.",
-  "tabs": {
-   "overview": "نظرة عامة",
-   "gates": "البوابات",
-   "config": "الإعدادات",
-   "planning": "التخطيط",
-   "commissioning": "التشغيل التجريبي"
-  }
- }
 }
