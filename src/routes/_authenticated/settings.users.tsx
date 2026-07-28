@@ -226,18 +226,18 @@ function UsersPage() {
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not create invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotCreateInvite"));
     },
   });
 
   const revokeMut = useMutation({
     mutationFn: (inviteId: string) => revokeFn({ data: { inviteId } }),
     onSuccess: () => {
-      toast.success("Invite revoked");
+      toast.success(t("adminMod.settings.inviteRevokedToast"));
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not revoke invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotRevokeInvite"));
     },
   });
 
@@ -249,7 +249,7 @@ function UsersPage() {
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not resend invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotResendInvite"));
     },
   });
 
@@ -298,13 +298,13 @@ function UsersPage() {
     },
     onError: (err, _vars, ctx) => {
       if (ctx?.snapshot) queryClient.setQueryData(membersKey, ctx.snapshot);
-      toast.error(err instanceof Error ? err.message : "Role update failed");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.roleUpdateFailed"));
     },
     onSuccess: (vars) => {
       toast.success(
         vars.action === "grant"
-          ? `Granted ${roleLabel(vars.role)}`
-          : `Revoked ${roleLabel(vars.role)}`,
+          ? t("adminMod.settings.grantedRoleToast", { role: roleLabel(vars.role) })
+          : t("adminMod.settings.revokedRoleToast", { role: roleLabel(vars.role) }),
       );
       queryClient.invalidateQueries({ queryKey: membersKey });
       queryClient.invalidateQueries({
@@ -375,9 +375,9 @@ function UsersPage() {
   const copyLink = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Invite link copied");
+      toast.success(t("adminMod.settings.inviteLinkCopied"));
     } catch {
-      toast.error("Could not copy — copy it manually");
+      toast.error(t("adminMod.settings.couldNotCopyLink"));
     }
   };
 
@@ -390,7 +390,7 @@ function UsersPage() {
 
   const onExport = () => {
     if (members.length === 0) {
-      toast.error("No members to export");
+      toast.error(t("adminMod.settings.noMembersToExport"));
       return;
     }
     downloadCsv("members.csv", toCsv(members));
@@ -399,29 +399,29 @@ function UsersPage() {
   return (
     <div className="page-shell max-w-5xl">
       <PageHeader
-        title="Users"
-        description="Workspace members, roles, and pending invitations."
+        title={t("adminMod.settings.title")}
+        description={t("adminMod.settings.description")}
         actions={
           isAdmin && (
             <div className="flex items-center gap-2">
               <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
                 <UsersIcon className="mr-2 h-4 w-4" />
-                Bulk invite
+                {t("adminMod.settings.bulkInvite")}
               </Button>
               <Dialog
                 open={dialogOpen}
                 onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}
               >
                 <DialogTrigger asChild>
-                  <Button>Invite member</Button>
+                  <Button>{t("adminMod.settings.inviteMember")}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   {issuedLink ? (
                     <>
                       <DialogHeader>
-                        <DialogTitle>Invitation link</DialogTitle>
+                        <DialogTitle>{t("adminMod.settings.invitationLink")}</DialogTitle>
                         <DialogDescription>
-                          Share this link with the recipient. It will only be shown once.
+                          {t("adminMod.settings.shareLinkOnce")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex items-center gap-2">
@@ -431,24 +431,27 @@ function UsersPage() {
                           variant="outline"
                           size="icon"
                           onClick={() => copyLink(issuedLink)}
-                          aria-label="Copy link"
+                          aria-label={t("adminMod.settings.copyLinkAria")}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
                       <DialogFooter>
                         <Button type="button" onClick={closeDialog}>
-                          I&apos;ve shared it
+                          {t("adminMod.settings.sharedIt")}
                         </Button>
                       </DialogFooter>
                     </>
                   ) : (
                     <>
                       <DialogHeader>
-                        <DialogTitle>Invite a teammate</DialogTitle>
+                        <DialogTitle>{t("adminMod.settings.inviteTeammate")}</DialogTitle>
                         <DialogDescription>
-                          They&apos;ll receive a one-time link to join{" "}
-                          {snapshotQuery.data ? "your company" : "the workspace"}.
+                          {t("adminMod.settings.willReceiveLinkTo", {
+                            destination: snapshotQuery.data
+                              ? t("adminMod.settings.yourCompany")
+                              : t("adminMod.settings.theWorkspace"),
+                          })}
                         </DialogDescription>
                       </DialogHeader>
                       <Form {...form}>
@@ -458,11 +461,11 @@ function UsersPage() {
                             name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Email</FormLabel>
+                                <FormLabel>{t("adminMod.settings.emailLabel")}</FormLabel>
                                 <FormControl>
                                   <Input
                                     type="email"
-                                    placeholder="teammate@company.com"
+                                    placeholder={t("adminMod.settings.emailPlaceholder")}
                                     {...field}
                                   />
                                 </FormControl>
@@ -475,11 +478,11 @@ function UsersPage() {
                             name="role"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Role</FormLabel>
+                                <FormLabel>{t("adminMod.settings.roleLabel")}</FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select a role" />
+                                      <SelectValue placeholder={t("adminMod.settings.selectRolePlaceholder")} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -499,7 +502,7 @@ function UsersPage() {
                               {createMut.isPending && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               )}
-                              Create invite
+                              {t("adminMod.settings.createInviteAction")}
                             </Button>
                           </DialogFooter>
                         </form>
@@ -527,9 +530,9 @@ function UsersPage() {
         <div className="flex items-start gap-3 rounded-lg border border-accent bg-accent/40 p-4 text-accent-foreground">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <div className="text-sm">
-            <p className="font-medium">Only one company admin</p>
+            <p className="font-medium">{t("adminMod.settings.onlyOneAdminTitle")}</p>
             <p className="text-accent-foreground/80">
-              We recommend at least 2 company admins to avoid lockout.
+              {t("adminMod.settings.onlyOneAdminDesc")}
             </p>
           </div>
         </div>
@@ -541,9 +544,9 @@ function UsersPage() {
         className="flex flex-col gap-4"
       >
         <TabsList>
-          <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="members">{t("adminMod.settings.membersTab")}</TabsTrigger>
           <TabsTrigger value="invitations">
-            Invitations
+            {t("adminMod.settings.invitationsTab")}
             {invites.filter((i) => i.status === "pending").length > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {invites.filter((i) => i.status === "pending").length}
@@ -557,7 +560,7 @@ function UsersPage() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name or email"
+              placeholder={t("adminMod.settings.searchNameOrEmail")}
               className="h-9 w-64"
             />
             <Button
@@ -568,7 +571,7 @@ function UsersPage() {
               disabled={membersQuery.isLoading || members.length === 0}
             >
               <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              {t("adminMod.settings.exportCsv")}
             </Button>
           </div>
           <div className="rounded-lg border border-border bg-card">
@@ -576,10 +579,10 @@ function UsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12" />
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Roles</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("adminMod.settings.nameCol")}</TableHead>
+                  <TableHead>{t("adminMod.settings.emailCol")}</TableHead>
+                  <TableHead>{t("adminMod.settings.rolesCol")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.settings.actionsCol")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -606,7 +609,7 @@ function UsersPage() {
                     <TableCell colSpan={5} className="text-center text-destructive">
                       {membersQuery.error instanceof Error
                         ? membersQuery.error.message
-                        : "Failed to load members"}
+                        : t("adminMod.settings.failedToLoadMembers")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -616,7 +619,9 @@ function UsersPage() {
                       <EmptyState
                         icon={UsersIcon}
                         title={
-                          members.length === 0 ? "No members yet" : "No members match your search"
+                          members.length === 0
+                            ? t("adminMod.settings.noMembersYet")
+                            : t("adminMod.settings.noMembersMatch")
                         }
                         compact
                         className="border-0 bg-transparent"
@@ -637,7 +642,7 @@ function UsersPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {m.roles.length === 0 && (
-                          <span className="text-xs text-muted-foreground">No roles</span>
+                          <span className="text-xs text-muted-foreground">{t("adminMod.settings.noRoles")}</span>
                         )}
                         {m.roles.map((r) => (
                           <Badge key={r} variant="outline">
@@ -655,7 +660,7 @@ function UsersPage() {
                           onClick={() => setManageUserId(m.userId)}
                         >
                           <Settings2 className="mr-2 h-4 w-4" />
-                          Manage roles
+                          {t("adminMod.settings.manageRoles")}
                         </Button>
                       )}
                     </TableCell>
@@ -671,7 +676,7 @@ function UsersPage() {
             <Input
               value={inviteSearch}
               onChange={(e) => setInviteSearch(e.target.value)}
-              placeholder="Search by email"
+              placeholder={t("adminMod.settings.searchByEmail")}
               className="h-9 w-64"
             />
             <Select
@@ -684,11 +689,11 @@ function UsersPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="revoked">Revoked</SelectItem>
+                <SelectItem value="all">{t("adminMod.settings.allStatuses")}</SelectItem>
+                <SelectItem value="pending">{t("adminMod.settings.statusPending")}</SelectItem>
+                <SelectItem value="accepted">{t("adminMod.settings.statusAccepted")}</SelectItem>
+                <SelectItem value="expired">{t("adminMod.settings.statusExpired")}</SelectItem>
+                <SelectItem value="revoked">{t("adminMod.settings.statusRevoked")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -696,19 +701,19 @@ function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Sent</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("adminMod.settings.emailCol")}</TableHead>
+                  <TableHead>{t("adminMod.settings.roleLabel")}</TableHead>
+                  <TableHead>{t("adminMod.settings.statusCol")}</TableHead>
+                  <TableHead>{t("adminMod.settings.sentCol")}</TableHead>
+                  <TableHead>{t("adminMod.settings.expiresCol")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.settings.actionsCol")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invitesQuery.isLoading && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      Loading invites…
+                      {t("adminMod.settings.loadingInvites")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -717,7 +722,7 @@ function UsersPage() {
                     <TableCell colSpan={6} className="text-center text-destructive">
                       {invitesQuery.error instanceof Error
                         ? invitesQuery.error.message
-                        : "Failed to load invites"}
+                        : t("adminMod.settings.failedToLoadInvites")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -728,8 +733,8 @@ function UsersPage() {
                         icon={Mail}
                         title={
                           invites.length === 0
-                            ? "No invites sent yet"
-                            : "No invites match your filter"
+                            ? t("adminMod.settings.noInvitesYet")
+                            : t("adminMod.settings.noInvitesMatch")
                         }
                         compact
                         className="border-0 bg-transparent"
@@ -764,7 +769,7 @@ function UsersPage() {
                             size="icon"
                             disabled={!isAdmin || !canAct || resendMut.isPending}
                             onClick={() => resendMut.mutate(row.id)}
-                            aria-label="Resend"
+                            aria-label={t("adminMod.settings.resendAria")}
                           >
                             {resendMut.isPending && resendMut.variables === row.id ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
@@ -778,7 +783,7 @@ function UsersPage() {
                             size="icon"
                             disabled={!isAdmin || !canAct || revokeMut.isPending}
                             onClick={() => revokeMut.mutate(row.id)}
-                            aria-label="Revoke"
+                            aria-label={t("adminMod.settings.revokeAria")}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -802,7 +807,7 @@ function UsersPage() {
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           <SheetHeader>
             <SheetTitle>
-              Manage roles
+              {t("adminMod.settings.manageRoles")}
               {managedMember && (
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
                   · {managedMember.fullName ?? managedMember.email ?? ""}
@@ -810,7 +815,7 @@ function UsersPage() {
               )}
             </SheetTitle>
             <SheetDescription>
-              Toggle roles for this member. Changes are audit-logged and enforced by the database.
+              {t("adminMod.settings.toggleRolesDesc")}
             </SheetDescription>
           </SheetHeader>
           {managedMember && (
@@ -844,7 +849,7 @@ function UsersPage() {
                                   action: next ? "grant" : "revoke",
                                 })
                               }
-                              aria-label={`${on ? "Revoke" : "Grant"} ${roleLabel(role)}`}
+                              aria-label={on ? t("adminMod.settings.revokeRoleAria", { role: roleLabel(role) }) : t("adminMod.settings.grantAria", { role: roleLabel(role) })}
                             />
                           </div>
                         </label>
@@ -854,8 +859,7 @@ function UsersPage() {
                 </div>
               ))}
               <p className="text-xs text-muted-foreground">
-                {GRANTABLE_ROLES.length} roles available. super_admin can only be granted by another
-                super_admin at the database level.
+                {t("adminMod.settings.rolesAvailableSuffix", { count: GRANTABLE_ROLES.length })}
               </p>
             </div>
           )}

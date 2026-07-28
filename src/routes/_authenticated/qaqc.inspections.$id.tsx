@@ -98,7 +98,7 @@ function InspectionDetailPage() {
         } as any,
       }),
     onSuccess: async () => {
-      toast.success("Inspection updated");
+      toast.success(t("fieldMod.qaqc.inspection.updated"));
       await qc.invalidateQueries({ queryKey: ["qaqc"] });
     },
     onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
@@ -116,7 +116,7 @@ function InspectionDetailPage() {
       <div className="page-shell">
         <Card>
           <CardContent className="p-4 text-sm text-destructive">
-            {errorMessage(detailQuery.error) || "Not found"}
+            {errorMessage(detailQuery.error) || t("fieldMod.qaqc.inspection.notFound")}
           </CardContent>
         </Card>
       </div>
@@ -127,7 +127,7 @@ function InspectionDetailPage() {
   const canEdit = data.permissions.canEdit;
   const clientReworkError =
     reworkRequired && !reworkNotes.trim()
-      ? "Rework notes are required when rework is flagged."
+      ? t("fieldMod.qaqc.inspection.reworkNotesRequired")
       : null;
 
   return (
@@ -137,16 +137,16 @@ function InspectionDetailPage() {
           to="/qaqc/inspections"
           className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft size={12} /> Back to inspections
+          <ArrowLeft size={12} /> {t("fieldMod.qaqc.inspection.backToInspections")}
         </Link>
         <PageHeader
           title={i.inspection_number}
-          description="QA/QC inspection detail, result, and attachments."
+          description={t("fieldMod.qaqc.inspection.detailDescription")}
           actions={
             <>
               <QaqcResultBadge result={i.result} />
               {i.rework_required ? (
-                <Badge className="bg-destructive/10 text-destructive">Rework</Badge>
+                <Badge className="bg-destructive/10 text-destructive">{t("fieldMod.qaqc.inspection.reworkBadge")}</Badge>
               ) : null}
               <Badge variant="outline" className="capitalize">
                 {i.discipline}
@@ -163,7 +163,7 @@ function InspectionDetailPage() {
                       area: i.area ?? undefined,
                     }}
                   >
-                    Raise NCR
+                    {t("fieldMod.qaqc.inspection.raiseNcr")}
                   </Link>
                 </Button>
               ) : null}
@@ -183,11 +183,11 @@ function InspectionDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Inspection</CardTitle>
+          <CardTitle className="text-base">{t("fieldMod.qaqc.inspection.inspectionSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <Label>Discipline</Label>
+            <Label>{t("fieldMod.qaqc.inspection.discipline")}</Label>
             <Select
               value={discipline}
               onValueChange={(v) => setDiscipline(v as QaqcDiscipline)}
@@ -206,15 +206,15 @@ function InspectionDetailPage() {
             </Select>
           </div>
           <div className="flex flex-col gap-1">
-            <Label>Area</Label>
+            <Label>{t("fieldMod.qaqc.inspection.area")}</Label>
             <Input value={area} onChange={(e) => setArea(e.target.value)} disabled={!canEdit} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label>ITP reference</Label>
+            <Label>{t("fieldMod.qaqc.inspection.itpReference")}</Label>
             <Input value={itpRef} onChange={(e) => setItpRef(e.target.value)} disabled={!canEdit} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label>Inspection date</Label>
+            <Label>{t("fieldMod.qaqc.inspection.inspectionDate")}</Label>
             <Input
               type="date"
               value={inspectionDate}
@@ -223,7 +223,7 @@ function InspectionDetailPage() {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <Label>Result</Label>
+            <Label>{t("fieldMod.qaqc.inspection.result")}</Label>
             <Select
               value={result}
               onValueChange={(v) => setResult(v as QaqcResult)}
@@ -242,7 +242,7 @@ function InspectionDetailPage() {
             </Select>
           </div>
           <div className="flex items-center justify-between rounded-md border border-border p-3">
-            <div className="text-sm font-medium">Rework required</div>
+            <div className="text-sm font-medium">{t("fieldMod.qaqc.inspection.reworkRequired")}</div>
             <Switch
               checked={reworkRequired}
               onCheckedChange={setReworkRequired}
@@ -250,7 +250,7 @@ function InspectionDetailPage() {
             />
           </div>
           <div className="md:col-span-2 flex flex-col gap-1">
-            <Label>Rework notes{reworkRequired ? " *" : ""}</Label>
+            <Label>{t("fieldMod.qaqc.inspection.reworkNotes")}{reworkRequired ? " *" : ""}</Label>
             <Textarea
               rows={3}
               value={reworkNotes}
@@ -266,7 +266,7 @@ function InspectionDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Attachments</CardTitle>
+          <CardTitle className="text-base">{t("fieldMod.qaqc.inspection.attachments")}</CardTitle>
         </CardHeader>
         <CardContent>
           <AttachmentList
@@ -287,7 +287,7 @@ function InspectionDetailPage() {
             className="ml-auto"
           >
             <Save size={14} aria-hidden />
-            {updateMut.isPending ? "Saving…" : "Save changes"}
+            {updateMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.qaqc.inspection.saveChanges")}
           </Button>
         </div>
       ) : null}

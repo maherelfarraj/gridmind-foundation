@@ -48,8 +48,8 @@ function statusTone(status: SloStatus): "positive" | "attention" | "critical" {
   return "positive";
 }
 
-function formatValue(s: SloSnapshot): string {
-  if (s.observed_value === null) return "No data";
+function formatValue(s: SloSnapshot, t: (key: string) => string): string {
+  if (s.observed_value === null) return t("adminMod.sloPage.noData");
   if (s.slo_name.includes("rate")) return `${s.observed_value}%`;
   if (s.slo_name.includes("triage")) return `${s.observed_value} min`;
   return `${s.observed_value} min ago`;
@@ -86,7 +86,7 @@ function SloPage() {
               disabled={query.isFetching}
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh
+              {t("adminMod.sloPage.refresh")}
             </Button>
           </div>
         }
@@ -103,15 +103,15 @@ function SloPage() {
       {query.isError ? (
         <Card className="border-destructive/40 bg-card">
           <CardHeader>
-            <CardTitle className="text-destructive">Couldn't load SLO dashboard</CardTitle>
+            <CardTitle className="text-destructive">{t("adminMod.sloPage.errorTitle")}</CardTitle>
             <CardDescription className="text-muted-foreground">
               {(query.error as Error | undefined)?.message ??
-                "The server returned an error while reading SLO signals."}
+                t("adminMod.sloPage.errorFallback")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => query.refetch()} variant="default">
-              Retry
+              {t("adminMod.sloPage.retry")}
             </Button>
           </CardContent>
         </Card>
@@ -120,8 +120,8 @@ function SloPage() {
       {query.data && query.data.length === 0 ? (
         <EmptyState
           icon={Activity}
-          title="No SLO data"
-          description="No SLO snapshots could be computed yet."
+          title={t("adminMod.sloPage.emptyTitle")}
+          description={t("adminMod.sloPage.emptyDescription")}
         />
       ) : null}
 
@@ -141,12 +141,12 @@ function SloPage() {
                   <StatusBadge status={s.status} tone={statusTone(s.status)} />
                 </div>
                 <CardDescription className="text-xs text-muted-foreground">
-                  Target: {s.target}
+                  {t("adminMod.sloPage.target", { target: s.target })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-1">
                 <span className="text-2xl font-semibold tabular-nums text-foreground">
-                  {formatValue(s)}
+                  {formatValue(s, t)}
                 </span>
                 <p className="text-xs text-muted-foreground">{s.measurement_window}</p>
               </CardContent>

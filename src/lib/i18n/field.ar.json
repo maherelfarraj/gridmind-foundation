@@ -145,7 +145,17 @@
       "addFile": "إضافة ملف (PDF أو صورة)",
       "uploading": "جارٍ الرفع…",
       "logInspection": "تسجيل الفحص",
-      "inspectionCreated": "تم إنشاء الفحص {{number}}"
+      "inspectionCreated": "تم إنشاء الفحص {{number}}",
+      "selectProjectFirst": "اختر مشروعًا أولاً",
+      "uploadFailed": "فشل الرفع: {{error}}",
+      "detailDescription": "تفاصيل فحص الجودة، النتيجة، والمرفقات.",
+      "reworkBadge": "إعادة عمل",
+      "raiseNcr": "رفع تقرير عدم مطابقة",
+      "inspectionSection": "الفحص",
+      "saveChanges": "حفظ التغييرات",
+      "notFound": "غير موجود",
+      "updated": "تم تحديث الفحص",
+      "reworkNotesRequired": "ملاحظات إعادة العمل مطلوبة عند تفعيل إعادة العمل."
     },
     "holdPoint": {
       "title": "نقطة توقف",

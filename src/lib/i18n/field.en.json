@@ -145,7 +145,17 @@
       "addFile": "Add file (PDF or image)",
       "uploading": "Uploading…",
       "logInspection": "Log inspection",
-      "inspectionCreated": "Inspection {{number}} created"
+      "inspectionCreated": "Inspection {{number}} created",
+      "selectProjectFirst": "Select a project first",
+      "uploadFailed": "Upload failed: {{error}}",
+      "detailDescription": "QA/QC inspection detail, result, and attachments.",
+      "reworkBadge": "Rework",
+      "raiseNcr": "Raise NCR",
+      "inspectionSection": "Inspection",
+      "saveChanges": "Save changes",
+      "notFound": "Not found",
+      "updated": "Inspection updated",
+      "reworkNotesRequired": "Rework notes are required when rework is flagged."
     },
     "holdPoint": {
       "title": "Hold point",

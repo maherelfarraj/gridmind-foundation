@@ -323,8 +323,8 @@ function PeriodRegister(props: {
     return (
       <EmptyState
         icon={CalendarClock}
-        title="No finance periods yet"
-        description="Periods appear here as soon as finance activity is recorded."
+        title={t("financeMod.periods.noPeriods")}
+        description={t("financeMod.periods.noPeriodsDesc")}
       />
     );
   }
@@ -376,10 +376,10 @@ function PeriodRegister(props: {
                         props.onReopen(r.period_month);
                       }}
                     >
-                      Reopen
+                      {t("financeMod.periods.reopenPeriod")}
                     </Button>
                   ) : (
-                    <span className="text-muted-foreground text-sm">Locked</span>
+                    <span className="text-muted-foreground text-sm">{t("financeMod.periods.locked")}</span>
                   )
                 ) : (
                   <Button
@@ -390,7 +390,7 @@ function PeriodRegister(props: {
                       props.onClose(r.period_month);
                     }}
                   >
-                    Close period
+                    {t("financeMod.periods.closePeriod")}
                   </Button>
                 )}
               </TableCell>
@@ -410,6 +410,7 @@ function ChecklistPanel(props: {
   onSave: (unbilledReviewed: boolean, note?: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const { period } = props;
   const [reviewed, setReviewed] = useState(Boolean(period.close_checklist.unbilled_reviewed));
   const [note, setNote] = useState(period.close_checklist.note ?? "");
@@ -423,8 +424,8 @@ function ChecklistPanel(props: {
     return (
       <EmptyState
         icon={LockKeyhole}
-        title={`${monthLabel(period.period_month)} is closed`}
-        description="Postings dated in this month are rejected until a company admin reopens it."
+        title={t("financeMod.periods.closedTitle", { month: monthLabel(period.period_month) })}
+        description={t("financeMod.periods.closedDesc")}
       />
     );
   }
@@ -452,7 +453,7 @@ function ChecklistPanel(props: {
               <p className="mt-1 text-sm">{item.detail}</p>
             </div>
             <Button asChild size="sm" variant="ghost">
-              <a href={item.link}>Open</a>
+              <a href={item.link}>{t("financeMod.periods.openAction")}</a>
             </Button>
           </div>
         ))}
@@ -467,7 +468,7 @@ function ChecklistPanel(props: {
             onCheckedChange={(v) => setReviewed(v === true)}
           />
           <Label htmlFor="unbilled-reviewed">
-            I reviewed certified-but-unbilled work for this month
+            {t("financeMod.periods.reviewedLabel")}
           </Label>
         </div>
         <Textarea
@@ -482,7 +483,7 @@ function ChecklistPanel(props: {
             disabled={!props.canWrite || props.saving}
             onClick={() => props.onSave(reviewed, note || undefined)}
           >
-            Save checklist
+            {t("financeMod.periods.saveChecklist")}
           </Button>
           <Button
             disabled={!props.canWrite || !period.can_close || props.closing}
@@ -507,12 +508,13 @@ function ComparisonPanel(props: {
   loading: boolean;
   data: ComparisonData | null;
 }) {
+  const { t } = useI18n();
   if (!props.month) {
     return (
       <EmptyState
         icon={CalendarClock}
-        title="Select a period"
-        description="Pick a month in the register to compare it with the prior month."
+        title={t("financeMod.periods.selectPeriodTitle")}
+        description={t("financeMod.periods.selectPeriodCompareDesc")}
       />
     );
   }
@@ -522,7 +524,12 @@ function ComparisonPanel(props: {
 
   const exportCsv = () => {
     const csv = toCsv(
-      ["Metric", monthLabel(current.period_month), monthLabel(prior.period_month), "Delta"],
+      [
+        t("financeMod.periods.metricHeader"),
+        monthLabel(current.period_month),
+        monthLabel(prior.period_month),
+        t("financeMod.periods.deltaHeader"),
+      ],
       lines.map((l) => [l.metric, l.current, l.prior, l.delta] as const),
     );
     downloadCsv(`period-comparison-${current.period_month}.csv`, csv);
@@ -533,16 +540,16 @@ function ComparisonPanel(props: {
       <div className="flex justify-end">
         <Button size="sm" variant="outline" onClick={exportCsv}>
           <Download className="mr-2 size-4" />
-          Export CSV
+          {t("financeMod.periods.export")}
         </Button>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Metric</TableHead>
+            <TableHead>{t("financeMod.periods.metricHeader")}</TableHead>
             <TableHead className="text-right">{monthLabel(current.period_month)}</TableHead>
             <TableHead className="text-right">{monthLabel(prior.period_month)}</TableHead>
-            <TableHead className="text-right">Delta</TableHead>
+            <TableHead className="text-right">{t("financeMod.periods.deltaHeader")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
