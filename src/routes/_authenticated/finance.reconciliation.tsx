@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertCircle, CheckCircle2, Landmark, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { MoneyCell } from "@/components/ui/num";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -80,15 +84,15 @@ function money(n: number, currency: string) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
 }
 
-const FILTER_LABEL: Record<ReconFilter, string> = {
-  unmatched: "Unmatched",
-  matched: "Matched",
-  partial: "Partial",
-  excluded: "Excluded",
-  all: "All",
-};
-
 function ReconciliationPage() {
+  const { t } = useI18n();
+  const FILTER_LABEL: Record<ReconFilter, string> = {
+    unmatched: t("financeMod.reconciliation.unmatched"),
+    matched: t("financeMod.reconciliation.matched"),
+    partial: t("financeMod.reconciliation.filterPartial"),
+    excluded: t("financeMod.reconciliation.exclude"),
+    all: t("financeMod.reconciliation.filterAll"),
+  };
   const qc = useQueryClient();
   const [month, setMonth] = useState(currentMonth());
   const [status, setStatus] = useState<ReconFilter>("unmatched");
@@ -118,24 +122,31 @@ function ReconciliationPage() {
   const single = useMutation({
     mutationFn: reconcileFn,
     onSuccess: (res) => {
-      toast.success(`Payment ${reconStatusLabel(res.status).toLowerCase()}`);
+      toast.success(
+        t("financeMod.reconciliation.reconciled", {
+          status: reconStatusLabel(res.status).toLowerCase(),
+        }),
+      );
       invalidate();
     },
-    onError: (e) => toast.error(invoiceErrorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), invoiceErrorMessage(e))),
   });
 
   const bulk = useMutation({
     mutationFn: bulkFn,
     onSuccess: (res) => {
       toast.success(
-        `${res.updated} payment(s) marked ${reconStatusLabel(res.status).toLowerCase()}`,
+        t("financeMod.reconciliation.bulkUpdated", {
+          count: res.updated,
+          status: reconStatusLabel(res.status).toLowerCase(),
+        }),
       );
       setSelected([]);
       setBulkPrefix("");
       setBulkNote("");
       invalidate();
     },
-    onError: (e) => toast.error(invoiceErrorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), invoiceErrorMessage(e))),
   });
 
   const rows = dataQ.data?.rows ?? [];
@@ -160,13 +171,13 @@ function ReconciliationPage() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Bank reconciliation"
-        description={`Match recorded payments to bank statement lines for ${monthLabel(month)}.`}
+        title={t("financeMod.reconciliation.title")}
+        description={t("financeMod.reconciliation.subtitle") + ` — ${monthLabel(month)}.`}
       />
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="recon-month">Month</Label>
+          <Label htmlFor="recon-month">{t("financeMod.reconciliation.month")}</Label>
           <Input
             id="recon-month"
             type="month"
@@ -179,15 +190,15 @@ function ReconciliationPage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="recon-direction">Direction</Label>
+          <Label htmlFor="recon-direction">{t("financeMod.reconciliation.direction")}</Label>
           <Select value={direction} onValueChange={(v) => setDirection(v as typeof direction)}>
             <SelectTrigger id="recon-direction" className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All directions</SelectItem>
-              <SelectItem value="receivable">Receivable</SelectItem>
-              <SelectItem value="payable">Payable</SelectItem>
+              <SelectItem value="all">{t("financeMod.reconciliation.allDirections")}</SelectItem>
+              <SelectItem value="receivable">{t("financeMod.invoices.receivable")}</SelectItem>
+              <SelectItem value="payable">{t("financeMod.invoices.payable")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -196,7 +207,7 @@ function ReconciliationPage() {
             <TooltipTrigger asChild>
               <div>
                 <KpiTile
-                  label="Reconciled"
+                  label={t("financeMod.reconciliation.reconciled", { status: "" }).replace(/\s+$/, "")}
                   icon={Landmark}
                   isLoading={dataQ.isLoading}
                   value={pct === null ? "n/a" : `${(pct * 100).toFixed(0)}%`}
@@ -234,9 +245,9 @@ function ReconciliationPage() {
 
       {canWrite && selected.length > 0 ? (
         <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-muted/40 p-3">
-          <span className="text-sm font-medium text-foreground">{selected.length} selected</span>
+          <span className="text-sm font-medium text-foreground">{t("financeMod.reconciliation.selected", { count: selected.length })}</span>
           <div className="space-y-1.5">
-            <Label htmlFor="bulk-prefix">Statement reference prefix</Label>
+            <Label htmlFor="bulk-prefix">{t("financeMod.reconciliation.statementRefPrefix")}</Label>
             <Input
               id="bulk-prefix"
               className="w-56"
@@ -246,7 +257,7 @@ function ReconciliationPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="bulk-note">Note (required to exclude)</Label>
+            <Label htmlFor="bulk-note">{t("financeMod.reconciliation.note")}</Label>
             <Input
               id="bulk-note"
               className="w-72"
@@ -268,7 +279,7 @@ function ReconciliationPage() {
               })
             }
           >
-            Mark matched
+            {t("financeMod.reconciliation.markMatched")}
           </Button>
           <Button
             size="sm"
@@ -276,7 +287,7 @@ function ReconciliationPage() {
             disabled={bulk.isPending}
             onClick={() => {
               if (!bulkNote.trim()) {
-                toast.error("A note is required when excluding payments.");
+                toast.error(t("financeMod.reconciliation.noteRequired"));
                 return;
               }
               bulk.mutate({
@@ -284,7 +295,7 @@ function ReconciliationPage() {
               });
             }}
           >
-            Mark excluded
+            {t("financeMod.reconciliation.markExcluded")}
           </Button>
         </div>
       ) : null}
@@ -298,15 +309,15 @@ function ReconciliationPage() {
       ) : dataQ.isError ? (
         <EmptyState
           icon={AlertCircle}
-          title="Could not load payments"
-          description={invoiceErrorMessage(dataQ.error)}
-          action={<Button onClick={() => void dataQ.refetch()}>Retry</Button>}
+          title={t("financeMod.reconciliation.couldNotLoad")}
+          description={translateError(t, errorCodeOf(dataQ.error), invoiceErrorMessage(dataQ.error))}
+          action={<Button onClick={() => void dataQ.refetch()}>{t("common.retry")}</Button>}
         />
       ) : rows.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
-          title="All payments reconciled for this month"
-          description={`No ${status === "all" ? "" : `${FILTER_LABEL[status].toLowerCase()} `}payments to review in ${monthLabel(month)}.`}
+          title={t("financeMod.reconciliation.allReconciled")}
+          description={t("financeMod.reconciliation.noneToReview", { status: status === "all" ? "" : FILTER_LABEL[status].toLowerCase(), month: monthLabel(month) })}
         />
       ) : (
         <div className="rounded-lg border border-border">
@@ -315,20 +326,20 @@ function ReconciliationPage() {
               <TableRow>
                 <TableHead className="w-10">
                   <Checkbox
-                    aria-label="Select all"
+                    aria-label={t("financeMod.reconciliation.selectAll")}
                     checked={allSelected}
                     disabled={!canWrite || selectableIds.length === 0}
                     onCheckedChange={(v) => setSelected(v ? selectableIds : [])}
                   />
                 </TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Bank reference</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("financeMod.reconciliation.paymentHeader")}</TableHead>
+                <TableHead>{t("financeMod.reconciliation.invoiceHeader")}</TableHead>
+                <TableHead>{t("common.date")}</TableHead>
+                <TableHead>{t("financeMod.reconciliation.methodHeader")}</TableHead>
+                <TableHead className="text-end">{t("common.amount")}</TableHead>
+                <TableHead>{t("financeMod.reconciliation.bankRefHeader")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
+                <TableHead className="text-end">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -352,15 +363,15 @@ function ReconciliationPage() {
                       <span>{r.invoice_number ?? "—"}</span>
                       <StatusBadge
                         status={r.direction}
-                        label={r.direction === "payable" ? "Payable" : "Receivable"}
+                        label={r.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
                         tone={r.direction === "payable" ? "attention" : "active"}
                       />
                     </div>
                   </TableCell>
                   <TableCell>{r.payment_date}</TableCell>
                   <TableCell>{paymentMethodLabel(r.method)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {money(r.amount, r.currency_code)}
+                  <TableCell className="text-end">
+                    <MoneyCell>{money(r.amount, r.currency_code)}</MoneyCell>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{r.bank_reference ?? "—"}</TableCell>
                   <TableCell>
@@ -370,7 +381,7 @@ function ReconciliationPage() {
                       tone={reconStatusTone(r.reconciliation_status as ReconStatus)}
                     />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     {canRowAct(r) ? (
                       <RowActions
                         row={r}
@@ -379,7 +390,7 @@ function ReconciliationPage() {
                       />
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        {r.record_status === "voided" ? "Voided" : "—"}
+                        {r.record_status === "voided" ? t("financeMod.reconciliation.voided") : "—"}
                       </span>
                     )}
                   </TableCell>
@@ -407,6 +418,7 @@ function RowActions({
     note?: string | null;
   }) => void;
 }) {
+  const { t } = useI18n();
   const [ref, setRef] = useState(row.bank_reference ?? "");
   const [note, setNote] = useState("");
   const [open, setOpen] = useState(false);
@@ -418,12 +430,12 @@ function RowActions({
         <PopoverTrigger asChild>
           <Button size="sm" variant="outline" disabled={pending}>
             <Link2 className="size-3.5" aria-hidden />
-            Match
+            {t("financeMod.reconciliation.match")}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor={`ref-${row.id}`}>Bank statement line reference</Label>
+            <Label htmlFor={`ref-${row.id}`}>{t("financeMod.reconciliation.statementLineRef")}</Label>
             <Input
               id={`ref-${row.id}`}
               value={ref}
@@ -444,7 +456,7 @@ function RowActions({
               setOpen(false);
             }}
           >
-            Match to statement line
+            {t("financeMod.reconciliation.matchToStatementLine")}
           </Button>
         </PopoverContent>
       </Popover>
@@ -461,18 +473,18 @@ function RowActions({
           })
         }
       >
-        Partial
+        {t("financeMod.reconciliation.partial")}
       </Button>
 
       <Popover open={excludeOpen} onOpenChange={setExcludeOpen}>
         <PopoverTrigger asChild>
           <Button size="sm" variant="ghost" disabled={pending}>
-            Exclude
+            {t("financeMod.reconciliation.exclude")}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor={`note-${row.id}`}>Why is this excluded?</Label>
+            <Label htmlFor={`note-${row.id}`}>{t("financeMod.reconciliation.whyExcluded")}</Label>
             <Textarea
               id={`note-${row.id}`}
               value={note}
@@ -489,7 +501,7 @@ function RowActions({
               setExcludeOpen(false);
             }}
           >
-            Mark excluded
+            {t("financeMod.reconciliation.markExcluded")}
           </Button>
         </PopoverContent>
       </Popover>

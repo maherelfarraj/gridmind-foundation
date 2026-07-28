@@ -29,6 +29,8 @@ import {
   invoiceErrorMessage,
 } from "@/lib/invoices.query";
 import { invoiceStatusLabel } from "@/lib/invoices.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { translateError, errorCodeOf } from "@/lib/i18n/error-keys";
 
 function fmt(n: number, currency: string) {
   return new Intl.NumberFormat(undefined, {
@@ -61,6 +63,7 @@ export function InvoiceDetailDrawer({
   onOpenChange: (v: boolean) => void;
   canWrite: boolean;
 }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const payFn = useServerFn(markInvoicePaid);
   const sendFn = useServerFn(markInvoiceSent);
@@ -76,15 +79,11 @@ export function InvoiceDetailDrawer({
     mutationFn: () => payFn({ data: { id: invoiceId! } }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast.success("Invoice marked as paid");
+      toast.success(t("financeMod.invoices.invoiceMarkedPaid"));
     },
     onError: (err) => {
-      const code = invoiceErrorCode(err);
-      if (code === "payment_release_blocked") {
-        toast.error("Payment release blocked by 3-way match variance");
-      } else {
-        toast.error(invoiceErrorMessage(err));
-      }
+      const code = invoiceErrorCode(err) ?? errorCodeOf(err);
+      toast.error(translateError(t, code, invoiceErrorMessage(err)));
     },
   });
 
@@ -92,18 +91,18 @@ export function InvoiceDetailDrawer({
     mutationFn: () => sendFn({ data: { invoice_id: invoiceId! } }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast.success("Invoice marked as sent");
+      toast.success(t("financeMod.invoices.invoiceMarkedSent"));
     },
-    onError: (err) => toast.error(invoiceErrorMessage(err)),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
   const approveMutation = useMutation({
     mutationFn: () => approveFn({ data: { invoice_id: invoiceId! } }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["invoices"] });
-      toast.success("Invoice approved");
+      toast.success(t("financeMod.invoices.invoiceApproved"));
     },
-    onError: (err) => toast.error(invoiceErrorMessage(err)),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
 
@@ -117,9 +116,9 @@ export function InvoiceDetailDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{d ? d.invoice.invoice_number : "Invoice"}</SheetTitle>
+          <SheetTitle>{d ? d.invoice.invoice_number : t("financeMod.invoices.invoiceFallback")}</SheetTitle>
           <SheetDescription>
-            {d ? `${d.invoice.direction === "payable" ? "Payable" : "Receivable"} invoice` : ""}
+            {d ? (d.invoice.direction === "payable" ? t("financeMod.invoices.payableInvoice") : t("financeMod.invoices.receivableInvoice")) : ""}
           </SheetDescription>
         </SheetHeader>
 
@@ -139,13 +138,13 @@ export function InvoiceDetailDrawer({
                 <div className="flex items-start gap-2">
                   <ShieldAlert className="mt-0.5 size-4 shrink-0" />
                   <div className="space-y-1">
-                    <p className="font-medium">Payment release blocked by 3-way match variance</p>
-                    <p className="text-xs">Resolve the linked match to release payment.</p>
+                    <p className="font-medium">{t("financeMod.invoices.paymentBlockedTitle")}</p>
+                    <p className="text-xs">{t("financeMod.invoices.paymentBlockedHint")}</p>
                     {d.blocked_match_ids[0] && (
                       <Button asChild variant="link" size="sm" className="h-auto p-0 text-xs">
                         <Link to="/procurement/matches" hash={d.blocked_match_ids[0]}>
-                          Open matching workbench
-                          <ExternalLink className="ml-1 inline size-3" />
+                          {t("financeMod.invoices.openMatching")}
+                          <ExternalLink className="ms-1 inline size-3" />
                         </Link>
                       </Button>
                     )}
@@ -156,7 +155,7 @@ export function InvoiceDetailDrawer({
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Status</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.status")}</dt>
                 <dd>
                   <span className="flex flex-wrap items-center gap-1">
                     <Badge variant={STATUS_VARIANT[d.invoice.status] ?? "outline"}>
@@ -165,7 +164,7 @@ export function InvoiceDetailDrawer({
                     {d.invoice.overdue && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge variant="destructive">Overdue</Badge>
+                          <Badge variant="destructive">{t("financeMod.invoices.overdueBadge")}</Badge>
                         </TooltipTrigger>
                         <TooltipContent>{FORMULAS.overdue}</TooltipContent>
                       </Tooltip>
@@ -174,25 +173,25 @@ export function InvoiceDetailDrawer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Amount</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.amount")}</dt>
                 <dd className="font-mono tabular-nums">
                   {fmt(d.invoice.amount, d.invoice.currency_code)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Tax</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.tax")}</dt>
                 <dd className="font-mono tabular-nums">
                   {fmt(d.invoice.tax_amount, d.invoice.currency_code)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Paid</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.paid")}</dt>
                 <dd className="font-mono tabular-nums">
                   {fmt(d.invoice.paid_amount, d.invoice.currency_code)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Balance</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.balance")}</dt>
                 <dd>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -205,37 +204,37 @@ export function InvoiceDetailDrawer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Retention</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.retention")}</dt>
                 <dd className="font-mono tabular-nums">{d.invoice.retention_pct}%</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Issued</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.issued")}</dt>
                 <dd>{d.invoice.issue_date ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Due</dt>
+                <dt className="text-xs text-muted-foreground">{t("financeMod.common.dueDate")}</dt>
                 <dd>{d.invoice.due_date ?? "—"}</dd>
               </div>
               {d.invoice.milestone_label && (
                 <div className="col-span-2">
-                  <dt className="text-xs text-muted-foreground">Milestone</dt>
+                  <dt className="text-xs text-muted-foreground">{t("financeMod.invoices.milestoneLabel")}</dt>
                   <dd>{d.invoice.milestone_label}</dd>
                 </div>
               )}
               {d.invoice.paid_at && (
                 <div className="col-span-2">
-                  <dt className="text-xs text-muted-foreground">Paid at</dt>
+                  <dt className="text-xs text-muted-foreground">{t("financeMod.invoices.paidAtLabel")}</dt>
                   <dd>{d.invoice.paid_at.slice(0, 10)}</dd>
                 </div>
               )}
             </dl>
 
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Linked</h3>
+              <h3 className="text-sm font-semibold">{t("financeMod.invoices.linkedTitle")}</h3>
               <ul className="space-y-1 text-sm">
                 {d.contract && (
                   <li>
-                    Contract{" "}
+                    {t("financeMod.invoices.contractPrefix")}{" "}
                     <Link
                       to="/finance/contracts/$contractId"
                       params={{ contractId: d.contract.id }}
@@ -245,9 +244,9 @@ export function InvoiceDetailDrawer({
                     </Link>
                   </li>
                 )}
-                {d.pay_app && <li>Pay application #{d.pay_app.application_number}</li>}
+                {d.pay_app && <li>{t("financeMod.invoices.payAppPrefix", { number: d.pay_app.application_number })}</li>}
                 {!d.contract && !d.pay_app && (
-                  <li className="text-muted-foreground">No linked records.</li>
+                  <li className="text-muted-foreground">{t("financeMod.invoices.noLinked")}</li>
                 )}
               </ul>
             </div>
@@ -257,15 +256,13 @@ export function InvoiceDetailDrawer({
                 <div className="flex items-start gap-2 text-warning">
                   <AlertTriangle className="mt-0.5 size-3.5" />
                   <span>
-                    Open balance reduced by{" "}
-                    <span className="font-mono">
-                      {fmt(d.debit_notes_open_sum, d.invoice.currency_code)}
-                    </span>{" "}
-                    in debit notes.
+                    {t("financeMod.invoices.debitNoteReduced", {
+                      amount: fmt(d.debit_notes_open_sum, d.invoice.currency_code),
+                    })}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="text-muted-foreground">Net open</span>
+                  <span className="text-muted-foreground">{t("financeMod.invoices.netOpen")}</span>
                   <span className="font-mono tabular-nums">
                     {fmt(
                       Math.max(0, d.invoice.amount - d.debit_notes_open_sum),
@@ -289,7 +286,7 @@ export function InvoiceDetailDrawer({
                   disabled={!canRecord || approveMutation.isPending}
                   onClick={() => approveMutation.mutate()}
                 >
-                  {approveMutation.isPending ? "Approving…" : "Approve"}
+                  {approveMutation.isPending ? t("financeMod.invoices.approving") : t("financeMod.invoices.approve")}
                 </Button>
               )}
               {d.invoice.status === "approved" && (
@@ -298,7 +295,7 @@ export function InvoiceDetailDrawer({
                   disabled={!canWrite || sendMutation.isPending}
                   onClick={() => sendMutation.mutate()}
                 >
-                  Mark sent
+                  {t("financeMod.invoices.markSent")}
                 </Button>
               )}
               {acceptsPayment(d.invoice.status) && (
@@ -306,7 +303,7 @@ export function InvoiceDetailDrawer({
                   disabled={!canRecord || d.payment_release_blocked}
                   onClick={() => setPayOpen(true)}
                 >
-                  Record payment
+                  {t("financeMod.invoices.recordPayment")}
                 </Button>
               )}
             </div>
@@ -328,11 +325,11 @@ export function InvoiceDetailDrawer({
                   disabled={!canWrite || d.payment_release_blocked || mutation.isPending}
                   onClick={() => mutation.mutate()}
                 >
-                  {mutation.isPending ? "Releasing…" : "Mark as paid"}
+                  {mutation.isPending ? t("financeMod.invoices.releasing") : t("financeMod.invoices.markAsPaid")}
                 </Button>
                 {!canWrite && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Finance admin role required to release payments.
+                    {t("financeMod.invoices.financeAdminRequired")}
                   </p>
                 )}
               </div>

@@ -6,6 +6,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { CalendarClock, CheckCircle2, CircleAlert, Download, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -74,6 +77,7 @@ const money = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function FinancePeriodsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const periods = useQuery(financePeriodsQueryOptions());
   const [selected, setSelected] = useState<string | null>(null);
@@ -99,13 +103,11 @@ function FinancePeriodsPage() {
   const closeMutation = useMutation({
     mutationFn: (period_month: string) => closeFn({ data: { period_month } }),
     onSuccess: (_r, period_month) => {
-      toast.success(
-        `${monthLabel(period_month)} closed. Postings in that month are now locked.`,
-      );
+      toast.success(t("financeMod.periods.toastClosed", { month: monthLabel(period_month) }));
       setCloseTarget(null);
       invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not close the period."),
+    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotClose")),
   });
 
   const [closeTarget, setCloseTarget] = useState<string | null>(null);
@@ -115,14 +117,12 @@ function FinancePeriodsPage() {
   const reopenMutation = useMutation({
     mutationFn: (input: { period_month: string; reason: string }) => reopenFn({ data: input }),
     onSuccess: (_r, input) => {
-      toast.success(
-        `${monthLabel(input.period_month)} reopened. The reason is recorded in the audit log.`,
-      );
+      toast.success(t("financeMod.periods.toastReopened", { month: monthLabel(input.period_month) }));
       setReopenTarget(null);
       setReopenReason("");
       invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not reopen the period."),
+    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotReopen")),
   });
 
 
@@ -130,10 +130,10 @@ function FinancePeriodsPage() {
     mutationFn: (input: { period_month: string; unbilled_reviewed: boolean; note?: string }) =>
       checklistFn({ data: input }),
     onSuccess: () => {
-      toast.success("Checklist saved.");
+      toast.success(t("financeMod.periods.toastChecklistSaved"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not save the checklist."),
+    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotSaveChecklist")),
   });
 
   if (periods.isLoading) {
@@ -150,8 +150,8 @@ function FinancePeriodsPage() {
       <div className="p-6">
         <EmptyState
           icon={LockKeyhole}
-          title="No access to finance periods"
-          description="Ask a company admin for a finance role to view or manage the period close."
+          title={t("financeMod.periods.noAccessTitle")}
+          description={t("financeMod.periods.noAccessDesc")}
         />
       </div>
     );
@@ -163,15 +163,15 @@ function FinancePeriodsPage() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Period close"
-        description="Lock a finance month once its checklist is clean, then compare it against the prior month."
+        title={t("financeMod.periods.title")}
+        description={t("financeMod.periods.lockDesc")}
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiTile label="Months tracked" value={String(rows.length)} icon={CalendarClock} />
-        <KpiTile label="Closed months" value={String(closedCount)} icon={LockKeyhole} />
+        <KpiTile label={t("financeMod.periods.monthsTracked")} value={String(rows.length)} icon={CalendarClock} />
+        <KpiTile label={t("financeMod.periods.closedMonths")} value={String(closedCount)} icon={LockKeyhole} />
         <KpiTile
-          label="Open blockers"
+          label={t("financeMod.periods.openBlockers")}
           value={String(blockers)}
           icon={blockers === 0 ? CheckCircle2 : CircleAlert}
           status={blockers === 0 ? "good" : "warning"}
@@ -180,9 +180,9 @@ function FinancePeriodsPage() {
 
       <Tabs defaultValue="register">
         <TabsList>
-          <TabsTrigger value="register">Register</TabsTrigger>
-          <TabsTrigger value="checklist">Close checklist</TabsTrigger>
-          <TabsTrigger value="comparison">Comparison report</TabsTrigger>
+          <TabsTrigger value="register">{t("financeMod.periods.register")}</TabsTrigger>
+          <TabsTrigger value="checklist">{t("financeMod.periods.checklistTab")}</TabsTrigger>
+          <TabsTrigger value="comparison">{t("financeMod.periods.comparisonTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="register" className="mt-4">
@@ -221,8 +221,8 @@ function FinancePeriodsPage() {
           ) : (
             <EmptyState
               icon={CalendarClock}
-              title="Select a period"
-              description="Pick a month in the register to see its close checklist."
+              title={t("financeMod.periods.selectPeriodTitle")}
+              description={t("financeMod.periods.selectPeriodChecklistDesc")}
             />
           )}
         </TabsContent>
@@ -240,15 +240,14 @@ function FinancePeriodsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Reopen {reopenTarget ? monthLabel(reopenTarget) : ""}
+              {t("financeMod.periods.reopenDialogTitle", { month: reopenTarget ? monthLabel(reopenTarget) : "" })}
             </DialogTitle>
             <DialogDescription>
-              Reopening a closed month is a governed act. The reason below is written to the audit
-              log with your name and the time.
+              {t("financeMod.periods.reopenDialogDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="reopen-reason">Reason (required, min 10 characters)</Label>
+            <Label htmlFor="reopen-reason">{t("financeMod.periods.reasonLabel")}</Label>
             <Textarea
               id="reopen-reason"
               value={reopenReason}
@@ -258,7 +257,7 @@ function FinancePeriodsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setReopenTarget(null)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               disabled={reopenReason.trim().length < REOPEN_REASON_MIN || reopenMutation.isPending}
@@ -270,7 +269,7 @@ function FinancePeriodsPage() {
                 })
               }
             >
-              Reopen {reopenTarget ? monthLabel(reopenTarget) : "period"}
+              {t("financeMod.periods.reopenAction", { month: reopenTarget ? monthLabel(reopenTarget) : "" })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -280,23 +279,21 @@ function FinancePeriodsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Close {closeTarget ? monthLabel(closeTarget) : ""}?
+              {t("financeMod.periods.closeDialogTitle", { month: closeTarget ? monthLabel(closeTarget) : "" })}
             </DialogTitle>
             <DialogDescription>
-              Closing {closeTarget ? monthLabel(closeTarget) : "this month"} locks every financial
-              posting dated inside it. Later postings are rejected with a 409 until the month is
-              reopened with a recorded reason.
+              {t("financeMod.periods.closeDialogDesc", { month: closeTarget ? monthLabel(closeTarget) : "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCloseTarget(null)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               disabled={closeMutation.isPending}
               onClick={() => closeTarget && closeMutation.mutate(closeTarget)}
             >
-              Close {closeTarget ? monthLabel(closeTarget) : "period"}
+              {t("financeMod.periods.closeAction", { month: closeTarget ? monthLabel(closeTarget) : "" })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -320,7 +317,9 @@ function PeriodRegister(props: {
   onClose: (m: string) => void;
   onReopen: (m: string) => void;
 }) {
+  const { t } = useI18n();
   if (props.rows.length === 0) {
+
     return (
       <EmptyState
         icon={CalendarClock}
@@ -333,11 +332,11 @@ function PeriodRegister(props: {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Month</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Blockers</TableHead>
-          <TableHead>Closed by</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>{t("financeMod.periods.period")}</TableHead>
+          <TableHead>{t("common.status")}</TableHead>
+          <TableHead>{t("financeMod.periods.blockersHeader")}</TableHead>
+          <TableHead>{t("financeMod.periods.closedByHeader")}</TableHead>
+          <TableHead className="text-end">{t("common.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -360,7 +359,7 @@ function PeriodRegister(props: {
                 />
               </TableCell>
               <TableCell>
-                {r.status === "closed" ? "—" : blockers === 0 ? "Ready to close" : blockers}
+                {r.status === "closed" ? "—" : blockers === 0 ? t("financeMod.periods.readyToClose") : blockers}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {r.closed_by_name ? `${r.closed_by_name} · ${r.closed_at?.slice(0, 10)}` : "—"}

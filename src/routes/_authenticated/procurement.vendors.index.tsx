@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   getVendorWriteAccess,
   listVendors,
@@ -54,16 +55,17 @@ export const Route = createFileRoute("/_authenticated/procurement/vendors/")({
 });
 
 function VendorsError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">Couldn’t load vendors</h2>
+      <h2 className="font-display text-lg font-semibold">{t("procurementMod.vendors.loadError")}</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button
         onClick={() => {
           reset();
         }}
       >
-        Try again
+        {t("procurementMod.common.tryAgain")}
       </Button>
     </div>
   );
@@ -130,6 +132,7 @@ function downloadCsv(rows: VendorRow[]) {
 }
 
 function VendorsIndex() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<VendorStatus | "all">("all");
   const navigate = useNavigate();
@@ -152,8 +155,8 @@ function VendorsIndex() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Vendors"
-        description="Supplier master — identity, commercial terms, and certifications."
+        title={t("procurementMod.vendors.title")}
+        description={t("procurementMod.vendors.subtitle")}
         actions={
           <>
             <Button
@@ -161,12 +164,12 @@ function VendorsIndex() {
               onClick={() => downloadCsv(rows)}
               disabled={rows.length === 0}
             >
-              <Download className="mr-2 h-4 w-4" /> Export CSV
+              <Download className="me-2 h-4 w-4" /> {t("procurementMod.common.export")}
             </Button>
             {canWrite && (
               <Button asChild>
                 <Link to="/procurement/vendors/new">
-                  <Plus className="mr-2 h-4 w-4" /> New vendor
+                  <Plus className="me-2 h-4 w-4" /> {t("procurementMod.vendors.newVendor")}
                 </Link>
               </Button>
             )}
@@ -176,10 +179,10 @@ function VendorsIndex() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[240px] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
-            placeholder="Search name, tax ID, email…"
+            className="ps-9"
+            placeholder={t("procurementMod.vendors.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -189,7 +192,7 @@ function VendorsIndex() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("procurementMod.common.allStatuses")}</SelectItem>
             {VENDOR_STATUSES.map((s) => (
               <SelectItem key={s} value={s} className="capitalize">
                 {s.replace("_", " ")}
@@ -208,13 +211,13 @@ function VendorsIndex() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Truck}
-          title="No vendors yet"
-          description="Add supplier identity, payment terms, incoterms and certifications to start issuing RFQs."
+          title={t("procurementMod.vendors.emptyTitle")}
+          description={t("procurementMod.vendors.emptyDescription")}
           action={
             canWrite ? (
               <Button asChild>
                 <Link to="/procurement/vendors/new">
-                  <Plus className="mr-2 h-4 w-4" /> Onboard vendor
+                  <Plus className="me-2 h-4 w-4" /> {t("procurementMod.vendors.onboardVendor")}
                 </Link>
               </Button>
             ) : undefined
@@ -224,12 +227,12 @@ function VendorsIndex() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Categories</TableHead>
-              <TableHead>Terms</TableHead>
-              <TableHead>Currency</TableHead>
-              <TableHead>Location</TableHead>
+              <TableHead>{t("procurementMod.vendors.colName")}</TableHead>
+              <TableHead>{t("procurementMod.common.status")}</TableHead>
+              <TableHead>{t("procurementMod.vendors.colCategories")}</TableHead>
+              <TableHead>{t("procurementMod.vendors.colTerms")}</TableHead>
+              <TableHead>{t("procurementMod.vendors.colCurrency")}</TableHead>
+              <TableHead>{t("procurementMod.vendors.colLocation")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

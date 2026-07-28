@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { Num } from "@/components/ui/num";
 import { supabase } from "@/integrations/supabase/client";
 import { createDraftGrn, getReceivableForPo, listReceivablePos } from "@/lib/grn.functions";
 import {
@@ -47,6 +48,8 @@ import {
   useCreateDraftGrn,
   useSaveGrnDraft,
 } from "@/lib/grn-query";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
 
 const searchSchema = z.object({
   po: z.string().uuid().optional(),
@@ -68,6 +71,7 @@ export const Route = createFileRoute("/_authenticated/procurement/receipts/new")
 });
 
 function NewReceipt() {
+  const { t } = useI18n();
   const { po } = useSearch({
     from: "/_authenticated/procurement/receipts/new",
   });
@@ -80,12 +84,12 @@ function NewReceipt() {
     return (
       <div className="page-shell max-w-lg">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="me-2 h-4 w-4" /> {t("procurementMod.grn.backToReceipts")}
         </Button>
-        <h1 className="font-display text-xl font-semibold">Pick a PO to receive</h1>
+        <h1 className="font-display text-xl font-semibold">{t("procurementMod.grn.pickPoTitle")}</h1>
         {posQuery.data.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No issued POs are open for receiving right now.
+            {t("procurementMod.grn.noOpenPos")}
           </p>
         ) : (
           <div className="space-y-2">
@@ -99,14 +103,16 @@ function NewReceipt() {
                     search: { po: p.id },
                   })
                 }
-                className="flex w-full items-center justify-between rounded-md border border-border p-3 text-left hover:bg-accent"
+                className="flex w-full items-center justify-between rounded-md border border-border p-3 text-start hover:bg-accent"
               >
                 <div>
                   <div className="font-mono text-sm">{p.po_number}</div>
-                  <div className="text-xs text-muted-foreground">{p.vendor_name ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {p.vendor_name ?? t("procurementMod.grn.vendorFallback")}
+                  </div>
                 </div>
-                <Badge variant="outline" className="capitalize">
-                  {p.status.replace("_", " ")}
+                <Badge variant="outline">
+                  {t(`procurementMod.grn.poStatuses.${p.status}`)}
                 </Badge>
               </button>
             ))}
@@ -125,6 +131,7 @@ interface DraftContext {
 }
 
 function ReceivingForm({ poId }: { poId: string }) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const receivableFn = useServerFn(getReceivableForPo);
   const receivableQuery = useSuspenseQuery(receivableForPoQueryOptions(receivableFn, poId));
@@ -150,7 +157,7 @@ function ReceivingForm({ poId }: { poId: string }) {
   if (creating || !draft) {
     return (
       <div className="flex items-center gap-2 p-6 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> Preparing receipt…
+        <Loader2 className="h-4 w-4 animate-spin" /> {t("procurementMod.grn.preparingReceipt")}
       </div>
     );
   }
@@ -203,6 +210,7 @@ function ReceivingEditor({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useI18n();
   const [lines, setLines] = useState<GrnLine[]>(() => makeInitialLines(receivable));
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
@@ -216,7 +224,7 @@ function ReceivingEditor({
 
   const captureGeo = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      toast.error("Location is not available on this device");
+      toast.error(t("procurementMod.grn.locationNotAvailable"));
       return;
     }
     setLocating(true);
@@ -228,11 +236,16 @@ function ReceivingEditor({
           accuracy_m: pos.coords.accuracy == null ? null : Math.round(pos.coords.accuracy),
         });
         setLocating(false);
-        toast.success("Location captured");
+        toast.success(t("procurementMod.grn.locationCaptured"));
       },
-      () => {
+      (err) => {
         setLocating(false);
-        toast.error("Couldn’t read your location");
+        const code = errorCodeOf(err) ?? (err?.code === 1 ? "gps_outside_geofence" : null);
+        toast.error(
+          code === "gps_outside_geofence"
+            ? translateError(t, code, null)
+            : t("procurementMod.grn.locationReadFailed"),
+        );
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
     );
@@ -255,7 +268,7 @@ function ReceivingEditor({
 
   const uploadPhoto = async (file: File) => {
     if (photos.length >= 10) {
-      toast.error("Max 10 photos");
+      toast.error(t("procurementMod.grn.maxPhotos"));
       return;
     }
     setUploading(true);
@@ -276,7 +289,7 @@ function ReceivingEditor({
         setPhotoUrls((m) => ({ ...m, [path]: signed.signedUrl }));
       }
     } catch (e: any) {
-      toast.error(e?.message ?? "Upload failed");
+      toast.error(translateError(t, errorCodeOf(e), e?.message ?? t("procurementMod.grn.uploadFailed")));
     } finally {
       setUploading(false);
     }
@@ -306,14 +319,14 @@ function ReceivingEditor({
   return (
     <div className="page-shell max-w-3xl pb-32">
       <Button variant="ghost" size="sm" onClick={onCancel}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        <ArrowLeft className="me-2 h-4 w-4" /> {t("procurementMod.grn.backToReceipts")}
       </Button>
-      <PageHeader title={poNumber} description="Receive against PO" />
+      <PageHeader title={poNumber} description={t("procurementMod.grn.receiveAgainstPo")} />
 
       {badLines.length > 0 && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 h-4 w-4" />
-          <span>Line(s) {badLines.join(", ")} exceed the remaining quantity on the PO.</span>
+          <span>{t("procurementMod.grn.overReceivedWarning", { lines: badLines.join(", ") })}</span>
         </div>
       )}
 
@@ -328,13 +341,17 @@ function ReceivingEditor({
                 {l.description}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Ordered {l.qty_ordered} {l.uom} · Remaining {remaining} {l.uom}
+                {t("procurementMod.grn.ordered", {
+                  qty: l.qty_ordered,
+                  uom: l.uom,
+                  remaining,
+                })}
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor={`qty-${l.po_line_no}`}>Received</Label>
+                  <Label htmlFor={`qty-${l.po_line_no}`}>{t("procurementMod.grn.colReceived")}</Label>
                   <Input
                     id={`qty-${l.po_line_no}`}
                     type="number"
@@ -351,7 +368,7 @@ function ReceivingEditor({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>Condition</Label>
+                  <Label>{t("procurementMod.grn.colCondition")}</Label>
                   <Select
                     value={l.condition}
                     onValueChange={(v) =>
@@ -365,8 +382,8 @@ function ReceivingEditor({
                     </SelectTrigger>
                     <SelectContent>
                       {GRN_CONDITIONS.map((c) => (
-                        <SelectItem key={c} value={c} className="capitalize">
-                          {c}
+                        <SelectItem key={c} value={c}>
+                          {t(`procurementMod.grn.conditions.${c}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -381,11 +398,11 @@ function ReceivingEditor({
 
               {l.condition !== "ok" && (
                 <div className="space-y-1">
-                  <Label htmlFor={`def-${l.po_line_no}`}>Defect notes</Label>
+                  <Label htmlFor={`def-${l.po_line_no}`}>{t("procurementMod.grn.defectNotesLabel")}</Label>
                   <Textarea
                     id={`def-${l.po_line_no}`}
                     rows={2}
-                    placeholder="Describe the damage or shortfall…"
+                    placeholder={t("procurementMod.grn.defectNotesPlaceholder")}
                     value={l.defect_notes ?? ""}
                     onChange={(e) =>
                       updateLine(l.po_line_no, {
@@ -402,7 +419,9 @@ function ReceivingEditor({
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Photos ({photos.length}/10)</CardTitle>
+          <CardTitle className="text-base">
+            {t("procurementMod.grn.photosLabel", { count: photos.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <PhotoPicker onFile={uploadPhoto} disabled={uploading || photos.length >= 10} />
@@ -417,14 +436,14 @@ function ReceivingEditor({
                     <img src={photoUrls[p]} alt="Delivery" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                      Uploaded
+                      {t("procurementMod.grn.uploaded")}
                     </div>
                   )}
                   <button
                     type="button"
-                    aria-label="Remove photo"
+                    aria-label={t("procurementMod.grn.removePhotoAria")}
                     onClick={() => removePhoto(p)}
-                    className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
+                    className="absolute end-1 top-1 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition group-hover:opacity-100"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -437,30 +456,38 @@ function ReceivingEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Receipt location</CardTitle>
+          <CardTitle className="text-base">{t("procurementMod.grn.receiptLocation")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-3">
           <Button type="button" variant="outline" onClick={captureGeo} disabled={locating}>
-            {locating ? "Locating…" : geo ? "Re-capture GPS" : "Capture GPS"}
+            {locating
+              ? t("procurementMod.grn.locating")
+              : geo
+                ? t("procurementMod.grn.recapture")
+                : t("procurementMod.grn.captureGps")}
           </Button>
           <p className="text-sm text-muted-foreground">
-            {geo
-              ? `${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}${
+            {geo ? (
+              <Num>
+                {`${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}${
                   geo.accuracy_m != null ? ` · ±${geo.accuracy_m} m` : ""
-                }`
-              : "Not captured — the receipt will be saved without a location stamp."}
+                }`}
+              </Num>
+            ) : (
+              t("procurementMod.grn.noGpsCaptured")
+            )}
           </p>
         </CardContent>
       </Card>
 
       <div className="space-y-1">
-        <Label htmlFor="grn-notes">Notes</Label>
+        <Label htmlFor="grn-notes">{t("procurementMod.grn.notesLabel")}</Label>
         <Textarea
           id="grn-notes"
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Anything the site team should know…"
+          placeholder={t("procurementMod.grn.notesPlaceholder")}
         />
       </div>
 
@@ -474,7 +501,7 @@ function ReceivingEditor({
             disabled={saveDraft.isPending}
             onClick={() => saveDraft.mutate(payload)}
           >
-            <Save className="mr-2 h-4 w-4" /> Save draft
+            <Save className="me-2 h-4 w-4" /> {t("procurementMod.grn.saveDraft")}
           </Button>
           <Button
             className="flex-1"
@@ -486,11 +513,11 @@ function ReceivingEditor({
             }
           >
             {confirm.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : (
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
             )}
-            Confirm receipt
+            {t("procurementMod.grn.confirmReceipt")}
           </Button>
         </div>
       </div>
@@ -505,6 +532,7 @@ function LotIdInput({
   lotIds: string[];
   onChange: (next: string[]) => void;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
   const add = () => {
     const v = value.trim();
@@ -518,11 +546,11 @@ function LotIdInput({
   };
   return (
     <div className="space-y-1">
-      <Label>Lot / serial IDs</Label>
+      <Label>{t("procurementMod.grn.lotSerialLabel")}</Label>
       <div className="flex gap-2">
         <Input
           value={value}
-          placeholder="Scan or type…"
+          placeholder={t("procurementMod.grn.lotSerialPlaceholder")}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -532,7 +560,7 @@ function LotIdInput({
           }}
         />
         <Button type="button" variant="outline" onClick={add}>
-          Add
+          {t("procurementMod.grn.add")}
         </Button>
       </div>
       {lotIds.length > 0 && (
@@ -542,7 +570,7 @@ function LotIdInput({
               <span className="font-mono text-xs">{id}</span>
               <button
                 type="button"
-                aria-label={`Remove ${id}`}
+                aria-label={t("procurementMod.grn.removeLot", { id })}
                 onClick={() => onChange(lotIds.filter((x) => x !== id))}
               >
                 <X className="h-3 w-3" />
@@ -556,6 +584,7 @@ function LotIdInput({
 }
 
 function PhotoPicker({ onFile, disabled }: { onFile: (file: File) => void; disabled: boolean }) {
+  const { t } = useI18n();
   const camRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   return (
@@ -590,7 +619,7 @@ function PhotoPicker({ onFile, disabled }: { onFile: (file: File) => void; disab
         disabled={disabled}
         onClick={() => camRef.current?.click()}
       >
-        <Camera className="mr-2 h-4 w-4" /> Camera
+        <Camera className="me-2 h-4 w-4" /> {t("procurementMod.grn.camera")}
       </Button>
       <Button
         type="button"
@@ -599,7 +628,7 @@ function PhotoPicker({ onFile, disabled }: { onFile: (file: File) => void; disab
         disabled={disabled}
         onClick={() => fileRef.current?.click()}
       >
-        <Upload className="mr-2 h-4 w-4" /> Upload
+        <Upload className="me-2 h-4 w-4" /> {t("procurementMod.grn.upload")}
       </Button>
     </div>
   );

@@ -25,6 +25,8 @@ import { InviteVendorDialog } from "@/components/procurement/invite-vendor-dialo
 import { SubmitBidDialog } from "@/components/procurement/submit-bid-dialog";
 import { BidTabulationTable } from "@/components/procurement/bid-tabulation-table";
 import { AwardPanel } from "@/components/procurement/award-panel";
+import { Num } from "@/components/ui/num";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { getRfq, getRfqWriteAccess } from "@/lib/rfq.functions";
 import {
   rfqDetailQueryOptions,
@@ -49,6 +51,7 @@ export const Route = createFileRoute("/_authenticated/procurement/rfqs/$rfqId")(
 });
 
 function RfqDetail() {
+  const { t } = useI18n();
   const { rfqId } = useParams({ from: "/_authenticated/procurement/rfqs/$rfqId" });
   const navigate = useNavigate();
   const [tab, setTab] = useState("lines");
@@ -78,7 +81,7 @@ function RfqDetail() {
     <div className="page-shell">
       <div>
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/rfqs" })}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="me-2 h-4 w-4" /> {t("procurementMod.rfqs.backToList")}
         </Button>
       </div>
 
@@ -90,7 +93,7 @@ function RfqDetail() {
             <RfqStatusBadge status={rfq.status} />
             <span>{rfq.project_name ?? "—"}</span>
             <span>{rfq.currency_code}</span>
-            {rfq.due_date && <span>Due {format(new Date(rfq.due_date), "PP")}</span>}
+            {rfq.due_date && <span>{t("procurementMod.rfqs.dueOn", { date: format(new Date(rfq.due_date), "PP") })}</span>}
           </span>
         }
         actions={
@@ -105,12 +108,12 @@ function RfqDetail() {
               }
               title={
                 changeControl.blocked
-                  ? "Under change control — resolve the open change request first"
+                  ? t("procurementMod.common.changeControlBlocked")
                   : undefined
               }
             >
-              <Send className="mr-2 h-4 w-4" />
-              {issue.isPending ? "Issuing…" : "Issue RFQ"}
+              <Send className="me-2 h-4 w-4" />
+              {issue.isPending ? t("procurementMod.rfqs.issuing") : t("procurementMod.rfqs.issueRfq")}
             </Button>
           ) : undefined
         }
@@ -120,30 +123,30 @@ function RfqDetail() {
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="lines">Lines ({rfq.lines.length})</TabsTrigger>
-          <TabsTrigger value="vendors">Invited ({inviteCount})</TabsTrigger>
-          <TabsTrigger value="bids">Bids ({submittedCount})</TabsTrigger>
-          <TabsTrigger value="tabulation">Tabulation</TabsTrigger>
+          <TabsTrigger value="lines">{t("procurementMod.rfqs.linesTab", { count: rfq.lines.length })}</TabsTrigger>
+          <TabsTrigger value="vendors">{t("procurementMod.rfqs.vendorsTab", { count: inviteCount })}</TabsTrigger>
+          <TabsTrigger value="bids">{t("procurementMod.rfqs.bidsTab", { count: submittedCount })}</TabsTrigger>
+          <TabsTrigger value="tabulation">{t("procurementMod.rfqs.tabulationTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lines" className="pt-4">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16">#</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Spec</TableHead>
-                <TableHead className="w-24">Qty</TableHead>
-                <TableHead className="w-20">UoM</TableHead>
-                <TableHead className="w-32">Target</TableHead>
-                <TableHead className="w-36">Site need</TableHead>
+                <TableHead className="w-16">{t("procurementMod.common.hash")}</TableHead>
+                <TableHead>{t("procurementMod.common.description")}</TableHead>
+                <TableHead>{t("procurementMod.common.spec")}</TableHead>
+                <TableHead className="w-24">{t("procurementMod.common.qtyShort")}</TableHead>
+                <TableHead className="w-20">{t("procurementMod.common.uom")}</TableHead>
+                <TableHead className="w-32">{t("procurementMod.rfqs.colTarget")}</TableHead>
+                <TableHead className="w-36">{t("procurementMod.rfqs.colSiteNeed")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rfq.lines.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="border-0 bg-transparent">
-                    <EmptyState title="No lines on this RFQ" compact />
+                    <EmptyState title={t("procurementMod.rfqs.noLines")} compact />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -152,9 +155,13 @@ function RfqDetail() {
                     <TableCell>{l.line_no}</TableCell>
                     <TableCell className="font-medium">{l.description}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{l.spec ?? "—"}</TableCell>
-                    <TableCell>{l.qty}</TableCell>
+                    <TableCell>
+                      <Num>{l.qty}</Num>
+                    </TableCell>
                     <TableCell>{l.uom}</TableCell>
-                    <TableCell>{l.target_price != null ? l.target_price : "—"}</TableCell>
+                    <TableCell>
+                      {l.target_price != null ? <Num>{l.target_price}</Num> : "—"}
+                    </TableCell>
                     <TableCell>
                       {l.site_need_date ? format(new Date(l.site_need_date), "PP") : "—"}
                     </TableCell>
@@ -173,7 +180,7 @@ function RfqDetail() {
                 onInvite={(ids) => invite.mutateAsync(ids)}
                 trigger={
                   <Button>
-                    <MailPlus className="mr-2 h-4 w-4" /> Invite vendors
+                    <MailPlus className="me-2 h-4 w-4" /> {t("procurementMod.rfqs.inviteVendors")}
                   </Button>
                 }
               />
@@ -182,9 +189,9 @@ function RfqDetail() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-32">Invited</TableHead>
+                <TableHead>{t("procurementMod.common.vendor")}</TableHead>
+                <TableHead>{t("procurementMod.common.status")}</TableHead>
+                <TableHead className="w-32">{t("procurementMod.rfqs.colInvited")}</TableHead>
                 <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
@@ -192,7 +199,7 @@ function RfqDetail() {
               {bids.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="border-0 bg-transparent">
-                    <EmptyState title="No vendors invited yet" compact />
+                    <EmptyState title={t("procurementMod.rfqs.noVendorsInvited")} compact />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -210,7 +217,7 @@ function RfqDetail() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          aria-label={`Remove ${b.vendor_name}`}
+                          aria-label={t("procurementMod.rfqs.removeVendor", { name: b.vendor_name })}
                           onClick={() => removeInvite.mutate(b.id)}
                           disabled={removeInvite.isPending}
                         >
@@ -227,17 +234,17 @@ function RfqDetail() {
 
         <TabsContent value="bids" className="pt-4">
           {bids.length === 0 ? (
-            <EmptyState title="No bids submitted yet" />
+            <EmptyState title={t("procurementMod.rfqs.noBids")} />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Lead</TableHead>
-                  <TableHead>Validity</TableHead>
-                  <TableHead>Submitted</TableHead>
+                  <TableHead>{t("procurementMod.common.vendor")}</TableHead>
+                  <TableHead>{t("procurementMod.common.status")}</TableHead>
+                  <TableHead>{t("procurementMod.rfqs.colTotal")}</TableHead>
+                  <TableHead>{t("procurementMod.rfqs.colLead")}</TableHead>
+                  <TableHead>{t("procurementMod.rfqs.colValidity")}</TableHead>
+                  <TableHead>{t("procurementMod.rfqs.colSubmitted")}</TableHead>
                   <TableHead className="w-40" />
                 </TableRow>
               </TableHeader>
@@ -249,9 +256,13 @@ function RfqDetail() {
                       <RfqBidStatusBadge status={b.status} />
                     </TableCell>
                     <TableCell>
-                      {b.total_price != null
-                        ? `${b.currency_code ?? rfq.currency_code} ${b.total_price.toFixed(2)}`
-                        : "—"}
+                      {b.total_price != null ? (
+                        <Num>
+                          {b.currency_code ?? rfq.currency_code} {b.total_price.toFixed(2)}
+                        </Num>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell>{b.lead_time_days ?? "—"}</TableCell>
                     <TableCell>
@@ -260,7 +271,7 @@ function RfqDetail() {
                     <TableCell className="text-sm text-muted-foreground">
                       {b.submitted_at ? format(new Date(b.submitted_at), "PP") : "—"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       {canAuthor &&
                         rfq.status === "issued" &&
                         b.status !== "awarded" &&
@@ -272,7 +283,7 @@ function RfqDetail() {
                             onSubmit={(input) => submitBid.mutateAsync(input)}
                             trigger={
                               <Button size="sm" variant="outline">
-                                Record bid
+                                {t("procurementMod.rfqs.recordBid")}
                               </Button>
                             }
                           />
