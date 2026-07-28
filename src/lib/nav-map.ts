@@ -122,6 +122,14 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: LayoutDashboard,
         alwaysVisible: true,
       },
+      {
+        moduleKey: "admin",
+        label: "Portfolio",
+        url: "/portfolio",
+        icon: Library,
+        alwaysVisible: true,
+        hideFromExternalViewers: true,
+      },
     ],
   },
   {

@@ -227,7 +227,8 @@
     "Webhooks": "Webhooks",
     "API docs": "API docs",
     "Profile": "Profile",
-    "Company": "Company"
+    "Company": "Company",
+    "Portfolio": "Portfolio"
   },
   "chrome": {
     "brand": "GridMind EPC",
