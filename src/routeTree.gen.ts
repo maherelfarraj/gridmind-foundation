@@ -130,6 +130,7 @@ import { Route as AuthenticatedAdminOpsAlertsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
+import { Route as VendorVendorIdSubcontractsIndexRouteImport } from './routes/vendor.$vendorId.subcontracts.index'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
 import { Route as AuthenticatedQaqcInspectionsIndexRouteImport } from './routes/_authenticated/qaqc.inspections.index'
@@ -943,6 +944,12 @@ const AuthenticatedAdminTenantsRouteRoute =
     id: '/tenants',
     path: '/tenants',
     getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const VendorVendorIdSubcontractsIndexRoute =
+  VendorVendorIdSubcontractsIndexRouteImport.update({
+    id: '/subcontracts/',
+    path: '/subcontracts/',
+    getParentRoute: () => VendorVendorIdRoute,
   } as any)
 const AuthenticatedQaqcPunchIndexRoute =
   AuthenticatedQaqcPunchIndexRouteImport.update({
@@ -1933,6 +1940,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts/': typeof VendorVendorIdSubcontractsIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2171,6 +2179,7 @@ export interface FileRoutesByTo {
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts': typeof VendorVendorIdSubcontractsIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2422,6 +2431,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts/': typeof VendorVendorIdSubcontractsIndexRoute
   '/_authenticated/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/_authenticated/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/_authenticated/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2674,6 +2684,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections/'
     | '/qaqc/ncrs/'
     | '/qaqc/punch/'
+    | '/vendor/$vendorId/subcontracts/'
     | '/om/scada/plants/$projectId'
     | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
@@ -2912,6 +2923,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections'
     | '/qaqc/ncrs'
     | '/qaqc/punch'
+    | '/vendor/$vendorId/subcontracts'
     | '/om/scada/plants/$projectId'
     | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
@@ -3162,6 +3174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/inspections/'
     | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
+    | '/vendor/$vendorId/subcontracts/'
     | '/_authenticated/om/scada/plants/$projectId'
     | '/_authenticated/procurement/subcontracts/claims/$claimId'
     | '/_authenticated/projects/$projectId/commissioning/certificates'
@@ -4089,6 +4102,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/tenants'
       preLoaderRoute: typeof AuthenticatedAdminTenantsRouteRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/vendor/$vendorId/subcontracts/': {
+      id: '/vendor/$vendorId/subcontracts/'
+      path: '/subcontracts'
+      fullPath: '/vendor/$vendorId/subcontracts/'
+      preLoaderRoute: typeof VendorVendorIdSubcontractsIndexRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/_authenticated/qaqc/punch/': {
       id: '/_authenticated/qaqc/punch/'
@@ -5742,6 +5762,7 @@ interface VendorVendorIdRouteChildren {
   VendorVendorIdInvoicesRoute: typeof VendorVendorIdInvoicesRoute
   VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
   VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
+  VendorVendorIdSubcontractsIndexRoute: typeof VendorVendorIdSubcontractsIndexRoute
 }
 
 const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
@@ -5750,6 +5771,7 @@ const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
   VendorVendorIdInvoicesRoute: VendorVendorIdInvoicesRoute,
   VendorVendorIdPosRoute: VendorVendorIdPosRoute,
   VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
+  VendorVendorIdSubcontractsIndexRoute: VendorVendorIdSubcontractsIndexRoute,
 }
 
 const VendorVendorIdRouteWithChildren = VendorVendorIdRoute._addFileChildren(
