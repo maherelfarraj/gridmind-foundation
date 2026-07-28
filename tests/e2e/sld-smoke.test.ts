@@ -268,7 +268,6 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
     } as never);
     expect(reviewErr, reviewErr?.message).toBeNull();
 
-
     await client.rpc("write_audit_log", {
       p_action: "sld.status_changed",
       p_entity: "sld_drawings",
@@ -310,7 +309,6 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
       .single();
     expect(apprErr, apprErr?.message).toBeNull();
     expect(approved!.status).toBe("approved");
-
 
     await client.rpc("write_audit_log", {
       p_action: "sld.approved",
