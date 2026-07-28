@@ -18,6 +18,7 @@ import {
 } from "@/lib/invites.functions";
 import { linkAcceptedPortalInvites } from "@/lib/portal.functions";
 import { acceptVendorPortalInvites } from "@/lib/vendor-portal.functions";
+import { resolveLandingRoute } from "@/lib/portal-landing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
