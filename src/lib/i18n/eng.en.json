@@ -488,5 +488,36 @@
    "planning": "Planning",
    "commissioning": "Commissioning"
   }
+ },
+ "docSearch": {
+  "title": "Document search",
+  "subtitle": "Search the controlled document register",
+  "scopeLabel": "Controlled documents",
+  "scopeNote": "Only registered controlled documents are searched — not every file in storage. Text-based PDFs are searched by content; images and CAD files are matched on metadata only.",
+  "arabicNote": "Arabic search matches exact words (no root stemming) — a known text-search limitation.",
+  "placeholder": "Search by document number, title, tag or content…",
+  "searchAction": "Search",
+  "clear": "Clear",
+  "minLength": "Type at least 2 characters",
+  "noResults": "No results",
+  "noResultsHint": "Try a document number, a tag, or fewer words.",
+  "results_one": "{{count}} document",
+  "results_other": "{{count}} documents",
+  "recent": "Recent searches",
+  "filters": "Filters",
+  "project": "Project",
+  "docType": "Type",
+  "status": "Status",
+  "discipline": "Discipline",
+  "retentionClass": "Retention class",
+  "dateFrom": "Registered from",
+  "dateTo": "Registered to",
+  "all": "All",
+  "contentIndexed": "Content indexed",
+  "metadataOnly": "Metadata only",
+  "revision": "Rev {{rev}}",
+  "openDocument": "Open",
+  "failed": "Search failed",
+  "searching": "Searching…"
  }
 }
