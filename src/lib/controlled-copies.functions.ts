@@ -80,12 +80,12 @@ export const issueControlledCopy = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     const { data: row, error } = await context.supabase.rpc("issue_controlled_copy", {
       p_document_id: data.documentId,
-      p_holder_user_id: data.holderUserId ?? null,
-      p_holder_contact_id: data.holderContactId ?? null,
-      p_holder_name: data.holderName ?? null,
-      p_location: data.location ?? null,
-      p_notes: data.notes ?? null,
-      p_issue_date: data.issueDate ?? null,
+      p_holder_user_id: data.holderUserId ?? undefined,
+      p_holder_contact_id: data.holderContactId ?? undefined,
+      p_holder_name: data.holderName ?? undefined,
+      p_location: data.location ?? undefined,
+      p_notes: data.notes ?? undefined,
+      p_issue_date: data.issueDate ?? undefined,
     });
     if (error) {
       throw Object.assign(new Error(error.message), { details: error.details });
@@ -109,7 +109,7 @@ export const recallControlledCopy = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase.rpc("recall_controlled_copy", {
       p_copy_id: data.copyId,
       p_disposition: data.disposition,
-      p_notes: data.notes ?? null,
+      p_notes: data.notes ?? undefined,
     });
     if (error) throw error;
     return row as unknown as ControlledCopyRow;
