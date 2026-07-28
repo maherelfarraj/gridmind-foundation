@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Num } from "@/components/ui/num";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
@@ -25,6 +26,7 @@ import {
 } from "@/components/vendor-portal/propose-delivery-dialog";
 import { useProposeDelivery, useVendorLineEtas } from "@/lib/vendor-portal-propose";
 import { formatDate } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   isVendorProposedNote,
   parsePoLines,
@@ -53,6 +55,7 @@ export const Route = createFileRoute("/vendor/$vendorId/deliveries")({
 });
 
 function VendorDeliveries() {
+  const { t } = useI18n();
   const { vendorId } = Route.useParams();
   const posFn = useServerFn(getVendorPortalPos);
   const membershipsFn = useServerFn(listMyVendorMemberships);
@@ -79,19 +82,19 @@ function VendorDeliveries() {
     return code === "vendor_portal_access_denied" ? (
       <VendorStateCard
         icon={Lock}
-        title="Access expired or revoked"
-        description="Your access to this vendor account is no longer active. Please contact your EPC representative."
+        title={t("portalMod.deliveries.accessExpiredTitle")}
+        description={t("portalMod.deliveries.accessExpiredDesc")}
       />
     ) : code?.endsWith("_not_exposed") ? (
       <VendorStateCard
         icon={Lock}
-        title="Not shared with you"
-        description="Your EPC contact hasn’t shared delivery scheduling with your account."
+        title={t("portalMod.deliveries.notSharedTitle")}
+        description={t("portalMod.deliveries.notSharedDesc")}
       />
     ) : (
       <VendorStateCard
-        title="Couldn’t load deliveries"
-        description="Something went wrong. Please try again."
+        title={t("portalMod.deliveries.couldntLoadTitle")}
+        description={t("portalMod.deliveries.couldntLoadDesc")}
         onRetry={() => void pos.refetch()}
       />
     );
@@ -100,8 +103,8 @@ function VendorDeliveries() {
     return (
       <VendorStateCard
         icon={Lock}
-        title="Not shared with you"
-        description="Your EPC contact hasn’t shared delivery scheduling with your account."
+        title={t("portalMod.deliveries.notSharedTitle")}
+        description={t("portalMod.deliveries.notSharedDesc")}
       />
     );
   }
@@ -111,13 +114,13 @@ function VendorDeliveries() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Delivery scheduling"
-        description="Propose delivery dates for your open purchase order lines. Procurement confirms each ETA."
+        title={t("portalMod.deliveries.title")}
+        description={t("portalMod.deliveries.description")}
         actions={
           <Button variant="outline" size="sm" asChild>
             <Link to="/vendor/$vendorId" params={{ vendorId }}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Dashboard
+              <ArrowLeft className="me-2 h-4 w-4" />
+              {t("portalMod.deliveries.backToDashboard")}
             </Link>
           </Button>
         }
@@ -126,8 +129,8 @@ function VendorDeliveries() {
       {openPos.length === 0 ? (
         <EmptyState
           icon={Truck}
-          title="No open purchase orders"
-          description="Delivery scheduling appears here once a purchase order is issued to you."
+          title={t("portalMod.deliveries.emptyTitle")}
+          description={t("portalMod.deliveries.emptyDesc")}
         />
       ) : (
         <div className="space-y-4">
@@ -162,6 +165,7 @@ function PoDeliverySection({
   etaByKey: Map<string, VendorLineEtaRow>;
   onPropose: () => void;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(true);
   const lines = parsePoLines(po.lines);
 
@@ -169,20 +173,22 @@ function PoDeliverySection({
     <Card>
       <Collapsible open={open} onOpenChange={setOpen}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <CollapsibleTrigger className="flex items-center gap-2 text-left">
+          <CollapsibleTrigger className="flex items-center gap-2 text-start">
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}`}
+              className={`h-4 w-4 transition-transform rtl:-scale-x-100 ${open ? "" : "-rotate-90"}`}
               aria-hidden
             />
             <span className="font-mono text-sm">{po.po_number}</span>
             <span className="text-xs text-muted-foreground">
-              {lines.length} line{lines.length === 1 ? "" : "s"} · issued{" "}
-              {po.issued_at ? formatDate(po.issued_at) : "—"}
+              {t(`portalMod.deliveries.lineCount`, { count: lines.length })}
+              {t("portalMod.deliveries.issuedOn", {
+                date: po.issued_at ? formatDate(po.issued_at) : "—",
+              })}
             </span>
           </CollapsibleTrigger>
           <Button size="sm" onClick={onPropose} disabled={lines.length === 0}>
-            <CalendarClock className="mr-2 h-4 w-4" />
-            Propose delivery
+            <CalendarClock className="me-2 h-4 w-4" />
+            {t("portalMod.deliveries.proposeDelivery")}
           </Button>
         </div>
         <CollapsibleContent>
@@ -190,12 +196,12 @@ function PoDeliverySection({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16">Line</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Qty</TableHead>
-                  <TableHead>Site need</TableHead>
-                  <TableHead>Current ETA</TableHead>
-                  <TableHead>Confirmation</TableHead>
+                  <TableHead className="w-16">{t("portalMod.deliveries.colLine")}</TableHead>
+                  <TableHead>{t("portalMod.deliveries.colDescription")}</TableHead>
+                  <TableHead>{t("portalMod.deliveries.colQty")}</TableHead>
+                  <TableHead>{t("portalMod.deliveries.colSiteNeed")}</TableHead>
+                  <TableHead>{t("portalMod.deliveries.colCurrentEta")}</TableHead>
+                  <TableHead>{t("portalMod.deliveries.colConfirmation")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -211,7 +217,7 @@ function PoDeliverySection({
                         ) : null}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {l.quantity}
+                        <Num>{l.quantity}</Num>
                         {l.uom ? ` ${l.uom}` : ""}
                       </TableCell>
                       <TableCell className="text-xs">
