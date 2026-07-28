@@ -275,7 +275,19 @@
       "closed": "أغلق",
       "exported": "صدّر",
       "invited": "دعا",
-      "blocked": "مُنع على"
+      "blocked": "مُنع على",
+      "create": "أنشأ",
+      "update": "حدّث",
+      "approve": "اعتمد",
+      "reject": "رفض",
+      "send": "أرسل",
+      "record": "سجّل",
+      "eta_confirmed": "أكّد موعد الوصول لـ",
+      "eta_countered": "اقترح موعد وصول بديل لـ",
+      "eta_confirm_denied": "مُنع من تأكيد موعد الوصول لـ",
+      "pay_blocked": "مُنع من صرف الدفعة لـ",
+      "invoice_uploaded": "رفع فاتورة لـ",
+      "three_way_matched": "طابق ثلاثياً"
     },
     "entities": {
       "projects": "مشروع",

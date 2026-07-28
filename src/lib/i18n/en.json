@@ -275,7 +275,19 @@
       "closed": "closed",
       "exported": "exported",
       "invited": "invited",
-      "blocked": "was blocked on"
+      "blocked": "was blocked on",
+      "create": "created",
+      "update": "updated",
+      "approve": "approved",
+      "reject": "rejected",
+      "send": "sent",
+      "record": "recorded",
+      "eta_confirmed": "confirmed the ETA on",
+      "eta_countered": "counter-proposed the ETA on",
+      "eta_confirm_denied": "was denied ETA confirmation on",
+      "pay_blocked": "was blocked from paying",
+      "invoice_uploaded": "uploaded an invoice for",
+      "three_way_matched": "three-way matched"
     },
     "entities": {
       "projects": "Project",
