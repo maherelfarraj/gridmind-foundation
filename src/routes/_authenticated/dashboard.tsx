@@ -46,7 +46,7 @@ function DashboardPage() {
       value: punch?.total ?? 0,
       hint: punch ? `A ${punch.a} · B ${punch.b} · C ${punch.c}` : "Items awaiting close-out",
       icon: HardHat,
-      to: "/qaqc/punchlist",
+      to: "/qaqc/punch",
     },
     {
       label: "In transit",
