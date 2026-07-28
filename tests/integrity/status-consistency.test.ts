@@ -55,6 +55,14 @@ function report(cls: string, found: Divergence[]) {
 
 // Scope: every live tenant (GSI + Sandbox today). Company name is carried in
 // the output so the divergence table is readable per tenant.
+// Fixture tenants are re-created by the RLS/E2E suites on every run and are
+// deliberately left in odd states, so the CI gate scopes to real tenants.
+// Set INTEGRITY_ALL_TENANTS=1 to audit fixtures too.
+const REAL_ONLY =
+  process.env.INTEGRITY_ALL_TENANTS === "1"
+    ? ""
+    : ` and c.name !~ '^(E2E|SLD E2E|P-?[0-9]+ )' `;
+
 const CO = "join public.companies c on c.id = %T%.company_id";
 
 // ---------------------------------------------------------------------------
@@ -70,7 +78,7 @@ select c.name, r.po_ref, r.expected, r.actual from (
          b.status::text as actual
   from public.rfq_bids b
 ) r ${CO.replace(/%T%/g, "r")}
-where (r.expected = 'awarded') <> (r.actual = 'awarded')
+where 1=1 ${REAL_ONLY} and (r.expected = 'awarded') <> (r.actual = 'awarded')
 order by 1, 2`;
 
 // ---------------------------------------------------------------------------
@@ -87,7 +95,7 @@ select c.name, r.ref, r.expected, r.actual from (
   from public.drawing_register d
   left join public.drawing_revisions rev on rev.id = d.current_revision_id
 ) r ${CO.replace(/%T%/g, "r")}
-where r.expected is distinct from r.actual
+where 1=1 ${REAL_ONLY} and r.expected is distinct from r.actual
 order by 1, 2`;
 
 const C2_LOCK = `
@@ -101,7 +109,7 @@ select c.name, r.ref, r.expected, r.actual from (
          case when d.locked then 'locked' else 'unlocked' end as actual
   from public.drawing_register d
 ) r ${CO.replace(/%T%/g, "r")}
-where r.actual = 'locked' and r.expected = 'unlocked'
+where 1=1 ${REAL_ONLY} and r.actual = 'locked' and r.expected = 'unlocked'
 order by 1, 2`;
 
 // ---------------------------------------------------------------------------
@@ -116,7 +124,7 @@ select c.name, r.ref, r.expected, r.actual from (
   from public.sld_drawings s
   join public.drawing_register dr on dr.id = s.drawing_register_id
 ) r ${CO.replace(/%T%/g, "r")}
-where r.expected is distinct from r.actual
+where 1=1 ${REAL_ONLY} and r.expected is distinct from r.actual
 order by 1, 2`;
 
 // ---------------------------------------------------------------------------
@@ -140,7 +148,7 @@ select c.name, r.ref, r.expected, r.actual from (
   from public.${table} t
   join public.approval_instances ai on ai.id = t.approval_instance_id
 ) r ${CO.replace(/%T%/g, "r")}
-where (r.expected = 'approved' and r.actual not in (${app}))
+where 1=1 ${REAL_ONLY} and (r.expected = 'approved' and r.actual not in (${app}))
    or (r.expected = 'rejected' and r.actual not in (${rej}))
 order by 1, 2`;
 }
@@ -182,7 +190,7 @@ select c.name, r.ref, r.expected, r.actual from (
          p.status::text as actual
   from public.pay_applications p
 ) r ${CO.replace(/%T%/g, "r")}
-where (r.expected = 'approved' and r.actual not in ('approved','paid','invoiced','closed'))
+where 1=1 ${REAL_ONLY} and (r.expected = 'approved' and r.actual not in ('approved','paid','invoiced','closed'))
    or (r.expected = 'open' and r.actual in ('approved','paid'))
 order by 1, 2`;
 
@@ -208,7 +216,7 @@ select c.name, r.ref, r.expected, r.actual from (
   ) pay on true
   where i.status not in ('draft', 'cancelled', 'disputed')
 ) r ${CO.replace(/%T%/g, "r")}
-where (r.expected = 'paid' and r.actual <> 'paid')
+where 1=1 ${REAL_ONLY} and (r.expected = 'paid' and r.actual <> 'paid')
    or (r.expected = 'partially_paid' and r.actual not in ('partially_paid','paid'))
    or (r.expected = 'unpaid' and r.actual in ('paid','partially_paid'))
 order by 1, 2`;
@@ -225,7 +233,7 @@ select c.name, r.ref, r.expected, r.actual from (
     where p.invoice_id = i.id and p.record_status <> 'voided'
   ) pay on true
 ) r ${CO.replace(/%T%/g, "r")}
-where r.expected <> r.actual
+where 1=1 ${REAL_ONLY} and r.expected <> r.actual
 order by 1, 2`;
 
 // ---------------------------------------------------------------------------
@@ -239,7 +247,7 @@ select c.name, r.ref, r.expected, r.actual from (
          l.status::text as actual
   from public.leave_requests l
 ) r ${CO.replace(/%T%/g, "r")}
-where (r.expected = 'decided' and r.actual in ('draft','submitted','pending'))
+where 1=1 ${REAL_ONLY} and (r.expected = 'decided' and r.actual in ('draft','submitted','pending'))
    or (r.expected = 'pending' and r.actual in ('approved','rejected'))
 order by 1, 2`;
 
