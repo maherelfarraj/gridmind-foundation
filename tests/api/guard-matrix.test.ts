@@ -333,8 +333,6 @@ describe.skipIf(!canRunHttp)(`P-131 HTTP guard matrix (server enforce=${SERVER_M
     }
   });
 
-
-
   // Row 9: Tampered body — signature over body A, actual bytes B.
   it("row 9: tampered body (valid ts, wrong sig) → blocked or warned", async () => {
     const body = '{"real":true}';

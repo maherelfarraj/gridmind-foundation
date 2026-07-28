@@ -82,12 +82,10 @@ describe("vendor portal RLS (offline policy parse)", () => {
       expect(p.body.replace(/\s/g, "").toLowerCase(), `${p.action} policy is not deny-all`).toMatch(
         /(withcheck|using)\(false\)/,
       );
-
     }
     expect(sql).toMatch(/grant select on public\.vendor_portal_events to authenticated/i);
     expect(sql).not.toMatch(/grant[\w,\s]*insert[\w,\s]*on public\.vendor_portal_events/i);
   });
-
 
   it("grants nothing to anon on either table", () => {
     expect(sql).not.toMatch(/grant[\s\S]{0,60}on public\.vendor_portal_\w+ to [^;]*anon/i);

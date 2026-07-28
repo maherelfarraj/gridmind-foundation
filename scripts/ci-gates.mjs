@@ -24,7 +24,9 @@ const GATES = [
 const bar = (ch) => ch.repeat(72);
 
 if (!process.env.PGHOST) {
-  console.error(`\n${bar("=")}\nCI GATES: FAILED — no database connection (PGHOST unset).\nThe policy lint and status-consistency harness are non-skippable.\n${bar("=")}\n`);
+  console.error(
+    `\n${bar("=")}\nCI GATES: FAILED — no database connection (PGHOST unset).\nThe policy lint and status-consistency harness are non-skippable.\n${bar("=")}\n`,
+  );
   process.exit(1);
 }
 

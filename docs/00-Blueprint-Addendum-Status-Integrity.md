@@ -16,7 +16,7 @@ Every derived status column MUST satisfy all four legs:
 
 **(a) DB-maintained via sync trigger.**
 The column is recomputed from its source-of-truth rows by an `AFTER INSERT OR
-UPDATE OR DELETE` trigger on the *source* table (and, where the entity can be
+UPDATE OR DELETE` trigger on the _source_ table (and, where the entity can be
 created already-decided, on the entity itself). The recompute function is
 `SECURITY DEFINER`, `SET search_path`, and sets the engine marker before
 writing.
@@ -36,7 +36,7 @@ columns add a new class in the same PR — a derived column without a class is
 an incomplete change.
 
 **(d) Exempt transitions enumerated per entity.**
-Manual, human-initiated transitions that do *not* mirror another table (draft
+Manual, human-initiated transitions that do _not_ mirror another table (draft
 → submitted, submitted → withdrawn, archive) stay open, are listed below per
 entity, and are performed only through their governed server functions.
 
@@ -47,10 +47,10 @@ entity, and are performed only through their governed server functions.
 Both run inside `bun run test:all` as named, non-skippable gates
 (`scripts/ci-gates.mjs`). Missing DB env is a **failure**, not a skip.
 
-| Gate | Command | Threshold |
-| --- | --- | --- |
-| RLS policy lint | `bun run test:policy-lint` | 0 flags |
-| Status-consistency harness | `bun run test:integrity` | 13/13 classes at 0 |
+| Gate                       | Command                    | Threshold          |
+| -------------------------- | -------------------------- | ------------------ |
+| RLS policy lint            | `bun run test:policy-lint` | 0 flags            |
+| Status-consistency harness | `bun run test:integrity`   | 13/13 classes at 0 |
 
 Scope: real tenants (GSI + Sandbox) by default;
 `INTEGRITY_ALL_TENANTS=1` widens the sweep to every tenant including fixtures.
@@ -60,21 +60,21 @@ Both scopes must be at 0 before a release.
 
 ## The 13 classes and their exemptions
 
-| # | Entity · column | Source of truth | Exempt (manual) transitions |
-| --- | --- | --- | --- |
-| 1 | `rfq_bids.status` | `rfq_line_awards` | submit, withdraw, disqualify |
-| 2 | `drawing_register.current_status` / `locked` | latest `drawing_revisions` + released `ifc_releases` | register create, `current_revision_id` re-point |
-| 3 | `sld_drawings.status` / `locked` | approval rows + `drawing_register` lock (`sld_apply_status`) | draft create, submit for review |
-| 4 | `purchase_orders.status` | `approval_instances` (settler) | draft, submit, cancel, close |
-| 4 | `proposals.status` | `approval_instances` via `approval_instance_id` | draft, submit, withdraw, expire |
-| 4 | `pay_applications.status` | `approval_instances` (`pay_app_decide`) | draft, submit, withdraw |
-| 4 | `estimates.status` | `approval_instances` | draft, submit, supersede |
-| 4 | `esg_reports.status` | `approval_instances` | draft, submit |
-| 5 | `invoices.status` / `payment_status` | `payments` ledger | draft, issue, void |
-| 6 | approval-decided mirrors (all of the above) | `decide_approval` engine only | — |
-| 7 | `timesheets.status` | approval chain instance | draft, submit, recall-before-review |
-| 7 | `leave_requests.status` | approval chain (`leave_decide`) | draft, submit, cancel-before-decision |
-| — | `scada_alarms.status` | acknowledgement/clear events | manual acknowledge |
+| #   | Entity · column                              | Source of truth                                              | Exempt (manual) transitions                     |
+| --- | -------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| 1   | `rfq_bids.status`                            | `rfq_line_awards`                                            | submit, withdraw, disqualify                    |
+| 2   | `drawing_register.current_status` / `locked` | latest `drawing_revisions` + released `ifc_releases`         | register create, `current_revision_id` re-point |
+| 3   | `sld_drawings.status` / `locked`             | approval rows + `drawing_register` lock (`sld_apply_status`) | draft create, submit for review                 |
+| 4   | `purchase_orders.status`                     | `approval_instances` (settler)                               | draft, submit, cancel, close                    |
+| 4   | `proposals.status`                           | `approval_instances` via `approval_instance_id`              | draft, submit, withdraw, expire                 |
+| 4   | `pay_applications.status`                    | `approval_instances` (`pay_app_decide`)                      | draft, submit, withdraw                         |
+| 4   | `estimates.status`                           | `approval_instances`                                         | draft, submit, supersede                        |
+| 4   | `esg_reports.status`                         | `approval_instances`                                         | draft, submit                                   |
+| 5   | `invoices.status` / `payment_status`         | `payments` ledger                                            | draft, issue, void                              |
+| 6   | approval-decided mirrors (all of the above)  | `decide_approval` engine only                                | —                                               |
+| 7   | `timesheets.status`                          | approval chain instance                                      | draft, submit, recall-before-review             |
+| 7   | `leave_requests.status`                      | approval chain (`leave_decide`)                              | draft, submit, cancel-before-decision           |
+| —   | `scada_alarms.status`                        | acknowledgement/clear events                                 | manual acknowledge                              |
 
 ---
 
@@ -101,7 +101,9 @@ that creates a tenant now tears it down through the audited purge path:
 
 ```ts
 import { purgeFixtureTenants } from "../helpers/fixture-teardown";
-afterAll(async () => { await purgeFixtureTenants(svc, [companyId]); });
+afterAll(async () => {
+  await purgeFixtureTenants(svc, [companyId]);
+});
 ```
 
 `public.fixture_purge_tenants(uuid[])` is `SECURITY DEFINER`, service-role
