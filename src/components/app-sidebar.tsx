@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronRight } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { translateNavLabel } from "@/lib/i18n/nav-label";
+
 import { getCurrentUserRoles } from "@/lib/user-roles.functions";
 import { listModuleAccess } from "@/lib/modules.functions";
 import { getMyPendingCount } from "@/lib/approvals.inbox.functions";
@@ -50,6 +53,7 @@ function resolveUrl(url: string, projectId: string | null): string {
 
 export function AppSidebar() {
   const { state, isMobile } = useSidebar();
+  const { t, dir } = useI18n();
   const collapsed = state === "collapsed" && !isMobile;
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const visibleModules = getVisibleModules(DEV_SESSION_CONTEXT.role, DEV_SESSION_CONTEXT.planTier);
@@ -210,10 +214,10 @@ export function AppSidebar() {
                     const Icon = item.icon;
                     return (
                       <SidebarMenuItem key={`nav:${group.key}:${url}:${item.label}`}>
-                        <SidebarMenuButton asChild isActive={isActive(url)} tooltip={item.label}>
+                        <SidebarMenuButton asChild isActive={isActive(url)} tooltip={translateNavLabel(t, item.label)}>
                           <a href={url} className="flex items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
-                            <span className="truncate">{item.label}</span>
+                            <span className="truncate">{translateNavLabel(t, item.label)}</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -254,16 +258,16 @@ export function AppSidebar() {
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={groupActive}
-                          tooltip={group.label}
+                          tooltip={translateNavLabel(t, group.label)}
                           aria-expanded={open}
                           className="focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                         >
                           <GroupIcon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{group.label}</span>
+                          <span className="truncate">{translateNavLabel(t, group.label)}</span>
                           {count > 0 && (
                             <Badge
                               variant="secondary"
-                              className="ml-auto h-5 min-w-5 justify-center px-1.5 text-xs"
+                              className="ms-auto h-5 min-w-5 justify-center px-1.5 text-xs"
                             >
                               {count > 99 ? "99+" : count}
                             </Badge>
@@ -271,9 +275,9 @@ export function AppSidebar() {
                           <ChevronRight
                             aria-hidden="true"
                             className={cn(
-                              "h-4 w-4 shrink-0 transition-transform",
-                              count > 0 ? "ml-1" : "ml-auto",
-                              open && "rotate-90",
+                              "h-4 w-4 shrink-0 transition-transform rtl:rotate-180",
+                              count > 0 ? "ms-1" : "ms-auto",
+                              open && "rotate-90 rtl:rotate-90",
                             )}
                           />
                         </SidebarMenuButton>
@@ -289,11 +293,11 @@ export function AppSidebar() {
                                 <SidebarMenuSubButton asChild isActive={isActive(url)}>
                                   <a href={url} className="flex items-center gap-2">
                                     <Icon className="h-4 w-4 shrink-0" />
-                                    <span className="truncate">{item.label}</span>
+                                    <span className="truncate">{translateNavLabel(t, item.label)}</span>
                                     {itemCount > 0 && (
                                       <Badge
                                         variant="secondary"
-                                        className="ml-auto h-5 min-w-5 justify-center px-1.5 text-xs"
+                                        className="ms-auto h-5 min-w-5 justify-center px-1.5 text-xs"
                                       >
                                         {itemCount > 99 ? "99+" : itemCount}
                                       </Badge>
@@ -335,20 +339,21 @@ function CollapsedGroup({
   isActive: (url: string) => boolean;
 }) {
   const GroupIcon = group.icon;
+  const { t, dir } = useI18n();
   return (
     <SidebarMenuItem>
       <HoverCard openDelay={80} closeDelay={120}>
         <HoverCardTrigger asChild>
-          <SidebarMenuButton isActive={groupActive} aria-label={group.label} className="relative">
+          <SidebarMenuButton isActive={groupActive} aria-label={translateNavLabel(t, group.label)} className="relative">
             <GroupIcon className="h-4 w-4 shrink-0" />
-            <span className="truncate">{group.label}</span>
+            <span className="truncate">{translateNavLabel(t, group.label)}</span>
             {count > 0 && (
-              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
+              <span className="absolute end-1 top-1 h-2 w-2 rounded-full bg-destructive" />
             )}
           </SidebarMenuButton>
         </HoverCardTrigger>
-        <HoverCardContent side="right" align="start" className="w-56 p-1">
-          <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{group.label}</p>
+        <HoverCardContent side={dir === "rtl" ? "left" : "right"} align="start" className="w-56 p-1">
+          <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{translateNavLabel(t, group.label)}</p>
           <ul className="grid gap-0.5">
             {items.map((item) => {
               const url = resolveUrl(item.url, projectId);
@@ -363,7 +368,7 @@ function CollapsedGroup({
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{translateNavLabel(t, item.label)}</span>
                   </a>
                 </li>
               );
