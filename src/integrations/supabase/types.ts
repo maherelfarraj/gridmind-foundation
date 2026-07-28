@@ -20085,6 +20085,7 @@ export type Database = {
         }[]
       }
       portfolio_guard: { Args: { p_rpc: string }; Returns: string }
+      portfolio_hse_exposure: { Args: never; Returns: Json }
       portfolio_hse_quality: { Args: never; Returns: Json }
       portfolio_kpis: { Args: never; Returns: Json }
       portfolio_project_cards: {

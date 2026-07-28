@@ -1,9 +1,10 @@
-// P-252/P-253 — Query options for the portfolio dashboard.
+// P-252/P-253/P-254 — Query options for the portfolio dashboard.
 import { queryOptions } from "@tanstack/react-query";
 
 import {
   getPortfolioCashCurveProjects,
   getPortfolioCashMonth,
+  getPortfolioHseExposure,
   getPortfolioKpis,
   getPortfolioProjectCards,
 } from "@/lib/portfolio.functions";
@@ -12,6 +13,14 @@ export function portfolioKpisQueryOptions() {
   return queryOptions({
     queryKey: ["portfolio", "kpis"],
     queryFn: () => getPortfolioKpis(),
+    staleTime: 30_000,
+  });
+}
+
+export function portfolioExposureQueryOptions() {
+  return queryOptions({
+    queryKey: ["portfolio", "hse-exposure"],
+    queryFn: () => getPortfolioHseExposure(),
     staleTime: 30_000,
   });
 }

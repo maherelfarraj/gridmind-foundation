@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Plus, Search } from "lucide-react";
+import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,13 @@ import { errorMessage, hseProjectsQueryOptions, incidentListQueryOptions } from 
 import { IncidentTimingBadge } from "@/components/hse/incident-timing-badge";
 import { objectsToCsv, downloadCsv } from "@/lib/csv";
 
+const searchSchema = z.object({
+  projectId: z.string().uuid().optional(),
+  status: z.enum(["open", "investigating", "closed"]).optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/hse/incidents/")({
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "HSE incidents — GridMind EPC" },
@@ -44,9 +51,10 @@ export const Route = createFileRoute("/_authenticated/hse/incidents/")({
 });
 
 function IncidentListPage() {
+  const sp = Route.useSearch();
   const projectsQuery = useQuery(hseProjectsQueryOptions());
-  const [projectId, setProjectId] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
+  const [projectId, setProjectId] = useState<string>(sp.projectId ?? "");
+  const [status, setStatus] = useState<string>(sp.status ?? "");
   const [search, setSearch] = useState("");
 
   const filters = useMemo(
