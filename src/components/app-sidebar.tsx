@@ -214,7 +214,11 @@ export function AppSidebar() {
                     const Icon = item.icon;
                     return (
                       <SidebarMenuItem key={`nav:${group.key}:${url}:${item.label}`}>
-                        <SidebarMenuButton asChild isActive={isActive(url)} tooltip={translateNavLabel(t, item.label)}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(url)}
+                          tooltip={translateNavLabel(t, item.label)}
+                        >
                           <a href={url} className="flex items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className="truncate">{translateNavLabel(t, item.label)}</span>
@@ -293,7 +297,9 @@ export function AppSidebar() {
                                 <SidebarMenuSubButton asChild isActive={isActive(url)}>
                                   <a href={url} className="flex items-center gap-2">
                                     <Icon className="h-4 w-4 shrink-0" />
-                                    <span className="truncate">{translateNavLabel(t, item.label)}</span>
+                                    <span className="truncate">
+                                      {translateNavLabel(t, item.label)}
+                                    </span>
                                     {itemCount > 0 && (
                                       <Badge
                                         variant="secondary"
@@ -344,7 +350,11 @@ function CollapsedGroup({
     <SidebarMenuItem>
       <HoverCard openDelay={80} closeDelay={120}>
         <HoverCardTrigger asChild>
-          <SidebarMenuButton isActive={groupActive} aria-label={translateNavLabel(t, group.label)} className="relative">
+          <SidebarMenuButton
+            isActive={groupActive}
+            aria-label={translateNavLabel(t, group.label)}
+            className="relative"
+          >
             <GroupIcon className="h-4 w-4 shrink-0" />
             <span className="truncate">{translateNavLabel(t, group.label)}</span>
             {count > 0 && (
@@ -352,8 +362,14 @@ function CollapsedGroup({
             )}
           </SidebarMenuButton>
         </HoverCardTrigger>
-        <HoverCardContent side={dir === "rtl" ? "left" : "right"} align="start" className="w-56 p-1">
-          <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{translateNavLabel(t, group.label)}</p>
+        <HoverCardContent
+          side={dir === "rtl" ? "left" : "right"}
+          align="start"
+          className="w-56 p-1"
+        >
+          <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+            {translateNavLabel(t, group.label)}
+          </p>
           <ul className="grid gap-0.5">
             {items.map((item) => {
               const url = resolveUrl(item.url, projectId);

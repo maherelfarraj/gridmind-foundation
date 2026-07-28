@@ -70,10 +70,7 @@ function DashboardPage() {
 
   return (
     <div className="page-shell">
-      <PageHeader
-        title={t("dashboard.title")}
-        description={t("dashboard.subtitle")}
-      />
+      <PageHeader title={t("dashboard.title")} description={t("dashboard.subtitle")} />
 
       <KpiGrid>
         {tiles.map((kpi) => (

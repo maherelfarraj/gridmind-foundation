@@ -25,7 +25,10 @@ export interface ActivityItem {
 /** "vendor_portal.delivery_proposed" -> "delivery_proposed" */
 export function actionKeyOf(action: string): string {
   const tail = action.includes(".") ? action.slice(action.lastIndexOf(".") + 1) : action;
-  return tail.replace(/[\s-]+/g, "_").trim().toLowerCase();
+  return tail
+    .replace(/[\s-]+/g, "_")
+    .trim()
+    .toLowerCase();
 }
 
 /** "vendor_portal.delivery_proposed" -> "Delivery proposed" */
@@ -35,7 +38,6 @@ export function humanizeAction(action: string): string {
   if (!words) return action;
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
-
 
 /** "purchase_orders" -> "Purchase order" (naive singularization, good enough for labels). */
 export function humanizeEntity(entity: string): string {
