@@ -46,24 +46,24 @@ export const Route = createFileRoute("/_authenticated/admin/health")({
   component: HealthPage,
 });
 
-function statusBadge(status: SignalStatus) {
+function statusBadge(status: SignalStatus, t: (key: string) => string) {
   if (status === "crit") {
     return (
       <Badge variant="destructive" className="uppercase tracking-wide">
-        Critical
+        {t("adminMod.healthPage.critical")}
       </Badge>
     );
   }
   if (status === "warn") {
     return (
       <Badge className="bg-warning/15 text-warning border border-warning/30 uppercase tracking-wide hover:bg-warning/15">
-        Warn
+        {t("adminMod.healthPage.warn")}
       </Badge>
     );
   }
   return (
     <Badge className="bg-primary/10 text-primary border border-primary/20 uppercase tracking-wide hover:bg-primary/10">
-      OK
+      {t("adminMod.healthPage.ok")}
     </Badge>
   );
 }
@@ -91,7 +91,7 @@ function HealthPage() {
         description="Audit-driven signals from the public API guard, webhook framework, and cron schedulers."
         actions={
           <div className="flex items-center gap-3">
-            {query.data ? statusBadge(query.data.overall) : null}
+            {query.data ? statusBadge(query.data.overall, t) : null}
             <Button
               variant="outline"
               size="sm"
@@ -99,7 +99,7 @@ function HealthPage() {
               disabled={query.isFetching}
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh
+              {t("adminMod.healthPage.refresh")}
             </Button>
           </div>
         }
@@ -110,26 +110,26 @@ function HealthPage() {
       {query.isError ? (
         <Card className="border-destructive/40 bg-card">
           <CardHeader>
-            <CardTitle className="text-destructive">Couldn't load ops health</CardTitle>
+            <CardTitle className="text-destructive">{t("adminMod.healthPage.errorTitle")}</CardTitle>
             <CardDescription className="text-muted-foreground">
               {(query.error as Error | undefined)?.message ??
-                "The server returned an error while reading audit signals."}
+                t("adminMod.healthPage.errorFallback")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => query.refetch()} variant="default">
-              Retry
+              {t("adminMod.healthPage.retry")}
             </Button>
           </CardContent>
         </Card>
       ) : null}
 
-      {query.data ? <HealthContent data={query.data} /> : null}
+      {query.data ? <HealthContent data={query.data} t={t} /> : null}
     </div>
   );
 }
 
-function HealthContent({ data }: { data: OpsHealth }) {
+function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: Record<string, unknown>) => string }) {
   const emptyAll =
     data.signals.every((s) => s.value24h === 0) && data.crons.every((c) => !c.lastRunAt);
 
@@ -137,10 +137,9 @@ function HealthContent({ data }: { data: OpsHealth }) {
     return (
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">All quiet</CardTitle>
+          <CardTitle className="text-foreground">{t("adminMod.healthPage.allQuietTitle")}</CardTitle>
           <CardDescription className="text-muted-foreground">
-            No guard events in 24h and no cron runs recorded. The public API surface is either idle
-            or has never been exercised on this environment.
+            {t("adminMod.healthPage.allQuietDesc")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -169,9 +168,9 @@ function HealthContent({ data }: { data: OpsHealth }) {
                 <span className="text-2xl font-semibold tabular-nums text-foreground">
                   {s.value24h}
                 </span>
-                <span className="text-xs text-muted-foreground">last 24h</span>
+                <span className="text-xs text-muted-foreground">{t("adminMod.healthPage.last24h")}</span>
                 {s.peakPerHour > 0 ? (
-                  <span className="text-xs text-muted-foreground">· peak {s.peakPerHour}/h</span>
+                  <span className="text-xs text-muted-foreground">{t("adminMod.healthPage.peakPerHour", { value: s.peakPerHour })}</span>
                 ) : null}
               </div>
               {s.status !== "ok" ? (
@@ -185,10 +184,10 @@ function HealthContent({ data }: { data: OpsHealth }) {
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-base font-medium text-foreground">
-            7-day guard activity
+            {t("adminMod.healthPage.guardActivityTitle")}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Signature failures (all reasons) and rate-limit 429s per day.
+            {t("adminMod.healthPage.guardActivityDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -229,7 +228,7 @@ function HealthContent({ data }: { data: OpsHealth }) {
                 <Area
                   type="monotone"
                   dataKey="signature_failed"
-                  name="Signature failed"
+                  name={t("adminMod.healthPage.signatureFailed")}
                   stroke="var(--destructive)"
                   fill="url(#sigFill)"
                   strokeWidth={2}
@@ -237,7 +236,7 @@ function HealthContent({ data }: { data: OpsHealth }) {
                 <Area
                   type="monotone"
                   dataKey="guard_429"
-                  name="Rate limited (429)"
+                  name={t("adminMod.healthPage.rateLimited")}
                   stroke="var(--primary)"
                   fill="url(#rateFill)"
                   strokeWidth={2}
@@ -250,9 +249,9 @@ function HealthContent({ data }: { data: OpsHealth }) {
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-foreground">Cron runs</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">{t("adminMod.healthPage.cronRunsTitle")}</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Latest audit timestamp per scheduled job (last 7 days).
+            {t("adminMod.healthPage.cronRunsDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -268,11 +267,11 @@ function HealthContent({ data }: { data: OpsHealth }) {
                 </div>
                 <div className="mt-0.5 text-xs text-muted-foreground">
                   {c.lastRunAt
-                    ? `Ran ${formatDistanceToNowStrict(new Date(c.lastRunAt), { addSuffix: true })}`
-                    : "No run recorded in 7 days"}
+                    ? t("adminMod.healthPage.ranAgo", { time: formatDistanceToNowStrict(new Date(c.lastRunAt), { addSuffix: true }) })
+                    : t("adminMod.healthPage.noRunIn7d")}
                 </div>
               </div>
-              {statusBadge(c.status)}
+              {statusBadge(c.status, t)}
             </div>
           ))}
         </CardContent>
