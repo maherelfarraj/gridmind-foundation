@@ -64,10 +64,7 @@ describe("portfolio AR/AP open balances", () => {
 
   it("sums an invoice set", () => {
     expect(
-      sumOpenBalances([
-        { amount: 1000, tax_amount: 160, paid_amount: 200 },
-        { amount: 400 },
-      ]),
+      sumOpenBalances([{ amount: 1000, tax_amount: 160, paid_amount: 200 }, { amount: 400 }]),
     ).toBe(1360);
   });
 });

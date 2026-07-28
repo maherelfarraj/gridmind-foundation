@@ -29,18 +29,12 @@ export function ratio(numerator: number, denominator: number): number | null {
 
 /** Weighted SPI = ΣEV / ΣPV across the portfolio. */
 export function weightedSpi(rows: readonly EvmInput[]): number | null {
-  return ratio(
-    sum(rows.map((r) => r.ev)),
-    sum(rows.map((r) => r.pv)),
-  );
+  return ratio(sum(rows.map((r) => r.ev)), sum(rows.map((r) => r.pv)));
 }
 
 /** Weighted CPI = ΣEV / ΣAC across the portfolio. */
 export function weightedCpi(rows: readonly EvmInput[]): number | null {
-  return ratio(
-    sum(rows.map((r) => r.ev)),
-    sum(rows.map((r) => r.ac)),
-  );
+  return ratio(sum(rows.map((r) => r.ev)), sum(rows.map((r) => r.ac)));
 }
 
 export function aggregateEvm(rows: readonly EvmInput[]): EvmAggregate {
@@ -92,9 +86,7 @@ export interface CashCurveCumulativePoint extends CashCurvePoint {
 }
 
 /** Running totals for the consolidated curve; input must be period-ascending. */
-export function withCumulative(
-  points: readonly CashCurvePoint[],
-): CashCurveCumulativePoint[] {
+export function withCumulative(points: readonly CashCurvePoint[]): CashCurveCumulativePoint[] {
   let forecast = 0;
   let actual = 0;
   return points.map((p) => {
