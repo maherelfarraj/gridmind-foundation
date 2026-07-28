@@ -54,7 +54,9 @@ function toMap(m: Map<number, number> | Record<number, number>): Map<number, num
  */
 export function computeVariances(inputs: VarianceInputs): VarianceResult {
   const grn = toMap(inputs.grnQtyByLine);
-  const amount_variance = round2(Number(inputs.invoiceAmount || 0) - Number(inputs.poTotal || 0));
+  const basis =
+    inputs.expectedAmount == null ? Number(inputs.poTotal || 0) : Number(inputs.expectedAmount);
+  const amount_variance = round2(Number(inputs.invoiceAmount || 0) - basis);
 
   let qty_variance_pct: number | null = null;
   let price_variance_pct: number | null = null;
