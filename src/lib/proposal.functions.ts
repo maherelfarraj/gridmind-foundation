@@ -958,6 +958,8 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
         .insert({
           company_id: companyId,
           entity: PRICING_ENTITY,
+          entity_type: PRICING_ENTITY,
+          rule_key: PRICING_RULE_KEY,
           entity_id: data.proposalId,
           status: "pending",
           requested_by: context.user.id,
@@ -998,7 +1000,10 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
 
     const { error: upErr } = await context.supabase
       .from("proposals")
-      .update({ pricing_lock: pendingLock as any })
+      .update({
+        pricing_lock: pendingLock as any,
+        ...(instanceId ? { approval_instance_id: instanceId } : {}),
+      } as any)
       .eq("id", data.proposalId);
     if (upErr) throw new Error(upErr.message);
 
