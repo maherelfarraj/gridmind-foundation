@@ -134,8 +134,7 @@ function EsgActivityPage() {
   const listKey = ["esg", "activities", activeProject, month] as const;
   const list = useQuery({
     queryKey: listKey,
-    queryFn: () =>
-      listFn({ data: { projectId: activeProject, month } }) as Promise<ActivityRow[]>,
+    queryFn: () => listFn({ data: { projectId: activeProject, month } }) as Promise<ActivityRow[]>,
     enabled: Boolean(activeProject),
   });
 
@@ -250,11 +249,7 @@ function EsgActivityPage() {
                 busy={busy === "waste"}
                 onClick={() => void runImport("waste")}
               />
-              <Button
-                variant="outline"
-                disabled={!activeProject}
-                onClick={() => setCsvOpen(true)}
-              >
+              <Button variant="outline" disabled={!activeProject} onClick={() => setCsvOpen(true)}>
                 <FileSpreadsheet className="size-4" aria-hidden /> CSV paste
               </Button>
               <Button

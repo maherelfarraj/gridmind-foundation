@@ -21,6 +21,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import { isDevServerUp, DEV_SERVER_URL } from "../helpers/dev-server";
 import { guardPublicHook } from "@/lib/public-api/guard";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 // --------------------------------------------------------------------------
 // Environment / capability detection
@@ -103,7 +104,7 @@ async function createFixture(): Promise<Fixture> {
 
 async function cleanupFixture(f: Fixture): Promise<void> {
   await f.admin.from("api_keys").delete().eq("company_id", f.companyId);
-  await f.admin.from("companies").delete().eq("id", f.companyId);
+  await purgeFixtureTenants(f.admin, [f.companyId]);
 }
 
 async function post(url: string, headers: Record<string, string>, body = "{}"): Promise<Response> {
@@ -331,8 +332,6 @@ describe.skipIf(!canRunHttp)(`P-131 HTTP guard matrix (server enforce=${SERVER_M
       expect(j.error).toBe("signature_expired");
     }
   });
-
-
 
   // Row 9: Tampered body — signature over body A, actual bytes B.
   it("row 9: tampered body (valid ts, wrong sig) → blocked or warned", async () => {

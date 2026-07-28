@@ -362,17 +362,24 @@ function PvSimulationPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Info className="size-4" aria-hidden /> {t("engMod.pv.simulation.serverPrefilled")}
+                  <Info className="size-4" aria-hidden />{" "}
+                  {t("engMod.pv.simulation.serverPrefilled")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 text-xs sm:grid-cols-3">
                   <div>
-                    <p className="text-muted-foreground">{t("engMod.pv.simulation.siteConfiguration")}</p>
-                    <p className="font-medium">{pf?.siteConfig.name ?? t("engMod.pv.simulation.noActiveSiteConfig")}</p>
+                    <p className="text-muted-foreground">
+                      {t("engMod.pv.simulation.siteConfiguration")}
+                    </p>
+                    <p className="font-medium">
+                      {pf?.siteConfig.name ?? t("engMod.pv.simulation.noActiveSiteConfig")}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">{t("engMod.pv.simulation.approvedLayout")}</p>
+                    <p className="text-muted-foreground">
+                      {t("engMod.pv.simulation.approvedLayout")}
+                    </p>
                     <p className="font-medium">
                       {pf?.layout.name ?? t("engMod.pv.simulation.noneApproved")}{" "}
                       {pf?.layout.layoutNumber ? `(${pf.layout.layoutNumber})` : ""}
@@ -381,8 +388,8 @@ function PvSimulationPage() {
                   <div>
                     <p className="text-muted-foreground">{t("engMod.pv.simulation.stringing")}</p>
                     <p className="font-medium">
-                      {pf?.stringing.stringCount ?? 0} {t("engMod.pv.simulation.strings")} · {pf?.stringing.dcAcRatio ?? "—"}{" "}
-                      DC/AC
+                      {pf?.stringing.stringCount ?? 0} {t("engMod.pv.simulation.strings")} ·{" "}
+                      {pf?.stringing.dcAcRatio ?? "—"} DC/AC
                     </p>
                   </div>
                 </div>
@@ -444,8 +451,12 @@ function PvSimulationPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="fixed">{t("engMod.pv.simulation.fixedTilt")}</SelectItem>
-                            <SelectItem value="single_axis">{t("engMod.pv.simulation.singleAxisTracker")}</SelectItem>
+                            <SelectItem value="fixed">
+                              {t("engMod.pv.simulation.fixedTilt")}
+                            </SelectItem>
+                            <SelectItem value="single_axis">
+                              {t("engMod.pv.simulation.singleAxisTracker")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -581,7 +592,9 @@ function PvSimulationPage() {
                     <div className="flex items-center gap-3">
                       <Button type="submit" disabled={!canWrite || run.isPending}>
                         <Play className="size-4" aria-hidden />
-                        {run.isPending ? t("engMod.pv.simulation.form.running") : t("engMod.pv.simulation.form.runButton")}
+                        {run.isPending
+                          ? t("engMod.pv.simulation.form.running")
+                          : t("engMod.pv.simulation.form.runButton")}
                       </Button>
                       {!canWrite ? (
                         <span className="text-xs text-muted-foreground">
@@ -643,17 +656,29 @@ function PvSimulationPage() {
                 <CardContent className="space-y-4 text-sm">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.approvalStatus")}</p>
-                      <p className="font-medium">{instance?.status ?? t("engMod.pv.simulation.approval.notSubmitted")}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.currentStep")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("engMod.pv.simulation.approval.approvalStatus")}
+                      </p>
                       <p className="font-medium">
-                        {instance ? t("engMod.pv.simulation.approval.stepEngineeringAdmin", { step: instance.current_step ?? 1 }) : "—"}
+                        {instance?.status ?? t("engMod.pv.simulation.approval.notSubmitted")}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.slaAge")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("engMod.pv.simulation.approval.currentStep")}
+                      </p>
+                      <p className="font-medium">
+                        {instance
+                          ? t("engMod.pv.simulation.approval.stepEngineeringAdmin", {
+                              step: instance.current_step ?? 1,
+                            })
+                          : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("engMod.pv.simulation.approval.slaAge")}
+                      </p>
                       <p className="font-medium">
                         {instance
                           ? formatDistanceToNowStrict(new Date(instance.requested_at), {
@@ -679,7 +704,9 @@ function PvSimulationPage() {
                         onClick={() => baseline.mutate(selected.id)}
                       >
                         <BadgeCheck className="size-4" aria-hidden />
-                        {selected.is_baseline ? t("engMod.pv.simulation.approval.currentBaseline") : t("engMod.pv.simulation.approval.setAsBaseline")}
+                        {selected.is_baseline
+                          ? t("engMod.pv.simulation.approval.currentBaseline")
+                          : t("engMod.pv.simulation.approval.setAsBaseline")}
                       </Button>
                     ) : (
                       <p className="self-center text-xs text-muted-foreground">
@@ -702,13 +729,17 @@ function PvSimulationPage() {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">{t("engMod.pv.simulation.compare.title")}</CardTitle>
+                  <CardTitle className="text-base">
+                    {t("engMod.pv.simulation.compare.title")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-3">
                     <Select value={selected?.id ?? ""} onValueChange={setSelectedId}>
                       <SelectTrigger className="w-72">
-                        <SelectValue placeholder={t("engMod.pv.simulation.compare.baselinePlaceholder")} />
+                        <SelectValue
+                          placeholder={t("engMod.pv.simulation.compare.baselinePlaceholder")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {simulations.map((s) => (
@@ -720,7 +751,9 @@ function PvSimulationPage() {
                     </Select>
                     <Select value={compareId ?? ""} onValueChange={setCompareId}>
                       <SelectTrigger className="w-72">
-                        <SelectValue placeholder={t("engMod.pv.simulation.compare.comparePlaceholder")} />
+                        <SelectValue
+                          placeholder={t("engMod.pv.simulation.compare.comparePlaceholder")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {simulations

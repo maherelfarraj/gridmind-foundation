@@ -31,11 +31,7 @@ import {
 } from "@/components/ui/table";
 import { useActiveCompany } from "@/components/company-switcher";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  createImportUpload,
-  importScadaCsv,
-  listImportTags,
-} from "@/lib/scada-import.functions";
+import { createImportUpload, importScadaCsv, listImportTags } from "@/lib/scada-import.functions";
 import {
   MAX_PREVIEW_ROWS,
   TIMESTAMP_FORMATS,
@@ -98,10 +94,7 @@ function ScadaImportPage() {
   });
 
   const table = useMemo(() => (csv ? parseCsvTable(csv) : null), [csv]);
-  const knownTags = useMemo(
-    () => new Set((tags.data?.tags ?? []).map((t) => t.tag)),
-    [tags.data],
-  );
+  const knownTags = useMemo(() => new Set((tags.data?.tags ?? []).map((t) => t.tag)), [tags.data]);
 
   const mapping: ImportMapping | null = useMemo(() => {
     const columns = Object.entries(columnTags)
@@ -157,8 +150,7 @@ function ScadaImportPage() {
     onSuccess: (res) => {
       toast.success(`Imported ${res.accepted} readings (${res.rejected} rejected)`);
     },
-    onError: (err: unknown) =>
-      toast.error(err instanceof Error ? err.message : "Import failed"),
+    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : "Import failed"),
   });
 
   const result = runImport.data;
@@ -244,10 +236,7 @@ function ScadaImportPage() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Timestamp format</Label>
-                <Select
-                  value={tsFormat}
-                  onValueChange={(v) => setTsFormat(v as TimestampFormat)}
-                >
+                <Select value={tsFormat} onValueChange={(v) => setTsFormat(v as TimestampFormat)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -362,10 +351,7 @@ function ScadaImportPage() {
               Readings are written in batches of 500 with conflicts ignored — re-importing the same
               file never duplicates telemetry.
             </p>
-            <Button
-              disabled={!mapping || runImport.isPending}
-              onClick={() => runImport.mutate()}
-            >
+            <Button disabled={!mapping || runImport.isPending} onClick={() => runImport.mutate()}>
               <Upload className="mr-1 h-4 w-4" />
               {runImport.isPending ? "Importing…" : "Run import"}
             </Button>

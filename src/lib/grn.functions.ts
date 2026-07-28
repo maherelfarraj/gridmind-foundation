@@ -18,7 +18,6 @@ import {
   overReceivedLines,
   serialRowsFromLines,
   type GrnLine,
-
   type GrnStatus,
   type ReceivableLine,
 } from "@/lib/grn-rules";
@@ -549,7 +548,6 @@ export const confirmGrn = createServerFn({ method: "POST" })
         if (sErr && (sErr as any).code === "42501") httpError(403, "forbidden");
         if (sErr) throw sErr;
       }
-
 
       // Project PO status from all confirmed receipts + this one.
       const nextPoStatus =

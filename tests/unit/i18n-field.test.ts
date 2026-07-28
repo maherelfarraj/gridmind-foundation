@@ -3,11 +3,18 @@
 import { describe, expect, it } from "vitest";
 
 import { createI18n, resources } from "@/lib/i18n";
-import { ERROR_KEY_MAP, errorCodeOf, translateError, UNKNOWN_ERROR_KEY } from "@/lib/i18n/error-keys";
+import {
+  ERROR_KEY_MAP,
+  errorCodeOf,
+  translateError,
+  UNKNOWN_ERROR_KEY,
+} from "@/lib/i18n/error-keys";
 
 function flatten(obj: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === "object" ? flatten(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`],
+    v && typeof v === "object"
+      ? flatten(v as Record<string, unknown>, `${prefix}${k}.`)
+      : [`${prefix}${k}`],
   );
 }
 

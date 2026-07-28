@@ -139,7 +139,8 @@ function VendorInvoicesPage() {
       void qc.invalidateQueries({ queryKey: invoicesKey });
     },
     onError: (err: unknown) => {
-      const code = err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
+      const code =
+        err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
       toast.error(
         code
           ? translateError(t, code, t("portalMod.invoices.genericErrorToast"))
@@ -173,7 +174,10 @@ function VendorInvoicesPage() {
   return (
     <div className="space-y-6">
       <BackLink vendorId={vendorId} />
-      <PageHeader title={t("portalMod.invoices.title")} description={t("portalMod.invoices.description")} />
+      <PageHeader
+        title={t("portalMod.invoices.title")}
+        description={t("portalMod.invoices.description")}
+      />
 
       <Card>
         <CardHeader>
@@ -287,7 +291,9 @@ function VendorInvoicesPage() {
                     <TableCell>{row.po_number ?? "—"}</TableCell>
                     <TableCell>{formatDate(row.invoice_date)}</TableCell>
                     <TableCell className="text-end">
-                      <MoneyCell>{formatMoney(row.invoice_amount, row.invoice_currency_code)}</MoneyCell>
+                      <MoneyCell>
+                        {formatMoney(row.invoice_amount, row.invoice_currency_code)}
+                      </MoneyCell>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={row.status} label={row.status.replace(/_/g, " ")} />

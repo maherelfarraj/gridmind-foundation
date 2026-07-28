@@ -29,11 +29,7 @@ import {
 } from "@/components/ui/table";
 import { PanelState, ProjectSelect } from "@/components/construction/controls-shell";
 import { getControlsAccess, getCwpBoard, listControlsProjects } from "@/lib/controls.functions";
-import {
-  getLookAheadPlan,
-  setLookAheadStatus,
-  upsertLookAheadPlan,
-} from "@/lib/cwp.functions";
+import { getLookAheadPlan, setLookAheadStatus, upsertLookAheadPlan } from "@/lib/cwp.functions";
 import { isMonday } from "@/lib/cwp.rules";
 import { mondayOf } from "@/lib/controls.rules";
 import { useI18n } from "@/lib/i18n/locale-provider";
@@ -201,10 +197,14 @@ function LookAheadPage() {
             onChange={(e) => setWeekStart(mondayOf(e.target.value))}
           />
           {!validWeek ? (
-            <p className="text-xs text-destructive">{t("adminMod.construction.lookAhead.weekMustBeMonday")}</p>
+            <p className="text-xs text-destructive">
+              {t("adminMod.construction.lookAhead.weekMustBeMonday")}
+            </p>
           ) : null}
         </div>
-        {locked ? <Badge variant="outline">{t("adminMod.construction.lookAhead.locked")}</Badge> : null}
+        {locked ? (
+          <Badge variant="outline">{t("adminMod.construction.lookAhead.locked")}</Badge>
+        ) : null}
       </div>
 
       <PanelState
@@ -222,7 +222,9 @@ function LookAheadPage() {
               <TableRow>
                 <TableHead>{t("adminMod.construction.lookAhead.workPackageCol")}</TableHead>
                 <TableHead>{t("adminMod.construction.lookAhead.dayCol")}</TableHead>
-                <TableHead className="w-24">{t("adminMod.construction.lookAhead.crewCol")}</TableHead>
+                <TableHead className="w-24">
+                  {t("adminMod.construction.lookAhead.crewCol")}
+                </TableHead>
                 <TableHead>{t("adminMod.construction.lookAhead.constraintsCol")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -240,7 +242,9 @@ function LookAheadPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">{t("adminMod.construction.lookAhead.unassigned")}</SelectItem>
+                        <SelectItem value="none">
+                          {t("adminMod.construction.lookAhead.unassigned")}
+                        </SelectItem>
                         {(cwps.data ?? []).map((c) => (
                           <SelectItem key={c.id} value={c.id}>
                             {c.cwp_number} — {c.title}

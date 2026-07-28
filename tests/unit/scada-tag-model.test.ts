@@ -43,7 +43,9 @@ describe("scada tag model", () => {
     expect(classifyQuality(tag, { value: 100, ageSeconds: 400 })).toBe("suspect");
     expect(classifyQuality(tag, { value: 100, ageSeconds: 1000 })).toBe("bad");
     expect(classifyQuality(tag, { value: -1, ageSeconds: 10 })).toBe("bad");
-    expect(classifyQuality(tag, { value: 100, ageSeconds: 10, repeatedSamples: 12 })).toBe("suspect");
+    expect(classifyQuality(tag, { value: 100, ageSeconds: 10, repeatedSamples: 12 })).toBe(
+      "suspect",
+    );
   });
 
   it("evaluates limit bands with alarm precedence", () => {

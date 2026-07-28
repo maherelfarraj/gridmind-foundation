@@ -378,7 +378,9 @@ function PvLayoutPage() {
                         </p>
                       </>
                     ) : (
-                      <p className="text-muted-foreground">{t("engMod.pv.layout.selectBlockPrompt")}</p>
+                      <p className="text-muted-foreground">
+                        {t("engMod.pv.layout.selectBlockPrompt")}
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -488,7 +490,9 @@ function PvLayoutPage() {
                       <TableHead>{t("engMod.pv.layout.savedColumns.version")}</TableHead>
                       <TableHead>{t("engMod.pv.layout.savedColumns.dcKwp")}</TableHead>
                       <TableHead>{t("engMod.pv.layout.savedColumns.status")}</TableHead>
-                      <TableHead className="text-right">{t("engMod.pv.layout.savedColumns.actions")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("engMod.pv.layout.savedColumns.actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

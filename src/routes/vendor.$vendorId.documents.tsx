@@ -85,7 +85,8 @@ function VendorDocumentsPage() {
       void qc.invalidateQueries({ queryKey: key });
     },
     onError: (err: unknown) => {
-      const code = err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
+      const code =
+        err instanceof Error ? err.message : (errorCodeOf(err) as VendorUploadErrorCode | null);
       toast.error(
         code
           ? translateError(t, code, t("portalMod.documents.genericErrorToast"))
@@ -204,7 +205,11 @@ function DocSection({
         {loading ? (
           <VendorTableSkeleton rows={2} />
         ) : rows.length === 0 ? (
-          <EmptyState icon={FileText} title={t("portalMod.documents.emptyGenericTitle")} description={empty} />
+          <EmptyState
+            icon={FileText}
+            title={t("portalMod.documents.emptyGenericTitle")}
+            description={empty}
+          />
         ) : (
           <ul className="divide-y divide-border">
             {rows.map((doc) => (

@@ -74,7 +74,8 @@ function VendorTopBar() {
           to="/vendor"
           className="font-display text-lg font-semibold tracking-tight text-foreground"
         >
-          {brand?.company_name ?? t("portalMod.topbar.brandFallback")} {t("portalMod.topbar.brandSuffix")}
+          {brand?.company_name ?? t("portalMod.topbar.brandFallback")}{" "}
+          {t("portalMod.topbar.brandSuffix")}
         </Link>
         <div className="ml-auto flex items-center gap-3">
           <UserMenu />

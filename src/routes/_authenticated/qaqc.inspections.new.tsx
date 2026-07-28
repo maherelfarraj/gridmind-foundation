@@ -86,7 +86,9 @@ function NewInspectionPage() {
   const createMut = useMutation({
     mutationFn: (payload: InspectionInput) => createInspection({ data: payload as any }),
     onSuccess: async (row) => {
-      toast.success(t("fieldMod.qaqc.inspection.inspectionCreated", { number: row.inspection_number }));
+      toast.success(
+        t("fieldMod.qaqc.inspection.inspectionCreated", { number: row.inspection_number }),
+      );
       await qc.invalidateQueries({ queryKey: ["qaqc"] });
       navigate({ to: "/qaqc/inspections/$id", params: { id: row.id } });
     },
@@ -143,7 +145,10 @@ function NewInspectionPage() {
         >
           <ArrowLeft size={12} /> {t("fieldMod.qaqc.inspection.backToInspections")}
         </Link>
-        <PageHeader title={t("fieldMod.qaqc.inspection.title")} description={t("fieldMod.qaqc.inspection.description")} />
+        <PageHeader
+          title={t("fieldMod.qaqc.inspection.title")}
+          description={t("fieldMod.qaqc.inspection.description")}
+        />
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -197,7 +202,11 @@ function NewInspectionPage() {
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="area">{t("fieldMod.qaqc.inspection.area")}</Label>
-              <Input id="area" {...form.register("area")} placeholder={t("fieldMod.qaqc.inspection.areaPlaceholder")} />
+              <Input
+                id="area"
+                {...form.register("area")}
+                placeholder={t("fieldMod.qaqc.inspection.areaPlaceholder")}
+              />
               {form.formState.errors.area ? (
                 <span className="text-xs text-destructive">
                   {form.formState.errors.area.message as string}
@@ -265,8 +274,12 @@ function NewInspectionPage() {
             </div>
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
-                <div className="text-sm font-medium">{t("fieldMod.qaqc.inspection.reworkRequired")}</div>
-                <div className="text-xs text-muted-foreground">{t("fieldMod.qaqc.inspection.reworkRequiredHint")}</div>
+                <div className="text-sm font-medium">
+                  {t("fieldMod.qaqc.inspection.reworkRequired")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("fieldMod.qaqc.inspection.reworkRequiredHint")}
+                </div>
               </div>
               <Switch
                 checked={reworkRequired}
@@ -276,7 +289,10 @@ function NewInspectionPage() {
               />
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
-              <Label htmlFor="reworkNotes">{t("fieldMod.qaqc.inspection.reworkNotes")}{reworkRequired ? " *" : ""}</Label>
+              <Label htmlFor="reworkNotes">
+                {t("fieldMod.qaqc.inspection.reworkNotes")}
+                {reworkRequired ? " *" : ""}
+              </Label>
               <Textarea
                 id="reworkNotes"
                 rows={3}
@@ -304,7 +320,9 @@ function NewInspectionPage() {
             <AttachmentList attachments={attachments} onRemove={removeAttachment} />
             <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground hover:bg-accent">
               <Upload size={14} aria-hidden />
-              {uploading ? t("fieldMod.qaqc.inspection.uploading") : t("fieldMod.qaqc.inspection.addFile")}
+              {uploading
+                ? t("fieldMod.qaqc.inspection.uploading")
+                : t("fieldMod.qaqc.inspection.addFile")}
               <input
                 type="file"
                 className="sr-only"
@@ -328,7 +346,9 @@ function NewInspectionPage() {
             <X size={14} aria-hidden /> {t("fieldMod.common.cancel")}
           </Button>
           <Button type="submit" disabled={createMut.isPending} className="ms-auto">
-            {createMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.qaqc.inspection.logInspection")}
+            {createMut.isPending
+              ? t("fieldMod.common.saving")
+              : t("fieldMod.qaqc.inspection.logInspection")}
           </Button>
         </div>
       </form>

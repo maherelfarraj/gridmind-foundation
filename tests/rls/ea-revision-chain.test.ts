@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/integrations/supabase/types";
 import { isSupabaseUp, serviceClient } from "./helpers/rls";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 const up = await isSupabaseUp();
 
@@ -47,7 +48,7 @@ describe.skipIf(!up)("P-170 EA study revision chain", () => {
 
   afterAll(async () => {
     if (!up) return;
-    if (state.companyId) await svc.from("companies").delete().eq("id", state.companyId);
+    await purgeFixtureTenants(svc, [state.companyId]);
   }, 90_000);
 
   it("creates a draft at revision 0", async () => {

@@ -117,9 +117,7 @@ function NewIncidentPage() {
       <div className="flex items-start gap-3 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
         <Info size={16} className="mt-0.5 text-primary" aria-hidden />
         <div>
-          <div className="font-medium text-foreground">
-            {t("fieldMod.hse.incident.banner")}
-          </div>
+          <div className="font-medium text-foreground">{t("fieldMod.hse.incident.banner")}</div>
           <div className="text-xs text-muted-foreground">
             {t("fieldMod.hse.incident.bannerHint")}
           </div>
@@ -240,13 +238,19 @@ function NewIncidentPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t("fieldMod.hse.incident.oshaClassification")}</CardTitle>
+            <CardTitle className="text-base">
+              {t("fieldMod.hse.incident.oshaClassification")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
-                <div className="text-sm font-medium">{t("fieldMod.hse.incident.oshaRecordable")}</div>
-                <div className="text-xs text-muted-foreground">{t("fieldMod.hse.incident.oshaRecordableHint")}</div>
+                <div className="text-sm font-medium">
+                  {t("fieldMod.hse.incident.oshaRecordable")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("fieldMod.hse.incident.oshaRecordableHint")}
+                </div>
               </div>
               <Switch
                 checked={form.watch("oshaRecordable")}
@@ -254,7 +258,9 @@ function NewIncidentPage() {
               />
             </div>
             <div className="flex items-center justify-between rounded-md border border-border p-3">
-              <div className="text-sm font-medium">{t("fieldMod.hse.incident.medicalTreatment")}</div>
+              <div className="text-sm font-medium">
+                {t("fieldMod.hse.incident.medicalTreatment")}
+              </div>
               <Switch
                 checked={form.watch("medicalTreatment")}
                 onCheckedChange={(v) => form.setValue("medicalTreatment", v)}
@@ -283,7 +289,9 @@ function NewIncidentPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">{t("fieldMod.hse.incident.correctiveActions")}</CardTitle>
+            <CardTitle className="text-base">
+              {t("fieldMod.hse.incident.correctiveActions")}
+            </CardTitle>
             <Button
               type="button"
               size="sm"
@@ -295,7 +303,11 @@ function NewIncidentPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {actions.fields.length === 0 ? (
-              <EmptyState icon={ClipboardList} title={t("fieldMod.hse.incident.noActions")} compact />
+              <EmptyState
+                icon={ClipboardList}
+                title={t("fieldMod.hse.incident.noActions")}
+                compact
+              />
             ) : null}
             {actions.fields.map((f, i) => (
               <div
@@ -336,7 +348,9 @@ function NewIncidentPage() {
             {t("fieldMod.common.cancel")}
           </Button>
           <Button type="submit" disabled={createMut.isPending} className="ms-auto">
-            {createMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.hse.incident.logIncident")}
+            {createMut.isPending
+              ? t("fieldMod.common.saving")
+              : t("fieldMod.hse.incident.logIncident")}
           </Button>
         </div>
       </form>

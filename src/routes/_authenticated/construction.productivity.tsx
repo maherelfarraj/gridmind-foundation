@@ -91,8 +91,7 @@ function ProductivityPage() {
   const prodFn = useServerFn(getProductivity);
   const prod = useQuery({
     queryKey: ["productivity", activeProject, dimension, from, to, minCrew],
-    queryFn: () =>
-      prodFn({ data: { projectId: activeProject, dimension, from, to, minCrew } }),
+    queryFn: () => prodFn({ data: { projectId: activeProject, dimension, from, to, minCrew } }),
     enabled: Boolean(activeProject),
   });
 
@@ -142,17 +141,20 @@ function ProductivityPage() {
           <Label htmlFor="dimension" className="text-xs text-muted-foreground">
             {t("adminMod.construction.productivity.groupBy")}
           </Label>
-          <Select
-            value={dimension}
-            onValueChange={(v) => setDimension(v as typeof dimension)}
-          >
+          <Select value={dimension} onValueChange={(v) => setDimension(v as typeof dimension)}>
             <SelectTrigger id="dimension">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="discipline">{t("adminMod.construction.productivity.dimension.discipline")}</SelectItem>
-              <SelectItem value="area">{t("adminMod.construction.productivity.dimension.area")}</SelectItem>
-              <SelectItem value="trade">{t("adminMod.construction.productivity.dimension.trade")}</SelectItem>
+              <SelectItem value="discipline">
+                {t("adminMod.construction.productivity.dimension.discipline")}
+              </SelectItem>
+              <SelectItem value="area">
+                {t("adminMod.construction.productivity.dimension.area")}
+              </SelectItem>
+              <SelectItem value="trade">
+                {t("adminMod.construction.productivity.dimension.trade")}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -183,9 +185,18 @@ function ProductivityPage() {
       </div>
 
       <KpiGrid>
-        <KpiTile label={t("adminMod.construction.productivity.unitsPerManhour")} value={formatPerManhour(overall)} />
-        <KpiTile label={t("adminMod.construction.productivity.totalQuantity")} value={String(prod.data?.totalQty ?? 0)} />
-        <KpiTile label={t("adminMod.construction.productivity.totalManhours")} value={String(totalHours)} />
+        <KpiTile
+          label={t("adminMod.construction.productivity.unitsPerManhour")}
+          value={formatPerManhour(overall)}
+        />
+        <KpiTile
+          label={t("adminMod.construction.productivity.totalQuantity")}
+          value={String(prod.data?.totalQty ?? 0)}
+        />
+        <KpiTile
+          label={t("adminMod.construction.productivity.totalManhours")}
+          value={String(totalHours)}
+        />
       </KpiGrid>
 
       <PanelState

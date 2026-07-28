@@ -128,7 +128,9 @@ function MocDashboardPage() {
       </KpiGrid>
 
       <Card className="space-y-3 p-4">
-        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.openChangesByType")}</h2>
+        <h2 className="text-sm font-medium text-foreground">
+          {t("adminMod.changes.register.openChangesByType")}
+        </h2>
         {chartData.length === 0 ? (
           <EmptyState title={t("adminMod.changes.register.noOpen")} compact />
         ) : (
@@ -161,7 +163,9 @@ function MocDashboardPage() {
       </Card>
 
       <Card className="space-y-3 overflow-x-auto p-4">
-        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.agingOfOpenChanges")}</h2>
+        <h2 className="text-sm font-medium text-foreground">
+          {t("adminMod.changes.register.agingOfOpenChanges")}
+        </h2>
         {data.aging.length === 0 ? (
           <EmptyState title={t("adminMod.changes.register.nothingAging")} compact />
         ) : (
@@ -199,7 +203,9 @@ function MocDashboardPage() {
       </Card>
 
       <Card className="space-y-3 overflow-x-auto p-4">
-        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.costScheduleByProject")}</h2>
+        <h2 className="text-sm font-medium text-foreground">
+          {t("adminMod.changes.register.costScheduleByProject")}
+        </h2>
         {data.byProject.length === 0 ? (
           <EmptyState title={t("adminMod.changes.register.noneYet")} compact />
         ) : (
@@ -207,12 +213,24 @@ function MocDashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("adminMod.changes.register.projectCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.openCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.openCostCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.openDaysCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.closedCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.closedCostCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.closedDaysCol")}</TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.openCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.openCostCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.openDaysCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.closedCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.closedCostCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.closedDaysCol")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -64,14 +64,14 @@ export const getOpsAlerts = createServerFn({ method: "GET" })
       if (alertErr) throw alertErr;
       if (ruleErr) throw ruleErr;
 
-      let alerts = ((alertRows ?? []) as Array<OpsAlertRow & { ops_alert_rules?: { rule_type: string } | null }>).map(
-        (r) => {
-          const { ops_alert_rules, ...rest } = r;
-          return { ...rest, rule_type: ops_alert_rules?.rule_type ?? null } as OpsAlertRow & {
-            rule_type: string | null;
-          };
-        },
-      );
+      let alerts = (
+        (alertRows ?? []) as Array<OpsAlertRow & { ops_alert_rules?: { rule_type: string } | null }>
+      ).map((r) => {
+        const { ops_alert_rules, ...rest } = r;
+        return { ...rest, rule_type: ops_alert_rules?.rule_type ?? null } as OpsAlertRow & {
+          rule_type: string | null;
+        };
+      });
       if (data.rule_type !== "all") {
         alerts = alerts.filter((a) => a.rule_type === data.rule_type);
       }
@@ -162,7 +162,11 @@ export const saveOpsAlertRule = createServerFn({ method: "POST" })
         action: "ops_alert_rule.save",
         entity: "ops_alert_rules",
         entity_id: id,
-        metadata: { rule_type: data.rule_type, enabled: data.enabled, notify_role: data.notify_role },
+        metadata: {
+          rule_type: data.rule_type,
+          enabled: data.enabled,
+          notify_role: data.notify_role,
+        },
       });
     }
 

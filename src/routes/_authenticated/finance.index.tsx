@@ -93,8 +93,6 @@ function TileShell({ to, children }: { to?: string; children: React.ReactNode })
   );
 }
 
-
-
 function FinanceCockpitPage() {
   const { t } = useI18n();
   const NA = <span className="text-muted-foreground">{t("financeMod.common.na")}</span>;
@@ -148,7 +146,9 @@ function FinanceCockpitPage() {
         description={t("financeMod.cockpit.subtitle")}
         actions={
           <div className="flex items-center gap-2">
-            {level === "read" ? <Badge variant="outline">{t("financeMod.cockpit.readOnly")}</Badge> : null}
+            {level === "read" ? (
+              <Badge variant="outline">{t("financeMod.cockpit.readOnly")}</Badge>
+            ) : null}
             <Button
               variant="outline"
               size="sm"
@@ -167,7 +167,9 @@ function FinanceCockpitPage() {
       {error ? (
         <Card className="flex flex-col items-start gap-3 border-destructive/40 p-5">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-destructive">{t("financeMod.cockpit.couldNotLoad")}</p>
+            <p className="text-sm font-medium text-destructive">
+              {t("financeMod.cockpit.couldNotLoad")}
+            </p>
             <p className="text-sm text-muted-foreground">
               {(error as Error).message || t("financeMod.cockpit.unexpectedError")}
             </p>
@@ -214,7 +216,10 @@ function FinanceCockpitPage() {
             hint={
               <span className="flex items-center gap-1.5">
                 {data?.cash_position.available
-                  ? t("financeMod.cockpit.cashPositionHint", { inflow: money(data.cash_position.value!.inflow), outflow: money(data.cash_position.value!.outflow) })
+                  ? t("financeMod.cockpit.cashPositionHint", {
+                      inflow: money(data.cash_position.value!.inflow),
+                      outflow: money(data.cash_position.value!.outflow),
+                    })
                   : t("financeMod.cockpit.paymentsUnavailable")}
                 <FormulaInfo text={COCKPIT_FORMULAS.cash_position} />
               </span>
@@ -234,7 +239,6 @@ function FinanceCockpitPage() {
                   {t("financeMod.cockpit.overdueLabel", {
                     amount: aging.data ? money(aging.data.overdue_ar) : t("financeMod.common.na"),
                   })}
-
                 </span>
                 <FormulaInfo text={COCKPIT_FORMULAS.ar_total} />
               </span>
@@ -252,7 +256,9 @@ function FinanceCockpitPage() {
             hint={
               <span className="flex items-center gap-1.5">
                 {data?.open_pay_apps.available
-                  ? t("financeMod.cockpit.payAppsHint", { count: formatNumber(data.open_pay_apps.value!.count) })
+                  ? t("financeMod.cockpit.payAppsHint", {
+                      count: formatNumber(data.open_pay_apps.value!.count),
+                    })
                   : t("financeMod.cockpit.payAppsUnavailable")}
                 <FormulaInfo text={COCKPIT_FORMULAS.open_pay_apps} />
               </span>
@@ -269,7 +275,9 @@ function FinanceCockpitPage() {
               <span className="flex flex-wrap items-baseline gap-2">
                 <span>{money(data.budget_vs_actual.value!.actual)}</span>
                 <span className="text-sm text-muted-foreground">
-                  {t("financeMod.cockpit.ofBudget", { amount: money(data.budget_vs_actual.value!.budget) })}
+                  {t("financeMod.cockpit.ofBudget", {
+                    amount: money(data.budget_vs_actual.value!.budget),
+                  })}
                 </span>
               </span>
             ) : (
@@ -285,7 +293,9 @@ function FinanceCockpitPage() {
             <span className="flex flex-col gap-1.5">
               <span className="flex items-center gap-1.5">
                 {data?.budget_vs_actual.value?.consumed_pct != null
-                  ? t("financeMod.cockpit.consumedPct", { pct: data.budget_vs_actual.value.consumed_pct.toFixed(1) })
+                  ? t("financeMod.cockpit.consumedPct", {
+                      pct: data.budget_vs_actual.value.consumed_pct.toFixed(1),
+                    })
                   : t("financeMod.cockpit.noBudgets")}
                 <FormulaInfo text={COCKPIT_FORMULAS.budget_vs_actual} />
               </span>
@@ -352,7 +362,10 @@ function FinanceCockpitPage() {
           hint={
             <span className="flex items-center gap-1.5">
               {data?.co_exposure.available
-                ? t("financeMod.cockpit.coExposureHint", { co: money(data.co_exposure.value!.co_amount), contract: money(data.co_exposure.value!.contract_value) })
+                ? t("financeMod.cockpit.coExposureHint", {
+                    co: money(data.co_exposure.value!.co_amount),
+                    contract: money(data.co_exposure.value!.contract_value),
+                  })
                 : t("financeMod.cockpit.coExposureUnavailable")}
               <FormulaInfo text={COCKPIT_FORMULAS.co_exposure} />
             </span>
@@ -370,7 +383,9 @@ function FinanceCockpitPage() {
           hint={
             <span className="flex items-center gap-1.5">
               {data?.sla_credits.available
-                ? t("financeMod.cockpit.slaCreditsHint", { count: formatNumber(data.sla_credits.value!.count) })
+                ? t("financeMod.cockpit.slaCreditsHint", {
+                    count: formatNumber(data.sla_credits.value!.count),
+                  })
                 : t("financeMod.cockpit.slaCreditsUnavailable")}
               <FormulaInfo text={COCKPIT_FORMULAS.sla_credits} />
             </span>
@@ -474,7 +489,11 @@ function FinanceCockpitPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : !data?.cash_trend.available ? (
-          <EmptyState compact icon={AlertTriangle} title={t("financeMod.cockpit.cashFlowUnavailable")} />
+          <EmptyState
+            compact
+            icon={AlertTriangle}
+            title={t("financeMod.cockpit.cashFlowUnavailable")}
+          />
         ) : (
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -549,7 +568,11 @@ function FinanceCockpitPage() {
             ))}
           </div>
         ) : !data?.activity.available ? (
-          <EmptyState compact icon={AlertTriangle} title={t("financeMod.cockpit.auditUnavailable")} />
+          <EmptyState
+            compact
+            icon={AlertTriangle}
+            title={t("financeMod.cockpit.auditUnavailable")}
+          />
         ) : data.activity.value!.length === 0 ? (
           <EmptyState compact icon={Inbox} title={t("financeMod.cockpit.noActivity")} />
         ) : (
@@ -560,7 +583,9 @@ function FinanceCockpitPage() {
                   {row.action}
                 </Badge>
                 <span className="text-muted-foreground">{row.entity}</span>
-                <span className="text-foreground">{row.actor_name ?? t("financeMod.common.system")}</span>
+                <span className="text-foreground">
+                  {row.actor_name ?? t("financeMod.common.system")}
+                </span>
                 <span className="ms-auto text-xs text-muted-foreground">
                   {formatRelative(row.created_at)}
                 </span>

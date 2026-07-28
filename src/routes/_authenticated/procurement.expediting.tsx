@@ -226,9 +226,17 @@ function ExpeditingPage() {
       invalidate();
       qc.invalidateQueries({ queryKey: ["expediting", "open-pos"] });
       toast.success(
-        t(res.imported === 1 ? "procurementMod.expediting.importedToast_one" : "procurementMod.expediting.importedToast_other", {
-          count: res.imported,
-        }) + (res.skipped > 0 ? t("procurementMod.expediting.importedSkipped", { count: res.skipped }) : ""),
+        t(
+          res.imported === 1
+            ? "procurementMod.expediting.importedToast_one"
+            : "procurementMod.expediting.importedToast_other",
+          {
+            count: res.imported,
+          },
+        ) +
+          (res.skipped > 0
+            ? t("procurementMod.expediting.importedSkipped", { count: res.skipped })
+            : ""),
       );
       setImportOpen(false);
     },
@@ -380,7 +388,12 @@ function ExpeditingPage() {
               <div className="flex items-center justify-between border-b border-border px-4 py-2">
                 <div className="font-medium">{group.projectName}</div>
                 <div className="text-xs text-muted-foreground">
-                  {t(group.items.length === 1 ? "procurementMod.expediting.itemsCount_one" : "procurementMod.expediting.itemsCount_other", { count: group.items.length })}
+                  {t(
+                    group.items.length === 1
+                      ? "procurementMod.expediting.itemsCount_one"
+                      : "procurementMod.expediting.itemsCount_other",
+                    { count: group.items.length },
+                  )}
                 </div>
               </div>
               <Table>
@@ -751,7 +764,9 @@ function ImportFromPoDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">{t("procurementMod.expediting.colLongLead")}</TableHead>
+                  <TableHead className="w-12">
+                    {t("procurementMod.expediting.colLongLead")}
+                  </TableHead>
                   <TableHead>{t("procurementMod.common.line")}</TableHead>
                   <TableHead>{t("procurementMod.common.description")}</TableHead>
                   <TableHead className="text-end">{t("procurementMod.common.qtyShort")}</TableHead>
@@ -791,7 +806,9 @@ function ImportFromPoDialog({
       </div>
       <DialogFooter>
         <Button disabled={!poId || submitting} onClick={() => onImport(poId, Array.from(longLead))}>
-          {submitting ? t("procurementMod.expediting.importing") : t("procurementMod.expediting.importLines")}
+          {submitting
+            ? t("procurementMod.expediting.importing")
+            : t("procurementMod.expediting.importLines")}
         </Button>
       </DialogFooter>
     </DialogContent>

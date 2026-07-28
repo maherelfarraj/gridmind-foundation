@@ -143,10 +143,7 @@ function AlarmsPage() {
 
   return (
     <div className="page-shell">
-      <PageHeader
-        title={t("omMod.alarms.title")}
-        description={t("omMod.alarms.description")}
-      />
+      <PageHeader title={t("omMod.alarms.title")} description={t("omMod.alarms.description")} />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
@@ -244,7 +241,11 @@ function AlarmsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <ThreadLink entityType="scada_alarm" entityId={row.id} label={t("omMod.alarms.threadLabel")} />
+                        <ThreadLink
+                          entityType="scada_alarm"
+                          entityId={row.id}
+                          label={t("omMod.alarms.threadLabel")}
+                        />
                         {row.status === "active" ? (
                           <Button
                             size="sm"
@@ -284,7 +285,11 @@ function AlarmsPage() {
                   <FormItem>
                     <FormLabel>{t("omMod.alarms.noteLabel")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder={t("omMod.alarms.notePlaceholder")} {...field} />
+                      <Textarea
+                        rows={4}
+                        placeholder={t("omMod.alarms.notePlaceholder")}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

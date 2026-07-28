@@ -54,7 +54,6 @@ describe("direct table writes", () => {
     const writePolicies = eventsAcl.policies.filter((p) => p.action !== "select");
     expect(writePolicies.every((p) => p.denyAll)).toBe(true);
   });
-
 });
 
 describe("the RPC path bypasses via definer rights", () => {

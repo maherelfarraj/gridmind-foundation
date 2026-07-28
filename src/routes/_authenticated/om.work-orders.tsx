@@ -457,7 +457,9 @@ function TableView({
       hideBelow: "lg",
       cell: (r) =>
         r.assignee_name ??
-        r.assignee_email ?? <span className="text-muted-foreground">{t("omMod.common.unassigned")}</span>,
+        r.assignee_email ?? (
+          <span className="text-muted-foreground">{t("omMod.common.unassigned")}</span>
+        ),
     },
     {
       id: "due",

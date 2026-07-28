@@ -54,9 +54,9 @@ import {
 } from "@/lib/drawings-query";
 
 /** Display-only labels; the stored enum values are never translated. */
-function disciplineLabels(
-  t: (key: string) => string,
-): Record<DrawingDiscipline, string> {
+type TFn = (key: string) => string;
+
+function disciplineLabels(t: TFn): Record<DrawingDiscipline, string> {
   return {
     civil: t("engMod.drawings.disciplineLabels.civil"),
     structural: t("engMod.drawings.disciplineLabels.structural"),
@@ -67,7 +67,6 @@ function disciplineLabels(
     general: t("engMod.drawings.disciplineLabels.general"),
   };
 }
-
 
 export function statusBadgeClass(status: DrawingStatus): string {
   switch (status) {
@@ -282,7 +281,11 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
                         {STATUS_LABEL_T[r.current_status]}
                       </Badge>
                       {r.locked && (
-                        <Lock size={12} className="text-muted-foreground" aria-label={t("engMod.drawings.locked")} />
+                        <Lock
+                          size={12}
+                          className="text-muted-foreground"
+                          aria-label={t("engMod.drawings.locked")}
+                        />
                       )}
                     </span>
                   </TableCell>
@@ -320,9 +323,7 @@ function EmptyState({ canWrite, projectId }: { canWrite: boolean; projectId: str
     <Card className="flex flex-col items-center gap-3 border-dashed p-10 text-center">
       <FileWarning className="text-muted-foreground" />
       <p className="text-sm font-medium text-foreground">{t("engMod.drawings.empty.title")}</p>
-      <p className="text-sm text-muted-foreground">
-        {t("engMod.drawings.empty.description")}
-      </p>
+      <p className="text-sm text-muted-foreground">{t("engMod.drawings.empty.description")}</p>
       {canWrite && <NewDrawingDialog projectId={projectId} />}
     </Card>
   );
@@ -370,9 +371,7 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("engMod.drawings.newDrawing.title")}</DialogTitle>
-          <DialogDescription>
-            {t("engMod.drawings.newDrawing.description")}
-          </DialogDescription>
+          <DialogDescription>{t("engMod.drawings.newDrawing.description")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">

@@ -93,7 +93,11 @@ function RfqDetail() {
             <RfqStatusBadge status={rfq.status} />
             <span>{rfq.project_name ?? "—"}</span>
             <span>{rfq.currency_code}</span>
-            {rfq.due_date && <span>{t("procurementMod.rfqs.dueOn", { date: format(new Date(rfq.due_date), "PP") })}</span>}
+            {rfq.due_date && (
+              <span>
+                {t("procurementMod.rfqs.dueOn", { date: format(new Date(rfq.due_date), "PP") })}
+              </span>
+            )}
           </span>
         }
         actions={
@@ -107,13 +111,13 @@ function RfqDetail() {
                 changeControl.blocked
               }
               title={
-                changeControl.blocked
-                  ? t("procurementMod.common.changeControlBlocked")
-                  : undefined
+                changeControl.blocked ? t("procurementMod.common.changeControlBlocked") : undefined
               }
             >
               <Send className="me-2 h-4 w-4" />
-              {issue.isPending ? t("procurementMod.rfqs.issuing") : t("procurementMod.rfqs.issueRfq")}
+              {issue.isPending
+                ? t("procurementMod.rfqs.issuing")
+                : t("procurementMod.rfqs.issueRfq")}
             </Button>
           ) : undefined
         }
@@ -123,9 +127,15 @@ function RfqDetail() {
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="lines">{t("procurementMod.rfqs.linesTab", { count: rfq.lines.length })}</TabsTrigger>
-          <TabsTrigger value="vendors">{t("procurementMod.rfqs.vendorsTab", { count: inviteCount })}</TabsTrigger>
-          <TabsTrigger value="bids">{t("procurementMod.rfqs.bidsTab", { count: submittedCount })}</TabsTrigger>
+          <TabsTrigger value="lines">
+            {t("procurementMod.rfqs.linesTab", { count: rfq.lines.length })}
+          </TabsTrigger>
+          <TabsTrigger value="vendors">
+            {t("procurementMod.rfqs.vendorsTab", { count: inviteCount })}
+          </TabsTrigger>
+          <TabsTrigger value="bids">
+            {t("procurementMod.rfqs.bidsTab", { count: submittedCount })}
+          </TabsTrigger>
           <TabsTrigger value="tabulation">{t("procurementMod.rfqs.tabulationTab")}</TabsTrigger>
         </TabsList>
 
@@ -217,7 +227,9 @@ function RfqDetail() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          aria-label={t("procurementMod.rfqs.removeVendor", { name: b.vendor_name })}
+                          aria-label={t("procurementMod.rfqs.removeVendor", {
+                            name: b.vendor_name,
+                          })}
                           onClick={() => removeInvite.mutate(b.id)}
                           disabled={removeInvite.isPending}
                         >

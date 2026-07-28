@@ -254,7 +254,6 @@ export async function reversePaymentOnInvoice(
   return { status: next.status, paid_amount: next.paid_amount };
 }
 
-
 export function decorateOverdue<
   T extends { status: string; due_date: string | null; amount: number; tax_amount: number },
 >(rows: T[], paidMap: (r: T) => number): (T & { balance: number; overdue: boolean })[] {

@@ -116,8 +116,6 @@ describe.skipIf(!HAS_DB)("RLS policy lint (live schema)", () => {
     expect(offenders, `unscoped tenant policy:\n${offenders.join("\n")}`).toEqual([]);
   });
 
-
-
   it("R3: every tenant table has RLS enabled and is not reachable without policies", () => {
     const rows = q(
       `select cl.relname, cl.relrowsecurity::text,

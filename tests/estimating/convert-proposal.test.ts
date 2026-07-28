@@ -43,12 +43,15 @@ describe("category mapping", () => {
     expect(drafts.map((d) => d.description)).toContain("Overhead & indirect costs");
     expect(drafts.every((d) => d.line_total !== 0)).toBe(true);
 
-    const zeroStages = proposalLinesFromEstimate(LINES, computeEstimate(LINES, {
-      escalation_pct: 0,
-      contingency_pct: 0,
-      overhead_pct: 0,
-      profit_pct: 10,
-    }));
+    const zeroStages = proposalLinesFromEstimate(
+      LINES,
+      computeEstimate(LINES, {
+        escalation_pct: 0,
+        contingency_pct: 0,
+        overhead_pct: 0,
+        profit_pct: 10,
+      }),
+    );
     expect(zeroStages.some((d) => d.category === "contingency")).toBe(false);
     expect(zeroStages.some((d) => d.description === "Escalation")).toBe(false);
   });

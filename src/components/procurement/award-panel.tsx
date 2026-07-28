@@ -43,7 +43,6 @@ import {
 } from "@/lib/po-query";
 import type { BidRow, RfqRow } from "@/lib/rfq.functions";
 
-
 function fmtMoney(n: number | null | undefined, currency: string) {
   if (n == null || Number.isNaN(n)) return "—";
   try {
@@ -95,10 +94,7 @@ export function AwardPanel({
   const isDisabled = rfq.status !== "issued" || !canAward;
 
   return (
-    <section
-      data-testid="award-panel"
-      className="space-y-3 rounded-md border border-border p-4"
-    >
+    <section data-testid="award-panel" className="space-y-3 rounded-md border border-border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-sm font-semibold uppercase tracking-wide">
@@ -135,7 +131,6 @@ export function AwardPanel({
           Purchase orders exist for this RFQ — awards are locked and can no longer be removed.
         </p>
       )}
-
 
       {rfq.status !== "issued" && (
         <p className="rounded border border-dashed border-border p-3 text-xs text-muted-foreground">
@@ -280,13 +275,11 @@ export function AwardPanel({
       >
         <AlertDialogContent data-testid="award-unaward-confirm">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Remove the award on line {confirmUnaward?.lineNo}?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Remove the award on line {confirmUnaward?.lineNo}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This reverses a procurement decision. The award record is deleted, the winning
-              bid returns to its pre-award status, and the reversal is written to the audit
-              log against your user.
+              This reverses a procurement decision. The award record is deleted, the winning bid
+              returns to its pre-award status, and the reversal is written to the audit log against
+              your user.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -304,6 +297,5 @@ export function AwardPanel({
         </AlertDialogContent>
       </AlertDialog>
     </section>
-
   );
 }

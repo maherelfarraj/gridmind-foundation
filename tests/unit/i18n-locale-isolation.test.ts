@@ -6,11 +6,7 @@ import { globSync } from "tinyglobby";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { LOCALE_STORAGE_KEY } from "@/lib/i18n";
-import {
-  cachedLocaleFor,
-  clearCachedLocale,
-  writeCachedLocale,
-} from "@/lib/i18n/locale-storage";
+import { cachedLocaleFor, clearCachedLocale, writeCachedLocale } from "@/lib/i18n/locale-storage";
 
 describe("locale persistence isolation", () => {
   beforeEach(() => window.localStorage.clear());
@@ -57,7 +53,9 @@ describe("export language sanity", () => {
       const src = readFileSync(f, "utf8");
       return /from ["']@\/lib\/i18n/.test(src) || /useI18n|useTranslation/.test(src);
     });
-    expect(leaks, `export modules must not import UI translations: ${leaks.join(", ")}`).toEqual([]);
+    expect(leaks, `export modules must not import UI translations: ${leaks.join(", ")}`).toEqual(
+      [],
+    );
   });
 
   it("has no Arabic characters in export sources", () => {

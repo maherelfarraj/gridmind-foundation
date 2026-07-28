@@ -38,10 +38,16 @@ function policies(table: string): Policy[] {
 }
 
 function grants(table: string, grantee: string): Set<Action> {
-  const re = new RegExp(`grant\\s+([\\w,\\s]+?)\\s+on\\s+public\\.${table}\\s+to\\s+([\\w,\\s]+)`, "gi");
+  const re = new RegExp(
+    `grant\\s+([\\w,\\s]+?)\\s+on\\s+public\\.${table}\\s+to\\s+([\\w,\\s]+)`,
+    "gi",
+  );
   const out = new Set<Action>();
   for (const m of sql.matchAll(re)) {
-    const grantees = m[2].toLowerCase().split(",").map((g) => g.trim());
+    const grantees = m[2]
+      .toLowerCase()
+      .split(",")
+      .map((g) => g.trim());
     if (!grantees.includes(grantee)) continue;
     for (const p of m[1].split(",").map((x) => x.trim().toLowerCase())) {
       if (p === "all") ALL.forEach((a) => out.add(a));
@@ -53,7 +59,9 @@ function grants(table: string, grantee: string): Set<Action> {
 
 describe("ESG carbon RLS (offline policy parse)", () => {
   it.each(TABLES)("%s has RLS enabled", (table) => {
-    expect(sql).toMatch(new RegExp(`alter table public\\.${table}\\s+enable row level security`, "i"));
+    expect(sql).toMatch(
+      new RegExp(`alter table public\\.${table}\\s+enable row level security`, "i"),
+    );
   });
 
   it.each(TABLES)("%s SELECT is company-scoped — cross-tenant reads return zero rows", (table) => {

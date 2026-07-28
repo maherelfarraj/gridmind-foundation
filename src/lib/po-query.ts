@@ -17,7 +17,6 @@ import {
   listRfqAwards,
   rejectPo,
   rfqHasPos,
-
   revokePoShareLink,
   setPoApprovalThreshold,
   submitPoForApproval,
@@ -117,7 +116,6 @@ export function rfqHasPosQueryOptions(
     staleTime: 15_000,
   });
 }
-
 
 // ---------------------------------------------------------------------------
 // mutations

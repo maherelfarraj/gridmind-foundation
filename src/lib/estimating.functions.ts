@@ -643,7 +643,12 @@ export const getEstimateComparison = createServerFn({ method: "GET" })
     }
 
     const pos = await loadProjectPos(context, estimate.project_id);
-    const invoiced = pos ? await loadInvoicedByPo(context, pos.map((p) => p.id)) : null;
+    const invoiced = pos
+      ? await loadInvoicedByPo(
+          context,
+          pos.map((p) => p.id),
+        )
+      : null;
     const labor = await loadLaborActuals(context, estimate.project_id);
 
     const committed = pos ? committedByType(pos) : null;

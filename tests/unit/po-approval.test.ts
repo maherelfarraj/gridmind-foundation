@@ -49,21 +49,25 @@ describe("PO approval engine rules", () => {
 
   it("picks up overdue instances for the escalation sweep", () => {
     const now = new Date("2026-07-27T12:00:00Z");
-    expect(
-      isInstanceOverdue({ status: "pending", sla_due_at: "2026-07-26T12:00:00Z" }, now),
-    ).toBe(true);
-    expect(
-      isInstanceOverdue({ status: "pending", sla_due_at: "2026-07-28T12:00:00Z" }, now),
-    ).toBe(false);
+    expect(isInstanceOverdue({ status: "pending", sla_due_at: "2026-07-26T12:00:00Z" }, now)).toBe(
+      true,
+    );
+    expect(isInstanceOverdue({ status: "pending", sla_due_at: "2026-07-28T12:00:00Z" }, now)).toBe(
+      false,
+    );
     expect(
       isInstanceOverdue(
-        { status: "pending", sla_due_at: "2026-07-26T12:00:00Z", escalated_at: "2026-07-26T13:00:00Z" },
+        {
+          status: "pending",
+          sla_due_at: "2026-07-26T12:00:00Z",
+          escalated_at: "2026-07-26T13:00:00Z",
+        },
         now,
       ),
     ).toBe(false);
-    expect(
-      isInstanceOverdue({ status: "approved", sla_due_at: "2026-07-26T12:00:00Z" }, now),
-    ).toBe(false);
+    expect(isInstanceOverdue({ status: "approved", sla_due_at: "2026-07-26T12:00:00Z" }, now)).toBe(
+      false,
+    );
     expect(isInstanceOverdue({ status: "pending", sla_due_at: null }, now)).toBe(false);
   });
 });

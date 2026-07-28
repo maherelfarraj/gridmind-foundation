@@ -5,7 +5,6 @@ import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase
 import {
   ClosePeriodSchema,
   ReopenPeriodSchema,
-
   ComparePeriodsSchema,
   SaveChecklistSchema,
   canClose,
@@ -82,7 +81,6 @@ export const reopenFinancePeriod = createServerFn({ method: "POST" })
     await reopenPeriod(context, companyId, data.period_month, data.reason);
     return { ok: true };
   });
-
 
 export const saveFinancePeriodChecklist = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])

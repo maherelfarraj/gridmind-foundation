@@ -105,7 +105,6 @@ export function InvoiceDetailDrawer({
     onError: (err) => toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
-
   const d = detail.data;
   const canRecord =
     d?.invoice.direction === "payable"
@@ -116,9 +115,15 @@ export function InvoiceDetailDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{d ? d.invoice.invoice_number : t("financeMod.invoices.invoiceFallback")}</SheetTitle>
+          <SheetTitle>
+            {d ? d.invoice.invoice_number : t("financeMod.invoices.invoiceFallback")}
+          </SheetTitle>
           <SheetDescription>
-            {d ? (d.invoice.direction === "payable" ? t("financeMod.invoices.payableInvoice") : t("financeMod.invoices.receivableInvoice")) : ""}
+            {d
+              ? d.invoice.direction === "payable"
+                ? t("financeMod.invoices.payableInvoice")
+                : t("financeMod.invoices.receivableInvoice")
+              : ""}
           </SheetDescription>
         </SheetHeader>
 
@@ -164,7 +169,9 @@ export function InvoiceDetailDrawer({
                     {d.invoice.overdue && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge variant="destructive">{t("financeMod.invoices.overdueBadge")}</Badge>
+                          <Badge variant="destructive">
+                            {t("financeMod.invoices.overdueBadge")}
+                          </Badge>
                         </TooltipTrigger>
                         <TooltipContent>{FORMULAS.overdue}</TooltipContent>
                       </Tooltip>
@@ -204,7 +211,9 @@ export function InvoiceDetailDrawer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">{t("financeMod.common.retention")}</dt>
+                <dt className="text-xs text-muted-foreground">
+                  {t("financeMod.common.retention")}
+                </dt>
                 <dd className="font-mono tabular-nums">{d.invoice.retention_pct}%</dd>
               </div>
               <div>
@@ -217,13 +226,17 @@ export function InvoiceDetailDrawer({
               </div>
               {d.invoice.milestone_label && (
                 <div className="col-span-2">
-                  <dt className="text-xs text-muted-foreground">{t("financeMod.invoices.milestoneLabel")}</dt>
+                  <dt className="text-xs text-muted-foreground">
+                    {t("financeMod.invoices.milestoneLabel")}
+                  </dt>
                   <dd>{d.invoice.milestone_label}</dd>
                 </div>
               )}
               {d.invoice.paid_at && (
                 <div className="col-span-2">
-                  <dt className="text-xs text-muted-foreground">{t("financeMod.invoices.paidAtLabel")}</dt>
+                  <dt className="text-xs text-muted-foreground">
+                    {t("financeMod.invoices.paidAtLabel")}
+                  </dt>
                   <dd>{d.invoice.paid_at.slice(0, 10)}</dd>
                 </div>
               )}
@@ -244,7 +257,13 @@ export function InvoiceDetailDrawer({
                     </Link>
                   </li>
                 )}
-                {d.pay_app && <li>{t("financeMod.invoices.payAppPrefix", { number: d.pay_app.application_number })}</li>}
+                {d.pay_app && (
+                  <li>
+                    {t("financeMod.invoices.payAppPrefix", {
+                      number: d.pay_app.application_number,
+                    })}
+                  </li>
+                )}
                 {!d.contract && !d.pay_app && (
                   <li className="text-muted-foreground">{t("financeMod.invoices.noLinked")}</li>
                 )}
@@ -286,7 +305,9 @@ export function InvoiceDetailDrawer({
                   disabled={!canRecord || approveMutation.isPending}
                   onClick={() => approveMutation.mutate()}
                 >
-                  {approveMutation.isPending ? t("financeMod.invoices.approving") : t("financeMod.invoices.approve")}
+                  {approveMutation.isPending
+                    ? t("financeMod.invoices.approving")
+                    : t("financeMod.invoices.approve")}
                 </Button>
               )}
               {d.invoice.status === "approved" && (
@@ -325,7 +346,9 @@ export function InvoiceDetailDrawer({
                   disabled={!canWrite || d.payment_release_blocked || mutation.isPending}
                   onClick={() => mutation.mutate()}
                 >
-                  {mutation.isPending ? t("financeMod.invoices.releasing") : t("financeMod.invoices.markAsPaid")}
+                  {mutation.isPending
+                    ? t("financeMod.invoices.releasing")
+                    : t("financeMod.invoices.markAsPaid")}
                 </Button>
                 {!canWrite && (
                   <p className="mt-2 text-xs text-muted-foreground">

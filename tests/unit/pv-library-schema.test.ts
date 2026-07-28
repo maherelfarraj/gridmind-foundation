@@ -1,10 +1,7 @@
 // P-150 — PV equipment library schema guards.
 import { describe, expect, it } from "vitest";
 
-import {
-  isCertificationExpired,
-  pvEquipmentSchema,
-} from "@/lib/pv-library.schemas";
+import { isCertificationExpired, pvEquipmentSchema } from "@/lib/pv-library.schemas";
 
 const base = {
   category: "inverter" as const,

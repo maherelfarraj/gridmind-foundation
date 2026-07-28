@@ -22,7 +22,10 @@ describe("createEstimateRevision", () => {
       converted_proposal_id: "prop-1",
     });
     const w = makeWorld({ estimates: [source], estimate_lines: LINES });
-    const created = await cloneEstimateAsRevision(w.ctx, { companyId: COMPANY_A, estimate: source });
+    const created = await cloneEstimateAsRevision(w.ctx, {
+      companyId: COMPANY_A,
+      estimate: source,
+    });
     expect(created.revision).toBe(3);
     const clone = w.db.estimates.find((e) => e.id === created.id)!;
     expect(clone).toMatchObject({
@@ -45,7 +48,10 @@ describe("createEstimateRevision", () => {
   it("copies every line with traceability ids preserved", async () => {
     const source = makeEstimate({ status: "priced" });
     const w = makeWorld({ estimates: [source], estimate_lines: LINES });
-    const created = await cloneEstimateAsRevision(w.ctx, { companyId: COMPANY_A, estimate: source });
+    const created = await cloneEstimateAsRevision(w.ctx, {
+      companyId: COMPANY_A,
+      estimate: source,
+    });
     expect(created.lines_copied).toBe(2);
     const copies = w.db.estimate_lines.filter((l) => l.estimate_id === created.id);
     expect(copies).toHaveLength(2);

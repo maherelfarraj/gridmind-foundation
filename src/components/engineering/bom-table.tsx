@@ -127,10 +127,18 @@ export function BomTable({
                     <TableHead>{t("engMod.calculators.columns.item")}</TableHead>
                     <TableHead>{t("engMod.calculators.columns.spec")}</TableHead>
                     <TableHead className="w-20">{t("engMod.calculators.columns.unit")}</TableHead>
-                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.qty")}</TableHead>
-                    <TableHead className="w-28 text-right">{t("engMod.calculators.columns.bufferPct")}</TableHead>
-                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.buffered")}</TableHead>
-                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.unitCost")}</TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("engMod.calculators.columns.qty")}
+                    </TableHead>
+                    <TableHead className="w-28 text-right">
+                      {t("engMod.calculators.columns.bufferPct")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("engMod.calculators.columns.buffered")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("engMod.calculators.columns.unitCost")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

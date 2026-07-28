@@ -23,8 +23,7 @@ function fakeSupabase(opts: { closed: boolean }) {
       opts.closed
         ? {
             error: {
-              message:
-                "finance_period_closed: 2026-07-01 is closed for financial mutations",
+              message: "finance_period_closed: 2026-07-01 is closed for financial mutations",
             },
           }
         : { error: null },
@@ -44,12 +43,10 @@ describe("blocked-attempt audit", () => {
     };
     let thrown: unknown;
     try {
-      await assertPeriodOpen(
-        sb as never,
-        "company-1",
-        "2026-07-28",
-        { entity: "payments", entityId: "11111111-1111-1111-1111-111111111111" },
-      );
+      await assertPeriodOpen(sb as never, "company-1", "2026-07-28", {
+        entity: "payments",
+        entityId: "11111111-1111-1111-1111-111111111111",
+      });
     } catch (err) {
       thrown = err;
     }
@@ -66,9 +63,7 @@ describe("blocked-attempt audit", () => {
 
   it("writes no audit row when the period is open", async () => {
     const sb = fakeSupabase({ closed: false }) as unknown as { inserted: Row[] };
-    await expect(
-      assertPeriodOpen(sb as never, "company-1", "2026-08-02"),
-    ).resolves.toBeUndefined();
+    await expect(assertPeriodOpen(sb as never, "company-1", "2026-08-02")).resolves.toBeUndefined();
     expect(sb.inserted).toHaveLength(0);
   });
 

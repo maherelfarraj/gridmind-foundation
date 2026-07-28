@@ -88,7 +88,11 @@ export function SldGallery({ projectId, canWrite }: { projectId: string; canWrit
                     >
                       {row.current_status}
                     </Badge>
-                    {row.revision_code && <Badge variant="outline">{t("engMod.sld.gallery.revision", { code: row.revision_code })}</Badge>}
+                    {row.revision_code && (
+                      <Badge variant="outline">
+                        {t("engMod.sld.gallery.revision", { code: row.revision_code })}
+                      </Badge>
+                    )}
                     {row.markup_count > 0 && (
                       <Badge variant="secondary">
                         {t("engMod.sld.gallery.markup", { count: row.markup_count })}
@@ -141,9 +145,7 @@ function NewSldDialog({ projectId }: { projectId: string }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("engMod.sld.gallery.newSld.title")}</DialogTitle>
-          <DialogDescription>
-            {t("engMod.sld.gallery.newSld.description")}
-          </DialogDescription>
+          <DialogDescription>{t("engMod.sld.gallery.newSld.description")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
@@ -175,7 +177,9 @@ function NewSldDialog({ projectId }: { projectId: string }) {
               {t("engMod.common.cancel")}
             </Button>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? t("engMod.common.creating") : t("engMod.sld.gallery.newSld.createButton")}
+              {create.isPending
+                ? t("engMod.common.creating")
+                : t("engMod.sld.gallery.newSld.createButton")}
             </Button>
           </DialogFooter>
         </form>

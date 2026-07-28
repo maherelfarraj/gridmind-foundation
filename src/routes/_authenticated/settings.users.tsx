@@ -482,7 +482,9 @@ function UsersPage() {
                                 <Select value={field.value} onValueChange={field.onChange}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder={t("adminMod.settings.selectRolePlaceholder")} />
+                                      <SelectValue
+                                        placeholder={t("adminMod.settings.selectRolePlaceholder")}
+                                      />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -531,9 +533,7 @@ function UsersPage() {
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <div className="text-sm">
             <p className="font-medium">{t("adminMod.settings.onlyOneAdminTitle")}</p>
-            <p className="text-accent-foreground/80">
-              {t("adminMod.settings.onlyOneAdminDesc")}
-            </p>
+            <p className="text-accent-foreground/80">{t("adminMod.settings.onlyOneAdminDesc")}</p>
           </div>
         </div>
       )}
@@ -642,7 +642,9 @@ function UsersPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {m.roles.length === 0 && (
-                          <span className="text-xs text-muted-foreground">{t("adminMod.settings.noRoles")}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {t("adminMod.settings.noRoles")}
+                          </span>
                         )}
                         {m.roles.map((r) => (
                           <Badge key={r} variant="outline">
@@ -747,9 +749,7 @@ function UsersPage() {
                   return (
                     <TableRow key={row.id}>
                       <TableCell className="font-medium">{row.email}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {roleLabel(row.role)}
-                      </TableCell>
+                      <TableCell className="text-muted-foreground">{roleLabel(row.role)}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariant(row.derivedStatus)}>
                           {row.derivedStatus}
@@ -814,9 +814,7 @@ function UsersPage() {
                 </span>
               )}
             </SheetTitle>
-            <SheetDescription>
-              {t("adminMod.settings.toggleRolesDesc")}
-            </SheetDescription>
+            <SheetDescription>{t("adminMod.settings.toggleRolesDesc")}</SheetDescription>
           </SheetHeader>
           {managedMember && (
             <div className="mt-6 flex flex-col gap-6">
@@ -849,7 +847,11 @@ function UsersPage() {
                                   action: next ? "grant" : "revoke",
                                 })
                               }
-                              aria-label={on ? t("adminMod.settings.revokeRoleAria", { role: roleLabel(role) }) : t("adminMod.settings.grantAria", { role: roleLabel(role) })}
+                              aria-label={
+                                on
+                                  ? t("adminMod.settings.revokeRoleAria", { role: roleLabel(role) })
+                                  : t("adminMod.settings.grantAria", { role: roleLabel(role) })
+                              }
                             />
                           </div>
                         </label>

@@ -72,7 +72,9 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/")({
 
 function TenantsNotFound() {
   const { t } = useI18n();
-  return <div className="p-8 text-sm text-muted-foreground">{t("adminMod.tenantsPage.notFound")}</div>;
+  return (
+    <div className="p-8 text-sm text-muted-foreground">{t("adminMod.tenantsPage.notFound")}</div>
+  );
 }
 
 function TenantsError({ error, reset }: { error: Error; reset: () => void }) {
@@ -248,7 +250,8 @@ function CreateTenantDialog() {
       form.reset();
       setOpen(false);
     },
-    onError: (err: Error) => toast.error(err.message || t("adminMod.tenantsPage.create.errorToast")),
+    onError: (err: Error) =>
+      toast.error(err.message || t("adminMod.tenantsPage.create.errorToast")),
   });
 
   return (
@@ -275,7 +278,10 @@ function CreateTenantDialog() {
                 <FormItem>
                   <FormLabel>{t("adminMod.tenantsPage.create.legalNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t("adminMod.tenantsPage.create.legalNamePlaceholder")} />
+                    <Input
+                      {...field}
+                      placeholder={t("adminMod.tenantsPage.create.legalNamePlaceholder")}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -288,7 +294,10 @@ function CreateTenantDialog() {
                 <FormItem>
                   <FormLabel>{t("adminMod.tenantsPage.create.shortNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t("adminMod.tenantsPage.create.shortNamePlaceholder")} />
+                    <Input
+                      {...field}
+                      placeholder={t("adminMod.tenantsPage.create.shortNamePlaceholder")}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -301,7 +310,11 @@ function CreateTenantDialog() {
                 <FormItem>
                   <FormLabel>{t("adminMod.tenantsPage.create.contactEmailLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" placeholder={t("adminMod.tenantsPage.create.contactEmailPlaceholder")} />
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder={t("adminMod.tenantsPage.create.contactEmailPlaceholder")}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -320,9 +333,15 @@ function CreateTenantDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="starter">{t("adminMod.tenantsPage.plan.starter")}</SelectItem>
-                      <SelectItem value="growth">{t("adminMod.tenantsPage.plan.growth")}</SelectItem>
-                      <SelectItem value="enterprise">{t("adminMod.tenantsPage.plan.enterprise")}</SelectItem>
+                      <SelectItem value="starter">
+                        {t("adminMod.tenantsPage.plan.starter")}
+                      </SelectItem>
+                      <SelectItem value="growth">
+                        {t("adminMod.tenantsPage.plan.growth")}
+                      </SelectItem>
+                      <SelectItem value="enterprise">
+                        {t("adminMod.tenantsPage.plan.enterprise")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

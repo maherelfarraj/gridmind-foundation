@@ -121,7 +121,11 @@ function PosIndex() {
       hideBelow: "lg",
       cell: (r) => <span className="text-muted-foreground">{r.project_name ?? "—"}</span>,
     },
-    { id: "status", header: t("procurementMod.common.status"), cell: (r) => <PoStatusBadge status={r.status} /> },
+    {
+      id: "status",
+      header: t("procurementMod.common.status"),
+      cell: (r) => <PoStatusBadge status={r.status} />,
+    },
     {
       id: "ack",
       header: t("procurementMod.pos.colVendorAck"),
@@ -145,7 +149,9 @@ function PosIndex() {
       header: t("procurementMod.pos.colTotal"),
       numeric: true,
       cell: (r) => (
-        <MoneyCell className="font-medium">{formatMoney(r.total_amount, r.currency_code)}</MoneyCell>
+        <MoneyCell className="font-medium">
+          {formatMoney(r.total_amount, r.currency_code)}
+        </MoneyCell>
       ),
     },
     {
@@ -233,7 +239,10 @@ function PosIndex() {
           ),
           badge: <PoStatusBadge status={r.status} />,
           fields: [
-            { label: t("procurementMod.pos.colTotal"), value: formatMoney(r.total_amount, r.currency_code) },
+            {
+              label: t("procurementMod.pos.colTotal"),
+              value: formatMoney(r.total_amount, r.currency_code),
+            },
             { label: t("procurementMod.pos.colCreated"), value: formatDate(r.created_at) },
           ],
         })}

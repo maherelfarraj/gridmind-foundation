@@ -117,9 +117,7 @@ function OpsAlertsPage() {
   });
 
   const canWrite = alerts.data?.canWrite ?? false;
-  const ruleTypes = Array.from(
-    new Set((alerts.data?.rules ?? []).map((r) => r.rule_type)),
-  );
+  const ruleTypes = Array.from(new Set((alerts.data?.rules ?? []).map((r) => r.rule_type)));
 
   return (
     <div className="space-y-6">

@@ -207,7 +207,10 @@ function ReconciliationPage() {
             <TooltipTrigger asChild>
               <div>
                 <KpiTile
-                  label={t("financeMod.reconciliation.reconciled", { status: "" }).replace(/\s+$/, "")}
+                  label={t("financeMod.reconciliation.reconciled", { status: "" }).replace(
+                    /\s+$/,
+                    "",
+                  )}
                   icon={Landmark}
                   isLoading={dataQ.isLoading}
                   value={pct === null ? "n/a" : `${(pct * 100).toFixed(0)}%`}
@@ -245,7 +248,9 @@ function ReconciliationPage() {
 
       {canWrite && selected.length > 0 ? (
         <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-muted/40 p-3">
-          <span className="text-sm font-medium text-foreground">{t("financeMod.reconciliation.selected", { count: selected.length })}</span>
+          <span className="text-sm font-medium text-foreground">
+            {t("financeMod.reconciliation.selected", { count: selected.length })}
+          </span>
           <div className="space-y-1.5">
             <Label htmlFor="bulk-prefix">{t("financeMod.reconciliation.statementRefPrefix")}</Label>
             <Input
@@ -310,14 +315,21 @@ function ReconciliationPage() {
         <EmptyState
           icon={AlertCircle}
           title={t("financeMod.reconciliation.couldNotLoad")}
-          description={translateError(t, errorCodeOf(dataQ.error), invoiceErrorMessage(dataQ.error))}
+          description={translateError(
+            t,
+            errorCodeOf(dataQ.error),
+            invoiceErrorMessage(dataQ.error),
+          )}
           action={<Button onClick={() => void dataQ.refetch()}>{t("common.retry")}</Button>}
         />
       ) : rows.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
           title={t("financeMod.reconciliation.allReconciled")}
-          description={t("financeMod.reconciliation.noneToReview", { status: status === "all" ? "" : FILTER_LABEL[status].toLowerCase(), month: monthLabel(month) })}
+          description={t("financeMod.reconciliation.noneToReview", {
+            status: status === "all" ? "" : FILTER_LABEL[status].toLowerCase(),
+            month: monthLabel(month),
+          })}
         />
       ) : (
         <div className="rounded-lg border border-border">
@@ -363,7 +375,11 @@ function ReconciliationPage() {
                       <span>{r.invoice_number ?? "—"}</span>
                       <StatusBadge
                         status={r.direction}
-                        label={r.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
+                        label={
+                          r.direction === "payable"
+                            ? t("financeMod.invoices.payable")
+                            : t("financeMod.invoices.receivable")
+                        }
                         tone={r.direction === "payable" ? "attention" : "active"}
                       />
                     </div>
@@ -435,7 +451,9 @@ function RowActions({
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor={`ref-${row.id}`}>{t("financeMod.reconciliation.statementLineRef")}</Label>
+            <Label htmlFor={`ref-${row.id}`}>
+              {t("financeMod.reconciliation.statementLineRef")}
+            </Label>
             <Input
               id={`ref-${row.id}`}
               value={ref}

@@ -142,7 +142,9 @@ function ReportRow({ row }: { row: OmReportRow }) {
   const getUrl = useServerFn(getOmReportDownloadUrl);
   const [busy, setBusy] = useState(false);
   const period = format(parseISO(`${row.period_start}T00:00:00`), "MMM yyyy");
-  const generated = row.generated_at ? format(parseISO(row.generated_at), "PP p") : t("omMod.common.none");
+  const generated = row.generated_at
+    ? format(parseISO(row.generated_at), "PP p")
+    : t("omMod.common.none");
 
   async function download() {
     setBusy(true);

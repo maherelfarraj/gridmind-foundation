@@ -47,9 +47,7 @@ describe("serialRowsFromLines", () => {
       line({ po_line_no: 1, lot_ids: [] }),
       line({ po_line_no: 2, description: "", qty_received: 4, lot_ids: ["  ", "S1"] }),
     ]);
-    expect(rows).toEqual([
-      { sku: "Line 2", batch_serial: "S1", qty: 4, grn_line_no: 2 },
-    ]);
+    expect(rows).toEqual([{ sku: "Line 2", batch_serial: "S1", qty: 4, grn_line_no: 2 }]);
   });
 
   it("flags serials reused across lines", () => {
@@ -89,12 +87,12 @@ describe("etaSlippage", () => {
       slip_days: 14,
       severity: "late",
     });
-    expect(
-      etaSlippage({ site_need_date: "2026-09-01", current_eta: "2026-08-31" }).severity,
-    ).toBe("at_risk");
-    expect(
-      etaSlippage({ site_need_date: "2026-09-01", current_eta: "2026-08-01" }).severity,
-    ).toBe("on_time");
+    expect(etaSlippage({ site_need_date: "2026-09-01", current_eta: "2026-08-31" }).severity).toBe(
+      "at_risk",
+    );
+    expect(etaSlippage({ site_need_date: "2026-09-01", current_eta: "2026-08-01" }).severity).toBe(
+      "on_time",
+    );
     expect(etaSlippage({ site_need_date: null, current_eta: "2026-09-01" })).toEqual({
       slip_days: null,
       severity: "unknown",

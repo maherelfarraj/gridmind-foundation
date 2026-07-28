@@ -47,11 +47,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/ifc-release/")(
-  {
-    component: IfcReleasePage,
-  },
-);
+export const Route = createFileRoute(
+  "/_authenticated/projects/$projectId/engineering/ifc-release/",
+)({
+  component: IfcReleasePage,
+});
 
 function IfcReleasePage() {
   const { projectId } = Route.useParams();

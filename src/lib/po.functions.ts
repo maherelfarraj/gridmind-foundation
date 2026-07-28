@@ -262,7 +262,6 @@ export const awardRfqLine = createServerFn({ method: "POST" })
     // Bid status is DB-maintained: the rfq_line_awards trigger flips the parent
     // bid to 'awarded' (and reverts it on unaward). No status write here.
 
-
     await audit(context, "rfq.award", "rfq_line_awards", (inserted as any).id, {
       rfq_id: data.rfqId,
       bid_id: data.bidId,
@@ -290,8 +289,7 @@ export const unawardRfqLine = createServerFn({ method: "POST" })
       if (msg.includes("award_not_found")) httpError(404, "award_not_found");
       if (msg.includes("award_locked"))
         httpError(409, "award_locked", "POs already exist for this RFQ — cannot unaward.");
-      if (msg.includes("forbidden") || (error as any).code === "42501")
-        httpError(403, "forbidden");
+      if (msg.includes("forbidden") || (error as any).code === "42501") httpError(403, "forbidden");
       throw error;
     }
 
@@ -302,7 +300,6 @@ export const unawardRfqLine = createServerFn({ method: "POST" })
       bid_reverted: (result as any)?.bid_reverted ?? false,
     });
     return { ok: true };
-
   });
 
 // ---------------------------------------------------------------------------
@@ -1134,4 +1131,3 @@ export const rfqHasPos = createServerFn({ method: "GET" })
 
 // re-exports for UI
 export { PO_STATUSES };
-

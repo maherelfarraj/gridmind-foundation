@@ -56,8 +56,6 @@ export const resources = {
   },
 } as const;
 
-
-
 export function isLocale(value: unknown): value is Locale {
   return value === "en" || value === "ar";
 }

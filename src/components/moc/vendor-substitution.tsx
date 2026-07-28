@@ -22,11 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getVendorSubstitution, saveVendorSubstitution } from "@/lib/moc.exec.functions";
-import {
-  defaultEquivalence,
-  equivalenceComplete,
-  type EquivalenceRow,
-} from "@/lib/moc.exec.rules";
+import { defaultEquivalence, equivalenceComplete, type EquivalenceRow } from "@/lib/moc.exec.rules";
 
 interface Props {
   changeRequestId: string;
@@ -107,7 +103,10 @@ export function VendorSubstitution({ changeRequestId, editable }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <ArrowRight className="hidden size-4 self-center text-muted-foreground md:block" aria-hidden />
+        <ArrowRight
+          className="hidden size-4 self-center text-muted-foreground md:block"
+          aria-hidden
+        />
         <div className="space-y-1">
           <Label htmlFor="new-vendor">Replacement vendor</Label>
           <Select

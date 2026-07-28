@@ -105,13 +105,18 @@ export function BomHeader({
             disabled={!canRelease || !snap || isReleased || releasing}
           >
             <Rocket className="mr-1 h-4 w-4" />
-            {releasing ? t("engMod.calculators.bomHeader.releasing") : t("engMod.calculators.bomHeader.release")}
+            {releasing
+              ? t("engMod.calculators.bomHeader.releasing")
+              : t("engMod.calculators.bomHeader.release")}
           </Button>
         </div>
       </CardHeader>
       {snap && (
         <CardContent className="grid gap-4 md:grid-cols-4">
-          <Metric label={t("engMod.calculators.bomHeader.metrics.version")} value={`v${snap.version}`} />
+          <Metric
+            label={t("engMod.calculators.bomHeader.metrics.version")}
+            value={`v${snap.version}`}
+          />
           <Metric
             label={t("engMod.calculators.bomHeader.metrics.capacity")}
             value={params.capacity_mwp_dc != null ? Number(params.capacity_mwp_dc).toFixed(1) : "—"}

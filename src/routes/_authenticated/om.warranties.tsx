@@ -88,11 +88,15 @@ function CoverageBadge({ dateISO }: { dateISO: string }) {
   }
   if (badge === "expiring") {
     return (
-      <Badge className="bg-warning text-warning-foreground">{t("omMod.warranties.inDays", { days })}</Badge>
+      <Badge className="bg-warning text-warning-foreground">
+        {t("omMod.warranties.inDays", { days })}
+      </Badge>
     );
   }
   return (
-    <Badge className="bg-success text-success-foreground">{t("omMod.warranties.activeDays", { days })}</Badge>
+    <Badge className="bg-success text-success-foreground">
+      {t("omMod.warranties.activeDays", { days })}
+    </Badge>
   );
 }
 
@@ -193,7 +197,10 @@ function WarrantiesPage() {
           value={kpisQ.data?.activeCoveragePct == null ? "—" : `${kpisQ.data.activeCoveragePct}%`}
           hint={
             kpisQ.data
-              ? t("omMod.warranties.activeCoverageHint", { covered: kpisQ.data.coveredEquipment, active: kpisQ.data.activeEquipment })
+              ? t("omMod.warranties.activeCoverageHint", {
+                  covered: kpisQ.data.coveredEquipment,
+                  active: kpisQ.data.activeEquipment,
+                })
               : undefined
           }
           isLoading={kpisQ.isLoading}
@@ -296,13 +303,17 @@ function WarrantiesPage() {
                     <TableCell>
                       <div className="font-medium">
                         {r.equipment_tag ?? (
-                          <span className="text-muted-foreground">{t("omMod.common.projectWide")}</span>
+                          <span className="text-muted-foreground">
+                            {t("omMod.common.projectWide")}
+                          </span>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">{r.project_name}</div>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {r.vendor_name ?? <span className="text-muted-foreground">{t("omMod.common.none")}</span>}
+                      {r.vendor_name ?? (
+                        <span className="text-muted-foreground">{t("omMod.common.none")}</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{t(`omMod.warrantyType.${r.warranty_type}`)}</Badge>

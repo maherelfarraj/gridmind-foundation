@@ -107,9 +107,18 @@ function PlantBody({ data }: { data: PlantDetailPayload }) {
   return (
     <>
       <KpiGrid>
-        <KpiTile label={t("omMod.plantDetail.capacity")} value={`${p?.capacityMw.toFixed(2) ?? "—"} MW`} />
-        <KpiTile label={t("omMod.plantDetail.currentPower")} value={`${p?.currentPowerKw.toFixed(1) ?? "—"} kW`} />
-        <KpiTile label={t("omMod.plantDetail.energyToday")} value={`${p?.todayEnergyKwh.toFixed(1) ?? "—"} kWh`} />
+        <KpiTile
+          label={t("omMod.plantDetail.capacity")}
+          value={`${p?.capacityMw.toFixed(2) ?? "—"} MW`}
+        />
+        <KpiTile
+          label={t("omMod.plantDetail.currentPower")}
+          value={`${p?.currentPowerKw.toFixed(1) ?? "—"} kW`}
+        />
+        <KpiTile
+          label={t("omMod.plantDetail.energyToday")}
+          value={`${p?.todayEnergyKwh.toFixed(1) ?? "—"} kWh`}
+        />
         <KpiTile
           label={t("omMod.plantDetail.availability")}
           value={
@@ -135,11 +144,7 @@ function PlantBody({ data }: { data: PlantDetailPayload }) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.perInverter}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    stroke="var(--muted-foreground)"
-                    tick={{ fontSize: 11 }}
-                  />
+                  <XAxis dataKey="name" stroke="var(--muted-foreground)" tick={{ fontSize: 11 }} />
                   <YAxis
                     stroke="var(--muted-foreground)"
                     tick={{ fontSize: 11 }}

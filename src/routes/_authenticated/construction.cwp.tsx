@@ -33,7 +33,6 @@ import { CWP_STATUSES, type CwpStatus } from "@/lib/cwp.rules";
 import { typedErrorMessage } from "@/lib/typed-error";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
-
 export const Route = createFileRoute("/_authenticated/construction/cwp")({
   head: () => ({
     meta: [
@@ -46,7 +45,8 @@ export const Route = createFileRoute("/_authenticated/construction/cwp")({
       { property: "og:title", content: "Construction work packages · GridMind EPC" },
       {
         property: "og:description",
-        content: "Plan, sequence and track construction work packages across disciplines and areas.",
+        content:
+          "Plan, sequence and track construction work packages across disciplines and areas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -120,8 +120,7 @@ function CwpBoardPage() {
   );
   const filtered = rows.filter(
     (r) =>
-      (discipline === "all" || r.discipline === discipline) &&
-      (area === "all" || r.area === area),
+      (discipline === "all" || r.discipline === discipline) && (area === "all" || r.area === area),
   );
 
   const detailFn = useServerFn(getWorkPackageDetail);
@@ -244,13 +243,15 @@ function CwpBoardPage() {
                     </p>
                     <Progress value={Number(c.progress_pct ?? 0)} className="mt-2 h-1.5" />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {Number(c.progress_pct ?? 0).toFixed(0)}% ·{" "}
-                      {c.planned_start ?? "—"} → {c.planned_end ?? "—"}
+                      {Number(c.progress_pct ?? 0).toFixed(0)}% · {c.planned_start ?? "—"} →{" "}
+                      {c.planned_end ?? "—"}
                     </p>
                   </button>
                 ))}
                 {cards.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.dropHere")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("adminMod.construction.cwp.dropHere")}
+                  </p>
                 ) : null}
               </section>
             );
@@ -261,7 +262,9 @@ function CwpBoardPage() {
       <Sheet open={Boolean(openId)} onOpenChange={(o) => !o && setOpenId(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>{detail.data?.cwp?.cwp_number ?? t("adminMod.construction.cwp.workPackage")}</SheetTitle>
+            <SheetTitle>
+              {detail.data?.cwp?.cwp_number ?? t("adminMod.construction.cwp.workPackage")}
+            </SheetTitle>
           </SheetHeader>
           <div className="space-y-4 p-4">
             <PanelState
@@ -281,11 +284,15 @@ function CwpBoardPage() {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.weight")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("adminMod.construction.cwp.weight")}
+                  </p>
                   <p className="text-foreground">{Number(detail.data?.cwp?.weight ?? 0)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.progress")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("adminMod.construction.cwp.progress")}
+                  </p>
                   <p className="text-foreground">
                     {Number(detail.data?.cwp?.progress_pct ?? 0).toFixed(1)}%
                   </p>
@@ -294,11 +301,15 @@ function CwpBoardPage() {
               <Separator />
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{t("adminMod.construction.cwp.linkedTasks")}</CardTitle>
+                  <CardTitle className="text-sm">
+                    {t("adminMod.construction.cwp.linkedTasks")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {(detail.data?.tasks ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{t("adminMod.construction.cwp.noTasksLinked")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("adminMod.construction.cwp.noTasksLinked")}
+                    </p>
                   ) : (
                     (detail.data?.tasks ?? []).map((t) => (
                       <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
@@ -314,11 +325,15 @@ function CwpBoardPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{t("adminMod.construction.cwp.progressHistory")}</CardTitle>
+                  <CardTitle className="text-sm">
+                    {t("adminMod.construction.cwp.progressHistory")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {(detail.data?.history ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{t("adminMod.construction.cwp.noHistory")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("adminMod.construction.cwp.noHistory")}
+                    </p>
                   ) : (
                     (detail.data?.history ?? []).map((h) => (
                       <div key={h.id} className="text-xs">

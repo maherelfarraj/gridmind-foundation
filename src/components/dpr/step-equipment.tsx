@@ -136,7 +136,9 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
                       type="button"
                       size="icon"
                       variant="ghost"
-                      aria-label={t("fieldMod.dpr.equipment.removeEquipment", { tag: r.equipment_tag })}
+                      aria-label={t("fieldMod.dpr.equipment.removeEquipment", {
+                        tag: r.equipment_tag,
+                      })}
                       onClick={() => remove.mutate(r.id)}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -224,7 +226,8 @@ export function StepEquipment({ header, readOnly }: { header: DprRow; readOnly: 
                 disabled={!tag.trim() || save.isPending}
                 onClick={() => save.mutate()}
               >
-                <Plus className="me-2 h-4 w-4" aria-hidden /> {t("fieldMod.dpr.equipment.addEquipmentLog")}
+                <Plus className="me-2 h-4 w-4" aria-hidden />{" "}
+                {t("fieldMod.dpr.equipment.addEquipmentLog")}
               </Button>
             </div>
           </CardContent>

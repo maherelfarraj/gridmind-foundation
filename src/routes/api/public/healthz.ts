@@ -43,4 +43,3 @@ export const Route = createFileRoute("/api/public/healthz")({
     },
   },
 });
-

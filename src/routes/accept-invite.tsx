@@ -239,7 +239,10 @@ function AnonymousEnroll({
 
         <form onSubmit={form.handleSubmit(onSetPassword)} className="flex flex-col gap-3">
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-full-name">
+            <label
+              className="text-sm font-medium leading-none text-foreground"
+              htmlFor="invite-full-name"
+            >
               Full name
             </label>
             <Input
@@ -256,13 +259,19 @@ function AnonymousEnroll({
             ) : null}
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-email">
+            <label
+              className="text-sm font-medium leading-none text-foreground"
+              htmlFor="invite-email"
+            >
               Email
             </label>
             <Input id="invite-email" value={invite.email} readOnly disabled />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-password">
+            <label
+              className="text-sm font-medium leading-none text-foreground"
+              htmlFor="invite-password"
+            >
               Set a password
             </label>
             <Input

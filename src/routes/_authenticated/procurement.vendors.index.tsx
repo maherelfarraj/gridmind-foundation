@@ -58,7 +58,9 @@ function VendorsError({ error, reset }: { error: Error; reset: () => void }) {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">{t("procurementMod.vendors.loadError")}</h2>
+      <h2 className="font-display text-lg font-semibold">
+        {t("procurementMod.vendors.loadError")}
+      </h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button
         onClick={() => {

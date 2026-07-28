@@ -142,10 +142,7 @@ function AnalyticsPage() {
         title="Performance analytics"
         description="Downtime classification, lost energy, availability, performance ratio and guarantee margins."
         actions={
-          <Button
-            onClick={() => compute.mutate()}
-            disabled={!activeProject || compute.isPending}
-          >
+          <Button onClick={() => compute.mutate()} disabled={!activeProject || compute.isPending}>
             {compute.isPending ? "Computing…" : "Compute daily KPIs"}
           </Button>
         }
@@ -220,7 +217,9 @@ function AnalyticsPage() {
               hint={
                 <>
                   {d.downtimeMinutes.toFixed(0)} downtime minutes
-                  <Formula text={excludeGrid ? FORMULAS.availabilityExclGrid : FORMULAS.availability} />
+                  <Formula
+                    text={excludeGrid ? FORMULAS.availabilityExclGrid : FORMULAS.availability}
+                  />
                 </>
               }
               status={
@@ -272,7 +271,6 @@ function AnalyticsPage() {
                     : "warning"
               }
             />
-
           </KpiGrid>
 
           {d.dataQuality.driftFlags.length > 0 ? (
@@ -396,7 +394,9 @@ function AnalyticsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Expected vs actual energy (30 days)</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Expected vs actual energy (30 days)
+              </CardTitle>
             </CardHeader>
             <CardContent className="h-72">
               {!d.hasBaseline ? (

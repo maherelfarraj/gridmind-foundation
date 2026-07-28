@@ -62,7 +62,9 @@ function DueChip({ dateISO }: { dateISO: string }) {
   const diff = differenceInCalendarDays(parseISO(dateISO), new Date());
   if (diff < 0)
     return (
-      <Badge variant="destructive">{t("omMod.maintenancePlans.overdueBy", { days: Math.abs(diff) })}</Badge>
+      <Badge variant="destructive">
+        {t("omMod.maintenancePlans.overdueBy", { days: Math.abs(diff) })}
+      </Badge>
     );
   if (diff === 0) return <Badge>{t("omMod.maintenancePlans.dueToday")}</Badge>;
   if (diff <= 7)
@@ -169,7 +171,9 @@ function MaintenancePlansPage() {
                   <TableHead>{t("omMod.maintenancePlans.colLastGenerated")}</TableHead>
                   <TableHead>{t("omMod.maintenancePlans.colAuto")}</TableHead>
                   <TableHead>{t("omMod.maintenancePlans.colActive")}</TableHead>
-                  <TableHead className="text-end">{t("omMod.maintenancePlans.colActions")}</TableHead>
+                  <TableHead className="text-end">
+                    {t("omMod.maintenancePlans.colActions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -238,7 +242,9 @@ function MaintenancePlansPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => {
-                            if (confirm(t("omMod.maintenancePlans.deleteConfirm", { title: p.title })))
+                            if (
+                              confirm(t("omMod.maintenancePlans.deleteConfirm", { title: p.title }))
+                            )
                               del.mutate(p.id);
                           }}
                           title={t("omMod.common.delete")}

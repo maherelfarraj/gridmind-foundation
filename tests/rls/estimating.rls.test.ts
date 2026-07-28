@@ -94,7 +94,8 @@ describe("P-209 estimating RLS", () => {
 
   it("finance_admin reads estimates but can never write them", () => {
     const writes = policies.filter(
-      (p) => p.table !== "rate_library" && p.action !== "select" && p.roles.includes("finance_admin"),
+      (p) =>
+        p.table !== "rate_library" && p.action !== "select" && p.roles.includes("finance_admin"),
     );
     expect(writes).toEqual([]);
     expect(find("estimates", "select").memberScoped).toBe(true);
@@ -114,12 +115,18 @@ describe("P-209 estimating RLS", () => {
   it("has a trigger backstop blocking deletes of non-draft estimates", () => {
     expect(sql).toMatch(/function public\.estimates_block_delete\(\)/);
     expect(sql).toMatch(/old\.status <> 'draft'/);
-    expect(sql).toMatch(/create trigger estimates_block_delete_trg[\s\S]*before delete on public\.estimates/);
+    expect(sql).toMatch(
+      /create trigger estimates_block_delete_trg[\s\S]*before delete on public\.estimates/,
+    );
   });
 
   it("mints EST-#### numbers from a company counter", () => {
-    expect(sql).toMatch(/'EST-' \|\| lpad\(public\.next_estimate_number\(new\.company_id, 'estimate'\)/);
-    expect(sql).toMatch(/constraint estimates_number_unique unique \(company_id, estimate_number\)/);
+    expect(sql).toMatch(
+      /'EST-' \|\| lpad\(public\.next_estimate_number\(new\.company_id, 'estimate'\)/,
+    );
+    expect(sql).toMatch(
+      /constraint estimates_number_unique unique \(company_id, estimate_number\)/,
+    );
   });
 
   it("keeps rate names unique per company and rate type, and indexes expiry", () => {

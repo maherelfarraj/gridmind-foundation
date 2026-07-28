@@ -54,7 +54,10 @@ const FormSchema = z.object({
   amount: z
     .union([z.string(), z.number()])
     .transform((v) => (typeof v === "string" ? v.trim() : v))
-    .refine((v) => v !== "" && Number.isFinite(Number(v)), "financeMod.recordPaymentDialog.requiredAmount")
+    .refine(
+      (v) => v !== "" && Number.isFinite(Number(v)),
+      "financeMod.recordPaymentDialog.requiredAmount",
+    )
     .transform((v) => Number(v))
     .refine((n) => n > 0, "financeMod.recordPaymentDialog.amountPositive"),
   payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "financeMod.recordPaymentDialog.validDate"),
@@ -147,8 +150,7 @@ export function RecordPaymentDialog({
       onOpenChange(false);
       form.reset();
     },
-    onError: (err) =>
-      toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
   return (
@@ -202,19 +204,22 @@ export function RecordPaymentDialog({
                   });
                 form.setError("root", {
                   message: messages.length
-                    ? t("financeMod.recordPaymentDialog.checkFields", { messages: messages.join("; ") })
+                    ? t("financeMod.recordPaymentDialog.checkFields", {
+                        messages: messages.join("; "),
+                      })
                     : t("financeMod.recordPaymentDialog.validationFallback"),
                 });
               },
             )}
           >
-
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("financeMod.recordPaymentDialog.amountLabel", { currency })}</FormLabel>
+                  <FormLabel>
+                    {t("financeMod.recordPaymentDialog.amountLabel", { currency })}
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" min="0.01" {...field} />
                   </FormControl>
