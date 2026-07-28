@@ -259,11 +259,9 @@ export const awardRfqLine = createServerFn({ method: "POST" })
       throw error;
     }
 
-    // Mark the bid awarded (any bid with ≥1 awarded line).
-    await context.supabase
-      .from("rfq_bids")
-      .update({ status: "awarded" as any })
-      .eq("id", data.bidId);
+    // Bid status is DB-maintained: the rfq_line_awards trigger flips the parent
+    // bid to 'awarded' (and reverts it on unaward). No status write here.
+
 
     await audit(context, "rfq.award", "rfq_line_awards", (inserted as any).id, {
       rfq_id: data.rfqId,
