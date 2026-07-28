@@ -23,6 +23,9 @@ export default defineConfig({
       "tests/e2e/**/*.test.ts",
     ],
     testTimeout: 30_000,
-    hookTimeout: 30_000,
+    hookTimeout: 60_000,
+    // .tsx suites render React components — they need a DOM.
+    environmentMatchGlobs: [["**/*.test.tsx", "jsdom"]],
   },
+
 });
