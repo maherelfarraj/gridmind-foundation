@@ -490,6 +490,7 @@ export const confirmGrn = createServerFn({ method: "POST" })
       let seed = ((numRows ?? []) as any[]).map((r) => r.grn_number as string);
 
       const now = new Date().toISOString();
+      const geo = data.payload.geo ?? null;
       let saved: any = null;
       for (let attempt = 0; attempt < 3; attempt++) {
         const grnNumber = nextGrnNumber(seed);
@@ -504,6 +505,10 @@ export const confirmGrn = createServerFn({ method: "POST" })
             photos: data.payload.photos as any,
             received_by: (context as any).user.id,
             received_at: now,
+            receipt_lat: geo?.lat ?? null,
+            receipt_lng: geo?.lng ?? null,
+            receipt_accuracy_m: geo?.accuracy_m ?? null,
+            receipt_geo_at: geo ? now : null,
           } as any)
           .eq("id", data.grnId)
           .eq("status", "draft")
@@ -522,6 +527,27 @@ export const confirmGrn = createServerFn({ method: "POST" })
         httpError(409, "grn_not_draft");
       }
       if (!saved) httpError(409, "grn_number_conflict");
+
+      // P-233 — lot/serial traceability rows, one per captured serial.
+      const serials = serialRowsFromLines(lines);
+      if (serials.length > 0) {
+        await context.supabase.from("batch_serial_tracking").delete().eq("grn_id", data.grnId);
+        const { error: sErr } = await context.supabase.from("batch_serial_tracking").insert(
+          serials.map((s) => ({
+            company_id: companyId,
+            purchase_order_id: po.id,
+            grn_id: data.grnId,
+            grn_line_no: s.grn_line_no,
+            sku: s.sku,
+            batch_serial: s.batch_serial,
+            qty: s.qty,
+            created_by: (context as any).user.id,
+          })) as any,
+        );
+        if (sErr && (sErr as any).code === "42501") httpError(403, "forbidden");
+        if (sErr) throw sErr;
+      }
+
 
       // Project PO status from all confirmed receipts + this one.
       const nextPoStatus =
