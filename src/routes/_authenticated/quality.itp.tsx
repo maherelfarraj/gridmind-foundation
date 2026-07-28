@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ClipboardList, Lock, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { PanelState, ProjectSelect } from "@/components/construction/controls-shell";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,13 @@ import {
   type ItpPointType,
 } from "@/lib/quality.rules";
 
+const searchSchema = z.object({
+  projectId: z.string().uuid().optional(),
+  pointType: z.enum(ITP_POINT_TYPES).optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/quality/itp")({
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw ?? {}),
   head: () => ({
     meta: [
       { title: "Inspection & test plans — GridMind EPC" },
@@ -80,12 +87,13 @@ type StepRow = {
 
 function ItpPage() {
   const qc = useQueryClient();
-  const [projectId, setProjectId] = useState("");
+  const sp = Route.useSearch();
+  const [projectId, setProjectId] = useState(sp.projectId ?? "");
   const [title, setTitle] = useState("");
   const [discipline, setDiscipline] = useState("general");
   const [selected, setSelected] = useState("");
   const [stepText, setStepText] = useState("");
-  const [pointType, setPointType] = useState<ItpPointType>("review");
+  const [pointType, setPointType] = useState<ItpPointType>(sp.pointType ?? "review");
   const [signoffRole, setSignoffRole] = useState("");
 
   const projectsFn = useServerFn(listControlsProjects);

@@ -92,5 +92,60 @@
       "forecast": "Forecast",
       "actual": "Actual"
     }
+  },
+  "exposure": {
+    "heading": "Exposure",
+    "description": "Safety and quality exposure across every project — the loudest number is the one to act on.",
+    "hse": "HSE",
+    "quality": "Quality",
+    "incidentsOpen": "Open incidents",
+    "incidentsHint": "Across the portfolio",
+    "severity": "Severity",
+    "trir": "TRIR (12 months)",
+    "trirHint": "Recordables × 200,000 / {{hours}} exposure hours",
+    "trirNone": "No exposure hours recorded",
+    "trend": {
+      "up": "Up vs prior 12 months",
+      "down": "Down vs prior 12 months",
+      "flat": "Unchanged vs prior 12 months",
+      "unknown": "No prior period to compare"
+    },
+    "daysSince": "Days since last incident",
+    "daysSinceNone": "No incident recorded",
+    "punchOpen": "Open punch items",
+    "punchA": "A — gate blocking",
+    "punchB": "B — pre-handover",
+    "punchC": "C — cosmetic",
+    "ncrOpen": "Open NCRs",
+    "holdPoints": "Open hold points",
+    "holdPointsHint": "Inspection steps blocking work until signed",
+    "heat": {
+      "heading": "Project heat table",
+      "description": "Projects against exposure dimensions — deeper colour means more open exposure.",
+      "project": "Project",
+      "incidents": "Incidents",
+      "punchA": "Punch A",
+      "punchB": "Punch B",
+      "ncrs": "NCRs",
+      "holdPoints": "Hold points",
+      "daysSince": "Days since incident",
+      "clean": "No open exposure recorded."
+    },
+    "severities": {
+      "fatal": "Fatal",
+      "critical": "Critical",
+      "major": "Major",
+      "moderate": "Moderate",
+      "minor": "Minor"
+    },
+    "ncrStatus": {
+      "open": "Open",
+      "in_progress": "In progress"
+    },
+    "empty": {
+      "title": "No exposure recorded",
+      "description": "Incidents, punch items, NCRs and hold points appear here as soon as they are raised."
+    },
+    "drill": "Open filtered list"
   }
 }

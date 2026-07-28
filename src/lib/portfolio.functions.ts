@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import type { CashMovement, ProjectCurveRow } from "@/lib/portfolio/cash-curve.rules";
+import type { PortfolioExposure } from "@/lib/portfolio/exposure.rules";
 import type { EvmAggregate } from "@/lib/portfolio/portfolio.rules";
 
 export interface PortfolioKpis {
@@ -113,6 +114,16 @@ export const getPortfolioHseQuality = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase.rpc("portfolio_hse_quality");
     if (error) throw error;
     return data as unknown as PortfolioHseQuality;
+  });
+
+// P-254 — deeper exposure cut: severity split, TRIR trend, hold points.
+export const getPortfolioHseExposure = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<PortfolioExposure> => {
+    requireSupabaseAuth(context);
+    const { data, error } = await context.supabase.rpc("portfolio_hse_exposure");
+    if (error) throw error;
+    return data as unknown as PortfolioExposure;
   });
 
 export const getPortfolioCashCurve = createServerFn({ method: "POST" })
