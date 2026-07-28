@@ -20051,6 +20051,31 @@ export type Database = {
       portfolio_guard: { Args: { p_rpc: string }; Returns: string }
       portfolio_hse_quality: { Args: never; Returns: Json }
       portfolio_kpis: { Args: never; Returns: Json }
+      portfolio_project_cards: {
+        Args: never
+        Returns: {
+          actual_cost: number
+          contract_value: number
+          cpi: number
+          currency_code: string
+          current_gate_name: string
+          current_gate_status: string
+          earned_value: number
+          gates_approved: number
+          gates_total: number
+          next_gate_due: string
+          next_gate_name: string
+          phase: string
+          planned_value: number
+          project_code: string
+          project_id: string
+          project_name: string
+          punch_a_open: number
+          spi: number
+          status: string
+          target_cod: string
+        }[]
+      }
       proposal_pricing_decide: {
         Args: { p_comment?: string; p_decision: string; p_proposal_id: string }
         Returns: Json

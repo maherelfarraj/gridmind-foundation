@@ -19,6 +19,8 @@ import omEn from "./om.en.json";
 import engAr from "./eng.ar.json";
 import engEn from "./eng.en.json";
 import adminOpsAr from "./adminops.ar.json";
+import portfolioAr from "./portfolio.ar.json";
+import portfolioEn from "./portfolio.en.json";
 import adminOpsEn from "./adminops.en.json";
 
 export type Locale = "en" | "ar";
@@ -40,6 +42,7 @@ export const resources = {
       omMod: omEn,
       engMod: engEn,
       adminMod: adminOpsEn,
+      portfolioMod: portfolioEn,
     },
   },
   ar: {
@@ -52,6 +55,7 @@ export const resources = {
       omMod: omAr,
       engMod: engAr,
       adminMod: adminOpsAr,
+      portfolioMod: portfolioAr,
     },
   },
 } as const;

@@ -1,0 +1,53 @@
+{
+  "title": "Portfolio",
+  "subtitle": "Consolidated performance across every project in the company.",
+  "kpi": {
+    "activeProjects": "Active projects",
+    "activeProjectsHint": "{{total}} total",
+    "contractValue": "Aggregate contract value",
+    "spi": "Weighted SPI",
+    "cpi": "Weighted CPI",
+    "arOpen": "Open AR",
+    "cashMtd": "Cash MTD",
+    "cashMtdHint": "In {{in}} / Out {{out}}",
+    "weightedHint": "ΣEV / ΣPV across the portfolio",
+    "weightedCostHint": "ΣEV / ΣAC across the portfolio",
+    "noEvm": "No EVM snapshots yet"
+  },
+  "projects": {
+    "heading": "Projects",
+    "phase": "Phase",
+    "currentGate": "Current gate",
+    "nextGate": "Next gate",
+    "due": "Due",
+    "noGate": "No gate recorded",
+    "allGatesApproved": "All gates approved",
+    "gatesProgress": "{{approved}} of {{total}} gates approved",
+    "punchA": "Open punch A",
+    "open": "Open project"
+  },
+  "gateRail": {
+    "heading": "Gate rail",
+    "description": "Phase-gate position of every project, Development through Handover."
+  },
+  "phases": {
+    "development": "Development",
+    "ntp": "NTP",
+    "engineering": "Engineering",
+    "procurement": "Procurement",
+    "construction": "Construction",
+    "commissioning": "Commissioning",
+    "cod": "COD",
+    "handover": "Handover",
+    "operations": "Operations",
+    "closed": "Closed"
+  },
+  "empty": {
+    "title": "No projects yet",
+    "description": "Once a project is created for this company, its portfolio roll-up appears here."
+  },
+  "error": {
+    "title": "Portfolio unavailable",
+    "description": "We could not load the portfolio roll-up. Refresh to try again."
+  }
+}
