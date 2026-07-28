@@ -105,3 +105,21 @@ export const setDocumentContentText = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true, characters: text.length };
   });
+
+/** Click-through: a short-lived signed URL for a registered document's file. */
+export const signRegisteredDocumentUrl = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ documentId: z.string().uuid() }).parse(raw))
+  .handler(async ({ data, context }): Promise<{ url: string | null }> => {
+    requireSupabaseAuth(context);
+    const { data: row, error } = await context.supabase
+      .from("document_register")
+      .select("storage_path")
+      .eq("id", data.documentId)
+      .maybeSingle();
+    if (error) throw error;
+    const path = (row as { storage_path: string | null } | null)?.storage_path;
+    if (!path) return { url: null };
+    const signed = await context.supabase.storage.from("documents").createSignedUrl(path, 300);
+    return { url: signed.data?.signedUrl ?? null };
+  });
