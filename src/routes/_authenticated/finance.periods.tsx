@@ -107,7 +107,10 @@ function FinancePeriodsPage() {
       setCloseTarget(null);
       invalidate();
     },
-    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotClose")),
+    onError: (e: Error) =>
+      toast.error(
+        translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotClose"),
+      ),
   });
 
   const [closeTarget, setCloseTarget] = useState<string | null>(null);
@@ -117,14 +120,18 @@ function FinancePeriodsPage() {
   const reopenMutation = useMutation({
     mutationFn: (input: { period_month: string; reason: string }) => reopenFn({ data: input }),
     onSuccess: (_r, input) => {
-      toast.success(t("financeMod.periods.toastReopened", { month: monthLabel(input.period_month) }));
+      toast.success(
+        t("financeMod.periods.toastReopened", { month: monthLabel(input.period_month) }),
+      );
       setReopenTarget(null);
       setReopenReason("");
       invalidate();
     },
-    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotReopen")),
+    onError: (e: Error) =>
+      toast.error(
+        translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotReopen"),
+      ),
   });
-
 
   const checklistMutation = useMutation({
     mutationFn: (input: { period_month: string; unbilled_reviewed: boolean; note?: string }) =>
@@ -133,7 +140,11 @@ function FinancePeriodsPage() {
       toast.success(t("financeMod.periods.toastChecklistSaved"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(translateError(t, errorCodeOf(e), e.message) || t("financeMod.periods.couldNotSaveChecklist")),
+    onError: (e: Error) =>
+      toast.error(
+        translateError(t, errorCodeOf(e), e.message) ||
+          t("financeMod.periods.couldNotSaveChecklist"),
+      ),
   });
 
   if (periods.isLoading) {
@@ -168,8 +179,16 @@ function FinancePeriodsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiTile label={t("financeMod.periods.monthsTracked")} value={String(rows.length)} icon={CalendarClock} />
-        <KpiTile label={t("financeMod.periods.closedMonths")} value={String(closedCount)} icon={LockKeyhole} />
+        <KpiTile
+          label={t("financeMod.periods.monthsTracked")}
+          value={String(rows.length)}
+          icon={CalendarClock}
+        />
+        <KpiTile
+          label={t("financeMod.periods.closedMonths")}
+          value={String(closedCount)}
+          icon={LockKeyhole}
+        />
         <KpiTile
           label={t("financeMod.periods.openBlockers")}
           value={String(blockers)}
@@ -198,7 +217,6 @@ function FinancePeriodsPage() {
               setReopenReason("");
               setReopenTarget(m);
             }}
-
           />
         </TabsContent>
 
@@ -240,11 +258,11 @@ function FinancePeriodsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t("financeMod.periods.reopenDialogTitle", { month: reopenTarget ? monthLabel(reopenTarget) : "" })}
+              {t("financeMod.periods.reopenDialogTitle", {
+                month: reopenTarget ? monthLabel(reopenTarget) : "",
+              })}
             </DialogTitle>
-            <DialogDescription>
-              {t("financeMod.periods.reopenDialogDesc")}
-            </DialogDescription>
+            <DialogDescription>{t("financeMod.periods.reopenDialogDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="reopen-reason">{t("financeMod.periods.reasonLabel")}</Label>
@@ -269,7 +287,9 @@ function FinancePeriodsPage() {
                 })
               }
             >
-              {t("financeMod.periods.reopenAction", { month: reopenTarget ? monthLabel(reopenTarget) : "" })}
+              {t("financeMod.periods.reopenAction", {
+                month: reopenTarget ? monthLabel(reopenTarget) : "",
+              })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -279,10 +299,14 @@ function FinancePeriodsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t("financeMod.periods.closeDialogTitle", { month: closeTarget ? monthLabel(closeTarget) : "" })}
+              {t("financeMod.periods.closeDialogTitle", {
+                month: closeTarget ? monthLabel(closeTarget) : "",
+              })}
             </DialogTitle>
             <DialogDescription>
-              {t("financeMod.periods.closeDialogDesc", { month: closeTarget ? monthLabel(closeTarget) : "" })}
+              {t("financeMod.periods.closeDialogDesc", {
+                month: closeTarget ? monthLabel(closeTarget) : "",
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -293,7 +317,9 @@ function FinancePeriodsPage() {
               disabled={closeMutation.isPending}
               onClick={() => closeTarget && closeMutation.mutate(closeTarget)}
             >
-              {t("financeMod.periods.closeAction", { month: closeTarget ? monthLabel(closeTarget) : "" })}
+              {t("financeMod.periods.closeAction", {
+                month: closeTarget ? monthLabel(closeTarget) : "",
+              })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -301,7 +327,6 @@ function FinancePeriodsPage() {
     </div>
   );
 }
-
 
 function statusLabel(status: PeriodStatus) {
   return status === "closed" ? "Closed" : status === "closing" ? "Closing" : "Open";
@@ -319,7 +344,6 @@ function PeriodRegister(props: {
 }) {
   const { t } = useI18n();
   if (props.rows.length === 0) {
-
     return (
       <EmptyState
         icon={CalendarClock}
@@ -359,7 +383,11 @@ function PeriodRegister(props: {
                 />
               </TableCell>
               <TableCell>
-                {r.status === "closed" ? "—" : blockers === 0 ? t("financeMod.periods.readyToClose") : blockers}
+                {r.status === "closed"
+                  ? "—"
+                  : blockers === 0
+                    ? t("financeMod.periods.readyToClose")
+                    : blockers}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {r.closed_by_name ? `${r.closed_by_name} · ${r.closed_at?.slice(0, 10)}` : "—"}
@@ -379,7 +407,9 @@ function PeriodRegister(props: {
                       {t("financeMod.periods.reopenPeriod")}
                     </Button>
                   ) : (
-                    <span className="text-muted-foreground text-sm">{t("financeMod.periods.locked")}</span>
+                    <span className="text-muted-foreground text-sm">
+                      {t("financeMod.periods.locked")}
+                    </span>
                   )
                 ) : (
                   <Button
@@ -467,9 +497,7 @@ function ChecklistPanel(props: {
             disabled={!props.canWrite}
             onCheckedChange={(v) => setReviewed(v === true)}
           />
-          <Label htmlFor="unbilled-reviewed">
-            {t("financeMod.periods.reviewedLabel")}
-          </Label>
+          <Label htmlFor="unbilled-reviewed">{t("financeMod.periods.reviewedLabel")}</Label>
         </div>
         <Textarea
           value={note}

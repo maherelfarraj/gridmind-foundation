@@ -154,7 +154,9 @@ function PoDetail() {
             <div className="text-xs text-muted-foreground">
               {t("procurementMod.pos.thresholdLabel", {
                 amount: fmtMoney(threshold, po.currency_code),
-                state: requiresApproval ? t("procurementMod.pos.above") : t("procurementMod.pos.below"),
+                state: requiresApproval
+                  ? t("procurementMod.pos.above")
+                  : t("procurementMod.pos.below"),
               })}
             </div>
           </div>
@@ -181,7 +183,9 @@ function PoDetail() {
 
       <section className="rounded-md border border-border p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-display text-sm font-semibold">{t("procurementMod.pos.acknowledgment")}</h2>
+          <h2 className="font-display text-sm font-semibold">
+            {t("procurementMod.pos.acknowledgment")}
+          </h2>
           {po.acknowledgment_status ? (
             <AcknowledgmentChip
               status={po.acknowledgment_status as AcknowledgmentStatus}
@@ -190,7 +194,9 @@ function PoDetail() {
           ) : isAcknowledgeable(po.status) ? (
             <AwaitingAcknowledgmentChip />
           ) : (
-            <span className="text-sm text-muted-foreground">{t("procurementMod.pos.notApplicable")}</span>
+            <span className="text-sm text-muted-foreground">
+              {t("procurementMod.pos.notApplicable")}
+            </span>
           )}
         </div>
         {po.acknowledged_at && (
@@ -198,7 +204,9 @@ function PoDetail() {
             <dt className="text-muted-foreground">{t("procurementMod.pos.acknowledgedLabel")}</dt>
             <dd className="col-span-2">{format(new Date(po.acknowledged_at), "PPp")}</dd>
             <dt className="text-muted-foreground">{t("procurementMod.pos.byLabel")}</dt>
-            <dd className="col-span-2">{po.acknowledged_by_email ?? t("procurementMod.pos.vendorContactFallback")}</dd>
+            <dd className="col-span-2">
+              {po.acknowledged_by_email ?? t("procurementMod.pos.vendorContactFallback")}
+            </dd>
             <dt className="text-muted-foreground">{t("procurementMod.pos.commentLabel")}</dt>
             <dd className="col-span-2">{po.acknowledgment_note ?? "—"}</dd>
           </dl>
@@ -225,14 +233,18 @@ function PoDetail() {
               disabled={submit.isPending}
             >
               <Send className="me-2 h-4 w-4" />
-              {submit.isPending ? t("procurementMod.pos.submitting") : t("procurementMod.pos.submit")}
+              {submit.isPending
+                ? t("procurementMod.pos.submitting")
+                : t("procurementMod.pos.submit")}
             </Button>
           </div>
         )}
 
         {po.status === "pending_approval" && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">{t("procurementMod.pos.awaitingApproval")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("procurementMod.pos.awaitingApproval")}
+            </p>
             {access.canApprove ? (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -297,7 +309,9 @@ function PoDetail() {
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm text-muted-foreground">
               {po.approved_at
-                ? t("procurementMod.pos.approvedAt", { date: format(new Date(po.approved_at), "PPp") })
+                ? t("procurementMod.pos.approvedAt", {
+                    date: format(new Date(po.approved_at), "PPp"),
+                  })
                 : t("procurementMod.pos.approvedGeneric")}
               {po.approval_note ? ` · ${po.approval_note}` : ""}
             </div>
@@ -311,9 +325,7 @@ function PoDetail() {
               }
               disabled={issue.isPending || changeControl.blocked}
               title={
-                changeControl.blocked
-                  ? t("procurementMod.common.changeControlBlocked")
-                  : undefined
+                changeControl.blocked ? t("procurementMod.common.changeControlBlocked") : undefined
               }
             >
               <Send className="me-2 h-4 w-4" />
@@ -384,7 +396,9 @@ function PoDetail() {
               ) : (
                 <RefreshCw className="me-2 h-4 w-4" />
               )}
-              {download.isPending ? t("procurementMod.pos.preparingPdf") : t("procurementMod.pos.downloadPdf")}
+              {download.isPending
+                ? t("procurementMod.pos.preparingPdf")
+                : t("procurementMod.pos.downloadPdf")}
             </Button>
           </div>
 
@@ -430,7 +444,9 @@ function PoDetail() {
                       onClick={() =>
                         revokeLink.mutate(undefined, {
                           onError: (err: unknown) => {
-                            toast.error(translateError(t, errorCodeOf(err), (err as Error)?.message));
+                            toast.error(
+                              translateError(t, errorCodeOf(err), (err as Error)?.message),
+                            );
                           },
                         })
                       }
@@ -509,7 +525,9 @@ function PoDetail() {
                   <MoneyCell>{fmtMoney(l.unit_price, po.currency_code)}</MoneyCell>
                 </TableCell>
                 <TableCell className="text-end font-medium">
-                  <MoneyCell className="font-medium">{fmtMoney(l.amount, po.currency_code)}</MoneyCell>
+                  <MoneyCell className="font-medium">
+                    {fmtMoney(l.amount, po.currency_code)}
+                  </MoneyCell>
                 </TableCell>
               </TableRow>
             ))}
@@ -534,7 +552,9 @@ function PoDetail() {
                 {t("procurementMod.pos.total")}
               </TableCell>
               <TableCell className="text-end font-semibold">
-                <MoneyCell className="font-semibold">{fmtMoney(po.total_amount, po.currency_code)}</MoneyCell>
+                <MoneyCell className="font-semibold">
+                  {fmtMoney(po.total_amount, po.currency_code)}
+                </MoneyCell>
               </TableCell>
             </TableRow>
           </TableBody>

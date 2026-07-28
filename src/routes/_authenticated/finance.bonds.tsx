@@ -322,7 +322,9 @@ function BondsPage() {
           {t("financeMod.bonds.insuranceOnly")}
         </Button>
         {insuranceOnly ? (
-          <span className="text-xs text-muted-foreground">{t("financeMod.bonds.insuranceHint")}</span>
+          <span className="text-xs text-muted-foreground">
+            {t("financeMod.bonds.insuranceHint")}
+          </span>
         ) : null}
       </div>
 
@@ -340,7 +342,11 @@ function BondsPage() {
         <EmptyState
           icon={AlertTriangle}
           title={t("financeMod.bonds.couldNotLoadRegister")}
-          description={translateError(t, errorCodeOf(registerQ.error), bondErrorMessage(registerQ.error))}
+          description={translateError(
+            t,
+            errorCodeOf(registerQ.error),
+            bondErrorMessage(registerQ.error),
+          )}
           action={<Button onClick={() => registerQ.refetch()}>{t("common.retry")}</Button>}
         />
       ) : rows.length === 0 ? (
@@ -490,7 +496,6 @@ function NewInstrumentWizard({
     setForm((f) => (f.currency_code ? f : { ...f, currency_code: currencies[0] ?? "USD" }));
   }, [open, currencies]);
 
-
   function set<K extends keyof typeof EMPTY_FORM>(key: K, value: (typeof EMPTY_FORM)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
@@ -520,7 +525,9 @@ function NewInstrumentWizard({
       const field = issue?.path?.[0];
       const label = typeof field === "string" ? (FIELD_LABELS[field] ?? titleize(field)) : null;
       setError(
-        issue ? `${label ? `${label}: ` : ""}${issue.message}` : t("financeMod.bonds.checkFormError"),
+        issue
+          ? `${label ? `${label}: ` : ""}${issue.message}`
+          : t("financeMod.bonds.checkFormError"),
       );
 
       return null;
@@ -535,7 +542,9 @@ function NewInstrumentWizard({
     setSaving(true);
     try {
       const res = await createFn({ data: payload });
-      toast.success(t("financeMod.bonds.toastCreated", { number: res.instrument.instrument_number }));
+      toast.success(
+        t("financeMod.bonds.toastCreated", { number: res.instrument.instrument_number }),
+      );
       await qc.invalidateQueries({ queryKey: ["bonds"] });
       onOpenChange(false);
       setForm({ ...EMPTY_FORM });
@@ -873,7 +882,11 @@ function InstrumentDrawer({
             <EmptyState
               icon={AlertTriangle}
               title={t("financeMod.bonds.couldNotLoadRegister")}
-              description={translateError(t, errorCodeOf(detailQ.error), bondErrorMessage(detailQ.error))}
+              description={translateError(
+                t,
+                errorCodeOf(detailQ.error),
+                bondErrorMessage(detailQ.error),
+              )}
             />
           </div>
         ) : (
@@ -894,7 +907,9 @@ function InstrumentDrawer({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">{t("financeMod.bonds.beneficiary")}</dt>
+                <dt className="text-xs text-muted-foreground">
+                  {t("financeMod.bonds.beneficiary")}
+                </dt>
                 <dd>
                   {d.instrument.beneficiary_name} ({titleize(d.instrument.beneficiary_type)})
                 </dd>

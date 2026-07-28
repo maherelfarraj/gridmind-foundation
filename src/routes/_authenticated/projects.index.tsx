@@ -261,7 +261,9 @@ function ProjectsPage() {
 
       {query.isError ? (
         <ErrorPanel
-          message={query.error instanceof Error ? query.error.message : t("engMod.projects.error.fallback")}
+          message={
+            query.error instanceof Error ? query.error.message : t("engMod.projects.error.fallback")
+          }
           onRetry={() => query.refetch()}
         />
       ) : query.isLoading ? (
@@ -328,9 +330,12 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
       ? `${row.capacity_mw} MW${row.capacity_mwh != null ? ` · ${row.capacity_mwh} MWh` : ""}`
       : "—";
   const { t } = useI18n();
-  const codDisplay = row.target_cod ? format(parseISO(row.target_cod), "PP") : t("engMod.projects.card.noCod");
+  const codDisplay = row.target_cod
+    ? format(parseISO(row.target_cod), "PP")
+    : t("engMod.projects.card.noCod");
   const admin = row.project_admin;
-  const adminName = admin?.full_name?.trim() || admin?.email || t("engMod.projects.card.unassigned");
+  const adminName =
+    admin?.full_name?.trim() || admin?.email || t("engMod.projects.card.unassigned");
   const initials = (admin?.full_name || admin?.email || "?")
     .split(/\s+/)
     .map((w) => w[0])

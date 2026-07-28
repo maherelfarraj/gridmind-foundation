@@ -5,7 +5,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { attachSupabaseAuth, requireSupabaseAuth, type AuthContext } from "@/integrations/supabase/auth-attacher";
+import {
+  attachSupabaseAuth,
+  requireSupabaseAuth,
+  type AuthContext,
+} from "@/integrations/supabase/auth-attacher";
 import type { Database } from "@/integrations/supabase/types";
 
 export type SloStatus = Database["public"]["Enums"]["slo_status"];
@@ -19,7 +23,9 @@ export type SloSnapshot = {
   created_at: string;
 };
 
-async function requireSuperAdmin(context: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
+async function requireSuperAdmin(
+  context: AuthContext & { user: NonNullable<AuthContext["user"]> },
+) {
   const { data: isSuper, error: roleErr } = await context.supabase.rpc("has_role", {
     p_user_id: context.user.id,
     p_role: "super_admin",
@@ -55,7 +61,6 @@ export const getSloDashboard = createServerFn({ method: "GET" })
     // end of consolidation week; the four real cron jobs are reviewed directly
     // in cron.job_run_details.
 
-
     // 2. SCADA ingestion freshness
     const { data: scadaRow, error: scadaErr } = await supabaseAdmin
       .from("scada_telemetry")
@@ -70,7 +75,13 @@ export const getSloDashboard = createServerFn({ method: "GET" })
       target: "< 30 min since last reading",
       observed_value: scadaAgeMin,
       status:
-        scadaAgeMin === null ? "breach" : scadaAgeMin <= 30 ? "ok" : scadaAgeMin <= 120 ? "warn" : "breach",
+        scadaAgeMin === null
+          ? "breach"
+          : scadaAgeMin <= 30
+            ? "ok"
+            : scadaAgeMin <= 120
+              ? "warn"
+              : "breach",
       measurement_window: "point-in-time",
       created_at: now.toISOString(),
     });
@@ -89,9 +100,15 @@ export const getSloDashboard = createServerFn({ method: "GET" })
       const reason = String((r.metadata as Record<string, unknown> | null)?.reason ?? "");
       return (
         r.action === "public_hook.block" &&
-        ["missing_bearer", "invalid_key", "scope_missing", "signature_missing", "signature_mismatch", "signature_expired", "secret_not_configured"].includes(
-          reason,
-        )
+        [
+          "missing_bearer",
+          "invalid_key",
+          "scope_missing",
+          "signature_missing",
+          "signature_mismatch",
+          "signature_expired",
+          "secret_not_configured",
+        ].includes(reason)
       );
     }).length;
     const rate401 = total > 0 ? (unauthorized401 / total) * 100 : 0;
@@ -115,15 +132,20 @@ export const getSloDashboard = createServerFn({ method: "GET" })
     if (alertErr) throw alertErr;
     const acked = alertRows ?? [];
     const triageMinutes = acked.map(
-      (r) => (new Date(r.acknowledged_at as string).getTime() - new Date(r.created_at).getTime()) / 60000,
+      (r) =>
+        (new Date(r.acknowledged_at as string).getTime() - new Date(r.created_at).getTime()) /
+        60000,
     );
     const avgTriage =
-      triageMinutes.length > 0 ? triageMinutes.reduce((a, b) => a + b, 0) / triageMinutes.length : null;
+      triageMinutes.length > 0
+        ? triageMinutes.reduce((a, b) => a + b, 0) / triageMinutes.length
+        : null;
     snapshots.push({
       slo_name: "Finance alert triage time",
       target: "< 240 min average",
       observed_value: avgTriage === null ? null : Number(avgTriage.toFixed(1)),
-      status: avgTriage === null ? "ok" : avgTriage <= 240 ? "ok" : avgTriage <= 480 ? "warn" : "breach",
+      status:
+        avgTriage === null ? "ok" : avgTriage <= 240 ? "ok" : avgTriage <= 480 ? "warn" : "breach",
       measurement_window: "last 30d",
       created_at: now.toISOString(),
     });

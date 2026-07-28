@@ -342,10 +342,7 @@ function ItpPage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="step-type">Point type</Label>
-                  <Select
-                    value={pointType}
-                    onValueChange={(v) => setPointType(v as ItpPointType)}
-                  >
+                  <Select value={pointType} onValueChange={(v) => setPointType(v as ItpPointType)}>
                     <SelectTrigger id="step-type">
                       <SelectValue />
                     </SelectTrigger>

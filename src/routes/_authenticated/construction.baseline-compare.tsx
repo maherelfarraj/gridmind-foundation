@@ -118,7 +118,9 @@ function BaselineComparePage() {
           </Label>
           <Select value={activeBaseline} onValueChange={setBaselineId}>
             <SelectTrigger id="baseline">
-              <SelectValue placeholder={t("adminMod.construction.baselineCompare.selectLockedBaseline")} />
+              <SelectValue
+                placeholder={t("adminMod.construction.baselineCompare.selectLockedBaseline")}
+              />
             </SelectTrigger>
             <SelectContent>
               {lockedBaselines.map((b) => (
@@ -132,9 +134,18 @@ function BaselineComparePage() {
       </div>
 
       <KpiGrid>
-        <KpiTile label={t("adminMod.construction.baselineCompare.tasksCompared")} value={String(rows.length)} />
-        <KpiTile label={t("adminMod.construction.baselineCompare.slippingTasks")} value={String(slipping)} />
-        <KpiTile label={t("adminMod.construction.baselineCompare.worstFinishVariance")} value={worst == null ? "—" : `${worst} d`} />
+        <KpiTile
+          label={t("adminMod.construction.baselineCompare.tasksCompared")}
+          value={String(rows.length)}
+        />
+        <KpiTile
+          label={t("adminMod.construction.baselineCompare.slippingTasks")}
+          value={String(slipping)}
+        />
+        <KpiTile
+          label={t("adminMod.construction.baselineCompare.worstFinishVariance")}
+          value={worst == null ? "—" : `${worst} d`}
+        />
       </KpiGrid>
 
       <PanelState

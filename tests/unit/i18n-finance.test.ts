@@ -13,7 +13,9 @@ import {
 
 function flatten(obj: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === "object" ? flatten(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`],
+    v && typeof v === "object"
+      ? flatten(v as Record<string, unknown>, `${prefix}${k}.`)
+      : [`${prefix}${k}`],
   );
 }
 
@@ -74,7 +76,9 @@ describe("typed error key map", () => {
   it("renders Arabic messages and falls back to the server text in English", async () => {
     const ar = createI18n("ar");
     await ar.changeLanguage("ar");
-    expect(translateError((k) => ar.t(k), "payment_release_blocked")).toContain("المطابقة الثلاثية");
+    expect(translateError((k) => ar.t(k), "payment_release_blocked")).toContain(
+      "المطابقة الثلاثية",
+    );
     expect(translateError((k) => ar.t(k), "gps_outside_geofence")).toContain("النطاق الجغرافي");
 
     const en = createI18n("en");

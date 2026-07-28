@@ -48,8 +48,10 @@ describe("hardcoded user-facing strings (repo-wide)", () => {
 
   it("keeps the baseline honest — cleaned files must be delisted", () => {
     const stale = Object.keys(baselineCounts).filter((file) => !found.has(file));
-    expect(stale, `these files are clean now, remove them from the baseline:\n${stale.join("\n")}`)
-      .toEqual([]);
+    expect(
+      stale,
+      `these files are clean now, remove them from the baseline:\n${stale.join("\n")}`,
+    ).toEqual([]);
   });
 
   it("documents every exemption with a reason", () => {

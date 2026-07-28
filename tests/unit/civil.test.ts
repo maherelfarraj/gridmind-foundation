@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import { computeCutFill, buildDesignPlane, cellsInGeometry } from "@/lib/civil/cutfill";
 import { proposeDrainagePaths, computeFlow } from "@/lib/civil/flow";
 import { pointInGeometry, polygonArea } from "@/lib/civil/geom";
-import { buildPileSchedule, DEFAULT_EMBEDMENT_RULE, embedmentFor, revealFor } from "@/lib/civil/piles";
+import {
+  buildPileSchedule,
+  DEFAULT_EMBEDMENT_RULE,
+  embedmentFor,
+  revealFor,
+} from "@/lib/civil/piles";
 import { buildCoordinateSchedule, coordinateScheduleToCsv } from "@/lib/civil/schedule";
 import { runSlopeTolerance } from "@/lib/civil/slopeCheck";
 import { emptyGrid, type ElevationGrid } from "@/lib/terrain/grid";
@@ -195,9 +200,7 @@ describe("slopeCheck", () => {
       1,
     );
     const geometry = square(2);
-    const steep = runSlopeTolerance(grid, [
-      { block_id: "b1", label: "B1", geometry },
-    ]);
+    const steep = runSlopeTolerance(grid, [{ block_id: "b1", label: "B1", geometry }]);
     expect(steep.results[0].max_in_row_pct).toBeCloseTo(20, 5);
     expect(steep.results[0].status).toBe("fail");
     expect(steep.summary.failing).toBe(1);

@@ -103,22 +103,16 @@ export const getPerformanceSignals = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const now = new Date();
 
-    const { data: slowRows, error: slowErr } = await supabaseAdmin.rpc(
-      "admin_get_slow_queries",
-    );
+    const { data: slowRows, error: slowErr } = await supabaseAdmin.rpc("admin_get_slow_queries");
     if (slowErr) throw slowErr;
 
-    const { data: healthRows, error: healthErr } = await supabaseAdmin.rpc(
-      "admin_get_db_health",
-    );
+    const { data: healthRows, error: healthErr } = await supabaseAdmin.rpc("admin_get_db_health");
     if (healthErr) throw healthErr;
 
-    const { data: tableRows, error: tableErr } = await supabaseAdmin.rpc(
-      "admin_get_table_sizes",
-    );
+    const { data: tableRows, error: tableErr } = await supabaseAdmin.rpc("admin_get_table_sizes");
     if (tableErr) throw tableErr;
 
-    const rawSlow = ((slowRows ?? []) as unknown[]) as Array<{
+    const rawSlow = (slowRows ?? []) as unknown[] as Array<{
       query: string;
       calls: number;
       mean_ms: number;

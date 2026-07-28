@@ -317,7 +317,11 @@ function ServiceTicketsPage() {
                   </TableHeader>
                   <TableBody>
                     {rows.map((row) => (
-                      <TableRow key={row.id} className="cursor-pointer" onClick={() => setDrawer(row)}>
+                      <TableRow
+                        key={row.id}
+                        className="cursor-pointer"
+                        onClick={() => setDrawer(row)}
+                      >
                         <TableCell className="font-mono text-xs">{row.ticket_number}</TableCell>
                         <TableCell>
                           <div className="text-sm">{row.title}</div>
@@ -354,7 +358,9 @@ function ServiceTicketsPage() {
         <TabsContent value="breaches" className="space-y-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3">
-              <CardTitle className="text-base">{t("omMod.serviceTickets.breachLogTitle")}</CardTitle>
+              <CardTitle className="text-base">
+                {t("omMod.serviceTickets.breachLogTitle")}
+              </CardTitle>
               <Button
                 variant="outline"
                 size="sm"
@@ -398,7 +404,8 @@ function ServiceTicketsPage() {
                     {breaches.map((b) => {
                       const types: string[] = [];
                       if (b.response_breached) types.push(t("omMod.serviceTickets.breachResponse"));
-                      if (b.resolution_breached) types.push(t("omMod.serviceTickets.breachResolution"));
+                      if (b.resolution_breached)
+                        types.push(t("omMod.serviceTickets.breachResolution"));
                       return (
                         <TableRow key={b.id}>
                           <TableCell className="font-mono text-xs">{b.ticket_number}</TableCell>

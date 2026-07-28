@@ -44,7 +44,15 @@ describe("eng i18n catalog", () => {
   });
 
   it("does not translate SLD connection-type symbol tags (stored enum values)", () => {
-    const drawingDisciplines = ["civil", "structural", "electrical", "mechanical", "scada_controls", "survey", "general"];
+    const drawingDisciplines = [
+      "civil",
+      "structural",
+      "electrical",
+      "mechanical",
+      "scada_controls",
+      "survey",
+      "general",
+    ];
     for (const key of Object.keys(en.drawings.disciplineLabels)) {
       expect(drawingDisciplines).toContain(key);
     }

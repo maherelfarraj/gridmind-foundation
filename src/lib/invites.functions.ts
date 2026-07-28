@@ -248,7 +248,6 @@ export const resendInvite = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!token) throw new Error("create_invite returned no token");
 
-
     await context.supabase.rpc("write_audit_log", {
       p_action: "invite.resent",
       p_entity: "invites",

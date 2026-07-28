@@ -204,7 +204,9 @@ function PaymentsPage() {
                 <TableHead>{t("financeMod.paymentsPage.columnProject")}</TableHead>
                 <TableHead>{t("financeMod.paymentsPage.columnDate")}</TableHead>
                 <TableHead>{t("financeMod.paymentsPage.columnMethod")}</TableHead>
-                <TableHead className="text-end">{t("financeMod.paymentsPage.columnAmount")}</TableHead>
+                <TableHead className="text-end">
+                  {t("financeMod.paymentsPage.columnAmount")}
+                </TableHead>
                 <TableHead>{t("financeMod.paymentsPage.columnReconciliation")}</TableHead>
                 <TableHead>{t("financeMod.paymentsPage.columnStatus")}</TableHead>
               </TableRow>
@@ -220,7 +222,9 @@ function PaymentsPage() {
                     <TableCell>{p.invoice_number ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant={p.direction === "payable" ? "outline" : "secondary"}>
-                        {p.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
+                        {p.direction === "payable"
+                          ? t("financeMod.invoices.payable")
+                          : t("financeMod.invoices.receivable")}
                       </Badge>
                     </TableCell>
                     <TableCell>{p.project_name ?? "—"}</TableCell>

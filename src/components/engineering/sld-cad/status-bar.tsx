@@ -39,8 +39,14 @@ export function CanvasStatusBar() {
       >
         {t("engMod.sld.canvas.status.cursor", { value: cursorText })}
       </button>
-      <span className="tabular-nums">{t("engMod.sld.canvas.status.zoom", { value: Math.round(zoom * 100) })}</span>
-      <span>{snapEnabled ? t("engMod.sld.canvas.status.snapOn", { grid: gridMm }) : t("engMod.sld.canvas.status.snapOff")}</span>
+      <span className="tabular-nums">
+        {t("engMod.sld.canvas.status.zoom", { value: Math.round(zoom * 100) })}
+      </span>
+      <span>
+        {snapEnabled
+          ? t("engMod.sld.canvas.status.snapOn", { grid: gridMm })
+          : t("engMod.sld.canvas.status.snapOff")}
+      </span>
       <span className="capitalize">{t("engMod.sld.canvas.status.tool", { tool })}</span>
       {sel ? (
         <button

@@ -133,7 +133,9 @@ function InvoicesPage() {
             <SelectItem value="all">{t("financeMod.invoices.allDirections")}</SelectItem>
             {INVOICE_DIRECTIONS.map((d) => (
               <SelectItem key={d} value={d}>
-                {d === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
+                {d === "payable"
+                  ? t("financeMod.invoices.payable")
+                  : t("financeMod.invoices.receivable")}
               </SelectItem>
             ))}
           </SelectContent>
@@ -189,7 +191,9 @@ function InvoicesPage() {
                   <TableCell className="font-mono text-xs">{r.invoice_number}</TableCell>
                   <TableCell>
                     <Badge variant={r.direction === "payable" ? "destructive" : "secondary"}>
-                      {r.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
+                      {r.direction === "payable"
+                        ? t("financeMod.invoices.payable")
+                        : t("financeMod.invoices.receivable")}
                     </Badge>
                   </TableCell>
                   <TableCell className="max-w-[24rem] truncate text-sm">
@@ -198,7 +202,9 @@ function InvoicesPage() {
                   <TableCell>
                     <span className="flex flex-wrap items-center gap-1">
                       <Badge variant="outline">{invoiceStatusLabel(r.status)}</Badge>
-                      {r.overdue && <Badge variant="destructive">{t("financeMod.invoices.overdueBadge")}</Badge>}
+                      {r.overdue && (
+                        <Badge variant="destructive">{t("financeMod.invoices.overdueBadge")}</Badge>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell>

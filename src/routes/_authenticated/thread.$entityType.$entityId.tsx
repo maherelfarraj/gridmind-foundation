@@ -80,10 +80,15 @@ function ThreadPage() {
     mutationFn: (vars: { id: string; status: "acknowledged" | "resolved" | "dismissed" }) =>
       setStatus({ data: vars }),
     onSuccess: async (_res, vars) => {
-      toast.success(t("adminMod.digitalThread.impactUpdated", { status: t(`adminMod.digitalThread.status.${vars.status}`) }));
+      toast.success(
+        t("adminMod.digitalThread.impactUpdated", {
+          status: t(`adminMod.digitalThread.status.${vars.status}`),
+        }),
+      );
       await qc.invalidateQueries({ queryKey: ["thread"] });
     },
-    onError: (err) => toast.error(String((err as Error)?.message ?? t("adminMod.digitalThread.updateFailed"))),
+    onError: (err) =>
+      toast.error(String((err as Error)?.message ?? t("adminMod.digitalThread.updateFailed"))),
   });
 
   const impacts = data?.impacts ?? [];
@@ -156,7 +161,9 @@ function ThreadPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{a.title}</span>
                   <Badge className={SEVERITY_CLASS[a.severity] ?? SEVERITY_CLASS.low}>
-                    {t(`adminMod.digitalThread.severity.${a.severity}`, { defaultValue: a.severity })}
+                    {t(`adminMod.digitalThread.severity.${a.severity}`, {
+                      defaultValue: a.severity,
+                    })}
                   </Badge>
                   <Badge className={STATUS_CLASS[a.status] ?? STATUS_CLASS.open}>
                     {t(`adminMod.digitalThread.status.${a.status}`, { defaultValue: a.status })}

@@ -54,7 +54,9 @@ export function issueDateOf(po: VendorPoRow): string | null {
 export function ConfirmationChip({ eta }: { eta: VendorLineEtaRow | undefined }) {
   const { t } = useI18n();
   if (!eta?.current_eta) {
-    return <span className="text-xs text-muted-foreground">{t("portalMod.propose.noEtaProposed")}</span>;
+    return (
+      <span className="text-xs text-muted-foreground">{t("portalMod.propose.noEtaProposed")}</span>
+    );
   }
   if (eta.eta_confirmed) {
     return (
@@ -156,7 +158,9 @@ export function ProposeDeliveryDialog({
                         type="date"
                         min={issueDate ?? undefined}
                         value={row?.proposed_date ?? ""}
-                        aria-label={t("portalMod.propose.proposedDateAriaLabel", { line: l.line_no })}
+                        aria-label={t("portalMod.propose.proposedDateAriaLabel", {
+                          line: l.line_no,
+                        })}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,
@@ -184,7 +188,9 @@ export function ProposeDeliveryDialog({
                         type="number"
                         min={0}
                         value={row?.proposed_qty ?? ""}
-                        aria-label={t("portalMod.propose.proposedQtyAriaLabel", { line: l.line_no })}
+                        aria-label={t("portalMod.propose.proposedQtyAriaLabel", {
+                          line: l.line_no,
+                        })}
                         onChange={(e) =>
                           setDraft((d) => ({
                             ...d,

@@ -173,12 +173,7 @@ export interface GpsRejection {
 }
 
 /** Great-circle distance in metres between two WGS-84 points. */
-export function haversineMeters(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+export function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6_371_000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -264,7 +259,6 @@ export function gpsRejectionReason(
 ): string | null {
   return gpsRejectionDetail(claim, nowMs, anchor)?.message ?? null;
 }
-
 
 /** Accepted media MIME prefixes for field capture. */
 export function mediaTypeForFile(mime: string | null | undefined): "photo" | "video" {

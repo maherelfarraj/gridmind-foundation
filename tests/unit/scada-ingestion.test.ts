@@ -120,10 +120,7 @@ describe("P-172 ingestion health", () => {
   };
 
   it("marks fresh streams healthy", () => {
-    const h = classifyConnectorHealth(
-      { ...base, last_seen_at: "2026-07-01T11:59:30Z" },
-      now,
-    );
+    const h = classifyConnectorHealth({ ...base, last_seen_at: "2026-07-01T11:59:30Z" }, now);
     expect(h.health).toBe("healthy");
   });
 
@@ -181,10 +178,7 @@ describe("P-172 ingestion health", () => {
   it("summarizes KPIs over the last 24h of runs", () => {
     const rows = [
       classifyConnectorHealth({ ...base, last_seen_at: "2026-07-01T11:59:30Z" }, now),
-      classifyConnectorHealth(
-        { ...base, connector_id: "c2", last_seen_at: null },
-        now,
-      ),
+      classifyConnectorHealth({ ...base, connector_id: "c2", last_seen_at: null }, now),
     ];
     const kpis = summarizeIngestionHealth(
       rows,

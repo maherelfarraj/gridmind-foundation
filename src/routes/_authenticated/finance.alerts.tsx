@@ -101,7 +101,10 @@ function FinanceAlertsPage() {
       void invalidate();
     },
     onError: (e) =>
-      toast.error(translateError(t, errorCodeOf(e), (e as Error)?.message) || t("financeMod.alerts.couldNotUpdateAlert")),
+      toast.error(
+        translateError(t, errorCodeOf(e), (e as Error)?.message) ||
+          t("financeMod.alerts.couldNotUpdateAlert"),
+      ),
   });
 
   const ruleMutation = useMutation({
@@ -116,7 +119,10 @@ function FinanceAlertsPage() {
       void invalidate();
     },
     onError: (e) =>
-      toast.error(translateError(t, errorCodeOf(e), (e as Error)?.message) || t("financeMod.alerts.couldNotSaveRule")),
+      toast.error(
+        translateError(t, errorCodeOf(e), (e as Error)?.message) ||
+          t("financeMod.alerts.couldNotSaveRule"),
+      ),
   });
 
   const canWrite = access.data === "full";
@@ -137,7 +143,11 @@ function FinanceAlertsPage() {
         <EmptyState
           icon={BellRing}
           title={t("financeMod.alerts.couldNotLoadAlerts")}
-          description={translateError(t, errorCodeOf(alerts.error), (alerts.error as Error)?.message)}
+          description={translateError(
+            t,
+            errorCodeOf(alerts.error),
+            (alerts.error as Error)?.message,
+          )}
         />
       ) : (
         <Tabs defaultValue="alerts">

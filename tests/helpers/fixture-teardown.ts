@@ -43,12 +43,12 @@ export async function purgeFixtureTenants(
       const { data, error } = await rpc("fixture_purge_tenants", { p_company_ids: ids });
       if (!error) return typeof data === "number" ? data : 0;
       if (attempt === 2) {
-        console.warn("[fixture-teardown] purge failed", error);
+        console.info("[fixture-teardown] purge failed", error);
         return 0;
       }
     } catch (err) {
       if (attempt === 2) {
-        console.warn("[fixture-teardown] purge threw", err);
+        console.info("[fixture-teardown] purge threw", err);
         return 0;
       }
     }

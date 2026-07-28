@@ -113,7 +113,10 @@ function StudyListPage() {
       <Card>
         <CardContent className="flex flex-wrap items-center gap-3 py-3">
           <Select value={studyType} onValueChange={(v) => setStudyType(v as typeof studyType)}>
-            <SelectTrigger className="h-9 w-56" aria-label={t("engMod.ea.studies.filters.studyTypeAria")}>
+            <SelectTrigger
+              className="h-9 w-56"
+              aria-label={t("engMod.ea.studies.filters.studyTypeAria")}
+            >
               <SelectValue placeholder={t("engMod.ea.studies.filters.allStudyTypes")} />
             </SelectTrigger>
             <SelectContent>
@@ -126,13 +129,18 @@ function StudyListPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-            <SelectTrigger className="h-9 w-44" aria-label={t("engMod.ea.studies.filters.statusAria")}>
+            <SelectTrigger
+              className="h-9 w-44"
+              aria-label={t("engMod.ea.studies.filters.statusAria")}
+            >
               <SelectValue placeholder={t("engMod.ea.studies.filters.allStatuses")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("engMod.ea.studies.filters.allStatuses")}</SelectItem>
               <SelectItem value="draft">{t("engMod.ea.studies.filters.draft")}</SelectItem>
-              <SelectItem value="under_review">{t("engMod.ea.studies.filters.underReview")}</SelectItem>
+              <SelectItem value="under_review">
+                {t("engMod.ea.studies.filters.underReview")}
+              </SelectItem>
               <SelectItem value="approved">{t("engMod.ea.studies.filters.approved")}</SelectItem>
             </SelectContent>
           </Select>
@@ -156,7 +164,11 @@ function StudyListPage() {
         <EmptyState
           icon={AlertTriangle}
           title={t("engMod.ea.studies.loadError.title")}
-          description={query.error instanceof Error ? query.error.message : t("engMod.ea.studies.loadError.fallback")}
+          description={
+            query.error instanceof Error
+              ? query.error.message
+              : t("engMod.ea.studies.loadError.fallback")
+          }
           action={
             <Button variant="outline" onClick={() => void query.refetch()}>
               {t("engMod.ea.studies.retry")}
@@ -168,7 +180,11 @@ function StudyListPage() {
           icon={FlaskConical}
           title={t("engMod.ea.studies.empty.title")}
           description={t("engMod.ea.studies.empty.description")}
-          action={<Button onClick={() => setPickerOpen(true)}>{t("engMod.ea.studies.newStudyButton")}</Button>}
+          action={
+            <Button onClick={() => setPickerOpen(true)}>
+              {t("engMod.ea.studies.newStudyButton")}
+            </Button>
+          }
         />
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">

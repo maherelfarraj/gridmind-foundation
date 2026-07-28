@@ -140,7 +140,8 @@ function ChangeRegister() {
       void queryClient.invalidateQueries({ queryKey: ["moc"] });
       void navigate({ to: "/changes/$id", params: { id: created.id } });
     },
-    onError: (error: Error) => toast.error(error.message || t("adminMod.changes.register.createFailed")),
+    onError: (error: Error) =>
+      toast.error(error.message || t("adminMod.changes.register.createFailed")),
   });
 
   const selectedType = CHANGE_TYPES.find((t) => t.value === form.change_type);
@@ -275,7 +276,11 @@ function ChangeRegister() {
           icon={GitPullRequestArrow}
           title={t("adminMod.changes.register.noMatches")}
           description={t("adminMod.changes.register.noMatchesDesc")}
-          action={<Button onClick={() => setCreateOpen(true)}>{t("adminMod.changes.register.newChangeRequest")}</Button>}
+          action={
+            <Button onClick={() => setCreateOpen(true)}>
+              {t("adminMod.changes.register.newChangeRequest")}
+            </Button>
+          }
         />
       ) : null}
 
@@ -289,9 +294,15 @@ function ChangeRegister() {
                 <TableHead>{t("adminMod.changes.register.typeCol")}</TableHead>
                 <TableHead>{t("adminMod.changes.register.statusCol")}</TableHead>
                 <TableHead>{t("adminMod.changes.register.originatorCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.costImpactCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.scheduleCol")}</TableHead>
-                <TableHead className="text-right">{t("adminMod.changes.register.ageCol")}</TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.costImpactCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.scheduleCol")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("adminMod.changes.register.ageCol")}
+                </TableHead>
                 <TableHead>{t("adminMod.changes.register.updatedCol")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -317,9 +328,15 @@ function ChangeRegister() {
                     {row.cost_impact == null ? "—" : formatMoney(row.cost_impact, "USD")}
                   </TableCell>
                   <TableCell className="text-right">
-                    {row.schedule_impact_days == null ? "—" : t("adminMod.changes.register.daysSuffix", { value: row.schedule_impact_days })}
+                    {row.schedule_impact_days == null
+                      ? "—"
+                      : t("adminMod.changes.register.daysSuffix", {
+                          value: row.schedule_impact_days,
+                        })}
                   </TableCell>
-                  <TableCell className="text-right">{t("adminMod.changes.register.daysSuffix", { value: row.age_days })}</TableCell>
+                  <TableCell className="text-right">
+                    {t("adminMod.changes.register.daysSuffix", { value: row.age_days })}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatRelative(row.updated_at)}
                   </TableCell>
@@ -364,9 +381,7 @@ function ChangeRegister() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{t("adminMod.changes.register.newDialogTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("adminMod.changes.register.newDialogDesc")}
-            </DialogDescription>
+            <DialogDescription>{t("adminMod.changes.register.newDialogDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

@@ -24,7 +24,7 @@ const GATES = [
 const bar = (ch) => ch.repeat(72);
 
 if (!process.env.PGHOST) {
-  console.error(
+  console.info(
     `\n${bar("=")}\nCI GATES: FAILED — no database connection (PGHOST unset).\nThe policy lint and status-consistency harness are non-skippable.\n${bar("=")}\n`,
   );
   process.exit(1);
@@ -32,7 +32,7 @@ if (!process.env.PGHOST) {
 
 let failed = 0;
 for (const gate of GATES) {
-  console.log(`\n${bar("=")}\n${gate.name}\n  ${gate.why}\n${bar("=")}`);
+  console.info(`\n${bar("=")}\n${gate.name}\n  ${gate.why}\n${bar("=")}`);
   const res = spawnSync(
     "bunx",
     ["vitest", "run", "--config", "vitest.config.all.ts", "--project", "all", gate.file],
@@ -40,10 +40,10 @@ for (const gate of GATES) {
   );
   const ok = res.status === 0;
   if (!ok) failed += 1;
-  console.log(`\n>>> ${gate.name}: ${ok ? "PASS" : "FAIL"}\n`);
+  console.info(`\n>>> ${gate.name}: ${ok ? "PASS" : "FAIL"}\n`);
 }
 
-console.log(bar("="));
-console.log(failed === 0 ? "CI GATES: ALL PASS" : `CI GATES: ${failed} GATE(S) FAILED`);
-console.log(bar("="));
+console.info(bar("="));
+console.info(failed === 0 ? "CI GATES: ALL PASS" : `CI GATES: ${failed} GATE(S) FAILED`);
+console.info(bar("="));
 process.exit(failed === 0 ? 0 : 1);

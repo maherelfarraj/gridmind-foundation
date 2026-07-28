@@ -27,7 +27,10 @@ describe("IMPACT_MAP", () => {
 
 /** Minimal chainable Supabase stub: records calls, returns scripted rows. */
 function makeDb(rows: Record<string, unknown[]>, rpcResults: Record<string, unknown> = {}) {
-  const calls: { rpc: Array<{ name: string; args: any }>; inserts: Array<{ table: string; payload: any }> } = {
+  const calls: {
+    rpc: Array<{ name: string; args: any }>;
+    inserts: Array<{ table: string; payload: any }>;
+  } = {
     rpc: [],
     inserts: [],
   };
@@ -66,16 +69,23 @@ function makeDb(rows: Record<string, unknown[]>, rpcResults: Record<string, unkn
 }
 
 describe("emitThreadEvent", () => {
-  const project = { id: "11111111-1111-1111-1111-111111111111", company_id: "c1", name: "East Amman" };
+  const project = {
+    id: "11111111-1111-1111-1111-111111111111",
+    company_id: "c1",
+    name: "East Amman",
+  };
 
   it("skips cleanly when the project cannot be resolved", async () => {
     const { db } = makeDb({});
-    const res = await emitThreadEvent({ supabase: db as never }, {
-      event: "module_changed",
-      sourceType: "project",
-      sourceId: project.id,
-      projectId: project.id,
-    });
+    const res = await emitThreadEvent(
+      { supabase: db as never },
+      {
+        event: "module_changed",
+        sourceType: "project",
+        sourceId: project.id,
+        projectId: project.id,
+      },
+    );
     expect(res.skipped).toBe("project_not_found");
     expect(res.assessmentId).toBeNull();
   });
@@ -93,12 +103,15 @@ describe("emitThreadEvent", () => {
       { create_impact_assessment: "aaaa", link_entities: "link" },
     );
 
-    const res = await emitThreadEvent({ supabase: db as never }, {
-      event: "module_changed",
-      sourceType: "project",
-      sourceId: project.id,
-      projectId: project.id,
-    });
+    const res = await emitThreadEvent(
+      { supabase: db as never },
+      {
+        event: "module_changed",
+        sourceType: "project",
+        sourceId: project.id,
+        projectId: project.id,
+      },
+    );
 
     expect(res.assessmentId).toBe("aaaa");
     expect(res.impacts.map((i) => i.area)).toEqual(impactAreas("module_changed"));
@@ -117,12 +130,15 @@ describe("emitThreadEvent", () => {
       rpc: async () => ({ data: null, error: { message: "nope" } }),
     };
     await expect(
-      emitThreadEvent({ supabase: db as never }, {
-        event: "scada_alarm_raised",
-        sourceType: "scada_alarm",
-        sourceId: "66666666-6666-6666-6666-666666666666",
-        projectId: project.id,
-      }),
+      emitThreadEvent(
+        { supabase: db as never },
+        {
+          event: "scada_alarm_raised",
+          sourceType: "scada_alarm",
+          sourceId: "66666666-6666-6666-6666-666666666666",
+          projectId: project.id,
+        },
+      ),
     ).resolves.toMatchObject({ skipped: "project_not_found" });
   });
 });

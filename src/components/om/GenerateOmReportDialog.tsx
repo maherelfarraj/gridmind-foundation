@@ -91,8 +91,11 @@ export function GenerateOmReportDialog({ projects }: Props) {
       setOpen(false);
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : t("omMod.generateReportDialog.generateFailed");
-      toast.error(/export blocked/i.test(msg) ? t("omMod.generateReportDialog.exportsLocked") : msg);
+      const msg =
+        err instanceof Error ? err.message : t("omMod.generateReportDialog.generateFailed");
+      toast.error(
+        /export blocked/i.test(msg) ? t("omMod.generateReportDialog.exportsLocked") : msg,
+      );
     },
   });
 

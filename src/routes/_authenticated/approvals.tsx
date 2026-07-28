@@ -111,7 +111,11 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="mutedOutline">{statusLabel(row.entity_type)}</Badge>
           {row.escalated_at && (
-            <StatusBadge status="escalated" label={t("adminMod.approvals.escalated")} icon={AlertTriangle} />
+            <StatusBadge
+              status="escalated"
+              label={t("adminMod.approvals.escalated")}
+              icon={AlertTriangle}
+            />
           )}
           <span className="min-w-0 truncate font-medium text-foreground">{row.title}</span>
           {amount && <span className="text-sm text-muted-foreground tabular-nums">· {amount}</span>}
@@ -264,7 +268,9 @@ function DecideDialog({
             onClick={() => mutation.mutate()}
             disabled={disabled}
           >
-            {decision === "approved" ? t("adminMod.approvals.approve") : t("adminMod.approvals.reject")}
+            {decision === "approved"
+              ? t("adminMod.approvals.approve")
+              : t("adminMod.approvals.reject")}
           </Button>
         </DialogFooter>
       </DialogContent>

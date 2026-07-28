@@ -12,7 +12,9 @@ export type AppRole = Database["public"]["Enums"]["app_role"];
 export const OPS_ALERT_STATUSES: OpsAlertStatus[] = ["open", "acknowledged", "dismissed"];
 export const OPS_ALERT_SEVERITIES: OpsAlertSeverity[] = ["info", "warning", "critical"];
 
-export async function assertSuperAdmin(ctx: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
+export async function assertSuperAdmin(
+  ctx: AuthContext & { user: NonNullable<AuthContext["user"]> },
+) {
   const { data: isSuper, error } = await ctx.supabase.rpc("has_role", {
     p_user_id: ctx.user.id,
     p_role: "super_admin",

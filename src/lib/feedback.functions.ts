@@ -4,7 +4,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { attachSupabaseAuth, requireSupabaseAuth, type AuthContext } from "@/integrations/supabase/auth-attacher";
+import {
+  attachSupabaseAuth,
+  requireSupabaseAuth,
+  type AuthContext,
+} from "@/integrations/supabase/auth-attacher";
 import type { Database } from "@/integrations/supabase/types";
 
 export type OpsFeedbackCategory = Database["public"]["Enums"]["ops_feedback_category"];
@@ -28,7 +32,9 @@ const CATEGORIES = ["bug", "ux", "performance", "security", "feature", "other"] 
 const SEVERITIES = ["info", "warning", "critical"] as const;
 const STATUSES = ["open", "triaged", "in_progress", "resolved", "closed"] as const;
 
-async function requireSuperAdmin(context: AuthContext & { user: NonNullable<AuthContext["user"]> }) {
+async function requireSuperAdmin(
+  context: AuthContext & { user: NonNullable<AuthContext["user"]> },
+) {
   const { data: isSuper, error: roleErr } = await context.supabase.rpc("has_role", {
     p_user_id: context.user.id,
     p_role: "super_admin",

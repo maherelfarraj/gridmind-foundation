@@ -17,11 +17,20 @@ export interface LintExemption {
 /** Strings that look like JSX text but are not user-facing prose. */
 export const STRING_EXEMPTIONS: LintExemption[] = [
   { pattern: /^[A-Za-z]+\s*[?&|]{1,2}\s*\(?$/, reason: "JSX conditional/expression fragment" },
-  { pattern: /^(Promise|Record|Array|Partial|Awaited|ReturnType)$/, reason: "TypeScript generic argument" },
+  {
+    pattern: /^(Promise|Record|Array|Partial|Awaited|ReturnType)$/,
+    reason: "TypeScript generic argument",
+  },
   { pattern: /^\w+\(\)[\w\s.]*$/, reason: "code expression, not prose" },
   { pattern: /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+)+$/, reason: "dotted identifier / property path" },
-  { pattern: /^(GridMind EPC|GridMind|NEPCO|H₂)$/, reason: "brand or proper noun, intentionally untranslated" },
-  { pattern: /^[A-Z]{2,6}(-[A-Z0-9]+)*$/, reason: "Latin equipment tag / acronym (INV-01-01, SCADA, CSV)" },
+  {
+    pattern: /^(GridMind EPC|GridMind|NEPCO|H₂)$/,
+    reason: "brand or proper noun, intentionally untranslated",
+  },
+  {
+    pattern: /^[A-Z]{2,6}(-[A-Z0-9]+)*$/,
+    reason: "Latin equipment tag / acronym (INV-01-01, SCADA, CSV)",
+  },
   { pattern: /^[\d\s.,%/+-]+$/, reason: "numeric literal" },
 ];
 

@@ -21,11 +21,13 @@ export const ReopenPeriodSchema = z.object({
   reason: z
     .string()
     .trim()
-    .min(REOPEN_REASON_MIN, "Reason must be at least 10 characters — it is written to the audit log.")
+    .min(
+      REOPEN_REASON_MIN,
+      "Reason must be at least 10 characters — it is written to the audit log.",
+    )
     .max(500),
 });
 export type ReopenPeriodInput = z.infer<typeof ReopenPeriodSchema>;
-
 
 export const SaveChecklistSchema = z.object({
   period_month: PeriodMonthSchema,

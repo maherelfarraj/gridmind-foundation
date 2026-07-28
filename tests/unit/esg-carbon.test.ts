@@ -50,7 +50,12 @@ describe("category scope map", () => {
 
 describe("resolveFactor", () => {
   const factors = [
-    factor({ id: "global-old", kg_co2e_per_unit: 2.5, valid_from: "2020-01-01", valid_to: "2024-01-01" }),
+    factor({
+      id: "global-old",
+      kg_co2e_per_unit: 2.5,
+      valid_from: "2020-01-01",
+      valid_to: "2024-01-01",
+    }),
     factor({ id: "global-new", kg_co2e_per_unit: 2.68, valid_from: "2024-01-01" }),
     factor({
       id: "company",
@@ -109,7 +114,13 @@ describe("computeEmissions", () => {
   ];
   const rows = [
     { id: "1", category: "fuel_diesel", quantity: 1000, unit: "L", period_month: "2026-07-01" },
-    { id: "2", category: "electricity_grid", quantity: 2000, unit: "kWh", period_month: "2026-07-01" },
+    {
+      id: "2",
+      category: "electricity_grid",
+      quantity: 2000,
+      unit: "kWh",
+      period_month: "2026-07-01",
+    },
     { id: "3", category: "waste_general", quantity: 500, unit: "kg", period_month: "2026-07-01" },
     { id: "4", category: "materials_steel", quantity: 10, unit: "t", period_month: "2026-07-01" },
   ];

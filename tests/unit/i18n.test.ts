@@ -45,7 +45,6 @@ describe("locale switching", () => {
       base(flatten(resources.en.translation)).sort(),
     );
   });
-
 });
 
 describe("Arabic plural forms", () => {

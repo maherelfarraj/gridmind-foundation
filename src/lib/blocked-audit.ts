@@ -86,9 +86,7 @@ export async function writeBlockedAudit(
 }
 
 /** Resolves the acting profile id, or null when unavailable. */
-export async function currentActorId(
-  supabase: SupabaseClient,
-): Promise<string | null> {
+export async function currentActorId(supabase: SupabaseClient): Promise<string | null> {
   try {
     const { data } = await supabase.auth.getUser();
     return data?.user?.id ?? null;

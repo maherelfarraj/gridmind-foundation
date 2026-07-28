@@ -52,10 +52,7 @@ const act = (over: Partial<CarbonActivity> & { id: string }): CarbonActivity => 
 
 describe("computeEmissions", () => {
   it("1000 L diesel × 2.68 = 2680 kg exactly, with factor citation", () => {
-    const { rows, totals } = computeEmissions(
-      [act({ id: "a1", quantity: 1000 })],
-      FACTORS,
-    );
+    const { rows, totals } = computeEmissions([act({ id: "a1", quantity: 1000 })], FACTORS);
     expect(rows[0].co2e_kg).toBe(2680);
     expect(rows[0].factor_code).toBe("DIESEL-24");
     expect(rows[0].factor_source).toBe("DEFRA 2024");

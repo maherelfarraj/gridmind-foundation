@@ -234,7 +234,9 @@ function ReceivablesPage() {
             <Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as "client" | "project")}>
               <TabsList>
                 <TabsTrigger value="client">{t("financeMod.receivablesPage.byClient")}</TabsTrigger>
-                <TabsTrigger value="project">{t("financeMod.receivablesPage.byProject")}</TabsTrigger>
+                <TabsTrigger value="project">
+                  {t("financeMod.receivablesPage.byProject")}
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           }
@@ -270,8 +272,12 @@ function ReceivablesPage() {
                     </Tooltip>
                   </TableHead>
                 ))}
-                <TableHead className="text-end">{t("financeMod.receivablesPage.columnTotal")}</TableHead>
-                <TableHead className="text-end">{t("financeMod.receivablesPage.columnExpected")}</TableHead>
+                <TableHead className="text-end">
+                  {t("financeMod.receivablesPage.columnTotal")}
+                </TableHead>
+                <TableHead className="text-end">
+                  {t("financeMod.receivablesPage.columnExpected")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -295,14 +301,18 @@ function ReceivablesPage() {
                     </TableCell>
                     {AGING_BUCKETS.map((b) => (
                       <TableCell key={b}>
-                        <MoneyCell>{g.buckets[b] ? formatMoney(g.buckets[b], base) : "—"}</MoneyCell>
+                        <MoneyCell>
+                          {g.buckets[b] ? formatMoney(g.buckets[b], base) : "—"}
+                        </MoneyCell>
                       </TableCell>
                     ))}
                     <TableCell>
                       <MoneyCell className="font-medium">{formatMoney(g.total, base)}</MoneyCell>
                     </TableCell>
                     <TableCell>
-                      <MoneyCell className="text-accent">{formatMoney(g.expected_cash, base)}</MoneyCell>
+                      <MoneyCell className="text-accent">
+                        {formatMoney(g.expected_cash, base)}
+                      </MoneyCell>
                     </TableCell>
                   </TableRow>,
                   isOpen ? (
@@ -327,12 +337,19 @@ function ReceivablesPage() {
                                     ) : null}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {t("financeMod.receivablesPage.dueLabel", { date: formatDate(inv.due_date) })}{" "}
+                                    {t("financeMod.receivablesPage.dueLabel", {
+                                      date: formatDate(inv.due_date),
+                                    })}{" "}
                                     ·{" "}
                                     {inv.days_past_due > 0
-                                      ? t("financeMod.receivablesPage.daysPastDue", { days: inv.days_past_due })
+                                      ? t("financeMod.receivablesPage.daysPastDue", {
+                                          days: inv.days_past_due,
+                                        })
                                       : t("financeMod.receivablesPage.notYetDue")}{" "}
-                                    · {t("financeMod.receivablesPage.reminderCount", { count: inv.reminder_count })}
+                                    ·{" "}
+                                    {t("financeMod.receivablesPage.reminderCount", {
+                                      count: inv.reminder_count,
+                                    })}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-3">

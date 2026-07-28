@@ -452,7 +452,6 @@ export const inviteVendorContact = createServerFn({ method: "POST" })
         .single();
       if (insErr) throw insErr;
 
-
       const membershipId = (inserted as { id: string }).id;
       await writePortalEvent(context, data.vendorId, companyId, "vendor_portal.member_invited", {
         email: data.email,

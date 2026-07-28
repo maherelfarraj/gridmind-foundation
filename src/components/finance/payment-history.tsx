@@ -48,13 +48,14 @@ export function PaymentHistory({
       setVoidingId(null);
       setReason("");
     },
-    onError: (err) =>
-      toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
   if (q.isLoading) return <Skeleton className="h-24 w-full" />;
   if (q.isError)
-    return <p className="text-sm text-destructive">{t("financeMod.paymentHistory.couldNotLoad")}</p>;
+    return (
+      <p className="text-sm text-destructive">{t("financeMod.paymentHistory.couldNotLoad")}</p>
+    );
 
   const rows = q.data?.rows ?? [];
 
@@ -103,10 +104,14 @@ export function PaymentHistory({
                   <span>{p.payment_date}</span>
                   <span>{paymentMethodLabel(p.method)}</span>
                   {p.bank_reference && (
-                    <span>{t("financeMod.paymentHistory.refPrefix", { reference: p.bank_reference })}</span>
+                    <span>
+                      {t("financeMod.paymentHistory.refPrefix", { reference: p.bank_reference })}
+                    </span>
                   )}
                   <Badge variant="outline">{reconciliationLabel(p.reconciliation_status)}</Badge>
-                  {voided && <Badge variant="destructive">{t("financeMod.paymentHistory.voided")}</Badge>}
+                  {voided && (
+                    <Badge variant="destructive">{t("financeMod.paymentHistory.voided")}</Badge>
+                  )}
                 </div>
                 {voided && p.voided_reason && (
                   <p className="text-xs text-muted-foreground">

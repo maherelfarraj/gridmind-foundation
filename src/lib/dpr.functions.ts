@@ -785,8 +785,12 @@ export const attachPhoto = createServerFn({ method: "POST" })
       },
       async () => {
         // P-086 — geotagged pins must fall inside the project geofence.
-        if (data.latitude !== null && data.latitude !== undefined &&
-            data.longitude !== null && data.longitude !== undefined) {
+        if (
+          data.latitude !== null &&
+          data.latitude !== undefined &&
+          data.longitude !== null &&
+          data.longitude !== undefined
+        ) {
           const fence = geofenceRejection(data.latitude, data.longitude, {
             latitude: project.site_lat === null ? null : Number(project.site_lat),
             longitude: project.site_lng === null ? null : Number(project.site_lng),

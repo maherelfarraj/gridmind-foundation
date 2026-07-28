@@ -110,7 +110,9 @@ function HealthPage() {
       {query.isError ? (
         <Card className="border-destructive/40 bg-card">
           <CardHeader>
-            <CardTitle className="text-destructive">{t("adminMod.healthPage.errorTitle")}</CardTitle>
+            <CardTitle className="text-destructive">
+              {t("adminMod.healthPage.errorTitle")}
+            </CardTitle>
             <CardDescription className="text-muted-foreground">
               {(query.error as Error | undefined)?.message ??
                 t("adminMod.healthPage.errorFallback")}
@@ -129,7 +131,13 @@ function HealthPage() {
   );
 }
 
-function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: Record<string, unknown>) => string }) {
+function HealthContent({
+  data,
+  t,
+}: {
+  data: OpsHealth;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
   const emptyAll =
     data.signals.every((s) => s.value24h === 0) && data.crons.every((c) => !c.lastRunAt);
 
@@ -137,7 +145,9 @@ function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: R
     return (
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">{t("adminMod.healthPage.allQuietTitle")}</CardTitle>
+          <CardTitle className="text-foreground">
+            {t("adminMod.healthPage.allQuietTitle")}
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {t("adminMod.healthPage.allQuietDesc")}
           </CardDescription>
@@ -168,9 +178,13 @@ function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: R
                 <span className="text-2xl font-semibold tabular-nums text-foreground">
                   {s.value24h}
                 </span>
-                <span className="text-xs text-muted-foreground">{t("adminMod.healthPage.last24h")}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("adminMod.healthPage.last24h")}
+                </span>
                 {s.peakPerHour > 0 ? (
-                  <span className="text-xs text-muted-foreground">{t("adminMod.healthPage.peakPerHour", { value: s.peakPerHour })}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("adminMod.healthPage.peakPerHour", { value: s.peakPerHour })}
+                  </span>
                 ) : null}
               </div>
               {s.status !== "ok" ? (
@@ -249,7 +263,9 @@ function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: R
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-foreground">{t("adminMod.healthPage.cronRunsTitle")}</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">
+            {t("adminMod.healthPage.cronRunsTitle")}
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {t("adminMod.healthPage.cronRunsDesc")}
           </CardDescription>
@@ -267,7 +283,9 @@ function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: R
                 </div>
                 <div className="mt-0.5 text-xs text-muted-foreground">
                   {c.lastRunAt
-                    ? t("adminMod.healthPage.ranAgo", { time: formatDistanceToNowStrict(new Date(c.lastRunAt), { addSuffix: true }) })
+                    ? t("adminMod.healthPage.ranAgo", {
+                        time: formatDistanceToNowStrict(new Date(c.lastRunAt), { addSuffix: true }),
+                      })
                     : t("adminMod.healthPage.noRunIn7d")}
                 </div>
               </div>

@@ -106,7 +106,9 @@ function ScadaDashboardPage() {
         actions={
           <div className="flex items-end gap-3">
             <div className="w-64">
-              <label className="mb-1 block text-xs text-muted-foreground">{t("omMod.scadaDashboard.plantLabel")}</label>
+              <label className="mb-1 block text-xs text-muted-foreground">
+                {t("omMod.scadaDashboard.plantLabel")}
+              </label>
               <Select
                 value={projectId ?? "all"}
                 onValueChange={(v) =>
@@ -214,14 +216,15 @@ function KpiTiles({ data }: { data: DashboardPayload }) {
           value={`${formatNumber(tiles.fleetPowerKw)} kW`}
           icon={Zap}
         />
-        <KpiTile label={t("omMod.scadaDashboard.energyToday")} value={`${formatNumber(tiles.energyTodayKwh)} kWh`} />
+        <KpiTile
+          label={t("omMod.scadaDashboard.energyToday")}
+          value={`${formatNumber(tiles.energyTodayKwh)} kWh`}
+        />
         <KpiTile
           label={t("omMod.scadaDashboard.availability30d")}
           value={tiles.availabilityPct != null ? `${tiles.availabilityPct}%` : "—"}
           hint={
-            tiles.availabilityPct == null
-              ? t("omMod.scadaDashboard.availabilityHint")
-              : undefined
+            tiles.availabilityPct == null ? t("omMod.scadaDashboard.availabilityHint") : undefined
           }
         />
         <KpiTile
@@ -238,8 +241,12 @@ function KpiTiles({ data }: { data: DashboardPayload }) {
       {tiles.activeAlarms && (
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t("omMod.scadaDashboard.activeAlarms")}</span>
-          <Badge variant="destructive">{t("omMod.scadaDashboard.criticalCount", { count: tiles.activeAlarms.critical })}</Badge>
-          <Badge variant="secondary">{t("omMod.scadaDashboard.majorCount", { count: tiles.activeAlarms.major })}</Badge>
+          <Badge variant="destructive">
+            {t("omMod.scadaDashboard.criticalCount", { count: tiles.activeAlarms.critical })}
+          </Badge>
+          <Badge variant="secondary">
+            {t("omMod.scadaDashboard.majorCount", { count: tiles.activeAlarms.major })}
+          </Badge>
         </div>
       )}
     </>

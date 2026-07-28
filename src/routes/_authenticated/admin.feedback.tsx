@@ -62,7 +62,14 @@ export const Route = createFileRoute("/_authenticated/admin/feedback")({
   component: FeedbackPage,
 });
 
-const CATEGORIES: OpsFeedbackCategory[] = ["bug", "ux", "performance", "security", "feature", "other"];
+const CATEGORIES: OpsFeedbackCategory[] = [
+  "bug",
+  "ux",
+  "performance",
+  "security",
+  "feature",
+  "other",
+];
 const SEVERITIES: Array<"info" | "warning" | "critical"> = ["info", "warning", "critical"];
 const STATUSES: OpsFeedbackStatus[] = ["open", "triaged", "in_progress", "resolved", "closed"];
 
@@ -161,7 +168,9 @@ function FeedbackPage() {
               <Label>Category</Label>
               <Select
                 value={form.category}
-                onValueChange={(v) => setForm((f) => ({ ...f, category: v as OpsFeedbackCategory }))}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, category: v as OpsFeedbackCategory }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />

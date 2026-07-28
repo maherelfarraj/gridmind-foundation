@@ -23,10 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  listImplementationTasks,
-  updateImplementationTask,
-} from "@/lib/moc.exec.functions";
+import { listImplementationTasks, updateImplementationTask } from "@/lib/moc.exec.functions";
 import { ownerRoleLabel, taskProgress, type ImplementationTask } from "@/lib/moc.exec.rules";
 
 interface Props {
@@ -47,8 +44,11 @@ export function ImplementationTasks({ changeRequestId, canEdit }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: (input: { task_id: string; status: "done" | "skipped" | "pending"; note: string }) =>
-      updateFn({ data: input }),
+    mutationFn: (input: {
+      task_id: string;
+      status: "done" | "skipped" | "pending";
+      note: string;
+    }) => updateFn({ data: input }),
     onSuccess: () => {
       toast.success("Task updated");
       setDoneTask(null);
@@ -87,9 +87,10 @@ export function ImplementationTasks({ changeRequestId, canEdit }: Props) {
 
       <ul className="space-y-2">
         {rows.map((task) => {
-          const href = task.entity_type && task.entity_id
-            ? entityHref(task.entity_type, task.entity_id)
-            : null;
+          const href =
+            task.entity_type && task.entity_id
+              ? entityHref(task.entity_type, task.entity_id)
+              : null;
           return (
             <li key={task.id} className="rounded-md border border-border bg-card p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">

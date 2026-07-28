@@ -1,10 +1,6 @@
 // P-183 — Shared bits for the quality surfaces: result badge, calibration chip.
 import { Badge } from "@/components/ui/badge";
-import {
-  calibrationChipLabel,
-  calibrationState,
-  type TestResultStatus,
-} from "@/lib/quality.rules";
+import { calibrationChipLabel, calibrationState, type TestResultStatus } from "@/lib/quality.rules";
 
 const RESULT_TONE: Record<TestResultStatus, "default" | "secondary" | "outline" | "destructive"> = {
   pending: "outline",

@@ -137,12 +137,7 @@ export function YieldComparison({ scenarios }: { scenarios: YieldScenarioRow[] }
               />
               <Legend />
               {LOSS_KEYS.map((k, i) => (
-                <Bar
-                  key={k}
-                  dataKey={k}
-                  stackId="loss"
-                  fill={`var(--chart-${(i % 5) + 1})`}
-                />
+                <Bar key={k} dataKey={k} stackId="loss" fill={`var(--chart-${(i % 5) + 1})`} />
               ))}
             </BarChart>
           </ResponsiveContainer>

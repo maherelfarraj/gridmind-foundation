@@ -116,7 +116,9 @@ function PerformancePage() {
       {query.isError ? (
         <Card className="border-destructive/40 bg-card">
           <CardHeader>
-            <CardTitle className="text-destructive">{t("adminMod.performancePage.errorTitle")}</CardTitle>
+            <CardTitle className="text-destructive">
+              {t("adminMod.performancePage.errorTitle")}
+            </CardTitle>
             <CardDescription className="text-muted-foreground">
               {(query.error as Error | undefined)?.message ??
                 t("adminMod.performancePage.errorFallback")}
@@ -135,7 +137,13 @@ function PerformancePage() {
   );
 }
 
-function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, opts?: Record<string, unknown>) => string }) {
+function PerfContent({
+  data,
+  t,
+}: {
+  data: PerformanceSignals;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
   return (
     <>
       <KpiGrid columns={4}>
@@ -144,7 +152,15 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
             key={c.key}
             label={c.label}
             value={c.value == null ? t("adminMod.performancePage.naValue") : `${c.value}${c.unit}`}
-            hint={c.value == null ? t("adminMod.performancePage.notExposed") : t("adminMod.performancePage.thresholdHint", { warn: c.warnAt, crit: c.critAt, unit: c.unit })}
+            hint={
+              c.value == null
+                ? t("adminMod.performancePage.notExposed")
+                : t("adminMod.performancePage.thresholdHint", {
+                    warn: c.warnAt,
+                    crit: c.critAt,
+                    unit: c.unit,
+                  })
+            }
             status={toKpiStatus(c.status)}
           />
         ))}
@@ -154,18 +170,29 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         aria-label="Database health"
       >
-        <KpiTile label={t("adminMod.performancePage.dbSize")} value={`${data.dbHealth.dbSizeMb.toLocaleString()} MB`} />
-        <KpiTile label={t("adminMod.performancePage.walSize")} value={`${data.dbHealth.walSizeMb.toLocaleString()} MB`} />
+        <KpiTile
+          label={t("adminMod.performancePage.dbSize")}
+          value={`${data.dbHealth.dbSizeMb.toLocaleString()} MB`}
+        />
+        <KpiTile
+          label={t("adminMod.performancePage.walSize")}
+          value={`${data.dbHealth.walSizeMb.toLocaleString()} MB`}
+        />
         <KpiTile
           label={t("adminMod.performancePage.connections")}
           value={`${data.dbHealth.connectionsUsed} / ${data.dbHealth.connectionsMax}`}
         />
-        <KpiTile label={t("adminMod.performancePage.rollbackRate")} value={`${data.dbHealth.rollbackRate}%`} />
+        <KpiTile
+          label={t("adminMod.performancePage.rollbackRate")}
+          value={`${data.dbHealth.rollbackRate}%`}
+        />
       </section>
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-foreground">{t("adminMod.performancePage.capacityStatusTitle")}</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">
+            {t("adminMod.performancePage.capacityStatusTitle")}
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {t("adminMod.performancePage.capacityStatusDesc")}
           </CardDescription>
@@ -188,7 +215,9 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-foreground">{t("adminMod.performancePage.slowQueriesTitle")}</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">
+            {t("adminMod.performancePage.slowQueriesTitle")}
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {t("adminMod.performancePage.slowQueriesDesc")}
           </CardDescription>
@@ -204,10 +233,18 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("adminMod.performancePage.colQuery")}</TableHead>
-                    <TableHead className="text-right">{t("adminMod.performancePage.colCalls")}</TableHead>
-                    <TableHead className="text-right">{t("adminMod.performancePage.colMean")}</TableHead>
-                    <TableHead className="text-right">{t("adminMod.performancePage.colTotal")}</TableHead>
-                    <TableHead className="text-right">{t("adminMod.performancePage.colMax")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("adminMod.performancePage.colCalls")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("adminMod.performancePage.colMean")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("adminMod.performancePage.colTotal")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("adminMod.performancePage.colMax")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -231,7 +268,9 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-foreground">{t("adminMod.performancePage.tableSizesTitle")}</CardTitle>
+          <CardTitle className="text-base font-medium text-foreground">
+            {t("adminMod.performancePage.tableSizesTitle")}
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             {t("adminMod.performancePage.tableSizesDesc")}
           </CardDescription>
@@ -242,7 +281,9 @@ function PerfContent({ data, t }: { data: PerformanceSignals; t: (key: string, o
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("adminMod.performancePage.colTable")}</TableHead>
-                  <TableHead className="text-right">{t("adminMod.performancePage.colSizeMb")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("adminMod.performancePage.colSizeMb")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

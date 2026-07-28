@@ -138,7 +138,10 @@ function ProjectDetailLayout() {
       </div>
 
       {/* Tab bar */}
-      <nav aria-label={t("engMod.projectDetail.sectionsAriaLabel")} className="flex flex-wrap gap-1 border-b border-border">
+      <nav
+        aria-label={t("engMod.projectDetail.sectionsAriaLabel")}
+        className="flex flex-wrap gap-1 border-b border-border"
+      >
         {STATIC_TABS.map((t) => (
           <TabLink key={t.key} to={t.key} label={t.label} projectId={projectId} />
         ))}

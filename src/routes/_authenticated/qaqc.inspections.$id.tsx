@@ -146,7 +146,9 @@ function InspectionDetailPage() {
             <>
               <QaqcResultBadge result={i.result} />
               {i.rework_required ? (
-                <Badge className="bg-destructive/10 text-destructive">{t("fieldMod.qaqc.inspection.reworkBadge")}</Badge>
+                <Badge className="bg-destructive/10 text-destructive">
+                  {t("fieldMod.qaqc.inspection.reworkBadge")}
+                </Badge>
               ) : null}
               <Badge variant="outline" className="capitalize">
                 {i.discipline}
@@ -183,7 +185,9 @@ function InspectionDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("fieldMod.qaqc.inspection.inspectionSection")}</CardTitle>
+          <CardTitle className="text-base">
+            {t("fieldMod.qaqc.inspection.inspectionSection")}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="flex flex-col gap-1">
@@ -242,7 +246,9 @@ function InspectionDetailPage() {
             </Select>
           </div>
           <div className="flex items-center justify-between rounded-md border border-border p-3">
-            <div className="text-sm font-medium">{t("fieldMod.qaqc.inspection.reworkRequired")}</div>
+            <div className="text-sm font-medium">
+              {t("fieldMod.qaqc.inspection.reworkRequired")}
+            </div>
             <Switch
               checked={reworkRequired}
               onCheckedChange={setReworkRequired}
@@ -250,7 +256,10 @@ function InspectionDetailPage() {
             />
           </div>
           <div className="md:col-span-2 flex flex-col gap-1">
-            <Label>{t("fieldMod.qaqc.inspection.reworkNotes")}{reworkRequired ? " *" : ""}</Label>
+            <Label>
+              {t("fieldMod.qaqc.inspection.reworkNotes")}
+              {reworkRequired ? " *" : ""}
+            </Label>
             <Textarea
               rows={3}
               value={reworkNotes}
@@ -287,7 +296,9 @@ function InspectionDetailPage() {
             className="ml-auto"
           >
             <Save size={14} aria-hidden />
-            {updateMut.isPending ? t("fieldMod.common.saving") : t("fieldMod.qaqc.inspection.saveChanges")}
+            {updateMut.isPending
+              ? t("fieldMod.common.saving")
+              : t("fieldMod.qaqc.inspection.saveChanges")}
           </Button>
         </div>
       ) : null}

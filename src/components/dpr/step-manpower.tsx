@@ -79,8 +79,14 @@ export function StepManpower({ dprId, rows, readOnly }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3">
-          <TotalTile label={t("fieldMod.dpr.manpower.headcount")} value={totals.totalManpower.toString()} />
-          <TotalTile label={t("fieldMod.dpr.manpower.manHours")} value={totals.totalHours.toFixed(1)} />
+          <TotalTile
+            label={t("fieldMod.dpr.manpower.headcount")}
+            value={totals.totalManpower.toString()}
+          />
+          <TotalTile
+            label={t("fieldMod.dpr.manpower.manHours")}
+            value={totals.totalHours.toFixed(1)}
+          />
         </CardContent>
       </Card>
 

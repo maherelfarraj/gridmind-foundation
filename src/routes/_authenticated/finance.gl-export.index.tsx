@@ -270,7 +270,9 @@ function GlExportPage() {
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">{t("financeMod.glExport.exportRuns")}</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          {t("financeMod.glExport.exportRuns")}
+        </h2>
         {workspace.isLoading ? (
           <Skeleton className="h-32 w-full" />
         ) : runs.length === 0 ? (
@@ -288,7 +290,9 @@ function GlExportPage() {
                   <TableHead>{t("financeMod.glExport.periodHeader")}</TableHead>
                   <TableHead className="text-end">{t("financeMod.glExport.linesHeader")}</TableHead>
                   <TableHead className="text-end">{t("financeMod.glExport.debitHeader")}</TableHead>
-                  <TableHead className="text-end">{t("financeMod.glExport.creditHeader")}</TableHead>
+                  <TableHead className="text-end">
+                    {t("financeMod.glExport.creditHeader")}
+                  </TableHead>
                   <TableHead>{t("common.status")}</TableHead>
                   <TableHead className="text-end">{t("financeMod.glExport.csvHeader")}</TableHead>
                 </TableRow>
@@ -444,7 +448,9 @@ function JournalTable({
       >
         <Num>{t("financeMod.glExport.footerDr", { amount: money.format(totalDebit) })}</Num>
         <Num>{t("financeMod.glExport.footerCr", { amount: money.format(totalCredit) })}</Num>
-        <span>{balanced ? t("financeMod.glExport.balanced") : t("financeMod.glExport.outOfBalance")}</span>
+        <span>
+          {balanced ? t("financeMod.glExport.balanced") : t("financeMod.glExport.outOfBalance")}
+        </span>
       </div>
     </div>
   );

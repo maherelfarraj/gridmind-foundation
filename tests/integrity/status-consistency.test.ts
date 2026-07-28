@@ -59,9 +59,7 @@ function report(cls: string, found: Divergence[]) {
 // deliberately left in odd states, so the CI gate scopes to real tenants.
 // Set INTEGRITY_ALL_TENANTS=1 to audit fixtures too.
 const REAL_ONLY =
-  process.env.INTEGRITY_ALL_TENANTS === "1"
-    ? ""
-    : ` and c.name !~ '^(E2E|SLD E2E|P-?[0-9]+ )' `;
+  process.env.INTEGRITY_ALL_TENANTS === "1" ? "" : ` and c.name !~ '^(E2E|SLD E2E|P-?[0-9]+ )' `;
 
 const CO = "join public.companies c on c.id = %T%.company_id";
 

@@ -129,7 +129,10 @@ function VendorDashboard() {
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiTile label={t("portalMod.dashboard.kpiOpenPos")} value={String(overview.openPos)} />
-        <KpiTile label={t("portalMod.dashboard.kpiPendingAck")} value={String(overview.pendingAcknowledgments)} />
+        <KpiTile
+          label={t("portalMod.dashboard.kpiPendingAck")}
+          value={String(overview.pendingAcknowledgments)}
+        />
         <KpiTile
           label={t("portalMod.dashboard.kpiNextRequiredBy")}
           value={overview.nextRequiredBy ? formatDate(overview.nextRequiredBy) : "—"}

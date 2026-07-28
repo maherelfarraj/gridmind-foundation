@@ -80,8 +80,7 @@ function DossiersPage() {
   const itpsFn = useServerFn(listItps);
   const itps = useQuery({
     queryKey: ["itps", activeProject],
-    queryFn: () =>
-      itpsFn({ data: { projectId: activeProject } }) as Promise<Array<{ id: string }>>,
+    queryFn: () => itpsFn({ data: { projectId: activeProject } }) as Promise<Array<{ id: string }>>,
     enabled: Boolean(activeProject),
   });
   const fatSatFn = useServerFn(listFatSat);

@@ -187,7 +187,11 @@ function AlarmConsolePage() {
         />
         <KpiTile
           label={t("omMod.alarmConsole.mtta")}
-          value={kpis?.mttaMinutes != null ? t("omMod.alarmConsole.mttaMinutes", { count: kpis.mttaMinutes }) : "—"}
+          value={
+            kpis?.mttaMinutes != null
+              ? t("omMod.alarmConsole.mttaMinutes", { count: kpis.mttaMinutes })
+              : "—"
+          }
           icon={Timer}
           hint={kpis?.mttaMinutes == null ? t("omMod.alarmConsole.mttaHint") : undefined}
         />
@@ -225,7 +229,9 @@ function AlarmConsolePage() {
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <CardTitle className="text-sm font-medium">{t("omMod.alarmConsole.alarmsTitle")}</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {t("omMod.alarmConsole.alarmsTitle")}
+          </CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
               <SelectTrigger className="w-40">
@@ -388,9 +394,7 @@ function AlarmConsolePage() {
             </Button>
             <Button
               disabled={ackNote.trim().length === 0 || ackMut.isPending}
-              onClick={() =>
-                ackTarget && ackMut.mutate({ id: ackTarget.id, note: ackNote.trim() })
-              }
+              onClick={() => ackTarget && ackMut.mutate({ id: ackTarget.id, note: ackNote.trim() })}
             >
               {t("omMod.alarmConsole.acknowledge")}
             </Button>
@@ -479,7 +483,10 @@ function RcaDrawer({
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            {t("omMod.alarmConsole.currentStage", { stage: row ? RCA_STATUS_LABELS[row.rca_status] : "—", owner: row?.assignee_name ?? t("omMod.alarmConsole.ownerUnassigned") })}
+            {t("omMod.alarmConsole.currentStage", {
+              stage: row ? RCA_STATUS_LABELS[row.rca_status] : "—",
+              owner: row?.assignee_name ?? t("omMod.alarmConsole.ownerUnassigned"),
+            })}
           </p>
         </div>
 

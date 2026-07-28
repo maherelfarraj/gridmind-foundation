@@ -109,7 +109,6 @@ function ChangeDetailPage() {
   });
   const pendingTasks = (taskList.data?.rows ?? []).filter((t) => t.status === "pending").length;
 
-
   const cr = detail.data?.cr;
   useEffect(() => {
     if (cr) {
@@ -163,7 +162,8 @@ function ChangeDetailPage() {
       }
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.transitionRejected")),
+    onError: (e: Error) =>
+      toast.error(e.message || t("adminMod.changes.register.transitionRejected")),
   });
 
   const closeMutation = useMutation({
@@ -187,7 +187,6 @@ function ChangeDetailPage() {
     },
   });
 
-
   const decideMutation = useMutation({
     mutationFn: (input: { decision: "approved" | "rejected"; comment?: string }) =>
       decideFn({
@@ -203,7 +202,8 @@ function ChangeDetailPage() {
       setRejectComment("");
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.couldNotRecordDecision")),
+    onError: (e: Error) =>
+      toast.error(e.message || t("adminMod.changes.register.couldNotRecordDecision")),
   });
 
   const thread = useQuery({
@@ -297,7 +297,11 @@ function ChangeDetailPage() {
             <ChangeTypeBadge type={cr.change_type} />
             <StatusBadge status={cr.status} />
             {cr.project_name ? <span>{cr.project_name}</span> : null}
-            <span>{t("adminMod.changes.register.raisedBy", { name: cr.originator_name ?? t("adminMod.changes.register.unknown") })}</span>
+            <span>
+              {t("adminMod.changes.register.raisedBy", {
+                name: cr.originator_name ?? t("adminMod.changes.register.unknown"),
+              })}
+            </span>
           </span>
         }
         actions={
@@ -397,10 +401,14 @@ function ChangeDetailPage() {
 
         <TabsContent value="overview" className="space-y-6 pt-4">
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.whatIsChanging")}</h2>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.changes.register.whatIsChanging")}
+            </h2>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.description}</p>
             <Separator />
-            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.why")}</h2>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.changes.register.why")}
+            </h2>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.reason}</p>
           </Card>
 
@@ -410,21 +418,26 @@ function ChangeDetailPage() {
 
           <ImpactCards cr={cr} editable={editable} draft={draft} onChange={setDraft} />
 
-
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.affectedSystems")}</h2>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.changes.register.affectedSystems")}
+            </h2>
             <AffectedSystems rows={systems} editable={editable} onChange={setSystems} />
           </Card>
 
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.reviewerRouting")}</h2>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.changes.register.reviewerRouting")}
+            </h2>
             <ReviewerStepper steps={data.steps} currentStep={data.instance?.current_step ?? null} />
           </Card>
 
           {cr.status === "implementing" || evidence.length > 0 ? (
             <Card className="space-y-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.implementationEvidence")}</h2>
+                <h2 className="text-sm font-medium text-foreground">
+                  {t("adminMod.changes.register.implementationEvidence")}
+                </h2>
                 {cr.status === "implementing" ? (
                   <>
                     <input
@@ -444,7 +457,9 @@ function ChangeDetailPage() {
                       onClick={() => fileRef.current?.click()}
                     >
                       <FileUp className="mr-1 size-4" aria-hidden />
-                      {uploading ? t("adminMod.changes.register.uploading") : t("adminMod.changes.register.uploadEvidence")}
+                      {uploading
+                        ? t("adminMod.changes.register.uploading")
+                        : t("adminMod.changes.register.uploadEvidence")}
                     </Button>
                   </>
                 ) : null}
@@ -473,7 +488,9 @@ function ChangeDetailPage() {
 
           {cr.closure_notes ? (
             <Card className="space-y-2 p-4">
-              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.closure")}</h2>
+              <h2 className="text-sm font-medium text-foreground">
+                {t("adminMod.changes.register.closure")}
+              </h2>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                 {cr.closure_notes}
               </p>
@@ -502,14 +519,18 @@ function ChangeDetailPage() {
           />
           {cr.updated_documents.length > 0 || cr.updated_asbuilts.length > 0 ? (
             <Card className="space-y-3 p-4">
-              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.updatedDocuments")}</h2>
+              <h2 className="text-sm font-medium text-foreground">
+                {t("adminMod.changes.register.updatedDocuments")}
+              </h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
                 {cr.updated_documents.map((d) => (
                   <li key={d}>{d}</li>
                 ))}
               </ul>
               <Separator />
-              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.updatedAsbuilts")}</h2>
+              <h2 className="text-sm font-medium text-foreground">
+                {t("adminMod.changes.register.updatedAsbuilts")}
+              </h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
                 {cr.updated_asbuilts.map((d) => (
                   <li key={d}>{d}</li>
@@ -518,7 +539,6 @@ function ChangeDetailPage() {
             </Card>
           ) : null}
         </TabsContent>
-
 
         <TabsContent value="audit" className="space-y-3 pt-4">
           <div className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
@@ -536,7 +556,9 @@ function ChangeDetailPage() {
                       {formatDateTime(entry.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{entry.actor_name ?? t("adminMod.changes.register.system")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {entry.actor_name ?? t("adminMod.changes.register.system")}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -576,10 +598,10 @@ function ChangeDetailPage() {
       <Dialog open={closeOpen} onOpenChange={setCloseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("adminMod.changes.register.closeDialogTitle", { number: cr.cr_number })}</DialogTitle>
-            <DialogDescription>
-              {t("adminMod.changes.register.closeDialogDesc")}
-            </DialogDescription>
+            <DialogTitle>
+              {t("adminMod.changes.register.closeDialogTitle", { number: cr.cr_number })}
+            </DialogTitle>
+            <DialogDescription>{t("adminMod.changes.register.closeDialogDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Textarea
@@ -626,7 +648,6 @@ function ChangeDetailPage() {
                 })
               }
             >
-
               {t("adminMod.changes.register.closeChange")}
             </Button>
           </DialogFooter>

@@ -43,12 +43,15 @@ export const getAccessReview = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: profiles, error: profilesErr }, { data: companies, error: companiesErr }, { data: userRoles, error: rolesErr }] =
-      await Promise.all([
-        supabaseAdmin.from("profiles").select("id, full_name, email, company_id, created_at"),
-        supabaseAdmin.from("companies").select("id, name"),
-        supabaseAdmin.from("user_roles").select("user_id, company_id, role"),
-      ]);
+    const [
+      { data: profiles, error: profilesErr },
+      { data: companies, error: companiesErr },
+      { data: userRoles, error: rolesErr },
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, email, company_id, created_at"),
+      supabaseAdmin.from("companies").select("id, name"),
+      supabaseAdmin.from("user_roles").select("user_id, company_id, role"),
+    ]);
     if (profilesErr) throw profilesErr;
     if (companiesErr) throw companiesErr;
     if (rolesErr) throw rolesErr;

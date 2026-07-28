@@ -36,7 +36,9 @@ describe("look-ahead week validation", () => {
       projectId: "11111111-1111-4111-8111-111111111111",
       entries: [],
     };
-    expect(lookAheadUpsertSchema.safeParse({ ...base, weekStart: "2026-07-27" }).success).toBe(true);
+    expect(lookAheadUpsertSchema.safeParse({ ...base, weekStart: "2026-07-27" }).success).toBe(
+      true,
+    );
     expect(lookAheadUpsertSchema.safeParse({ ...base, weekStart: "2026-07-28" }).success).toBe(
       false,
     );

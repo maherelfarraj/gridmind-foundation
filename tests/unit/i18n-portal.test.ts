@@ -7,7 +7,9 @@ import { ERROR_KEY_MAP, translateError, UNKNOWN_ERROR_KEY } from "@/lib/i18n/err
 
 function flatten(obj: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === "object" ? flatten(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`],
+    v && typeof v === "object"
+      ? flatten(v as Record<string, unknown>, `${prefix}${k}.`)
+      : [`${prefix}${k}`],
   );
 }
 
@@ -28,7 +30,9 @@ describe("portalMod catalog parity", () => {
     await i18n.changeLanguage("ar");
     expect(i18n.t("portalMod.po.acknowledge")).toBe("تأكيد الاستلام");
     expect(i18n.t("portalMod.po.proposeDelivery")).toBe("اقتراح موعد التسليم");
-    expect(i18n.t("portalMod.propose.pendingBuyerConfirmation")).toBe("مقترح — بانتظار تأكيد المشتريات");
+    expect(i18n.t("portalMod.propose.pendingBuyerConfirmation")).toBe(
+      "مقترح — بانتظار تأكيد المشتريات",
+    );
     expect(i18n.t("portalMod.dashboard.kpiPendingAck")).toBe("بانتظار تأكيد الاستلام");
     expect(i18n.t("portalMod.dashboard.kpiNextRequiredBy")).toBe("مطلوب التسليم قبل");
   });
@@ -36,7 +40,9 @@ describe("portalMod catalog parity", () => {
 
 describe("typed error keys (vendor portal)", () => {
   it("maps vendor_portal_access_denied to the portal catalog", () => {
-    expect(ERROR_KEY_MAP.vendor_portal_access_denied).toBe("portalMod.errors.vendor_portal_access_denied");
+    expect(ERROR_KEY_MAP.vendor_portal_access_denied).toBe(
+      "portalMod.errors.vendor_portal_access_denied",
+    );
   });
 
   it("renders the localized Arabic access-denied message", async () => {

@@ -27,7 +27,8 @@ export const Route = createFileRoute("/_authenticated/admin/slo")({
       { property: "og:title", content: "SLO / SLI dashboard | GridMind EPC Admin" },
       {
         property: "og:description",
-        content: "Live SLO snapshots across cron, SCADA ingestion, public API and finance alerting.",
+        content:
+          "Live SLO snapshots across cron, SCADA ingestion, public API and finance alerting.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -105,8 +106,7 @@ function SloPage() {
           <CardHeader>
             <CardTitle className="text-destructive">{t("adminMod.sloPage.errorTitle")}</CardTitle>
             <CardDescription className="text-muted-foreground">
-              {(query.error as Error | undefined)?.message ??
-                t("adminMod.sloPage.errorFallback")}
+              {(query.error as Error | undefined)?.message ?? t("adminMod.sloPage.errorFallback")}
             </CardDescription>
           </CardHeader>
           <CardContent>

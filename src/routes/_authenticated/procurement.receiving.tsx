@@ -52,7 +52,9 @@ function ReceivingError({ error, reset }: { error: Error; reset: () => void }) {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">{t("procurementMod.receiving.loadError")}</h2>
+      <h2 className="font-display text-lg font-semibold">
+        {t("procurementMod.receiving.loadError")}
+      </h2>
       <p className="text-sm text-muted-foreground">
         {translateError(t, errorCodeOf(error), error.message)}
       </p>
@@ -95,10 +97,26 @@ function ReceivingDashboardPage() {
       />
 
       <KpiGrid>
-        <KpiTile label={t("procurementMod.receiving.openReceipts")} value={String(data.counts.open_receipts)} icon={ClipboardCheck} />
-        <KpiTile label={t("procurementMod.receiving.matchExceptions")} value={String(data.counts.match_exceptions)} icon={Scale} />
-        <KpiTile label={t("procurementMod.receiving.unconfirmedEtas")} value={String(data.counts.unconfirmed_etas)} icon={CalendarClock} />
-        <KpiTile label={t("procurementMod.receiving.lateLines")} value={String(data.counts.late_lines)} icon={AlertTriangle} />
+        <KpiTile
+          label={t("procurementMod.receiving.openReceipts")}
+          value={String(data.counts.open_receipts)}
+          icon={ClipboardCheck}
+        />
+        <KpiTile
+          label={t("procurementMod.receiving.matchExceptions")}
+          value={String(data.counts.match_exceptions)}
+          icon={Scale}
+        />
+        <KpiTile
+          label={t("procurementMod.receiving.unconfirmedEtas")}
+          value={String(data.counts.unconfirmed_etas)}
+          icon={CalendarClock}
+        />
+        <KpiTile
+          label={t("procurementMod.receiving.lateLines")}
+          value={String(data.counts.late_lines)}
+          icon={AlertTriangle}
+        />
       </KpiGrid>
 
       <Card>
@@ -154,7 +172,9 @@ function ReceivingDashboardPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">{t("procurementMod.receiving.matchExceptions")}</CardTitle>
+          <CardTitle className="text-base">
+            {t("procurementMod.receiving.matchExceptions")}
+          </CardTitle>
           <Button asChild variant="outline" size="sm">
             <Link to="/procurement/matches">{t("procurementMod.receiving.allMatches")}</Link>
           </Button>
@@ -172,7 +192,9 @@ function ReceivingDashboardPage() {
                 <TableRow>
                   <TableHead>{t("procurementMod.common.po")}</TableHead>
                   <TableHead>{t("procurementMod.receiving.colVendorInvoice")}</TableHead>
-                  <TableHead className="text-end">{t("procurementMod.receiving.colAmountVariance")}</TableHead>
+                  <TableHead className="text-end">
+                    {t("procurementMod.receiving.colAmountVariance")}
+                  </TableHead>
                   <TableHead>{t("procurementMod.common.status")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -190,7 +212,9 @@ function ReceivingDashboardPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-end">
-                      <MoneyCell>{m.amount_variance == null ? "—" : m.amount_variance.toFixed(2)}</MoneyCell>
+                      <MoneyCell>
+                        {m.amount_variance == null ? "—" : m.amount_variance.toFixed(2)}
+                      </MoneyCell>
                     </TableCell>
                     <TableCell>
                       <Badge variant="destructive">{m.status.replace(/_/g, " ")}</Badge>
@@ -225,7 +249,9 @@ function ReceivingDashboardPage() {
                   <TableHead>{t("procurementMod.common.description")}</TableHead>
                   <TableHead>{t("procurementMod.receiving.colSiteNeed")}</TableHead>
                   <TableHead>{t("procurementMod.receiving.colCurrentEta")}</TableHead>
-                  <TableHead className="text-end">{t("procurementMod.receiving.colSlipDays")}</TableHead>
+                  <TableHead className="text-end">
+                    {t("procurementMod.receiving.colSlipDays")}
+                  </TableHead>
                   <TableHead>{t("procurementMod.receiving.colState")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -244,7 +270,13 @@ function ReceivingDashboardPage() {
                       ) : null}
                     </TableCell>
                     <TableCell className="text-end">
-                      <Num>{r.slip_days == null ? "—" : r.slip_days > 0 ? `+${r.slip_days}` : r.slip_days}</Num>
+                      <Num>
+                        {r.slip_days == null
+                          ? "—"
+                          : r.slip_days > 0
+                            ? `+${r.slip_days}`
+                            : r.slip_days}
+                      </Num>
                     </TableCell>
                     <TableCell>
                       <Badge variant={slipVariant(r.severity)}>{t(slipLabelKey(r.severity))}</Badge>

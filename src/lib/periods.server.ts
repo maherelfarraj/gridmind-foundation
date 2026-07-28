@@ -270,7 +270,6 @@ export async function reopenPeriod(
   });
 }
 
-
 export async function saveChecklist(
   ctx: AuthContext,
   companyId: string,

@@ -6,11 +6,7 @@
 // in a destructive toast.
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  currentActorId,
-  periodBlockedAuditRow,
-  writeBlockedAudit,
-} from "@/lib/blocked-audit";
+import { currentActorId, periodBlockedAuditRow, writeBlockedAudit } from "@/lib/blocked-audit";
 
 export const PERIOD_CLOSED_PREFIX = "finance_period_closed";
 

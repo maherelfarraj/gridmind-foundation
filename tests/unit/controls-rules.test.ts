@@ -56,12 +56,36 @@ describe("baseline compare", () => {
   it("computes variance and flags slippage over 7 days", () => {
     const rows = compareToBaseline(
       [
-        { id: "t1", name: "Piling", start_date: "2026-01-05", end_date: "2026-01-20", progress_pct: 40 },
-        { id: "t2", name: "Trenching", start_date: "2026-01-01", end_date: "2026-01-10", progress_pct: 60 },
+        {
+          id: "t1",
+          name: "Piling",
+          start_date: "2026-01-05",
+          end_date: "2026-01-20",
+          progress_pct: 40,
+        },
+        {
+          id: "t2",
+          name: "Trenching",
+          start_date: "2026-01-01",
+          end_date: "2026-01-10",
+          progress_pct: 60,
+        },
       ],
       [
-        { task_id: "t1", name: "Piling", start_date: "2026-01-01", end_date: "2026-01-10", progress_pct: 50 },
-        { task_id: "t2", name: "Trenching", start_date: "2026-01-01", end_date: "2026-01-08", progress_pct: 50 },
+        {
+          task_id: "t1",
+          name: "Piling",
+          start_date: "2026-01-01",
+          end_date: "2026-01-10",
+          progress_pct: 50,
+        },
+        {
+          task_id: "t2",
+          name: "Trenching",
+          start_date: "2026-01-01",
+          end_date: "2026-01-08",
+          progress_pct: 50,
+        },
       ],
     );
     const t1 = rows.find((r) => r.taskId === "t1")!;
@@ -75,8 +99,22 @@ describe("baseline compare", () => {
 
 describe("quantity progress", () => {
   const rules: WeightingRule[] = [
-    { id: "r1", project_id: null, discipline: "civil", uom: "m3", target_qty: 1000, is_active: true },
-    { id: "r2", project_id: "p1", discipline: "civil", uom: "m3", target_qty: 500, is_active: true },
+    {
+      id: "r1",
+      project_id: null,
+      discipline: "civil",
+      uom: "m3",
+      target_qty: 1000,
+      is_active: true,
+    },
+    {
+      id: "r2",
+      project_id: "p1",
+      discipline: "civil",
+      uom: "m3",
+      target_qty: 500,
+      is_active: true,
+    },
   ];
 
   it("prefers the project rule over the company default", () => {

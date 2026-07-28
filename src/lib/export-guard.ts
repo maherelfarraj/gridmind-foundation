@@ -7,11 +7,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  currentActorId,
-  exportBlockedAuditRow,
-  writeBlockedAudit,
-} from "@/lib/blocked-audit";
+import { currentActorId, exportBlockedAuditRow, writeBlockedAudit } from "@/lib/blocked-audit";
 
 export type ExportType =
   | "proposal_pdf"

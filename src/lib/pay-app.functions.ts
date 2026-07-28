@@ -501,7 +501,11 @@ export const rejectPayApplication = createServerFn({ method: "POST" })
     } as never);
     if (error) {
       if (String((error as { message?: string }).message ?? "").includes("not_rejectable")) {
-        httpError(400, "not_rejectable", "Pay application cannot be rejected in its current state.");
+        httpError(
+          400,
+          "not_rejectable",
+          "Pay application cannot be rejected in its current state.",
+        );
       }
       throw error;
     }
