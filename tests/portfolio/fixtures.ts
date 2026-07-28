@@ -357,6 +357,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       amount_base: 100_000,
       base_currency_code: "USD",
       fx_rate_to_base: 1,
+      voided: false,
     },
     {
       company_id: companyId,
@@ -370,6 +371,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       amount_base: 50_000,
       base_currency_code: "USD",
       fx_rate_to_base: 1,
+      voided: false,
     },
     {
       company_id: companyId,
@@ -383,6 +385,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       amount_base: 99_000,
       base_currency_code: "USD",
       fx_rate_to_base: 1.1,
+      voided: false,
     },
     {
       company_id: companyId,
@@ -396,6 +399,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       amount_base: 44_000,
       base_currency_code: "USD",
       fx_rate_to_base: 1.1,
+      voided: false,
     },
     {
       company_id: companyId,
@@ -409,6 +413,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       amount_base: 100_110,
       base_currency_code: "USD",
       fx_rate_to_base: 1.41,
+      voided: false,
     },
     {
       // voided rows never reach the curve
