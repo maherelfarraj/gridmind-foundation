@@ -86,11 +86,11 @@ function NewReceipt() {
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/procurement/receipts" })}>
           <ArrowLeft className="me-2 h-4 w-4" /> {t("procurementMod.grn.backToReceipts")}
         </Button>
-        <h1 className="font-display text-xl font-semibold">{t("procurementMod.grn.pickPoTitle")}</h1>
+        <h1 className="font-display text-xl font-semibold">
+          {t("procurementMod.grn.pickPoTitle")}
+        </h1>
         {posQuery.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t("procurementMod.grn.noOpenPos")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("procurementMod.grn.noOpenPos")}</p>
         ) : (
           <div className="space-y-2">
             {posQuery.data.map((p) => (
@@ -111,9 +111,7 @@ function NewReceipt() {
                     {p.vendor_name ?? t("procurementMod.grn.vendorFallback")}
                   </div>
                 </div>
-                <Badge variant="outline">
-                  {t(`procurementMod.grn.poStatuses.${p.status}`)}
-                </Badge>
+                <Badge variant="outline">{t(`procurementMod.grn.poStatuses.${p.status}`)}</Badge>
               </button>
             ))}
           </div>
@@ -254,7 +252,6 @@ function ReceivingEditor({
   const saveDraft = useSaveGrnDraft(grnId);
   const confirm = useConfirmGrn(grnId);
 
-
   const badLines = useMemo(() => overReceivedLines(lines, receivable), [lines, receivable]);
   const anyDefectMissingNote = lines.some(
     (l) => l.condition !== "ok" && !(l.defect_notes ?? "").trim(),
@@ -289,7 +286,9 @@ function ReceivingEditor({
         setPhotoUrls((m) => ({ ...m, [path]: signed.signedUrl }));
       }
     } catch (e: any) {
-      toast.error(translateError(t, errorCodeOf(e), e?.message ?? t("procurementMod.grn.uploadFailed")));
+      toast.error(
+        translateError(t, errorCodeOf(e), e?.message ?? t("procurementMod.grn.uploadFailed")),
+      );
     } finally {
       setUploading(false);
     }
@@ -314,7 +313,6 @@ function ReceivingEditor({
     photos,
     geo,
   };
-
 
   return (
     <div className="page-shell max-w-3xl pb-32">
@@ -351,7 +349,9 @@ function ReceivingEditor({
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor={`qty-${l.po_line_no}`}>{t("procurementMod.grn.colReceived")}</Label>
+                  <Label htmlFor={`qty-${l.po_line_no}`}>
+                    {t("procurementMod.grn.colReceived")}
+                  </Label>
                   <Input
                     id={`qty-${l.po_line_no}`}
                     type="number"
@@ -398,7 +398,9 @@ function ReceivingEditor({
 
               {l.condition !== "ok" && (
                 <div className="space-y-1">
-                  <Label htmlFor={`def-${l.po_line_no}`}>{t("procurementMod.grn.defectNotesLabel")}</Label>
+                  <Label htmlFor={`def-${l.po_line_no}`}>
+                    {t("procurementMod.grn.defectNotesLabel")}
+                  </Label>
                   <Textarea
                     id={`def-${l.po_line_no}`}
                     rows={2}
@@ -490,8 +492,6 @@ function ReceivingEditor({
           placeholder={t("procurementMod.grn.notesPlaceholder")}
         />
       </div>
-
-
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 p-3 backdrop-blur">
         <div className="mx-auto flex max-w-3xl flex-wrap gap-2">

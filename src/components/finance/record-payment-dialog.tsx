@@ -33,7 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MoneyCell } from "@/components/ui/num";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { recordPayment } from "@/lib/payments.functions";
 import {
   FORMULAS,
@@ -50,10 +53,10 @@ const FormSchema = z.object({
   amount: z
     .union([z.string(), z.number()])
     .transform((v) => (typeof v === "string" ? v.trim() : v))
-    .refine((v) => v !== "" && Number.isFinite(Number(v)), "Enter a valid amount")
+    .refine((v) => v !== "" && Number.isFinite(Number(v)), "financeMod.recordPaymentDialog.requiredAmount")
     .transform((v) => Number(v))
-    .refine((n) => n > 0, "Amount must be greater than zero"),
-  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date (YYYY-MM-DD)"),
+    .refine((n) => n > 0, "financeMod.recordPaymentDialog.amountPositive"),
+  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "financeMod.recordPaymentDialog.validDate"),
   method: z.enum(PAYMENT_METHODS),
   bank_reference: z.string().max(120).optional(),
   notes: z.string().max(2000).optional(),
@@ -82,6 +85,7 @@ export function RecordPaymentDialog({
   balance: number;
   blocked: boolean;
 }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const recordFn = useServerFn(recordPayment);
   const form = useForm<FormValues>({
@@ -123,20 +127,28 @@ export function RecordPaymentDialog({
         qc.invalidateQueries({ queryKey: ["payments"] }),
         qc.invalidateQueries({ queryKey: ["invoices"] }),
       ]);
-      toast.success(`Payment recorded — invoice is now ${res.invoice_status.replace("_", " ")}`);
+      toast.success(
+        t("financeMod.recordPaymentDialog.successMessage", {
+          status: res.invoice_status.replace("_", " "),
+        }),
+      );
       onOpenChange(false);
       form.reset();
     },
-    onError: (err) => toast.error(invoiceErrorMessage(err)),
+    onError: (err) =>
+      toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
+          <DialogTitle>{t("financeMod.recordPaymentDialog.title")}</DialogTitle>
           <DialogDescription>
-            {invoiceNumber} — outstanding balance {fmt(balance, currency)}
+            {t("financeMod.recordPaymentDialog.descriptionPrefix", {
+              invoiceNumber,
+              balance: fmt(balance, currency),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -145,7 +157,7 @@ export function RecordPaymentDialog({
             className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
             role="alert"
           >
-            Payment release blocked by 3-way match variance.
+            {t("financeMod.recordPaymentDialog.blockedMessage")}
           </div>
         )}
 
@@ -171,11 +183,15 @@ export function RecordPaymentDialog({
               (errors) => {
                 const messages = Object.entries(errors)
                   .filter(([name]) => name !== "root")
-                  .map(([name, e]) => `${name}: ${(e as { message?: string })?.message ?? "invalid"}`);
+                  .map(([name, e]) => {
+                    const raw = (e as { message?: string })?.message;
+                    const msg = raw && raw.startsWith("financeMod.") ? t(raw) : (raw ?? "invalid");
+                    return `${name}: ${msg}`;
+                  });
                 form.setError("root", {
                   message: messages.length
-                    ? `Check the highlighted fields — ${messages.join("; ")}`
-                    : "The form could not be validated. Please review your entries.",
+                    ? t("financeMod.recordPaymentDialog.checkFields", { messages: messages.join("; ") })
+                    : t("financeMod.recordPaymentDialog.validationFallback"),
                 });
               },
             )}
@@ -186,7 +202,7 @@ export function RecordPaymentDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ({currency})</FormLabel>
+                  <FormLabel>{t("financeMod.recordPaymentDialog.amountLabel", { currency })}</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" min="0.01" {...field} />
                   </FormControl>
@@ -201,7 +217,7 @@ export function RecordPaymentDialog({
                 name="payment_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment date</FormLabel>
+                    <FormLabel>{t("financeMod.recordPaymentDialog.paymentDateLabel")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -214,7 +230,7 @@ export function RecordPaymentDialog({
                 name="method"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Method</FormLabel>
+                    <FormLabel>{t("financeMod.recordPaymentDialog.methodLabel")}</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
@@ -240,9 +256,9 @@ export function RecordPaymentDialog({
               name="bank_reference"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bank reference</FormLabel>
+                  <FormLabel>{t("financeMod.recordPaymentDialog.bankReferenceLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Optional" {...field} />
+                    <Input placeholder={t("financeMod.common.optional")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -254,9 +270,9 @@ export function RecordPaymentDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>{t("financeMod.recordPaymentDialog.notesLabel")}</FormLabel>
                   <FormControl>
-                    <Textarea rows={2} placeholder="Optional" {...field} />
+                    <Textarea rows={2} placeholder={t("financeMod.common.optional")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,16 +282,12 @@ export function RecordPaymentDialog({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center justify-between rounded-md border bg-muted/40 p-3 text-sm">
-                  <span className="text-muted-foreground">Balance after this payment</span>
-                  <span
-                    className={
-                      balanceAfter < 0
-                        ? "font-mono tabular-nums text-destructive"
-                        : "font-mono tabular-nums"
-                    }
-                  >
-                    {fmt(balanceAfter, currency)}
+                  <span className="text-muted-foreground">
+                    {t("financeMod.recordPaymentDialog.balanceAfterLabel")}
                   </span>
+                  <MoneyCell className={balanceAfter < 0 ? "text-destructive" : undefined}>
+                    {fmt(balanceAfter, currency)}
+                  </MoneyCell>
                 </div>
               </TooltipTrigger>
               <TooltipContent>{FORMULAS.balanceAfter}</TooltipContent>
@@ -283,16 +295,18 @@ export function RecordPaymentDialog({
 
             {balanceAfter < -0.005 && (
               <p className="text-xs text-destructive">
-                Overpayment — the amount exceeds the outstanding balance.
+                {t("financeMod.recordPaymentDialog.overpaymentWarning")}
               </p>
             )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t("financeMod.common.cancel")}
               </Button>
               <Button type="submit" disabled={blocked || mutation.isPending}>
-                {mutation.isPending ? "Recording…" : "Record payment"}
+                {mutation.isPending
+                  ? t("financeMod.recordPaymentDialog.recording")
+                  : t("financeMod.recordPaymentDialog.recordButton")}
               </Button>
             </DialogFooter>
           </form>

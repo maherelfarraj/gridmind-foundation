@@ -311,7 +311,10 @@
     "lineCount_other": "({{count}} قيود)",
     "toastRunGenerated": "تم إنشاء {{run}} بعدد {{count}} من قيود اليومية.",
     "toastRunSuperseded": "تم إنشاء {{run}} — وتم استبدال {{list}}.",
-    "toastCsvSaved": "تم حفظ {{file}} في {{path}}"
+    "toastCsvSaved": "تم حفظ {{file}} في {{path}}",
+    "footerDr": "إجمالي مدين {{amount}}",
+    "footerCr": "إجمالي دائن {{amount}}",
+    "selectAllPlaceholder": "اختر العملة"
   },
   "bonds": {
     "title": "الكفالات والضمانات",

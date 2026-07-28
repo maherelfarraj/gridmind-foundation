@@ -60,7 +60,9 @@ function MatchesError({ error, reset }: { error: Error; reset: () => void }) {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">{t("procurementMod.match.loadErrorDescription")}</h2>
+      <h2 className="font-display text-lg font-semibold">
+        {t("procurementMod.match.loadErrorDescription")}
+      </h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <Button onClick={() => reset()}>{t("procurementMod.match.tryAgain")}</Button>
     </div>
@@ -268,7 +270,9 @@ function MatchesIndex() {
                         {r.vendor_invoice_number}
                       </Link>
                       {r.payment_release_blocked && (
-                        <div className="text-xs text-destructive">{t("procurementMod.match.paymentBlocked")}</div>
+                        <div className="text-xs text-destructive">
+                          {t("procurementMod.match.paymentBlocked")}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>

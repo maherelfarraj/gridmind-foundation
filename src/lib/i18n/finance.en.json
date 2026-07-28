@@ -308,7 +308,10 @@
     "lineCount_other": "({{count}} lines)",
     "toastRunGenerated": "{{run}} generated with {{count}} journal lines.",
     "toastRunSuperseded": "{{run}} generated — {{list}} superseded.",
-    "toastCsvSaved": "{{file}} saved to {{path}}"
+    "toastCsvSaved": "{{file}} saved to {{path}}",
+    "footerDr": "Total DR {{amount}}",
+    "footerCr": "Total CR {{amount}}",
+    "selectAllPlaceholder": "Select currency"
   },
   "bonds": {
     "title": "Bonds & guarantees",
