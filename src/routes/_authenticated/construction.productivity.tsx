@@ -43,6 +43,7 @@ import {
   listControlsProjects,
 } from "@/lib/controls.functions";
 import { formatPerManhour } from "@/lib/controls.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/construction/productivity")({
   head: () => ({
@@ -72,6 +73,7 @@ function isoDaysAgo(days: number): string {
 }
 
 function ProductivityPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [projectId, setProjectId] = useState("");
   const [dimension, setDimension] = useState<"discipline" | "area" | "trade">("discipline");
@@ -99,11 +101,14 @@ function ProductivityPage() {
     mutationFn: () => quantityFn({ data: { projectId: activeProject } }),
     onSuccess: (r) => {
       toast.success(
-        `Progress recomputed — ${r.updatedCwps} package(s) updated, project at ${r.projectProgressPct.toFixed(1)}%`,
+        t("adminMod.construction.productivity.recomputeSuccess", {
+          count: r.updatedCwps,
+          pct: r.projectProgressPct.toFixed(1),
+        }),
       );
       void qc.invalidateQueries({ queryKey: ["cwp-board", activeProject] });
     },
-    onError: () => toast.error("Recompute failed — try again"),
+    onError: () => toast.error(t("adminMod.construction.productivity.recomputeFailed")),
   });
 
   const rows = prod.data?.rows ?? [];
@@ -113,15 +118,15 @@ function ProductivityPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <PageHeader
-        title="Construction productivity"
-        description="Installed quantities per manhour, from approved daily reports only."
+        title={t("adminMod.construction.productivity.title")}
+        description={t("adminMod.construction.productivity.description")}
         actions={
           <Button
             size="sm"
             disabled={!activeProject || !access.data?.canAdmin || rollup.isPending}
             onClick={() => rollup.mutate()}
           >
-            Recompute quantity progress
+            {t("adminMod.construction.productivity.recompute")}
           </Button>
         }
       />
@@ -135,7 +140,7 @@ function ProductivityPage() {
         />
         <div className="w-full space-y-1 sm:w-40">
           <Label htmlFor="dimension" className="text-xs text-muted-foreground">
-            Group by
+            {t("adminMod.construction.productivity.groupBy")}
           </Label>
           <Select
             value={dimension}
@@ -145,27 +150,27 @@ function ProductivityPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="discipline">Discipline</SelectItem>
-              <SelectItem value="area">Area</SelectItem>
-              <SelectItem value="trade">Trade</SelectItem>
+              <SelectItem value="discipline">{t("adminMod.construction.productivity.dimension.discipline")}</SelectItem>
+              <SelectItem value="area">{t("adminMod.construction.productivity.dimension.area")}</SelectItem>
+              <SelectItem value="trade">{t("adminMod.construction.productivity.dimension.trade")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="w-full space-y-1 sm:w-40">
           <Label htmlFor="from" className="text-xs text-muted-foreground">
-            From
+            {t("adminMod.construction.productivity.from")}
           </Label>
           <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
         <div className="w-full space-y-1 sm:w-40">
           <Label htmlFor="to" className="text-xs text-muted-foreground">
-            To
+            {t("adminMod.construction.productivity.to")}
           </Label>
           <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
         <div className="w-full space-y-1 sm:w-40">
           <Label htmlFor="min-crew" className="text-xs text-muted-foreground">
-            Min crew size
+            {t("adminMod.construction.productivity.minCrewSize")}
           </Label>
           <Input
             id="min-crew"
@@ -178,9 +183,9 @@ function ProductivityPage() {
       </div>
 
       <KpiGrid>
-        <KpiTile label="Units / manhour" value={formatPerManhour(overall)} />
-        <KpiTile label="Total quantity" value={String(prod.data?.totalQty ?? 0)} />
-        <KpiTile label="Total manhours" value={String(totalHours)} />
+        <KpiTile label={t("adminMod.construction.productivity.unitsPerManhour")} value={formatPerManhour(overall)} />
+        <KpiTile label={t("adminMod.construction.productivity.totalQuantity")} value={String(prod.data?.totalQty ?? 0)} />
+        <KpiTile label={t("adminMod.construction.productivity.totalManhours")} value={String(totalHours)} />
       </KpiGrid>
 
       <PanelState
@@ -189,8 +194,8 @@ function ProductivityPage() {
         onRetry={() => void prod.refetch()}
         isEmpty={!prod.isLoading && rows.length === 0}
         emptyIcon={BarChart3}
-        emptyTitle="No approved daily reports in range"
-        emptyDescription="Approve daily reports with quantities and manpower to see productivity."
+        emptyTitle={t("adminMod.construction.productivity.noApprovedReports")}
+        emptyDescription={t("adminMod.construction.productivity.noApprovedReportsDesc")}
       >
         <div className="space-y-4">
           <div className="h-64 rounded-md border border-border bg-card p-3">
@@ -205,7 +210,7 @@ function ProductivityPage() {
                   dataKey="unitsPerManhour"
                   stroke="var(--primary)"
                   dot={false}
-                  name="Units / manhour"
+                  name={t("adminMod.construction.productivity.unitsPerManhour")}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -216,9 +221,9 @@ function ProductivityPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{dimension}</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Manhours</TableHead>
-                  <TableHead>Units / manhour</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.quantityCol")}</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.manhoursCol")}</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.unitsPerManhour")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -240,10 +245,10 @@ function ProductivityPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Week</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Manhours</TableHead>
-                  <TableHead>Units / manhour</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.weekCol")}</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.quantityCol")}</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.manhoursCol")}</TableHead>
+                  <TableHead>{t("adminMod.construction.productivity.unitsPerManhour")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

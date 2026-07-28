@@ -47,6 +47,7 @@ import {
   generateImplementationTasks,
   listImplementationTasks,
 } from "@/lib/moc.exec.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 import {
   addChangeEvidence,
@@ -68,6 +69,7 @@ export const Route = createFileRoute("/_authenticated/changes/$id")({
 });
 
 function ChangeDetailPage() {
+  const { t } = useI18n();
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -124,19 +126,19 @@ function ChangeDetailPage() {
         data: { id, ...draftToPayload(draft!), affected_systems: systems ?? [] },
       }),
     onSuccess: () => {
-      toast.success("Impact assessment saved");
+      toast.success(t("adminMod.changes.register.impactAssessmentSaved"));
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not save"),
+    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.couldNotSave")),
   });
 
   const submitMutation = useMutation({
     mutationFn: () => submitFn({ data: { id } }),
     onSuccess: () => {
-      toast.success("Submitted for assessment");
+      toast.success(t("adminMod.changes.register.submittedForAssessmentToast"));
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not submit"),
+    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.couldNotSubmit")),
   });
 
   const transitionMutation = useMutation({
@@ -148,20 +150,20 @@ function ChangeDetailPage() {
       updated_asbuilts?: string[];
     }) => transitionFn({ data: { id, ...input } }),
     onSuccess: async (_r, input) => {
-      toast.success(`Change request moved to ${input.to}`);
+      toast.success(t("adminMod.changes.register.movedTo", { status: input.to }));
       setCloseOpen(false);
       if (input.to === "approved") {
         try {
           const res = await generateTasksFn({ data: { id } });
-          toast.success(`${res.created} implementation task(s) generated`);
+          toast.success(t("adminMod.changes.register.tasksGenerated", { count: res.created }));
           setTab("tasks");
         } catch (e) {
-          toast.error((e as Error).message || "Could not generate implementation tasks");
+          toast.error((e as Error).message || t("adminMod.changes.register.couldNotGenerateTasks"));
         }
       }
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Transition rejected"),
+    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.transitionRejected")),
   });
 
   const closeMutation = useMutation({
@@ -171,7 +173,7 @@ function ChangeDetailPage() {
       updated_asbuilts: string[];
     }) => closeFn({ data: { id, ...input } }),
     onSuccess: () => {
-      toast.success("Change closed");
+      toast.success(t("adminMod.changes.register.changeClosed"));
       setCloseOpen(false);
       void invalidate();
     },
@@ -179,8 +181,8 @@ function ChangeDetailPage() {
       const open = parseOpenTasksError(e.message ?? "");
       toast.error(
         open !== null
-          ? `${open} implementation task(s) still pending — resolve them before closing.`
-          : e.message || "Could not close the change",
+          ? t("adminMod.changes.register.tasksPendingClose", { count: open })
+          : e.message || t("adminMod.changes.register.couldNotClose"),
       );
     },
   });
@@ -196,12 +198,12 @@ function ChangeDetailPage() {
         },
       }),
     onSuccess: () => {
-      toast.success("Decision recorded");
+      toast.success(t("adminMod.changes.register.decisionRecorded"));
       setRejectOpen(false);
       setRejectComment("");
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not record the decision"),
+    onError: (e: Error) => toast.error(e.message || t("adminMod.changes.register.couldNotRecordDecision")),
   });
 
   const thread = useQuery({
@@ -225,8 +227,8 @@ function ChangeDetailPage() {
     return (
       <div className="p-6">
         <EmptyState
-          title="Change request unavailable"
-          description="It may have been removed, or you may not have access."
+          title={t("adminMod.changes.register.detailUnavailable")}
+          description={t("adminMod.changes.register.detailUnavailableDesc")}
           action={
             <Button variant="outline" onClick={() => void detail.refetch()}>
               Retry
@@ -248,10 +250,10 @@ function ChangeDetailPage() {
       const { error } = await supabase.storage.from("documents").upload(path, file);
       if (error) throw error;
       await addEvidenceFn({ data: { id, path, filename: file.name, size: file.size } });
-      toast.success("Evidence uploaded");
+      toast.success(t("adminMod.changes.register.evidenceUploaded"));
       void invalidate();
     } catch (error) {
-      toast.error((error as Error).message || "Upload failed");
+      toast.error((error as Error).message || t("adminMod.changes.register.uploadFailed"));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -263,7 +265,7 @@ function ChangeDetailPage() {
       const { url } = await signUrlFn({ data: { path } });
       if (url) window.open(url, "_blank", "noopener");
     } catch {
-      toast.error("Could not open the file");
+      toast.error(t("adminMod.changes.register.couldNotOpenFile"));
     }
   }
 
@@ -280,7 +282,7 @@ function ChangeDetailPage() {
         }
       >
         <ArrowLeft className="mr-1 size-4" aria-hidden />
-        Back to register
+        {t("adminMod.changes.register.backToRegister")}
       </Button>
 
       <PageHeader
@@ -295,7 +297,7 @@ function ChangeDetailPage() {
             <ChangeTypeBadge type={cr.change_type} />
             <StatusBadge status={cr.status} />
             {cr.project_name ? <span>{cr.project_name}</span> : null}
-            <span>Raised by {cr.originator_name ?? "unknown"}</span>
+            <span>{t("adminMod.changes.register.raisedBy", { name: cr.originator_name ?? t("adminMod.changes.register.unknown") })}</span>
           </span>
         }
         actions={
@@ -306,12 +308,12 @@ function ChangeDetailPage() {
                 disabled={saveMutation.isPending}
                 onClick={() => saveMutation.mutate()}
               >
-                Save assessment
+                {t("adminMod.changes.register.saveAssessment")}
               </Button>
             ) : null}
             {cr.status === "draft" ? (
               <Button disabled={submitMutation.isPending} onClick={() => submitMutation.mutate()}>
-                Submit for assessment
+                {t("adminMod.changes.register.submitForAssessment")}
               </Button>
             ) : null}
             {cr.status === "assessment" && data.myPendingApprovalId ? (
@@ -320,16 +322,16 @@ function ChangeDetailPage() {
                   disabled={decideMutation.isPending}
                   onClick={() => decideMutation.mutate({ decision: "approved" })}
                 >
-                  Approve
+                  {t("adminMod.changes.register.approve")}
                 </Button>
                 <Button variant="destructive" onClick={() => setRejectOpen(true)}>
-                  Reject
+                  {t("adminMod.changes.register.reject")}
                 </Button>
               </>
             ) : null}
             {cr.status === "assessment" && data.instance?.status === "approved" ? (
               <Button onClick={() => transitionMutation.mutate({ to: "approved" })}>
-                Sync status
+                {t("adminMod.changes.register.syncStatus")}
               </Button>
             ) : null}
             {cr.status === "assessment" && data.instance?.status === "rejected" ? (
@@ -342,12 +344,12 @@ function ChangeDetailPage() {
                   })
                 }
               >
-                Sync status
+                {t("adminMod.changes.register.syncStatus")}
               </Button>
             ) : null}
             {cr.status === "approved" ? (
               <Button onClick={() => transitionMutation.mutate({ to: "implementing" })}>
-                Begin implementation
+                {t("adminMod.changes.register.beginImplementation")}
               </Button>
             ) : null}
             {cr.status === "implementing" ? (
@@ -355,12 +357,12 @@ function ChangeDetailPage() {
                 disabled={evidence.length === 0 || pendingTasks > 0}
                 title={
                   pendingTasks > 0
-                    ? `${pendingTasks} implementation task(s) still pending`
+                    ? t("adminMod.changes.register.tasksPendingTitle", { count: pendingTasks })
                     : undefined
                 }
                 onClick={() => setCloseOpen(true)}
               >
-                Close change
+                {t("adminMod.changes.register.closeChange")}
               </Button>
             ) : null}
 
@@ -370,7 +372,7 @@ function ChangeDetailPage() {
                 variant="outline"
                 onClick={() => transitionMutation.mutate({ to: "cancelled" })}
               >
-                Cancel change
+                {t("adminMod.changes.register.cancelChange")}
               </Button>
             ) : null}
           </>
@@ -380,25 +382,25 @@ function ChangeDetailPage() {
       {cr.status === "draft" && missing.length > 0 ? (
         <div className="flex items-center gap-2 rounded-md bg-accent/15 px-3 py-2 text-sm text-accent">
           <ShieldAlert className="size-4" aria-hidden />
-          Not assessed: {missing.join(", ")}. Submission is allowed but the gaps are flagged to
-          reviewers.
+          {t("adminMod.changes.register.notAssessedPrefix")}: {missing.join(", ")}.{" "}
+          {t("adminMod.changes.register.notAssessedSuffix")}
         </div>
       ) : null}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="thread">Digital thread</TabsTrigger>
-          <TabsTrigger value="tasks">Implementation tasks</TabsTrigger>
-          <TabsTrigger value="audit">Audit trail</TabsTrigger>
+          <TabsTrigger value="overview">{t("adminMod.changes.register.tabOverview")}</TabsTrigger>
+          <TabsTrigger value="thread">{t("adminMod.changes.register.tabThread")}</TabsTrigger>
+          <TabsTrigger value="tasks">{t("adminMod.changes.register.tabTasks")}</TabsTrigger>
+          <TabsTrigger value="audit">{t("adminMod.changes.register.tabAudit")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 pt-4">
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">What is changing</h2>
+            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.whatIsChanging")}</h2>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.description}</p>
             <Separator />
-            <h2 className="text-sm font-medium text-foreground">Why</h2>
+            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.why")}</h2>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{cr.reason}</p>
           </Card>
 
@@ -410,19 +412,19 @@ function ChangeDetailPage() {
 
 
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">Affected systems</h2>
+            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.affectedSystems")}</h2>
             <AffectedSystems rows={systems} editable={editable} onChange={setSystems} />
           </Card>
 
           <Card className="space-y-3 p-4">
-            <h2 className="text-sm font-medium text-foreground">Reviewer routing</h2>
+            <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.reviewerRouting")}</h2>
             <ReviewerStepper steps={data.steps} currentStep={data.instance?.current_step ?? null} />
           </Card>
 
           {cr.status === "implementing" || evidence.length > 0 ? (
             <Card className="space-y-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-medium text-foreground">Implementation evidence</h2>
+                <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.implementationEvidence")}</h2>
                 {cr.status === "implementing" ? (
                   <>
                     <input
@@ -442,14 +444,14 @@ function ChangeDetailPage() {
                       onClick={() => fileRef.current?.click()}
                     >
                       <FileUp className="mr-1 size-4" aria-hidden />
-                      {uploading ? "Uploading…" : "Upload evidence"}
+                      {uploading ? t("adminMod.changes.register.uploading") : t("adminMod.changes.register.uploadEvidence")}
                     </Button>
                   </>
                 ) : null}
               </div>
               {evidence.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  At least one evidence item is required before closing.
+                  {t("adminMod.changes.register.evidenceRequired")}
                 </p>
               ) : (
                 <ul className="space-y-1">
@@ -471,7 +473,7 @@ function ChangeDetailPage() {
 
           {cr.closure_notes ? (
             <Card className="space-y-2 p-4">
-              <h2 className="text-sm font-medium text-foreground">Closure</h2>
+              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.closure")}</h2>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                 {cr.closure_notes}
               </p>
@@ -487,8 +489,8 @@ function ChangeDetailPage() {
           {thread.data && thread.data.graph.nodes.length === 0 ? (
             <EmptyState
               icon={Network}
-              title="No linked records yet"
-              description="Links appear once the change touches drawings, orders or field records."
+              title={t("adminMod.changes.register.noLinkedRecords")}
+              description={t("adminMod.changes.register.noLinkedRecordsDesc")}
             />
           ) : null}
         </TabsContent>
@@ -500,14 +502,14 @@ function ChangeDetailPage() {
           />
           {cr.updated_documents.length > 0 || cr.updated_asbuilts.length > 0 ? (
             <Card className="space-y-3 p-4">
-              <h2 className="text-sm font-medium text-foreground">Updated documents</h2>
+              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.updatedDocuments")}</h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
                 {cr.updated_documents.map((d) => (
                   <li key={d}>{d}</li>
                 ))}
               </ul>
               <Separator />
-              <h2 className="text-sm font-medium text-foreground">Updated as-builts</h2>
+              <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.updatedAsbuilts")}</h2>
               <ul className="list-inside list-disc text-sm text-muted-foreground">
                 {cr.updated_asbuilts.map((d) => (
                   <li key={d}>{d}</li>
@@ -520,10 +522,10 @@ function ChangeDetailPage() {
 
         <TabsContent value="audit" className="space-y-3 pt-4">
           <div className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-            This trail is append-only and cannot be edited.
+            {t("adminMod.changes.register.auditImmutable")}
           </div>
           {data.audit.length === 0 ? (
-            <EmptyState title="No audit entries yet" compact />
+            <EmptyState title={t("adminMod.changes.register.noAuditEntries")} compact />
           ) : (
             <ul className="space-y-2">
               {data.audit.map((entry) => (
@@ -534,7 +536,7 @@ function ChangeDetailPage() {
                       {formatDateTime(entry.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{entry.actor_name ?? "System"}</p>
+                  <p className="text-xs text-muted-foreground">{entry.actor_name ?? t("adminMod.changes.register.system")}</p>
                 </li>
               ))}
             </ul>
@@ -545,18 +547,18 @@ function ChangeDetailPage() {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject this change</DialogTitle>
-            <DialogDescription>A comment is required when rejecting.</DialogDescription>
+            <DialogTitle>{t("adminMod.changes.register.rejectDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("adminMod.changes.register.rejectDialogDesc")}</DialogDescription>
           </DialogHeader>
           <Textarea
             rows={4}
             value={rejectComment}
             onChange={(e) => setRejectComment(e.target.value)}
-            placeholder="Why is this rejected?"
+            placeholder={t("adminMod.changes.register.rejectPlaceholder")}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectOpen(false)}>
-              Cancel
+              {t("adminMod.changes.register.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -565,7 +567,7 @@ function ChangeDetailPage() {
                 decideMutation.mutate({ decision: "rejected", comment: rejectComment.trim() })
               }
             >
-              Reject
+              {t("adminMod.changes.register.reject")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -574,34 +576,34 @@ function ChangeDetailPage() {
       <Dialog open={closeOpen} onOpenChange={setCloseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Close change {cr.cr_number}</DialogTitle>
+            <DialogTitle>{t("adminMod.changes.register.closeDialogTitle", { number: cr.cr_number })}</DialogTitle>
             <DialogDescription>
-              Record what was implemented and which documents were updated.
+              {t("adminMod.changes.register.closeDialogDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Textarea
               rows={4}
-              placeholder="Closure notes (required)"
+              placeholder={t("adminMod.changes.register.closureNotesPlaceholder")}
               value={closureNotes}
               onChange={(e) => setClosureNotes(e.target.value)}
             />
             <Textarea
               rows={2}
-              placeholder="Updated documents, one per line"
+              placeholder={t("adminMod.changes.register.updatedDocsPlaceholder")}
               value={updatedDocs}
               onChange={(e) => setUpdatedDocs(e.target.value)}
             />
             <Textarea
               rows={2}
-              placeholder="Updated as-builts, one per line"
+              placeholder={t("adminMod.changes.register.updatedAsbuiltsPlaceholder")}
               value={updatedAsbuilts}
               onChange={(e) => setUpdatedAsbuilts(e.target.value)}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCloseOpen(false)}>
-              Cancel
+              {t("adminMod.changes.register.cancel")}
             </Button>
             <Button
               disabled={
@@ -625,14 +627,15 @@ function ChangeDetailPage() {
               }
             >
 
-              Close change
+              {t("adminMod.changes.register.closeChange")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <p className="text-xs text-muted-foreground">
-        Need the wider picture? <Link to="/changes/dashboard">Open the impact dashboard</Link>.
+        {t("adminMod.changes.register.wantWiderPicture")}{" "}
+        <Link to="/changes/dashboard">{t("adminMod.changes.register.openImpactDashboard")}</Link>.
       </p>
     </div>
   );

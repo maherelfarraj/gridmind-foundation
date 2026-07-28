@@ -41,6 +41,7 @@ import {
 } from "@/lib/ops-alerts.functions";
 import { opsAlertsQueryOptions, type OpsAlertFilters } from "@/lib/ops-alerts.query";
 import type { OpsAlertRow, OpsAlertRuleRow } from "@/lib/ops-alerts.server";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/admin/ops-alerts")({
   head: () => ({
@@ -75,6 +76,7 @@ const NOTIFY_ROLE_OPTIONS = [
 ] as const;
 
 function OpsAlertsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [filters, setFilters] = useState<OpsAlertFilters>({
     status: "open",
@@ -122,7 +124,7 @@ function OpsAlertsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Ops alerts"
+        title={t("adminMod.admin.opsAlerts")}
         description="Cross-tenant watchdog inbox — platform-level anomalies, integration health, and operational thresholds."
       />
 

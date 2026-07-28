@@ -40,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getScadaDashboard, listOperationsPlants } from "@/lib/scada-dashboard.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { plantAvailabilityBadge, type DashboardPayload } from "@/lib/scada-dashboard.rules";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +74,7 @@ export const Route = createFileRoute("/_authenticated/om/scada/")({
 });
 
 function ScadaDashboardPage() {
+  const { t } = useI18n();
   const { projectId } = Route.useSearch();
   const navigate = Route.useNavigate();
 
@@ -99,12 +101,12 @@ function ScadaDashboardPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="SCADA dashboard"
-        description="Fleet-wide live telemetry — auto-refreshes every 30 seconds."
+        title={t("omMod.scadaDashboard.title")}
+        description={t("omMod.scadaDashboard.description")}
         actions={
           <div className="flex items-end gap-3">
             <div className="w-64">
-              <label className="mb-1 block text-xs text-muted-foreground">Plant</label>
+              <label className="mb-1 block text-xs text-muted-foreground">{t("omMod.scadaDashboard.plantLabel")}</label>
               <Select
                 value={projectId ?? "all"}
                 onValueChange={(v) =>
@@ -115,10 +117,10 @@ function ScadaDashboardPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All operating plants" />
+                  <SelectValue placeholder={t("omMod.scadaDashboard.allPlants")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All operating plants</SelectItem>
+                  <SelectItem value="all">{t("omMod.scadaDashboard.allPlants")}</SelectItem>
                   {(plantsQuery.data?.projects ?? []).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
@@ -128,14 +130,14 @@ function ScadaDashboardPage() {
               </Select>
             </div>
             <div className="pb-1 text-right text-xs text-muted-foreground">
-              <div>Last updated {lastUpdatedLabel}</div>
+              <div>{t("omMod.scadaDashboard.lastUpdated", { time: lastUpdatedLabel })}</div>
               <Button
                 size="sm"
                 variant="ghost"
                 className="mt-1 h-7 px-2"
                 onClick={() => query.refetch()}
               >
-                <RefreshCw className="mr-1 h-3 w-3" /> Refresh
+                <RefreshCw className="mr-1 h-3 w-3" /> {t("omMod.scadaDashboard.refresh")}
               </Button>
             </div>
           </div>
@@ -148,9 +150,9 @@ function ScadaDashboardPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
             <AlertTriangle className="h-6 w-6 text-destructive" />
-            <p className="text-sm">Couldn&apos;t load SCADA dashboard.</p>
+            <p className="text-sm">{t("omMod.scadaDashboard.loadFailed")}</p>
             <Button size="sm" variant="outline" onClick={() => query.refetch()}>
-              Retry
+              {t("omMod.common.retry")}
             </Button>
           </CardContent>
         </Card>
@@ -176,16 +178,17 @@ function DashboardSkeleton() {
 }
 
 function DashboardBody({ data }: { data: DashboardPayload }) {
+  const { t } = useI18n();
   const noAssets = data.plants.length === 0;
   if (noAssets) {
     return (
       <EmptyState
         icon={Radio}
-        title="No telemetry yet"
-        description="Configure a connector in SCADA settings to start seeing live data."
+        title={t("omMod.scadaDashboard.noTelemetryTitle")}
+        description={t("omMod.scadaDashboard.noTelemetryDescription")}
         action={
           <Button asChild size="sm">
-            <Link to="/om/scada/connectors">Go to SCADA connectors</Link>
+            <Link to="/om/scada/connectors">{t("omMod.scadaDashboard.goToConnectors")}</Link>
           </Button>
         }
       />
@@ -201,41 +204,42 @@ function DashboardBody({ data }: { data: DashboardPayload }) {
 }
 
 function KpiTiles({ data }: { data: DashboardPayload }) {
+  const { t } = useI18n();
   const { tiles } = data;
   return (
     <>
       <KpiGrid>
         <KpiTile
-          label="Fleet power now"
+          label={t("omMod.scadaDashboard.fleetPowerNow")}
           value={`${formatNumber(tiles.fleetPowerKw)} kW`}
           icon={Zap}
         />
-        <KpiTile label="Energy today" value={`${formatNumber(tiles.energyTodayKwh)} kWh`} />
+        <KpiTile label={t("omMod.scadaDashboard.energyToday")} value={`${formatNumber(tiles.energyTodayKwh)} kWh`} />
         <KpiTile
-          label="Availability (30d)"
+          label={t("omMod.scadaDashboard.availability30d")}
           value={tiles.availabilityPct != null ? `${tiles.availabilityPct}%` : "—"}
           hint={
             tiles.availabilityPct == null
-              ? "Populates after alarm rules (P-105) & work orders (P-106)"
+              ? t("omMod.scadaDashboard.availabilityHint")
               : undefined
           }
         />
         <KpiTile
-          label="Performance ratio"
+          label={t("omMod.scadaDashboard.performanceRatio")}
           value={
             tiles.performanceRatioPct != null
               ? `${tiles.performanceRatioPct}%`
-              : "insufficient data"
+              : t("omMod.scadaDashboard.insufficientData")
           }
-          hint={!data.weatherAvailable ? "Add a weather station stream to compute PR" : undefined}
+          hint={!data.weatherAvailable ? t("omMod.scadaDashboard.addWeatherHint") : undefined}
           status={tiles.performanceRatioPct == null ? "neutral" : "good"}
         />
       </KpiGrid>
       {tiles.activeAlarms && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Active alarms:</span>
-          <Badge variant="destructive">{tiles.activeAlarms.critical} critical</Badge>
-          <Badge variant="secondary">{tiles.activeAlarms.major} major</Badge>
+          <span className="text-muted-foreground">{t("omMod.scadaDashboard.activeAlarms")}</span>
+          <Badge variant="destructive">{t("omMod.scadaDashboard.criticalCount", { count: tiles.activeAlarms.critical })}</Badge>
+          <Badge variant="secondary">{t("omMod.scadaDashboard.majorCount", { count: tiles.activeAlarms.major })}</Badge>
         </div>
       )}
     </>
@@ -243,6 +247,7 @@ function KpiTiles({ data }: { data: DashboardPayload }) {
 }
 
 export function PowerCurveCard({ data }: { data: DashboardPayload }) {
+  const { t } = useI18n();
   const chartData = useMemo(
     () =>
       data.powerCurve.map((p) => ({
@@ -256,11 +261,11 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Power curve — last 24 hours</CardTitle>
+        <CardTitle>{t("omMod.scadaDashboard.powerCurveTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <EmptyState title="No telemetry in the last 24 hours yet." compact />
+          <EmptyState title={t("omMod.scadaDashboard.noTelemetry24h")} compact />
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -308,8 +313,8 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                   }}
                   formatter={(v: number, name: string) =>
                     name === "ac_power_kw"
-                      ? [`${v.toFixed(1)} kW`, "AC power"]
-                      : [`${v.toFixed(0)} W/m²`, "Irradiance"]
+                      ? [`${v.toFixed(1)} kW`, t("omMod.scadaDashboard.acPower")]
+                      : [`${v.toFixed(0)} W/m²`, t("omMod.scadaDashboard.irradiance")]
                   }
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -317,7 +322,7 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                   yAxisId="power"
                   type="monotone"
                   dataKey="ac_power_kw"
-                  name="AC power (kW)"
+                  name={t("omMod.scadaDashboard.acPowerKw")}
                   fill="var(--primary)"
                   stroke="var(--primary)"
                   fillOpacity={0.25}
@@ -327,7 +332,7 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
                     yAxisId="irr"
                     type="monotone"
                     dataKey="irradiance_wm2"
-                    name="Irradiance (W/m²)"
+                    name={t("omMod.scadaDashboard.irradianceWm2")}
                     stroke="var(--accent-foreground)"
                     dot={false}
                     strokeWidth={2}
@@ -343,22 +348,23 @@ export function PowerCurveCard({ data }: { data: DashboardPayload }) {
 }
 
 function FleetTable({ data }: { data: DashboardPayload }) {
+  const { t } = useI18n();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Fleet status</CardTitle>
+        <CardTitle>{t("omMod.scadaDashboard.fleetStatusTitle")}</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Plant</TableHead>
-              <TableHead className="text-right">Capacity (MW)</TableHead>
-              <TableHead className="text-right">Current (kW)</TableHead>
-              <TableHead className="text-right">Today (kWh)</TableHead>
-              <TableHead>Availability</TableHead>
-              <TableHead className="text-right">Alarms</TableHead>
-              <TableHead>Last telemetry</TableHead>
+              <TableHead>{t("omMod.scadaDashboard.colPlant")}</TableHead>
+              <TableHead className="text-right">{t("omMod.scadaDashboard.colCapacity")}</TableHead>
+              <TableHead className="text-right">{t("omMod.scadaDashboard.colCurrent")}</TableHead>
+              <TableHead className="text-right">{t("omMod.scadaDashboard.colToday")}</TableHead>
+              <TableHead>{t("omMod.scadaDashboard.colAvailability")}</TableHead>
+              <TableHead className="text-right">{t("omMod.scadaDashboard.colAlarms")}</TableHead>
+              <TableHead>{t("omMod.scadaDashboard.colLastTelemetry")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

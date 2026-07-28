@@ -28,6 +28,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { buildOmReportPdfBytes, omReportFilename } from "@/lib/exports/om-report-pdf";
 import { attachOmReportPdf, generateOmReport } from "@/lib/om-reports.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 interface Props {
   projects: Array<{ id: string; name: string; code: string | null }>;
@@ -47,6 +48,7 @@ function monthOptions(): Array<{ value: string; label: string }> {
 }
 
 export function GenerateOmReportDialog({ projects }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [projectId, setProjectId] = useState<string>("");
   const [monthStart, setMonthStart] = useState<string>(
@@ -59,7 +61,7 @@ export function GenerateOmReportDialog({ projects }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!projectId) throw new Error("Pick a project");
+      if (!projectId) throw new Error(t("omMod.generateReportDialog.pickProject"));
       const periodStart = monthStart;
       const periodEnd = format(endOfMonth(new Date(monthStart)), "yyyy-MM-dd");
       const dto = await generate({
@@ -84,35 +86,32 @@ export function GenerateOmReportDialog({ projects }: Props) {
       return { filename, period: periodStart.slice(0, 7) };
     },
     onSuccess: (r) => {
-      toast.success(`Generated O&M report — ${r.period}`);
+      toast.success(t("omMod.generateReportDialog.generatedToast", { period: r.period }));
       qc.invalidateQueries({ queryKey: ["om-reports"] });
       setOpen(false);
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Failed to generate";
-      toast.error(/export blocked/i.test(msg) ? "Exports locked by governance" : msg);
+      const msg = err instanceof Error ? err.message : t("omMod.generateReportDialog.generateFailed");
+      toast.error(/export blocked/i.test(msg) ? t("omMod.generateReportDialog.exportsLocked") : msg);
     },
   });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Generate monthly report</Button>
+        <Button size="sm">{t("omMod.generateReportDialog.trigger")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Generate monthly O&amp;M report</DialogTitle>
-          <DialogDescription>
-            Aggregates availability, PR, alarms, work orders and spend for the selected project +
-            month, then uploads a branded PDF.
-          </DialogDescription>
+          <DialogTitle>{t("omMod.generateReportDialog.title")}</DialogTitle>
+          <DialogDescription>{t("omMod.generateReportDialog.description")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="om-project">Project</Label>
+            <Label htmlFor="om-project">{t("omMod.generateReportDialog.projectLabel")}</Label>
             <Select value={projectId} onValueChange={setProjectId}>
               <SelectTrigger id="om-project" className="h-10">
-                <SelectValue placeholder="Pick a project" />
+                <SelectValue placeholder={t("omMod.generateReportDialog.projectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((p) => (
@@ -125,7 +124,7 @@ export function GenerateOmReportDialog({ projects }: Props) {
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="om-month">Month</Label>
+            <Label htmlFor="om-month">{t("omMod.generateReportDialog.monthLabel")}</Label>
             <Select value={monthStart} onValueChange={setMonthStart}>
               <SelectTrigger id="om-month" className="h-10">
                 <SelectValue />
@@ -147,7 +146,7 @@ export function GenerateOmReportDialog({ projects }: Props) {
             onClick={() => setOpen(false)}
             disabled={mutation.isPending}
           >
-            Cancel
+            {t("omMod.common.cancel")}
           </Button>
           <Button
             type="button"
@@ -157,10 +156,10 @@ export function GenerateOmReportDialog({ projects }: Props) {
             {mutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                Generating…
+                {t("omMod.common.generating")}
               </>
             ) : (
-              "Generate"
+              t("omMod.generateReportDialog.generate")
             )}
           </Button>
         </DialogFooter>

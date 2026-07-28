@@ -5,6 +5,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useMemo, useState } from "react";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+
 import { PvLayoutCanvas } from "@/components/engineering/pv-layout-canvas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +90,7 @@ const DEFAULTS: Params = {
 };
 
 function PvLayoutPage() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const activeSiteFn = useServerFn(getActivePvSiteConfig);
   const layoutsFn = useServerFn(listPvLayouts);
@@ -266,37 +269,37 @@ function PvLayoutPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="PV layout"
-        description="Automatic block arrangement, compliance checks and layout alternatives."
+        title={t("engMod.pv.layout.title")}
+        description={t("engMod.pv.layout.description")}
       />
 
       {!geometry ? (
         <EmptyState
-          title="No active site configuration"
-          description="Draw the site boundary and activate a configuration on the Site config tab before arranging a layout."
+          title={t("engMod.pv.layout.noSiteConfig.title")}
+          description={t("engMod.pv.layout.noSiteConfig.description")}
         />
       ) : !moduleRow ? (
         <EmptyState
-          title="No PV module in the library"
-          description="Add at least one active module to the PV equipment library to size tables."
+          title={t("engMod.pv.layout.noModule.title")}
+          description={t("engMod.pv.layout.noModule.description")}
         />
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Arrangement parameters</CardTitle>
+              <CardTitle>{t("engMod.pv.layout.arrangementParameters")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {(
                 [
-                  ["gcr", "GCR", 0.01],
-                  ["setbackM", "Setback (m)", 1],
-                  ["tiltDeg", "Tilt (deg)", 1],
-                  ["azimuthDeg", "Azimuth (deg)", 1],
-                  ["modulesAcross", "Modules across", 1],
-                  ["modulesUp", "Modules up", 1],
-                  ["roadEveryNRows", "Road every N rows", 1],
-                  ["roadWidthM", "Road width (m)", 1],
+                  ["gcr", t("engMod.pv.layout.params.gcr"), 0.01],
+                  ["setbackM", t("engMod.pv.layout.params.setbackM"), 1],
+                  ["tiltDeg", t("engMod.pv.layout.params.tiltDeg"), 1],
+                  ["azimuthDeg", t("engMod.pv.layout.params.azimuthDeg"), 1],
+                  ["modulesAcross", t("engMod.pv.layout.params.modulesAcross"), 1],
+                  ["modulesUp", t("engMod.pv.layout.params.modulesUp"), 1],
+                  ["roadEveryNRows", t("engMod.pv.layout.params.roadEveryNRows"), 1],
+                  ["roadWidthM", t("engMod.pv.layout.params.roadWidthM"), 1],
                 ] as const
               ).map(([key, label, step]) => (
                 <div key={key} className="space-y-1.5">
@@ -351,26 +354,31 @@ function PvLayoutPage() {
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Block inspector</CardTitle>
+                    <CardTitle>{t("engMod.pv.layout.blockInspector")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     {selectedBlock ? (
                       <>
                         <p className="font-medium text-foreground">{selectedBlock.label}</p>
-                        <p className="text-muted-foreground">Type: {selectedBlock.type}</p>
                         <p className="text-muted-foreground">
-                          Modules: {selectedBlock.moduleCount} — {selectedBlock.dcKwp.toFixed(2)}{" "}
-                          kWp
+                          {t("engMod.pv.layout.blockType", { type: selectedBlock.type })}
                         </p>
                         <p className="text-muted-foreground">
-                          Slope:{" "}
+                          {t("engMod.pv.layout.blockModules", {
+                            count: selectedBlock.moduleCount,
+                            kwp: selectedBlock.dcKwp.toFixed(2),
+                          })}
+                        </p>
+                        <p className="text-muted-foreground">
                           {selectedBlock.slopePct === undefined
-                            ? "no terrain data"
-                            : `${selectedBlock.slopePct.toFixed(1)}%`}
+                            ? t("engMod.pv.layout.blockSlopeNoneFull")
+                            : t("engMod.pv.layout.blockSlope", {
+                                pct: selectedBlock.slopePct.toFixed(1),
+                              })}
                         </p>
                       </>
                     ) : (
-                      <p className="text-muted-foreground">Select a block on the canvas.</p>
+                      <p className="text-muted-foreground">{t("engMod.pv.layout.selectBlockPrompt")}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -378,7 +386,7 @@ function PvLayoutPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      Compliance
+                      {t("engMod.pv.layout.complianceTitle")}
                       <StatusBadge status={current.result.compliance.status} />
                     </CardTitle>
                   </CardHeader>
@@ -419,7 +427,7 @@ function PvLayoutPage() {
 
                 {canWrite ? (
                   <Button onClick={() => persist(current)} disabled={createLayout.isPending}>
-                    Save {current.name} as draft
+                    {t("engMod.pv.layout.saveAsDraft", { name: current.name })}
                   </Button>
                 ) : null}
               </div>
@@ -428,19 +436,19 @@ function PvLayoutPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Option comparison</CardTitle>
+              <CardTitle>{t("engMod.pv.layout.optionComparison")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Option</TableHead>
-                    <TableHead>DC kWp</TableHead>
-                    <TableHead>Modules</TableHead>
-                    <TableHead>Tables</TableHead>
-                    <TableHead>Used area (m²)</TableHead>
-                    <TableHead>Achieved GCR</TableHead>
-                    <TableHead>Warnings</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.option")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.dcKwp")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.modules")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.tables")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.usedArea")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.achievedGcr")}</TableHead>
+                    <TableHead>{t("engMod.pv.layout.comparisonColumns.warnings")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -464,23 +472,23 @@ function PvLayoutPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Saved layouts</CardTitle>
+              <CardTitle>{t("engMod.pv.layout.savedLayouts")}</CardTitle>
             </CardHeader>
             <CardContent>
               {(layoutsQuery.data ?? []).length === 0 ? (
                 <EmptyState
-                  title="No saved layouts"
-                  description="Save an option above to start the approval workflow."
+                  title={t("engMod.pv.layout.noSavedLayouts.title")}
+                  description={t("engMod.pv.layout.noSavedLayouts.description")}
                 />
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Layout</TableHead>
-                      <TableHead>Version</TableHead>
-                      <TableHead>DC kWp</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("engMod.pv.layout.savedColumns.layout")}</TableHead>
+                      <TableHead>{t("engMod.pv.layout.savedColumns.version")}</TableHead>
+                      <TableHead>{t("engMod.pv.layout.savedColumns.dcKwp")}</TableHead>
+                      <TableHead>{t("engMod.pv.layout.savedColumns.status")}</TableHead>
+                      <TableHead className="text-right">{t("engMod.pv.layout.savedColumns.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -502,7 +510,7 @@ function PvLayoutPage() {
                               onClick={() => submitLayout.mutate(row.id)}
                               disabled={submitLayout.isPending}
                             >
-                              Submit for approval
+                              {t("engMod.pv.layout.actions.submitForApproval")}
                             </Button>
                           ) : null}
                           {canWrite && row.status === "approved" ? (
@@ -511,7 +519,7 @@ function PvLayoutPage() {
                               onClick={() => generateSld.mutate(row.id)}
                               disabled={generateSld.isPending}
                             >
-                              Generate SLD
+                              {t("engMod.pv.layout.actions.generateSld")}
                             </Button>
                           ) : null}
                           {canWrite && row.status === "under_review" ? (
@@ -521,7 +529,7 @@ function PvLayoutPage() {
                               onClick={() => decideLayout.mutate(row.id)}
                               disabled={decideLayout.isPending}
                             >
-                              Apply decision
+                              {t("engMod.pv.layout.actions.applyDecision")}
                             </Button>
                           ) : null}
                         </TableCell>

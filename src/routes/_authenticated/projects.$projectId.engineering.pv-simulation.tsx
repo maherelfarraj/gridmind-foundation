@@ -48,6 +48,7 @@ import {
   listPvSimulations,
 } from "@/lib/pv-yield.functions";
 import { YIELD_DISCLAIMER } from "@/lib/pv/yield-v2";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/pv-simulation",
@@ -228,6 +229,7 @@ function NumberField({
 }
 
 function PvSimulationPage() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const listFn = useServerFn(listPvSimulations);
   const prefillFn = useServerFn(getPvSimulationPrefill);
@@ -330,8 +332,8 @@ function PvSimulationPage() {
   return (
     <div className="space-y-5 p-4 md:p-6">
       <PageHeader
-        title="Energy yield simulation"
-        description="Transparent 16-step loss chain, P-scenarios and the approval-gated project energy baseline."
+        title={t("engMod.pv.simulation.title")}
+        description={t("engMod.pv.simulation.description")}
       />
       <DisclaimerBanner />
 
@@ -343,42 +345,42 @@ function PvSimulationPage() {
       ) : prefill.isError || sims.isError ? (
         <EmptyState
           icon={AlertTriangle}
-          title="Could not load the simulation workspace"
-          description="Refresh the page or check that the project has an active site configuration."
+          title={t("engMod.pv.simulation.loadError.title")}
+          description={t("engMod.pv.simulation.loadError.description")}
         />
       ) : (
         <Tabs defaultValue="inputs">
           <TabsList>
-            <TabsTrigger value="inputs">Input sheet</TabsTrigger>
-            <TabsTrigger value="results">Results</TabsTrigger>
-            <TabsTrigger value="approval">Review &amp; approve</TabsTrigger>
-            <TabsTrigger value="compare">Compare</TabsTrigger>
+            <TabsTrigger value="inputs">{t("engMod.pv.simulation.tabs.inputSheet")}</TabsTrigger>
+            <TabsTrigger value="results">{t("engMod.pv.simulation.tabs.results")}</TabsTrigger>
+            <TabsTrigger value="approval">{t("engMod.pv.simulation.tabs.approval")}</TabsTrigger>
+            <TabsTrigger value="compare">{t("engMod.pv.simulation.tabs.compare")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="inputs" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Info className="size-4" aria-hidden /> Server-prefilled inputs
+                  <Info className="size-4" aria-hidden /> {t("engMod.pv.simulation.serverPrefilled")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 text-xs sm:grid-cols-3">
                   <div>
-                    <p className="text-muted-foreground">Site configuration</p>
-                    <p className="font-medium">{pf?.siteConfig.name ?? "No active site config"}</p>
+                    <p className="text-muted-foreground">{t("engMod.pv.simulation.siteConfiguration")}</p>
+                    <p className="font-medium">{pf?.siteConfig.name ?? t("engMod.pv.simulation.noActiveSiteConfig")}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Approved layout</p>
+                    <p className="text-muted-foreground">{t("engMod.pv.simulation.approvedLayout")}</p>
                     <p className="font-medium">
-                      {pf?.layout.name ?? "None approved"}{" "}
+                      {pf?.layout.name ?? t("engMod.pv.simulation.noneApproved")}{" "}
                       {pf?.layout.layoutNumber ? `(${pf.layout.layoutNumber})` : ""}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Stringing (P-154)</p>
+                    <p className="text-muted-foreground">{t("engMod.pv.simulation.stringing")}</p>
                     <p className="font-medium">
-                      {pf?.stringing.stringCount ?? 0} strings · {pf?.stringing.dcAcRatio ?? "—"}{" "}
+                      {pf?.stringing.stringCount ?? 0} {t("engMod.pv.simulation.strings")} · {pf?.stringing.dcAcRatio ?? "—"}{" "}
                       DC/AC
                     </p>
                   </div>
@@ -388,7 +390,7 @@ function PvSimulationPage() {
                   <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="space-y-1.5">
                       <Label htmlFor="name" className="text-xs">
-                        Run name
+                        {t("engMod.pv.simulation.runName")}
                       </Label>
                       <Input
                         id="name"
@@ -423,7 +425,7 @@ function PvSimulationPage() {
                       />
                       <div className="space-y-1.5">
                         <div className="flex items-baseline justify-between gap-2">
-                          <Label className="text-xs">Mounting</Label>
+                          <Label className="text-xs">{t("engMod.pv.simulation.mounting")}</Label>
                           <SourceTag
                             source={sources.tracker}
                             overridden={isOverridden("tracker")}
@@ -441,8 +443,8 @@ function PvSimulationPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="fixed">Fixed tilt</SelectItem>
-                            <SelectItem value="single_axis">Single-axis tracker</SelectItem>
+                            <SelectItem value="fixed">{t("engMod.pv.simulation.fixedTilt")}</SelectItem>
+                            <SelectItem value="single_axis">{t("engMod.pv.simulation.singleAxisTracker")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -569,7 +571,7 @@ function PvSimulationPage() {
 
                     {!pf?.bess.configured ? (
                       <p className="text-xs text-muted-foreground">
-                        BESS inputs are disabled — no battery entry is configured for this project.
+                        {t("engMod.pv.simulation.form.bessDisabledNote")}
                       </p>
                     ) : null}
 
@@ -578,11 +580,11 @@ function PvSimulationPage() {
                     <div className="flex items-center gap-3">
                       <Button type="submit" disabled={!canWrite || run.isPending}>
                         <Play className="size-4" aria-hidden />
-                        {run.isPending ? "Running…" : "Run simulation"}
+                        {run.isPending ? t("engMod.pv.simulation.form.running") : t("engMod.pv.simulation.form.runButton")}
                       </Button>
                       {!canWrite ? (
                         <span className="text-xs text-muted-foreground">
-                          Read-only — engineering roles can run simulations.
+                          {t("engMod.pv.simulation.form.readOnlyNote")}
                         </span>
                       ) : null}
                     </div>
@@ -596,13 +598,13 @@ function PvSimulationPage() {
             {simulations.length === 0 ? (
               <EmptyState
                 icon={Play}
-                title="No simulations yet"
-                description="Fill in the input sheet and run the transparent model to see the loss chain."
+                title={t("engMod.pv.simulation.resultsEmpty.title")}
+                description={t("engMod.pv.simulation.resultsEmpty.description")}
               />
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Label className="text-xs">Simulation</Label>
+                  <Label className="text-xs">{t("engMod.pv.simulation.simulationLabel")}</Label>
                   <Select value={selected?.id ?? ""} onValueChange={(v) => setSelectedId(v)}>
                     <SelectTrigger className="w-80">
                       <SelectValue />
@@ -611,7 +613,7 @@ function PvSimulationPage() {
                       {simulations.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.name}
-                          {s.is_baseline ? " · baseline" : ""}
+                          {s.is_baseline ? t("engMod.pv.simulation.baselineSuffix") : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -627,8 +629,8 @@ function PvSimulationPage() {
             {!selected ? (
               <EmptyState
                 icon={Send}
-                title="Nothing to review"
-                description="Run a simulation first, then submit it for engineering approval."
+                title={t("engMod.pv.simulation.approval.nothingToReview.title")}
+                description={t("engMod.pv.simulation.approval.nothingToReview.description")}
               />
             ) : (
               <Card>
@@ -640,17 +642,17 @@ function PvSimulationPage() {
                 <CardContent className="space-y-4 text-sm">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">Approval status</p>
-                      <p className="font-medium">{instance?.status ?? "not submitted"}</p>
+                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.approvalStatus")}</p>
+                      <p className="font-medium">{instance?.status ?? t("engMod.pv.simulation.approval.notSubmitted")}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Current step</p>
+                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.currentStep")}</p>
                       <p className="font-medium">
-                        {instance ? `Step ${instance.current_step ?? 1} · engineering_admin` : "—"}
+                        {instance ? t("engMod.pv.simulation.approval.stepEngineeringAdmin", { step: instance.current_step ?? 1 }) : "—"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">SLA age</p>
+                      <p className="text-xs text-muted-foreground">{t("engMod.pv.simulation.approval.slaAge")}</p>
                       <p className="font-medium">
                         {instance
                           ? formatDistanceToNowStrict(new Date(instance.requested_at), {
@@ -668,7 +670,7 @@ function PvSimulationPage() {
                       onClick={() => submit.mutate(selected.id)}
                     >
                       <Send className="size-4" aria-hidden />
-                      Submit for approval
+                      {t("engMod.pv.simulation.approval.submitForApproval")}
                     </Button>
                     {isApproved ? (
                       <Button
@@ -676,12 +678,11 @@ function PvSimulationPage() {
                         onClick={() => baseline.mutate(selected.id)}
                       >
                         <BadgeCheck className="size-4" aria-hidden />
-                        {selected.is_baseline ? "Current baseline" : "Set as project baseline"}
+                        {selected.is_baseline ? t("engMod.pv.simulation.approval.currentBaseline") : t("engMod.pv.simulation.approval.setAsBaseline")}
                       </Button>
                     ) : (
                       <p className="self-center text-xs text-muted-foreground">
-                        Baselining unlocks once the approval instance is approved — the server
-                        rejects earlier attempts.
+                        {t("engMod.pv.simulation.approval.baselineLocked")}
                       </p>
                     )}
                   </div>
@@ -694,19 +695,19 @@ function PvSimulationPage() {
             {simulations.length < 2 ? (
               <EmptyState
                 icon={GitCompare}
-                title="Need two simulations"
-                description="Run at least two simulations to compare annual energy, yield, PR and each loss step."
+                title={t("engMod.pv.simulation.compare.needTwo.title")}
+                description={t("engMod.pv.simulation.compare.needTwo.description")}
               />
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Compare runs</CardTitle>
+                  <CardTitle className="text-base">{t("engMod.pv.simulation.compare.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-3">
                     <Select value={selected?.id ?? ""} onValueChange={setSelectedId}>
                       <SelectTrigger className="w-72">
-                        <SelectValue placeholder="Baseline run" />
+                        <SelectValue placeholder={t("engMod.pv.simulation.compare.baselinePlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {simulations.map((s) => (
@@ -718,7 +719,7 @@ function PvSimulationPage() {
                     </Select>
                     <Select value={compareId ?? ""} onValueChange={setCompareId}>
                       <SelectTrigger className="w-72">
-                        <SelectValue placeholder="Compare with…" />
+                        <SelectValue placeholder={t("engMod.pv.simulation.compare.comparePlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {simulations
@@ -737,8 +738,8 @@ function PvSimulationPage() {
                     <EmptyState
                       compact
                       icon={GitCompare}
-                      title="Pick a second simulation"
-                      description="Select two runs to see the delta table."
+                      title={t("engMod.pv.simulation.compare.pickSecond.title")}
+                      description={t("engMod.pv.simulation.compare.pickSecond.description")}
                     />
                   )}
                 </CardContent>

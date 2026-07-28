@@ -16,19 +16,22 @@ import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
 import { DEPARTMENT_LABELS, type ProjectDepartment } from "@/lib/schemas/project-wizard";
 import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
 import type { ProjectArchetype } from "@/lib/wizard-draft";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 const ARCHETYPE_LABEL: Record<ProjectArchetype, string> = Object.fromEntries(
   ARCHETYPES.map((a) => [a.key, a.label]),
 ) as Record<ProjectArchetype, string>;
 
 // Tabs — key must match the child route path segment.
-const STATIC_TABS = [
-  { key: "overview" as const, label: "Overview" },
-  { key: "gates" as const, label: "Gates" },
-  { key: "config" as const, label: "Config" },
-  { key: "planning/wbs" as const, label: "Planning" },
-  { key: "commissioning" as const, label: "Commissioning" },
-];
+function buildStaticTabs(t: (key: string) => string) {
+  return [
+    { key: "overview" as const, label: t("engMod.projectDetail.tabs.overview") },
+    { key: "gates" as const, label: t("engMod.projectDetail.tabs.gates") },
+    { key: "config" as const, label: t("engMod.projectDetail.tabs.config") },
+    { key: "planning/wbs" as const, label: t("engMod.projectDetail.tabs.planning") },
+    { key: "commissioning" as const, label: t("engMod.projectDetail.tabs.commissioning") },
+  ];
+}
 
 // Department tabs — only render when the project has that department row.
 const DEPT_TABS: { key: TabKey; dept: ProjectDepartment; label: string }[] = [
@@ -85,8 +88,10 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
 });
 
 function ProjectDetailLayout() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data: project } = useSuspenseQuery(projectDetailQueryOptions(projectId));
+  const STATIC_TABS = buildStaticTabs(t);
 
   if (!project) {
     return <DetailNotFound />;
@@ -106,7 +111,7 @@ function ProjectDetailLayout() {
             className="inline-flex items-center gap-1 hover:text-foreground"
           >
             <ArrowLeft size={14} aria-hidden />
-            Projects
+            {t("engMod.projectDetail.breadcrumbProjects")}
           </Link>
           <span aria-hidden>/</span>
           <span className="font-mono">{project.code}</span>
@@ -133,7 +138,7 @@ function ProjectDetailLayout() {
       </div>
 
       {/* Tab bar */}
-      <nav aria-label="Project sections" className="flex flex-wrap gap-1 border-b border-border">
+      <nav aria-label={t("engMod.projectDetail.sectionsAriaLabel")} className="flex flex-wrap gap-1 border-b border-border">
         {STATIC_TABS.map((t) => (
           <TabLink key={t.key} to={t.key} label={t.label} projectId={projectId} />
         ))}
@@ -188,14 +193,15 @@ function DetailSkeleton() {
 
 function DetailError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex w-full max-w-3xl">
       <Card className="flex w-full flex-col items-start gap-3 border-destructive/40 bg-card p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
-          Couldn&rsquo;t load this project
+          {t("engMod.projectDetail.loadError.title")}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {error instanceof Error ? error.message : "Unexpected error."}
+          {error instanceof Error ? error.message : t("engMod.projectDetail.unexpectedError")}
         </p>
         <div className="flex gap-2">
           <Button
@@ -205,12 +211,12 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
             }}
           >
             <RefreshCw size={14} aria-hidden />
-            Retry
+            {t("engMod.projectDetail.loadError.retry")}
           </Button>
           <Button asChild variant="outline">
             <Link to="/projects" search={PROJECTS_LINK_SEARCH}>
               <ArrowLeft size={14} aria-hidden />
-              Back to projects
+              {t("engMod.projectDetail.loadError.backToProjects")}
             </Link>
           </Button>
         </div>
@@ -220,19 +226,20 @@ function DetailError({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 function DetailNotFound() {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex w-full max-w-3xl">
       <Card className="flex w-full flex-col items-start gap-3 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">
-          Project not available
+          {t("engMod.projectDetail.notAvailable.title")}
         </h2>
         <p className="text-sm text-muted-foreground">
-          This project doesn&rsquo;t exist or you don&rsquo;t have access.
+          {t("engMod.projectDetail.notAvailable.description")}
         </p>
         <Button asChild variant="outline">
           <Link to="/projects" search={PROJECTS_LINK_SEARCH}>
             <ArrowLeft size={14} aria-hidden />
-            Back to projects
+            {t("engMod.projectDetail.loadError.backToProjects")}
           </Link>
         </Button>
       </Card>
@@ -241,11 +248,14 @@ function DetailNotFound() {
 }
 
 function MobilizationHeaderChip({ projectId }: { projectId: string }) {
+  const { t } = useI18n();
   const { data } = useQuery(mobilizationHeaderChipQueryOptions(projectId));
   if (!data) return null;
   if (data.status === "complete" || data.status === "none") return null;
   const label =
-    data.status === "in_progress" ? "Mobilization: in progress" : "Mobilization: not started";
+    data.status === "in_progress"
+      ? t("engMod.projectDetail.mobilization.inProgress")
+      : t("engMod.projectDetail.mobilization.notStarted");
   return (
     <span
       className="inline-flex items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning"

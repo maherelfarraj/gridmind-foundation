@@ -43,6 +43,7 @@ import {
   type EaStudyType,
 } from "@/lib/ea/study-types";
 import { listEaStudies } from "@/lib/ea-studies.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/studies/")({
   head: () => ({
@@ -68,6 +69,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
 const GROUP_ORDER = ["power_system", "protection", "auxiliary", "compliance"] as const;
 
 function StudyListPage() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const listFn = useServerFn(listEaStudies);
   const [studyType, setStudyType] = useState<"all" | EaStudyType>("all");
@@ -99,11 +101,11 @@ function StudyListPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Electrical studies"
-        description="Every calculation is a numbered, revisioned record with its own review trail."
+        title={t("engMod.ea.studies.title")}
+        description={t("engMod.ea.studies.description")}
         actions={
           <Button onClick={() => setPickerOpen(true)}>
-            <Plus className="mr-1 size-4" aria-hidden /> New study
+            <Plus className="mr-1 size-4" aria-hidden /> {t("engMod.ea.studies.newStudy")}
           </Button>
         }
       />
@@ -111,11 +113,11 @@ function StudyListPage() {
       <Card>
         <CardContent className="flex flex-wrap items-center gap-3 py-3">
           <Select value={studyType} onValueChange={(v) => setStudyType(v as typeof studyType)}>
-            <SelectTrigger className="h-9 w-56" aria-label="Filter by study type">
-              <SelectValue placeholder="All study types" />
+            <SelectTrigger className="h-9 w-56" aria-label={t("engMod.ea.studies.filters.studyTypeAria")}>
+              <SelectValue placeholder={t("engMod.ea.studies.filters.allStudyTypes")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All study types</SelectItem>
+              <SelectItem value="all">{t("engMod.ea.studies.filters.allStudyTypes")}</SelectItem>
               {EA_STUDY_TYPES.map((t) => (
                 <SelectItem key={t} value={t}>
                   {EA_STUDY_SPECS[t].label}
@@ -124,14 +126,14 @@ function StudyListPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-            <SelectTrigger className="h-9 w-44" aria-label="Filter by status">
-              <SelectValue placeholder="All statuses" />
+            <SelectTrigger className="h-9 w-44" aria-label={t("engMod.ea.studies.filters.statusAria")}>
+              <SelectValue placeholder={t("engMod.ea.studies.filters.allStatuses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="under_review">Under review</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="all">{t("engMod.ea.studies.filters.allStatuses")}</SelectItem>
+              <SelectItem value="draft">{t("engMod.ea.studies.filters.draft")}</SelectItem>
+              <SelectItem value="under_review">{t("engMod.ea.studies.filters.underReview")}</SelectItem>
+              <SelectItem value="approved">{t("engMod.ea.studies.filters.approved")}</SelectItem>
             </SelectContent>
           </Select>
           <Link
@@ -139,7 +141,7 @@ function StudyListPage() {
             params={{ projectId }}
             className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Grid-code checklist
+            {t("engMod.ea.studies.gridCodeLink")}
           </Link>
         </CardContent>
       </Card>
@@ -153,32 +155,32 @@ function StudyListPage() {
       ) : query.isError ? (
         <EmptyState
           icon={AlertTriangle}
-          title="Studies could not be loaded"
-          description={query.error instanceof Error ? query.error.message : "Unexpected error"}
+          title={t("engMod.ea.studies.loadError.title")}
+          description={query.error instanceof Error ? query.error.message : t("engMod.ea.studies.loadError.fallback")}
           action={
             <Button variant="outline" onClick={() => void query.refetch()}>
-              Retry
+              {t("engMod.ea.studies.retry")}
             </Button>
           }
         />
       ) : (query.data?.studies ?? []).length === 0 ? (
         <EmptyState
           icon={FlaskConical}
-          title="No studies yet — run your first calculation"
-          description="Pick a study type to open the workspace; results, warnings and method text are stored with the record."
-          action={<Button onClick={() => setPickerOpen(true)}>New study</Button>}
+          title={t("engMod.ea.studies.empty.title")}
+          description={t("engMod.ea.studies.empty.description")}
+          action={<Button onClick={() => setPickerOpen(true)}>{t("engMod.ea.studies.newStudyButton")}</Button>}
         />
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Study</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Rev</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Updated</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.study")}</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.title")}</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.type")}</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.rev")}</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.status")}</TableHead>
+                <TableHead>{t("engMod.ea.studies.columns.updated")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -220,10 +222,9 @@ function StudyListPage() {
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>New study</DialogTitle>
+            <DialogTitle>{t("engMod.ea.studies.newStudyDialog.title")}</DialogTitle>
             <DialogDescription>
-              Choose the calculation to run. Types without a wired calculator open through the
-              protection and grid-code worksheets.
+              {t("engMod.ea.studies.newStudyDialog.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -253,8 +254,8 @@ function StudyListPage() {
                         <p className="text-sm font-medium text-muted-foreground">{spec.label}</p>
                         <p className="text-xs text-muted-foreground">
                           {spec.type === "grid_code_checklist"
-                            ? "Tracked in the grid-code checklist view."
-                            : "Prepared through the protection worksheets."}
+                            ? t("engMod.ea.studies.newStudyDialog.trackedInGridCode")
+                            : t("engMod.ea.studies.newStudyDialog.preparedThroughProtection")}
                         </p>
                       </div>
                     ),

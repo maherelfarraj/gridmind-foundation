@@ -22,6 +22,7 @@ import {
 import { formatMoney } from "@/lib/format";
 import { AGE_BUCKETS, changeTypeMeta, heatClass, OPEN_STATUSES } from "@/lib/moc.rules";
 import { getMocDashboard } from "@/lib/moc.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/changes/dashboard")({
   head: () => ({
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/changes/dashboard")({
 });
 
 function MocDashboardPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const fetchDashboard = useServerFn(getMocDashboard);
   const query = useQuery({
@@ -64,11 +66,11 @@ function MocDashboardPage() {
     return (
       <div className="p-6">
         <EmptyState
-          title="Could not load the dashboard"
-          description="The change metrics could not be read."
+          title={t("adminMod.changes.register.dashboardLoadError")}
+          description={t("adminMod.changes.register.dashboardLoadErrorDesc")}
           action={
             <Button variant="outline" onClick={() => void query.refetch()}>
-              Retry
+              {t("adminMod.approvals.retry")}
             </Button>
           }
         />
@@ -90,35 +92,35 @@ function MocDashboardPage() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Change impact dashboard"
+        title={t("adminMod.changes.register.dashboardTitle")}
         description="Where change is concentrated, how old it is, and what it costs."
         actions={
           <Button variant="outline" onClick={() => goto({})}>
-            Open register
+            {t("adminMod.changes.register.openRegister")}
           </Button>
         }
       />
 
       <KpiGrid>
         <KpiTile
-          label="Open change requests"
+          label={t("adminMod.changes.register.openChangeRequests")}
           value={data.openCount}
           icon={GitPullRequestArrow}
           hint={OPEN_STATUSES.map((s) => `${s}: ${data.byStatus[s] ?? 0}`).join(" · ")}
         />
         <KpiTile
-          label="Average days to close"
+          label={t("adminMod.changes.register.avgDaysToClose")}
           value={data.avgDaysToClose == null ? "—" : data.avgDaysToClose.toFixed(1)}
           icon={Timer}
         />
         <KpiTile
-          label="Cost impact (open)"
+          label={t("adminMod.changes.register.costImpactOpen")}
           value={formatMoney(data.openCostImpact, "USD")}
           icon={CircleDollarSign}
           status={data.openCostImpact > 0 ? "warning" : "neutral"}
         />
         <KpiTile
-          label="Schedule days at risk"
+          label={t("adminMod.changes.register.scheduleDaysAtRisk")}
           value={data.openScheduleDays}
           icon={CalendarClock}
           status={data.openScheduleDays > 0 ? "warning" : "neutral"}
@@ -126,9 +128,9 @@ function MocDashboardPage() {
       </KpiGrid>
 
       <Card className="space-y-3 p-4">
-        <h2 className="text-sm font-medium text-foreground">Open changes by type</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.openChangesByType")}</h2>
         {chartData.length === 0 ? (
-          <EmptyState title="No open change requests" compact />
+          <EmptyState title={t("adminMod.changes.register.noOpen")} compact />
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -159,17 +161,17 @@ function MocDashboardPage() {
       </Card>
 
       <Card className="space-y-3 overflow-x-auto p-4">
-        <h2 className="text-sm font-medium text-foreground">Aging of open changes</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.agingOfOpenChanges")}</h2>
         {data.aging.length === 0 ? (
-          <EmptyState title="Nothing aging" compact />
+          <EmptyState title={t("adminMod.changes.register.nothingAging")} compact />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
+                <TableHead>{t("adminMod.changes.register.typeCol")}</TableHead>
                 {AGE_BUCKETS.map((b) => (
                   <TableHead key={b} className="text-center">
-                    {b} days
+                    {b} {t("adminMod.changes.register.daysUnit")}
                   </TableHead>
                 ))}
               </TableRow>
@@ -197,20 +199,20 @@ function MocDashboardPage() {
       </Card>
 
       <Card className="space-y-3 overflow-x-auto p-4">
-        <h2 className="text-sm font-medium text-foreground">Cost and schedule by project</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("adminMod.changes.register.costScheduleByProject")}</h2>
         {data.byProject.length === 0 ? (
-          <EmptyState title="No change requests yet" compact />
+          <EmptyState title={t("adminMod.changes.register.noneYet")} compact />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead className="text-right">Open</TableHead>
-                <TableHead className="text-right">Open cost</TableHead>
-                <TableHead className="text-right">Open days</TableHead>
-                <TableHead className="text-right">Closed</TableHead>
-                <TableHead className="text-right">Closed cost</TableHead>
-                <TableHead className="text-right">Closed days</TableHead>
+                <TableHead>{t("adminMod.changes.register.projectCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.openCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.openCostCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.openDaysCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.closedCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.closedCostCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.closedDaysCol")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getEaStudy } from "@/lib/ea-studies.functions";
 import { isCalculatorStudyType, type CalculatorStudyType } from "@/lib/electrical";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/studies/$studyId",
@@ -33,6 +34,7 @@ export const Route = createFileRoute(
 });
 
 function StudyDetailPage() {
+  const { t } = useI18n();
   const { projectId, studyId } = Route.useParams();
   const getStudyFn = useServerFn(getEaStudy);
   const query = useQuery({
@@ -53,8 +55,8 @@ function StudyDetailPage() {
   if (!studyType || !isCalculatorStudyType(studyType)) {
     return (
       <EmptyState
-        title="This study has no wired calculator"
-        description="Protection schedules and grid-code checklists are edited in their own worksheets."
+        title={t("engMod.ea.studies.noWiredCalculator.title")}
+        description={t("engMod.ea.studies.noWiredCalculator.description")}
       />
     );
   }

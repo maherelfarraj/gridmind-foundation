@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   Select,
   SelectContent,
@@ -32,15 +33,16 @@ export function ProjectSelect({
   onChange: (id: string) => void;
   loading?: boolean;
 }) {
+  const { t } = useI18n();
   if (loading) return <Skeleton className="h-9 w-full sm:w-64" />;
   return (
     <div className="w-full space-y-1 sm:w-64">
       <Label htmlFor="controls-project" className="text-xs text-muted-foreground">
-        Project
+        {t("adminMod.construction.shell.project")}
       </Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger id="controls-project">
-          <SelectValue placeholder="Select a project" />
+          <SelectValue placeholder={t("adminMod.construction.shell.selectProject")} />
         </SelectTrigger>
         <SelectContent>
           {projects.map((p) => (
@@ -81,6 +83,7 @@ export function PanelState({
   skeletonRows?: number;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   if (isLoading) {
     return (
       <div className="space-y-2" aria-busy="true">
@@ -94,11 +97,11 @@ export function PanelState({
     return (
       <EmptyState
         icon={AlertTriangle}
-        title="Couldn't load this panel"
-        description="The request failed. Check your connection and try again."
+        title={t("adminMod.construction.shell.panelErrorTitle")}
+        description={t("adminMod.construction.shell.panelErrorDesc")}
         action={
           <Button size="sm" variant="outline" onClick={onRetry}>
-            Retry
+            {t("adminMod.construction.shell.retry")}
           </Button>
         }
       />
@@ -108,7 +111,7 @@ export function PanelState({
     return (
       <EmptyState
         icon={emptyIcon}
-        title={emptyTitle ?? "Nothing here yet"}
+        title={emptyTitle ?? t("adminMod.construction.shell.nothingHere")}
         description={emptyDescription}
         action={emptyAction}
       />

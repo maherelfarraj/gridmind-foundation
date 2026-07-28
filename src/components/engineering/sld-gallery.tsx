@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { listSldDrawings } from "@/lib/sld.functions";
 import { sldDrawingsQueryOptions, useCreateSldDrawing } from "@/lib/sld-query";
 
@@ -35,13 +36,14 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
 };
 
 export function SldGallery({ projectId, canWrite }: { projectId: string; canWrite: boolean }) {
+  const { t } = useI18n();
   const listFn = useServerFn(listSldDrawings);
   const { data: rows } = useSuspenseQuery(sldDrawingsQueryOptions(listFn, projectId));
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Single-line diagrams</h2>
+        <h2 className="text-lg font-semibold">{t("engMod.sld.gallery.title")}</h2>
         {canWrite && <NewSldDialog projectId={projectId} />}
       </div>
 
@@ -50,8 +52,8 @@ export function SldGallery({ projectId, canWrite }: { projectId: string; canWrit
           <CardContent className="py-12">
             <EmptyState
               icon={FileText}
-              title="No single-line diagrams yet"
-              description="Upload your first SLD to get started."
+              title={t("engMod.sld.gallery.empty.title")}
+              description={t("engMod.sld.gallery.empty.description")}
               action={canWrite ? <NewSldDialog projectId={projectId} /> : undefined}
             />
           </CardContent>
@@ -86,11 +88,10 @@ export function SldGallery({ projectId, canWrite }: { projectId: string; canWrit
                     >
                       {row.current_status}
                     </Badge>
-                    {row.revision_code && <Badge variant="outline">Rev {row.revision_code}</Badge>}
+                    {row.revision_code && <Badge variant="outline">{t("engMod.sld.gallery.revision", { code: row.revision_code })}</Badge>}
                     {row.markup_count > 0 && (
                       <Badge variant="secondary">
-                        {row.markup_count} markup
-                        {row.markup_count === 1 ? "" : "s"}
+                        {t("engMod.sld.gallery.markup", { count: row.markup_count })}
                       </Badge>
                     )}
                   </div>
@@ -112,6 +113,7 @@ const dialogSchema = z.object({
 type DialogValues = z.infer<typeof dialogSchema>;
 
 function NewSldDialog({ projectId }: { projectId: string }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const create = useCreateSldDrawing(projectId);
   const form = useForm<DialogValues>({
@@ -133,20 +135,19 @@ function NewSldDialog({ projectId }: { projectId: string }) {
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-1 h-4 w-4" />
-          New SLD
+          {t("engMod.sld.gallery.newSld.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New single-line diagram</DialogTitle>
+          <DialogTitle>{t("engMod.sld.gallery.newSld.title")}</DialogTitle>
           <DialogDescription>
-            The drawing number is auto-prefixed with <code className="font-mono">SLD-</code> so it
-            appears in this gallery.
+            {t("engMod.sld.gallery.newSld.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="drawingNumber">Drawing number</Label>
+            <Label htmlFor="drawingNumber">{t("engMod.sld.gallery.newSld.numberLabel")}</Label>
             <Input
               id="drawingNumber"
               placeholder="e.g. 001 or SLD-001"
@@ -159,7 +160,7 @@ function NewSldDialog({ projectId }: { projectId: string }) {
             )}
           </div>
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t("engMod.sld.gallery.newSld.titleLabel")}</Label>
             <Input
               id="title"
               placeholder="Overall single-line diagram"
@@ -171,10 +172,10 @@ function NewSldDialog({ projectId }: { projectId: string }) {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {t("engMod.common.cancel")}
             </Button>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Creating…" : "Create SLD"}
+              {create.isPending ? t("engMod.common.creating") : t("engMod.sld.gallery.newSld.createButton")}
             </Button>
           </DialogFooter>
         </form>

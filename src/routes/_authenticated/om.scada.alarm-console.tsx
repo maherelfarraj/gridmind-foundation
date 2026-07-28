@@ -65,6 +65,7 @@ import {
   validateRcaTransition,
   type RcaStatus,
 } from "@/lib/scada/alarm-workflow";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/om/scada/alarm-console")({
   head: () => ({
@@ -107,6 +108,7 @@ function severityBadge(s: string) {
 }
 
 function AlarmConsolePage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [status, setStatus] = useState<AlarmStatus | "all">("active");
   const [severity, setSeverity] = useState<AlarmSeverity | "all">("all");
@@ -135,22 +137,22 @@ function AlarmConsolePage() {
   const ackMut = useMutation({
     mutationFn: (vars: { id: string; note: string }) => ackFn({ data: vars }),
     onSuccess: () => {
-      toast.success("Alarm acknowledged");
+      toast.success(t("omMod.alarmConsole.acknowledgedToast"));
       setAckTarget(null);
       setAckNote("");
       invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Failed to acknowledge"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.alarmConsole.acknowledgeFailed")),
   });
 
   const assignFn = useServerFn(assignAlarmOwner);
   const assignMut = useMutation({
     mutationFn: (vars: { id: string; assigned_to: string | null }) => assignFn({ data: vars }),
     onSuccess: () => {
-      toast.success("Assignment saved");
+      toast.success(t("omMod.alarmConsole.assignmentSaved"));
       invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Failed to assign"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.alarmConsole.assignFailed")),
   });
 
   const rows = query.data?.rows ?? [];
@@ -164,13 +166,13 @@ function AlarmConsolePage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Alarm console"
-        description="Acknowledge, assign and root-cause plant alarms — refreshes every 30 seconds."
+        title={t("omMod.alarmConsole.title")}
+        description={t("omMod.alarmConsole.description")}
       />
 
       <KpiGrid columns={3}>
         <KpiTile
-          label="Unacknowledged critical"
+          label={t("omMod.alarmConsole.unacknowledgedCritical")}
           value={
             query.isLoading ? (
               "—"
@@ -184,19 +186,19 @@ function AlarmConsolePage() {
           status={(kpis?.unacknowledgedCritical ?? 0) > 0 ? "bad" : "good"}
         />
         <KpiTile
-          label="Mean time to acknowledge"
-          value={kpis?.mttaMinutes != null ? `${kpis.mttaMinutes} min` : "—"}
+          label={t("omMod.alarmConsole.mtta")}
+          value={kpis?.mttaMinutes != null ? t("omMod.alarmConsole.mttaMinutes", { count: kpis.mttaMinutes }) : "—"}
           icon={Timer}
-          hint={kpis?.mttaMinutes == null ? "No acknowledged alarms in range" : undefined}
+          hint={kpis?.mttaMinutes == null ? t("omMod.alarmConsole.mttaHint") : undefined}
         />
         <Card className="p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Alarms by severity
+            {t("omMod.alarmConsole.alarmsBySeverity")}
           </p>
           <div className="h-32">
             {donutData.length === 0 ? (
               <div className="flex h-full items-center text-sm text-muted-foreground">
-                No alarms in range
+                {t("omMod.alarmConsole.noAlarmsInRange")}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -223,14 +225,14 @@ function AlarmConsolePage() {
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
-          <CardTitle className="text-sm font-medium">Alarms</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("omMod.alarmConsole.alarmsTitle")}</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allStatuses")}</SelectItem>
                 {ALARM_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -243,7 +245,7 @@ function AlarmConsolePage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All severities</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allSeverities")}</SelectItem>
                 {ALARM_SEVERITIES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -253,10 +255,10 @@ function AlarmConsolePage() {
             </Select>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder="All projects" />
+                <SelectValue placeholder={t("omMod.common.allProjects")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All projects</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allProjects")}</SelectItem>
                 {(query.data?.projects ?? []).map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -276,28 +278,28 @@ function AlarmConsolePage() {
           ) : query.isError ? (
             <EmptyState
               icon={AlertTriangle}
-              title="Couldn't load the alarm console"
+              title={t("omMod.alarmConsole.loadFailed")}
               action={
                 <Button variant="outline" onClick={() => query.refetch()}>
-                  Retry
+                  {t("omMod.common.retry")}
                 </Button>
               }
             />
           ) : rows.length === 0 ? (
-            <EmptyState icon={CheckCircle2} title="No alarms match these filters" />
+            <EmptyState icon={CheckCircle2} title={t("omMod.alarmConsole.noAlarmsMatch")} />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Raised</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Asset</TableHead>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Root cause</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colRaised")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colSeverity")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colStatus")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colProject")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colAsset")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colMessage")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colOwner")}</TableHead>
+                  <TableHead>{t("omMod.alarmConsole.colRootCause")}</TableHead>
+                  <TableHead className="text-right">{t("omMod.alarmConsole.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -323,10 +325,10 @@ function AlarmConsolePage() {
                         }
                       >
                         <SelectTrigger className="h-8 w-44">
-                          <SelectValue placeholder="Unassigned" />
+                          <SelectValue placeholder={t("omMod.common.unassigned")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">Unassigned</SelectItem>
+                          <SelectItem value="none">{t("omMod.common.unassigned")}</SelectItem>
                           {members.map((m) => (
                             <SelectItem key={m.id} value={m.id}>
                               {m.full_name ?? m.email ?? m.id.slice(0, 8)}
@@ -347,11 +349,11 @@ function AlarmConsolePage() {
                             setAckNote("");
                           }}
                         >
-                          Acknowledge
+                          {t("omMod.alarmConsole.acknowledge")}
                         </Button>
                       ) : null}
                       <Button size="sm" variant="outline" onClick={() => setRcaTarget(row)}>
-                        Root cause
+                        {t("omMod.alarmConsole.rootCauseAction")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -366,23 +368,23 @@ function AlarmConsolePage() {
       <Dialog open={!!ackTarget} onOpenChange={(o) => !o && setAckTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Acknowledge alarm</DialogTitle>
+            <DialogTitle>{t("omMod.alarmConsole.acknowledgeDialogTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="ack-note">Acknowledgement note</Label>
+            <Label htmlFor="ack-note">{t("omMod.alarmConsole.acknowledgementNote")}</Label>
             <Textarea
               id="ack-note"
               value={ackNote}
               onChange={(e) => setAckNote(e.target.value)}
-              placeholder="What did you observe, and what is the immediate action?"
+              placeholder={t("omMod.alarmConsole.notePlaceholder")}
             />
             {ackNote.trim().length === 0 ? (
-              <p className="text-xs text-destructive">A note is required.</p>
+              <p className="text-xs text-destructive">{t("omMod.alarmConsole.noteRequired")}</p>
             ) : null}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAckTarget(null)}>
-              Cancel
+              {t("omMod.common.cancel")}
             </Button>
             <Button
               disabled={ackNote.trim().length === 0 || ackMut.isPending}
@@ -390,7 +392,7 @@ function AlarmConsolePage() {
                 ackTarget && ackMut.mutate({ id: ackTarget.id, note: ackNote.trim() })
               }
             >
-              Acknowledge
+              {t("omMod.alarmConsole.acknowledge")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -417,6 +419,7 @@ function RcaDrawer({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const rcaFn = useServerFn(updateAlarmRootCause);
   const [next, setNext] = useState<RcaStatus>("open");
   const [rootCause, setRootCause] = useState("");
@@ -438,10 +441,10 @@ function RcaDrawer({
       rca_notes: string | null;
     }) => rcaFn({ data: vars }),
     onSuccess: () => {
-      toast.success("Root-cause status updated");
+      toast.success(t("omMod.alarmConsole.rcaUpdated"));
       onSaved();
     },
-    onError: (e: Error) => toast.error(e.message || "Update rejected"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.alarmConsole.updateRejected")),
   });
 
   const check = row
@@ -457,12 +460,12 @@ function RcaDrawer({
     <Sheet open={!!row} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full space-y-5 overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Root-cause investigation</SheetTitle>
+          <SheetTitle>{t("omMod.alarmConsole.rcaTitle")}</SheetTitle>
           <SheetDescription>{row?.message}</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-2">
-          <Label>Stage</Label>
+          <Label>{t("omMod.alarmConsole.stage")}</Label>
           <Select value={next} onValueChange={(v) => setNext(v as RcaStatus)}>
             <SelectTrigger>
               <SelectValue />
@@ -476,28 +479,27 @@ function RcaDrawer({
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            Current stage: {row ? RCA_STATUS_LABELS[row.rca_status] : "—"} · owner{" "}
-            {row?.assignee_name ?? "unassigned"}
+            {t("omMod.alarmConsole.currentStage", { stage: row ? RCA_STATUS_LABELS[row.rca_status] : "—", owner: row?.assignee_name ?? t("omMod.alarmConsole.ownerUnassigned") })}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="root-cause">Root cause</Label>
+          <Label htmlFor="root-cause">{t("omMod.alarmConsole.rootCauseLabel")}</Label>
           <Textarea
             id="root-cause"
             value={rootCause}
             onChange={(e) => setRootCause(e.target.value)}
-            placeholder="Confirmed technical cause"
+            placeholder={t("omMod.alarmConsole.rootCausePlaceholder")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="rca-notes">Investigation notes</Label>
+          <Label htmlFor="rca-notes">{t("omMod.alarmConsole.investigationNotes")}</Label>
           <Textarea
             id="rca-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Evidence, tests performed, corrective actions"
+            placeholder={t("omMod.alarmConsole.investigationNotesPlaceholder")}
           />
         </div>
 
@@ -505,7 +507,7 @@ function RcaDrawer({
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("omMod.common.cancel")}
           </Button>
           <Button
             disabled={!check.ok || mut.isPending || !row}
@@ -519,7 +521,7 @@ function RcaDrawer({
               })
             }
           >
-            <UserRound className="mr-1 h-4 w-4" /> Save
+            <UserRound className="mr-1 h-4 w-4" /> {t("omMod.common.save")}
           </Button>
         </div>
       </SheetContent>

@@ -14,6 +14,12 @@ import portalAr from "./portal.ar.json";
 import portalEn from "./portal.en.json";
 import fieldAr from "./field.ar.json";
 import fieldEn from "./field.en.json";
+import omAr from "./om.ar.json";
+import omEn from "./om.en.json";
+import engAr from "./eng.ar.json";
+import engEn from "./eng.en.json";
+import adminOpsAr from "./adminops.ar.json";
+import adminOpsEn from "./adminops.en.json";
 
 export type Locale = "en" | "ar";
 
@@ -21,12 +27,35 @@ export const LOCALES: Locale[] = ["en", "ar"];
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_STORAGE_KEY = "gridmind-locale";
 
-// P-241 — module catalogs live in their own files so parallel module passes
-// never collide; they merge under the `financeMod` / `procurementMod` roots.
+// P-241/P-243 — module catalogs live in their own files so parallel module
+// passes never collide; they merge under the `<name>Mod` roots.
 export const resources = {
-  en: { translation: { ...en, financeMod: financeEn, procurementMod: procurementEn, fieldMod: fieldEn, portalMod: portalEn } },
-  ar: { translation: { ...ar, financeMod: financeAr, procurementMod: procurementAr, fieldMod: fieldAr, portalMod: portalAr } },
+  en: {
+    translation: {
+      ...en,
+      financeMod: financeEn,
+      procurementMod: procurementEn,
+      fieldMod: fieldEn,
+      portalMod: portalEn,
+      omMod: omEn,
+      engMod: engEn,
+      adminMod: adminOpsEn,
+    },
+  },
+  ar: {
+    translation: {
+      ...ar,
+      financeMod: financeAr,
+      procurementMod: procurementAr,
+      fieldMod: fieldAr,
+      portalMod: portalAr,
+      omMod: omAr,
+      engMod: engAr,
+      adminMod: adminOpsAr,
+    },
+  },
 } as const;
+
 
 
 export function isLocale(value: unknown): value is Locale {

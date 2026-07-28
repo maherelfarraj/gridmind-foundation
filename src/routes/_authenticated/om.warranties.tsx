@@ -42,6 +42,7 @@ import {
   WARRANTY_TYPES,
   type WarrantyType,
 } from "@/lib/warranties.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/om/warranties")({
   head: () => ({
@@ -55,45 +56,47 @@ export const Route = createFileRoute("/_authenticated/om/warranties")({
     ],
   }),
   component: WarrantiesPage,
-  errorComponent: ({ error, reset }) => (
-    <div className="page-shell">
-      <EmptyState
-        icon={ShieldAlert}
-        title="Failed to load warranties"
-        description={error.message}
-        action={
-          <Button size="sm" onClick={reset}>
-            Retry
-          </Button>
-        }
-      />
-    </div>
-  ),
+  errorComponent: ({ error, reset }) => {
+    const { t } = useI18n();
+    return (
+      <div className="page-shell">
+        <EmptyState
+          icon={ShieldAlert}
+          title={t("omMod.warranties.loadFailed")}
+          description={error.message}
+          action={
+            <Button size="sm" onClick={reset}>
+              {t("omMod.common.retry")}
+            </Button>
+          }
+        />
+      </div>
+    );
+  },
 });
 
 function CoverageBadge({ dateISO }: { dateISO: string }) {
+  const { t } = useI18n();
   const days = daysRemaining(dateISO);
   const badge = warrantyStatusBadge(days);
   if (badge === "expired") {
-    return <Badge className="bg-muted text-muted-foreground">Expired {Math.abs(days)}d</Badge>;
+    return (
+      <Badge className="bg-muted text-muted-foreground">
+        {t("omMod.warranties.expiredDays", { days: Math.abs(days) })}
+      </Badge>
+    );
   }
   if (badge === "expiring") {
-    return <Badge className="bg-warning text-warning-foreground">In {days}d</Badge>;
+    return (
+      <Badge className="bg-warning text-warning-foreground">{t("omMod.warranties.inDays", { days })}</Badge>
+    );
   }
-  return <Badge className="bg-success text-success-foreground">Active · {days}d</Badge>;
+  return (
+    <Badge className="bg-success text-success-foreground">{t("omMod.warranties.activeDays", { days })}</Badge>
+  );
 }
 
-function toCsv(rows: WarrantyRow[]): string {
-  const header = [
-    "Equipment",
-    "Vendor",
-    "Project",
-    "Type",
-    "Start",
-    "End",
-    "Days remaining",
-    "Claims",
-  ];
+function toCsv(rows: WarrantyRow[], header: string[]): string {
   const lines = [header.join(",")];
   for (const r of rows) {
     const cells = [
@@ -112,6 +115,7 @@ function toCsv(rows: WarrantyRow[]): string {
 }
 
 function WarrantiesPage() {
+  const { t } = useI18n();
   const listFn = useServerFn(listWarranties);
   const kpisFn = useServerFn(getWarrantyKpis);
   const projectsFn = useServerFn(listWarrantyProjects);
@@ -149,7 +153,16 @@ function WarrantiesPage() {
   const rows = (listQ.data ?? []) as WarrantyRow[];
 
   const exportCsv = () => {
-    const csv = toCsv(rows);
+    const csv = toCsv(rows, [
+      t("omMod.warranties.colEquipment"),
+      t("omMod.warranties.colVendor"),
+      t("omMod.warranties.csvProject"),
+      t("omMod.warranties.colType"),
+      t("omMod.warranties.csvStart"),
+      t("omMod.warranties.csvEnd"),
+      t("omMod.warranties.csvDaysRemaining"),
+      t("omMod.warranties.colClaims"),
+    ]);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -162,12 +175,12 @@ function WarrantiesPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Warranties"
-        description="Manufacturer, EPC, extended, and performance warranties across your O&amp;M fleet."
+        title={t("omMod.warranties.title")}
+        description={t("omMod.warranties.description")}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
-              <Download className="mr-2 h-4 w-4" /> Export CSV
+              <Download className="mr-2 h-4 w-4" /> {t("omMod.common.exportCsv")}
             </Button>
             <WarrantyDialog />
           </div>
@@ -176,27 +189,27 @@ function WarrantiesPage() {
 
       <KpiGrid>
         <KpiTile
-          label="Active coverage"
+          label={t("omMod.warranties.activeCoverage")}
           value={kpisQ.data?.activeCoveragePct == null ? "—" : `${kpisQ.data.activeCoveragePct}%`}
           hint={
             kpisQ.data
-              ? `${kpisQ.data.coveredEquipment}/${kpisQ.data.activeEquipment} active equipment covered`
+              ? t("omMod.warranties.activeCoverageHint", { covered: kpisQ.data.coveredEquipment, active: kpisQ.data.activeEquipment })
               : undefined
           }
           isLoading={kpisQ.isLoading}
         />
         <KpiTile
-          label="Contracts"
+          label={t("omMod.warranties.contracts")}
           value={kpisQ.data?.contracts ?? "—"}
           isLoading={kpisQ.isLoading}
         />
         <KpiTile
-          label="Expiring <90d"
+          label={t("omMod.warranties.expiringSoon")}
           value={kpisQ.data?.expiringSoon ?? "—"}
           isLoading={kpisQ.isLoading}
         />
         <KpiTile
-          label="Open claims"
+          label={t("omMod.warranties.openClaims")}
           value={kpisQ.data?.openClaims ?? "—"}
           isLoading={kpisQ.isLoading}
         />
@@ -204,7 +217,7 @@ function WarrantiesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Registry</CardTitle>
+          <CardTitle className="text-lg">{t("omMod.warranties.registryTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -212,17 +225,17 @@ function WarrantiesPage() {
               <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="w-64 pl-8"
-                placeholder="Search equipment, vendor, project…"
+                placeholder={t("omMod.warranties.searchPlaceholder")}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
             </div>
             <Select value={projectId} onValueChange={setProjectId}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder="All projects" />
+                <SelectValue placeholder={t("omMod.common.allProjects")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All projects</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allProjects")}</SelectItem>
                 {(projects.data ?? []).map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -232,13 +245,13 @@ function WarrantiesPage() {
             </Select>
             <Select value={warrantyType} onValueChange={setWarrantyType}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="All types" />
+                <SelectValue placeholder={t("omMod.common.allTypes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {WARRANTY_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t.replace("_", " ")}
+                <SelectItem value="all">{t("omMod.common.allTypes")}</SelectItem>
+                {WARRANTY_TYPES.map((wt) => (
+                  <SelectItem key={wt} value={wt}>
+                    {t(`omMod.warrantyType.${wt}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -248,7 +261,7 @@ function WarrantiesPage() {
               size="sm"
               onClick={() => setExpiringOnly((v) => !v)}
             >
-              Expiring &lt;90d
+              {t("omMod.warranties.expiringOnly")}
             </Button>
           </div>
 
@@ -261,20 +274,20 @@ function WarrantiesPage() {
           ) : rows.length === 0 ? (
             <EmptyState
               icon={Inbox}
-              title="No warranties"
-              description="Register your first warranty to start tracking coverage."
+              title={t("omMod.warranties.noWarrantiesTitle")}
+              description={t("omMod.warranties.noWarrantiesDescription")}
               action={<WarrantyDialog />}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Equipment</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Start – End</TableHead>
-                  <TableHead>Coverage</TableHead>
-                  <TableHead>Claims</TableHead>
+                  <TableHead>{t("omMod.warranties.colEquipment")}</TableHead>
+                  <TableHead>{t("omMod.warranties.colVendor")}</TableHead>
+                  <TableHead>{t("omMod.warranties.colType")}</TableHead>
+                  <TableHead>{t("omMod.warranties.colStartEnd")}</TableHead>
+                  <TableHead>{t("omMod.warranties.colCoverage")}</TableHead>
+                  <TableHead>{t("omMod.warranties.colClaims")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -283,16 +296,16 @@ function WarrantiesPage() {
                     <TableCell>
                       <div className="font-medium">
                         {r.equipment_tag ?? (
-                          <span className="text-muted-foreground">Project-wide</span>
+                          <span className="text-muted-foreground">{t("omMod.common.projectWide")}</span>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">{r.project_name}</div>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {r.vendor_name ?? <span className="text-muted-foreground">—</span>}
+                      {r.vendor_name ?? <span className="text-muted-foreground">{t("omMod.common.none")}</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{r.warranty_type.replace("_", " ")}</Badge>
+                      <Badge variant="outline">{t(`omMod.warrantyType.${r.warranty_type}`)}</Badge>
                     </TableCell>
                     <TableCell className="text-xs">
                       {r.start_date} → {r.end_date}

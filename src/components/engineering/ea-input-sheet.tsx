@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { emptyRow, type EaField } from "@/lib/ea/form-spec";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 type FormValues = Record<string, unknown>;
 type Form = UseFormReturn<FormValues>;
@@ -106,6 +107,7 @@ function ScalarField({
 }
 
 function GridField({ field, form, disabled }: { field: EaField; form: Form; disabled: boolean }) {
+  const { t } = useI18n();
   const columns = field.columns ?? [];
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -123,13 +125,13 @@ function GridField({ field, form, disabled }: { field: EaField; form: Form; disa
           disabled={disabled}
           onClick={() => append(emptyRow(columns) as never)}
         >
-          <Plus className="mr-1 size-3.5" aria-hidden /> Add row
+          <Plus className="mr-1 size-3.5" aria-hidden /> {t("engMod.calculators.addRow")}
         </Button>
       </div>
 
       {fields.length === 0 ? (
         <p className="py-3 text-center text-sm text-muted-foreground">
-          No rows yet — add at least one.
+          {t("engMod.calculators.noRowsYet")}
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -164,7 +166,7 @@ function GridField({ field, form, disabled }: { field: EaField; form: Form; disa
                       size="icon"
                       variant="ghost"
                       disabled={disabled}
-                      aria-label={`Remove row ${index + 1}`}
+                      aria-label={t("engMod.calculators.removeRow", { index: index + 1 })}
                       onClick={() => remove(index)}
                     >
                       <Trash2 className="size-4" aria-hidden />
@@ -181,6 +183,7 @@ function GridField({ field, form, disabled }: { field: EaField; form: Form; disa
 }
 
 function ListField({ field, form, disabled }: { field: EaField; form: Form; disabled: boolean }) {
+  const { t } = useI18n();
   const raw = form.watch(field.name);
   const items = Array.isArray(raw) ? (raw as unknown[]) : [];
   const setItems = (next: unknown[]) => form.setValue(field.name, next, { shouldDirty: true });
@@ -198,12 +201,12 @@ function ListField({ field, form, disabled }: { field: EaField; form: Form; disa
           disabled={disabled}
           onClick={() => setItems([...items, field.itemKind === "number" ? 0 : ""])}
         >
-          <Plus className="mr-1 size-3.5" aria-hidden /> Add
+          <Plus className="mr-1 size-3.5" aria-hidden /> {t("engMod.calculators.add")}
         </Button>
       </div>
       <div className="flex flex-wrap gap-2">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No entries yet.</p>
+          <p className="text-sm text-muted-foreground">{t("engMod.calculators.noEntriesYet")}</p>
         ) : (
           items.map((item, index) => (
             <div key={`${field.name}-${index}`} className="flex items-center gap-1">
@@ -225,7 +228,7 @@ function ListField({ field, form, disabled }: { field: EaField; form: Form; disa
                 size="icon"
                 variant="ghost"
                 disabled={disabled}
-                aria-label={`Remove entry ${index + 1}`}
+                aria-label={t("engMod.calculators.removeEntry", { index: index + 1 })}
                 onClick={() => setItems(items.filter((_, i) => i !== index))}
               >
                 <Trash2 className="size-4" aria-hidden />

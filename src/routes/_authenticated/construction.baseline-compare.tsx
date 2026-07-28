@@ -31,6 +31,7 @@ import {
   listProjectBaselines,
 } from "@/lib/controls.functions";
 import { SLIPPAGE_THRESHOLD_DAYS } from "@/lib/controls.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/construction/baseline-compare")({
   head: () => ({
@@ -64,6 +65,7 @@ function VarianceChip({ days }: { days: number | null }) {
 }
 
 function BaselineComparePage() {
+  const { t } = useI18n();
   const [projectId, setProjectId] = useState("");
   const [baselineId, setBaselineId] = useState("");
 
@@ -97,8 +99,10 @@ function BaselineComparePage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <PageHeader
-        title="Baseline compare"
-        description={`Current schedule versus a locked baseline. Slippage over ${SLIPPAGE_THRESHOLD_DAYS} days is flagged.`}
+        title={t("adminMod.construction.baselineCompare.title")}
+        description={t("adminMod.construction.baselineCompare.description", {
+          days: SLIPPAGE_THRESHOLD_DAYS,
+        })}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -110,11 +114,11 @@ function BaselineComparePage() {
         />
         <div className="w-full space-y-1 sm:w-72">
           <Label htmlFor="baseline" className="text-xs text-muted-foreground">
-            Locked baseline
+            {t("adminMod.construction.baselineCompare.lockedBaseline")}
           </Label>
           <Select value={activeBaseline} onValueChange={setBaselineId}>
             <SelectTrigger id="baseline">
-              <SelectValue placeholder="Select a locked baseline" />
+              <SelectValue placeholder={t("adminMod.construction.baselineCompare.selectLockedBaseline")} />
             </SelectTrigger>
             <SelectContent>
               {lockedBaselines.map((b) => (
@@ -128,9 +132,9 @@ function BaselineComparePage() {
       </div>
 
       <KpiGrid>
-        <KpiTile label="Tasks compared" value={String(rows.length)} />
-        <KpiTile label="Slipping tasks" value={String(slipping)} />
-        <KpiTile label="Worst finish variance" value={worst == null ? "—" : `${worst} d`} />
+        <KpiTile label={t("adminMod.construction.baselineCompare.tasksCompared")} value={String(rows.length)} />
+        <KpiTile label={t("adminMod.construction.baselineCompare.slippingTasks")} value={String(slipping)} />
+        <KpiTile label={t("adminMod.construction.baselineCompare.worstFinishVariance")} value={worst == null ? "—" : `${worst} d`} />
       </KpiGrid>
 
       <PanelState
@@ -139,19 +143,19 @@ function BaselineComparePage() {
         onRetry={() => void compare.refetch()}
         isEmpty={!compare.isLoading && rows.length === 0}
         emptyIcon={GitCompare}
-        emptyTitle="Nothing to compare"
-        emptyDescription="Lock a schedule baseline on the project Gantt, then return here."
+        emptyTitle={t("adminMod.construction.baselineCompare.nothingToCompare")}
+        emptyDescription={t("adminMod.construction.baselineCompare.nothingToCompareDesc")}
       >
         <div className="overflow-x-auto rounded-md border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead>Baseline</TableHead>
-                <TableHead>Current</TableHead>
-                <TableHead>Start var</TableHead>
-                <TableHead>Finish var</TableHead>
-                <TableHead>Progress Δ</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.taskCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.baselineCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.currentCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.startVarCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.finishVarCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.baselineCompare.progressDeltaCol")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

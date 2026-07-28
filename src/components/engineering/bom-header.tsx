@@ -12,17 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { BomSnapshotDetail, BomSnapshotRow } from "@/lib/bom.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 const STATUS_VARIANT: Record<BomSnapshotRow["status"], "default" | "secondary" | "outline"> = {
   draft: "outline",
   released: "default",
   superseded: "secondary",
-};
-
-const STATUS_LABEL: Record<BomSnapshotRow["status"], string> = {
-  draft: "Draft",
-  released: "Released",
-  superseded: "Superseded",
 };
 
 export function BomHeader({
@@ -50,6 +45,12 @@ export function BomHeader({
   onRelease: () => void;
   onExport: () => void;
 }) {
+  const { t } = useI18n();
+  const STATUS_LABEL: Record<BomSnapshotRow["status"], string> = {
+    draft: t("engMod.calculators.bomHeader.statusLabels.draft"),
+    released: t("engMod.calculators.bomHeader.statusLabels.released"),
+    superseded: t("engMod.calculators.bomHeader.statusLabels.superseded"),
+  };
   const snap = detail?.snapshot;
   const totals = (snap?.totals ?? {}) as any;
   const params = (snap?.params ?? {}) as any;
@@ -59,12 +60,12 @@ export function BomHeader({
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <CardTitle className="text-base">Bill of materials</CardTitle>
+          <CardTitle className="text-base">{t("engMod.calculators.bomHeader.title")}</CardTitle>
           {snap && <Badge variant={STATUS_VARIANT[snap.status]}>{STATUS_LABEL[snap.status]}</Badge>}
           {snapshots.length > 0 && (
             <Select value={selectedId} onValueChange={onSelect}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Version" />
+                <SelectValue placeholder={t("engMod.calculators.bomHeader.metrics.version")} />
               </SelectTrigger>
               <SelectContent>
                 {snapshots.map((s) => (
@@ -83,7 +84,7 @@ export function BomHeader({
             onClick={onExport}
             disabled={!detail || detail.lines.length === 0}
           >
-            <Download className="mr-1 h-4 w-4" /> Export CSV
+            <Download className="mr-1 h-4 w-4" /> {t("engMod.calculators.bomHeader.exportCsv")}
           </Button>
           <Button
             variant="outline"
@@ -92,7 +93,11 @@ export function BomHeader({
             disabled={!canWrite || generating}
           >
             <Play className="mr-1 h-4 w-4" />
-            {generating ? "Generating…" : snapshots.length === 0 ? "Generate" : "Regenerate"}
+            {generating
+              ? t("engMod.calculators.bomHeader.generating")
+              : snapshots.length === 0
+                ? t("engMod.calculators.bomHeader.generate")
+                : t("engMod.calculators.bomHeader.regenerate")}
           </Button>
           <Button
             size="sm"
@@ -100,27 +105,27 @@ export function BomHeader({
             disabled={!canRelease || !snap || isReleased || releasing}
           >
             <Rocket className="mr-1 h-4 w-4" />
-            {releasing ? "Releasing…" : "Release"}
+            {releasing ? t("engMod.calculators.bomHeader.releasing") : t("engMod.calculators.bomHeader.release")}
           </Button>
         </div>
       </CardHeader>
       {snap && (
         <CardContent className="grid gap-4 md:grid-cols-4">
-          <Metric label="Version" value={`v${snap.version}`} />
+          <Metric label={t("engMod.calculators.bomHeader.metrics.version")} value={`v${snap.version}`} />
           <Metric
-            label="Capacity (MWp DC)"
+            label={t("engMod.calculators.bomHeader.metrics.capacity")}
             value={params.capacity_mwp_dc != null ? Number(params.capacity_mwp_dc).toFixed(1) : "—"}
           />
           <Metric
-            label="Line count"
+            label={t("engMod.calculators.bomHeader.metrics.lineCount")}
             value={totals.line_count != null ? String(totals.line_count) : "—"}
           />
           <Metric
-            label="Estimated total"
+            label={t("engMod.calculators.bomHeader.metrics.estimatedTotal")}
             value={
               typeof totals.total_cost === "number" && totals.total_cost > 0
                 ? currency(totals.total_cost)
-                : "Add unit costs"
+                : t("engMod.calculators.bomHeader.addUnitCosts")
             }
           />
         </CardContent>

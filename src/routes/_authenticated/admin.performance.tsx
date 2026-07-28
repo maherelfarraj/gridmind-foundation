@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   Table,
   TableBody,
@@ -80,6 +81,7 @@ function toKpiStatus(status: CapacityStatus): "neutral" | "good" | "warning" | "
 }
 
 function PerformancePage() {
+  const { t } = useI18n();
   const fetchPerf = useServerFn(getPerformanceSignals);
   const query = useQuery({
     queryKey: ["admin-performance"],
@@ -91,7 +93,7 @@ function PerformancePage() {
   return (
     <div className="page-shell max-w-6xl">
       <PageHeader
-        title="Performance & Capacity"
+        title={t("adminMod.admin.performance")}
         description="Slow queries, connection/WAL capacity, and table growth — read-only Postgres introspection."
         actions={
           <div className="flex items-center gap-3">

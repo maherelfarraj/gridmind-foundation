@@ -39,6 +39,7 @@ import {
 import { TimesheetApprovalCard } from "@/components/timesheets/approval-summary-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/approvals")({
   head: () => ({
@@ -98,6 +99,7 @@ function entityLink(row: InboxRow): string | null {
 
 // POL-3 — approvals inbox is card-based at every width (one-hand usable at 390px).
 function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => void }) {
+  const { t } = useI18n();
   const amount = formatAmount(row);
   return (
     <button
@@ -109,7 +111,7 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="mutedOutline">{statusLabel(row.entity_type)}</Badge>
           {row.escalated_at && (
-            <StatusBadge status="escalated" label="Escalated" icon={AlertTriangle} />
+            <StatusBadge status="escalated" label={t("adminMod.approvals.escalated")} icon={AlertTriangle} />
           )}
           <span className="min-w-0 truncate font-medium text-foreground">{row.title}</span>
           {amount && <span className="text-sm text-muted-foreground tabular-nums">· {amount}</span>}
@@ -134,6 +136,7 @@ function ApprovalRow({ row, onOpen }: { row: InboxRow; onOpen: (id: string) => v
 }
 
 function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void }) {
+  const { t } = useI18n();
   const listFn = useServerFn(listMyApprovals);
   const query = useQuery({
     queryKey: ["approvals", "list", tab],
@@ -153,9 +156,9 @@ function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void 
   if (query.error) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-        Failed to load approvals.{" "}
+        {t("adminMod.approvals.loadError")}{" "}
         <Button size="sm" variant="ghost" onClick={() => query.refetch()}>
-          Retry
+          {t("adminMod.approvals.retry")}
         </Button>
       </div>
     );
@@ -167,10 +170,10 @@ function ApprovalList({ tab, onOpen }: { tab: Tab; onOpen: (id: string) => void 
         icon={InboxIcon}
         title={
           tab === "pending"
-            ? "You're all caught up"
+            ? t("adminMod.approvals.empty.pending")
             : tab === "decided"
-              ? "You haven't decided any approvals yet"
-              : "No approvals in the queue"
+              ? t("adminMod.approvals.empty.decided")
+              : t("adminMod.approvals.empty.all")
         }
       />
     );
@@ -197,6 +200,7 @@ function DecideDialog({
   onOpenChange: (v: boolean) => void;
   onDone: () => void;
 }) {
+  const { t } = useI18n();
   const [comment, setComment] = useState("");
   const decideFn = useServerFn(decideApproval);
   const qc = useQueryClient();
@@ -210,7 +214,7 @@ function DecideDialog({
         },
       }),
     onSuccess: () => {
-      toast.success("Approval recorded");
+      toast.success(t("adminMod.approvals.decisionRecorded"));
       qc.invalidateQueries({ queryKey: ["approvals"] });
       qc.invalidateQueries({ queryKey: ["timesheets"] });
       setComment("");
@@ -218,7 +222,7 @@ function DecideDialog({
       onDone();
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Failed to record decision";
+      const msg = err instanceof Error ? err.message : t("adminMod.approvals.decisionFailed");
       toast.error(msg);
     },
   });
@@ -230,29 +234,37 @@ function DecideDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{decision === "approved" ? "Approve" : "Reject"} approval</DialogTitle>
+          <DialogTitle>
+            {decision === "approved"
+              ? t("adminMod.approvals.approveApproval")
+              : t("adminMod.approvals.rejectApproval")}
+          </DialogTitle>
           <DialogDescription>
             {decision === "rejected"
-              ? "A comment is required when rejecting."
-              : "Add an optional note."}
+              ? t("adminMod.approvals.rejectReasonRequired")
+              : t("adminMod.approvals.optionalNote")}
           </DialogDescription>
         </DialogHeader>
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder={decision === "rejected" ? "Reason for rejection…" : "Optional comment…"}
+          placeholder={
+            decision === "rejected"
+              ? t("adminMod.approvals.rejectPlaceholder")
+              : t("adminMod.approvals.optionalCommentPlaceholder")
+          }
           rows={4}
         />
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
-            Cancel
+            {t("adminMod.approvals.cancel")}
           </Button>
           <Button
             variant={decision === "rejected" ? "destructive" : "default"}
             onClick={() => mutation.mutate()}
             disabled={disabled}
           >
-            {decision === "approved" ? "Approve" : "Reject"}
+            {decision === "approved" ? t("adminMod.approvals.approve") : t("adminMod.approvals.reject")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -267,6 +279,7 @@ function ApprovalDetailDrawer({
   instanceId: string | null;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const getFn = useServerFn(getApprovalInstance);
   const query = useQuery({
     queryKey: ["approvals", "detail", instanceId],
@@ -357,7 +370,7 @@ function ApprovalDetailDrawer({
 
             <div>
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Approval chain
+                {t("adminMod.approvals.approvalChain")}
               </h3>
               <ol className="space-y-3">
                 {detail.steps.map((step) => {
@@ -420,7 +433,7 @@ function ApprovalDetailDrawer({
                   }}
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Approve
+                  {t("adminMod.approvals.approve")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -431,7 +444,7 @@ function ApprovalDetailDrawer({
                   }}
                 >
                   <XCircle className="mr-2 h-4 w-4" />
-                  Reject
+                  {t("adminMod.approvals.reject")}
                 </Button>
               </div>
             )}
@@ -440,7 +453,7 @@ function ApprovalDetailDrawer({
 
             <div>
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Audit trail
+                {t("adminMod.approvals.auditTrail")}
               </h3>
               <ul className="space-y-2 text-xs">
                 {detail.audit.length === 0 && (
@@ -480,21 +493,22 @@ function ApprovalDetailDrawer({
 }
 
 function ApprovalsPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("pending");
   const [openInstance, setOpenInstance] = useState<string | null>(null);
 
   return (
     <div className="page-shell max-w-5xl">
       <PageHeader
-        title="Approvals"
-        description="Your queue of pending decisions, SLA-timed and fully audited."
+        title={t("adminMod.approvals.title")}
+        description={t("adminMod.approvals.description")}
       />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
         <TabsList>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="decided">Decided by me</TabsTrigger>
-          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="pending">{t("adminMod.approvals.tabs.pending")}</TabsTrigger>
+          <TabsTrigger value="decided">{t("adminMod.approvals.tabs.decided")}</TabsTrigger>
+          <TabsTrigger value="all">{t("adminMod.approvals.tabs.all")}</TabsTrigger>
         </TabsList>
         <TabsContent value="pending" className="mt-4">
           <ApprovalList tab="pending" onOpen={setOpenInstance} />

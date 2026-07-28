@@ -40,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/admin/feedback")({
   head: () => ({
@@ -88,6 +89,7 @@ const EMPTY_FORM: FormState = {
 };
 
 function FeedbackPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
@@ -135,7 +137,7 @@ function FeedbackPage() {
   return (
     <div className="page-shell max-w-6xl space-y-6">
       <PageHeader
-        title="Ops feedback"
+        title={t("adminMod.admin.feedback")}
         description="Bug bash / UAT feedback capture and triage."
       />
 

@@ -71,6 +71,7 @@ import {
   updateEaStudy,
 } from "@/lib/ea-studies.functions";
 import { exportEaStudyReport } from "@/lib/ea-report.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 type Assumption = { text: string; source: string };
 
@@ -97,6 +98,7 @@ export function EaStudyWorkspace({
   studyType: CalculatorStudyType;
   studyId?: string;
 }) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const spec = EA_STUDY_SPECS[studyType];
@@ -166,7 +168,7 @@ export function EaStudyWorkspace({
     const parsed = calculator.inputSchema.safeParse(raw);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
-      toast.error(`Check the input sheet: ${issue?.path.join(".") || "input"} — ${issue?.message}`);
+      toast.error(t("engMod.ea.workspace.toasts.checkInputSheet", { field: issue?.path.join(".") || "input", message: issue?.message }));
       return null;
     }
     try {
@@ -179,10 +181,10 @@ export function EaStudyWorkspace({
           source: a.source,
         })),
       );
-      toast.success("Calculation complete");
+      toast.success(t("engMod.ea.workspace.toasts.calculationComplete"));
       return { inputSheet: raw };
     } catch (err) {
-      toast.error(errorMessage(err, "Calculation failed"));
+      toast.error(errorMessage(err, t("engMod.ea.workspace.toasts.calculationFailed")));
       return null;
     }
   }
@@ -191,7 +193,7 @@ export function EaStudyWorkspace({
     mutationFn: async () => {
       const raw = coerceValues(fields, form.getValues());
       const parsed = calculator.inputSchema.safeParse(raw);
-      if (!parsed.success) throw new Error("The input sheet is incomplete — fix the fields first.");
+      if (!parsed.success) throw new Error(t("engMod.ea.workspace.toasts.incompleteInputSheet"));
       const saved = await saveFn({
         data: {
           studyId: studyId ?? null,
@@ -208,7 +210,7 @@ export function EaStudyWorkspace({
       return saved;
     },
     onSuccess: (saved) => {
-      toast.success("Draft saved");
+      toast.success(t("engMod.ea.workspace.toasts.draftSaved"));
       void queryClient.invalidateQueries({ queryKey: ["ea-studies", projectId] });
       if (!studyId && saved.study?.id) {
         void navigate({
@@ -219,17 +221,17 @@ export function EaStudyWorkspace({
       }
       void queryClient.invalidateQueries({ queryKey: ["ea-study", studyId] });
     },
-    onError: (err) => toast.error(errorMessage(err, "Could not save the study")),
+    onError: (err) => toast.error(errorMessage(err, t("engMod.ea.workspace.toasts.couldNotSave"))),
   });
 
   const submitMutation = useMutation({
     mutationFn: () => submitFn({ data: { studyId: studyId as string } }),
     onSuccess: () => {
-      toast.success("Submitted for engineering review");
+      toast.success(t("engMod.ea.workspace.toasts.submittedForReview"));
       void queryClient.invalidateQueries({ queryKey: ["ea-study", studyId] });
       void queryClient.invalidateQueries({ queryKey: ["ea-studies", projectId] });
     },
-    onError: (err) => toast.error(errorMessage(err, "Could not submit the study")),
+    onError: (err) => toast.error(errorMessage(err, t("engMod.ea.workspace.toasts.couldNotSubmit"))),
   });
 
   const reviseMutation = useMutation({
@@ -238,20 +240,20 @@ export function EaStudyWorkspace({
     onSuccess: () => {
       setReviseOpen(false);
       setChangeSummary("");
-      toast.success("New revision opened as draft");
+      toast.success(t("engMod.ea.workspace.toasts.revisionOpened"));
       void queryClient.invalidateQueries({ queryKey: ["ea-study", studyId] });
     },
-    onError: (err) => toast.error(errorMessage(err, "Could not open a revision")),
+    onError: (err) => toast.error(errorMessage(err, t("engMod.ea.workspace.toasts.couldNotOpenRevision"))),
   });
 
   const exportMutation = useMutation({
     mutationFn: () => exportFn({ data: { studyId: studyId as string } }),
     onSuccess: (res) => {
-      toast.success(`Report stored as ${res.fileName}`);
+      toast.success(t("engMod.ea.workspace.toasts.reportStored", { fileName: res.fileName }));
       if (res.signedUrl) window.open(res.signedUrl, "_blank", "noopener,noreferrer");
     },
     onError: (err) =>
-      toast.error(errorMessage(err, "Could not export the report — the project may be locked")),
+      toast.error(errorMessage(err, t("engMod.ea.workspace.toasts.couldNotExport"))),
   });
 
   if (studyId && studyQuery.isLoading) {
@@ -268,11 +270,11 @@ export function EaStudyWorkspace({
     return (
       <EmptyState
         icon={AlertTriangle}
-        title="This study could not be loaded"
-        description={errorMessage(studyQuery.error, "Unexpected error")}
+        title={t("engMod.ea.workspace.loadError.title")}
+        description={errorMessage(studyQuery.error, t("engMod.ea.workspace.loadError.fallback"))}
         action={
           <Button variant="outline" onClick={() => void studyQuery.refetch()}>
-            Retry
+            {t("engMod.common.retry")}
           </Button>
         }
       />
@@ -294,11 +296,11 @@ export function EaStudyWorkspace({
           <div className="flex flex-wrap items-center gap-2">
             {study ? <StatusBadge status={study.status} /> : null}
             {study ? (
-              <StatusBadge status="info" tone="neutral" label={`Rev ${study.revision}`} />
+              <StatusBadge status="info" tone="neutral" label={t("engMod.ea.workspace.rev", { revision: study.revision })} />
             ) : null}
             {study ? (
               <Button variant="outline" size="sm" onClick={() => setRevisionsOpen(true)}>
-                <History className="mr-1 size-4" aria-hidden /> Revisions
+                <History className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.revisions")}
               </Button>
             ) : null}
             {study ? (
@@ -308,12 +310,12 @@ export function EaStudyWorkspace({
                 disabled={exportMutation.isPending}
                 onClick={() => exportMutation.mutate()}
               >
-                <Download className="mr-1 size-4" aria-hidden /> Export report
+                <Download className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.exportReport")}
               </Button>
             ) : null}
             {study?.status === "approved" ? (
               <Button size="sm" onClick={() => setReviseOpen(true)}>
-                <FilePlus2 className="mr-1 size-4" aria-hidden /> New revision
+                <FilePlus2 className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.newRevision")}
               </Button>
             ) : null}
           </div>
@@ -327,12 +329,11 @@ export function EaStudyWorkspace({
           <CardContent className="flex flex-wrap items-center gap-3 py-3 text-sm">
             <StatusBadge status={approval.status} />
             <span className="text-muted-foreground">
-              Step {approval.current_step} of {approval.steps.length || 2} · engineer review →
-              engineering admin approval
+              {t("engMod.ea.workspace.stepOf", { current: approval.current_step, total: approval.steps.length || 2 })}
             </span>
             {approval.sla_due_at ? (
               <span className="text-muted-foreground">
-                SLA due {new Date(approval.sla_due_at).toLocaleString()}
+                {t("engMod.ea.workspace.slaDue", { date: new Date(approval.sla_due_at).toLocaleString() })}
               </span>
             ) : null}
           </CardContent>
@@ -341,10 +342,10 @@ export function EaStudyWorkspace({
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle className="text-base">Input sheet</CardTitle>
+          <CardTitle className="text-base">{t("engMod.ea.workspace.inputSheet")}</CardTitle>
           <div className="flex items-center gap-2">
             <Label htmlFor="ea-title" className="text-xs text-muted-foreground">
-              Title
+              {t("engMod.ea.workspace.titleLabel")}
             </Label>
             <Input
               id="ea-title"
@@ -360,7 +361,7 @@ export function EaStudyWorkspace({
           <EaInputSheet fields={fields} form={form} disabled={readOnly} />
           <div className="flex flex-wrap gap-2 border-t border-border pt-3">
             <Button type="button" onClick={() => runCalculation()}>
-              <Calculator className="mr-1 size-4" aria-hidden /> Calculate
+              <Calculator className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.calculate")}
             </Button>
             <Button
               type="button"
@@ -368,7 +369,7 @@ export function EaStudyWorkspace({
               disabled={readOnly || saveMutation.isPending}
               onClick={() => saveMutation.mutate()}
             >
-              <Save className="mr-1 size-4" aria-hidden /> Save draft
+              <Save className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.saveDraft")}
             </Button>
             {study && study.status === "draft" ? (
               <Button
@@ -377,14 +378,14 @@ export function EaStudyWorkspace({
                 disabled={submitMutation.isPending}
                 onClick={() => submitMutation.mutate()}
               >
-                <Send className="mr-1 size-4" aria-hidden /> Submit for engineering review
+                <Send className="mr-1 size-4" aria-hidden /> {t("engMod.ea.workspace.submitForReview")}
               </Button>
             ) : null}
             {readOnly ? (
               <span className="self-center text-xs text-muted-foreground">
                 {study?.status === "approved"
-                  ? "Approved — start a new revision to edit."
-                  : "Under review — recall it before editing."}
+                  ? t("engMod.ea.workspace.approvedNotice")
+                  : t("engMod.ea.workspace.underReviewNotice")}
               </span>
             ) : null}
           </div>
@@ -394,15 +395,15 @@ export function EaStudyWorkspace({
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Results</CardTitle>
+            <CardTitle className="text-base">{t("engMod.ea.workspace.results")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {!results ? (
               <EmptyState
                 icon={Calculator}
                 compact
-                title="No results yet"
-                description="Fill in the input sheet and press Calculate."
+                title={t("engMod.ea.workspace.noResults.title")}
+                description={t("engMod.ea.workspace.noResults.description")}
               />
             ) : (
               <>
@@ -448,11 +449,11 @@ export function EaStudyWorkspace({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Warnings</CardTitle>
+            <CardTitle className="text-base">{t("engMod.ea.workspace.warnings")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {sortedWarnings.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No warnings raised by this run.</p>
+              <p className="text-sm text-muted-foreground">{t("engMod.ea.workspace.noWarnings")}</p>
             ) : (
               sortedWarnings.map((w) => (
                 <div
@@ -470,12 +471,12 @@ export function EaStudyWorkspace({
 
       <Accordion type="single" collapsible className="rounded-md border border-border bg-card px-4">
         <AccordionItem value="method" className="border-0">
-          <AccordionTrigger className="text-sm font-medium">Method &amp; formulas</AccordionTrigger>
+          <AccordionTrigger className="text-sm font-medium">{t("engMod.ea.workspace.methodFormulas")}</AccordionTrigger>
           <AccordionContent className="space-y-4">
             <p className="whitespace-pre-line text-sm text-muted-foreground">{calculator.method}</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground">Assumptions</h4>
+                <h4 className="text-sm font-medium text-foreground">{t("engMod.ea.workspace.assumptions")}</h4>
                 <Button
                   type="button"
                   size="sm"
@@ -483,12 +484,12 @@ export function EaStudyWorkspace({
                   disabled={readOnly}
                   onClick={() => setAssumptions([...assumptions, { text: "", source: "" }])}
                 >
-                  <Plus className="mr-1 size-3.5" aria-hidden /> Add
+                  <Plus className="mr-1 size-3.5" aria-hidden /> {t("engMod.ea.workspace.add")}
                 </Button>
               </div>
               {assumptions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No assumptions recorded — calculate to echo the engine defaults.
+                  {t("engMod.ea.workspace.noAssumptions")}
                 </p>
               ) : (
                 assumptions.map((a, index) => (
@@ -497,7 +498,7 @@ export function EaStudyWorkspace({
                       className="h-9 flex-1"
                       value={a.text}
                       disabled={readOnly}
-                      aria-label={`Assumption ${index + 1}`}
+                      aria-label={t("engMod.ea.workspace.assumptionAria", { index: index + 1 })}
                       onChange={(e) => {
                         const next = [...assumptions];
                         next[index] = { ...a, text: e.target.value };
@@ -508,8 +509,8 @@ export function EaStudyWorkspace({
                       className="h-9 w-56"
                       value={a.source}
                       disabled={readOnly}
-                      placeholder="Source"
-                      aria-label={`Assumption ${index + 1} source`}
+                      placeholder={t("engMod.ea.workspace.sourcePlaceholder")}
+                      aria-label={t("engMod.ea.workspace.assumptionSourceAria", { index: index + 1 })}
                       onChange={(e) => {
                         const next = [...assumptions];
                         next[index] = { ...a, source: e.target.value };
@@ -521,7 +522,7 @@ export function EaStudyWorkspace({
                       size="icon"
                       variant="ghost"
                       disabled={readOnly}
-                      aria-label={`Remove assumption ${index + 1}`}
+                      aria-label={t("engMod.ea.workspace.removeAssumptionAria", { index: index + 1 })}
                       onClick={() => setAssumptions(assumptions.filter((_, i) => i !== index))}
                     >
                       <Trash2 className="size-4" aria-hidden />
@@ -531,7 +532,7 @@ export function EaStudyWorkspace({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Standards referenced: {(study?.standards_ref ?? spec.defaultStandards).join(", ")}
+              {t("engMod.ea.workspace.standardsReferenced", { standards: (study?.standards_ref ?? spec.defaultStandards).join(", ") })}
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -542,31 +543,31 @@ export function EaStudyWorkspace({
       <Sheet open={revisionsOpen} onOpenChange={setRevisionsOpen}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>Revision history</SheetTitle>
+            <SheetTitle>{t("engMod.ea.workspace.revisionHistory")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
             {revisions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No snapshots recorded yet.</p>
+              <p className="text-sm text-muted-foreground">{t("engMod.ea.workspace.noSnapshots")}</p>
             ) : (
               revisions.map((rev) => (
                 <div key={rev.id} className="space-y-2 rounded-md border border-border bg-card p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Rev {rev.revision}</span>
+                    <span className="text-sm font-medium text-foreground">{t("engMod.ea.workspace.rev", { revision: rev.revision })}</span>
                     <StatusBadge status={rev.status} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {rev.change_summary ?? "No change summary"} ·{" "}
+                    {rev.change_summary ?? t("engMod.ea.workspace.noChangeSummary")} ·{" "}
                     {new Date(rev.created_at).toLocaleString()}
                   </p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs font-medium text-foreground">Inputs</p>
+                      <p className="text-xs font-medium text-foreground">{t("engMod.ea.workspace.inputs")}</p>
                       <p className="break-words text-xs text-muted-foreground">
                         {summarise(rev.input_sheet)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-foreground">Results</p>
+                      <p className="text-xs font-medium text-foreground">{t("engMod.ea.workspace.results")}</p>
                       <p className="break-words text-xs text-muted-foreground">
                         {summarise(rev.results)}
                       </p>
@@ -582,13 +583,13 @@ export function EaStudyWorkspace({
       <Dialog open={reviseOpen} onOpenChange={setReviseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Open a new revision</DialogTitle>
+            <DialogTitle>{t("engMod.ea.workspace.openRevisionTitle")}</DialogTitle>
             <DialogDescription>
-              The approved payload is snapshotted first; the study reopens as a draft.
+              {t("engMod.ea.workspace.openRevisionDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="ea-change-summary">Change summary (required)</Label>
+            <Label htmlFor="ea-change-summary">{t("engMod.ea.workspace.changeSummaryLabel")}</Label>
             <Textarea
               id="ea-change-summary"
               value={changeSummary}
@@ -598,13 +599,13 @@ export function EaStudyWorkspace({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setReviseOpen(false)}>
-              Cancel
+              {t("engMod.ea.workspace.cancel")}
             </Button>
             <Button
               disabled={changeSummary.trim().length === 0 || reviseMutation.isPending}
               onClick={() => reviseMutation.mutate()}
             >
-              Create revision
+              {t("engMod.ea.workspace.createRevision")}
             </Button>
           </DialogFooter>
         </DialogContent>

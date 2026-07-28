@@ -31,6 +31,7 @@ import {
 } from "@/lib/controls.functions";
 import { CWP_STATUSES, type CwpStatus } from "@/lib/cwp.rules";
 import { typedErrorMessage } from "@/lib/typed-error";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 
 export const Route = createFileRoute("/_authenticated/construction/cwp")({
@@ -54,16 +55,16 @@ export const Route = createFileRoute("/_authenticated/construction/cwp")({
   component: CwpBoardPage,
 });
 
-const STATUS_LABEL: Record<CwpStatus, string> = {
-  draft: "Draft",
-  planned: "Planned",
-  in_progress: "In progress",
-  on_hold: "On hold",
-  complete: "Complete",
-  cancelled: "Cancelled",
-};
-
 function CwpBoardPage() {
+  const { t } = useI18n();
+  const STATUS_LABEL: Record<CwpStatus, string> = {
+    draft: t("adminMod.construction.cwp.status.draft"),
+    planned: t("adminMod.construction.cwp.status.planned"),
+    in_progress: t("adminMod.construction.cwp.status.in_progress"),
+    on_hold: t("adminMod.construction.cwp.status.on_hold"),
+    complete: t("adminMod.construction.cwp.status.complete"),
+    cancelled: t("adminMod.construction.cwp.status.cancelled"),
+  };
   const qc = useQueryClient();
   const [projectId, setProjectId] = useState("");
   const [discipline, setDiscipline] = useState("all");
@@ -100,10 +101,11 @@ function CwpBoardPage() {
     },
     onError: (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(boardKey, ctx.prev);
-      toast.error(typedErrorMessage(e, "Status change failed — reverted"));
+      toast.error(typedErrorMessage(e, t("adminMod.construction.cwp.statusChangeFailed")));
     },
 
-    onSuccess: (_d, v) => toast.success(`Moved to ${STATUS_LABEL[v.status]}`),
+    onSuccess: (_d, v) =>
+      toast.success(t("adminMod.construction.cwp.movedTo", { status: STATUS_LABEL[v.status] })),
     onSettled: () => void qc.invalidateQueries({ queryKey: boardKey }),
   });
 
@@ -132,8 +134,8 @@ function CwpBoardPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <PageHeader
-        title="Construction work packages"
-        description="Sequence delivery by status, discipline and area. Drag a card to change status."
+        title={t("adminMod.construction.cwp.title")}
+        description={t("adminMod.construction.cwp.description")}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -145,14 +147,14 @@ function CwpBoardPage() {
         />
         <div className="w-full space-y-1 sm:w-48">
           <Label htmlFor="cwp-discipline" className="text-xs text-muted-foreground">
-            Discipline
+            {t("adminMod.construction.cwp.discipline")}
           </Label>
           <Select value={discipline} onValueChange={setDiscipline}>
             <SelectTrigger id="cwp-discipline">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All disciplines</SelectItem>
+              <SelectItem value="all">{t("adminMod.construction.cwp.allDisciplines")}</SelectItem>
               {disciplines.map((d) => (
                 <SelectItem key={d} value={d}>
                   {d}
@@ -163,14 +165,14 @@ function CwpBoardPage() {
         </div>
         <div className="w-full space-y-1 sm:w-48">
           <Label htmlFor="cwp-area" className="text-xs text-muted-foreground">
-            Area
+            {t("adminMod.construction.cwp.area")}
           </Label>
           <Select value={area} onValueChange={setArea}>
             <SelectTrigger id="cwp-area">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All areas</SelectItem>
+              <SelectItem value="all">{t("adminMod.construction.cwp.allAreas")}</SelectItem>
               {areas.map((a) => (
                 <SelectItem key={a} value={a}>
                   {a}
@@ -187,8 +189,8 @@ function CwpBoardPage() {
         onRetry={() => void board.refetch()}
         isEmpty={Boolean(activeProject) && filtered.length === 0}
         emptyIcon={HardHat}
-        emptyTitle="No work packages"
-        emptyDescription="Create construction work packages to start planning delivery for this project."
+        emptyTitle={t("adminMod.construction.cwp.noWorkPackages")}
+        emptyDescription={t("adminMod.construction.cwp.noWorkPackagesDesc")}
         skeletonRows={5}
       >
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -248,7 +250,7 @@ function CwpBoardPage() {
                   </button>
                 ))}
                 {cards.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Drop packages here</p>
+                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.dropHere")}</p>
                 ) : null}
               </section>
             );
@@ -259,7 +261,7 @@ function CwpBoardPage() {
       <Sheet open={Boolean(openId)} onOpenChange={(o) => !o && setOpenId(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>{detail.data?.cwp?.cwp_number ?? "Work package"}</SheetTitle>
+            <SheetTitle>{detail.data?.cwp?.cwp_number ?? t("adminMod.construction.cwp.workPackage")}</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 p-4">
             <PanelState
@@ -268,22 +270,22 @@ function CwpBoardPage() {
               onRetry={() => void detail.refetch()}
               isEmpty={!detail.isLoading && !detail.data?.cwp}
               emptyIcon={KanbanSquare}
-              emptyTitle="Work package not found"
+              emptyTitle={t("adminMod.construction.cwp.workPackageNotFound")}
               skeletonRows={3}
             >
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">{detail.data?.cwp?.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  {detail.data?.cwp?.description || "No description."}
+                  {detail.data?.cwp?.description || t("adminMod.construction.cwp.noDescription")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">Weight</p>
+                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.weight")}</p>
                   <p className="text-foreground">{Number(detail.data?.cwp?.weight ?? 0)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Progress</p>
+                  <p className="text-xs text-muted-foreground">{t("adminMod.construction.cwp.progress")}</p>
                   <p className="text-foreground">
                     {Number(detail.data?.cwp?.progress_pct ?? 0).toFixed(1)}%
                   </p>
@@ -292,11 +294,11 @@ function CwpBoardPage() {
               <Separator />
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Linked schedule tasks</CardTitle>
+                  <CardTitle className="text-sm">{t("adminMod.construction.cwp.linkedTasks")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {(detail.data?.tasks ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No tasks linked.</p>
+                    <p className="text-sm text-muted-foreground">{t("adminMod.construction.cwp.noTasksLinked")}</p>
                   ) : (
                     (detail.data?.tasks ?? []).map((t) => (
                       <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
@@ -312,11 +314,11 @@ function CwpBoardPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Progress history</CardTitle>
+                  <CardTitle className="text-sm">{t("adminMod.construction.cwp.progressHistory")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {(detail.data?.history ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No recorded changes yet.</p>
+                    <p className="text-sm text-muted-foreground">{t("adminMod.construction.cwp.noHistory")}</p>
                   ) : (
                     (detail.data?.history ?? []).map((h) => (
                       <div key={h.id} className="text-xs">
