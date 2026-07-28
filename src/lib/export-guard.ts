@@ -27,6 +27,7 @@ export type ExportType =
   | "esg_report"
   | "timesheet_report"
   | "timesheet_payroll"
+  | "portfolio_report"
   | "csv";
 
 export interface ExportLockedError extends Error {
