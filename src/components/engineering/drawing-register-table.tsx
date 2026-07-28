@@ -54,7 +54,9 @@ import {
 } from "@/lib/drawings-query";
 
 /** Display-only labels; the stored enum values are never translated. */
-function disciplineLabels(t: (key: string) => string): Record<DrawingDiscipline, string> {
+type TFn = (key: string) => string;
+
+function disciplineLabels(t: TFn): Record<DrawingDiscipline, string> {
   return {
     civil: t("engMod.drawings.disciplineLabels.civil"),
     structural: t("engMod.drawings.disciplineLabels.structural"),
