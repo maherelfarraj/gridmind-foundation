@@ -103,10 +103,13 @@ export function amountVariancePct(amount_variance: number, poTotal: number): num
 export function deriveMatchStatus(args: {
   variances: VarianceResult;
   poTotal: number;
+  /** Denominator for the amount variance %; defaults to `poTotal`. */
+  expectedAmount?: number | null;
   thresholdPct: number;
 }): Exclude<MatchStatus, "pending" | "approved_with_variance"> {
   const t = Math.abs(Number(args.thresholdPct || 0));
-  const amtPct = amountVariancePct(args.variances.amount_variance, args.poTotal);
+  const basis = args.expectedAmount == null ? args.poTotal : Number(args.expectedAmount);
+  const amtPct = amountVariancePct(args.variances.amount_variance, basis);
   const qty = args.variances.qty_variance_pct;
   const price = args.variances.price_variance_pct;
   const outOfTolerance =
