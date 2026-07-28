@@ -198,7 +198,15 @@ async function computeForDate(
       monthRange(snapshotDate.slice(0, 7)),
     )) ?? 0;
 
-  const actualCost = actual + accrual + laborCost;
+  // P-261 — certified subcontractor claims are project actuals too.
+  const { loadCertifiedSubcontractActuals } = await import("@/lib/subcontract-actuals.server");
+  const subCost = await loadCertifiedSubcontractActuals(
+    context.supabase as never,
+    projectId,
+    snapshotDate,
+  );
+
+  const actualCost = actual + accrual + laborCost + subCost;
 
   const computation = computeEvm({
     bac,
