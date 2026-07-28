@@ -519,5 +519,44 @@
     "openDocument": "Open",
     "failed": "Search failed",
     "searching": "Searching…"
+  },
+  "docHistory": {
+    "subtitle": "Revision history and supersedure chain",
+    "tabs": {
+      "overview": "Overview",
+      "history": "History"
+    },
+    "overviewTitle": "Document",
+    "field": {
+      "docType": "Type",
+      "discipline": "Discipline",
+      "revision": "Revision",
+      "status": "Status",
+      "retention": "Retention class",
+      "changeSummary": "Change summary"
+    },
+    "revision": "Rev {{rev}}",
+    "openFile": "Open file",
+    "openRevision": "Open revision",
+    "openFailed": "Could not open the document",
+    "noFile": "No file is attached to this revision",
+    "noHistory": "No revision history",
+    "noHistoryHint": "This document has a single revision.",
+    "chainCount_one": "{{count}} revision in this chain",
+    "chainCount_other": "{{count}} revisions in this chain",
+    "supersededBy": "Superseded by",
+    "viewSuccessor": "the next revision",
+    "viewingHistorical": "You are viewing a historical revision.",
+    "jumpToCurrent": "Jump to current (Rev {{rev}})",
+    "compare": "Compare revisions",
+    "compareTitle": "Revision comparison",
+    "compareFrom": "From revision",
+    "compareTo": "To revision",
+    "diffField": "Field",
+    "diffBefore": "Before",
+    "diffAfter": "After",
+    "noChanges": "No metadata differences between these revisions.",
+    "visualCompare": "Both revisions are rendered files — open them side by side to compare visually.",
+    "metadataCompare": "Metadata-only comparison: this document type has no rendered preview."
   }
 }
