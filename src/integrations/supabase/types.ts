@@ -19849,6 +19849,10 @@ export type Database = {
         Args: { p_company_id: string; p_project_id: string }
         Returns: string
       }
+      fixture_purge_tenants: {
+        Args: { p_company_ids: string[] }
+        Returns: number
+      }
       generate_implementation_tasks: {
         Args: { p_change_request_id: string }
         Returns: number

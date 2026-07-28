@@ -8,6 +8,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+import { deleteFixtureUsers, purgeFixtureTenants } from "../../helpers/fixture-teardown";
+
 const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
   process.env.SUPABASE_PUBLISHABLE_KEY ??
@@ -270,55 +272,10 @@ export async function setupFixtures(): Promise<Fixtures> {
   };
 
   const cleanup = async () => {
-    // Best-effort teardown; audit rows stay per project convention.
-    for (const cid of [depsA.companyId, depsB.companyId, orphanCo.id]) {
-      // Delete tables that reference company_id in dependency-safe order.
-      const tables: readonly string[] = [
-        "scada_telemetry",
-        "work_orders",
-        "equipment_registry",
-        "scada_assets",
-        "commissioning_tests",
-        "performance_tests",
-        "qaqc_inspections",
-        "hse_incidents",
-        "construction_daily_reports",
-        "change_orders",
-        "invoices",
-        "budgets",
-        "cost_codes",
-        "purchase_orders",
-        "rfqs",
-        "vendors",
-        "proposals",
-        "opportunities",
-        "leads",
-        "project_phase_gates",
-        "project_members",
-        "portal_tickets",
-        "investor_share_links",
-        "portal_memberships",
-        "projects",
-        "invites",
-        "user_roles",
-        "profiles",
-      ];
-      for (const t of tables) {
-        // Cast: table union is generated; unknown members are ignored by TS.
-        await svc
-          .from(t as never)
-          .delete()
-          .eq("company_id", cid);
-      }
-      await svc.from("companies").delete().eq("id", cid);
-    }
-    for (const uid of [rawA.userId, rawB.userId, rawViewer.userId]) {
-      try {
-        await svc.auth.admin.deleteUser(uid);
-      } catch {
-        /* ignore */
-      }
-    }
+    // P-250: audited purge path — a plain companies.delete() silently no-ops
+    // whenever any child FK survives, which is how fixture tenants regrew.
+    await purgeFixtureTenants(svc, [depsA.companyId, depsB.companyId, orphanCo.id]);
+    await deleteFixtureUsers(svc, [rawA.userId, rawB.userId, rawViewer.userId]);
   };
 
   return { svc, A, B, viewer, cleanup };

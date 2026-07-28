@@ -16,6 +16,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isDevServerUp } from "../helpers/dev-server";
 import { envReady, login, service } from "./helpers/rpc";
 import { runValidation, type ConnEdge, type ConnObject } from "@/lib/sld/connectivity";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 const canRun = (await isDevServerUp()) && envReady();
 
@@ -85,7 +86,7 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
 
   afterAll(async () => {
     if (!canRun) return;
-    if (state.companyId) await svc.from("companies").delete().eq("id", state.companyId);
+    await purgeFixtureTenants(svc, [state.companyId]);
     if (state.userId) await svc.auth.admin.deleteUser(state.userId).catch(() => undefined);
   }, 60_000);
 

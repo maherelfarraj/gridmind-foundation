@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { isDevServerUp } from "../helpers/dev-server";
 import { envReady, login, service } from "./helpers/rpc";
 import { buildProposalPdf } from "@/lib/exports/proposal-pdf";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 const canRun = (await isDevServerUp()) && envReady();
 
@@ -140,7 +141,7 @@ describe.skipIf(!canRun)("P-133 e2e smoke: golden path", () => {
         .delete()
         .eq("company_id", state.companyId);
     }
-    await svc.from("companies").delete().eq("id", state.companyId);
+    await purgeFixtureTenants(svc, [state.companyId]);
     if (state.userId) {
       try {
         await svc.auth.admin.deleteUser(state.userId);

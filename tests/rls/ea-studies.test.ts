@@ -15,6 +15,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/integrations/supabase/types";
 import { isSupabaseUp, serviceClient } from "./helpers/rls";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 const URL_ = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -168,9 +169,7 @@ describe.skipIf(!up)("P-170 electrical analysis — cross-tenant RLS", () => {
 
   afterAll(async () => {
     if (!up) return;
-    for (const id of [state.a?.companyId, state.b?.companyId]) {
-      if (id) await svc.from("companies").delete().eq("id", id);
-    }
+    await purgeFixtureTenants(svc, [state.a?.companyId, state.b?.companyId]);
     for (const actor of [state.engA, state.engB, state.clientViewerA, state.lenderViewerA]) {
       if (actor) await svc.auth.admin.deleteUser(actor.userId).catch(() => undefined);
     }

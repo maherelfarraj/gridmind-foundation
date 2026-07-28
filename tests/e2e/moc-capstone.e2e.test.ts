@@ -14,6 +14,7 @@ import { envReady, login, service } from "./helpers/rpc";
 import { emitThreadEvent } from "@/lib/digital-thread/engine.server";
 import { isUnderChangeControl } from "@/lib/moc.change-control";
 import { taskProgress } from "@/lib/moc.exec.rules";
+import { purgeFixtureTenants } from "../helpers/fixture-teardown";
 
 const canRun = (await isDevServerUp()) && envReady();
 
@@ -144,7 +145,7 @@ describe.skipIf(!canRun)("P-192 capstone: module change → CR → implementatio
         .eq("company_id", state.companyId as string);
     }
     if (state.userId) await svc.auth.admin.deleteUser(state.userId);
-    await svc.from("companies").delete().eq("id", state.companyId);
+    await purgeFixtureTenants(svc, [state.companyId]);
   });
 
   it("1. an engineer's module change fans impacts across the thread", async () => {
