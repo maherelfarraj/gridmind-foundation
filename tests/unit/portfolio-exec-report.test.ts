@@ -237,8 +237,11 @@ describe("PDF generation", () => {
   it("renders tables through jspdf-autotable v5 without regressions", async () => {
     const autotable = await import("jspdf-autotable");
     expect(typeof autotable.default).toBe("function");
-    const pkg = await import("jspdf-autotable/package.json");
-    expect(String((pkg as { version?: string }).version ?? "")).toMatch(/^5\./);
+    const { readFileSync } = await import("node:fs");
+    const pkg = JSON.parse(
+      readFileSync("node_modules/jspdf-autotable/package.json", "utf8"),
+    ) as { version: string };
+    expect(pkg.version).toMatch(/^5\./);
 
     const plain = await buildPortfolioExecReportPdf(fixture());
     const empty = await buildPortfolioExecReportPdf({
