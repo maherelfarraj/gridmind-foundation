@@ -20,14 +20,6 @@ import { linkAcceptedPortalInvites } from "@/lib/portal.functions";
 import { acceptVendorPortalInvites } from "@/lib/vendor-portal.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 
 const searchSchema = z.object({
   token: z.string().regex(/^[a-f0-9]{64}$/i),
@@ -244,46 +236,53 @@ function AnonymousEnroll({
           </p>
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSetPassword)} className="flex flex-col gap-3">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={form.handleSubmit(onSetPassword)} className="flex flex-col gap-3">
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-full-name">
+              Full name
+            </label>
+            <Input
+              id="invite-full-name"
+              placeholder="Your name"
+              {...form.register("fullName")}
+              aria-invalid={Boolean(form.formState.errors.fullName)}
+              aria-describedby="invite-full-name-error"
             />
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input value={invite.email} readOnly disabled />
-              </FormControl>
-            </FormItem>
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Set a password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            {form.formState.errors.fullName?.message ? (
+              <p id="invite-full-name-error" className="text-sm font-medium text-destructive">
+                {form.formState.errors.fullName.message}
+              </p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-email">
+              Email
+            </label>
+            <Input id="invite-email" value={invite.email} readOnly disabled />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none text-foreground" htmlFor="invite-password">
+              Set a password
+            </label>
+            <Input
+              id="invite-password"
+              type="password"
+              placeholder="••••••••"
+              {...form.register("password")}
+              aria-invalid={Boolean(form.formState.errors.password)}
+              aria-describedby="invite-password-error"
             />
-            <Button type="submit" disabled={submitting}>
-              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create account &amp; join
-            </Button>
-          </form>
-        </Form>
+            {form.formState.errors.password?.message ? (
+              <p id="invite-password-error" className="text-sm font-medium text-destructive">
+                {form.formState.errors.password.message}
+              </p>
+            ) : null}
+          </div>
+          <Button type="submit" disabled={submitting}>
+            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create account &amp; join
+          </Button>
+        </form>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
