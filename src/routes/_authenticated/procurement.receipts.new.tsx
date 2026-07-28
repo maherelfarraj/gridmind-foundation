@@ -435,6 +435,24 @@ function ReceivingEditor({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Receipt location</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="outline" onClick={captureGeo} disabled={locating}>
+            {locating ? "Locating…" : geo ? "Re-capture GPS" : "Capture GPS"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            {geo
+              ? `${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}${
+                  geo.accuracy_m != null ? ` · ±${geo.accuracy_m} m` : ""
+                }`
+              : "Not captured — the receipt will be saved without a location stamp."}
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="space-y-1">
         <Label htmlFor="grn-notes">Notes</Label>
         <Textarea
@@ -445,6 +463,8 @@ function ReceivingEditor({
           placeholder="Anything the site team should know…"
         />
       </div>
+
+
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 p-3 backdrop-blur">
         <div className="mx-auto flex max-w-3xl flex-wrap gap-2">
