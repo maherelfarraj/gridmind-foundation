@@ -3800,6 +3800,8 @@ export type Database = {
       document_register: {
         Row: {
           company_id: string
+          content_extracted_at: string | null
+          content_text: string | null
           created_at: string
           created_by: string | null
           current_revision: string
@@ -3813,6 +3815,7 @@ export type Database = {
           owner_id: string | null
           project_id: string | null
           retention_class: Database["public"]["Enums"]["document_retention_class"]
+          search_vector: unknown
           source_id: string | null
           source_table: string | null
           status: Database["public"]["Enums"]["document_register_status"]
@@ -3824,6 +3827,8 @@ export type Database = {
         }
         Insert: {
           company_id: string
+          content_extracted_at?: string | null
+          content_text?: string | null
           created_at?: string
           created_by?: string | null
           current_revision?: string
@@ -3837,6 +3842,7 @@ export type Database = {
           owner_id?: string | null
           project_id?: string | null
           retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          search_vector?: unknown
           source_id?: string | null
           source_table?: string | null
           status?: Database["public"]["Enums"]["document_register_status"]
@@ -3848,6 +3854,8 @@ export type Database = {
         }
         Update: {
           company_id?: string
+          content_extracted_at?: string | null
+          content_text?: string | null
           created_at?: string
           created_by?: string | null
           current_revision?: string
@@ -3861,6 +3869,7 @@ export type Database = {
           owner_id?: string | null
           project_id?: string | null
           retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          search_vector?: unknown
           source_id?: string | null
           source_table?: string | null
           status?: Database["public"]["Enums"]["document_register_status"]
@@ -20899,6 +20908,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      document_register_tsv: {
+        Args: {
+          p_content: string
+          p_discipline: string
+          p_doc_number: string
+          p_doc_type: string
+          p_file_name: string
+          p_metadata: Json
+          p_tags: string[]
+          p_title: string
+        }
+        Returns: unknown
+      }
       drawing_register_derived_lock: {
         Args: {
           p_drawing_id: string
@@ -21265,6 +21287,36 @@ export type Database = {
       save_pv_layout_blocks: {
         Args: { p_blocks: Json; p_layout_id: string; p_totals?: Json }
         Returns: number
+      }
+      search_documents: {
+        Args: {
+          p_discipline?: string
+          p_doc_type?: string
+          p_from?: string
+          p_limit?: number
+          p_project?: string
+          p_query: string
+          p_retention_class?: string
+          p_status?: string
+          p_to?: string
+        }
+        Returns: {
+          current_revision: string
+          discipline: string
+          doc_number: string
+          doc_type: string
+          file_name: string
+          has_content: boolean
+          id: string
+          project_id: string
+          project_name: string
+          rank: number
+          retention_class: string
+          snippet: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
       }
       set_pv_layout_status: {
         Args: { p_layout_id: string; p_status: string }
