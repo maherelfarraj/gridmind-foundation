@@ -76,10 +76,7 @@ function SubPortalListPage() {
       <PageHeader title={t("portalMod.sub.listTitle")} description={t("portalMod.sub.listDesc")} />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiTile
-          label={t("portalMod.sub.kpiCertified")}
-          value={formatMoney(certified, currency)}
-        />
+        <KpiTile label={t("portalMod.sub.kpiCertified")} value={formatMoney(certified, currency)} />
         <KpiTile
           label={t("portalMod.sub.kpiRetentionHeld")}
           value={formatMoney(retentionHeld, currency)}

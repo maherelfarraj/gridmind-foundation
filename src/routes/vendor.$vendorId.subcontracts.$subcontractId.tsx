@@ -359,7 +359,8 @@ function ClaimForm({
                     {line.line_no}. {line.description}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatMoney(line.amount, currency)} · {t("portalMod.sub.remainingHint", {
+                    {formatMoney(line.amount, currency)} ·{" "}
+                    {t("portalMod.sub.remainingHint", {
                       pct: max,
                     })}
                   </p>
