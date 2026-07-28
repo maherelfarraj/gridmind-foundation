@@ -18,9 +18,34 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 import { deleteFixtureUsers, purgeFixtureTenants } from "../helpers/fixture-teardown";
-import { anonClient, createUser, isSupabaseUp, serviceClient } from "../portfolio/fixtures";
+import {
+  anonClient,
+  createUser as createUserOnce,
+  isSupabaseUp,
+  serviceClient,
+} from "../portfolio/fixtures";
 
-export { anonClient, createUser, isSupabaseUp, serviceClient };
+export { anonClient, isSupabaseUp, serviceClient };
+
+/**
+ * The auth endpoint rate-limits sign-ups when the whole suite runs in
+ * parallel. Back off and retry rather than failing the fixture.
+ */
+export async function createUser(
+  svc: SupabaseClient<Database>,
+  prefix: string,
+): Promise<Awaited<ReturnType<typeof createUserOnce>>> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return await createUserOnce(svc, prefix);
+    } catch (err) {
+      lastErr = err;
+      await new Promise((r) => setTimeout(r, 1_500 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
 
 type Svc = SupabaseClient<Database>;
 type Rpc = (
@@ -218,29 +243,34 @@ export async function certifyClaim(
 // ---------------------------------------------------------------------------
 // Fixture
 // ---------------------------------------------------------------------------
-export interface SubcontractFixture {
+export interface LifecycleFixture {
   svc: Svc;
   companyId: string;
   projectId: string;
   admin: { userId: string; email: string; client: Svc };
+  vendorA: string;
+  subA: { id: string; lineIds: string[] };
+  cleanup: () => Promise<void>;
+}
+
+export interface SubcontractFixture extends LifecycleFixture {
   /** Internal member with no subcontract write role. */
   engineer: { userId: string; email: string; client: Svc };
-  vendorA: string;
   vendorB: string;
-  subA: { id: string; lineIds: string[] };
   subB: { id: string; lineIds: string[]; claimId: string };
   /** Portal seats — external viewers, one per vendor. */
   subUserA: { userId: string; client: Svc };
   subUserB: { userId: string; client: Svc };
-  cleanup: () => Promise<void>;
 }
 
-export async function setupSubcontractFixture(): Promise<SubcontractFixture> {
+async function setup<T extends LifecycleFixture>(
+  mode: "lifecycle" | "isolation",
+): Promise<T> {
   const svc = serviceClient();
   const tenants: string[] = [];
   const users: string[] = [];
   try {
-    return await build(svc, tenants, users);
+    return (await build(svc, tenants, users, mode)) as T;
   } catch (err) {
     await purgeFixtureTenants(svc, tenants);
     await deleteFixtureUsers(svc, users);
@@ -248,7 +278,20 @@ export async function setupSubcontractFixture(): Promise<SubcontractFixture> {
   }
 }
 
-async function build(svc: Svc, tenants: string[], users: string[]): Promise<SubcontractFixture> {
+/** Money-loop fixture: one tenant, one admin, one subcontract. */
+export const setupLifecycleFixture = (): Promise<LifecycleFixture> =>
+  setup<LifecycleFixture>("lifecycle");
+
+/** Isolation fixture: adds an engineer, a second sub and two portal seats. */
+export const setupSubcontractFixture = (): Promise<SubcontractFixture> =>
+  setup<SubcontractFixture>("isolation");
+
+async function build(
+  svc: Svc,
+  tenants: string[],
+  users: string[],
+  mode: "lifecycle" | "isolation",
+): Promise<LifecycleFixture | SubcontractFixture> {
   const companyId = await createTenant(svc, "sub");
   tenants.push(companyId);
 
@@ -256,9 +299,6 @@ async function build(svc: Svc, tenants: string[], users: string[]): Promise<Subc
   users.push(admin.userId);
   await attachMember(svc, admin.userId, admin.email, companyId, ["company_admin"]);
 
-  const engineer = await createUser(svc, "p262-eng");
-  users.push(engineer.userId);
-  await attachMember(svc, engineer.userId, engineer.email, companyId, ["engineer"]);
 
   const stamp = crypto.randomUUID().slice(0, 6).toUpperCase();
   const project = await one<{ id: string }>(svc, "projects", {
@@ -283,7 +323,6 @@ async function build(svc: Svc, tenants: string[], users: string[]): Promise<Subc
       })
     ).id;
   const vendorA = await mkVendor(`P262 Sub A ${stamp}`);
-  const vendorB = await mkVendor(`P262 Sub B ${stamp}`);
 
   const mkSubcontract = async (vendorId: string, title: string, value: number) =>
     (
@@ -319,6 +358,26 @@ async function build(svc: Svc, tenants: string[], users: string[]): Promise<Subc
     lineIds.push(row.id);
   }
 
+  const base: LifecycleFixture = {
+    svc,
+    companyId,
+    projectId: project.id,
+    admin: { userId: admin.userId, email: admin.email, client: admin.client },
+    vendorA,
+    subA: { id: subAId, lineIds },
+    cleanup: async () => {
+      await purgeFixtureTenants(svc, tenants);
+      await deleteFixtureUsers(svc, users);
+    },
+  };
+  if (mode === "lifecycle") return base;
+
+  const engineer = await createUser(svc, "p262-eng");
+  users.push(engineer.userId);
+  await attachMember(svc, engineer.userId, engineer.email, companyId, ["engineer"]);
+
+  const vendorB = await mkVendor(`P262 Sub B ${stamp}`);
+
   // Sub B — the isolation counterparty: its own subcontract and open claim.
   const subBId = await mkSubcontract(vendorB, "P262 fencing package", 10_000);
   const bLine = await one<{ id: string }>(svc, "subcontract_lines", {
@@ -350,21 +409,12 @@ async function build(svc: Svc, tenants: string[], users: string[]): Promise<Subc
   const subUserB = await mkSeat(vendorB, "p262-subb");
 
   return {
-    svc,
-    companyId,
-    projectId: project.id,
-    admin: { userId: admin.userId, email: admin.email, client: admin.client },
+    ...base,
     engineer: { userId: engineer.userId, email: engineer.email, client: engineer.client },
-    vendorA,
     vendorB,
-    subA: { id: subAId, lineIds },
     subB: { id: subBId, lineIds: [bLine.id], claimId: bClaim },
     subUserA,
     subUserB,
-    cleanup: async () => {
-      await purgeFixtureTenants(svc, tenants);
-      await deleteFixtureUsers(svc, users);
-    },
   };
 }
 
