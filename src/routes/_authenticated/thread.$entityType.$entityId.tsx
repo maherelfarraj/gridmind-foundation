@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getEntityThread, updateImpactStatus } from "@/lib/digital-thread/thread.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/thread/$entityType/$entityId")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -61,6 +62,7 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 function ThreadPage() {
+  const { t } = useI18n();
   const { entityType, entityId } = Route.useParams();
   const { depth } = Route.useSearch();
   const navigate = useNavigate();
@@ -78,10 +80,10 @@ function ThreadPage() {
     mutationFn: (vars: { id: string; status: "acknowledged" | "resolved" | "dismissed" }) =>
       setStatus({ data: vars }),
     onSuccess: async (_res, vars) => {
-      toast.success(`Impact assessment ${vars.status}`);
+      toast.success(t("adminMod.digitalThread.impactUpdated", { status: t(`adminMod.digitalThread.status.${vars.status}`) }));
       await qc.invalidateQueries({ queryKey: ["thread"] });
     },
-    onError: (err) => toast.error(String((err as Error)?.message ?? "Update failed")),
+    onError: (err) => toast.error(String((err as Error)?.message ?? t("adminMod.digitalThread.updateFailed"))),
   });
 
   const impacts = data?.impacts ?? [];
@@ -89,7 +91,7 @@ function ThreadPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Digital thread"
+        title={t("adminMod.digitalThread.title")}
         description={`${entityType.replaceAll("_", " ")} · ${entityId.slice(0, 8)}…`}
         actions={
           <Select
@@ -104,7 +106,7 @@ function ThreadPage() {
             <SelectContent>
               {[1, 2, 3, 4].map((d) => (
                 <SelectItem key={d} value={String(d)}>
-                  Depth {d}
+                  {t("adminMod.digitalThread.depth", { value: d })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -115,7 +117,7 @@ function ThreadPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Network className="size-4" /> Linked entities
+            <Network className="size-4" /> {t("adminMod.digitalThread.linkedEntities")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -124,8 +126,8 @@ function ThreadPage() {
           ) : (data?.graph.nodes.length ?? 0) <= 1 ? (
             <EmptyState
               icon={Network}
-              title="No links yet"
-              description="This record has no upstream or downstream links on the digital thread."
+              title={t("adminMod.digitalThread.noLinksYet")}
+              description={t("adminMod.digitalThread.noLinksYetDesc")}
             />
           ) : (
             <ThreadGraph graph={data!.graph} />
@@ -136,7 +138,7 @@ function ThreadPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="size-4" /> Impact assessments
+            <AlertTriangle className="size-4" /> {t("adminMod.digitalThread.impactAssessments")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -145,8 +147,8 @@ function ThreadPage() {
           ) : impacts.length === 0 ? (
             <EmptyState
               icon={AlertTriangle}
-              title="No impact assessments"
-              description="No change event has flagged this record yet."
+              title={t("adminMod.digitalThread.noImpactAssessments")}
+              description={t("adminMod.digitalThread.noImpactAssessmentsDesc")}
             />
           ) : (
             impacts.map((a) => (
@@ -154,9 +156,11 @@ function ThreadPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{a.title}</span>
                   <Badge className={SEVERITY_CLASS[a.severity] ?? SEVERITY_CLASS.low}>
-                    {a.severity}
+                    {t(`adminMod.digitalThread.severity.${a.severity}`, { defaultValue: a.severity })}
                   </Badge>
-                  <Badge className={STATUS_CLASS[a.status] ?? STATUS_CLASS.open}>{a.status}</Badge>
+                  <Badge className={STATUS_CLASS[a.status] ?? STATUS_CLASS.open}>
+                    {t(`adminMod.digitalThread.status.${a.status}`, { defaultValue: a.status })}
+                  </Badge>
                   <span className="text-xs text-muted-foreground">
                     {format(new Date(a.created_at), "dd MMM yyyy HH:mm")}
                   </span>
@@ -177,14 +181,14 @@ function ThreadPage() {
                         </span>
                         <span className="text-muted-foreground">
                           {String(rec.action ?? "").replaceAll("_", " ")}
-                          {rec.entity_id ? "" : " · unresolved"}
+                          {rec.entity_id ? "" : ` · ${t("adminMod.digitalThread.unresolved")}`}
                         </span>
                       </li>
                     );
                   })}
                 </ul>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Recommendations only — no downstream record is changed automatically.
+                  {t("adminMod.digitalThread.recommendationsOnly")}
                 </p>
                 {a.status === "open" || a.status === "acknowledged" ? (
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -195,7 +199,7 @@ function ThreadPage() {
                         disabled={mutation.isPending}
                         onClick={() => mutation.mutate({ id: a.id, status: "acknowledged" })}
                       >
-                        <Check className="mr-1 size-3" /> Acknowledge
+                        <Check className="mr-1 size-3" /> {t("adminMod.digitalThread.acknowledge")}
                       </Button>
                     ) : null}
                     <Button
@@ -203,7 +207,7 @@ function ThreadPage() {
                       disabled={mutation.isPending}
                       onClick={() => mutation.mutate({ id: a.id, status: "resolved" })}
                     >
-                      Resolve
+                      {t("adminMod.digitalThread.resolve")}
                     </Button>
                     <Button
                       size="sm"
@@ -211,7 +215,7 @@ function ThreadPage() {
                       disabled={mutation.isPending}
                       onClick={() => mutation.mutate({ id: a.id, status: "dismissed" })}
                     >
-                      <X className="mr-1 size-3" /> Dismiss
+                      <X className="mr-1 size-3" /> {t("adminMod.digitalThread.dismiss")}
                     </Button>
                   </div>
                 ) : null}

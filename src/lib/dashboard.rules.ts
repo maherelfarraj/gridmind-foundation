@@ -82,3 +82,40 @@ export function toActivityItem(row: RawActivityRow, now: Date = new Date()): Act
     created_at: row.created_at,
   };
 }
+
+/** P-243 — action tails that are display-named via `adminMod.auditActions.<key>`
+ * instead of the generic naive humanization (construction/governance/MOC/admin
+ * domain actions). Returns null when the action isn't one of ours, so callers
+ * fall back to the generic `activity.actions.<key>` / humanizeAction path.
+ */
+const ADMIN_AUDIT_ACTION_KEYS = new Set([
+  "cwp_created",
+  "cwp_status_changed",
+  "cwp_baselined",
+  "lookahead_published",
+  "productivity_recorded",
+  "method_statement_created",
+  "method_statement_updated",
+  "method_statement_submitted",
+  "ptw_created",
+  "ptw_issued",
+  "ptw_closed",
+  "ptw_expired",
+  "ptw_suspended",
+  "moc_submitted",
+  "moc_approved",
+  "moc_rejected",
+  "impact_acknowledged",
+  "impact_resolved",
+  "impact_dismissed",
+  "role_changed",
+  "tenant_suspended",
+  "tenant_activated",
+]);
+
+/** "governance.ptw_issued" -> "adminMod.auditActions.ptw_issued", or null if the
+ * action isn't one of the admin/construction/governance/MOC domain actions. */
+export function adminAuditActionI18nKey(action: string): string | null {
+  const key = actionKeyOf(action);
+  return ADMIN_AUDIT_ACTION_KEYS.has(key) ? `adminMod.auditActions.${key}` : null;
+}

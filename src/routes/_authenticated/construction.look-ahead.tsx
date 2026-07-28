@@ -36,6 +36,7 @@ import {
 } from "@/lib/cwp.functions";
 import { isMonday } from "@/lib/cwp.rules";
 import { mondayOf } from "@/lib/controls.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/construction/look-ahead")({
   head: () => ({
@@ -77,6 +78,7 @@ interface EntryRow {
 }
 
 function LookAheadPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [projectId, setProjectId] = useState("");
   const [weekStart, setWeekStart] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
@@ -136,20 +138,20 @@ function LookAheadPage() {
         },
       }),
     onSuccess: () => {
-      toast.success("Look-ahead saved");
+      toast.success(t("adminMod.construction.lookAhead.saved"));
       void qc.invalidateQueries({ queryKey: planKey });
     },
-    onError: () => toast.error("Save failed — try again"),
+    onError: () => toast.error(t("adminMod.construction.lookAhead.saveFailed")),
   });
 
   const publishFn = useServerFn(setLookAheadStatus);
   const publish = useMutation({
     mutationFn: () => publishFn({ data: { id: plan.data!.id, status: "published" } }),
     onSuccess: () => {
-      toast.success("Plan published and locked");
+      toast.success(t("adminMod.construction.lookAhead.published"));
       void qc.invalidateQueries({ queryKey: planKey });
     },
-    onError: () => toast.error("Publish failed — try again"),
+    onError: () => toast.error(t("adminMod.construction.lookAhead.publishFailed")),
   });
 
   const update = (i: number, patch: Partial<EntryRow>) =>
@@ -158,8 +160,8 @@ function LookAheadPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <PageHeader
-        title="Look-ahead planning"
-        description="Weekly rolling commitments. Weeks always start on a Monday; publishing locks the plan."
+        title={t("adminMod.construction.lookAhead.title")}
+        description={t("adminMod.construction.lookAhead.description")}
         actions={
           <div className="flex gap-2">
             <Button
@@ -168,14 +170,14 @@ function LookAheadPage() {
               disabled={!canEdit || save.isPending}
               onClick={() => save.mutate()}
             >
-              Save draft
+              {t("adminMod.construction.lookAhead.saveDraft")}
             </Button>
             <Button
               size="sm"
               disabled={!plan.data || locked || publish.isPending || !access.data?.canWrite}
               onClick={() => publish.mutate()}
             >
-              Publish
+              {t("adminMod.construction.lookAhead.publish")}
             </Button>
           </div>
         }
@@ -190,7 +192,7 @@ function LookAheadPage() {
         />
         <div className="w-full space-y-1 sm:w-56">
           <Label htmlFor="week-start" className="text-xs text-muted-foreground">
-            Week start (Monday)
+            {t("adminMod.construction.lookAhead.weekStart")}
           </Label>
           <Input
             id="week-start"
@@ -199,10 +201,10 @@ function LookAheadPage() {
             onChange={(e) => setWeekStart(mondayOf(e.target.value))}
           />
           {!validWeek ? (
-            <p className="text-xs text-destructive">Week start must be a Monday.</p>
+            <p className="text-xs text-destructive">{t("adminMod.construction.lookAhead.weekMustBeMonday")}</p>
           ) : null}
         </div>
-        {locked ? <Badge variant="outline">Locked · read-only</Badge> : null}
+        {locked ? <Badge variant="outline">{t("adminMod.construction.lookAhead.locked")}</Badge> : null}
       </div>
 
       <PanelState
@@ -211,17 +213,17 @@ function LookAheadPage() {
         onRetry={() => void plan.refetch()}
         isEmpty={entries.length === 0 && !canEdit}
         emptyIcon={CalendarRange}
-        emptyTitle="No look-ahead entries"
-        emptyDescription="Add rows to commit crews and work packages for this week."
+        emptyTitle={t("adminMod.construction.lookAhead.noEntries")}
+        emptyDescription={t("adminMod.construction.lookAhead.noEntriesDesc")}
       >
         <div className="overflow-x-auto rounded-md border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Work package</TableHead>
-                <TableHead>Day</TableHead>
-                <TableHead className="w-24">Crew</TableHead>
-                <TableHead>Constraints</TableHead>
+                <TableHead>{t("adminMod.construction.lookAhead.workPackageCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.lookAhead.dayCol")}</TableHead>
+                <TableHead className="w-24">{t("adminMod.construction.lookAhead.crewCol")}</TableHead>
+                <TableHead>{t("adminMod.construction.lookAhead.constraintsCol")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -238,7 +240,7 @@ function LookAheadPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Unassigned</SelectItem>
+                        <SelectItem value="none">{t("adminMod.construction.lookAhead.unassigned")}</SelectItem>
                         {(cwps.data ?? []).map((c) => (
                           <SelectItem key={c.id} value={c.id}>
                             {c.cwp_number} — {c.title}
@@ -301,7 +303,7 @@ function LookAheadPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      aria-label="Remove row"
+                      aria-label={t("adminMod.construction.lookAhead.removeRow")}
                       disabled={!canEdit}
                       onClick={() => setEntries((rows) => rows.filter((_, idx) => idx !== i))}
                     >
@@ -333,11 +335,11 @@ function LookAheadPage() {
               ])
             }
           >
-            <Plus className="mr-1 size-4" /> Add row
+            <Plus className="mr-1 size-4" /> {t("adminMod.construction.lookAhead.addRow")}
           </Button>
           <div className="space-y-1">
             <Label htmlFor="la-notes" className="text-xs text-muted-foreground">
-              Notes
+              {t("adminMod.construction.lookAhead.notes")}
             </Label>
             <Textarea
               id="la-notes"

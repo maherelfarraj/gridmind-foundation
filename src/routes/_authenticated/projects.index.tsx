@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { useActiveCompany } from "@/components/company-switcher";
 import { PhaseBadge } from "@/components/projects/phase-badge";
 import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
@@ -83,6 +84,7 @@ function useDebounced<T>(value: T, ms = 300): T {
 }
 
 function ProjectsPage() {
+  const { t } = useI18n();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { activeCompany } = useActiveCompany();
@@ -160,9 +162,9 @@ function ProjectsPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success("CSV downloaded");
+      toast.success(t("engMod.projects.exportSuccess"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Export failed");
+      toast.error(e instanceof Error ? e.message : t("engMod.projects.exportFailed"));
     } finally {
       setExporting(false);
     }
@@ -187,11 +189,11 @@ function ProjectsPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Projects"
+        title={t("engMod.projects.title")}
         description={
           query.isLoading
-            ? "Loading…"
-            : `${total} project${total === 1 ? "" : "s"}${filtersActive ? " matching filters" : ""}`
+            ? t("engMod.projects.loading")
+            : `${t("engMod.projects.count", { count: total })}${filtersActive ? ` ${t("engMod.projects.matchingFilters")}` : ""}`
         }
         actions={
           <>
@@ -201,12 +203,12 @@ function ProjectsPage() {
               disabled={exporting || !companyId || rows.length === 0}
             >
               <Download size={16} aria-hidden />
-              Export CSV
+              {t("engMod.projects.exportCsv")}
             </Button>
             <Button asChild>
               <Link to="/projects/new" search={{ step: 1 }}>
                 <Plus size={16} aria-hidden />
-                New project
+                {t("engMod.projects.newProject")}
               </Link>
             </Button>
           </>
@@ -223,13 +225,13 @@ function ProjectsPage() {
           <Input
             value={rawQ}
             onChange={(e) => setRawQ(e.target.value)}
-            placeholder="Search by name or code"
+            placeholder={t("engMod.projects.searchPlaceholder")}
             className="pl-8"
-            aria-label="Search projects"
+            aria-label={t("engMod.projects.searchAriaLabel")}
           />
         </div>
         <FilterSelect
-          label="Phase"
+          label={t("engMod.projects.filters.phase")}
           value={phase ?? ""}
           onChange={(v) => setFilter("phase", v)}
           options={PROJECT_PHASES.map((p) => ({
@@ -238,7 +240,7 @@ function ProjectsPage() {
           }))}
         />
         <FilterSelect
-          label="Archetype"
+          label={t("engMod.projects.filters.archetype")}
           value={archetype ?? ""}
           onChange={(v) => setFilter("archetype", v)}
           options={ARCHETYPE_KEYS.map((k) => ({
@@ -247,7 +249,7 @@ function ProjectsPage() {
           }))}
         />
         <FilterSelect
-          label="Department"
+          label={t("engMod.projects.filters.department")}
           value={department ?? ""}
           onChange={(v) => setFilter("department", v)}
           options={PROJECT_DEPARTMENTS.map((d) => ({
@@ -259,7 +261,7 @@ function ProjectsPage() {
 
       {query.isError ? (
         <ErrorPanel
-          message={query.error instanceof Error ? query.error.message : "Failed to load projects"}
+          message={query.error instanceof Error ? query.error.message : t("engMod.projects.error.fallback")}
           onRetry={() => query.refetch()}
         />
       ) : query.isLoading ? (
@@ -298,6 +300,7 @@ function FilterSelect({
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-1">
       <label className="text-xs text-muted-foreground">{label}</label>
@@ -306,7 +309,7 @@ function FilterSelect({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__">All</SelectItem>
+          <SelectItem value="__all__">{t("engMod.common.all")}</SelectItem>
           {options.map((o) => (
             <SelectItem key={o.value} value={o.value}>
               {o.label}
@@ -324,9 +327,10 @@ function ProjectCard({ row }: { row: ProjectCardRow }) {
     row.capacity_mw != null
       ? `${row.capacity_mw} MW${row.capacity_mwh != null ? ` · ${row.capacity_mwh} MWh` : ""}`
       : "—";
-  const codDisplay = row.target_cod ? format(parseISO(row.target_cod), "PP") : "No COD set";
+  const { t } = useI18n();
+  const codDisplay = row.target_cod ? format(parseISO(row.target_cod), "PP") : t("engMod.projects.card.noCod");
   const admin = row.project_admin;
-  const adminName = admin?.full_name?.trim() || admin?.email || "Unassigned";
+  const adminName = admin?.full_name?.trim() || admin?.email || t("engMod.projects.card.unassigned");
   const initials = (admin?.full_name || admin?.email || "?")
     .split(/\s+/)
     .map((w) => w[0])
@@ -398,22 +402,23 @@ function SkeletonGrid() {
 }
 
 function EmptyState({ filtersActive }: { filtersActive: boolean }) {
+  const { t } = useI18n();
   return filtersActive ? (
     <SharedEmptyState
       icon={FolderPlus}
-      title="No projects match your filters"
-      description="Adjust or clear the filters above to see more results."
+      title={t("engMod.projects.empty.filteredTitle")}
+      description={t("engMod.projects.empty.filteredDesc")}
     />
   ) : (
     <SharedEmptyState
       icon={FolderPlus}
-      title="No projects yet"
-      description="Create your first project to start phase-gated delivery."
+      title={t("engMod.projects.empty.emptyTitle")}
+      description={t("engMod.projects.empty.emptyDesc")}
       action={
         <Button asChild size="sm">
           <Link to="/projects/new" search={{ step: 1 }}>
             <Plus size={16} aria-hidden />
-            New project
+            {t("engMod.projects.newProject")}
           </Link>
         </Button>
       }
@@ -422,15 +427,16 @@ function EmptyState({ filtersActive }: { filtersActive: boolean }) {
 }
 
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useI18n();
   return (
     <Card className="flex flex-col items-start gap-3 border-destructive/40 bg-destructive/10 p-6">
       <div className="flex items-center gap-2 text-destructive">
         <AlertTriangle size={18} aria-hidden />
-        <span className="text-sm font-medium">Couldn't load projects</span>
+        <span className="text-sm font-medium">{t("engMod.projects.error.title")}</span>
       </div>
       <p className="text-xs text-muted-foreground">{message}</p>
       <Button size="sm" variant="outline" onClick={onRetry}>
-        Retry
+        {t("engMod.common.retry")}
       </Button>
     </Card>
   );

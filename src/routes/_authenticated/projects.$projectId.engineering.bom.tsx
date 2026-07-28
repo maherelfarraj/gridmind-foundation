@@ -25,6 +25,7 @@ import { BomHeader } from "@/components/engineering/bom-header";
 import { BomTable } from "@/components/engineering/bom-table";
 import { BOM_CATEGORY_LABEL } from "@/lib/calculators/bom";
 import { UnderChangeControlBanner } from "@/components/moc/under-change-control-banner";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/engineering/bom")({
   head: () => ({
@@ -44,14 +45,19 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/engine
     ],
   }),
   component: BomPage,
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }) => <BomErrorFallback error={error} />,
+});
+
+function BomErrorFallback({ error }: { error: unknown }) {
+  const { t } = useI18n();
+  return (
     <Card>
       <CardContent className="py-8 text-sm text-destructive">
-        {error instanceof Error ? error.message : "Failed to load BOM."}
+        {error instanceof Error ? error.message : t("engMod.calculators.errorFallback")}
       </CardContent>
     </Card>
-  ),
-});
+  );
+}
 
 function BomPage() {
   const { projectId } = Route.useParams();
@@ -63,6 +69,7 @@ function BomPage() {
 }
 
 function BomWorkspace({ projectId }: { projectId: string }) {
+  const { t } = useI18n();
   const listFn = useServerFn(listBomSnapshots);
   const detailFn = useServerFn(getBomSnapshot);
   const rolesFn = useServerFn(getMyBomRoles);
@@ -124,14 +131,16 @@ function BomWorkspace({ projectId }: { projectId: string }) {
           <CardContent className="py-12">
             <EmptyState
               icon={PackageSearch}
-              title="No BOM yet"
-              description="Generate a preliminary BOM from the archetype configuration."
+              title={t("engMod.calculators.noBom.title")}
+              description={t("engMod.calculators.noBom.description")}
               action={
                 <Button
                   onClick={() => generate.mutate()}
                   disabled={!roles.canWrite || generate.isPending}
                 >
-                  {generate.isPending ? "Generating…" : "Generate BOM"}
+                  {generate.isPending
+                    ? t("engMod.calculators.generating")
+                    : t("engMod.calculators.generateBom")}
                 </Button>
               }
             />

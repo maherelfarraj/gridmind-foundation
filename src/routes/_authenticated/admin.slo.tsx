@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/admin/slo")({
   head: () => ({
@@ -55,6 +56,7 @@ function formatValue(s: SloSnapshot): string {
 }
 
 function SloPage() {
+  const { t } = useI18n();
   const fetchSlo = useServerFn(getSloDashboard);
   const query = useQuery({
     queryKey: ["ops-slo"],
@@ -72,7 +74,7 @@ function SloPage() {
   return (
     <div className="page-shell max-w-6xl">
       <PageHeader
-        title="SLO / SLI dashboard"
+        title={t("adminMod.admin.slo")}
         description="Live service-level indicators computed from cron probes, SCADA ingestion, the public API guard and finance alert triage."
         actions={
           <div className="flex items-center gap-3">

@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import {
   DRAWING_DISCIPLINES,
@@ -52,15 +53,21 @@ import {
   useCreateDrawing,
 } from "@/lib/drawings-query";
 
-const DISCIPLINE_LABEL: Record<DrawingDiscipline, string> = {
-  civil: "Civil",
-  structural: "Structural",
-  electrical: "Electrical",
-  mechanical: "Mechanical",
-  scada_controls: "SCADA/Controls",
-  survey: "Survey",
-  general: "General",
-};
+/** Display-only labels; the stored enum values are never translated. */
+function disciplineLabels(
+  t: (key: string) => string,
+): Record<DrawingDiscipline, string> {
+  return {
+    civil: t("engMod.drawings.disciplineLabels.civil"),
+    structural: t("engMod.drawings.disciplineLabels.structural"),
+    electrical: t("engMod.drawings.disciplineLabels.electrical"),
+    mechanical: t("engMod.drawings.disciplineLabels.mechanical"),
+    scada_controls: t("engMod.drawings.disciplineLabels.scada_controls"),
+    survey: t("engMod.drawings.disciplineLabels.survey"),
+    general: t("engMod.drawings.disciplineLabels.general"),
+  };
+}
+
 
 export function statusBadgeClass(status: DrawingStatus): string {
   switch (status) {
@@ -100,6 +107,15 @@ interface Props {
 }
 
 export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Props) {
+  const { t } = useI18n();
+  const DISCIPLINE_LABEL_T = disciplineLabels(t);
+  const STATUS_LABEL_T: Record<DrawingStatus, string> = {
+    draft: t("engMod.drawings.statusLabels.draft"),
+    IFD: t("engMod.drawings.statusLabels.IFD"),
+    IFC: t("engMod.drawings.statusLabels.IFC"),
+    as_built: t("engMod.drawings.statusLabels.as_built"),
+    superseded: t("engMod.drawings.statusLabels.superseded"),
+  };
   const listFn = useServerFn(listDrawings);
   const rolesFn = useServerFn(getMyDrawingRoles);
   const { data: rolesData } = useSuspenseQuery(drawingRolesQueryOptions(rolesFn, projectId));
@@ -162,7 +178,7 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
             size={14}
           />
           <Input
-            placeholder="Search number or title…"
+            placeholder={t("engMod.drawings.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8"
@@ -179,13 +195,13 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
           }
         >
           <SelectTrigger className="w-[170px]">
-            <SelectValue placeholder="Discipline" />
+            <SelectValue placeholder={t("engMod.drawings.disciplinePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All disciplines</SelectItem>
+            <SelectItem value="all">{t("engMod.drawings.allDisciplines")}</SelectItem>
             {DRAWING_DISCIPLINES.map((d) => (
               <SelectItem key={d} value={d}>
-                {DISCIPLINE_LABEL[d]}
+                {DISCIPLINE_LABEL_T[d]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -201,20 +217,20 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
           }
         >
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("engMod.drawings.statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("engMod.drawings.allStatuses")}</SelectItem>
             {DRAWING_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
-                {STATUS_LABEL[s]}
+                {STATUS_LABEL_T[s]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Button variant="outline" size="sm" onClick={exportCsv}>
           <Download size={14} aria-hidden />
-          CSV
+          {t("engMod.drawings.exportCsv")}
         </Button>
         {rolesData.canWrite && <NewDrawingDialog projectId={projectId} />}
       </div>
@@ -226,12 +242,12 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Number</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Discipline</TableHead>
-                <TableHead>Revision</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Issued</TableHead>
+                <TableHead>{t("engMod.drawings.columns.number")}</TableHead>
+                <TableHead>{t("engMod.drawings.columns.title")}</TableHead>
+                <TableHead>{t("engMod.drawings.columns.discipline")}</TableHead>
+                <TableHead>{t("engMod.drawings.columns.revision")}</TableHead>
+                <TableHead>{t("engMod.drawings.columns.status")}</TableHead>
+                <TableHead>{t("engMod.drawings.columns.issued")}</TableHead>
                 <TableHead className="w-16"></TableHead>
               </TableRow>
             </TableHeader>
@@ -255,7 +271,7 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
                     {r.title}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{DISCIPLINE_LABEL[r.discipline]}</Badge>
+                    <Badge variant="outline">{DISCIPLINE_LABEL_T[r.discipline]}</Badge>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {r.current_revision?.revision_code ?? "—"}
@@ -263,10 +279,10 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
                   <TableCell>
                     <span className="inline-flex items-center gap-1.5">
                       <Badge className={statusBadgeClass(r.current_status)}>
-                        {STATUS_LABEL[r.current_status]}
+                        {STATUS_LABEL_T[r.current_status]}
                       </Badge>
                       {r.locked && (
-                        <Lock size={12} className="text-muted-foreground" aria-label="Locked" />
+                        <Lock size={12} className="text-muted-foreground" aria-label={t("engMod.drawings.locked")} />
                       )}
                     </span>
                   </TableCell>
@@ -281,7 +297,7 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
                         to="/projects/$projectId/engineering/drawings/$drawingId"
                         params={{ projectId, drawingId: r.id }}
                       >
-                        Open
+                        {t("engMod.drawings.open")}
                       </Link>
                     </Button>
                   </TableCell>
@@ -292,19 +308,20 @@ export function DrawingRegisterTable({ projectId, filters, onFilterChange }: Pro
         </Card>
       )}
       <p className="text-xs text-muted-foreground">
-        Showing {data.rows.length} of {data.total} drawings.
+        {t("engMod.drawings.showing", { shown: data.rows.length, total: data.total })}
       </p>
     </div>
   );
 }
 
 function EmptyState({ canWrite, projectId }: { canWrite: boolean; projectId: string }) {
+  const { t } = useI18n();
   return (
     <Card className="flex flex-col items-center gap-3 border-dashed p-10 text-center">
       <FileWarning className="text-muted-foreground" />
-      <p className="text-sm font-medium text-foreground">No drawings yet</p>
+      <p className="text-sm font-medium text-foreground">{t("engMod.drawings.empty.title")}</p>
       <p className="text-sm text-muted-foreground">
-        Register a drawing number and start uploading revisions.
+        {t("engMod.drawings.empty.description")}
       </p>
       {canWrite && <NewDrawingDialog projectId={projectId} />}
     </Card>
@@ -319,6 +336,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 function NewDrawingDialog({ projectId }: { projectId: string }) {
+  const { t } = useI18n();
+  const DISCIPLINE_LABEL_T = disciplineLabels(t);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const create = useCreateDrawing(projectId);
@@ -345,20 +364,20 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus size={14} aria-hidden />
-          New drawing
+          {t("engMod.drawings.newDrawing.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New drawing</DialogTitle>
+          <DialogTitle>{t("engMod.drawings.newDrawing.title")}</DialogTitle>
           <DialogDescription>
-            Register the drawing number, title, and discipline. Upload revisions afterwards.
+            {t("engMod.drawings.newDrawing.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="drawing-number">Drawing number</Label>
+              <Label htmlFor="drawing-number">{t("engMod.drawings.newDrawing.numberLabel")}</Label>
               <Input
                 id="drawing-number"
                 placeholder="GM-E-1001"
@@ -371,7 +390,7 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
               )}
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="discipline">Discipline</Label>
+              <Label htmlFor="discipline">{t("engMod.drawings.newDrawing.disciplineLabel")}</Label>
               <Select
                 value={form.watch("discipline")}
                 onValueChange={(v) => form.setValue("discipline", v as DrawingDiscipline)}
@@ -382,7 +401,7 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
                 <SelectContent>
                   {DRAWING_DISCIPLINES.map((d) => (
                     <SelectItem key={d} value={d}>
-                      {DISCIPLINE_LABEL[d]}
+                      {DISCIPLINE_LABEL_T[d]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -390,7 +409,7 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t("engMod.drawings.newDrawing.titleLabel")}</Label>
             <Input
               id="title"
               placeholder="Single-line diagram — inverter bay 01"
@@ -409,11 +428,11 @@ function NewDrawingDialog({ projectId }: { projectId: string }) {
               onClick={() => setOpen(false)}
               disabled={create.isPending}
             >
-              Cancel
+              {t("engMod.common.cancel")}
             </Button>
             <Button type="submit" disabled={create.isPending}>
               {create.isPending && <Loader2 className="animate-spin" size={14} />}
-              Create
+              {t("engMod.common.create")}
             </Button>
           </DialogFooter>
         </form>

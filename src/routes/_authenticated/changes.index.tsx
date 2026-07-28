@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney, formatRelative } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   CHANGE_TYPES,
   CR_STATUSES,
@@ -72,6 +73,7 @@ export const Route = createFileRoute("/_authenticated/changes/")({
 const ALL = "__all__";
 
 function ChangeRegister() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const search = Route.useSearch() as {
@@ -133,12 +135,12 @@ function ChangeRegister() {
         },
       }),
     onSuccess: (created) => {
-      toast.success(`${created.cr_number} created`);
+      toast.success(t("adminMod.changes.register.createdToast", { number: created.cr_number }));
       setCreateOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["moc"] });
       void navigate({ to: "/changes/$id", params: { id: created.id } });
     },
-    onError: (error: Error) => toast.error(error.message || "Could not create the change request"),
+    onError: (error: Error) => toast.error(error.message || t("adminMod.changes.register.createFailed")),
   });
 
   const selectedType = CHANGE_TYPES.find((t) => t.value === form.change_type);
@@ -146,16 +148,16 @@ function ChangeRegister() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Change control"
-        description="Every deviation from the approved baseline, assessed and routed for approval."
+        title={t("adminMod.changes.register.title")}
+        description={t("adminMod.changes.register.description")}
         actions={
           <>
             <Button asChild variant="outline">
-              <Link to="/changes/dashboard">Impact dashboard</Link>
+              <Link to="/changes/dashboard">{t("adminMod.changes.register.impactDashboard")}</Link>
             </Button>
             <Button onClick={() => setCreateOpen(true)}>
               <Plus className="mr-1 size-4" aria-hidden />
-              New change request
+              {t("adminMod.changes.register.newChangeRequest")}
             </Button>
           </>
         }
@@ -170,7 +172,7 @@ function ChangeRegister() {
             setStatuses(next as CrStatus[]);
             setPage(1);
           }}
-          placeholder="All statuses"
+          placeholder={t("adminMod.changes.register.allStatuses")}
         />
         <Select
           value={changeType}
@@ -180,10 +182,10 @@ function ChangeRegister() {
           }}
         >
           <SelectTrigger aria-label="Filter by change type">
-            <SelectValue placeholder="All types" />
+            <SelectValue placeholder={t("adminMod.changes.register.allTypes")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All types</SelectItem>
+            <SelectItem value={ALL}>{t("adminMod.changes.register.allTypes")}</SelectItem>
             {CHANGE_TYPES.map((t) => (
               <SelectItem key={t.value} value={t.value}>
                 {t.label}
@@ -199,10 +201,10 @@ function ChangeRegister() {
           }}
         >
           <SelectTrigger aria-label="Filter by project">
-            <SelectValue placeholder="All projects" />
+            <SelectValue placeholder={t("adminMod.changes.register.allProjects")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All projects</SelectItem>
+            <SelectItem value={ALL}>{t("adminMod.changes.register.allProjects")}</SelectItem>
             {(projects.data?.rows ?? []).map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
@@ -239,7 +241,7 @@ function ChangeRegister() {
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Search title or CR number"
+            placeholder={t("adminMod.changes.register.searchPlaceholder")}
             aria-label="Search change requests"
           />
           <Button type="submit" variant="outline" size="icon" aria-label="Search">
@@ -258,11 +260,11 @@ function ChangeRegister() {
 
       {list.isError ? (
         <EmptyState
-          title="Could not load change requests"
-          description="The register could not be read."
+          title={t("adminMod.changes.register.loadError")}
+          description={t("adminMod.changes.register.loadErrorDesc")}
           action={
             <Button variant="outline" onClick={() => void list.refetch()}>
-              Retry
+              {t("adminMod.approvals.retry")}
             </Button>
           }
         />
@@ -271,9 +273,9 @@ function ChangeRegister() {
       {list.data && list.data.rows.length === 0 ? (
         <EmptyState
           icon={GitPullRequestArrow}
-          title="No change requests match"
-          description="Adjust the filters, or raise the first change request."
-          action={<Button onClick={() => setCreateOpen(true)}>New change request</Button>}
+          title={t("adminMod.changes.register.noMatches")}
+          description={t("adminMod.changes.register.noMatchesDesc")}
+          action={<Button onClick={() => setCreateOpen(true)}>{t("adminMod.changes.register.newChangeRequest")}</Button>}
         />
       ) : null}
 
@@ -282,15 +284,15 @@ function ChangeRegister() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>CR</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Originator</TableHead>
-                <TableHead className="text-right">Cost impact</TableHead>
-                <TableHead className="text-right">Schedule</TableHead>
-                <TableHead className="text-right">Age</TableHead>
-                <TableHead>Updated</TableHead>
+                <TableHead>{t("adminMod.changes.register.crCol")}</TableHead>
+                <TableHead>{t("adminMod.changes.register.titleCol")}</TableHead>
+                <TableHead>{t("adminMod.changes.register.typeCol")}</TableHead>
+                <TableHead>{t("adminMod.changes.register.statusCol")}</TableHead>
+                <TableHead>{t("adminMod.changes.register.originatorCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.costImpactCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.scheduleCol")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.changes.register.ageCol")}</TableHead>
+                <TableHead>{t("adminMod.changes.register.updatedCol")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -315,9 +317,9 @@ function ChangeRegister() {
                     {row.cost_impact == null ? "—" : formatMoney(row.cost_impact, "USD")}
                   </TableCell>
                   <TableCell className="text-right">
-                    {row.schedule_impact_days == null ? "—" : `${row.schedule_impact_days} d`}
+                    {row.schedule_impact_days == null ? "—" : t("adminMod.changes.register.daysSuffix", { value: row.schedule_impact_days })}
                   </TableCell>
-                  <TableCell className="text-right">{row.age_days} d</TableCell>
+                  <TableCell className="text-right">{t("adminMod.changes.register.daysSuffix", { value: row.age_days })}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatRelative(row.updated_at)}
                   </TableCell>
@@ -331,8 +333,11 @@ function ChangeRegister() {
       {list.data && list.data.total > list.data.pageSize ? (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            Page {list.data.page} of {Math.ceil(list.data.total / list.data.pageSize)} ·{" "}
-            {list.data.total} change requests
+            {t("adminMod.changes.register.pageOf", {
+              page: list.data.page,
+              total: Math.ceil(list.data.total / list.data.pageSize),
+              count: list.data.total,
+            })}
           </span>
           <div className="flex gap-2">
             <Button
@@ -341,7 +346,7 @@ function ChangeRegister() {
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Previous
+              {t("adminMod.changes.register.previous")}
             </Button>
             <Button
               variant="outline"
@@ -349,7 +354,7 @@ function ChangeRegister() {
               disabled={page >= Math.ceil(list.data.total / list.data.pageSize)}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {t("adminMod.changes.register.next")}
             </Button>
           </div>
         </div>
@@ -358,14 +363,14 @@ function ChangeRegister() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>New change request</DialogTitle>
+            <DialogTitle>{t("adminMod.changes.register.newDialogTitle")}</DialogTitle>
             <DialogDescription>
-              Describe what is changing and why. A CR number is assigned automatically.
+              {t("adminMod.changes.register.newDialogDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="cr-type">Change type</Label>
+              <Label htmlFor="cr-type">{t("adminMod.changes.register.changeType")}</Label>
               <Select
                 value={form.change_type}
                 onValueChange={(v) => setForm((f) => ({ ...f, change_type: v }))}
@@ -386,7 +391,7 @@ function ChangeRegister() {
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cr-title">Title</Label>
+              <Label htmlFor="cr-title">{t("adminMod.changes.register.titleLabel")}</Label>
               <Input
                 id="cr-title"
                 value={form.title}
@@ -394,7 +399,7 @@ function ChangeRegister() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cr-desc">Description</Label>
+              <Label htmlFor="cr-desc">{t("adminMod.changes.register.descriptionLabel")}</Label>
               <Textarea
                 id="cr-desc"
                 rows={3}
@@ -403,7 +408,7 @@ function ChangeRegister() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cr-reason">Reason</Label>
+              <Label htmlFor="cr-reason">{t("adminMod.changes.register.reasonLabel")}</Label>
               <Textarea
                 id="cr-reason"
                 rows={3}
@@ -412,7 +417,7 @@ function ChangeRegister() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cr-project">Project</Label>
+              <Label htmlFor="cr-project">{t("adminMod.changes.register.projectLabel")}</Label>
               <Select
                 value={form.project_id}
                 onValueChange={(v) => setForm((f) => ({ ...f, project_id: v }))}
@@ -421,7 +426,7 @@ function ChangeRegister() {
                   <SelectValue placeholder="No project" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL}>No project</SelectItem>
+                  <SelectItem value={ALL}>{t("adminMod.changes.register.noProject")}</SelectItem>
                   {(projects.data?.rows ?? []).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
@@ -433,7 +438,7 @@ function ChangeRegister() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              Cancel
+              {t("adminMod.changes.register.cancel")}
             </Button>
             <Button
               disabled={
@@ -444,7 +449,7 @@ function ChangeRegister() {
               }
               onClick={() => createMutation.mutate()}
             >
-              Create
+              {t("adminMod.changes.register.create")}
             </Button>
           </DialogFooter>
         </DialogContent>

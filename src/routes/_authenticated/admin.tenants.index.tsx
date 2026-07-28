@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   Table,
   TableBody,
@@ -70,6 +71,7 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/")({
 });
 
 function TenantsNotFound() {
+  const { t } = useI18n();
   return <div className="p-8 text-sm text-muted-foreground">Not found.</div>;
 }
 
@@ -121,6 +123,7 @@ const createSchema = z.object({
 type CreateFormValues = z.infer<typeof createSchema>;
 
 function TenantsPage() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   useMemo(() => {
@@ -137,7 +140,7 @@ function TenantsPage() {
   return (
     <div className="page-shell max-w-6xl">
       <PageHeader
-        title="Tenants"
+        title={t("adminMod.admin.tenants")}
         description="Platform super admin console for managing every GridMind tenant."
         actions={<CreateTenantDialog />}
       />

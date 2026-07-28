@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { KpiTile } from "@/components/ui/kpi-tile";
 import {
   Table,
@@ -134,7 +135,17 @@ const KIND_FILL: Record<string, string> = {
   net: "var(--color-chart-2)",
 };
 
+export function PvHonestyLabel({ className }: { className?: string }) {
+  const { t } = useI18n();
+  return (
+    <p className={className ?? "text-xs text-muted-foreground"}>
+      {t("engMod.pv.simulation.honestyLabel")}
+    </p>
+  );
+}
+
 export function PvSimulationResults({ simulation }: { simulation: SimulationRecord }) {
+  const { t } = useI18n();
   const result = resultOf(simulation);
   if (!result) {
     return (
@@ -171,6 +182,7 @@ export function PvSimulationResults({ simulation }: { simulation: SimulationReco
 
   return (
     <div className="space-y-4">
+      <PvHonestyLabel />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <KpiTile
           label="Annual net energy"

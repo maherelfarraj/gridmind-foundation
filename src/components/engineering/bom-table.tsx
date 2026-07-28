@@ -20,6 +20,7 @@ import {
 } from "@/lib/calculators/bom";
 import type { BomLineRow } from "@/lib/bom.functions";
 import { useUpdateBomLine } from "@/lib/bom-query";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 type EditState = Record<
   string,
@@ -78,6 +79,7 @@ export function BomTable({
   lines: BomLineRow[];
   readOnly: boolean;
 }) {
+  const { t } = useI18n();
   const [edit, dispatch] = useReducer(reducer, {} as EditState);
   const update = useUpdateBomLine(snapshotId, projectId);
 
@@ -122,13 +124,13 @@ export function BomTable({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Spec</TableHead>
-                    <TableHead className="w-20">Unit</TableHead>
-                    <TableHead className="w-32 text-right">Qty</TableHead>
-                    <TableHead className="w-28 text-right">Buffer %</TableHead>
-                    <TableHead className="w-32 text-right">Buffered</TableHead>
-                    <TableHead className="w-32 text-right">Unit cost</TableHead>
+                    <TableHead>{t("engMod.calculators.columns.item")}</TableHead>
+                    <TableHead>{t("engMod.calculators.columns.spec")}</TableHead>
+                    <TableHead className="w-20">{t("engMod.calculators.columns.unit")}</TableHead>
+                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.qty")}</TableHead>
+                    <TableHead className="w-28 text-right">{t("engMod.calculators.columns.bufferPct")}</TableHead>
+                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.buffered")}</TableHead>
+                    <TableHead className="w-32 text-right">{t("engMod.calculators.columns.unitCost")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

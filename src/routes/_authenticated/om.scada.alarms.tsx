@@ -55,6 +55,7 @@ import {
   type AlarmSeverity,
   type AlarmStatus,
 } from "@/lib/alarms.rules";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/om/scada/alarms")({
   head: () => ({
@@ -93,6 +94,7 @@ function statusBadge(s: AlarmStatus) {
 }
 
 function AlarmsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [status, setStatus] = useState<AlarmStatus | "all">("active");
   const [severity, setSeverity] = useState<AlarmSeverity | "all">("all");
@@ -131,31 +133,31 @@ function AlarmsPage() {
   const ackMut = useMutation({
     mutationFn: (vars: { id: string; note: string }) => ackFn({ data: vars }),
     onSuccess: () => {
-      toast.success("Alarm acknowledged");
+      toast.success(t("omMod.alarms.acknowledgedToast"));
       setAckTarget(null);
       form.reset({ id: "", note: "" });
       qc.invalidateQueries({ queryKey: ["alarms"] });
     },
-    onError: (e: Error) => toast.error(e.message ?? "Failed to acknowledge"),
+    onError: (e: Error) => toast.error(e.message ?? t("omMod.alarms.acknowledgeFailed")),
   });
 
   return (
     <div className="page-shell">
       <PageHeader
-        title="SCADA alarms"
-        description="Live plant health signals — auto-refreshes every 30 seconds."
+        title={t("omMod.alarms.title")}
+        description={t("omMod.alarms.description")}
       />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle className="text-sm font-medium">Filters</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("omMod.alarms.filters")}</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allStatuses")}</SelectItem>
                 {ALARM_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -168,7 +170,7 @@ function AlarmsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All severities</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allSeverities")}</SelectItem>
                 {ALARM_SEVERITIES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -178,10 +180,10 @@ function AlarmsPage() {
             </Select>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder="All projects" />
+                <SelectValue placeholder={t("omMod.common.allProjects")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All projects</SelectItem>
+                <SelectItem value="all">{t("omMod.common.allProjects")}</SelectItem>
                 {projectOptions.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -201,28 +203,28 @@ function AlarmsPage() {
           ) : query.isError ? (
             <EmptyState
               icon={AlertTriangle}
-              title="Failed to load alarms"
+              title={t("omMod.alarms.loadFailed")}
               action={
                 <Button variant="outline" onClick={() => query.refetch()}>
-                  Retry
+                  {t("omMod.common.retry")}
                 </Button>
               }
             />
           ) : filtered.length === 0 ? (
-            <EmptyState icon={CheckCircle2} title="No active alarms — plant healthy" />
+            <EmptyState icon={CheckCircle2} title={t("omMod.alarms.noActiveAlarms")} />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Raised</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Asset</TableHead>
-                  <TableHead>Rule</TableHead>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>{t("omMod.alarms.colRaised")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colSeverity")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colStatus")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colProject")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colAsset")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colRule")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colMessage")}</TableHead>
+                  <TableHead>{t("omMod.alarms.colValue")}</TableHead>
+                  <TableHead className="text-right">{t("omMod.alarms.colAction")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -242,7 +244,7 @@ function AlarmsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <ThreadLink entityType="scada_alarm" entityId={row.id} label="Thread" />
+                        <ThreadLink entityType="scada_alarm" entityId={row.id} label={t("omMod.alarms.threadLabel")} />
                         {row.status === "active" ? (
                           <Button
                             size="sm"
@@ -251,7 +253,7 @@ function AlarmsPage() {
                               form.reset({ id: row.id, note: "" });
                             }}
                           >
-                            Acknowledge
+                            {t("omMod.alarms.acknowledge")}
                           </Button>
                         ) : row.acknowledge_note ? (
                           <span className="text-xs text-muted-foreground">
@@ -271,7 +273,7 @@ function AlarmsPage() {
       <Dialog open={!!ackTarget} onOpenChange={(o) => !o && setAckTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Acknowledge alarm</DialogTitle>
+            <DialogTitle>{t("omMod.alarms.acknowledgeDialogTitle")}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit((v) => ackMut.mutate(v))} className="space-y-4">
@@ -280,9 +282,9 @@ function AlarmsPage() {
                 name="note"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Note (required)</FormLabel>
+                    <FormLabel>{t("omMod.alarms.noteLabel")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder="Root cause / action taken" {...field} />
+                      <Textarea rows={4} placeholder={t("omMod.alarms.notePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -290,10 +292,10 @@ function AlarmsPage() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setAckTarget(null)}>
-                  Cancel
+                  {t("omMod.common.cancel")}
                 </Button>
                 <Button type="submit" disabled={ackMut.isPending}>
-                  {ackMut.isPending ? "Saving…" : "Acknowledge"}
+                  {ackMut.isPending ? t("omMod.common.saving") : t("omMod.alarms.acknowledge")}
                 </Button>
               </DialogFooter>
             </form>

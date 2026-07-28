@@ -28,19 +28,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCanvasStore } from "@/lib/sld/canvas-store";
-import { CONNECTION_LABELS, CONNECTION_TYPES, type ConnectionType } from "@/lib/sld/canvas-types";
+import { CONNECTION_TYPES, type ConnectionType } from "@/lib/sld/canvas-types";
 import type { AlignMode, DistributeAxis } from "@/lib/sld/geometry";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
-const ALIGN_BUTTONS: Array<{ mode: AlignMode; label: string; Icon: typeof AlignStartVertical }> = [
-  { mode: "left", label: "Align left", Icon: AlignStartVertical },
-  { mode: "center", label: "Align centre", Icon: AlignCenterVertical },
-  { mode: "right", label: "Align right", Icon: AlignEndVertical },
-  { mode: "top", label: "Align top", Icon: AlignStartHorizontal },
-  { mode: "middle", label: "Align middle", Icon: AlignCenterHorizontal },
-  { mode: "bottom", label: "Align bottom", Icon: AlignEndHorizontal },
+const ALIGN_MODES: Array<{ mode: AlignMode; Icon: typeof AlignStartVertical }> = [
+  { mode: "left", Icon: AlignStartVertical },
+  { mode: "center", Icon: AlignCenterVertical },
+  { mode: "right", Icon: AlignEndVertical },
+  { mode: "top", Icon: AlignStartHorizontal },
+  { mode: "middle", Icon: AlignCenterHorizontal },
+  { mode: "bottom", Icon: AlignEndHorizontal },
 ];
 
 export function OpsToolbar({ editable }: { editable: boolean }) {
+  const { t } = useI18n();
+  const CONNECTION_LABELS_T: Record<ConnectionType, string> = {
+    cable: t("engMod.sld.canvas.connectionTypeLabels.cable"),
+    busbar: t("engMod.sld.canvas.connectionTypeLabels.busbar"),
+    dc_string: t("engMod.sld.canvas.connectionTypeLabels.dc_string"),
+    earth: t("engMod.sld.canvas.connectionTypeLabels.earth"),
+    signal: t("engMod.sld.canvas.connectionTypeLabels.signal"),
+  };
+  const ALIGN_LABELS: Record<AlignMode, string> = {
+    left: t("engMod.sld.canvas.align.left"),
+    center: t("engMod.sld.canvas.align.center"),
+    right: t("engMod.sld.canvas.align.right"),
+    top: t("engMod.sld.canvas.align.top"),
+    middle: t("engMod.sld.canvas.align.middle"),
+    bottom: t("engMod.sld.canvas.align.bottom"),
+  };
   const tool = useCanvasStore((s) => s.tool);
   const selection = useCanvasStore((s) => s.selection);
   const connectionType = useCanvasStore((s) => s.connectionType);
@@ -57,7 +74,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
         <Button
           variant={tool === "select" ? "default" : "ghost"}
           size="icon"
-          aria-label="Select tool"
+          aria-label={t("engMod.sld.canvas.tools.select")}
           onClick={() => s().setTool("select")}
         >
           <MousePointer2 className="size-4" />
@@ -65,7 +82,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
         <Button
           variant={tool === "pan" ? "default" : "ghost"}
           size="icon"
-          aria-label="Pan tool"
+          aria-label={t("engMod.sld.canvas.tools.pan")}
           onClick={() => s().setTool("pan")}
         >
           <Move className="size-4" />
@@ -73,7 +90,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
         <Button
           variant={tool === "connect" ? "default" : "ghost"}
           size="icon"
-          aria-label="Connection tool"
+          aria-label={t("engMod.sld.canvas.tools.connect")}
           disabled={!editable}
           onClick={() => s().setTool("connect")}
         >
@@ -82,7 +99,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
         <Button
           variant={tool === "measure" ? "default" : "ghost"}
           size="icon"
-          aria-label="Measure tool"
+          aria-label={t("engMod.sld.canvas.tools.measure")}
           disabled={!editable}
           onClick={() => s().setTool("measure")}
         >
@@ -94,13 +111,13 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
         value={connectionType}
         onValueChange={(v) => s().setConnectionType(v as ConnectionType)}
       >
-        <SelectTrigger className="h-8 w-[130px]" aria-label="Connection type">
+        <SelectTrigger className="h-8 w-[130px]" aria-label={t("engMod.sld.canvas.connectionType")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {CONNECTION_TYPES.map((t) => (
             <SelectItem key={t} value={t}>
-              {CONNECTION_LABELS[t]}
+              {CONNECTION_LABELS_T[t]}
             </SelectItem>
           ))}
         </SelectContent>
@@ -111,7 +128,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Rotate 90°"
+        aria-label={t("engMod.sld.canvas.actions.rotate")}
         disabled={!editable || !some}
         onClick={() => s().rotateSelection()}
       >
@@ -120,7 +137,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Mirror horizontally"
+        aria-label={t("engMod.sld.canvas.actions.mirror")}
         disabled={!editable || !some}
         onClick={() => s().mirrorSelection()}
       >
@@ -129,7 +146,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Copy"
+        aria-label={t("engMod.sld.canvas.actions.copy")}
         disabled={!editable || !some}
         onClick={() => s().copySelection()}
       >
@@ -138,7 +155,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Paste"
+        aria-label={t("engMod.sld.canvas.actions.paste")}
         disabled={!editable}
         onClick={() => s().paste()}
       >
@@ -147,7 +164,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Group"
+        aria-label={t("engMod.sld.canvas.actions.group")}
         disabled={!editable || !many}
         onClick={() => s().groupSelection()}
       >
@@ -156,7 +173,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Ungroup"
+        aria-label={t("engMod.sld.canvas.actions.ungroup")}
         disabled={!editable || !some}
         onClick={() => s().ungroupSelection()}
       >
@@ -165,7 +182,7 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Delete selection"
+        aria-label={t("engMod.sld.canvas.actions.delete")}
         disabled={!editable || !some}
         onClick={() => s().deleteSelection()}
       >
@@ -174,12 +191,12 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
 
       <span className="mx-1 h-6 w-px bg-border" aria-hidden />
 
-      {ALIGN_BUTTONS.map(({ mode, label, Icon }) => (
+      {ALIGN_MODES.map(({ mode, Icon }) => (
         <Button
           key={mode}
           variant="ghost"
           size="icon"
-          aria-label={label}
+          aria-label={ALIGN_LABELS[mode]}
           disabled={!editable || !many}
           onClick={() => s().alignSelection(mode)}
         >
@@ -192,11 +209,13 @@ export function OpsToolbar({ editable }: { editable: boolean }) {
           variant="ghost"
           size="sm"
           className="h-8 px-2 text-xs"
-          aria-label={`Distribute ${axis}ly`}
+          aria-label={t("engMod.sld.canvas.distribute.aria", { axis })}
           disabled={!editable || !three}
           onClick={() => s().distributeSelection(axis)}
         >
-          {axis === "horizontal" ? "Dist H" : "Dist V"}
+          {axis === "horizontal"
+            ? t("engMod.sld.canvas.distribute.horizontal")
+            : t("engMod.sld.canvas.distribute.vertical")}
         </Button>
       ))}
     </div>

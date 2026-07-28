@@ -5,6 +5,7 @@ import { EaStudyWorkspace } from "@/components/engineering/ea-study-workspace";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isCalculatorStudyType, type CalculatorStudyType } from "@/lib/electrical";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/engineering/studies/$studyType/new",
@@ -30,17 +31,18 @@ export const Route = createFileRoute(
 });
 
 function NewStudyPage() {
+  const { t } = useI18n();
   const { projectId, studyType } = Route.useParams();
 
   if (!isCalculatorStudyType(studyType)) {
     return (
       <EmptyState
-        title="No calculator for this study type"
-        description="This study type is prepared through the protection worksheets or the grid-code checklist."
+        title={t("engMod.ea.studies.noCalculator.title")}
+        description={t("engMod.ea.studies.noCalculator.description")}
         action={
           <Button asChild variant="outline">
             <Link to="/projects/$projectId/engineering/studies" params={{ projectId }}>
-              Back to studies
+              {t("engMod.ea.studies.noCalculator.backToStudies")}
             </Link>
           </Button>
         }

@@ -38,6 +38,7 @@ import type { WorkOrderStatus } from "@/lib/work-orders.rules";
 import { canTransition, WORK_ORDER_STATUSES } from "@/lib/work-orders.rules";
 import { CreateWorkOrderDialog } from "@/components/work-orders/create-work-order-dialog";
 import { WorkOrderDrawer } from "@/components/work-orders/work-order-drawer";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/om/work-orders")({
   head: () => ({
@@ -98,6 +99,7 @@ function money(n: number) {
 
 // ---------------------------------------------------------------------------
 function WorkOrdersPage() {
+  const { t } = useI18n();
   const listFn = useServerFn(listWorkOrders);
   const kpiFn = useServerFn(getWorkOrderKpis);
   const statusFn = useServerFn(updateWorkOrderStatus);
@@ -130,10 +132,10 @@ function WorkOrdersPage() {
     },
     onError: (err: Error, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(["work-orders", { q }], ctx.prev);
-      toast.error(err.message ?? "Status change rejected");
+      toast.error(err.message || t("omMod.workOrders.statusRejected"));
     },
     onSuccess: () => {
-      toast.success("Status updated");
+      toast.success(t("omMod.workOrders.statusUpdated"));
       qc.invalidateQueries({ queryKey: ["wo-kpis"] });
     },
   });
@@ -161,12 +163,12 @@ function WorkOrdersPage() {
     const row = rows.find((r) => r.id === id);
     if (!row || row.status === to) return;
     if (to === "closed") {
-      toast.info("Use the Close tab to close a work order (needs resolution notes).");
+      toast.info(t("omMod.workOrders.moveClosedInfo"));
       setOpenId(id);
       return;
     }
     if (!canTransition(row.status, to)) {
-      toast.error(`Cannot move ${row.status} → ${to}`);
+      toast.error(t("omMod.workOrders.cannotMove", { from: row.status, to }));
       return;
     }
     statusMut.mutate({ id, status: to });
@@ -194,21 +196,21 @@ function WorkOrdersPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Work orders"
-        description="Corrective, preventive, and inspection work across your fleet."
+        title={t("omMod.workOrders.title")}
+        description={t("omMod.workOrders.description")}
         actions={
           <>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="w-64 pl-8"
-                placeholder="Search WO # or title"
+                className="w-64 ps-8"
+                placeholder={t("omMod.workOrders.searchPlaceholder")}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
             </div>
             <Button variant="outline" onClick={exportCsv} disabled={!rows.length}>
-              <Download className="mr-2 h-4 w-4" /> CSV
+              <Download className="me-2 h-4 w-4" /> {t("omMod.common.csv")}
             </Button>
             <CreateWorkOrderDialog />
           </>
@@ -216,6 +218,7 @@ function WorkOrdersPage() {
       />
 
       <KpiStrip
+        t={t}
         loading={kpisQ.isLoading}
         pmRatio={kpisQ.data?.pmRatio ?? null}
         pmCount={kpisQ.data?.pmCount ?? 0}
@@ -229,15 +232,17 @@ function WorkOrdersPage() {
         <Tabs value={view} onValueChange={(v) => setView(v as "kanban" | "table")}>
           <TabsList>
             <TabsTrigger value="kanban">
-              <LayoutGrid className="mr-1 h-4 w-4" /> Kanban
+              <LayoutGrid className="me-1 h-4 w-4" /> {t("omMod.workOrders.kanban")}
             </TabsTrigger>
             <TabsTrigger value="table">
-              <Rows className="mr-1 h-4 w-4" /> Table
+              <Rows className="me-1 h-4 w-4" /> {t("omMod.workOrders.table")}
             </TabsTrigger>
           </TabsList>
         </Tabs>
         <span className="text-xs text-muted-foreground">
-          {rowsQ.isLoading ? "Loading…" : `${rows.length} work orders`}
+          {rowsQ.isLoading
+            ? t("omMod.workOrders.loadingCount")
+            : t("omMod.workOrders.countLabel", { count: rows.length })}
         </span>
       </div>
 
@@ -245,12 +250,12 @@ function WorkOrdersPage() {
         <DndContext sensors={sensors} onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-6">
             {KANBAN_COLUMNS.map((col) => (
-              <KanbanColumn key={col} status={col} rows={columns[col]} onOpen={setOpenId} />
+              <KanbanColumn key={col} status={col} rows={columns[col]} onOpen={setOpenId} t={t} />
             ))}
           </div>
         </DndContext>
       ) : (
-        <TableView rows={rows} onOpen={setOpenId} />
+        <TableView rows={rows} onOpen={setOpenId} t={t} />
       )}
 
       <WorkOrderDrawer
@@ -265,6 +270,7 @@ function WorkOrdersPage() {
 
 // ---------------------------------------------------------------------------
 function KpiStrip(props: {
+  t: ReturnType<typeof useI18n>["t"];
   loading: boolean;
   pmRatio: number | null;
   pmCount: number;
@@ -273,34 +279,35 @@ function KpiStrip(props: {
   correctiveClosed: number;
   windowDays: number;
 }) {
+  const { t } = props;
   const pct = props.pmRatio == null ? null : Math.round(props.pmRatio * 100);
   const targetMet = pct != null && pct >= 80;
   return (
     <KpiGrid columns={3}>
       <KpiTile
-        label={`PM : CM ratio (${props.windowDays}d)`}
+        label={t("omMod.workOrders.pmCmRatio", { days: props.windowDays })}
         value={pct == null ? "—" : `${pct}%`}
         status={targetMet ? "good" : "neutral"}
         hint={
           <span className="flex items-center gap-2">
-            <Badge variant={targetMet ? "default" : "outline"}>target ≥ 80%</Badge>
-            <span>
-              {props.pmCount} preventive · {props.cmCount} corrective (closed)
-            </span>
+            <Badge variant={targetMet ? "default" : "outline"}>
+              {t("omMod.workOrders.targetLabel")}
+            </Badge>
+            <span>{t("omMod.workOrders.pmCmHint", { pm: props.pmCount, cm: props.cmCount })}</span>
           </span>
         }
         isLoading={props.loading}
       />
       <KpiTile
-        label="MTTR (corrective, closed)"
+        label={t("omMod.workOrders.mttr")}
         value={props.mttrHours == null ? "—" : `${props.mttrHours} h`}
-        hint={`${props.correctiveClosed} completed corrective WOs`}
+        hint={t("omMod.workOrders.mttrHint", { count: props.correctiveClosed })}
         isLoading={props.loading}
       />
       <KpiTile
-        label="Window"
+        label={t("omMod.workOrders.window")}
         value={`${props.windowDays}d`}
-        hint="Trailing window for PM ratio & MTTR"
+        hint={t("omMod.workOrders.windowHint")}
         isLoading={props.loading}
       />
     </KpiGrid>
@@ -312,10 +319,12 @@ function KanbanColumn({
   status,
   rows,
   onOpen,
+  t,
 }: {
   status: WorkOrderStatus;
   rows: WorkOrderRow[];
   onOpen: (id: string) => void;
+  t: ReturnType<typeof useI18n>["t"];
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   return (
@@ -326,23 +335,31 @@ function KanbanColumn({
       }`}
     >
       <div className="flex items-center justify-between border-b border-border px-3 py-2">
-        <span className="text-sm font-medium capitalize">{status.replace("_", " ")}</span>
+        <span className="text-sm font-medium">{t(`omMod.workOrderStatus.${status}`)}</span>
         <Badge variant="outline">{rows.length}</Badge>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2">
         {rows.length === 0 ? (
           <p className="px-1 py-3 text-xs text-muted-foreground uppercase tracking-wide">
-            No cards
+            {t("omMod.workOrders.noCards")}
           </p>
         ) : (
-          rows.map((r) => <KanbanCard key={r.id} row={r} onOpen={onOpen} />)
+          rows.map((r) => <KanbanCard key={r.id} row={r} onOpen={onOpen} t={t} />)
         )}
       </div>
     </div>
   );
 }
 
-function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) => void }) {
+function KanbanCard({
+  row,
+  onOpen,
+  t,
+}: {
+  row: WorkOrderRow;
+  onOpen: (id: string) => void;
+  t: ReturnType<typeof useI18n>["t"];
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: row.id });
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
@@ -366,7 +383,9 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-mono text-xs text-muted-foreground">{row.wo_number}</span>
-        <Badge className={priorityCls(row.priority)}>{row.priority}</Badge>
+        <Badge className={priorityCls(row.priority)}>
+          {t(`omMod.workOrderPriority.${row.priority}`)}
+        </Badge>
       </div>
       <p className="mt-1 line-clamp-2 text-sm font-medium">{row.title}</p>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -377,11 +396,15 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
         <span
           className={`text-xs ${overdue ? "font-semibold text-destructive" : "text-muted-foreground"}`}
         >
-          {row.due_date ? (overdue ? `Overdue · ${row.due_date}` : `Due ${row.due_date}`) : "—"}
+          {row.due_date
+            ? overdue
+              ? t("omMod.workOrders.overdue", { date: row.due_date })
+              : t("omMod.workOrders.due", { date: row.due_date })
+            : "—"}
         </span>
         <span
           className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium"
-          title={row.assignee_name ?? row.assignee_email ?? "Unassigned"}
+          title={row.assignee_name ?? row.assignee_email ?? t("omMod.common.unassigned")}
         >
           {row.assigned_to ? initials(row.assignee_name, row.assignee_email) : "·"}
         </span>
@@ -392,28 +415,53 @@ function KanbanCard({ row, onOpen }: { row: WorkOrderRow; onOpen: (id: string) =
 
 // ---------------------------------------------------------------------------
 // POL-3 — shared DataTable standard (numeric right-aligned, card list on mobile).
-function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string) => void }) {
+function TableView({
+  rows,
+  onOpen,
+  t,
+}: {
+  rows: WorkOrderRow[];
+  onOpen: (id: string) => void;
+  t: ReturnType<typeof useI18n>["t"];
+}) {
   const columns: DataTableColumn<WorkOrderRow>[] = [
     {
       id: "wo",
-      header: "WO #",
+      header: t("omMod.workOrders.colWo"),
       cell: (r) => <span className="font-mono text-xs">{r.wo_number}</span>,
     },
-    { id: "title", header: "Title", cell: (r) => <span className="font-medium">{r.title}</span> },
-    { id: "type", header: "Type", hideBelow: "lg", cell: (r) => <StatusBadge status={r.type} /> },
-    { id: "priority", header: "Priority", cell: (r) => <StatusBadge status={r.priority} /> },
-    { id: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      id: "title",
+      header: t("omMod.workOrders.colTitle"),
+      cell: (r) => <span className="font-medium">{r.title}</span>,
+    },
+    {
+      id: "type",
+      header: t("omMod.workOrders.colType"),
+      hideBelow: "lg",
+      cell: (r) => <StatusBadge status={r.type} />,
+    },
+    {
+      id: "priority",
+      header: t("omMod.workOrders.colPriority"),
+      cell: (r) => <StatusBadge status={r.priority} />,
+    },
+    {
+      id: "status",
+      header: t("omMod.workOrders.colStatus"),
+      cell: (r) => <StatusBadge status={r.status} />,
+    },
     {
       id: "assignee",
-      header: "Assignee",
+      header: t("omMod.workOrders.colAssignee"),
       hideBelow: "lg",
       cell: (r) =>
         r.assignee_name ??
-        r.assignee_email ?? <span className="text-muted-foreground">Unassigned</span>,
+        r.assignee_email ?? <span className="text-muted-foreground">{t("omMod.common.unassigned")}</span>,
     },
     {
       id: "due",
-      header: "Due",
+      header: t("omMod.workOrders.colDue"),
       hideBelow: "md",
       cell: (r) =>
         isOverdue(r.due_date, r.status) ? (
@@ -424,7 +472,7 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
     },
     {
       id: "cost",
-      header: "Cost",
+      header: t("omMod.workOrders.colCost"),
       numeric: true,
       cell: (r) => formatMoney(r.total_cost, "USD"),
     },
@@ -436,8 +484,8 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
       rows={rows}
       getRowId={(r) => r.id}
       onRowClick={(r) => onOpen(r.id)}
-      emptyTitle="No work orders yet"
-      emptyDescription="Corrective and preventive work orders appear here."
+      emptyTitle={t("omMod.workOrders.emptyTitle")}
+      emptyDescription={t("omMod.workOrders.emptyDescription")}
       mobileCard={(r) => ({
         primary: (
           <span className="flex flex-col">
@@ -447,9 +495,9 @@ function TableView({ rows, onOpen }: { rows: WorkOrderRow[]; onOpen: (id: string
         ),
         badge: <StatusBadge status={r.status} />,
         fields: [
-          { label: "Priority", value: <StatusBadge status={r.priority} /> },
+          { label: t("omMod.workOrders.colPriority"), value: <StatusBadge status={r.priority} /> },
           {
-            label: "Due",
+            label: t("omMod.workOrders.colDue"),
             value: isOverdue(r.due_date, r.status) ? (
               <span className="font-medium text-destructive">{formatDate(r.due_date)}</span>
             ) : (

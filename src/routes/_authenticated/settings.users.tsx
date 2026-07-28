@@ -85,6 +85,7 @@ import { BulkInviteDialog } from "@/components/bulk-invite-dialog";
 import { Mail } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/settings/users")({
   head: () => ({
@@ -154,7 +155,13 @@ function downloadCsv(filename: string, csv: string) {
 }
 
 function UsersPage() {
+  const { t } = useI18n();
   const { activeCompanyId } = useActiveCompany();
+  const roleLabel = (role: string) => {
+    const key = `adminMod.settings.roles.${role}`;
+    const label = t(key);
+    return label === key ? humanizeRole(role as GrantableRole) : label;
+  };
   const queryClient = useQueryClient();
   const listFn = useServerFn(listInvites);
   const snapshotFn = useServerFn(getCompanyAdminSnapshot);
@@ -296,8 +303,8 @@ function UsersPage() {
     onSuccess: (vars) => {
       toast.success(
         vars.action === "grant"
-          ? `Granted ${humanizeRole(vars.role)}`
-          : `Revoked ${humanizeRole(vars.role)}`,
+          ? `Granted ${roleLabel(vars.role)}`
+          : `Revoked ${roleLabel(vars.role)}`,
       );
       queryClient.invalidateQueries({ queryKey: membersKey });
       queryClient.invalidateQueries({
@@ -478,7 +485,7 @@ function UsersPage() {
                                   <SelectContent>
                                     {INVITE_ROLE_OPTIONS.map((role) => (
                                       <SelectItem key={role} value={role}>
-                                        {humanizeRole(role)}
+                                        {roleLabel(role)}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -634,7 +641,7 @@ function UsersPage() {
                         )}
                         {m.roles.map((r) => (
                           <Badge key={r} variant="outline">
-                            {humanizeRole(r)}
+                            {roleLabel(r)}
                           </Badge>
                         ))}
                       </div>
@@ -736,7 +743,7 @@ function UsersPage() {
                     <TableRow key={row.id}>
                       <TableCell className="font-medium">{row.email}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {humanizeRole(row.role)}
+                        {roleLabel(row.role)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={statusVariant(row.derivedStatus)}>
@@ -822,7 +829,7 @@ function UsersPage() {
                           key={role}
                           className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm"
                         >
-                          <span className="capitalize text-foreground">{humanizeRole(role)}</span>
+                          <span className="capitalize text-foreground">{roleLabel(role)}</span>
                           <div className="flex items-center gap-2">
                             {busy && (
                               <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
@@ -837,7 +844,7 @@ function UsersPage() {
                                   action: next ? "grant" : "revoke",
                                 })
                               }
-                              aria-label={`${on ? "Revoke" : "Grant"} ${humanizeRole(role)}`}
+                              aria-label={`${on ? "Revoke" : "Grant"} ${roleLabel(role)}`}
                             />
                           </div>
                         </label>

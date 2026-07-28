@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { PmPlanDialog } from "@/components/pm-plans/pm-plan-dialog";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   deletePmPlan,
   generatePmNow,
@@ -41,25 +42,40 @@ export const Route = createFileRoute("/_authenticated/om/maintenance-plans")({
     ],
   }),
   component: MaintenancePlansPage,
-  errorComponent: ({ error, reset }) => (
-    <div className="p-6">
-      <div className="text-sm text-destructive">Failed to load PM plans: {error.message}</div>
-      <Button className="mt-2" size="sm" onClick={reset}>
-        Retry
-      </Button>
-    </div>
-  ),
+  errorComponent: ({ error, reset }) => {
+    const { t } = useI18n();
+    return (
+      <div className="p-6">
+        <div className="text-sm text-destructive">
+          {t("omMod.maintenancePlans.loadFailed", { message: error.message })}
+        </div>
+        <Button className="mt-2" size="sm" onClick={reset}>
+          {t("omMod.common.retry")}
+        </Button>
+      </div>
+    );
+  },
 });
 
 function DueChip({ dateISO }: { dateISO: string }) {
+  const { t } = useI18n();
   const diff = differenceInCalendarDays(parseISO(dateISO), new Date());
-  if (diff < 0) return <Badge variant="destructive">Overdue {Math.abs(diff)}d</Badge>;
-  if (diff === 0) return <Badge>Due today</Badge>;
-  if (diff <= 7) return <Badge variant="secondary">In {diff}d</Badge>;
-  return <span className="text-sm text-muted-foreground">In {diff}d</span>;
+  if (diff < 0)
+    return (
+      <Badge variant="destructive">{t("omMod.maintenancePlans.overdueBy", { days: Math.abs(diff) })}</Badge>
+    );
+  if (diff === 0) return <Badge>{t("omMod.maintenancePlans.dueToday")}</Badge>;
+  if (diff <= 7)
+    return <Badge variant="secondary">{t("omMod.maintenancePlans.inDays", { days: diff })}</Badge>;
+  return (
+    <span className="text-sm text-muted-foreground">
+      {t("omMod.maintenancePlans.inDays", { days: diff })}
+    </span>
+  );
 }
 
 function MaintenancePlansPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listFn = useServerFn(listPmPlans);
   const toggleFn = useServerFn(togglePmPlan);
@@ -72,30 +88,33 @@ function MaintenancePlansPage() {
     mutationFn: (v: { id: string; active?: boolean; auto_generate?: boolean }) =>
       toggleFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pm-plans"] }),
-    onError: (e: Error) => toast.error(e.message ?? "Toggle failed"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.maintenancePlans.toggleFailed")),
   });
 
   const del = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => {
-      toast.success("Plan deleted");
+      toast.success(t("omMod.maintenancePlans.planDeleted"));
       qc.invalidateQueries({ queryKey: ["pm-plans"] });
     },
-    onError: (e: Error) => toast.error(e.message ?? "Delete failed"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.maintenancePlans.deleteFailed")),
   });
 
   const gen = useMutation({
     mutationFn: (planId?: string) => genFn({ data: { plan_id: planId } }),
     onSuccess: (s) => {
       toast.success(
-        `Generated ${s.generated} work order${s.generated === 1 ? "" : "s"}` +
-          (s.skipped ? ` (${s.skipped} skipped)` : ""),
+        t("omMod.maintenancePlans.generatedCount", {
+          count: s.generated,
+          plural: s.generated === 1 ? "" : "s",
+          skipped: s.skipped ? t("omMod.maintenancePlans.skippedSuffix", { count: s.skipped }) : "",
+        }),
       );
       qc.invalidateQueries({ queryKey: ["pm-plans"] });
       qc.invalidateQueries({ queryKey: ["work-orders"] });
       qc.invalidateQueries({ queryKey: ["wo-kpis"] });
     },
-    onError: (e: Error) => toast.error(e.message ?? "Generation failed"),
+    onError: (e: Error) => toast.error(e.message || t("omMod.maintenancePlans.generationFailed")),
   });
 
   const plans = (plansQ.data ?? []) as PmPlanRow[];
@@ -103,8 +122,8 @@ function MaintenancePlansPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Preventive maintenance plans"
-        description="Schedule recurring work that auto-generates preventive work orders when due."
+        title={t("omMod.maintenancePlans.title")}
+        description={t("omMod.maintenancePlans.description")}
         actions={
           <>
             <Button
@@ -112,8 +131,8 @@ function MaintenancePlansPage() {
               onClick={() => gen.mutate(undefined)}
               disabled={gen.isPending}
             >
-              <Play className="mr-2 h-4 w-4" />
-              Generate all now
+              <Play className="me-2 h-4 w-4" />
+              {t("omMod.maintenancePlans.generateAllNow")}
             </Button>
             <PmPlanDialog />
           </>
@@ -122,10 +141,8 @@ function MaintenancePlansPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Plans</CardTitle>
-          <CardDescription>
-            PM:CM ratio improves whenever a preventive WO is generated ahead of a failure.
-          </CardDescription>
+          <CardTitle>{t("omMod.maintenancePlans.plansTitle")}</CardTitle>
+          <CardDescription>{t("omMod.maintenancePlans.plansHint")}</CardDescription>
         </CardHeader>
         <CardContent>
           {plansQ.isLoading ? (
@@ -137,22 +154,22 @@ function MaintenancePlansPage() {
           ) : plans.length === 0 ? (
             <EmptyState
               icon={CalendarClock}
-              title="No preventive plans"
-              description="Schedule your first plan to start generating preventive work orders."
+              title={t("omMod.maintenancePlans.noPlansTitle")}
+              description={t("omMod.maintenancePlans.noPlansDescription")}
               action={<PmPlanDialog />}
             />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Target</TableHead>
-                  <TableHead>Frequency</TableHead>
-                  <TableHead>Next due</TableHead>
-                  <TableHead>Last generated</TableHead>
-                  <TableHead>Auto</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colPlan")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colTarget")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colFrequency")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colNextDue")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colLastGenerated")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colAuto")}</TableHead>
+                  <TableHead>{t("omMod.maintenancePlans.colActive")}</TableHead>
+                  <TableHead className="text-end">{t("omMod.maintenancePlans.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -166,12 +183,16 @@ function MaintenancePlansPage() {
                       {p.equipment_tag ? (
                         <Badge variant="outline">{p.equipment_tag}</Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Project-wide</span>
+                        <span className="text-xs text-muted-foreground">
+                          {t("omMod.common.projectWide")}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="capitalize">
                       {p.frequency}
-                      <div className="text-xs text-muted-foreground">every {p.interval_days}d</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t("omMod.maintenancePlans.everyDays", { days: p.interval_days })}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
@@ -194,21 +215,21 @@ function MaintenancePlansPage() {
                         onCheckedChange={(v) => toggle.mutate({ id: p.id, active: v })}
                       />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <div className="flex justify-end gap-1">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => gen.mutate(p.id)}
                           disabled={gen.isPending}
-                          title="Generate now"
+                          title={t("omMod.maintenancePlans.generateNow")}
                         >
                           <Play className="h-4 w-4" />
                         </Button>
                         <PmPlanDialog
                           plan={p}
                           trigger={
-                            <Button size="sm" variant="ghost" title="Edit">
+                            <Button size="sm" variant="ghost" title={t("omMod.common.edit")}>
                               <Pencil className="h-4 w-4" />
                             </Button>
                           }
@@ -217,9 +238,10 @@ function MaintenancePlansPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => {
-                            if (confirm(`Delete plan "${p.title}"?`)) del.mutate(p.id);
+                            if (confirm(t("omMod.maintenancePlans.deleteConfirm", { title: p.title })))
+                              del.mutate(p.id);
                           }}
-                          title="Delete"
+                          title={t("omMod.common.delete")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

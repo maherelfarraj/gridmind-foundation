@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/ui/page-header";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/admin/health")({
   head: () => ({
@@ -74,6 +75,7 @@ function statusIcon(status: SignalStatus) {
 }
 
 function HealthPage() {
+  const { t } = useI18n();
   const fetchHealth = useServerFn(getOpsHealth);
   const query = useQuery({
     queryKey: ["ops-health"],
@@ -85,7 +87,7 @@ function HealthPage() {
   return (
     <div className="page-shell max-w-6xl">
       <PageHeader
-        title="Ops Health"
+        title={t("adminMod.admin.health")}
         description="Audit-driven signals from the public API guard, webhook framework, and cron schedulers."
         actions={
           <div className="flex items-center gap-3">
