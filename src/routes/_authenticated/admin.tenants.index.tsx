@@ -72,15 +72,16 @@ export const Route = createFileRoute("/_authenticated/admin/tenants/")({
 
 function TenantsNotFound() {
   const { t } = useI18n();
-  return <div className="p-8 text-sm text-muted-foreground">Not found.</div>;
+  return <div className="p-8 text-sm text-muted-foreground">{t("adminMod.tenantsPage.notFound")}</div>;
 }
 
 function TenantsError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   const router = useRouter();
   return (
     <Card className="m-6">
       <CardHeader>
-        <CardTitle>Couldn't load tenants</CardTitle>
+        <CardTitle>{t("adminMod.tenantsPage.errorTitle")}</CardTitle>
         <CardDescription>{error.message}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,22 +92,18 @@ function TenantsError({ error, reset }: { error: Error; reset: () => void }) {
             reset();
           }}
         >
-          Retry
+          {t("adminMod.tenantsPage.retry")}
         </Button>
       </CardContent>
     </Card>
   );
 }
 
-const PLAN_LABELS: Record<PlanTier, string> = {
-  starter: "Starter",
-  growth: "Growth",
-  enterprise: "Enterprise",
-};
-
 function PlanBadge({ tier }: { tier: PlanTier }) {
+  const { t } = useI18n();
   const variant = tier === "enterprise" ? "default" : tier === "growth" ? "secondary" : "outline";
-  return <Badge variant={variant}>{PLAN_LABELS[tier]}</Badge>;
+  const label = t(`adminMod.tenantsPage.plan.${tier}`);
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
 const createSchema = z.object({
@@ -141,14 +138,14 @@ function TenantsPage() {
     <div className="page-shell max-w-6xl">
       <PageHeader
         title={t("adminMod.admin.tenants")}
-        description="Platform super admin console for managing every GridMind tenant."
+        description={t("adminMod.tenantsPage.description")}
         actions={<CreateTenantDialog />}
       />
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search legal name, short name, email…"
+          placeholder={t("adminMod.tenantsPage.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -160,12 +157,12 @@ function TenantsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Legal name</TableHead>
-                <TableHead>Short name</TableHead>
-                <TableHead>Contact email</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead className="text-right">Members</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>{t("adminMod.tenantsPage.colLegalName")}</TableHead>
+                <TableHead>{t("adminMod.tenantsPage.colShortName")}</TableHead>
+                <TableHead>{t("adminMod.tenantsPage.colContactEmail")}</TableHead>
+                <TableHead>{t("adminMod.tenantsPage.colPlan")}</TableHead>
+                <TableHead className="text-right">{t("adminMod.tenantsPage.colMembers")}</TableHead>
+                <TableHead>{t("adminMod.tenantsPage.colCreated")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,7 +182,7 @@ function TenantsPage() {
                     {(query.error as Error).message}
                     <div className="mt-3">
                       <Button size="sm" variant="outline" onClick={() => query.refetch()}>
-                        Retry
+                        {t("adminMod.tenantsPage.retry")}
                       </Button>
                     </div>
                   </TableCell>
@@ -195,7 +192,7 @@ function TenantsPage() {
                   <TableCell colSpan={6} className="border-0 bg-transparent p-0">
                     <EmptyState
                       icon={Building2}
-                      title="No tenants yet"
+                      title={t("adminMod.tenantsPage.emptyTitle")}
                       compact
                       className="border-0 bg-transparent"
                     />
@@ -234,6 +231,7 @@ function TenantsPage() {
 }
 
 function CreateTenantDialog() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
   const createFn = useServerFn(createTenant);
@@ -245,12 +243,12 @@ function CreateTenantDialog() {
   const mutation = useMutation({
     mutationFn: (values: CreateFormValues) => createFn({ data: values }),
     onSuccess: () => {
-      toast.success("Tenant created");
+      toast.success(t("adminMod.tenantsPage.create.successToast"));
       qc.invalidateQueries({ queryKey: ["admin", "tenants"] });
       form.reset();
       setOpen(false);
     },
-    onError: (err: Error) => toast.error(err.message || "Failed to create tenant"),
+    onError: (err: Error) => toast.error(err.message || t("adminMod.tenantsPage.create.errorToast")),
   });
 
   return (
@@ -258,14 +256,14 @@ function CreateTenantDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Create tenant
+          {t("adminMod.tenantsPage.create.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create tenant</DialogTitle>
+          <DialogTitle>{t("adminMod.tenantsPage.create.dialogTitle")}</DialogTitle>
           <DialogDescription>
-            Provisions a new company. You can invite members after creation.
+            {t("adminMod.tenantsPage.create.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -275,9 +273,9 @@ function CreateTenantDialog() {
               name="legalName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Legal name</FormLabel>
+                  <FormLabel>{t("adminMod.tenantsPage.create.legalNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Acme Solar Holdings, Inc." />
+                    <Input {...field} placeholder={t("adminMod.tenantsPage.create.legalNamePlaceholder")} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -288,9 +286,9 @@ function CreateTenantDialog() {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Short name</FormLabel>
+                  <FormLabel>{t("adminMod.tenantsPage.create.shortNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="acme-solar" />
+                    <Input {...field} placeholder={t("adminMod.tenantsPage.create.shortNamePlaceholder")} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -301,9 +299,9 @@ function CreateTenantDialog() {
               name="contactEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact email</FormLabel>
+                  <FormLabel>{t("adminMod.tenantsPage.create.contactEmailLabel")}</FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" placeholder="ops@acme.com" />
+                    <Input {...field} type="email" placeholder={t("adminMod.tenantsPage.create.contactEmailPlaceholder")} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -314,7 +312,7 @@ function CreateTenantDialog() {
               name="planTier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Plan tier</FormLabel>
+                  <FormLabel>{t("adminMod.tenantsPage.create.planTierLabel")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
@@ -322,9 +320,9 @@ function CreateTenantDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="starter">Starter</SelectItem>
-                      <SelectItem value="growth">Growth</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                      <SelectItem value="starter">{t("adminMod.tenantsPage.plan.starter")}</SelectItem>
+                      <SelectItem value="growth">{t("adminMod.tenantsPage.plan.growth")}</SelectItem>
+                      <SelectItem value="enterprise">{t("adminMod.tenantsPage.plan.enterprise")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -333,11 +331,11 @@ function CreateTenantDialog() {
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {t("adminMod.tenantsPage.create.cancel")}
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create tenant
+                {t("adminMod.tenantsPage.create.submit")}
               </Button>
             </DialogFooter>
           </form>

@@ -226,18 +226,18 @@ function UsersPage() {
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not create invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotCreateInvite"));
     },
   });
 
   const revokeMut = useMutation({
     mutationFn: (inviteId: string) => revokeFn({ data: { inviteId } }),
     onSuccess: () => {
-      toast.success("Invite revoked");
+      toast.success(t("adminMod.settings.inviteRevokedToast"));
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not revoke invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotRevokeInvite"));
     },
   });
 
@@ -249,7 +249,7 @@ function UsersPage() {
       invalidate();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not resend invite");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.couldNotResendInvite"));
     },
   });
 
@@ -298,13 +298,13 @@ function UsersPage() {
     },
     onError: (err, _vars, ctx) => {
       if (ctx?.snapshot) queryClient.setQueryData(membersKey, ctx.snapshot);
-      toast.error(err instanceof Error ? err.message : "Role update failed");
+      toast.error(err instanceof Error ? err.message : t("adminMod.settings.roleUpdateFailed"));
     },
     onSuccess: (vars) => {
       toast.success(
         vars.action === "grant"
-          ? `Granted ${roleLabel(vars.role)}`
-          : `Revoked ${roleLabel(vars.role)}`,
+          ? t("adminMod.settings.grantedRoleToast", { role: roleLabel(vars.role) })
+          : t("adminMod.settings.revokedRoleToast", { role: roleLabel(vars.role) }),
       );
       queryClient.invalidateQueries({ queryKey: membersKey });
       queryClient.invalidateQueries({
@@ -375,9 +375,9 @@ function UsersPage() {
   const copyLink = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Invite link copied");
+      toast.success(t("adminMod.settings.inviteLinkCopied"));
     } catch {
-      toast.error("Could not copy — copy it manually");
+      toast.error(t("adminMod.settings.couldNotCopyLink"));
     }
   };
 
@@ -390,7 +390,7 @@ function UsersPage() {
 
   const onExport = () => {
     if (members.length === 0) {
-      toast.error("No members to export");
+      toast.error(t("adminMod.settings.noMembersToExport"));
       return;
     }
     downloadCsv("members.csv", toCsv(members));
