@@ -22,9 +22,16 @@ declare
   v_copy_2 uuid;
   v_num integer;
   v_due timestamptz;
+  v_actor uuid;
   v_err text;
 begin
-  select id into v_company from public.companies order by created_at limit 1;
+  select ur.company_id, ur.user_id into v_company, v_actor
+    from public.user_roles ur
+   where ur.role = 'company_admin'::public.app_role
+   order by ur.created_at
+   limit 1;
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', v_actor, 'role', 'authenticated')::text, true);
 
   insert into public.document_register
     (company_id, doc_type, title, current_revision, status)
@@ -32,17 +39,8 @@ begin
   returning id into v_a;
 
   -- two copies, sequential numbering per document
-  insert into public.controlled_copies
-    (company_id, document_id, copy_number, revision_pinned, holder_name, issue_date, status)
-  values (v_company, v_a, coalesce((select max(copy_number) from public.controlled_copies where document_id = v_a), 0) + 1,
-          'A', 'Site office', current_date, 'issued')
-  returning id into v_copy_1;
-
-  insert into public.controlled_copies
-    (company_id, document_id, copy_number, revision_pinned, holder_name, issue_date, status)
-  values (v_company, v_a, coalesce((select max(copy_number) from public.controlled_copies where document_id = v_a), 0) + 1,
-          'A', 'QA lead', current_date, 'issued')
-  returning id into v_copy_2;
+  select id into v_copy_1 from public.issue_controlled_copy(v_a, null, null, 'Site office');
+  select id into v_copy_2 from public.issue_controlled_copy(v_a, null, null, 'QA lead');
 
   select copy_number into v_num from public.controlled_copies where id = v_copy_2;
   raise notice 'CHECK|copy_number_seq|%', v_num;
@@ -102,7 +100,7 @@ describe("controlled copy discipline (live schema)", () => {
   });
 
   it("flags outstanding copies as recall-due when the document is superseded", () => {
-    expect(checks.recall_due_set).toBe("true");
+    expect(checks.recall_due_set).toBe("t");
     expect(checks.recall_reason).toBe("document_superseded");
     expect(checks.due_count).toBe("2");
   });
@@ -131,7 +129,7 @@ describe("controlled copy discipline (live schema)", () => {
     const lines = out.split("\n").filter(Boolean);
     expect(lines).toHaveLength(4);
     for (const line of lines) {
-      expect(line).toContain("|t|"); // security definer
+      expect(line).toContain("|true|"); // security definer
       expect(line).toContain("authenticated=X");
       expect(line).not.toMatch(/(^|,)anon=X/);
     }
