@@ -8,6 +8,7 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { signInWithBackoff } from "../../helpers/auth-retry";
 
 const URL_ = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -34,7 +35,7 @@ export async function login(
   const c = createClient<Database>(URL_, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await c.auth.signInWithPassword({ email, password });
+  const { data, error } = await signInWithBackoff(c, email, password);
   if (error || !data.session) throw error ?? new Error("login failed");
   const token = data.session.access_token;
   const userId = data.user!.id;

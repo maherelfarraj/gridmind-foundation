@@ -9,6 +9,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 import { deleteFixtureUsers, purgeFixtureTenants } from "../../helpers/fixture-teardown";
+import { signInWithBackoff } from "../../helpers/auth-retry";
 
 const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -91,10 +92,7 @@ async function createUser(
   const auth = createClient(URL, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: signIn, error: signInErr } = await auth.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const { data: signIn, error: signInErr } = await signInWithBackoff(auth, email, password);
   if (signInErr || !signIn.session) throw signInErr ?? new Error("sign-in failed");
   return { userId: data.user.id, email, password, jwt: signIn.session.access_token };
 }

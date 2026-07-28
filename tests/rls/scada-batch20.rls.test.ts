@@ -16,6 +16,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import type { Database } from "@/integrations/supabase/types";
 import { isSupabaseUp, serviceClient, setupFixtures, type Fixtures } from "./helpers/rls";
+import { signInWithBackoff } from "../helpers/auth-retry";
 
 const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -61,10 +62,7 @@ async function makeRoleUser(
   const auth = createClient<Database>(URL, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: signIn, error: signInErr } = await auth.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const { data: signIn, error: signInErr } = await signInWithBackoff(auth, email, password);
   if (signInErr || !signIn.session) throw signInErr ?? new Error("sign-in failed");
   return {
     userId: data.user.id,

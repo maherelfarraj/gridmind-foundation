@@ -5,6 +5,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 
 import { isDevServerUp } from "../helpers/dev-server";
+import { signInWithBackoff } from "../helpers/auth-retry";
 
 const URL_ = process.env.SUPABASE_TEST_URL ?? process.env.SUPABASE_URL ?? "";
 const ANON =
@@ -46,7 +47,7 @@ describe.skipIf(!serverUp)("terrain & civil RLS", () => {
     const client = createClient(URL_, ANON, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { error: authError } = await client.auth.signInWithPassword({ email, password });
+    const { error: authError } = await signInWithBackoff(client, email, password);
     expect(authError).toBeNull();
 
     for (const table of TABLES) {

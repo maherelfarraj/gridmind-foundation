@@ -12,6 +12,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 import { deleteFixtureUsers, purgeFixtureTenants } from "../helpers/fixture-teardown";
+import { signInWithBackoff } from "../helpers/auth-retry";
 
 const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -66,7 +67,7 @@ export async function createUser(
   });
   if (error || !data.user) throw error ?? new Error("createUser failed");
   const auth = anonClient();
-  const { data: signIn, error: signErr } = await auth.auth.signInWithPassword({ email, password });
+  const { data: signIn, error: signErr } = await signInWithBackoff(auth, email, password);
   if (signErr || !signIn.session) throw signErr ?? new Error("sign-in failed");
   return {
     userId: data.user.id,

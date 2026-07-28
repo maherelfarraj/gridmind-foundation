@@ -15,8 +15,8 @@
     "test:all": "vitest run --config vitest.config.all.ts && node scripts/ci-gates.mjs",
     "test:suite": "vitest run --config vitest.config.all.ts",
     "test:gates": "node scripts/ci-gates.mjs",
-    "test:policy-lint": "vitest run --config vitest.config.all.ts --project all tests/rls/policy-lint.test.ts",
-    "test:integrity": "vitest run --config vitest.config.all.ts --project all tests/integrity/status-consistency.test.ts"
+    "test:policy-lint": "vitest run --config vitest.config.all.ts --project all-db tests/rls/policy-lint.test.ts",
+    "test:integrity": "vitest run --config vitest.config.all.ts --project all-db tests/integrity/status-consistency.test.ts"
   },
   "overrides": {
     "entities": "^6.0.0"
