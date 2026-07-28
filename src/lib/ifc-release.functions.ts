@@ -606,12 +606,12 @@ export const releaseIfc = createServerFn({ method: "POST" })
         .eq("id", entry.revision_id);
       if (uRevErr) throw uRevErr;
 
+      // P-249 — the register's current_status/locked derive from the revision
+      // state and the released package; we only re-point the current revision.
       const { error: uDrErr } = await context.supabase
         .from("drawing_register")
         .update({
-          current_status: "IFC",
           current_revision_id: entry.revision_id,
-          locked: true,
           updated_at: now,
         } as any)
         .eq("id", entry.drawing_id);

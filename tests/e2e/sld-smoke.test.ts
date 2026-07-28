@@ -261,10 +261,11 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
 
     // ----------------------------------------------------------------- 6
     console.info("[sld-smoke] step 6 — submit for review");
-    const { error: reviewErr } = await client
-      .from("sld_drawings")
-      .update({ status: "under_review" })
-      .eq("id", state.drawingId!);
+    // P-249 — status is derived; sld_apply_status is the only writer.
+    const { error: reviewErr } = await client.rpc("sld_apply_status", {
+      p_drawing_id: state.drawingId!,
+      p_status: "under_review",
+    } as never);
     expect(reviewErr, reviewErr?.message).toBeNull();
 
     await client.rpc("write_audit_log", {
@@ -295,11 +296,16 @@ describe.skipIf(!canRun)("P-148 e2e smoke: SLD create → validate → schedule 
     expect(inst!.status).toBe("approved");
     state.instanceId = inst!.id;
 
+    // P-249 — the approval engine settles the drawing; no app-level write.
+    const { error: settleErr } = await client.rpc("settle_approval_entity", {
+      p_instance_id: state.instanceId!,
+    } as never);
+    expect(settleErr, settleErr?.message).toBeNull();
+
     const { data: approved, error: apprErr } = await client
       .from("sld_drawings")
-      .update({ status: "approved" })
-      .eq("id", state.drawingId!)
       .select("status")
+      .eq("id", state.drawingId!)
       .single();
     expect(apprErr, apprErr?.message).toBeNull();
     expect(approved!.status).toBe("approved");

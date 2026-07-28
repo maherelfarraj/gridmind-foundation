@@ -159,17 +159,16 @@ export const transitionSldStatus = createServerFn({ method: "POST" })
       extra.review_round_no = round.roundNo;
     }
 
+    // P-249 — sld_apply_status is the sole writer of status/locked; a guard
+    // trigger rejects any other writer with 42501.
     if (target === "ifc") {
       const issued = await issueForConstruction(context, snap);
       Object.assign(extra, issued);
-      const { error } = await context.supabase
-        .from("sld_drawings")
-        .update({
-          status: "ifc",
-          locked: true,
-          drawing_register_id: issued.registerId,
-        } as any)
-        .eq("id", drawing.id);
+      const { error } = await context.supabase.rpc("sld_apply_status", {
+        p_drawing_id: drawing.id,
+        p_status: "ifc",
+        p_register_id: issued.registerId,
+      } as never);
       if (error) throw error;
     } else if (target === "as_built") {
       cadHttpError(
@@ -178,12 +177,10 @@ export const transitionSldStatus = createServerFn({ method: "POST" })
         "Create the as-built revision from the Revisions panel (markAsBuilt).",
       );
     } else {
-      const patch: Record<string, unknown> = { status: target };
-      if (target === "superseded") patch.locked = true;
-      const { error } = await context.supabase
-        .from("sld_drawings")
-        .update(patch as any)
-        .eq("id", drawing.id);
+      const { error } = await context.supabase.rpc("sld_apply_status", {
+        p_drawing_id: drawing.id,
+        p_status: target,
+      } as never);
       if (error) throw error;
       if (target === "superseded") {
         extra.replacement_drawing_id = data.metadata?.replacement_drawing_id ?? null;

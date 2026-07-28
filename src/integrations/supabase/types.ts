@@ -19813,6 +19813,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      drawing_register_derived_lock: {
+        Args: {
+          p_drawing_id: string
+          p_project_id: string
+          p_status: Database["public"]["Enums"]["drawing_status"]
+        }
+        Returns: boolean
+      }
       enforce_audit_log_retention: {
         Args: never
         Returns: {
@@ -19910,6 +19918,10 @@ export type Database = {
       is_under_change_control: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
+      }
+      leave_decide: {
+        Args: { p_comment?: string; p_decision: string; p_leave_id: string }
+        Returns: Json
       }
       link_entities: {
         Args: {
@@ -20078,6 +20090,11 @@ export type Database = {
       settle_approval_entity: { Args: { p_instance_id: string }; Returns: Json }
       settle_approval_entity_for: {
         Args: { p_approval_id: string }
+        Returns: Json
+      }
+      settle_derived_entity: { Args: { p_instance_id: string }; Returns: Json }
+      sld_apply_status: {
+        Args: { p_drawing_id: string; p_register_id?: string; p_status: string }
         Returns: Json
       }
       start_approval_instance: {

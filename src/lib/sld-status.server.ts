@@ -298,20 +298,14 @@ export async function issueForConstruction(context: any, snap: GovernanceSnapsho
         drawing_number: drawing.drawing_number,
         title: drawing.title,
         discipline: "electrical",
-        current_status: "IFC",
-        locked: true,
         tags: ["SLD"],
       } as any)
       .select("id")
       .single();
     if (error) throw error;
     registerId = (data as any).id as string;
-  } else {
-    await context.supabase
-      .from("drawing_register")
-      .update({ current_status: "IFC", locked: true } as any)
-      .eq("id", registerId);
   }
+  // P-249 — the register's status/lock derive from the mirrored revision below.
 
   // 2. drawing_revisions record mirroring the SLD revision.
   const revisionCode = snap.revisionCode ?? "A";

@@ -630,13 +630,13 @@ export const transitionDrawingStatus = createServerFn({ method: "POST" })
       .eq("id", rev.id);
     if (uErr) throw uErr;
 
-    const locked = data.toStatus === "IFC" || data.toStatus === "as_built";
+    // P-249 — current_status/locked are derived by the register trigger from
+    // the revision state + released IFC packages. We only point the register at
+    // the revision; the trigger writes the status and the lock.
     const { error: dErr } = await context.supabase
       .from("drawing_register")
       .update({
-        current_status: data.toStatus,
         current_revision_id: rev.id,
-        locked,
         updated_at: now,
       } as any)
       .eq("id", drawing.id);
