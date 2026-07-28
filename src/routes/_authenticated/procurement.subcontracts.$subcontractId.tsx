@@ -59,14 +59,15 @@ export const Route = createFileRoute("/_authenticated/procurement/subcontracts/$
   }),
   component: SubcontractDetail,
   errorComponent: DetailError,
-  notFoundComponent: () => <EmptyState icon={FileText} title="Subcontract not found" />,
+  notFoundComponent: NotFoundPanel,
 });
 
 function DetailError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
       <p className="text-sm text-muted-foreground">{error.message}</p>
-      <Button onClick={() => reset()}>Try again</Button>
+      <Button onClick={() => reset()}>{t("procurementMod.common.tryAgain")}</Button>
     </div>
   );
 }
@@ -403,4 +404,9 @@ function NewClaimDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function NotFoundPanel() {
+  const { t } = useI18n();
+  return <EmptyState icon={FileText} title={t("procurementMod.common.noResults")} />;
 }
