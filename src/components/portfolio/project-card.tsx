@@ -70,8 +70,8 @@ export function ProjectCard({ project }: { project: PortfolioProjectCard }) {
 
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
-          <MiniIndex label={t("portfolioMod.kpi.spi")} value={project.spi} />
-          <MiniIndex label={t("portfolioMod.kpi.cpi")} value={project.cpi} />
+          <MiniIndex label={t("portfolioMod.projects.spi")} value={project.spi} />
+          <MiniIndex label={t("portfolioMod.projects.cpi")} value={project.cpi} />
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <HardHat className="size-3.5" aria-hidden />

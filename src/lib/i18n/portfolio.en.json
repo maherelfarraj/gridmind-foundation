@@ -24,7 +24,9 @@
     "allGatesApproved": "All gates approved",
     "gatesProgress": "{{approved}} of {{total}} gates approved",
     "punchA": "Open punch A",
-    "open": "Open project"
+    "open": "Open project",
+    "spi": "SPI",
+    "cpi": "CPI"
   },
   "gateRail": {
     "heading": "Gate rail",
