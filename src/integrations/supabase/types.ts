@@ -10032,6 +10032,7 @@ export type Database = {
       pay_applications: {
         Row: {
           application_number: number
+          approval_instance_id: string | null
           approved_at: string | null
           approved_by: string | null
           certified_at: string | null
@@ -10058,6 +10059,7 @@ export type Database = {
         }
         Insert: {
           application_number: number
+          approval_instance_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           certified_at?: string | null
@@ -10084,6 +10086,7 @@ export type Database = {
         }
         Update: {
           application_number?: number
+          approval_instance_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           certified_at?: string | null
@@ -10109,6 +10112,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pay_applications_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pay_applications_approved_by_fkey"
             columns: ["approved_by"]
@@ -12160,6 +12170,7 @@ export type Database = {
       proposals: {
         Row: {
           accepted_at: string | null
+          approval_instance_id: string | null
           array_config: Json
           company_id: string
           contingency_pct: number
@@ -12193,6 +12204,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          approval_instance_id?: string | null
           array_config?: Json
           company_id: string
           contingency_pct?: number
@@ -12226,6 +12238,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          approval_instance_id?: string | null
           array_config?: Json
           company_id?: string
           contingency_pct?: number
@@ -12258,6 +12271,13 @@ export type Database = {
           yield_result?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "proposals_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "proposals_company_id_fkey"
             columns: ["company_id"]
@@ -19938,6 +19958,10 @@ export type Database = {
         Args: { p_company_id: string; p_kind: string }
         Returns: number
       }
+      pay_app_decide: {
+        Args: { p_comment?: string; p_decision: string; p_id: string }
+        Returns: Json
+      }
       portal_assert_access: {
         Args: { p_project_id: string }
         Returns: {
@@ -19978,6 +20002,10 @@ export type Database = {
           p_subject: string
         }
         Returns: string
+      }
+      proposal_pricing_decide: {
+        Args: { p_comment?: string; p_decision: string; p_proposal_id: string }
+        Returns: Json
       }
       recompute_invoice_payment_state: {
         Args: { p_invoice_id: string }
@@ -20046,6 +20074,11 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      settle_approval_entity: { Args: { p_instance_id: string }; Returns: Json }
+      settle_approval_entity_for: {
+        Args: { p_approval_id: string }
+        Returns: Json
       }
       start_approval_instance: {
         Args: {

@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { assertRoles, audit, currentCompanyId, httpError } from "@/lib/cwp.server";
+import { settleEntityForInstance } from "@/lib/approval-settle.server";
 import { assertExportAllowed } from "@/lib/export-guard";
 import {
   buildReportPackage,
@@ -111,29 +112,19 @@ export const checkEsgReportApproval = createServerFn({ method: "POST" })
     let status: string = report.status;
     let comment: string | null = null;
 
-    if (report.status === "draft" && snapshot.status === "approved") {
-      status = "approved";
-      await patchReport(context.supabase, report.id, {
-        status,
-        approved_at: new Date().toISOString(),
-        approved_by: context.user.id,
-      });
-      await audit(context.supabase, "esg.report_approved", "esg_reports", report.id, {
-        report_id: report.id,
-        approval_instance_id: snapshot.id,
-      });
-    } else if (report.status === "draft" && snapshot.status === "rejected") {
-      comment = await loadDecisionComment(context.supabase, snapshot.id);
-      await patchReport(context.supabase, report.id, {
-        status: "draft",
-        rejection_comment: comment,
-        approval_instance_id: null,
-      });
-      await audit(context.supabase, "esg.report_rejected", "esg_reports", report.id, {
-        report_id: report.id,
-        approval_instance_id: snapshot.id,
-        comment,
-      });
+    // P-248 — the approval engine owns the status write; read it back here.
+    if (
+      report.status === "draft" &&
+      (snapshot.status === "approved" || snapshot.status === "rejected")
+    ) {
+      await settleEntityForInstance(context.supabase, snapshot.id);
+      const settled = await loadReport(context.supabase, companyId, report.id);
+      status = settled.status;
+      comment =
+        snapshot.status === "rejected"
+          ? (settled.rejection_comment ??
+            (await loadDecisionComment(context.supabase, snapshot.id)))
+          : null;
     }
 
     const pkg =

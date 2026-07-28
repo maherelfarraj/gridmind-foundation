@@ -15,6 +15,7 @@ import {
   startApprovalSchema,
   toggleRuleSchema,
 } from "@/lib/approvals.rules";
+import { settleEntityForApproval } from "@/lib/approval-settle.server";
 import { settlePoAfterDecision } from "@/lib/po-approval.server";
 import { settleAfterDecision } from "@/lib/scada-actions.server";
 
@@ -279,6 +280,9 @@ export const decideApproval = createServerFn({ method: "POST" })
     await settleAfterDecision(context, data.approval_id);
     // Day 2 — settle any purchase order bound to this approval instance.
     await settlePoAfterDecision(context, data.approval_id);
+    // P-248 — engine-owned settlement for estimates / ESG reports / proposals /
+    // pay applications bound to this instance.
+    await settleEntityForApproval(context.supabase, data.approval_id);
     return { ok: true };
   });
 

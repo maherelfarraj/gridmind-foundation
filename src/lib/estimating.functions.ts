@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { settleEntityForInstance } from "@/lib/approval-settle.server";
 import { audit, httpError } from "@/lib/payments.server";
 import {
   ConvertEstimateSchema,
@@ -537,26 +538,19 @@ export const checkEstimateApproval = createServerFn({ method: "POST" })
     let status: string = estimate.status;
     let comment: string | null = null;
 
-    if (estimate.status === "in_review" && snapshot.status === "approved") {
-      status = "approved";
-      await patchEstimate(context, estimate.id, {
-        status,
-        approved_at: new Date().toISOString(),
-        approved_by: context.user!.id,
-      });
-      await audit(context, "estimate.approved", "estimates", estimate.id, {
-        estimate_id: estimate.id,
-        approval_instance_id: snapshot.id,
-      });
-    } else if (estimate.status === "in_review" && snapshot.status === "rejected") {
-      status = "draft";
-      comment = await loadDecisionComment(context, snapshot.id);
-      await patchEstimate(context, estimate.id, { status, rejection_comment: comment });
-      await audit(context, "estimate.rejected", "estimates", estimate.id, {
-        estimate_id: estimate.id,
-        approval_instance_id: snapshot.id,
-        comment,
-      });
+    // P-248 — the engine settles the estimate; this path only reconciles/read-backs.
+    if (
+      estimate.status === "in_review" &&
+      (snapshot.status === "approved" || snapshot.status === "rejected")
+    ) {
+      await settleEntityForInstance(context.supabase, snapshot.id);
+      const settled = await loadEstimate(context, data.estimate_id);
+      status = settled.status;
+      comment =
+        snapshot.status === "rejected"
+          ? ((settled as { rejection_comment?: string | null }).rejection_comment ??
+            (await loadDecisionComment(context, snapshot.id)))
+          : null;
     }
 
     return {

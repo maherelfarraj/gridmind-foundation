@@ -457,18 +457,24 @@ export const approvePayApplication = createServerFn({ method: "POST" })
       });
     }
 
-    const { data: upd, error: uErr } = await context.supabase
+    // P-248 — reconciliation snapshot stays app-owned; the status write goes
+    // through the engine-marked RPC (guard trigger rejects any other writer).
+    const { error: recErr } = await context.supabase
       .from("pay_applications")
-      .update({
-        status: "approved",
-        reconciliation: rec as any,
-        approved_by: (context as any).user.id,
-        approved_at: new Date().toISOString(),
-      })
-      .eq("id", data.id)
-      .select("*")
-      .maybeSingle();
+      .update({ reconciliation: rec as any })
+      .eq("id", data.id);
+    if (recErr) throw recErr;
+    const { error: uErr } = await context.supabase.rpc("pay_app_decide", {
+      p_id: data.id,
+      p_decision: "approve",
+      p_comment: null,
+    } as never);
     if (uErr) throw uErr;
+    const { data: upd } = await context.supabase
+      .from("pay_applications")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     const rowUpd = toRow(upd);
     await audit(context, "pay_app.approve", "pay_applications", rowUpd.id, {
       reconciliation: rec,
@@ -488,19 +494,22 @@ export const rejectPayApplication = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<PayAppRow> => {
     requireSupabaseAuth(context);
     if (!(await hasAnyRole(context, APPROVE_ROLES))) httpError(403, "forbidden");
-    const { data: upd, error } = await context.supabase
+    const { error } = await context.supabase.rpc("pay_app_decide", {
+      p_id: data.id,
+      p_decision: "reject",
+      p_comment: data.note,
+    } as never);
+    if (error) {
+      if (String((error as { message?: string }).message ?? "").includes("not_rejectable")) {
+        httpError(400, "not_rejectable", "Pay application cannot be rejected in its current state.");
+      }
+      throw error;
+    }
+    const { data: upd } = await context.supabase
       .from("pay_applications")
-      .update({
-        status: "rejected",
-        reject_note: data.note,
-        approved_by: (context as any).user.id,
-        approved_at: new Date().toISOString(),
-      })
-      .eq("id", data.id)
-      .in("status", ["certified", "submitted", "draft"] as any)
       .select("*")
+      .eq("id", data.id)
       .maybeSingle();
-    if (error) throw error;
     if (!upd)
       httpError(400, "not_rejectable", "Pay application cannot be rejected in its current state.");
     const row = toRow(upd);

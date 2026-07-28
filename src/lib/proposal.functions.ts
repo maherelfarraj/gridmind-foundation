@@ -958,6 +958,8 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
         .insert({
           company_id: companyId,
           entity: PRICING_ENTITY,
+          entity_type: PRICING_ENTITY,
+          rule_key: PRICING_RULE_KEY,
           entity_id: data.proposalId,
           status: "pending",
           requested_by: context.user.id,
@@ -998,7 +1000,10 @@ export const submitPricingApproval = createServerFn({ method: "POST" })
 
     const { error: upErr } = await context.supabase
       .from("proposals")
-      .update({ pricing_lock: pendingLock as any })
+      .update({
+        pricing_lock: pendingLock as any,
+        ...(instanceId ? { approval_instance_id: instanceId } : {}),
+      } as any)
       .eq("id", data.proposalId);
     if (upErr) throw new Error(upErr.message);
 
@@ -1046,67 +1051,16 @@ export const decidePricingApproval = createServerFn({ method: "POST" })
     if (!proposal) httpError(404, "not_found");
     const p = proposal as any;
 
-    const now = new Date().toISOString();
     const approved = data.decision === "approve";
 
-    try {
-      const { data: inst } = await context.supabase
-        .from("approval_instances")
-        .select("id")
-        .eq("entity", PRICING_ENTITY)
-        .eq("entity_id", data.proposalId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (inst) {
-        await context.supabase
-          .from("approval_instances")
-          .update({
-            status: approved ? "approved" : "rejected",
-            decided_by: context.user.id,
-            decided_at: now,
-          } as any)
-          .eq("id", (inst as any).id);
-        await context.supabase
-          .from("approvals")
-          .update({
-            status: approved ? "approved" : "rejected",
-            comment: data.comment ?? null,
-            decided_at: now,
-          } as any)
-          .eq("instance_id", (inst as any).id)
-          .eq("approver_id", context.user.id);
-      }
-    } catch (err: any) {
-      const code = err?.code ?? "";
-      if (code !== "42P01" && code !== "42703") throw err;
-    }
-
-    const lockPayload = approved
-      ? {
-          status: "approved",
-          approved_by: context.user.id,
-          approved_at: now,
-          margin_pct: Number(p.margin_pct ?? 0),
-          fx_rate_snapshot: p.fx_rate_snapshot != null ? Number(p.fx_rate_snapshot) : null,
-          contingency_pct: Number(p.contingency_pct ?? 0),
-        }
-      : {
-          status: "rejected",
-          rejected_by: context.user.id,
-          rejected_at: now,
-          comment: data.comment ?? null,
-        };
-
-    const patch: Record<string, any> = { pricing_lock: lockPayload };
-    if (approved) patch.status = "approved";
-
-    const { error: upErr } = await context.supabase
-      .from("proposals")
-      .update(patch as any)
-      .eq("id", data.proposalId);
-    if (upErr) throw new Error(upErr.message);
+    // P-248 — the engine-marked RPC owns the instance decision, the pricing
+    // lock and the proposals.status write. Guard trigger rejects any other path.
+    const { error: rpcErr } = await context.supabase.rpc("proposal_pricing_decide", {
+      p_proposal_id: data.proposalId,
+      p_decision: approved ? "approve" : "reject",
+      p_comment: data.comment ?? null,
+    } as never);
+    if (rpcErr) throw new Error(rpcErr.message);
 
     await context.supabase.rpc("write_audit_log", {
       p_action: approved ? "proposal.pricing_approved" : "proposal.pricing_rejected",
