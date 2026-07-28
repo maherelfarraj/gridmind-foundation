@@ -20,8 +20,7 @@ const up = await isSupabaseUp();
 const d = up ? describe : describe.skip;
 
 const n = (v: unknown): number => Number(v ?? 0);
-const round = (v: number, places: number): number =>
-  Math.round(v * 10 ** places) / 10 ** places;
+const round = (v: number, places: number): number => Math.round(v * 10 ** places) / 10 ** places;
 
 d("P-256 · portfolio aggregation over a 3-project fixture", () => {
   let fx: PortfolioFixture;

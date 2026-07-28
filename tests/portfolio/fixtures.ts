@@ -100,7 +100,9 @@ export async function attachProfile(
   companyId: string,
   role: Database["public"]["Enums"]["app_role"],
 ): Promise<void> {
-  const { error: pErr } = await svc.from("profiles").upsert({ id: userId, company_id: companyId, email });
+  const { error: pErr } = await svc
+    .from("profiles")
+    .upsert({ id: userId, company_id: companyId, email });
   if (pErr) throw pErr;
   const { error: rErr } = await svc
     .from("user_roles")
@@ -191,7 +193,7 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
   const stamp = crypto.randomUUID().slice(0, 6).toUpperCase();
   const codes = { A: `P256-${stamp}-A`, B: `P256-${stamp}-B`, C: `P256-${stamp}-C` };
 
-  const one = async <T,>(table: string, payload: Record<string, unknown>): Promise<T> => {
+  const one = async <T>(table: string, payload: Record<string, unknown>): Promise<T> => {
     const { data, error } = await svc
       .from(table as never)
       .insert(payload as never)
