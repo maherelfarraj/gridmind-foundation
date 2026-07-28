@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveLandingRoute } from "@/lib/portal-landing";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,9 +27,10 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-const CHIPS = ["Phase-gated delivery", "Finance-grade controls", "Field-first, offline-ready"];
+const CHIP_KEYS = ["landing.chip1", "landing.chip2", "landing.chip3"] as const;
 
 function LandingPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [signedIn, setSignedIn] = useState(false);
 
@@ -53,31 +55,30 @@ function LandingPage() {
     <main className="dark flex min-h-screen items-center justify-center bg-background px-6 py-24">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
         <span className="font-display text-sm font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-          GridMind EPC
+          {t("landing.eyebrow")}
         </span>
 
         <h1 className="mt-8 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          The operating system for renewable EPC
+          {t("landing.headline")}
         </h1>
 
         <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
-          From first lead to lifetime O&amp;M — one multi-tenant platform for solar, BESS, and
-          substation delivery.
+          {t("landing.subhead")}
         </p>
 
         <Button asChild size="lg" className="mt-10">
           <Link to={signedIn ? landing : "/login"}>
-            {signedIn ? "Open your workspace" : "Sign in"}
+            {signedIn ? t("landing.openWorkspace") : t("common.signIn")}
           </Link>
         </Button>
 
         <ul className="mt-12 flex flex-wrap items-center justify-center gap-2">
-          {CHIPS.map((chip) => (
+          {CHIP_KEYS.map((key) => (
             <li
-              key={chip}
+              key={key}
               className="rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground"
             >
-              {chip}
+              {t(key)}
             </li>
           ))}
         </ul>

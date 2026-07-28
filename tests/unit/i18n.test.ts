@@ -79,7 +79,14 @@ describe("locale-aware formatting", () => {
 });
 
 describe("no raw hardcoded chrome strings", () => {
-  const files = ["src/components/user-menu.tsx"];
+  const files = [
+    "src/components/user-menu.tsx",
+    "src/components/notifications-bell.tsx",
+    "src/components/offline/offline-badge.tsx",
+    "src/components/company-switcher.tsx",
+    "src/routes/index.tsx",
+    "src/routes/_authenticated/dashboard.tsx",
+  ];
 
   it("routes user-facing chrome text through t()", () => {
     for (const file of files) {
@@ -89,5 +96,48 @@ describe("no raw hardcoded chrome strings", () => {
       );
       expect(jsxText, `${file} has literal JSX text: ${jsxText.join(" | ")}`).toEqual([]);
     }
+  });
+});
+
+// P-240 — chrome + nav + dashboard Arabic pass.
+describe("P-240 nav + activity catalogs", () => {
+  it("covers every nav-map label with an Arabic translation", () => {
+    const src = readFileSync(resolve(process.cwd(), "src/lib/nav-map.ts"), "utf8");
+    const labels = [...new Set([...src.matchAll(/label:\s*"([^"]+)"/g)].map((m) => m[1]))];
+    const nav = resources.ar.translation.navItems as Record<string, string>;
+    const missing = labels.filter((l) => !nav[l]);
+    expect(missing, `untranslated nav labels: ${missing.join(" | ")}`).toEqual([]);
+    // Every Arabic nav label must actually differ from English (no lazy copies),
+    // apart from deliberate brand/acronym passthroughs.
+    const untouched = labels.filter((l) => nav[l] === l);
+    expect(untouched).toEqual([]);
+  });
+
+  it("keeps H₂ intact in the Green H₂ translations", () => {
+    const nav = resources.ar.translation.navItems as Record<string, string>;
+    expect(nav["Green H₂"]).toContain("H₂");
+    expect(nav["Green H₂"]).toContain("الهيدروجين الأخضر");
+    expect(nav["Green H₂ projects"]).toContain("H₂");
+  });
+
+  it("translates common audit actions and falls back to English otherwise", () => {
+    const i18n = createI18n("ar");
+    const actions = resources.en.translation.activity.actions as Record<string, string>;
+    expect(Object.keys(actions).length).toBeGreaterThanOrEqual(15);
+    expect(i18n.t("activity.actions.approved")).toBe("اعتمد");
+    expect(i18n.t("activity.actions.delivery_proposed")).toBe("اقترح موعد تسليم لـ");
+    expect(i18n.t("activity.actions.frobnicated", { defaultValue: "Frobnicated" })).toBe(
+      "Frobnicated",
+    );
+    expect(i18n.t("activity.entities.purchase_orders")).toBe("أمر شراء");
+    expect(i18n.t("activity.entities.widgets", { defaultValue: "Widget" })).toBe("Widget");
+  });
+
+  it("localizes landing and chrome strings", () => {
+    const i18n = createI18n("ar");
+    expect(i18n.t("landing.headline")).toBe("نظام تشغيل مشاريع الطاقة المتجددة");
+    expect(i18n.t("chrome.markAllRead")).toBe("تعليم الكل كمقروء");
+    expect(i18n.t("chrome.offline")).toBe("غير متصل");
+    expect(i18n.t("dashboard.punchBreakdown", { a: 1, b: 2, c: 3 })).toContain("1");
   });
 });

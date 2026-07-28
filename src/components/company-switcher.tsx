@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { listMyCompanies } from "@/lib/user-roles.functions";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export interface Company {
   id: string;
@@ -107,6 +108,7 @@ function initialsOf(name: string): string {
 }
 
 export function CompanySwitcher() {
+  const { t } = useI18n();
   const { companies, activeCompany, activeCompanyId, setActiveCompanyId } = useActiveCompany();
 
   if (!activeCompany) return null;
@@ -118,7 +120,7 @@ export function CompanySwitcher() {
           variant="ghost"
           size="sm"
           className="h-9 gap-2 px-2 text-sm font-medium text-foreground"
-          aria-label={`Active company: ${activeCompany.name}`}
+          aria-label={t("chrome.activeCompanyAria", { name: activeCompany.name })}
         >
           <Avatar className="h-6 w-6">
             <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
@@ -132,7 +134,7 @@ export function CompanySwitcher() {
 
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-          Switch company
+          {t("chrome.switchCompany")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {companies.map((company) => {
