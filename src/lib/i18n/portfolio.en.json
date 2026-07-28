@@ -51,5 +51,46 @@
   "error": {
     "title": "Portfolio unavailable",
     "description": "We could not load the portfolio roll-up. Refresh to try again."
+  },
+  "cash": {
+    "heading": "Consolidated cash curve",
+    "description": "Monthly forecast versus actual cash across every project, in {{currency}}.",
+    "forecast": "Forecast",
+    "actual": "Actual",
+    "cumulative": "Cumulative",
+    "monthly": "Monthly",
+    "view": "View",
+    "byProject": "By project",
+    "total": "Total",
+    "range": "Range",
+    "rangeOption": "{{back}}m back / {{forward}}m forward",
+    "baseCurrency": "Base currency: {{currency}}",
+    "empty": {
+      "title": "No cash movements yet",
+      "description": "Forecast and actual cash entries appear here once they are recorded against a project."
+    },
+    "singleProject": "One project in the portfolio — shown as a single series.",
+    "drill": {
+      "heading": "Cash movements — {{month}}",
+      "hint": "Select a month in the chart to list its movements.",
+      "close": "Close",
+      "project": "Project",
+      "direction": "Direction",
+      "kind": "Kind",
+      "category": "Category",
+      "amount": "Amount (base)",
+      "reference": "Reference",
+      "open": "Open source record",
+      "none": "No cash movements recorded for this month.",
+      "totals": "In {{in}} / Out {{out}} / Net {{net}}"
+    },
+    "direction": {
+      "inflow": "Inflow",
+      "outflow": "Outflow"
+    },
+    "kind": {
+      "forecast": "Forecast",
+      "actual": "Actual"
+    }
   }
 }
