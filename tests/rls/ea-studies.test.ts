@@ -16,6 +16,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/integrations/supabase/types";
 import { isSupabaseUp, serviceClient } from "./helpers/rls";
 import { purgeFixtureTenants } from "../helpers/fixture-teardown";
+import { signInWithBackoff } from "../helpers/auth-retry";
 
 const URL_ = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const ANON =
@@ -50,10 +51,7 @@ async function makeActor(
   const anon = createClient<Database>(URL_, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: session, error: signInErr } = await anon.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const { data: session, error: signInErr } = await signInWithBackoff(anon, email, password);
   if (signInErr || !session.session) throw signInErr ?? new Error("sign-in failed");
   const client = createClient<Database>(URL_, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },

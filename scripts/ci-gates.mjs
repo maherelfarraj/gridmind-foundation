@@ -35,7 +35,7 @@ for (const gate of GATES) {
   console.info(`\n${bar("=")}\n${gate.name}\n  ${gate.why}\n${bar("=")}`);
   const res = spawnSync(
     "bunx",
-    ["vitest", "run", "--config", "vitest.config.all.ts", "--project", "all", gate.file],
+    ["vitest", "run", "--config", "vitest.config.all.ts", "--project", "all-db", gate.file],
     { stdio: "inherit", env: process.env },
   );
   const ok = res.status === 0;
