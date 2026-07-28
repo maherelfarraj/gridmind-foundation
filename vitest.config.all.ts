@@ -11,7 +11,7 @@ const NODE_INCLUDE = [
   "tests/esg/**/*.test.ts",
   "tests/vendor-portal/**/*.test.ts",
   "tests/portfolio/**/*.test.ts",
-
+  "tests/subcontracts/**/*.test.ts",
 
   "tests/api/**/*.test.ts",
   "tests/rls/**/*.test.ts",

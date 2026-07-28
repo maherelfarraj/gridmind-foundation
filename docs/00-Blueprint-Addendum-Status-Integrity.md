@@ -137,3 +137,36 @@ Proof suites: `tests/portfolio/aggregation.test.ts` (3-project fixture, every
 number hand-computed) and `tests/rls/portfolio.rls.test.ts` (four external
 roles, anon, cross-tenant isolation, audit row). Both tear their tenants down
 through `fixture_purge_tenants`.
+
+---
+
+## External-party module doctrine (P-262, Batch 34)
+
+The subcontractor module is the **reference implementation** for every future
+external-party module (any counterparty that gets a seat in our app):
+
+1. **Vendor-portal definer pattern.** External parties never touch the raw
+   tables. Every policy on `subcontracts`, `subcontract_lines`,
+   `subcontract_claims`, `subcontract_claim_lines` and
+   `subcontract_retention_releases` is company-scoped *and* excludes
+   `is_external_viewer()`; the sub reads and writes only through
+   `SECURITY DEFINER` routines (`sub_portal_*`) that resolve company + vendor
+   from the caller's **active seat**, never from the argument. `anon` holds no
+   privileges on any of the five tables.
+2. **Engine-owned decision state.** `certified` is written by the approval
+   engine alone: `subcontract_claims_guard_status` raises
+   `subcontract_claim_engine_only` unless `gridmind.approval_settle` is on,
+   which only `settle_derived_entity` sets. Certification is therefore also
+   the single place the money loop fires (`sub_claim_generate_ap_invoice`).
+3. **Trigger-maintained ledgers.** `certified_to_date`, `retention_held` and
+   `retention_released` are never written by application code —
+   `subcontract_retention_sync()` derives them from certified claims and the
+   release ledger, exactly as the derived-status doctrine requires (no new
+   hand-maintained status columns were introduced by Batch 34).
+
+Proof suites: `tests/subcontracts/lifecycle.test.ts` ($100k subcontract, three
+claims at 40/35/25 %, retention and AP invoices asserted to the cent, EVM
+reflection, release zeroing the ledger) and
+`tests/rls/subcontracts.rls.test.ts` (policy shape on all five tables plus
+live cross-tenant, cross-sub, anon, external-viewer and engine-freeze probes).
+Both tear their tenants down through `fixture_purge_tenants`.
