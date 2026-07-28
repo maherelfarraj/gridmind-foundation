@@ -117,6 +117,7 @@ import { Route as AuthenticatedEstimatingIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedEsgActivityRouteImport } from './routes/_authenticated/esg.activity'
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocumentsSearchRouteImport } from './routes/_authenticated/documents.search'
+import { Route as AuthenticatedDocumentsControlledCopiesRouteImport } from './routes/_authenticated/documents.controlled-copies'
 import { Route as AuthenticatedDocumentsDocumentIdRouteImport } from './routes/_authenticated/documents.$documentId'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
@@ -873,6 +874,12 @@ const AuthenticatedDocumentsSearchRoute =
   AuthenticatedDocumentsSearchRouteImport.update({
     id: '/documents/search',
     path: '/documents/search',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocumentsControlledCopiesRoute =
+  AuthenticatedDocumentsControlledCopiesRouteImport.update({
+    id: '/documents/controlled-copies',
+    path: '/documents/controlled-copies',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDocumentsDocumentIdRoute =
@@ -1810,6 +1817,7 @@ export interface FileRoutesByFullPath {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
+  '/documents/controlled-copies': typeof AuthenticatedDocumentsControlledCopiesRoute
   '/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2062,6 +2070,7 @@ export interface FileRoutesByTo {
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
   '/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
+  '/documents/controlled-copies': typeof AuthenticatedDocumentsControlledCopiesRoute
   '/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2311,6 +2320,7 @@ export interface FileRoutesById {
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
   '/_authenticated/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
+  '/_authenticated/documents/controlled-copies': typeof AuthenticatedDocumentsControlledCopiesRoute
   '/_authenticated/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/_authenticated/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2569,6 +2579,7 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/documents/$documentId'
+    | '/documents/controlled-copies'
     | '/documents/search'
     | '/engineering/pv-library'
     | '/esg/activity'
@@ -2821,6 +2832,7 @@ export interface FileRouteTypes {
     | '/crm/pipeline'
     | '/docs/api'
     | '/documents/$documentId'
+    | '/documents/controlled-copies'
     | '/documents/search'
     | '/engineering/pv-library'
     | '/esg/activity'
@@ -3069,6 +3081,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
     | '/_authenticated/documents/$documentId'
+    | '/_authenticated/documents/controlled-copies'
     | '/_authenticated/documents/search'
     | '/_authenticated/engineering/pv-library'
     | '/_authenticated/esg/activity'
@@ -4076,6 +4089,13 @@ declare module '@tanstack/react-router' {
       path: '/documents/search'
       fullPath: '/documents/search'
       preLoaderRoute: typeof AuthenticatedDocumentsSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents/controlled-copies': {
+      id: '/_authenticated/documents/controlled-copies'
+      path: '/documents/controlled-copies'
+      fullPath: '/documents/controlled-copies'
+      preLoaderRoute: typeof AuthenticatedDocumentsControlledCopiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/documents/$documentId': {
@@ -5553,6 +5573,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
   AuthenticatedDocumentsDocumentIdRoute: typeof AuthenticatedDocumentsDocumentIdRoute
+  AuthenticatedDocumentsControlledCopiesRoute: typeof AuthenticatedDocumentsControlledCopiesRoute
   AuthenticatedDocumentsSearchRoute: typeof AuthenticatedDocumentsSearchRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
   AuthenticatedEsgActivityRoute: typeof AuthenticatedEsgActivityRoute
@@ -5691,6 +5712,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
   AuthenticatedDocumentsDocumentIdRoute: AuthenticatedDocumentsDocumentIdRoute,
+  AuthenticatedDocumentsControlledCopiesRoute:
+    AuthenticatedDocumentsControlledCopiesRoute,
   AuthenticatedDocumentsSearchRoute: AuthenticatedDocumentsSearchRoute,
   AuthenticatedEngineeringPvLibraryRoute:
     AuthenticatedEngineeringPvLibraryRoute,

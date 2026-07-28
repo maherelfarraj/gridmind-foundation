@@ -558,5 +558,43 @@
     "noChanges": "No metadata differences between these revisions.",
     "visualCompare": "Both revisions are rendered files — open them side by side to compare visually.",
     "metadataCompare": "Metadata-only comparison: this document type has no rendered preview."
+  },
+  "copies": {
+    "tab": "Controlled copies",
+    "title": "Controlled copies",
+    "issue": "Issue controlled copy",
+    "issueTitle": "Issue a controlled copy",
+    "holder": "Copy holder",
+    "location": "Location",
+    "issued": "Controlled copy issued",
+    "recalled": "Copy disposition recorded",
+    "notCurrent": "This revision is superseded — issue the current revision instead.",
+    "print": "Print copy",
+    "printUncontrolled": "Print (uncontrolled)",
+    "completeness": "{{closed}} of {{total}} copies recalled or returned",
+    "recallDueCount": "{{count}} recall-due",
+    "recallDue": "Recall due",
+    "overdue": "Overdue",
+    "copyNo": "Copy No {{n}}",
+    "pinned": "Rev {{rev}} pinned",
+    "none": "No controlled copies",
+    "noneHint": "Issue a copy to track who holds this revision.",
+    "recall": "Record disposition",
+    "status": {
+      "issued": "Issued",
+      "returned": "Returned",
+      "recalled": "Recalled",
+      "destroyed": "Destroyed"
+    },
+    "dashboardTitle": "Controlled copies & recalls",
+    "dashboardSubtitle": "Outstanding copies, recall-due queue and per-holder exposure",
+    "outstanding": "Outstanding copies",
+    "filterAll": "All outstanding",
+    "filterDue": "Recall due only",
+    "queueTitle": "Outstanding copies",
+    "queueEmpty": "Nothing outstanding",
+    "queueEmptyHint": "Every issued copy has been recalled, returned or destroyed.",
+    "byHolder": "Per holder",
+    "holderSummary": "{{outstanding}} out · {{due}} due · {{overdue}} overdue"
   }
 }
