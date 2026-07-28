@@ -268,7 +268,8 @@
     "claim_already_open": "يوجد مستحق مفتوح على هذا العقد.",
     "claim_cumulative_out_of_range": "يجب أن يبقى الإنجاز التراكمي بين 0% و100%.",
     "line_not_on_subcontract": "هذا البند ليس ضمن عقد الباطن.",
-    "message_required": "اكتب رسالة أولاً."
+    "message_required": "اكتب رسالة أولاً.",
+    "compliance_insurance_expired": "انتهت صلاحية شهادة التأمين الخاصة بك. يرجى رفع شهادة سارية قبل تقديم المستحق."
   },
   "sub": {
     "tab": "عقود الباطن",
@@ -340,6 +341,21 @@
     "kpiRetentionHeld": "الضمان المحتجز",
     "kpiCertified": "المعتمد حتى تاريخه",
     "kpiOpenClaims": "مستحقات قيد المراجعة",
-    "loadError": "تعذّر تحميل عقود الباطن. حاول بعد قليل."
+    "loadError": "تعذّر تحميل عقود الباطن. حاول بعد قليل.",
+    "complianceStatusTitle": "التزاماتي",
+    "complianceStatusDesc": "حافظ على سريانها — انتهاء شهادة التأمين يوقف تقديم المستحقات.",
+    "complianceExpiresOn": "تنتهي في {{date}}",
+    "complianceNone": "لا توجد مستندات التزام مسجّلة بعد.",
+    "complianceValid": "سارٍ",
+    "complianceExpiringSoon": "يقارب الانتهاء",
+    "complianceExpired": "منتهٍ",
+    "complianceBlocked": "انتهت صلاحية تأمينك الإلزامي — لا يمكنك تقديم مستحق حتى تجديده.",
+    "scoreTitle": "نتيجة أدائي",
+    "scoreDesc": "نتيجتك المركّبة لآخر فترة تم تقييمها.",
+    "scoreNone": "لم تُنشر نتيجة بعد.",
+    "scorePeriod": "الفترة {{start}} ← {{end}}",
+    "scoreTrendUp": "ارتفاع بمقدار {{delta}} مقارنة بالفترة السابقة",
+    "scoreTrendDown": "انخفاض بمقدار {{delta}} مقارنة بالفترة السابقة",
+    "scoreTrendFlat": "دون تغيير مقارنة بالفترة السابقة"
   }
 }

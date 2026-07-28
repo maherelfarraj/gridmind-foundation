@@ -16874,6 +16874,88 @@ export type Database = {
           },
         ]
       }
+      subcontract_compliance_docs: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          doc_type: string
+          expiry_date: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          issue_date: string | null
+          mandatory: boolean
+          notes: string | null
+          reference: string | null
+          status: string
+          subcontract_id: string | null
+          title: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          doc_type: string
+          expiry_date: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          mandatory?: boolean
+          notes?: string | null
+          reference?: string | null
+          status?: string
+          subcontract_id?: string | null
+          title: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          doc_type?: string
+          expiry_date?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          issue_date?: string | null
+          mandatory?: boolean
+          notes?: string | null
+          reference?: string | null
+          status?: string
+          subcontract_id?: string | null
+          title?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_compliance_docs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_compliance_docs_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_compliance_docs_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcontract_counters: {
         Row: {
           company_id: string
@@ -16966,6 +17048,75 @@ export type Database = {
             columns: ["wbs_item_id"]
             isOneToOne: false
             referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontract_scorecards: {
+        Row: {
+          claim_accuracy: number | null
+          company_id: string
+          composite: number | null
+          computed_at: string
+          computed_by: string | null
+          created_at: string
+          id: string
+          metrics: Json
+          on_time_score: number | null
+          period_end: string
+          period_start: string
+          quality_score: number | null
+          safety_score: number | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          claim_accuracy?: number | null
+          company_id: string
+          composite?: number | null
+          computed_at?: string
+          computed_by?: string | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          on_time_score?: number | null
+          period_end: string
+          period_start: string
+          quality_score?: number | null
+          safety_score?: number | null
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          claim_accuracy?: number | null
+          company_id?: string
+          composite?: number | null
+          computed_at?: string
+          computed_by?: string | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          on_time_score?: number | null
+          period_end?: string
+          period_start?: string
+          quality_score?: number | null
+          safety_score?: number | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_scorecards_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_scorecards_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -20683,11 +20834,21 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      sub_compliance_expiry_sweep: { Args: never; Returns: Json }
+      sub_compliance_gate: {
+        Args: { p_subcontract_id: string }
+        Returns: string
+      }
+      sub_compliance_status: {
+        Args: { p_asof?: string; p_expiry: string }
+        Returns: string
+      }
       sub_portal_add_claim_message: {
         Args: { p_body: string; p_claim_id: string }
         Returns: string
       }
       sub_portal_get_claim: { Args: { p_claim_id: string }; Returns: Json }
+      sub_portal_get_scorecard: { Args: { p_vendor_id: string }; Returns: Json }
       sub_portal_get_subcontract: {
         Args: { p_subcontract_id: string }
         Returns: Json
@@ -20695,6 +20856,10 @@ export type Database = {
       sub_portal_has_seat: {
         Args: { p_company_id: string; p_vendor_id: string }
         Returns: boolean
+      }
+      sub_portal_list_compliance: {
+        Args: { p_vendor_id: string }
+        Returns: Json
       }
       sub_portal_list_subcontracts: {
         Args: { p_vendor_id: string }

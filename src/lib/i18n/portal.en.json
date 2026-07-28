@@ -254,7 +254,8 @@
     "claim_already_open": "A claim is already open on this subcontract.",
     "claim_cumulative_out_of_range": "Cumulative progress must stay between 0% and 100%.",
     "line_not_on_subcontract": "That line is not on this subcontract.",
-    "message_required": "Write a message first."
+    "message_required": "Write a message first.",
+    "compliance_insurance_expired": "Your insurance certificate has expired. Upload a valid one before submitting a claim."
   },
   "sub": {
     "tab": "Subcontracts",
@@ -326,6 +327,21 @@
     "kpiRetentionHeld": "Retention held",
     "kpiCertified": "Certified to date",
     "kpiOpenClaims": "Claims in review",
-    "loadError": "We couldn’t load your subcontracts. Try again shortly."
+    "loadError": "We couldn’t load your subcontracts. Try again shortly.",
+    "complianceStatusTitle": "My compliance",
+    "complianceStatusDesc": "Keep these current — an expired insurance certificate blocks new claims.",
+    "complianceExpiresOn": "Expires {{date}}",
+    "complianceNone": "No compliance documents recorded yet.",
+    "complianceValid": "Valid",
+    "complianceExpiringSoon": "Expiring soon",
+    "complianceExpired": "Expired",
+    "complianceBlocked": "Your mandatory insurance has expired — you cannot submit a claim until it is renewed.",
+    "scoreTitle": "My performance score",
+    "scoreDesc": "Your composite score for the latest scored period.",
+    "scoreNone": "No score published yet.",
+    "scorePeriod": "Period {{start}} → {{end}}",
+    "scoreTrendUp": "Up {{delta}} vs the previous period",
+    "scoreTrendDown": "Down {{delta}} vs the previous period",
+    "scoreTrendFlat": "Unchanged vs the previous period"
   }
 }

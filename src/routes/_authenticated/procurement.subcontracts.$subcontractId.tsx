@@ -25,6 +25,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CompliancePanel } from "@/components/procurement/compliance-panel";
+import { SubScorecardPanel } from "@/components/procurement/sub-scorecard-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -316,6 +318,17 @@ function SubcontractDetail() {
           </CardContent>
         </Card>
       </section>
+
+      {sc.vendor_id ? (
+        <section className="grid gap-6 lg:grid-cols-2">
+          <CompliancePanel
+            vendorId={sc.vendor_id}
+            subcontractId={subcontractId}
+            canWrite={canWrite}
+          />
+          <SubScorecardPanel vendorId={sc.vendor_id} canWrite={canWrite} />
+        </section>
+      ) : null}
 
       {canWrite ? (
         <NewClaimDialog

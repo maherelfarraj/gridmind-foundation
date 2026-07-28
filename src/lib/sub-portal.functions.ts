@@ -268,3 +268,53 @@ export const submitSubComplianceDocument = createServerFn({ method: "POST" })
     if (error) throw rpcError(error.message);
     return { id: id ? String(id) : null };
   });
+
+// ---------------------------------------------------------------------------
+// P-260 — compliance + own composite score
+// ---------------------------------------------------------------------------
+export interface SubPortalComplianceRow {
+  id: string;
+  doc_type: string;
+  title: string;
+  issue_date: string | null;
+  expiry_date: string;
+  mandatory: boolean;
+  status: string;
+  subcontract_id: string | null;
+}
+
+export const listMyCompliance = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ vendorId: z.string().uuid() }).parse(raw))
+  .handler(async ({ context, data }): Promise<SubPortalComplianceRow[]> => {
+    requireSupabaseAuth(context);
+    await vendorGate(context, data.vendorId);
+    const { data: rows, error } = await context.supabase.rpc("sub_portal_list_compliance", {
+      p_vendor_id: data.vendorId,
+    });
+    if (error) throw httpError(error.message, 403);
+    return (rows ?? []) as unknown as SubPortalComplianceRow[];
+  });
+
+export interface SubPortalScorecard {
+  period_start: string;
+  period_end: string;
+  composite: number | null;
+  prior_composite: number | null;
+  computed_at: string;
+}
+
+/** The sub sees ONLY their own composite — no sub-scores, no peer comparison. */
+export const getMyScorecard = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ vendorId: z.string().uuid() }).parse(raw))
+  .handler(async ({ context, data }): Promise<SubPortalScorecard | null> => {
+    requireSupabaseAuth(context);
+    await vendorGate(context, data.vendorId);
+    const { data: res, error } = await context.supabase.rpc("sub_portal_get_scorecard", {
+      p_vendor_id: data.vendorId,
+    });
+    if (error) throw httpError(error.message, 403);
+    const card = (res as { scorecard: SubPortalScorecard | null } | null)?.scorecard ?? null;
+    return card;
+  });
