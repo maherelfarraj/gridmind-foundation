@@ -14,6 +14,7 @@ const NODE_INCLUDE = [
   "tests/api/**/*.test.ts",
   "tests/rls/**/*.test.ts",
   "tests/e2e/**/*.test.ts",
+  "tests/integrity/**/*.test.ts",
 ];
 
 export default defineConfig({
