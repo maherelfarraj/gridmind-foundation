@@ -232,7 +232,10 @@ export const getPortfolioExecReportData = createServerFn({ method: "POST" })
         supabase.rpc("portfolio_kpis"),
         supabase.rpc("portfolio_project_cards"),
         supabase.rpc("portfolio_gates"),
-        supabase.rpc("portfolio_cash_curve_projects", { p_back: data.back, p_forward: data.forward }),
+        supabase.rpc("portfolio_cash_curve_projects", {
+          p_back: data.back,
+          p_forward: data.forward,
+        }),
         supabase.rpc("portfolio_hse_exposure"),
       ]);
     for (const res of [companyRes, kpisRes, cardsRes, gatesRes, curveRes, exposureRes]) {

@@ -458,9 +458,14 @@ function drawGateRail(
   doc.setFontSize(FONT.caption);
   doc.setTextColor(NEUTRAL.muted[0], NEUTRAL.muted[1], NEUTRAL.muted[2]);
   PHASE_RAIL.forEach((phase, i) => {
-    doc.text(titleCase(phase === "cod" ? "COD" : phase), plotX(i, PHASE_RAIL.length, railLeft, railW), y, {
-      align: "center",
-    });
+    doc.text(
+      titleCase(phase === "cod" ? "COD" : phase),
+      plotX(i, PHASE_RAIL.length, railLeft, railW),
+      y,
+      {
+        align: "center",
+      },
+    );
   });
   y += mm(5);
 
@@ -531,7 +536,16 @@ function drawProjectsPage(doc: jsPDF, theme: ExportTheme, data: PortfolioExecRep
     startY: y,
     pageHeader: { title: DOC_TITLE, subtitle },
     head: [
-      ["Project", "Phase", "Current gate", "Next gate / due", "Contract value", "SPI", "CPI", "Punch A"],
+      [
+        "Project",
+        "Phase",
+        "Current gate",
+        "Next gate / due",
+        "Contract value",
+        "SPI",
+        "CPI",
+        "Punch A",
+      ],
     ],
     body: body.length ? body : [["No projects in scope", "—", "—", "—", "—", "—", "—", "—"]],
     styles: { fontSize: 7.8 },
@@ -662,11 +676,7 @@ function drawExecFooters(doc: jsPDF, theme: ExportTheme, data: PortfolioExecRepo
     doc.setDrawColor(NEUTRAL.line[0], NEUTRAL.line[1], NEUTRAL.line[2]);
     doc.setLineWidth(0.5);
     doc.line(PAGE.margin, pageH - mm(16), pageW - PAGE.margin, pageH - mm(16));
-    doc.text(
-      `${CONFIDENTIALITY_NOTE} ${LANGUAGE_NOTE}`,
-      PAGE.margin,
-      pageH - mm(12),
-    );
+    doc.text(`${CONFIDENTIALITY_NOTE} ${LANGUAGE_NOTE}`, PAGE.margin, pageH - mm(12));
     doc.text(
       `${theme.footerLeft || sanitize(data.company.name)} · ${LIVE_DATA_STAMP} ${utcDateTime(
         data.generatedAt,

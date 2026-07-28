@@ -97,8 +97,14 @@ export function periodFromWindow(reference: Date, back: number, forward: number)
     `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
   const base = Date.UTC(reference.getUTCFullYear(), reference.getUTCMonth(), 1);
   return {
-    start: iso(new Date(Date.UTC(new Date(base).getUTCFullYear(), new Date(base).getUTCMonth() - back, 1))),
-    end: iso(new Date(Date.UTC(new Date(base).getUTCFullYear(), new Date(base).getUTCMonth() + forward, 1))),
+    start: iso(
+      new Date(Date.UTC(new Date(base).getUTCFullYear(), new Date(base).getUTCMonth() - back, 1)),
+    ),
+    end: iso(
+      new Date(
+        Date.UTC(new Date(base).getUTCFullYear(), new Date(base).getUTCMonth() + forward, 1),
+      ),
+    ),
   };
 }
 

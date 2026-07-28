@@ -40,7 +40,15 @@ const fixture = (): PortfolioExecReportData => ({
     base_currency: "USD",
     projects: { total: 2, by_phase: { development: 1, construction: 1 }, by_status: { active: 2 } },
     contract_value: 48_500_000,
-    evm: { pv: 300, ev: 310, ac: 320, bac: 500, spi: 310 / 300, cpi: 310 / 320, projects_counted: 2 },
+    evm: {
+      pv: 300,
+      ev: 310,
+      ac: 320,
+      bac: 500,
+      spi: 310 / 300,
+      cpi: 310 / 320,
+      projects_counted: 2,
+    },
     ar_open: 960,
     ap_open: 400,
     cash_mtd: { inflow: 275_000, outflow: 41_000 },
@@ -238,9 +246,9 @@ describe("PDF generation", () => {
     const autotable = await import("jspdf-autotable");
     expect(typeof autotable.default).toBe("function");
     const { readFileSync } = await import("node:fs");
-    const pkg = JSON.parse(
-      readFileSync("node_modules/jspdf-autotable/package.json", "utf8"),
-    ) as { version: string };
+    const pkg = JSON.parse(readFileSync("node_modules/jspdf-autotable/package.json", "utf8")) as {
+      version: string;
+    };
     expect(pkg.version).toMatch(/^5\./);
 
     const plain = await buildPortfolioExecReportPdf(fixture());
