@@ -208,49 +208,52 @@ export function rethrowInsertError(err: unknown): never {
   throw err as Error;
 }
 
+/**
+ * Read back the invoice payment state after a ledger write.
+ * P-247: paid_amount / paid_at / paid status are DB-maintained by the
+ * `payments_sync_invoice_state` trigger — the app never writes them.
+ */
+async function readInvoicePaymentState(
+  ctx: AuthContext,
+  invoiceId: string,
+): Promise<{ status: string; paid_amount: number; amount: number; tax_amount: number }> {
+  const { data, error } = await ctx.supabase
+    .from("invoices")
+    .select("status, paid_amount, amount, tax_amount")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (error) throw error;
+  const r = (data ?? {}) as Record<string, unknown>;
+  return {
+    status: String(r.status ?? ""),
+    paid_amount: Number(r.paid_amount ?? 0),
+    amount: Number(r.amount ?? 0),
+    tax_amount: Number(r.tax_amount ?? 0),
+  };
+}
+
 export async function applyPaymentToInvoice(
   ctx: AuthContext,
   invoice: PaymentInvoice,
-  amount: number,
+  _amount: number,
 ): Promise<{ status: string; paid_amount: number; balance_after: number }> {
-  const status = statusAfterPayment(invoice, amount);
-  const paid = Math.round((invoice.paid_amount + amount) * 100) / 100;
-  const patch: Record<string, unknown> = {
-    paid_amount: paid,
-    last_payment_at: new Date().toISOString(),
-    status,
-  };
-  if (status === "paid") patch.paid_at = new Date().toISOString();
-  const { error } = await ctx.supabase
-    .from("invoices")
-    .update(patch as never)
-    .eq("id", invoice.id);
-  if (error) throw error;
+  const next = await readInvoicePaymentState(ctx, invoice.id);
   return {
-    status,
-    paid_amount: paid,
-    balance_after: invoiceBalance({ ...invoice, paid_amount: paid }),
+    status: next.status,
+    paid_amount: next.paid_amount,
+    balance_after: invoiceBalance(next),
   };
 }
 
 export async function reversePaymentOnInvoice(
   ctx: AuthContext,
   invoice: PaymentInvoice,
-  amount: number,
+  _amount: number,
 ): Promise<{ status: string; paid_amount: number }> {
-  const next = statusAfterVoid(invoice, amount);
-  const patch: Record<string, unknown> = {
-    paid_amount: next.paid_amount,
-    status: next.status,
-  };
-  if (next.status !== "paid") patch.paid_at = null;
-  const { error } = await ctx.supabase
-    .from("invoices")
-    .update(patch as never)
-    .eq("id", invoice.id);
-  if (error) throw error;
-  return next;
+  const next = await readInvoicePaymentState(ctx, invoice.id);
+  return { status: next.status, paid_amount: next.paid_amount };
 }
+
 
 export function decorateOverdue<
   T extends { status: string; due_date: string | null; amount: number; tax_amount: number },
