@@ -3816,15 +3816,20 @@ export type Database = {
           created_by: string | null
           current_revision: string
           discipline: string | null
+          disposal_reason: string | null
+          disposed_at: string | null
           doc_number: string | null
           doc_type: string
           file_name: string | null
           id: string
+          legal_hold: boolean
           metadata: Json
           mime_type: string | null
           owner_id: string | null
           project_id: string | null
           retention_class: Database["public"]["Enums"]["document_retention_class"]
+          retention_expires_at: string | null
+          retention_starts_at: string
           search_vector: unknown
           source_id: string | null
           source_table: string | null
@@ -3845,15 +3850,20 @@ export type Database = {
           created_by?: string | null
           current_revision?: string
           discipline?: string | null
+          disposal_reason?: string | null
+          disposed_at?: string | null
           doc_number?: string | null
           doc_type: string
           file_name?: string | null
           id?: string
+          legal_hold?: boolean
           metadata?: Json
           mime_type?: string | null
           owner_id?: string | null
           project_id?: string | null
           retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          retention_expires_at?: string | null
+          retention_starts_at?: string
           search_vector?: unknown
           source_id?: string | null
           source_table?: string | null
@@ -3874,15 +3884,20 @@ export type Database = {
           created_by?: string | null
           current_revision?: string
           discipline?: string | null
+          disposal_reason?: string | null
+          disposed_at?: string | null
           doc_number?: string | null
           doc_type?: string
           file_name?: string | null
           id?: string
+          legal_hold?: boolean
           metadata?: Json
           mime_type?: string | null
           owner_id?: string | null
           project_id?: string | null
           retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          retention_expires_at?: string | null
+          retention_starts_at?: string
           search_vector?: unknown
           source_id?: string | null
           source_table?: string | null
@@ -19188,6 +19203,86 @@ export type Database = {
           },
         ]
       }
+      turnover_dossiers: {
+        Row: {
+          chapters: Json
+          company_id: string
+          complete: boolean
+          created_at: string
+          document_id: string | null
+          dossier_number: string | null
+          gap_count: number
+          gaps: Json
+          generated_at: string
+          generated_by: string | null
+          id: string
+          project_id: string
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          chapters?: Json
+          company_id: string
+          complete?: boolean
+          created_at?: string
+          document_id?: string | null
+          dossier_number?: string | null
+          gap_count?: number
+          gaps?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          project_id: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chapters?: Json
+          company_id?: string
+          complete?: boolean
+          created_at?: string
+          document_id?: string | null
+          dossier_number?: string | null
+          gap_count?: number
+          gaps?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          project_id?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turnover_dossiers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_dossiers_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "document_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_dossiers_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnover_dossiers_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       turnover_packages: {
         Row: {
           accepted_at: string | null
@@ -20970,6 +21065,22 @@ export type Database = {
           title: string
         }[]
       }
+      document_disposal_queue: {
+        Args: { p_project_id?: string; p_within_days?: number }
+        Returns: {
+          doc_number: string
+          doc_type: string
+          eligible: boolean
+          id: string
+          legal_hold: boolean
+          project_id: string
+          project_name: string
+          retention_class: string
+          retention_expires_at: string
+          status: string
+          title: string
+        }[]
+      }
       document_history: {
         Args: { p_doc_id: string }
         Returns: {
@@ -21004,6 +21115,27 @@ export type Database = {
           p_title: string
         }
         Returns: unknown
+      }
+      document_retention_expiry: {
+        Args: {
+          p_class: Database["public"]["Enums"]["document_retention_class"]
+          p_project_id: string
+          p_starts_at: string
+        }
+        Returns: string
+      }
+      document_retention_summary: {
+        Args: { p_project_id?: string }
+        Returns: {
+          active: number
+          disposal_eligible: number
+          expiring_90d: number
+          obsolete: number
+          on_hold: number
+          retention_class: string
+          superseded: number
+          total: number
+        }[]
       }
       drawing_register_derived_lock: {
         Args: {
@@ -21408,6 +21540,20 @@ export type Database = {
         Returns: undefined
       }
       redeem_invite: { Args: { p_token: string }; Returns: string }
+      register_turnover_dossier: {
+        Args: {
+          p_chapters: Json
+          p_complete: boolean
+          p_gaps: Json
+          p_project_id: string
+          p_storage_path?: string
+        }
+        Returns: {
+          doc_number: string
+          document_id: string
+          dossier_id: string
+        }[]
+      }
       reopen_finance_period: {
         Args: { p_company_id: string; p_period_month: string }
         Returns: {

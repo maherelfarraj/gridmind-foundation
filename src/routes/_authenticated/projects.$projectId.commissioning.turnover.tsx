@@ -16,6 +16,7 @@ import {
   Upload,
 } from "lucide-react";
 
+import { TurnoverDossierCard } from "@/components/documents/turnover-dossier-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -473,6 +474,9 @@ function TurnoverRoute() {
           })}
         </div>
       )}
+
+      {/* P-267 — one-click as-built turnover dossier with the completeness gate */}
+      <TurnoverDossierCard projectId={projectId} />
 
       <Dialog open={deliverOpen} onOpenChange={setDeliverOpen}>
         <DialogContent>

@@ -596,5 +596,60 @@
     "queueEmptyHint": "Every issued copy has been recalled, returned or destroyed.",
     "byHolder": "Per holder",
     "holderSummary": "{{outstanding}} out · {{due}} due · {{overdue}} overdue"
+  },
+  "engMod": {
+    "retention": {
+      "title": "Retention classes",
+      "subtitle": "Retention class distribution and the disposal-eligible queue",
+      "classDistribution": "Class distribution",
+      "documents": "Documents",
+      "onHold": "On legal hold",
+      "expiringSoon": "Maturing",
+      "eligible": "Disposal-eligible",
+      "queueTitle": "Disposal queue",
+      "queueSubtitle": "Nothing is deleted automatically — the audited retention job is the only disposal path.",
+      "empty": "No documents are disposal-eligible",
+      "withinDays": "Next {{days}} days",
+      "docNumber": "Document",
+      "docTitle": "Title",
+      "class": "Class",
+      "expires": "Retention ends",
+      "project": "Project",
+      "status": "Status",
+      "overdue": "Past window",
+      "legalHold": "Legal hold",
+      "classLabel": {
+        "permanent": "Permanent",
+        "contract_term": "Contract term",
+        "seven_years": "Seven years",
+        "three_years": "Three years",
+        "transient": "Transient"
+      },
+      "classDesc": {
+        "permanent": "Never expires",
+        "contract_term": "Anchored to project COD + 1 year",
+        "seven_years": "7-year window",
+        "three_years": "3-year window",
+        "transient": "90-day window"
+      }
+    },
+    "dossier": {
+      "title": "Turnover dossier",
+      "subtitle": "Compile the as-built handover package",
+      "generate": "Generate turnover dossier",
+      "generating": "Compiling…",
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "gaps_one": "{{count}} gap",
+      "gaps_other": "{{count}} gaps",
+      "gapList": "Gaps detected",
+      "chapters": "Chapters",
+      "records": "Records",
+      "download": "Download dossier PDF",
+      "registered": "Dossier {{doc}} registered as a permanent controlled document",
+      "failed": "Dossier generation failed",
+      "previous": "Previous dossiers",
+      "none": "No dossiers generated yet"
+    }
   }
 }
