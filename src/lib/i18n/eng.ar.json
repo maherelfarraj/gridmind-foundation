@@ -605,5 +605,60 @@
     "queueEmptyHint": "تم سحب أو إعادة أو إتلاف كل النسخ الصادرة.",
     "byHolder": "حسب الحامل",
     "holderSummary": "{{outstanding}} قائمة · {{due}} مستحقة · {{overdue}} متأخرة"
+  },
+  "engMod": {
+    "retention": {
+      "title": "فئات الاحتفاظ",
+      "subtitle": "توزيع فئات الاحتفاظ وقائمة المستندات القابلة للإتلاف",
+      "classDistribution": "توزيع الفئات",
+      "documents": "المستندات",
+      "onHold": "تحت الحجز القانوني",
+      "expiringSoon": "تقترب من الاستحقاق",
+      "eligible": "قابلة للإتلاف",
+      "queueTitle": "قائمة الإتلاف",
+      "queueSubtitle": "لا يُحذف أي مستند تلقائيًا — مهمة الاحتفاظ المدققة هي المسار الوحيد للإتلاف.",
+      "empty": "لا توجد مستندات قابلة للإتلاف",
+      "withinDays": "خلال {{days}} يومًا",
+      "docNumber": "المستند",
+      "docTitle": "العنوان",
+      "class": "الفئة",
+      "expires": "انتهاء الاحتفاظ",
+      "project": "المشروع",
+      "status": "الحالة",
+      "overdue": "تجاوز المدة",
+      "legalHold": "حجز قانوني",
+      "classLabel": {
+        "permanent": "دائم",
+        "contract_term": "مدة العقد",
+        "seven_years": "سبع سنوات",
+        "three_years": "ثلاث سنوات",
+        "transient": "مؤقت"
+      },
+      "classDesc": {
+        "permanent": "لا ينتهي",
+        "contract_term": "مرتبط بتاريخ التشغيل التجاري + سنة",
+        "seven_years": "نافذة 7 سنوات",
+        "three_years": "نافذة 3 سنوات",
+        "transient": "نافذة 90 يومًا"
+      }
+    },
+    "dossier": {
+      "title": "حزمة التسليم",
+      "subtitle": "تجميع حزمة التسليم النهائية",
+      "generate": "إنشاء حزمة التسليم",
+      "generating": "جارٍ التجميع…",
+      "complete": "مكتملة",
+      "incomplete": "غير مكتملة",
+      "gaps_one": "فجوة واحدة",
+      "gaps_other": "{{count}} فجوات",
+      "gapList": "الفجوات المكتشفة",
+      "chapters": "الفصول",
+      "records": "السجلات",
+      "download": "تنزيل ملف الحزمة",
+      "registered": "تم تسجيل الحزمة {{doc}} كمستند خاضع للتحكم بشكل دائم",
+      "failed": "فشل إنشاء حزمة التسليم",
+      "previous": "الحزم السابقة",
+      "none": "لم يتم إنشاء أي حزمة بعد"
+    }
   }
 }
