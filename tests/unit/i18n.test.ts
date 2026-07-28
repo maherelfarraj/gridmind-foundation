@@ -46,7 +46,9 @@ describe("Arabic plural forms", () => {
   it("renders all six categories distinctly", async () => {
     const i18n = createI18n("ar");
     await i18n.changeLanguage("ar");
-    const rendered = [0, 1, 2, 3, 11, 100].map((count) => i18n.t("dashboard.projectCount", { count }));
+    const rendered = [0, 1, 2, 3, 11, 100].map((count) =>
+      i18n.t("dashboard.projectCount", { count }),
+    );
     expect(rendered[0]).toBe("لا توجد مشاريع");
     expect(rendered[1]).toBe("مشروع واحد");
     expect(rendered[2]).toBe("مشروعان");
