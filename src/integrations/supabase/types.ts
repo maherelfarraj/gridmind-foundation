@@ -3799,6 +3799,7 @@ export type Database = {
       }
       document_register: {
         Row: {
+          change_summary: string | null
           company_id: string
           content_extracted_at: string | null
           content_text: string | null
@@ -3821,11 +3822,13 @@ export type Database = {
           status: Database["public"]["Enums"]["document_register_status"]
           storage_path: string | null
           superseded_by_id: string | null
+          supersedes_id: string | null
           tags: string[]
           title: string
           updated_at: string
         }
         Insert: {
+          change_summary?: string | null
           company_id: string
           content_extracted_at?: string | null
           content_text?: string | null
@@ -3848,11 +3851,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["document_register_status"]
           storage_path?: string | null
           superseded_by_id?: string | null
+          supersedes_id?: string | null
           tags?: string[]
           title: string
           updated_at?: string
         }
         Update: {
+          change_summary?: string | null
           company_id?: string
           content_extracted_at?: string | null
           content_text?: string | null
@@ -3875,6 +3880,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["document_register_status"]
           storage_path?: string | null
           superseded_by_id?: string | null
+          supersedes_id?: string | null
           tags?: string[]
           title?: string
           updated_at?: string
@@ -3911,6 +3917,13 @@ export type Database = {
           {
             foreignKeyName: "document_register_superseded_by_id_fkey"
             columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "document_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_register_supersedes_id_fkey"
+            columns: ["supersedes_id"]
             isOneToOne: false
             referencedRelation: "document_register"
             referencedColumns: ["id"]
@@ -20907,6 +20920,39 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      document_current_in_lineage: {
+        Args: { p_doc_id: string }
+        Returns: {
+          current_revision: string
+          doc_number: string
+          id: string
+          is_self: boolean
+          status: Database["public"]["Enums"]["document_register_status"]
+          title: string
+        }[]
+      }
+      document_history: {
+        Args: { p_doc_id: string }
+        Returns: {
+          change_summary: string
+          created_at: string
+          created_by: string
+          created_by_name: string
+          current_revision: string
+          depth: number
+          discipline: string
+          doc_number: string
+          id: string
+          is_root: boolean
+          owner_id: string
+          owner_name: string
+          status: Database["public"]["Enums"]["document_register_status"]
+          superseded_by_id: string
+          supersedes_id: string
+          title: string
+          updated_at: string
+        }[]
       }
       document_register_tsv: {
         Args: {

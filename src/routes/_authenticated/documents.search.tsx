@@ -1,6 +1,6 @@
 // P-264 — Controlled-document full-text search.
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FileSearch, Loader2, Search } from "lucide-react";
@@ -285,9 +285,16 @@ function DocumentSearchPage() {
                         </div>
                         <Snippet snippet={hit.snippet} />
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => void open(hit)}>
-                        {t("engMod.docSearch.openDocument")}
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => void open(hit)}>
+                          {t("engMod.docSearch.openDocument")}
+                        </Button>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/documents/$documentId" params={{ documentId: hit.id }}>
+                            {t("engMod.docHistory.tabs.history")}
+                          </Link>
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>

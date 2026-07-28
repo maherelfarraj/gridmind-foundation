@@ -528,5 +528,44 @@
     "openDocument": "فتح",
     "failed": "فشل البحث",
     "searching": "جارٍ البحث…"
+  },
+  "docHistory": {
+    "subtitle": "سجل المراجعات وسلسلة الاستبدال",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "history": "سجل المراجعات"
+    },
+    "overviewTitle": "الوثيقة",
+    "field": {
+      "docType": "النوع",
+      "discipline": "التخصص",
+      "revision": "المراجعة",
+      "status": "الحالة",
+      "retention": "فئة الحفظ",
+      "changeSummary": "ملخص التغيير"
+    },
+    "revision": "مراجعة {{rev}}",
+    "openFile": "فتح الملف",
+    "openRevision": "فتح المراجعة",
+    "openFailed": "تعذّر فتح الوثيقة",
+    "noFile": "لا يوجد ملف مرفق بهذه المراجعة",
+    "noHistory": "لا يوجد سجل مراجعات",
+    "noHistoryHint": "لهذه الوثيقة مراجعة واحدة فقط.",
+    "chainCount_one": "مراجعة واحدة في هذه السلسلة",
+    "chainCount_other": "{{count}} مراجعات في هذه السلسلة",
+    "supersededBy": "استُبدلت بواسطة",
+    "viewSuccessor": "المراجعة التالية",
+    "viewingHistorical": "أنت تطالع مراجعة سابقة.",
+    "jumpToCurrent": "الانتقال إلى الحالية (مراجعة {{rev}})",
+    "compare": "مقارنة المراجعات",
+    "compareTitle": "مقارنة المراجعات",
+    "compareFrom": "من المراجعة",
+    "compareTo": "إلى المراجعة",
+    "diffField": "الحقل",
+    "diffBefore": "قبل",
+    "diffAfter": "بعد",
+    "noChanges": "لا توجد فروق في البيانات الوصفية بين هاتين المراجعتين.",
+    "visualCompare": "كلتا المراجعتين ملفات قابلة للعرض — افتحهما جنبًا إلى جنب للمقارنة البصرية.",
+    "metadataCompare": "مقارنة بيانات وصفية فقط: لا يوجد عرض مرئي لهذا النوع من الوثائق."
   }
 }

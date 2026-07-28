@@ -117,6 +117,7 @@ import { Route as AuthenticatedEstimatingIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedEsgActivityRouteImport } from './routes/_authenticated/esg.activity'
 import { Route as AuthenticatedEngineeringPvLibraryRouteImport } from './routes/_authenticated/engineering.pv-library'
 import { Route as AuthenticatedDocumentsSearchRouteImport } from './routes/_authenticated/documents.search'
+import { Route as AuthenticatedDocumentsDocumentIdRouteImport } from './routes/_authenticated/documents.$documentId'
 import { Route as AuthenticatedDocsApiRouteImport } from './routes/_authenticated/docs.api'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedConstructionProductivityRouteImport } from './routes/_authenticated/construction.productivity'
@@ -872,6 +873,12 @@ const AuthenticatedDocumentsSearchRoute =
   AuthenticatedDocumentsSearchRouteImport.update({
     id: '/documents/search',
     path: '/documents/search',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocumentsDocumentIdRoute =
+  AuthenticatedDocumentsDocumentIdRouteImport.update({
+    id: '/documents/$documentId',
+    path: '/documents/$documentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDocsApiRoute = AuthenticatedDocsApiRouteImport.update({
@@ -1802,6 +1809,7 @@ export interface FileRoutesByFullPath {
   '/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
+  '/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
   '/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2053,6 +2061,7 @@ export interface FileRoutesByTo {
   '/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/docs/api': typeof AuthenticatedDocsApiRoute
+  '/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
   '/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2301,6 +2310,7 @@ export interface FileRoutesById {
   '/_authenticated/construction/productivity': typeof AuthenticatedConstructionProductivityRoute
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/docs/api': typeof AuthenticatedDocsApiRoute
+  '/_authenticated/documents/$documentId': typeof AuthenticatedDocumentsDocumentIdRoute
   '/_authenticated/documents/search': typeof AuthenticatedDocumentsSearchRoute
   '/_authenticated/engineering/pv-library': typeof AuthenticatedEngineeringPvLibraryRoute
   '/_authenticated/esg/activity': typeof AuthenticatedEsgActivityRoute
@@ -2558,6 +2568,7 @@ export interface FileRouteTypes {
     | '/construction/productivity'
     | '/crm/pipeline'
     | '/docs/api'
+    | '/documents/$documentId'
     | '/documents/search'
     | '/engineering/pv-library'
     | '/esg/activity'
@@ -2809,6 +2820,7 @@ export interface FileRouteTypes {
     | '/construction/productivity'
     | '/crm/pipeline'
     | '/docs/api'
+    | '/documents/$documentId'
     | '/documents/search'
     | '/engineering/pv-library'
     | '/esg/activity'
@@ -3056,6 +3068,7 @@ export interface FileRouteTypes {
     | '/_authenticated/construction/productivity'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/docs/api'
+    | '/_authenticated/documents/$documentId'
     | '/_authenticated/documents/search'
     | '/_authenticated/engineering/pv-library'
     | '/_authenticated/esg/activity'
@@ -4063,6 +4076,13 @@ declare module '@tanstack/react-router' {
       path: '/documents/search'
       fullPath: '/documents/search'
       preLoaderRoute: typeof AuthenticatedDocumentsSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents/$documentId': {
+      id: '/_authenticated/documents/$documentId'
+      path: '/documents/$documentId'
+      fullPath: '/documents/$documentId'
+      preLoaderRoute: typeof AuthenticatedDocumentsDocumentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/docs/api': {
@@ -5532,6 +5552,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConstructionProductivityRoute: typeof AuthenticatedConstructionProductivityRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedDocsApiRoute: typeof AuthenticatedDocsApiRoute
+  AuthenticatedDocumentsDocumentIdRoute: typeof AuthenticatedDocumentsDocumentIdRoute
   AuthenticatedDocumentsSearchRoute: typeof AuthenticatedDocumentsSearchRoute
   AuthenticatedEngineeringPvLibraryRoute: typeof AuthenticatedEngineeringPvLibraryRoute
   AuthenticatedEsgActivityRoute: typeof AuthenticatedEsgActivityRoute
@@ -5669,6 +5690,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedConstructionProductivityRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedDocsApiRoute: AuthenticatedDocsApiRoute,
+  AuthenticatedDocumentsDocumentIdRoute: AuthenticatedDocumentsDocumentIdRoute,
   AuthenticatedDocumentsSearchRoute: AuthenticatedDocumentsSearchRoute,
   AuthenticatedEngineeringPvLibraryRoute:
     AuthenticatedEngineeringPvLibraryRoute,
@@ -5910,13 +5932,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
