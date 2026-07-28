@@ -23,6 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  useFormField,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,6 +67,17 @@ type FormValues = z.input<typeof FormSchema>;
 
 function fmt(n: number, currency: string) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
+}
+
+// Zod refine messages carry catalog keys (financeMod.*) so this dialog's field
+// errors localize instead of leaking raw English through the shared FormMessage.
+function TranslatedFormMessage() {
+  const { t } = useI18n();
+  const { error } = useFormField();
+  const raw = error?.message ? String(error.message) : "";
+  if (!raw) return null;
+  const text = raw.startsWith("financeMod.") ? t(raw) : raw;
+  return <p className="text-[0.8rem] font-medium text-destructive">{text}</p>;
 }
 
 export function RecordPaymentDialog({
@@ -206,7 +218,7 @@ export function RecordPaymentDialog({
                   <FormControl>
                     <Input type="number" step="0.01" min="0.01" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <TranslatedFormMessage />
                 </FormItem>
               )}
             />
@@ -221,7 +233,7 @@ export function RecordPaymentDialog({
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <TranslatedFormMessage />
                   </FormItem>
                 )}
               />
@@ -245,7 +257,7 @@ export function RecordPaymentDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <TranslatedFormMessage />
                   </FormItem>
                 )}
               />
@@ -260,7 +272,7 @@ export function RecordPaymentDialog({
                   <FormControl>
                     <Input placeholder={t("financeMod.common.optional")} {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <TranslatedFormMessage />
                 </FormItem>
               )}
             />
@@ -274,7 +286,7 @@ export function RecordPaymentDialog({
                   <FormControl>
                     <Textarea rows={2} placeholder={t("financeMod.common.optional")} {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <TranslatedFormMessage />
                 </FormItem>
               )}
             />
