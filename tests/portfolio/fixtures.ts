@@ -454,6 +454,9 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
   ]);
 
   // --------------------------------------------------------- HSE / DPR ----
+  // manpower_logs.hours is numeric(5,2) — exposure hours are accumulated as
+  // 800-hour crew logs so the totals stay exact without overflowing.
+  const CHUNK = 800;
   const dpr = async (project: string, hours: number, headcount: number, back: number) => {
     const row = await one<{ id: string }>("construction_daily_reports", {
       company_id: companyId,
@@ -462,12 +465,21 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       shift: "day",
       status: "approved",
       total_manpower: headcount,
-      total_hours: hours,
+      total_hours: 0,
     });
-    await many("manpower_logs", [
-      { company_id: companyId, dpr_id: row.id, trade: "electrical", headcount, hours },
-    ]);
+    const chunks = hours / CHUNK;
+    await many(
+      "manpower_logs",
+      Array.from({ length: chunks }, (_, i) => ({
+        company_id: companyId,
+        dpr_id: row.id,
+        trade: `crew-${i + 1}`,
+        headcount: Math.round(headcount / chunks),
+        hours: CHUNK,
+      })),
+    );
   };
+
   await dpr(A, 12_000, 120, 10);
   await dpr(B, 8_000, 80, 12);
   await dpr(C, 4_000, 40, 14);
