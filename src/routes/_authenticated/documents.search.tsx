@@ -224,9 +224,7 @@ function DocumentSearchPage() {
 
           {recent.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {t("engMod.docSearch.recent")}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("engMod.docSearch.recent")}</span>
               {recent.map((q) => (
                 <Button key={q} size="sm" variant="outline" onClick={() => submit(q)}>
                   {q}

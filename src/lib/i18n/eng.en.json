@@ -1,523 +1,523 @@
 {
- "_module": "eng",
- "common": {
-  "all": "All",
-  "cancel": "Cancel",
-  "create": "Create",
-  "creating": "Creating…",
-  "open": "Open",
-  "retry": "Retry",
-  "search": "Search",
-  "loading": "Loading…",
-  "status": "Status",
-  "revision": "Revision",
-  "notSet": "—"
- },
- "projects": {
-  "title": "Projects",
-  "loading": "Loading…",
-  "count_one": "{{count}} project",
-  "count_other": "{{count}} projects",
-  "matchingFilters": "matching filters",
-  "exportCsv": "Export CSV",
-  "exportSuccess": "CSV downloaded",
-  "exportFailed": "Export failed",
-  "newProject": "New project",
-  "searchPlaceholder": "Search by name or code",
-  "searchAriaLabel": "Search projects",
-  "filters": {
-   "phase": "Phase",
-   "archetype": "Archetype",
-   "department": "Department"
-  },
-  "card": {
-   "noCod": "No COD set",
-   "unassigned": "Unassigned"
-  },
-  "empty": {
-   "filteredTitle": "No projects match your filters",
-   "filteredDesc": "Adjust or clear the filters above to see more results.",
-   "emptyTitle": "No projects yet",
-   "emptyDesc": "Create your first project to start phase-gated delivery."
-  },
-  "error": {
-   "title": "Couldn't load projects",
-   "fallback": "Failed to load projects"
-  }
- },
- "drawings": {
-  "columns": {
-   "number": "Number",
-   "title": "Title",
-   "discipline": "Discipline",
-   "revision": "Revision",
-   "status": "Status",
-   "issued": "Issued"
-  },
-  "searchPlaceholder": "Search number or title…",
-  "disciplinePlaceholder": "Discipline",
-  "allDisciplines": "All disciplines",
-  "statusPlaceholder": "Status",
-  "allStatuses": "All statuses",
-  "exportCsv": "CSV",
-  "locked": "Locked",
-  "open": "Open",
-  "showing": "Showing {{shown}} of {{total}} drawings.",
-  "empty": {
-   "title": "No drawings yet",
-   "description": "Register a drawing number and start uploading revisions."
-  },
-  "newDrawing": {
-   "trigger": "New drawing",
-   "title": "New drawing",
-   "description": "Register the drawing number, title, and discipline. Upload revisions afterwards.",
-   "numberLabel": "Drawing number",
-   "disciplineLabel": "Discipline",
-   "titleLabel": "Title"
-  },
-  "disciplineLabels": {
-   "civil": "Civil",
-   "structural": "Structural",
-   "electrical": "Electrical",
-   "mechanical": "Mechanical",
-   "scada_controls": "SCADA/Controls",
-   "survey": "Survey",
-   "general": "General"
-  },
-  "statusLabels": {
-   "draft": "Draft",
-   "IFD": "IFD",
-   "IFC": "IFC",
-   "as_built": "As-built",
-   "superseded": "Superseded"
-  }
- },
- "sld": {
-  "gallery": {
-   "title": "Single-line diagrams",
-   "empty": {
-    "title": "No single-line diagrams yet",
-    "description": "Upload your first SLD to get started."
-   },
-   "revision": "Rev {{code}}",
-   "markup_one": "{{count}} markup",
-   "markup_other": "{{count}} markups",
-   "newSld": {
-    "trigger": "New SLD",
-    "title": "New single-line diagram",
-    "description": "The drawing number is auto-prefixed with SLD- so it appears in this gallery.",
-    "numberLabel": "Drawing number",
-    "titleLabel": "Title",
-    "createButton": "Create SLD"
-   }
-  },
-  "canvas": {
-   "tools": {
-    "select": "Select tool",
-    "pan": "Pan tool",
-    "connect": "Connection tool",
-    "measure": "Measure tool"
-   },
-   "connectionType": "Connection type",
-   "actions": {
-    "rotate": "Rotate 90°",
-    "mirror": "Mirror horizontally",
-    "copy": "Copy",
-    "paste": "Paste",
-    "group": "Group",
-    "ungroup": "Ungroup",
-    "delete": "Delete selection"
-   },
-   "align": {
-    "left": "Align left",
-    "center": "Align centre",
-    "right": "Align right",
-    "top": "Align top",
-    "middle": "Align middle",
-    "bottom": "Align bottom"
-   },
-   "distribute": {
-    "horizontal": "Dist H",
-    "vertical": "Dist V",
-    "aria": "Distribute {{axis}}ly"
-   },
-   "status": {
-    "copyCursor": "Copy cursor coordinates",
-    "copySelection": "Copy selected object position",
-    "cursor": "X/Y: {{value}} mm",
-    "zoom": "Zoom {{value}}%",
-    "snapOn": "Snap on · {{grid}} mm",
-    "snapOff": "Snap off",
-    "tool": "Tool: {{tool}}",
-    "selectedCount_one": "{{count}} selected",
-    "selectedCount_other": "{{count}} selected",
-    "measurement": "Δ {{distance}} (dx {{dx}}, dy {{dy}})",
-    "copiedToast": "Copied {{text}}"
-   },
-   "connectionTypeLabels": {
-    "cable": "Cable",
-    "busbar": "Busbar",
-    "dc_string": "DC string",
-    "earth": "Earth",
-    "signal": "Signal"
-   }
-  }
- },
- "pv": {
-  "layout": {
-   "title": "PV layout",
-   "description": "Automatic block arrangement, compliance checks and layout alternatives.",
-   "noSiteConfig": {
-    "title": "No active site configuration",
-    "description": "Draw the site boundary and activate a configuration on the Site config tab before arranging a layout."
-   },
-   "noModule": {
-    "title": "No PV module in the library",
-    "description": "Add at least one active module to the PV equipment library to size tables."
-   },
-   "arrangementParameters": "Arrangement parameters",
-   "blockInspector": "Block inspector",
-   "optionComparison": "Option comparison",
-   "savedLayouts": "Saved layouts",
-   "noSavedLayouts": {
-    "title": "No saved layouts",
-    "description": "Save an option above to start the approval workflow."
-   },
-   "complianceTitle": "Compliance",
-   "saveAsDraft": "Save {{name}} as draft",
-   "selectBlockPrompt": "Select a block on the canvas.",
-   "blockType": "Type: {{type}}",
-   "blockModules": "Modules: {{count}} — {{kwp}} kWp",
-   "blockSlopeNone": "no terrain data",
-   "blockSlope": "Slope: {{pct}}%",
-   "comparisonColumns": {
-    "option": "Option",
-    "dcKwp": "DC kWp",
-    "modules": "Modules",
-    "tables": "Tables",
-    "usedArea": "Used area (m²)",
-    "achievedGcr": "Achieved GCR",
-    "warnings": "Warnings"
-   },
-   "savedColumns": {
-    "layout": "Layout",
-    "version": "Version",
-    "dcKwp": "DC kWp",
+  "_module": "eng",
+  "common": {
+    "all": "All",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating…",
+    "open": "Open",
+    "retry": "Retry",
+    "search": "Search",
+    "loading": "Loading…",
     "status": "Status",
-    "actions": "Actions"
-   },
-   "actions": {
-    "submitForApproval": "Submit for approval",
-    "generateSld": "Generate SLD",
-    "applyDecision": "Apply decision"
-   },
-   "params": {
-    "gcr": "GCR",
-    "setbackM": "Setback (m)",
-    "tiltDeg": "Tilt (deg)",
-    "azimuthDeg": "Azimuth (deg)",
-    "modulesAcross": "Modules across",
-    "modulesUp": "Modules up",
-    "roadEveryNRows": "Road every N rows",
-    "roadWidthM": "Road width (m)"
-   },
-   "blockSlopeNoneFull": "Slope: no terrain data"
+    "revision": "Revision",
+    "notSet": "—"
   },
-  "simulation": {
-   "title": "Energy yield simulation",
-   "honestyLabel": "GridMind transparent model — not yet validated against commercial tools.",
-   "description": "Transparent 16-step loss chain, P-scenarios and the approval-gated project energy baseline.",
-   "disclaimer": "This model has not been validated against PVsyst, PlantPredict, SAM or any third-party engine. Cross-check the loss chain against your discipline's assumptions before treating results as bankable.",
-   "loadError": {
-    "title": "Could not load the simulation workspace",
-    "description": "Refresh the page or check that the project has an active site configuration."
-   },
-   "tabs": {
-    "inputSheet": "Input sheet",
-    "results": "Results",
-    "approval": "Review & approve",
-    "compare": "Compare"
-   },
-   "serverPrefilled": "Server-prefilled inputs",
-   "siteConfiguration": "Site configuration",
-   "noActiveSiteConfig": "No active site config",
-   "approvedLayout": "Approved layout",
-   "noneApproved": "None approved",
-   "stringing": "Stringing (P-154)",
-   "strings": "strings",
-   "runName": "Run name",
-   "mounting": "Mounting",
-   "fixedTilt": "Fixed tilt",
-   "singleAxisTracker": "Single-axis tracker",
-   "resultsEmpty": {
-    "title": "No simulations yet",
-    "description": "Fill in the input sheet and run the transparent model to see the loss chain."
-   },
-   "simulationLabel": "Simulation",
-   "baselineSuffix": " · baseline",
-   "approval": {
-    "nothingToReview": {
-     "title": "Nothing to review",
-     "description": "Run a simulation first, then submit it for engineering approval."
+  "projects": {
+    "title": "Projects",
+    "loading": "Loading…",
+    "count_one": "{{count}} project",
+    "count_other": "{{count}} projects",
+    "matchingFilters": "matching filters",
+    "exportCsv": "Export CSV",
+    "exportSuccess": "CSV downloaded",
+    "exportFailed": "Export failed",
+    "newProject": "New project",
+    "searchPlaceholder": "Search by name or code",
+    "searchAriaLabel": "Search projects",
+    "filters": {
+      "phase": "Phase",
+      "archetype": "Archetype",
+      "department": "Department"
     },
-    "approvalStatus": "Approval status",
-    "notSubmitted": "not submitted",
-    "currentStep": "Current step",
-    "stepEngineeringAdmin": "Step {{step}} · engineering_admin",
-    "slaAge": "SLA age",
-    "submitForApproval": "Submit for approval",
-    "currentBaseline": "Current baseline",
-    "setAsBaseline": "Set as project baseline",
-    "baselineLocked": "Baselining unlocks once the approval instance is approved — the server rejects earlier attempts."
-   },
-   "compare": {
-    "title": "Compare runs",
-    "needTwo": {
-     "title": "Need two simulations",
-     "description": "Run at least two simulations to compare annual energy, yield, PR and each loss step."
+    "card": {
+      "noCod": "No COD set",
+      "unassigned": "Unassigned"
     },
-    "baselinePlaceholder": "Baseline run",
-    "comparePlaceholder": "Compare with…",
-    "pickSecond": {
-     "title": "Pick a second simulation",
-     "description": "Select two runs to see the delta table."
+    "empty": {
+      "filteredTitle": "No projects match your filters",
+      "filteredDesc": "Adjust or clear the filters above to see more results.",
+      "emptyTitle": "No projects yet",
+      "emptyDesc": "Create your first project to start phase-gated delivery."
+    },
+    "error": {
+      "title": "Couldn't load projects",
+      "fallback": "Failed to load projects"
     }
-   },
-   "form": {
-    "runButton": "Run simulation",
-    "running": "Running…",
-    "readOnlyNote": "Read-only — engineering roles can run simulations.",
-    "bessDisabledNote": "BESS inputs are disabled — no battery entry is configured for this project.",
-    "overridden": "overridden",
-    "gridLimitLabel": "Export limit / curtailment (kW)"
-   },
-   "results": {
-    "pScenarios": "P-scenarios",
-    "inputs": "Inputs",
-    "inputSources": "Input sources",
-    "metric": "Metric",
-    "lossStep": "Loss step"
-   }
-  }
- },
- "ea": {
-  "studies": {
-   "title": "Electrical studies",
-   "description": "Every calculation is a numbered, revisioned record with its own review trail.",
-   "loadError": {
-    "title": "Studies could not be loaded",
-    "fallback": "Unexpected error"
-   },
-   "empty": {
-    "title": "No studies yet — run your first calculation",
-    "description": "Pick a study type to open the workspace; results, warnings and method text are stored with the record."
-   },
-   "newStudy": "New study",
-   "filters": {
-    "studyTypeAria": "Filter by study type",
-    "allStudyTypes": "All study types",
-    "statusAria": "Filter by status",
+  },
+  "drawings": {
+    "columns": {
+      "number": "Number",
+      "title": "Title",
+      "discipline": "Discipline",
+      "revision": "Revision",
+      "status": "Status",
+      "issued": "Issued"
+    },
+    "searchPlaceholder": "Search number or title…",
+    "disciplinePlaceholder": "Discipline",
+    "allDisciplines": "All disciplines",
+    "statusPlaceholder": "Status",
     "allStatuses": "All statuses",
-    "draft": "Draft",
-    "underReview": "Under review",
-    "approved": "Approved"
-   },
-   "gridCodeLink": "Grid-code checklist",
-   "columns": {
-    "study": "Study",
-    "title": "Title",
-    "type": "Type",
-    "rev": "Rev",
+    "exportCsv": "CSV",
+    "locked": "Locked",
+    "open": "Open",
+    "showing": "Showing {{shown}} of {{total}} drawings.",
+    "empty": {
+      "title": "No drawings yet",
+      "description": "Register a drawing number and start uploading revisions."
+    },
+    "newDrawing": {
+      "trigger": "New drawing",
+      "title": "New drawing",
+      "description": "Register the drawing number, title, and discipline. Upload revisions afterwards.",
+      "numberLabel": "Drawing number",
+      "disciplineLabel": "Discipline",
+      "titleLabel": "Title"
+    },
+    "disciplineLabels": {
+      "civil": "Civil",
+      "structural": "Structural",
+      "electrical": "Electrical",
+      "mechanical": "Mechanical",
+      "scada_controls": "SCADA/Controls",
+      "survey": "Survey",
+      "general": "General"
+    },
+    "statusLabels": {
+      "draft": "Draft",
+      "IFD": "IFD",
+      "IFC": "IFC",
+      "as_built": "As-built",
+      "superseded": "Superseded"
+    }
+  },
+  "sld": {
+    "gallery": {
+      "title": "Single-line diagrams",
+      "empty": {
+        "title": "No single-line diagrams yet",
+        "description": "Upload your first SLD to get started."
+      },
+      "revision": "Rev {{code}}",
+      "markup_one": "{{count}} markup",
+      "markup_other": "{{count}} markups",
+      "newSld": {
+        "trigger": "New SLD",
+        "title": "New single-line diagram",
+        "description": "The drawing number is auto-prefixed with SLD- so it appears in this gallery.",
+        "numberLabel": "Drawing number",
+        "titleLabel": "Title",
+        "createButton": "Create SLD"
+      }
+    },
+    "canvas": {
+      "tools": {
+        "select": "Select tool",
+        "pan": "Pan tool",
+        "connect": "Connection tool",
+        "measure": "Measure tool"
+      },
+      "connectionType": "Connection type",
+      "actions": {
+        "rotate": "Rotate 90°",
+        "mirror": "Mirror horizontally",
+        "copy": "Copy",
+        "paste": "Paste",
+        "group": "Group",
+        "ungroup": "Ungroup",
+        "delete": "Delete selection"
+      },
+      "align": {
+        "left": "Align left",
+        "center": "Align centre",
+        "right": "Align right",
+        "top": "Align top",
+        "middle": "Align middle",
+        "bottom": "Align bottom"
+      },
+      "distribute": {
+        "horizontal": "Dist H",
+        "vertical": "Dist V",
+        "aria": "Distribute {{axis}}ly"
+      },
+      "status": {
+        "copyCursor": "Copy cursor coordinates",
+        "copySelection": "Copy selected object position",
+        "cursor": "X/Y: {{value}} mm",
+        "zoom": "Zoom {{value}}%",
+        "snapOn": "Snap on · {{grid}} mm",
+        "snapOff": "Snap off",
+        "tool": "Tool: {{tool}}",
+        "selectedCount_one": "{{count}} selected",
+        "selectedCount_other": "{{count}} selected",
+        "measurement": "Δ {{distance}} (dx {{dx}}, dy {{dy}})",
+        "copiedToast": "Copied {{text}}"
+      },
+      "connectionTypeLabels": {
+        "cable": "Cable",
+        "busbar": "Busbar",
+        "dc_string": "DC string",
+        "earth": "Earth",
+        "signal": "Signal"
+      }
+    }
+  },
+  "pv": {
+    "layout": {
+      "title": "PV layout",
+      "description": "Automatic block arrangement, compliance checks and layout alternatives.",
+      "noSiteConfig": {
+        "title": "No active site configuration",
+        "description": "Draw the site boundary and activate a configuration on the Site config tab before arranging a layout."
+      },
+      "noModule": {
+        "title": "No PV module in the library",
+        "description": "Add at least one active module to the PV equipment library to size tables."
+      },
+      "arrangementParameters": "Arrangement parameters",
+      "blockInspector": "Block inspector",
+      "optionComparison": "Option comparison",
+      "savedLayouts": "Saved layouts",
+      "noSavedLayouts": {
+        "title": "No saved layouts",
+        "description": "Save an option above to start the approval workflow."
+      },
+      "complianceTitle": "Compliance",
+      "saveAsDraft": "Save {{name}} as draft",
+      "selectBlockPrompt": "Select a block on the canvas.",
+      "blockType": "Type: {{type}}",
+      "blockModules": "Modules: {{count}} — {{kwp}} kWp",
+      "blockSlopeNone": "no terrain data",
+      "blockSlope": "Slope: {{pct}}%",
+      "comparisonColumns": {
+        "option": "Option",
+        "dcKwp": "DC kWp",
+        "modules": "Modules",
+        "tables": "Tables",
+        "usedArea": "Used area (m²)",
+        "achievedGcr": "Achieved GCR",
+        "warnings": "Warnings"
+      },
+      "savedColumns": {
+        "layout": "Layout",
+        "version": "Version",
+        "dcKwp": "DC kWp",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "submitForApproval": "Submit for approval",
+        "generateSld": "Generate SLD",
+        "applyDecision": "Apply decision"
+      },
+      "params": {
+        "gcr": "GCR",
+        "setbackM": "Setback (m)",
+        "tiltDeg": "Tilt (deg)",
+        "azimuthDeg": "Azimuth (deg)",
+        "modulesAcross": "Modules across",
+        "modulesUp": "Modules up",
+        "roadEveryNRows": "Road every N rows",
+        "roadWidthM": "Road width (m)"
+      },
+      "blockSlopeNoneFull": "Slope: no terrain data"
+    },
+    "simulation": {
+      "title": "Energy yield simulation",
+      "honestyLabel": "GridMind transparent model — not yet validated against commercial tools.",
+      "description": "Transparent 16-step loss chain, P-scenarios and the approval-gated project energy baseline.",
+      "disclaimer": "This model has not been validated against PVsyst, PlantPredict, SAM or any third-party engine. Cross-check the loss chain against your discipline's assumptions before treating results as bankable.",
+      "loadError": {
+        "title": "Could not load the simulation workspace",
+        "description": "Refresh the page or check that the project has an active site configuration."
+      },
+      "tabs": {
+        "inputSheet": "Input sheet",
+        "results": "Results",
+        "approval": "Review & approve",
+        "compare": "Compare"
+      },
+      "serverPrefilled": "Server-prefilled inputs",
+      "siteConfiguration": "Site configuration",
+      "noActiveSiteConfig": "No active site config",
+      "approvedLayout": "Approved layout",
+      "noneApproved": "None approved",
+      "stringing": "Stringing (P-154)",
+      "strings": "strings",
+      "runName": "Run name",
+      "mounting": "Mounting",
+      "fixedTilt": "Fixed tilt",
+      "singleAxisTracker": "Single-axis tracker",
+      "resultsEmpty": {
+        "title": "No simulations yet",
+        "description": "Fill in the input sheet and run the transparent model to see the loss chain."
+      },
+      "simulationLabel": "Simulation",
+      "baselineSuffix": " · baseline",
+      "approval": {
+        "nothingToReview": {
+          "title": "Nothing to review",
+          "description": "Run a simulation first, then submit it for engineering approval."
+        },
+        "approvalStatus": "Approval status",
+        "notSubmitted": "not submitted",
+        "currentStep": "Current step",
+        "stepEngineeringAdmin": "Step {{step}} · engineering_admin",
+        "slaAge": "SLA age",
+        "submitForApproval": "Submit for approval",
+        "currentBaseline": "Current baseline",
+        "setAsBaseline": "Set as project baseline",
+        "baselineLocked": "Baselining unlocks once the approval instance is approved — the server rejects earlier attempts."
+      },
+      "compare": {
+        "title": "Compare runs",
+        "needTwo": {
+          "title": "Need two simulations",
+          "description": "Run at least two simulations to compare annual energy, yield, PR and each loss step."
+        },
+        "baselinePlaceholder": "Baseline run",
+        "comparePlaceholder": "Compare with…",
+        "pickSecond": {
+          "title": "Pick a second simulation",
+          "description": "Select two runs to see the delta table."
+        }
+      },
+      "form": {
+        "runButton": "Run simulation",
+        "running": "Running…",
+        "readOnlyNote": "Read-only — engineering roles can run simulations.",
+        "bessDisabledNote": "BESS inputs are disabled — no battery entry is configured for this project.",
+        "overridden": "overridden",
+        "gridLimitLabel": "Export limit / curtailment (kW)"
+      },
+      "results": {
+        "pScenarios": "P-scenarios",
+        "inputs": "Inputs",
+        "inputSources": "Input sources",
+        "metric": "Metric",
+        "lossStep": "Loss step"
+      }
+    }
+  },
+  "ea": {
+    "studies": {
+      "title": "Electrical studies",
+      "description": "Every calculation is a numbered, revisioned record with its own review trail.",
+      "loadError": {
+        "title": "Studies could not be loaded",
+        "fallback": "Unexpected error"
+      },
+      "empty": {
+        "title": "No studies yet — run your first calculation",
+        "description": "Pick a study type to open the workspace; results, warnings and method text are stored with the record."
+      },
+      "newStudy": "New study",
+      "filters": {
+        "studyTypeAria": "Filter by study type",
+        "allStudyTypes": "All study types",
+        "statusAria": "Filter by status",
+        "allStatuses": "All statuses",
+        "draft": "Draft",
+        "underReview": "Under review",
+        "approved": "Approved"
+      },
+      "gridCodeLink": "Grid-code checklist",
+      "columns": {
+        "study": "Study",
+        "title": "Title",
+        "type": "Type",
+        "rev": "Rev",
+        "status": "Status",
+        "updated": "Updated"
+      },
+      "retry": "Retry",
+      "newStudyButton": "New study",
+      "newStudyDialog": {
+        "title": "New study",
+        "description": "Choose the calculation to run. Types without a wired calculator open through the protection and grid-code worksheets.",
+        "trackedInGridCode": "Tracked in the grid-code checklist view.",
+        "preparedThroughProtection": "Prepared through the protection worksheets."
+      },
+      "noCalculator": {
+        "title": "No calculator for this study type",
+        "description": "This study type is prepared through the protection worksheets or the grid-code checklist.",
+        "backToStudies": "Back to studies"
+      },
+      "noWiredCalculator": {
+        "title": "This study has no wired calculator",
+        "description": "Protection schedules and grid-code checklists are edited in their own worksheets."
+      }
+    },
+    "workspace": {
+      "loadError": {
+        "title": "This study could not be loaded",
+        "fallback": "Unexpected error"
+      },
+      "inputSheet": "Input sheet",
+      "results": "Results",
+      "noResults": {
+        "title": "No results yet",
+        "description": "Fill in the input sheet and press Calculate."
+      },
+      "warnings": "Warnings",
+      "assumptions": "Assumptions",
+      "titleLabel": "Title",
+      "calculate": "Calculate",
+      "saveDraft": "Save draft",
+      "submitForReview": "Submit for engineering review",
+      "approvedNotice": "Approved — start a new revision to edit.",
+      "underReviewNotice": "Under review — recall it before editing.",
+      "revisions": "Revisions",
+      "exportReport": "Export report",
+      "newRevision": "New revision",
+      "stepOf": "Step {{current}} of {{total}} · engineer review → engineering admin approval",
+      "slaDue": "SLA due {{date}}",
+      "methodFormulas": "Method & formulas",
+      "add": "Add",
+      "noAssumptions": "No assumptions recorded — calculate to echo the engine defaults.",
+      "sourcePlaceholder": "Source",
+      "assumptionAria": "Assumption {{index}}",
+      "assumptionSourceAria": "Assumption {{index}} source",
+      "removeAssumptionAria": "Remove assumption {{index}}",
+      "standardsReferenced": "Standards referenced: {{standards}}",
+      "revisionHistory": "Revision history",
+      "noSnapshots": "No snapshots recorded yet.",
+      "rev": "Rev {{revision}}",
+      "noChangeSummary": "No change summary",
+      "inputs": "Inputs",
+      "openRevisionTitle": "Open a new revision",
+      "openRevisionDesc": "The approved payload is snapshotted first; the study reopens as a draft.",
+      "changeSummaryLabel": "Change summary (required)",
+      "cancel": "Cancel",
+      "createRevision": "Create revision",
+      "noWarnings": "No warnings raised by this run.",
+      "toasts": {
+        "checkInputSheet": "Check the input sheet: {{field}} — {{message}}",
+        "calculationComplete": "Calculation complete",
+        "calculationFailed": "Calculation failed",
+        "draftSaved": "Draft saved",
+        "submittedForReview": "Submitted for engineering review",
+        "revisionOpened": "New revision opened as draft",
+        "reportStored": "Report stored as {{fileName}}",
+        "couldNotSave": "Could not save the study",
+        "couldNotSubmit": "Could not submit the study",
+        "couldNotOpenRevision": "Could not open a revision",
+        "couldNotExport": "Could not export the report — the project may be locked",
+        "incompleteInputSheet": "The input sheet is incomplete — fix the fields first."
+      }
+    }
+  },
+  "calculators": {
+    "sourceOverridden": "overridden",
+    "addRow": "Add row",
+    "noRowsYet": "No rows yet — add at least one.",
+    "removeRow": "Remove row {{index}}",
+    "add": "Add",
+    "noEntriesYet": "No entries yet.",
+    "removeEntry": "Remove entry {{index}}",
+    "overridden": "overridden",
+    "categoryLabels": {
+      "modules": "Modules",
+      "inverters": "Inverters",
+      "cables": "Cables",
+      "structures": "Structures & mounting",
+      "transformers": "Transformers",
+      "bos": "Balance of system",
+      "other": "Other"
+    },
+    "columns": {
+      "item": "Item",
+      "spec": "Spec",
+      "unit": "Unit",
+      "qty": "Qty",
+      "bufferPct": "Buffer %",
+      "buffered": "Buffered",
+      "unitCost": "Unit cost"
+    },
+    "noBom": {
+      "title": "No BOM yet",
+      "description": "Generate a preliminary BOM from the archetype configuration."
+    },
+    "generateBom": "Generate BOM",
+    "generating": "Generating…",
+    "errorFallback": "Failed to load BOM.",
+    "bomHeader": {
+      "title": "Bill of materials",
+      "exportCsv": "Export CSV",
+      "generate": "Generate",
+      "regenerate": "Regenerate",
+      "generating": "Generating…",
+      "release": "Release",
+      "releasing": "Releasing…",
+      "addUnitCosts": "Add unit costs",
+      "metrics": {
+        "version": "Version",
+        "capacity": "Capacity (MWp DC)",
+        "lineCount": "Line count",
+        "estimatedTotal": "Estimated total"
+      },
+      "statusLabels": {
+        "draft": "Draft",
+        "released": "Released",
+        "superseded": "Superseded"
+      }
+    }
+  },
+  "projectDetail": {
+    "breadcrumbProjects": "Projects",
+    "loadError": {
+      "title": "Couldn't load this project",
+      "retry": "Retry",
+      "backToProjects": "Back to projects"
+    },
+    "notAvailable": {
+      "title": "Project not available",
+      "description": "This project doesn't exist or you don't have access."
+    },
+    "mobilization": {
+      "inProgress": "Mobilization: in progress",
+      "notStarted": "Mobilization: not started"
+    },
+    "sectionsAriaLabel": "Project sections",
+    "unexpectedError": "Unexpected error.",
+    "tabs": {
+      "overview": "Overview",
+      "gates": "Gates",
+      "config": "Config",
+      "planning": "Planning",
+      "commissioning": "Commissioning"
+    }
+  },
+  "docSearch": {
+    "title": "Document search",
+    "subtitle": "Search the controlled document register",
+    "scopeLabel": "Controlled documents",
+    "scopeNote": "Only registered controlled documents are searched — not every file in storage. Text-based PDFs are searched by content; images and CAD files are matched on metadata only.",
+    "arabicNote": "Arabic search matches exact words (no root stemming) — a known text-search limitation.",
+    "placeholder": "Search by document number, title, tag or content…",
+    "searchAction": "Search",
+    "clear": "Clear",
+    "minLength": "Type at least 2 characters",
+    "noResults": "No results",
+    "noResultsHint": "Try a document number, a tag, or fewer words.",
+    "results_one": "{{count}} document",
+    "results_other": "{{count}} documents",
+    "recent": "Recent searches",
+    "filters": "Filters",
+    "project": "Project",
+    "docType": "Type",
     "status": "Status",
-    "updated": "Updated"
-   },
-   "retry": "Retry",
-   "newStudyButton": "New study",
-   "newStudyDialog": {
-    "title": "New study",
-    "description": "Choose the calculation to run. Types without a wired calculator open through the protection and grid-code worksheets.",
-    "trackedInGridCode": "Tracked in the grid-code checklist view.",
-    "preparedThroughProtection": "Prepared through the protection worksheets."
-   },
-   "noCalculator": {
-    "title": "No calculator for this study type",
-    "description": "This study type is prepared through the protection worksheets or the grid-code checklist.",
-    "backToStudies": "Back to studies"
-   },
-   "noWiredCalculator": {
-    "title": "This study has no wired calculator",
-    "description": "Protection schedules and grid-code checklists are edited in their own worksheets."
-   }
-  },
-  "workspace": {
-   "loadError": {
-    "title": "This study could not be loaded",
-    "fallback": "Unexpected error"
-   },
-   "inputSheet": "Input sheet",
-   "results": "Results",
-   "noResults": {
-    "title": "No results yet",
-    "description": "Fill in the input sheet and press Calculate."
-   },
-   "warnings": "Warnings",
-   "assumptions": "Assumptions",
-   "titleLabel": "Title",
-   "calculate": "Calculate",
-   "saveDraft": "Save draft",
-   "submitForReview": "Submit for engineering review",
-   "approvedNotice": "Approved — start a new revision to edit.",
-   "underReviewNotice": "Under review — recall it before editing.",
-   "revisions": "Revisions",
-   "exportReport": "Export report",
-   "newRevision": "New revision",
-   "stepOf": "Step {{current}} of {{total}} · engineer review → engineering admin approval",
-   "slaDue": "SLA due {{date}}",
-   "methodFormulas": "Method & formulas",
-   "add": "Add",
-   "noAssumptions": "No assumptions recorded — calculate to echo the engine defaults.",
-   "sourcePlaceholder": "Source",
-   "assumptionAria": "Assumption {{index}}",
-   "assumptionSourceAria": "Assumption {{index}} source",
-   "removeAssumptionAria": "Remove assumption {{index}}",
-   "standardsReferenced": "Standards referenced: {{standards}}",
-   "revisionHistory": "Revision history",
-   "noSnapshots": "No snapshots recorded yet.",
-   "rev": "Rev {{revision}}",
-   "noChangeSummary": "No change summary",
-   "inputs": "Inputs",
-   "openRevisionTitle": "Open a new revision",
-   "openRevisionDesc": "The approved payload is snapshotted first; the study reopens as a draft.",
-   "changeSummaryLabel": "Change summary (required)",
-   "cancel": "Cancel",
-   "createRevision": "Create revision",
-   "noWarnings": "No warnings raised by this run.",
-   "toasts": {
-    "checkInputSheet": "Check the input sheet: {{field}} — {{message}}",
-    "calculationComplete": "Calculation complete",
-    "calculationFailed": "Calculation failed",
-    "draftSaved": "Draft saved",
-    "submittedForReview": "Submitted for engineering review",
-    "revisionOpened": "New revision opened as draft",
-    "reportStored": "Report stored as {{fileName}}",
-    "couldNotSave": "Could not save the study",
-    "couldNotSubmit": "Could not submit the study",
-    "couldNotOpenRevision": "Could not open a revision",
-    "couldNotExport": "Could not export the report — the project may be locked",
-    "incompleteInputSheet": "The input sheet is incomplete — fix the fields first."
-   }
+    "discipline": "Discipline",
+    "retentionClass": "Retention class",
+    "dateFrom": "Registered from",
+    "dateTo": "Registered to",
+    "all": "All",
+    "contentIndexed": "Content indexed",
+    "metadataOnly": "Metadata only",
+    "revision": "Rev {{rev}}",
+    "openDocument": "Open",
+    "failed": "Search failed",
+    "searching": "Searching…"
   }
- },
- "calculators": {
-  "sourceOverridden": "overridden",
-  "addRow": "Add row",
-  "noRowsYet": "No rows yet — add at least one.",
-  "removeRow": "Remove row {{index}}",
-  "add": "Add",
-  "noEntriesYet": "No entries yet.",
-  "removeEntry": "Remove entry {{index}}",
-  "overridden": "overridden",
-  "categoryLabels": {
-   "modules": "Modules",
-   "inverters": "Inverters",
-   "cables": "Cables",
-   "structures": "Structures & mounting",
-   "transformers": "Transformers",
-   "bos": "Balance of system",
-   "other": "Other"
-  },
-  "columns": {
-   "item": "Item",
-   "spec": "Spec",
-   "unit": "Unit",
-   "qty": "Qty",
-   "bufferPct": "Buffer %",
-   "buffered": "Buffered",
-   "unitCost": "Unit cost"
-  },
-  "noBom": {
-   "title": "No BOM yet",
-   "description": "Generate a preliminary BOM from the archetype configuration."
-  },
-  "generateBom": "Generate BOM",
-  "generating": "Generating…",
-  "errorFallback": "Failed to load BOM.",
-  "bomHeader": {
-   "title": "Bill of materials",
-   "exportCsv": "Export CSV",
-   "generate": "Generate",
-   "regenerate": "Regenerate",
-   "generating": "Generating…",
-   "release": "Release",
-   "releasing": "Releasing…",
-   "addUnitCosts": "Add unit costs",
-   "metrics": {
-    "version": "Version",
-    "capacity": "Capacity (MWp DC)",
-    "lineCount": "Line count",
-    "estimatedTotal": "Estimated total"
-   },
-   "statusLabels": {
-    "draft": "Draft",
-    "released": "Released",
-    "superseded": "Superseded"
-   }
-  }
- },
- "projectDetail": {
-  "breadcrumbProjects": "Projects",
-  "loadError": {
-   "title": "Couldn't load this project",
-   "retry": "Retry",
-   "backToProjects": "Back to projects"
-  },
-  "notAvailable": {
-   "title": "Project not available",
-   "description": "This project doesn't exist or you don't have access."
-  },
-  "mobilization": {
-   "inProgress": "Mobilization: in progress",
-   "notStarted": "Mobilization: not started"
-  },
-  "sectionsAriaLabel": "Project sections",
-  "unexpectedError": "Unexpected error.",
-  "tabs": {
-   "overview": "Overview",
-   "gates": "Gates",
-   "config": "Config",
-   "planning": "Planning",
-   "commissioning": "Commissioning"
-  }
- },
- "docSearch": {
-  "title": "Document search",
-  "subtitle": "Search the controlled document register",
-  "scopeLabel": "Controlled documents",
-  "scopeNote": "Only registered controlled documents are searched — not every file in storage. Text-based PDFs are searched by content; images and CAD files are matched on metadata only.",
-  "arabicNote": "Arabic search matches exact words (no root stemming) — a known text-search limitation.",
-  "placeholder": "Search by document number, title, tag or content…",
-  "searchAction": "Search",
-  "clear": "Clear",
-  "minLength": "Type at least 2 characters",
-  "noResults": "No results",
-  "noResultsHint": "Try a document number, a tag, or fewer words.",
-  "results_one": "{{count}} document",
-  "results_other": "{{count}} documents",
-  "recent": "Recent searches",
-  "filters": "Filters",
-  "project": "Project",
-  "docType": "Type",
-  "status": "Status",
-  "discipline": "Discipline",
-  "retentionClass": "Retention class",
-  "dateFrom": "Registered from",
-  "dateTo": "Registered to",
-  "all": "All",
-  "contentIndexed": "Content indexed",
-  "metadataOnly": "Metadata only",
-  "revision": "Rev {{rev}}",
-  "openDocument": "Open",
-  "failed": "Search failed",
-  "searching": "Searching…"
- }
 }
