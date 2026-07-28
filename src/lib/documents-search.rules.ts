@@ -12,20 +12,26 @@ export const DOC_SEARCH_MIN_LENGTH = 2;
 export const RECENT_SEARCHES_KEY = "gridmind-doc-recent-searches";
 export const RECENT_SEARCHES_MAX = 8;
 
-// Tashkeel + tatweel + superscript alef. The class is assembled at runtime so
-// the linter does not read the combining marks as literal combined characters.
-const DIACRITIC_RANGE = ["\\u064B-\\u0652", "\\u0640", "\\u0670"].join("");
-const ARABIC_DIACRITICS = new RegExp(`[${DIACRITIC_RANGE}]`, "g");
+// Tashkeel (0x64B–0x652), tatweel (0x640) and superscript alef (0x670) are
+// stripped by code point rather than by a regex class — combining marks inside
+// a character class are a lint hazard and read badly in source.
+function isDiacritic(code: number): boolean {
+  return (code >= 0x064b && code <= 0x0652) || code === 0x0640 || code === 0x0670;
+}
+
+const ALEF_VARIANTS = new Set([0x0622, 0x0623, 0x0625, 0x0671]);
 
 export function normalizeQuery(raw: string): string {
-  return raw
-    .normalize("NFKC")
-    .replace(ARABIC_DIACRITICS, "")
-    .replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627") // alef variants → ا
-    .replace(/\u0649/g, "\u064A") // alef maqsura → ي
-    .replace(/\u0629/g, "\u0647") // ta marbuta → ه
-    .replace(/\s+/g, " ")
-    .trim();
+  let out = "";
+  for (const ch of raw.normalize("NFKC")) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (isDiacritic(code)) continue;
+    if (ALEF_VARIANTS.has(code)) out += "\u0627"; // → ا
+    else if (code === 0x0649) out += "\u064a"; // alef maqsura → ي
+    else if (code === 0x0629) out += "\u0647"; // ta marbuta → ه
+    else out += ch;
+  }
+  return out.replace(/\s+/g, " ").trim();
 }
 
 /** Empty-query guard: below the minimum we never hit the database. */
