@@ -73,6 +73,7 @@ import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_
 import { Route as AuthenticatedProjectsNewRouteImport } from './routes/_authenticated/projects.new'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedProcurementVendorsRouteImport } from './routes/_authenticated/procurement.vendors'
+import { Route as AuthenticatedProcurementSubcontractsRouteImport } from './routes/_authenticated/procurement.subcontracts'
 import { Route as AuthenticatedProcurementSparePartsRouteImport } from './routes/_authenticated/procurement.spare-parts'
 import { Route as AuthenticatedProcurementScorecardsRouteImport } from './routes/_authenticated/procurement.scorecards'
 import { Route as AuthenticatedProcurementRfqsRouteImport } from './routes/_authenticated/procurement.rfqs'
@@ -134,6 +135,7 @@ import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedQaqcInspectionsIndexRouteImport } from './routes/_authenticated/qaqc.inspections.index'
 import { Route as AuthenticatedProjectsProjectIdIndexRouteImport } from './routes/_authenticated/projects.$projectId.index'
 import { Route as AuthenticatedProcurementVendorsIndexRouteImport } from './routes/_authenticated/procurement.vendors.index'
+import { Route as AuthenticatedProcurementSubcontractsIndexRouteImport } from './routes/_authenticated/procurement.subcontracts.index'
 import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/_authenticated/procurement.rfqs.index'
 import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './routes/_authenticated/procurement.receipts.index'
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
@@ -178,6 +180,7 @@ import { Route as AuthenticatedProjectsProjectIdConstructionRouteImport } from '
 import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
 import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes/_authenticated/procurement.vendors.new'
 import { Route as AuthenticatedProcurementVendorsVendorIdRouteImport } from './routes/_authenticated/procurement.vendors.$vendorId'
+import { Route as AuthenticatedProcurementSubcontractsSubcontractIdRouteImport } from './routes/_authenticated/procurement.subcontracts.$subcontractId'
 import { Route as AuthenticatedProcurementRfqsNewRouteImport } from './routes/_authenticated/procurement.rfqs.new'
 import { Route as AuthenticatedProcurementRfqsRfqIdRouteImport } from './routes/_authenticated/procurement.rfqs.$rfqId'
 import { Route as AuthenticatedProcurementReceiptsNewRouteImport } from './routes/_authenticated/procurement.receipts.new'
@@ -236,6 +239,7 @@ import { Route as AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImp
 import { Route as AuthenticatedProjectsProjectIdCommissioningKpisRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.kpis'
 import { Route as AuthenticatedProjectsProjectIdCommissioningHandoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.handover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.certificates'
+import { Route as AuthenticatedProcurementSubcontractsClaimsClaimIdRouteImport } from './routes/_authenticated/procurement.subcontracts.claims.$claimId'
 import { Route as AuthenticatedOmScadaPlantsProjectIdRouteImport } from './routes/_authenticated/om.scada.plants.$projectId'
 import { Route as AuthenticatedProjectsProjectIdFinanceProjectFinanceIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.project-finance.index'
 import { Route as AuthenticatedProjectsProjectIdFinancePayApplicationsIndexRouteImport } from './routes/_authenticated/projects.$projectId.finance.pay-applications.index'
@@ -605,6 +609,12 @@ const AuthenticatedProcurementVendorsRoute =
     path: '/procurement/vendors',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProcurementSubcontractsRoute =
+  AuthenticatedProcurementSubcontractsRouteImport.update({
+    id: '/procurement/subcontracts',
+    path: '/procurement/subcontracts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProcurementSparePartsRoute =
   AuthenticatedProcurementSparePartsRouteImport.update({
     id: '/procurement/spare-parts',
@@ -964,6 +974,12 @@ const AuthenticatedProcurementVendorsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProcurementVendorsRoute,
   } as any)
+const AuthenticatedProcurementSubcontractsIndexRoute =
+  AuthenticatedProcurementSubcontractsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProcurementSubcontractsRoute,
+  } as any)
 const AuthenticatedProcurementRfqsIndexRoute =
   AuthenticatedProcurementRfqsIndexRouteImport.update({
     id: '/',
@@ -1222,6 +1238,12 @@ const AuthenticatedProcurementVendorsVendorIdRoute =
     id: '/$vendorId',
     path: '/$vendorId',
     getParentRoute: () => AuthenticatedProcurementVendorsRoute,
+  } as any)
+const AuthenticatedProcurementSubcontractsSubcontractIdRoute =
+  AuthenticatedProcurementSubcontractsSubcontractIdRouteImport.update({
+    id: '/$subcontractId',
+    path: '/$subcontractId',
+    getParentRoute: () => AuthenticatedProcurementSubcontractsRoute,
   } as any)
 const AuthenticatedProcurementRfqsNewRoute =
   AuthenticatedProcurementRfqsNewRouteImport.update({
@@ -1573,6 +1595,12 @@ const AuthenticatedProjectsProjectIdCommissioningCertificatesRoute =
     path: '/commissioning/certificates',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
   } as any)
+const AuthenticatedProcurementSubcontractsClaimsClaimIdRoute =
+  AuthenticatedProcurementSubcontractsClaimsClaimIdRouteImport.update({
+    id: '/claims/$claimId',
+    path: '/claims/$claimId',
+    getParentRoute: () => AuthenticatedProcurementSubcontractsRoute,
+  } as any)
 const AuthenticatedOmScadaPlantsProjectIdRoute =
   AuthenticatedOmScadaPlantsProjectIdRouteImport.update({
     id: '/om/scada/plants/$projectId',
@@ -1781,6 +1809,7 @@ export interface FileRoutesByFullPath {
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/procurement/spare-parts': typeof AuthenticatedProcurementSparePartsRoute
+  '/procurement/subcontracts': typeof AuthenticatedProcurementSubcontractsRouteWithChildren
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -1853,6 +1882,7 @@ export interface FileRoutesByFullPath {
   '/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
+  '/procurement/subcontracts/$subcontractId': typeof AuthenticatedProcurementSubcontractsSubcontractIdRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -1897,12 +1927,14 @@ export interface FileRoutesByFullPath {
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
+  '/procurement/subcontracts/': typeof AuthenticatedProcurementSubcontractsIndexRoute
   '/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
+  '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -2089,6 +2121,7 @@ export interface FileRoutesByTo {
   '/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
+  '/procurement/subcontracts/$subcontractId': typeof AuthenticatedProcurementSubcontractsSubcontractIdRoute
   '/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -2132,12 +2165,14 @@ export interface FileRoutesByTo {
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/procurement/rfqs': typeof AuthenticatedProcurementRfqsIndexRoute
+  '/procurement/subcontracts': typeof AuthenticatedProcurementSubcontractsIndexRoute
   '/procurement/vendors': typeof AuthenticatedProcurementVendorsIndexRoute
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
+  '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -2263,6 +2298,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/rfqs': typeof AuthenticatedProcurementRfqsRouteWithChildren
   '/_authenticated/procurement/scorecards': typeof AuthenticatedProcurementScorecardsRoute
   '/_authenticated/procurement/spare-parts': typeof AuthenticatedProcurementSparePartsRoute
+  '/_authenticated/procurement/subcontracts': typeof AuthenticatedProcurementSubcontractsRouteWithChildren
   '/_authenticated/procurement/vendors': typeof AuthenticatedProcurementVendorsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/new': typeof AuthenticatedProjectsNewRoute
@@ -2335,6 +2371,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/receipts/new': typeof AuthenticatedProcurementReceiptsNewRoute
   '/_authenticated/procurement/rfqs/$rfqId': typeof AuthenticatedProcurementRfqsRfqIdRoute
   '/_authenticated/procurement/rfqs/new': typeof AuthenticatedProcurementRfqsNewRoute
+  '/_authenticated/procurement/subcontracts/$subcontractId': typeof AuthenticatedProcurementSubcontractsSubcontractIdRoute
   '/_authenticated/procurement/vendors/$vendorId': typeof AuthenticatedProcurementVendorsVendorIdRoute
   '/_authenticated/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
@@ -2379,12 +2416,14 @@ export interface FileRoutesById {
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/_authenticated/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
   '/_authenticated/procurement/rfqs/': typeof AuthenticatedProcurementRfqsIndexRoute
+  '/_authenticated/procurement/subcontracts/': typeof AuthenticatedProcurementSubcontractsIndexRoute
   '/_authenticated/procurement/vendors/': typeof AuthenticatedProcurementVendorsIndexRoute
   '/_authenticated/projects/$projectId/': typeof AuthenticatedProjectsProjectIdIndexRoute
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
   '/_authenticated/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
+  '/_authenticated/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/_authenticated/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
   '/_authenticated/projects/$projectId/commissioning/handover': typeof AuthenticatedProjectsProjectIdCommissioningHandoverRoute
   '/_authenticated/projects/$projectId/commissioning/kpis': typeof AuthenticatedProjectsProjectIdCommissioningKpisRoute
@@ -2511,6 +2550,7 @@ export interface FileRouteTypes {
     | '/procurement/rfqs'
     | '/procurement/scorecards'
     | '/procurement/spare-parts'
+    | '/procurement/subcontracts'
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/projects/new'
@@ -2583,6 +2623,7 @@ export interface FileRouteTypes {
     | '/procurement/receipts/new'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
+    | '/procurement/subcontracts/$subcontractId'
     | '/procurement/vendors/$vendorId'
     | '/procurement/vendors/new'
     | '/projects/$projectId/config'
@@ -2627,12 +2668,14 @@ export interface FileRouteTypes {
     | '/procurement/pos/'
     | '/procurement/receipts/'
     | '/procurement/rfqs/'
+    | '/procurement/subcontracts/'
     | '/procurement/vendors/'
     | '/projects/$projectId/'
     | '/qaqc/inspections/'
     | '/qaqc/ncrs/'
     | '/qaqc/punch/'
     | '/om/scada/plants/$projectId'
+    | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
     | '/projects/$projectId/commissioning/kpis'
@@ -2819,6 +2862,7 @@ export interface FileRouteTypes {
     | '/procurement/receipts/new'
     | '/procurement/rfqs/$rfqId'
     | '/procurement/rfqs/new'
+    | '/procurement/subcontracts/$subcontractId'
     | '/procurement/vendors/$vendorId'
     | '/procurement/vendors/new'
     | '/projects/$projectId/config'
@@ -2862,12 +2906,14 @@ export interface FileRouteTypes {
     | '/procurement/pos'
     | '/procurement/receipts'
     | '/procurement/rfqs'
+    | '/procurement/subcontracts'
     | '/procurement/vendors'
     | '/projects/$projectId'
     | '/qaqc/inspections'
     | '/qaqc/ncrs'
     | '/qaqc/punch'
     | '/om/scada/plants/$projectId'
+    | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
     | '/projects/$projectId/commissioning/handover'
     | '/projects/$projectId/commissioning/kpis'
@@ -2992,6 +3038,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/rfqs'
     | '/_authenticated/procurement/scorecards'
     | '/_authenticated/procurement/spare-parts'
+    | '/_authenticated/procurement/subcontracts'
     | '/_authenticated/procurement/vendors'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/new'
@@ -3064,6 +3111,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/receipts/new'
     | '/_authenticated/procurement/rfqs/$rfqId'
     | '/_authenticated/procurement/rfqs/new'
+    | '/_authenticated/procurement/subcontracts/$subcontractId'
     | '/_authenticated/procurement/vendors/$vendorId'
     | '/_authenticated/procurement/vendors/new'
     | '/_authenticated/projects/$projectId/config'
@@ -3108,12 +3156,14 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/pos/'
     | '/_authenticated/procurement/receipts/'
     | '/_authenticated/procurement/rfqs/'
+    | '/_authenticated/procurement/subcontracts/'
     | '/_authenticated/procurement/vendors/'
     | '/_authenticated/projects/$projectId/'
     | '/_authenticated/qaqc/inspections/'
     | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
     | '/_authenticated/om/scada/plants/$projectId'
+    | '/_authenticated/procurement/subcontracts/claims/$claimId'
     | '/_authenticated/projects/$projectId/commissioning/certificates'
     | '/_authenticated/projects/$projectId/commissioning/handover'
     | '/_authenticated/projects/$projectId/commissioning/kpis'
@@ -3641,6 +3691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementVendorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/procurement/subcontracts': {
+      id: '/_authenticated/procurement/subcontracts'
+      path: '/procurement/subcontracts'
+      fullPath: '/procurement/subcontracts'
+      preLoaderRoute: typeof AuthenticatedProcurementSubcontractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/procurement/spare-parts': {
       id: '/_authenticated/procurement/spare-parts'
       path: '/procurement/spare-parts'
@@ -4068,6 +4125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementVendorsIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementVendorsRoute
     }
+    '/_authenticated/procurement/subcontracts/': {
+      id: '/_authenticated/procurement/subcontracts/'
+      path: '/'
+      fullPath: '/procurement/subcontracts/'
+      preLoaderRoute: typeof AuthenticatedProcurementSubcontractsIndexRouteImport
+      parentRoute: typeof AuthenticatedProcurementSubcontractsRoute
+    }
     '/_authenticated/procurement/rfqs/': {
       id: '/_authenticated/procurement/rfqs/'
       path: '/'
@@ -4375,6 +4439,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/vendors/$vendorId'
       preLoaderRoute: typeof AuthenticatedProcurementVendorsVendorIdRouteImport
       parentRoute: typeof AuthenticatedProcurementVendorsRoute
+    }
+    '/_authenticated/procurement/subcontracts/$subcontractId': {
+      id: '/_authenticated/procurement/subcontracts/$subcontractId'
+      path: '/$subcontractId'
+      fullPath: '/procurement/subcontracts/$subcontractId'
+      preLoaderRoute: typeof AuthenticatedProcurementSubcontractsSubcontractIdRouteImport
+      parentRoute: typeof AuthenticatedProcurementSubcontractsRoute
     }
     '/_authenticated/procurement/rfqs/new': {
       id: '/_authenticated/procurement/rfqs/new'
@@ -4782,6 +4853,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
     }
+    '/_authenticated/procurement/subcontracts/claims/$claimId': {
+      id: '/_authenticated/procurement/subcontracts/claims/$claimId'
+      path: '/claims/$claimId'
+      fullPath: '/procurement/subcontracts/claims/$claimId'
+      preLoaderRoute: typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRouteImport
+      parentRoute: typeof AuthenticatedProcurementSubcontractsRoute
+    }
     '/_authenticated/om/scada/plants/$projectId': {
       id: '/_authenticated/om/scada/plants/$projectId'
       path: '/om/scada/plants/$projectId'
@@ -5052,6 +5130,27 @@ const AuthenticatedProcurementRfqsRouteChildren: AuthenticatedProcurementRfqsRou
 const AuthenticatedProcurementRfqsRouteWithChildren =
   AuthenticatedProcurementRfqsRoute._addFileChildren(
     AuthenticatedProcurementRfqsRouteChildren,
+  )
+
+interface AuthenticatedProcurementSubcontractsRouteChildren {
+  AuthenticatedProcurementSubcontractsSubcontractIdRoute: typeof AuthenticatedProcurementSubcontractsSubcontractIdRoute
+  AuthenticatedProcurementSubcontractsIndexRoute: typeof AuthenticatedProcurementSubcontractsIndexRoute
+  AuthenticatedProcurementSubcontractsClaimsClaimIdRoute: typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
+}
+
+const AuthenticatedProcurementSubcontractsRouteChildren: AuthenticatedProcurementSubcontractsRouteChildren =
+  {
+    AuthenticatedProcurementSubcontractsSubcontractIdRoute:
+      AuthenticatedProcurementSubcontractsSubcontractIdRoute,
+    AuthenticatedProcurementSubcontractsIndexRoute:
+      AuthenticatedProcurementSubcontractsIndexRoute,
+    AuthenticatedProcurementSubcontractsClaimsClaimIdRoute:
+      AuthenticatedProcurementSubcontractsClaimsClaimIdRoute,
+  }
+
+const AuthenticatedProcurementSubcontractsRouteWithChildren =
+  AuthenticatedProcurementSubcontractsRoute._addFileChildren(
+    AuthenticatedProcurementSubcontractsRouteChildren,
   )
 
 interface AuthenticatedProcurementVendorsRouteChildren {
@@ -5374,6 +5473,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProcurementRfqsRoute: typeof AuthenticatedProcurementRfqsRouteWithChildren
   AuthenticatedProcurementScorecardsRoute: typeof AuthenticatedProcurementScorecardsRoute
   AuthenticatedProcurementSparePartsRoute: typeof AuthenticatedProcurementSparePartsRoute
+  AuthenticatedProcurementSubcontractsRoute: typeof AuthenticatedProcurementSubcontractsRouteWithChildren
   AuthenticatedProcurementVendorsRoute: typeof AuthenticatedProcurementVendorsRouteWithChildren
   AuthenticatedProjectsProjectIdRoute: typeof AuthenticatedProjectsProjectIdRouteWithChildren
   AuthenticatedProjectsNewRoute: typeof AuthenticatedProjectsNewRoute
@@ -5522,6 +5622,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProcurementScorecardsRoute,
   AuthenticatedProcurementSparePartsRoute:
     AuthenticatedProcurementSparePartsRoute,
+  AuthenticatedProcurementSubcontractsRoute:
+    AuthenticatedProcurementSubcontractsRouteWithChildren,
   AuthenticatedProcurementVendorsRoute:
     AuthenticatedProcurementVendorsRouteWithChildren,
   AuthenticatedProjectsProjectIdRoute:

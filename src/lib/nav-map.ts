@@ -294,6 +294,12 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         moduleKey: "procurement",
+        label: "Subcontracts",
+        url: "/procurement/subcontracts",
+        icon: HardHat,
+      },
+      {
+        moduleKey: "procurement",
         label: "Expediting",
         url: "/procurement/expediting",
         icon: Truck,
