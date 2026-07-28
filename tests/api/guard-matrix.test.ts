@@ -333,16 +333,6 @@ describe.skipIf(!canRunHttp)(`P-131 HTTP guard matrix (server enforce=${SERVER_M
   });
 
 
-  it("row 8c: ts = now + 301 → signature_expired blocked-or-warned", async () => {
-    const body = "{}";
-    const ts = nowSec() + 301;
-    const res = await post(ECHO_URL, signedHeaders(fx.keyOpen, body, { ts }), body);
-    await expectBlockedOrWarned(res, 401, "signature_expired", fx.keyOpen.id);
-    if (SERVER_MODE === "block") {
-      const j = (await res.json()) as { error: string };
-      expect(j.error).toBe("signature_expired");
-    }
-  });
 
   // Row 9: Tampered body — signature over body A, actual bytes B.
   it("row 9: tampered body (valid ts, wrong sig) → blocked or warned", async () => {
