@@ -23,7 +23,7 @@ export function isApInvoiceNumber(value: string | null | undefined): boolean {
 
 /** due_date = issue_date + payment terms (days). */
 export function apDueDate(issueDate: string, paymentTermsDays?: number | null): string {
-  const days = Number.isFinite(Number(paymentTermsDays))
+  const days = paymentTermsDays != null && Number.isFinite(Number(paymentTermsDays))
     ? Math.max(0, Math.trunc(Number(paymentTermsDays)))
     : DEFAULT_PAYMENT_TERMS_DAYS;
   const d = new Date(`${issueDate}T00:00:00Z`);
