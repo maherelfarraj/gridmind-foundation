@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { BellRing, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { Num } from "@/components/ui/num";
+
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -73,6 +77,7 @@ export const Route = createFileRoute("/_authenticated/finance/alerts")({
 });
 
 function FinanceAlertsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [filters, setFilters] = useState<ListAlertsInput>({ status: "open", rule_type: "all" });
 
@@ -88,10 +93,15 @@ function FinanceAlertsPage() {
     mutationFn: (vars: { alert_id: string; action: "acknowledge" | "dismiss" }) =>
       act({ data: vars }),
     onSuccess: (_d, vars) => {
-      toast.success(vars.action === "acknowledge" ? "Alert acknowledged" : "Alert dismissed");
+      toast.success(
+        vars.action === "acknowledge"
+          ? t("financeMod.alerts.toastAcknowledged")
+          : t("financeMod.alerts.toastDismissed"),
+      );
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not update the alert"),
+    onError: (e) =>
+      toast.error(translateError(t, errorCodeOf(e), (e as Error)?.message) || t("financeMod.alerts.couldNotUpdateAlert")),
   });
 
   const ruleMutation = useMutation({
@@ -102,10 +112,11 @@ function FinanceAlertsPage() {
       notify_role: (typeof NOTIFY_ROLE_OPTIONS)[number];
     }) => saveRule({ data: vars }),
     onSuccess: () => {
-      toast.success("Rule saved");
+      toast.success(t("financeMod.alerts.toastRuleSaved"));
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message || "Could not save the rule"),
+    onError: (e) =>
+      toast.error(translateError(t, errorCodeOf(e), (e as Error)?.message) || t("financeMod.alerts.couldNotSaveRule")),
   });
 
   const canWrite = access.data === "full";
@@ -113,8 +124,8 @@ function FinanceAlertsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Finance alerts"
-        description="Automated daily checks on receivables, unbilled certified work and unmatched payments."
+        title={t("financeMod.alerts.title")}
+        description={t("financeMod.alerts.subtitle")}
       />
 
       {access.isLoading || alerts.isLoading ? (
@@ -125,20 +136,20 @@ function FinanceAlertsPage() {
       ) : alerts.isError ? (
         <EmptyState
           icon={BellRing}
-          title="Could not load finance alerts"
-          description={(alerts.error as Error)?.message ?? "Please try again."}
+          title={t("financeMod.alerts.couldNotLoadAlerts")}
+          description={translateError(t, errorCodeOf(alerts.error), (alerts.error as Error)?.message)}
         />
       ) : (
         <Tabs defaultValue="alerts">
           <TabsList>
-            <TabsTrigger value="alerts">Alerts</TabsTrigger>
-            <TabsTrigger value="rules">Rules</TabsTrigger>
+            <TabsTrigger value="alerts">{t("financeMod.alerts.tabAlerts")}</TabsTrigger>
+            <TabsTrigger value="rules">{t("financeMod.alerts.tabRules")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="alerts" className="space-y-4">
             <div className="flex flex-wrap items-end gap-4">
               <div className="space-y-1">
-                <Label>Status</Label>
+                <Label>{t("common.status")}</Label>
                 <Select
                   value={filters.status}
                   onValueChange={(v) =>
@@ -149,7 +160,7 @@ function FinanceAlertsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="all">{t("financeMod.alerts.filterAllStatuses")}</SelectItem>
                     {FINANCE_ALERT_STATUSES.map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
@@ -159,7 +170,7 @@ function FinanceAlertsPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Rule</Label>
+                <Label>{t("financeMod.alerts.rule")}</Label>
                 <Select
                   value={filters.rule_type}
                   onValueChange={(v) =>
@@ -170,10 +181,10 @@ function FinanceAlertsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All rules</SelectItem>
-                    {FINANCE_ALERT_RULE_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {ruleTypeLabel(t)}
+                    <SelectItem value="all">{t("financeMod.alerts.filterAllRules")}</SelectItem>
+                    {FINANCE_ALERT_RULE_TYPES.map((rt) => (
+                      <SelectItem key={rt} value={rt}>
+                        {ruleTypeLabel(rt)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -184,27 +195,29 @@ function FinanceAlertsPage() {
             {(alerts.data?.alerts.length ?? 0) === 0 ? (
               <EmptyState
                 icon={ShieldCheck}
-                title="No finance alerts"
-                description="Nothing has breached the configured thresholds."
+                title={t("financeMod.alerts.noAlerts")}
+                description={t("financeMod.alerts.noAlertsDesc")}
               />
             ) : (
               <div className="rounded-lg border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Rule</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Entity</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("financeMod.alerts.severity")}</TableHead>
+                      <TableHead>{t("financeMod.alerts.rule")}</TableHead>
+                      <TableHead>{t("financeMod.alerts.messageHeader")}</TableHead>
+                      <TableHead>{t("financeMod.alerts.entityHeader")}</TableHead>
+                      <TableHead>{t("common.status")}</TableHead>
+                      <TableHead className="text-end">{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {alerts.data?.alerts.map((a) => (
                       <TableRow key={a.id}>
-                        <TableCell className="whitespace-nowrap">{a.alert_date}</TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Num>{a.alert_date}</Num>
+                        </TableCell>
                         <TableCell>
                           <StatusBadge status={a.severity} tone={severityTone(a.severity)} />
                         </TableCell>
@@ -216,7 +229,7 @@ function FinanceAlertsPage() {
                         <TableCell>
                           <StatusBadge status={a.status} tone={alertStatusTone(a.status)} />
                         </TableCell>
-                        <TableCell className="space-x-2 text-right">
+                        <TableCell className="space-x-2 text-end">
                           <Button
                             size="sm"
                             variant="outline"
@@ -225,7 +238,7 @@ function FinanceAlertsPage() {
                               actMutation.mutate({ alert_id: a.id, action: "acknowledge" })
                             }
                           >
-                            Acknowledge
+                            {t("financeMod.alerts.acknowledge")}
                           </Button>
                           <Button
                             size="sm"
@@ -235,7 +248,7 @@ function FinanceAlertsPage() {
                               actMutation.mutate({ alert_id: a.id, action: "dismiss" })
                             }
                           >
-                            Dismiss
+                            {t("financeMod.alerts.dismiss")}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -247,14 +260,14 @@ function FinanceAlertsPage() {
           </TabsContent>
 
           <TabsContent value="rules" className="space-y-4">
-            {FINANCE_ALERT_RULE_TYPES.map((t) => (
+            {FINANCE_ALERT_RULE_TYPES.map((rt) => (
               <RuleCard
-                key={t}
-                ruleType={t}
-                rule={alerts.data?.rules.find((r) => r.rule_type === t)}
+                key={rt}
+                ruleType={rt}
+                rule={alerts.data?.rules.find((r) => r.rule_type === rt)}
                 canWrite={canWrite}
                 saving={ruleMutation.isPending}
-                onSave={(payload) => ruleMutation.mutate({ rule_type: t, ...payload })}
+                onSave={(payload) => ruleMutation.mutate({ rule_type: rt, ...payload })}
               />
             ))}
           </TabsContent>
@@ -283,6 +296,7 @@ function RuleCard({
   saving: boolean;
   onSave: (payload: RulePayload) => void;
 }) {
+  const { t } = useI18n();
   const initial = (rule?.threshold ?? defaultThreshold(ruleType)) as ThresholdMap;
   const [days, setDays] = useState(String(initial.days ?? ""));
   const [amount, setAmount] = useState(String(initial.amount_base ?? ""));
@@ -313,7 +327,7 @@ function RuleCard({
       <div className="flex flex-wrap items-end gap-4">
         {usesDays && (
           <div className="space-y-1">
-            <Label>Days</Label>
+            <Label>{t("financeMod.alerts.daysLabel")}</Label>
             <Input
               className="w-28"
               type="number"
@@ -325,7 +339,7 @@ function RuleCard({
         )}
         {usesAmount && (
           <div className="space-y-1">
-            <Label>Amount (base currency)</Label>
+            <Label>{t("financeMod.alerts.amountBaseLabel")}</Label>
             <Input
               className="w-40"
               type="number"
@@ -337,7 +351,7 @@ function RuleCard({
         )}
         {ruleType === "ar_aging_threshold" && (
           <div className="space-y-1">
-            <Label>Bucket</Label>
+            <Label>{t("financeMod.alerts.bucketLabel")}</Label>
             <Select value={bucket} onValueChange={setBucket}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -353,7 +367,7 @@ function RuleCard({
           </div>
         )}
         <div className="space-y-1">
-          <Label>Notify role</Label>
+          <Label>{t("financeMod.alerts.notifyRoleLabel")}</Label>
           <Select
             value={notifyRole}
             onValueChange={(v) => setNotifyRole(v as (typeof NOTIFY_ROLE_OPTIONS)[number])}
@@ -372,10 +386,10 @@ function RuleCard({
         </div>
         <div className="flex items-center gap-2 pb-2">
           <Switch checked={enabled} onCheckedChange={setEnabled} disabled={!canWrite} />
-          <Label>Enabled</Label>
+          <Label>{t("financeMod.alerts.enabledLabel")}</Label>
         </div>
         <Button onClick={submit} disabled={!canWrite || saving}>
-          Save rule
+          {t("financeMod.alerts.saveRule")}
         </Button>
       </div>
     </div>
