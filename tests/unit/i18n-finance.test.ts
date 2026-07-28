@@ -47,7 +47,7 @@ describe("finance + procurement catalog parity", () => {
     expect(i18n.t("financeMod.periods.closePeriod")).toBe("إقفال الفترة المالية");
     expect(i18n.t("procurementMod.match.title")).toBe("المطابقة الثلاثية");
     expect(i18n.t("procurementMod.grn.title")).toBe("سند قبض بضاعة");
-    expect(i18n.t("procurementMod.expediting.title")).toBe("متابعة التوريد");
+    expect(i18n.t("procurementMod.expediting.title")).toBe("سجل متابعة التوريد");
     expect(i18n.t("procurementMod.grn.partiallyReceived")).toBe("مستلم جزئياً");
   });
 });
