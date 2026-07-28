@@ -8,13 +8,16 @@ import { OfflineBadge } from "@/components/offline/offline-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 interface AppShellProps {
   children: ReactNode;
   breadcrumbs?: BreadcrumbItemSpec[];
 }
 
-export function AppShell({ children, breadcrumbs = [{ label: "Dashboard" }] }: AppShellProps) {
+export function AppShell({ children, breadcrumbs }: AppShellProps) {
+  const { t } = useI18n();
+  const items = breadcrumbs ?? [{ label: t("nav.dashboard") }];
   return (
     <ActiveCompanyProvider>
       <SidebarProvider>
@@ -24,7 +27,7 @@ export function AppShell({ children, breadcrumbs = [{ label: "Dashboard" }] }: A
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger className="text-foreground" />
               <div className="min-w-0 flex-1">
-                <AppBreadcrumbs items={breadcrumbs} />
+                <AppBreadcrumbs items={items} />
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
