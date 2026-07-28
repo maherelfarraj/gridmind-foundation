@@ -56,24 +56,26 @@ export const Route = createFileRoute("/_authenticated/om/warranties")({
     ],
   }),
   component: WarrantiesPage,
-  errorComponent: ({ error, reset }) => {
-    const { t } = useI18n();
-    return (
-      <div className="page-shell">
-        <EmptyState
-          icon={ShieldAlert}
-          title={t("omMod.warranties.loadFailed")}
-          description={error.message}
-          action={
-            <Button size="sm" onClick={reset}>
-              {t("omMod.common.retry")}
-            </Button>
-          }
-        />
-      </div>
-    );
-  },
+  errorComponent: WarrantiesError,
 });
+
+function WarrantiesError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="page-shell">
+      <EmptyState
+        icon={ShieldAlert}
+        title={t("omMod.warranties.loadFailed")}
+        description={error.message}
+        action={
+          <Button size="sm" onClick={reset}>
+            {t("omMod.common.retry")}
+          </Button>
+        }
+      />
+    </div>
+  );
+}
 
 function CoverageBadge({ dateISO }: { dateISO: string }) {
   const { t } = useI18n();

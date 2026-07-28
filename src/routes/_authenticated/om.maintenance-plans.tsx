@@ -42,20 +42,22 @@ export const Route = createFileRoute("/_authenticated/om/maintenance-plans")({
     ],
   }),
   component: MaintenancePlansPage,
-  errorComponent: ({ error, reset }) => {
-    const { t } = useI18n();
-    return (
-      <div className="p-6">
-        <div className="text-sm text-destructive">
-          {t("omMod.maintenancePlans.loadFailed", { message: error.message })}
-        </div>
-        <Button className="mt-2" size="sm" onClick={reset}>
-          {t("omMod.common.retry")}
-        </Button>
-      </div>
-    );
-  },
+  errorComponent: MaintenancePlansError,
 });
+
+function MaintenancePlansError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="p-6">
+      <div className="text-sm text-destructive">
+        {t("omMod.maintenancePlans.loadFailed", { message: error.message })}
+      </div>
+      <Button className="mt-2" size="sm" onClick={reset}>
+        {t("omMod.common.retry")}
+      </Button>
+    </div>
+  );
+}
 
 function DueChip({ dateISO }: { dateISO: string }) {
   const { t } = useI18n();
