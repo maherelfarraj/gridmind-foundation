@@ -11,15 +11,14 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/login" });
     }
 
-    // P-222 — external-only accounts never see the internal shell.
+    // P-222 — external-only accounts never see the internal shell (defense in depth).
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id);
-    const roleNames = (roles ?? []).map((r) => r.role as string);
-    const EXTERNAL_ONLY = new Set(["external_viewer", "vendor_viewer"]);
-    if (roleNames.length > 0 && roleNames.every((r) => EXTERNAL_ONLY.has(r))) {
-      throw redirect({ to: roleNames.includes("vendor_viewer") ? "/vendor" : "/portal" });
+    const landing = externalLandingFor((roles ?? []).map((r) => r.role as string));
+    if (landing) {
+      throw redirect({ to: landing });
     }
 
     return { user: data.user };
