@@ -160,7 +160,7 @@ function HealthContent({ data, t }: { data: OpsHealth; t: (key: string, opts?: R
                   {statusIcon(s.status)}
                   {s.label}
                 </CardTitle>
-                {statusBadge(s.status)}
+                {statusBadge(s.status, t)}
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
