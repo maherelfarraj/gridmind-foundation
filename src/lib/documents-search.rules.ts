@@ -12,7 +12,8 @@ export const DOC_SEARCH_MIN_LENGTH = 2;
 export const RECENT_SEARCHES_KEY = "gridmind-doc-recent-searches";
 export const RECENT_SEARCHES_MAX = 8;
 
-const ARABIC_DIACRITICS = /[\u064B-\u0652\u0640\u0670]/g;
+// Built from a string so the linter does not read the class as combined chars.
+const ARABIC_DIACRITICS = new RegExp("[\\u064B-\\u0652\\u0640\\u0670]", "g");
 
 export function normalizeQuery(raw: string): string {
   return raw

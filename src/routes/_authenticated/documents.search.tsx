@@ -283,17 +283,7 @@ function DocumentSearchPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {snippetSegments(hit.snippet).map((seg, i) =>
-                            seg.mark ? (
-                              <mark key={i} className="bg-accent text-accent-foreground">
-                                {seg.text}
-                              </mark>
-                            ) : (
-                              <span key={i}>{seg.text}</span>
-                            ),
-                          )}
-                        </p>
+                        <Snippet snippet={hit.snippet} />
                       </div>
                       <Button size="sm" variant="ghost" onClick={() => void open(hit)}>
                         {t("engMod.docSearch.openDocument")}
@@ -307,6 +297,26 @@ function DocumentSearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function Snippet({ snippet }: { snippet: string | null }) {
+  const segments = snippetSegments(snippet);
+  if (segments.length === 0) return null;
+  return (
+    <p className="text-xs text-muted-foreground">
+      {segments.map((seg, i) => {
+        const key = `${i}-${seg.text}`;
+        if (seg.mark) {
+          return (
+            <mark key={key} className="bg-accent text-accent-foreground">
+              {seg.text}
+            </mark>
+          );
+        }
+        return <span key={key}>{seg.text}</span>;
+      })}
+    </p>
   );
 }
 
