@@ -19,6 +19,7 @@ import { AlertTriangle, ChevronDown, ChevronRight, Download, Inbox, Wallet } fro
 import { toast } from "sonner";
 
 import { SendReminderDialog } from "@/components/finance/reminder-dialog";
+import { MoneyCell } from "@/components/ui/num";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,6 +43,8 @@ import { FORMULAS, type AgingGroup, type AgingInvoiceRow } from "@/lib/ar-aging.
 import { downloadCsv } from "@/lib/csv";
 import { AGING_BUCKETS, AGING_BUCKET_LABELS, AGING_WEIGHTS } from "@/lib/finance/aging-weights";
 import { formatDate, formatMoney } from "@/lib/format";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { invoiceErrorMessage } from "@/lib/invoices.query";
 
 export const Route = createFileRoute("/_authenticated/finance/receivables")({
@@ -66,6 +69,7 @@ export const Route = createFileRoute("/_authenticated/finance/receivables")({
 });
 
 function ReceivablesPage() {
+  const { t } = useI18n();
   const [groupBy, setGroupBy] = useState<"client" | "project">("client");
   const [expanded, setExpanded] = useState<string | null>(null);
   const { data, isLoading } = useQuery(arAgingQueryOptions());
@@ -88,20 +92,20 @@ function ReceivablesPage() {
     try {
       const res = await exportCsv({ data: {} });
       downloadCsv(res.filename, res.csv);
-      toast.success("AR aging exported");
+      toast.success(t("financeMod.receivablesPage.exportSuccess"));
     } catch (e) {
-      toast.error(invoiceErrorMessage(e));
+      toast.error(translateError(t, errorCodeOf(e), invoiceErrorMessage(e)));
     }
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="AR aging & collections"
-        description={`Open receivables aged by due date, converted to ${base} and weighted by collection probability.`}
+        title={t("financeMod.receivables.title")}
+        description={t("financeMod.receivablesPage.subtitle", { base })}
         actions={
           <Button variant="outline" size="sm" onClick={() => void handleExport()}>
-            <Download className="size-4" /> Export CSV
+            <Download className="size-4" /> {t("financeMod.common.export")}
           </Button>
         }
       />
@@ -110,31 +114,33 @@ function ReceivablesPage() {
         <div className="flex items-start gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" />
           <p>
-            No FX rate to {base} for {data.fx_missing_currencies.join(", ")}. Those balances are
-            shown at face value and are excluded from conversion accuracy.
+            {t("financeMod.receivablesPage.fxMissing", {
+              base,
+              currencies: data.fx_missing_currencies.join(", "),
+            })}
           </p>
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <KpiTile
-          label="Total AR"
+          label={t("financeMod.receivablesPage.totalAr")}
           value={formatMoney(data?.total_ar ?? 0, base)}
           hint={FORMULAS.totalAr}
           icon={Wallet}
           isLoading={isLoading}
         />
         <KpiTile
-          label="Overdue AR"
+          label={t("financeMod.receivablesPage.overdueAr")}
           value={formatMoney(data?.overdue_ar ?? 0, base)}
-          delta={`${overduePct}% of AR`}
+          delta={t("financeMod.receivablesPage.pctOfAr", { pct: overduePct })}
           status={overduePct > 40 ? "bad" : overduePct > 15 ? "warning" : "good"}
           hint={FORMULAS.overdueAr}
           icon={AlertTriangle}
           isLoading={isLoading}
         />
         <KpiTile
-          label="Expected cash"
+          label={t("financeMod.receivablesPage.expectedCash")}
           value={formatMoney(data?.expected_cash ?? 0, base)}
           hint={FORMULAS.expectedCash}
           icon={Wallet}
@@ -144,13 +150,13 @@ function ReceivablesPage() {
 
       <Card className="space-y-3 p-4">
         <SectionHeader
-          title="Aging profile"
-          description="Balance per bucket against probability-weighted expected cash."
+          title={t("financeMod.receivablesPage.agingProfileTitle")}
+          description={t("financeMod.receivablesPage.agingProfileDesc")}
         />
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (data?.total_ar ?? 0) === 0 ? (
-          <EmptyState title="No open receivables" compact />
+          <EmptyState title={t("financeMod.receivablesPage.noOpenReceivables")} compact />
         ) : (
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -182,13 +188,13 @@ function ReceivablesPage() {
 
       <Card className="space-y-3 p-4">
         <SectionHeader
-          title="Expected-cash forecast"
-          description="Next 90 days — overdue balances are projected into the current month."
+          title={t("financeMod.receivablesPage.forecastTitle")}
+          description={t("financeMod.receivablesPage.forecastDesc")}
         />
         {isLoading ? (
           <Skeleton className="h-56 w-full" />
         ) : (data?.forecast.length ?? 0) === 0 ? (
-          <EmptyState title="Nothing expected in the next 90 days" compact />
+          <EmptyState title={t("financeMod.receivablesPage.nothingExpected")} compact />
         ) : (
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -222,13 +228,13 @@ function ReceivablesPage() {
 
       <Card className="space-y-3 p-4">
         <SectionHeader
-          title="Aging table"
-          description="Expand a row to drill into its open invoices and send reminders."
+          title={t("financeMod.receivablesPage.agingTableTitle")}
+          description={t("financeMod.receivablesPage.agingTableDesc")}
           actions={
             <Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as "client" | "project")}>
               <TabsList>
-                <TabsTrigger value="client">By client</TabsTrigger>
-                <TabsTrigger value="project">By project</TabsTrigger>
+                <TabsTrigger value="client">{t("financeMod.receivablesPage.byClient")}</TabsTrigger>
+                <TabsTrigger value="project">{t("financeMod.receivablesPage.byProject")}</TabsTrigger>
               </TabsList>
             </Tabs>
           }
@@ -238,28 +244,34 @@ function ReceivablesPage() {
         ) : groups.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title="No open receivables"
-            description="Approved, sent or partially paid receivable invoices appear here once issued."
+            title={t("financeMod.receivablesPage.noOpenReceivables")}
+            description={t("financeMod.receivablesPage.emptyTableDesc")}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{groupBy === "client" ? "Client" : "Project"}</TableHead>
+                <TableHead>
+                  {groupBy === "client"
+                    ? t("financeMod.receivablesPage.columnClient")
+                    : t("financeMod.receivablesPage.columnProject")}
+                </TableHead>
                 {AGING_BUCKETS.map((b) => (
-                  <TableHead key={b} className="text-right">
+                  <TableHead key={b} className="text-end">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span>{AGING_BUCKET_LABELS[b]}</span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        Collection probability {Math.round(AGING_WEIGHTS[b] * 100)}%
+                        {t("financeMod.receivablesPage.collectionProbability", {
+                          pct: Math.round(AGING_WEIGHTS[b] * 100),
+                        })}
                       </TooltipContent>
                     </Tooltip>
                   </TableHead>
                 ))}
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Expected</TableHead>
+                <TableHead className="text-end">{t("financeMod.receivablesPage.columnTotal")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.receivablesPage.columnExpected")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -282,15 +294,15 @@ function ReceivablesPage() {
                       </span>
                     </TableCell>
                     {AGING_BUCKETS.map((b) => (
-                      <TableCell key={b} className="text-right tabular-nums">
-                        {g.buckets[b] ? formatMoney(g.buckets[b], base) : "—"}
+                      <TableCell key={b}>
+                        <MoneyCell>{g.buckets[b] ? formatMoney(g.buckets[b], base) : "—"}</MoneyCell>
                       </TableCell>
                     ))}
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {formatMoney(g.total, base)}
+                    <TableCell>
+                      <MoneyCell className="font-medium">{formatMoney(g.total, base)}</MoneyCell>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-accent">
-                      {formatMoney(g.expected_cash, base)}
+                    <TableCell>
+                      <MoneyCell className="text-accent">{formatMoney(g.expected_cash, base)}</MoneyCell>
                     </TableCell>
                   </TableRow>,
                   isOpen ? (
@@ -309,26 +321,27 @@ function ReceivablesPage() {
                                   <p className="text-sm font-medium text-foreground">
                                     {inv.invoice_number}
                                     {inv.project_name ? (
-                                      <span className="ml-2 text-xs text-muted-foreground">
+                                      <span className="ms-2 text-xs text-muted-foreground">
                                         {inv.project_name}
                                       </span>
                                     ) : null}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    Due {formatDate(inv.due_date)} ·{" "}
+                                    {t("financeMod.receivablesPage.dueLabel", { date: formatDate(inv.due_date) })}{" "}
+                                    ·{" "}
                                     {inv.days_past_due > 0
-                                      ? `${inv.days_past_due}d past due`
-                                      : "not yet due"}{" "}
-                                    · {inv.reminder_count} reminder(s)
+                                      ? t("financeMod.receivablesPage.daysPastDue", { days: inv.days_past_due })
+                                      : t("financeMod.receivablesPage.notYetDue")}{" "}
+                                    · {t("financeMod.receivablesPage.reminderCount", { count: inv.reminder_count })}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <Badge variant="outline">{AGING_BUCKET_LABELS[inv.bucket]}</Badge>
-                                  <span className="text-sm tabular-nums text-foreground">
+                                  <MoneyCell className="text-sm text-foreground">
                                     {formatMoney(inv.balance, inv.currency_code, {
                                       maximumFractionDigits: 2,
                                     })}
-                                  </span>
+                                  </MoneyCell>
                                   <SendReminderDialog
                                     invoiceId={inv.id}
                                     invoiceNumber={inv.invoice_number}

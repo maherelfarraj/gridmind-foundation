@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { MoneyCell } from "@/components/ui/num";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -29,6 +30,8 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { downloadCsv } from "@/lib/csv";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { invoiceErrorMessage } from "@/lib/invoices.query";
 import { exportPaymentsCsv } from "@/lib/payments.functions";
 import { paymentsListQueryOptions } from "@/lib/payments.query";
@@ -69,6 +72,7 @@ function fmt(n: number, currency: string) {
 }
 
 function PaymentsPage() {
+  const { t } = useI18n();
   const [q, setQ] = useState("");
   const [direction, setDirection] = useState<"all" | "receivable" | "payable">("all");
   const [method, setMethod] = useState<"all" | PaymentMethod>("all");
@@ -97,48 +101,48 @@ function PaymentsPage() {
       const res = await exportFn({ data: filters });
       downloadCsv(res.filename, res.csv);
     } catch (err) {
-      toast.error(invoiceErrorMessage(err));
+      toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err)));
     }
   }
 
   return (
     <div className="page-shell">
       <PageHeader
-        title="Payments"
-        description="All recorded payments, receivable and payable."
+        title={t("financeMod.payments.title")}
+        description={t("financeMod.paymentsPage.subtitle")}
         actions={
           <Button variant="outline" size="sm" disabled={rows.length === 0} onClick={handleExport}>
-            <Download className="mr-2 size-4" /> Export CSV
+            <Download className="me-2 size-4" /> {t("financeMod.common.export")}
           </Button>
         }
       />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-56">
-          <Search className="pointer-events-none absolute left-2 top-2.5 size-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-2 top-2.5 size-4 text-muted-foreground" />
           <Input
-            className="pl-8"
-            placeholder="Number or bank reference…"
+            className="ps-8"
+            placeholder={t("financeMod.paymentsPage.searchPlaceholder")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
         <Select value={direction} onValueChange={(v) => setDirection(v as typeof direction)}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Direction" />
+            <SelectValue placeholder={t("financeMod.payments.direction")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All directions</SelectItem>
-            <SelectItem value="receivable">Receivable</SelectItem>
-            <SelectItem value="payable">Payable</SelectItem>
+            <SelectItem value="all">{t("financeMod.paymentsPage.allDirections")}</SelectItem>
+            <SelectItem value="receivable">{t("financeMod.invoices.receivable")}</SelectItem>
+            <SelectItem value="payable">{t("financeMod.invoices.payable")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Method" />
+            <SelectValue placeholder={t("financeMod.payments.method")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All methods</SelectItem>
+            <SelectItem value="all">{t("financeMod.paymentsPage.allMethods")}</SelectItem>
             {PAYMENT_METHODS.map((m) => (
               <SelectItem key={m} value={m}>
                 {paymentMethodLabel(m)}
@@ -148,10 +152,10 @@ function PaymentsPage() {
         </Select>
         <Select value={recon} onValueChange={(v) => setRecon(v as typeof recon)}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Reconciliation" />
+            <SelectValue placeholder={t("financeMod.paymentsPage.columnReconciliation")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All reconciliation</SelectItem>
+            <SelectItem value="all">{t("financeMod.paymentsPage.allReconciliation")}</SelectItem>
             {RECONCILIATION_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {reconciliationLabel(s)}
@@ -164,14 +168,14 @@ function PaymentsPage() {
           className="w-40"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
-          aria-label="From date"
+          aria-label={t("financeMod.paymentsPage.fromDate")}
         />
         <Input
           type="date"
           className="w-40"
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          aria-label="To date"
+          aria-label={t("financeMod.paymentsPage.toDate")}
         />
       </div>
 
@@ -182,27 +186,27 @@ function PaymentsPage() {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : rowsQ.isError ? (
-        <p className="text-sm text-destructive">Could not load payments. Try again.</p>
+        <p className="text-sm text-destructive">{t("financeMod.paymentsPage.couldNotLoad")}</p>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="No payments"
-          description="Record a payment from an invoice to see it here."
+          title={t("financeMod.paymentsPage.noPayments")}
+          description={t("financeMod.paymentsPage.emptyHint")}
         />
       ) : (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Number</TableHead>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Direction</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Reconciliation</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnNumber")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnInvoice")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnDirection")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnProject")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnDate")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnMethod")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.paymentsPage.columnAmount")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnReconciliation")}</TableHead>
+                <TableHead>{t("financeMod.paymentsPage.columnStatus")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -216,24 +220,18 @@ function PaymentsPage() {
                     <TableCell>{p.invoice_number ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant={p.direction === "payable" ? "outline" : "secondary"}>
-                        {p.direction === "payable" ? "Payable" : "Receivable"}
+                        {p.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
                       </Badge>
                     </TableCell>
                     <TableCell>{p.project_name ?? "—"}</TableCell>
                     <TableCell>{p.payment_date}</TableCell>
                     <TableCell>{paymentMethodLabel(p.method)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span
-                            className={
-                              voided
-                                ? "font-mono tabular-nums line-through"
-                                : "font-mono tabular-nums"
-                            }
-                          >
+                          <MoneyCell className={voided ? "line-through" : undefined}>
                             {fmt(p.amount, p.currency_code)}
-                          </span>
+                          </MoneyCell>
                         </TooltipTrigger>
                         <TooltipContent>
                           {p.amount_base !== null
@@ -249,9 +247,9 @@ function PaymentsPage() {
                     </TableCell>
                     <TableCell>
                       {voided ? (
-                        <Badge variant="destructive">Voided</Badge>
+                        <Badge variant="destructive">{t("financeMod.paymentsPage.voided")}</Badge>
                       ) : (
-                        <Badge variant="secondary">Recorded</Badge>
+                        <Badge variant="secondary">{t("financeMod.paymentsPage.recorded")}</Badge>
                       )}
                     </TableCell>
                   </TableRow>

@@ -464,7 +464,8 @@
     "columnReconciliation": "Reconciliation",
     "columnStatus": "Status",
     "voided": "Voided",
-    "recorded": "Recorded"
+    "recorded": "Recorded",
+    "noPayments": "No payments"
   },
   "receivablesPage": {
     "subtitle": "Open receivables aged by due date, converted to {{base}} and weighted by collection probability.",
@@ -492,6 +493,7 @@
     "daysPastDue": "{{days}}d past due",
     "notYetDue": "not yet due",
     "reminderCount": "{{count}} reminder(s)",
-    "exportSuccess": "AR aging exported"
+    "exportSuccess": "AR aging exported",
+    "noOpenReceivables": "No open receivables"
   }
 }

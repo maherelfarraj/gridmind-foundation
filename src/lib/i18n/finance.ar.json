@@ -467,7 +467,8 @@
     "columnReconciliation": "التسوية",
     "columnStatus": "الحالة",
     "voided": "مُلغاة",
-    "recorded": "مسجَّلة"
+    "recorded": "مسجَّلة",
+    "noPayments": "لا توجد مدفوعات"
   },
   "receivablesPage": {
     "subtitle": "الذمم المدينة المفتوحة مُصنَّفة حسب تاريخ الاستحقاق، محوَّلة إلى {{base}} ومرجَّحة باحتمال التحصيل.",
@@ -495,6 +496,7 @@
     "daysPastDue": "متأخرة {{days}} يوم",
     "notYetDue": "لم تستحق بعد",
     "reminderCount": "{{count}} تذكير(ات)",
-    "exportSuccess": "تم تصدير أعمار الذمم المدينة"
+    "exportSuccess": "تم تصدير أعمار الذمم المدينة",
+    "noOpenReceivables": "لا توجد ذمم مدينة مفتوحة"
   }
 }
