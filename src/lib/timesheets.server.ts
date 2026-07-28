@@ -521,7 +521,12 @@ export async function loadInstanceState(
   return { ...inst, comment: latest?.comment ?? null };
 }
 
-/** Sync the timesheet status with its approval instance. Idempotent. */
+/**
+ * P-249 — read-only reconcile. The timesheet's decided status is written by
+ * the approval engine (settler + `approval_instances_sync_timesheet` trigger);
+ * a guard trigger rejects any app-level write with 42501. This helper only
+ * reports where the sheet stands relative to its instance.
+ */
 export async function syncTimesheetDecision(
   client: Client,
   sheet: TimesheetRow,
@@ -534,20 +539,14 @@ export async function syncTimesheetDecision(
 
   const target =
     state.status === "approved" ? "approved" : state.status === "rejected" ? "rejected" : null;
-  if (!target || sheet.status === target) {
-    return { status: sheet.status, comment: state.comment, changed: false };
-  }
+  if (!target) return { status: sheet.status, comment: state.comment, changed: false };
 
-  const { error } = await client
+  // The engine owns the write; re-read rather than patching the mirror.
+  const { data: fresh } = await client
     .from("timesheets")
-    .update({ status: target as never })
+    .select("status")
     .eq("id", sheet.id)
-    .neq("status", target as never);
-  if (error) throw error;
-  await writeAuditLog(client, `timesheet.${target}`, "timesheets", sheet.id, {
-    week_start: sheet.week_start,
-    approval_instance_id: sheet.approval_instance_id,
-    comment: state.comment,
-  });
-  return { status: target, comment: state.comment, changed: true };
+    .maybeSingle();
+  const current = ((fresh as { status: string } | null)?.status ?? sheet.status) as string;
+  return { status: current, comment: state.comment, changed: current !== sheet.status };
 }

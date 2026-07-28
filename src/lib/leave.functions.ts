@@ -317,23 +317,25 @@ export const decideLeave = createServerFn({ method: "POST" })
         httpError(409, "leave_not_pending", `This request is already ${leave.status}.`);
       }
 
-      // Guarded transition: only the row still in `pending` is updated, so a
-      // double-click can never increment the balance twice.
-      const updated = await db
-        .from("leave_requests")
-        .update({
-          status: data.decision as never,
-          approver_id: userId,
-          decided_at: new Date().toISOString(),
-          decision_comment: data.comment?.trim() || null,
-        })
-        .eq("id", leave.id)
-        .eq("status", "pending" as never)
-        .select(LEAVE_COLS)
-        .maybeSingle();
-      if (updated.error) throw updated.error;
-      if (!updated.data) httpError(409, "leave_not_pending", "This request was already decided.");
-      const row = updated.data as unknown as LeaveRow;
+      // P-249 — the decision is written by the guarded `leave_decide` routine
+      // (status + approver + timestamp + comment in one marked statement). A
+      // guard trigger rejects any direct status write with 42501. The routine
+      // only matches a row still in `pending`, so a double-click can never
+      // increment the balance twice.
+      const decided = await db.rpc("leave_decide", {
+        p_leave_id: leave.id,
+        p_decision: data.decision,
+        p_comment: data.comment?.trim() || null,
+      } as never);
+      if (decided.error) throw decided.error;
+      const payload = decided.data as unknown as {
+        decided: boolean;
+        leave?: LeaveRow;
+      } | null;
+      if (!payload?.decided || !payload.leave) {
+        httpError(409, "leave_not_pending", "This request was already decided.");
+      }
+      const row = payload.leave as LeaveRow;
 
       let skipped: string[] = [];
       let createdCount = 0;
