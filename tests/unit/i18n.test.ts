@@ -79,7 +79,14 @@ describe("locale-aware formatting", () => {
 });
 
 describe("no raw hardcoded chrome strings", () => {
-  const files = ["src/components/user-menu.tsx"];
+  const files = [
+    "src/components/user-menu.tsx",
+    "src/components/notifications-bell.tsx",
+    "src/components/offline/offline-badge.tsx",
+    "src/components/company-switcher.tsx",
+    "src/routes/index.tsx",
+    "src/routes/_authenticated/dashboard.tsx",
+  ];
 
   it("routes user-facing chrome text through t()", () => {
     for (const file of files) {
