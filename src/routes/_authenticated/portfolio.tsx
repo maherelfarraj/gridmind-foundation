@@ -76,7 +76,12 @@ function PortfolioPage() {
 
   return (
     <div className="page-shell">
-      <PageHeader title={t("portfolioMod.title")} description={t("portfolioMod.subtitle")} />
+      <PageHeader
+        title={t("portfolioMod.title")}
+        description={t("portfolioMod.subtitle")}
+        actions={<ExportExecReportButton />}
+      />
+
 
       <KpiGrid columns={6} label={t("portfolioMod.title")}>
         <KpiTile
