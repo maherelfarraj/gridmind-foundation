@@ -20019,6 +20019,38 @@ export type Database = {
         }
         Returns: string
       }
+      portfolio_cash_curve: {
+        Args: { p_months?: number }
+        Returns: {
+          actual_inflow: number
+          actual_net: number
+          actual_outflow: number
+          base_currency: string
+          forecast_inflow: number
+          forecast_net: number
+          forecast_outflow: number
+          month: string
+        }[]
+      }
+      portfolio_gates: {
+        Args: never
+        Returns: {
+          current_gate_name: string
+          current_gate_status: string
+          gates_approved: number
+          gates_total: number
+          next_gate_due: string
+          next_gate_name: string
+          phase: string
+          project_code: string
+          project_id: string
+          project_name: string
+          status: string
+        }[]
+      }
+      portfolio_guard: { Args: { p_rpc: string }; Returns: string }
+      portfolio_hse_quality: { Args: never; Returns: Json }
+      portfolio_kpis: { Args: never; Returns: Json }
       proposal_pricing_decide: {
         Args: { p_comment?: string; p_decision: string; p_proposal_id: string }
         Returns: Json
