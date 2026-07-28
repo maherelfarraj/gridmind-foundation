@@ -2936,6 +2936,122 @@ export type Database = {
           },
         ]
       }
+      controlled_copies: {
+        Row: {
+          company_id: string
+          copy_number: number
+          created_at: string
+          created_by: string | null
+          document_id: string
+          holder_contact_id: string | null
+          holder_name: string | null
+          holder_user_id: string | null
+          id: string
+          issue_date: string
+          location: string | null
+          notes: string | null
+          recalled_at: string | null
+          recalled_by: string | null
+          returned_at: string | null
+          revision_pinned: string
+          status: Database["public"]["Enums"]["controlled_copy_status"]
+          transmittal_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          copy_number: number
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          holder_contact_id?: string | null
+          holder_name?: string | null
+          holder_user_id?: string | null
+          id?: string
+          issue_date?: string
+          location?: string | null
+          notes?: string | null
+          recalled_at?: string | null
+          recalled_by?: string | null
+          returned_at?: string | null
+          revision_pinned: string
+          status?: Database["public"]["Enums"]["controlled_copy_status"]
+          transmittal_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          copy_number?: number
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          holder_contact_id?: string | null
+          holder_name?: string | null
+          holder_user_id?: string | null
+          id?: string
+          issue_date?: string
+          location?: string | null
+          notes?: string | null
+          recalled_at?: string | null
+          recalled_by?: string | null
+          returned_at?: string | null
+          revision_pinned?: string
+          status?: Database["public"]["Enums"]["controlled_copy_status"]
+          transmittal_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controlled_copies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "document_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_holder_contact_id_fkey"
+            columns: ["holder_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_holder_user_id_fkey"
+            columns: ["holder_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_recalled_by_fkey"
+            columns: ["recalled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "controlled_copies_transmittal_id_fkey"
+            columns: ["transmittal_id"]
+            isOneToOne: false
+            referencedRelation: "transmittals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cost_codes: {
         Row: {
           code: string
@@ -3591,6 +3707,32 @@ export type Database = {
           },
         ]
       }
+      document_counters: {
+        Row: {
+          company_id: string
+          kind: string
+          last_number: number
+        }
+        Insert: {
+          company_id: string
+          kind: string
+          last_number?: number
+        }
+        Update: {
+          company_id?: string
+          kind?: string
+          last_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_markups: {
         Row: {
           annotation: Json
@@ -3651,6 +3793,117 @@ export type Database = {
             columns: ["revision_id"]
             isOneToOne: false
             referencedRelation: "drawing_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_register: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          current_revision: string
+          discipline: string | null
+          doc_number: string | null
+          doc_type: string
+          file_name: string | null
+          id: string
+          metadata: Json
+          mime_type: string | null
+          owner_id: string | null
+          project_id: string | null
+          retention_class: Database["public"]["Enums"]["document_retention_class"]
+          source_id: string | null
+          source_table: string | null
+          status: Database["public"]["Enums"]["document_register_status"]
+          storage_path: string | null
+          superseded_by_id: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          current_revision?: string
+          discipline?: string | null
+          doc_number?: string | null
+          doc_type: string
+          file_name?: string | null
+          id?: string
+          metadata?: Json
+          mime_type?: string | null
+          owner_id?: string | null
+          project_id?: string | null
+          retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          source_id?: string | null
+          source_table?: string | null
+          status?: Database["public"]["Enums"]["document_register_status"]
+          storage_path?: string | null
+          superseded_by_id?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          current_revision?: string
+          discipline?: string | null
+          doc_number?: string | null
+          doc_type?: string
+          file_name?: string | null
+          id?: string
+          metadata?: Json
+          mime_type?: string | null
+          owner_id?: string | null
+          project_id?: string | null
+          retention_class?: Database["public"]["Enums"]["document_retention_class"]
+          source_id?: string | null
+          source_table?: string | null
+          status?: Database["public"]["Enums"]["document_register_status"]
+          storage_path?: string | null
+          superseded_by_id?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_register_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_register_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_register_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_register_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_register_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "document_register"
             referencedColumns: ["id"]
           },
         ]
@@ -18706,9 +18959,74 @@ export type Database = {
           },
         ]
       }
+      transmittal_items: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_id: string
+          id: string
+          line_no: number
+          note: string | null
+          revision_pinned: string
+          storage_path_pinned: string | null
+          title_pinned: string | null
+          transmittal_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_id: string
+          id?: string
+          line_no: number
+          note?: string | null
+          revision_pinned: string
+          storage_path_pinned?: string | null
+          title_pinned?: string | null
+          transmittal_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          line_no?: number
+          note?: string | null
+          revision_pinned?: string
+          storage_path_pinned?: string | null
+          title_pinned?: string | null
+          transmittal_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transmittal_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittal_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "document_register"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittal_items_transmittal_id_fkey"
+            columns: ["transmittal_id"]
+            isOneToOne: false
+            referencedRelation: "transmittals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transmittals: {
         Row: {
           acknowledged_at: string | null
+          approval_instance_id: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -18716,9 +19034,18 @@ export type Database = {
           from_party: string
           id: string
           items: Json
+          notes: string | null
           project_id: string
+          purpose: Database["public"]["Enums"]["transmittal_purpose"]
+          recipient_contact_id: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_user_id: string | null
           response_due: string | null
+          returned_at: string | null
+          sender_id: string | null
           sent_at: string | null
+          status: Database["public"]["Enums"]["transmittal_status"]
           subject: string
           to_party: string
           transmittal_number: string
@@ -18726,23 +19053,34 @@ export type Database = {
         }
         Insert: {
           acknowledged_at?: string | null
+          approval_instance_id?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
           direction?: Database["public"]["Enums"]["transmittal_direction"]
-          from_party: string
+          from_party?: string
           id?: string
           items?: Json
+          notes?: string | null
           project_id: string
+          purpose?: Database["public"]["Enums"]["transmittal_purpose"]
+          recipient_contact_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id?: string | null
           response_due?: string | null
+          returned_at?: string | null
+          sender_id?: string | null
           sent_at?: string | null
+          status?: Database["public"]["Enums"]["transmittal_status"]
           subject: string
-          to_party: string
+          to_party?: string
           transmittal_number: string
           updated_at?: string
         }
         Update: {
           acknowledged_at?: string | null
+          approval_instance_id?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -18750,15 +19088,31 @@ export type Database = {
           from_party?: string
           id?: string
           items?: Json
+          notes?: string | null
           project_id?: string
+          purpose?: Database["public"]["Enums"]["transmittal_purpose"]
+          recipient_contact_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id?: string | null
           response_due?: string | null
+          returned_at?: string | null
+          sender_id?: string | null
           sent_at?: string | null
+          status?: Database["public"]["Enums"]["transmittal_status"]
           subject?: string
           to_party?: string
           transmittal_number?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transmittals_approval_instance_id_fkey"
+            columns: ["approval_instance_id"]
+            isOneToOne: false
+            referencedRelation: "approval_instances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transmittals_company_id_fkey"
             columns: ["company_id"]
@@ -18778,6 +19132,27 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittals_recipient_contact_id_fkey"
+            columns: ["recipient_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittals_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transmittals_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -20549,6 +20924,10 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: string
       }
+      ensure_transmittal_approval_rule: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
       entity_link_orphans: {
         Args: never
         Returns: {
@@ -20677,6 +21056,10 @@ export type Database = {
         Returns: number
       }
       next_cr_number: { Args: { p_company_id: string }; Returns: string }
+      next_document_number: {
+        Args: { p_company_id: string; p_kind: string }
+        Returns: number
+      }
       next_estimate_number: {
         Args: { p_company_id: string; p_kind: string }
         Returns: number
@@ -21340,6 +21723,7 @@ export type Database = {
         | "consulting"
         | "lease"
         | "other"
+      controlled_copy_status: "issued" | "returned" | "recalled" | "destroyed"
       cwp_status:
         | "draft"
         | "planned"
@@ -21374,6 +21758,13 @@ export type Database = {
         | "correspondence"
         | "contract_doc"
         | "other"
+      document_register_status: "draft" | "issued" | "superseded" | "obsolete"
+      document_retention_class:
+        | "permanent"
+        | "contract_term"
+        | "seven_years"
+        | "three_years"
+        | "transient"
       dossier_status: "compiling" | "complete" | "issued"
       dpr_status: "draft" | "submitted" | "approved"
       drawing_discipline:
@@ -21851,6 +22242,17 @@ export type Database = {
         | "rejected"
       tq_status: "draft" | "submitted" | "answered" | "closed" | "void"
       transmittal_direction: "outgoing" | "incoming"
+      transmittal_purpose:
+        | "for_approval"
+        | "for_information"
+        | "for_construction"
+        | "as_built"
+      transmittal_status:
+        | "draft"
+        | "issued"
+        | "acknowledged"
+        | "returned"
+        | "cancelled"
       vendor_portal_actor: "vendor" | "internal" | "system"
       vendor_portal_status: "invited" | "active" | "suspended" | "revoked"
       vendor_status: "onboarding" | "active" | "suspended" | "blacklisted"
@@ -22161,6 +22563,7 @@ export const Constants = {
         "lease",
         "other",
       ],
+      controlled_copy_status: ["issued", "returned", "recalled", "destroyed"],
       cwp_status: [
         "draft",
         "planned",
@@ -22198,6 +22601,14 @@ export const Constants = {
         "correspondence",
         "contract_doc",
         "other",
+      ],
+      document_register_status: ["draft", "issued", "superseded", "obsolete"],
+      document_retention_class: [
+        "permanent",
+        "contract_term",
+        "seven_years",
+        "three_years",
+        "transient",
       ],
       dossier_status: ["compiling", "complete", "issued"],
       dpr_status: ["draft", "submitted", "approved"],
@@ -22729,6 +23140,19 @@ export const Constants = {
       ],
       tq_status: ["draft", "submitted", "answered", "closed", "void"],
       transmittal_direction: ["outgoing", "incoming"],
+      transmittal_purpose: [
+        "for_approval",
+        "for_information",
+        "for_construction",
+        "as_built",
+      ],
+      transmittal_status: [
+        "draft",
+        "issued",
+        "acknowledged",
+        "returned",
+        "cancelled",
+      ],
       vendor_portal_actor: ["vendor", "internal", "system"],
       vendor_portal_status: ["invited", "active", "suspended", "revoked"],
       vendor_status: ["onboarding", "active", "suspended", "blacklisted"],
