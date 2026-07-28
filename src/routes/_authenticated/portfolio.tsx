@@ -7,6 +7,7 @@ import { Boxes, Coins, FileSignature, Gauge, TrendingUp, Wallet } from "lucide-r
 
 import { CashCurveSection } from "@/components/portfolio/cash-curve-section";
 import { ExposureSection } from "@/components/portfolio/exposure-section";
+import { ExportExecReportButton } from "@/components/portfolio/export-exec-report-button";
 import { GateRail } from "@/components/portfolio/gate-rail";
 import { ProjectCard } from "@/components/portfolio/project-card";
 import { Card } from "@/components/ui/card";
