@@ -19,9 +19,7 @@ import type { ArAgingResult } from "@/lib/ar-aging.functions";
 export const getApAging = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ project_id: z.string().uuid().optional() })
-      .parse(input ?? {}),
+    z.object({ project_id: z.string().uuid().optional() }).parse(input ?? {}),
   )
   .handler(async ({ data, context }): Promise<Omit<ArAgingResult, "forecast">> => {
     requireSupabaseAuth(context);

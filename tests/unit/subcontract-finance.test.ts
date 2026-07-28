@@ -103,8 +103,8 @@ describe("AP aging eligibility", () => {
     expect(isAgingEligible({ ...inv, direction: "receivable" })).toBe(true);
   });
   it("drops fully paid invoices from aging", () => {
-    expect(
-      isAgingEligible({ ...inv, direction: "payable", paid_amount: 90_000 }, "payable"),
-    ).toBe(false);
+    expect(isAgingEligible({ ...inv, direction: "payable", paid_amount: 90_000 }, "payable")).toBe(
+      false,
+    );
   });
 });

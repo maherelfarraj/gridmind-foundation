@@ -164,9 +164,7 @@ export function SubFinancePanel({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {t("procurementMod.subcontracts.finance.releaseRetention")}
-            </DialogTitle>
+            <DialogTitle>{t("procurementMod.subcontracts.finance.releaseRetention")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -185,9 +183,7 @@ export function SubFinancePanel({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="retention-reason">
-                {t("procurementMod.subcontracts.notes")}
-              </Label>
+              <Label htmlFor="retention-reason">{t("procurementMod.subcontracts.notes")}</Label>
               <Input
                 id="retention-reason"
                 value={reason}

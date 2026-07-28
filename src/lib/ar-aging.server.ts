@@ -97,13 +97,16 @@ export async function loadAgingDataset(
   if (error) throw error;
 
   const open = (data ?? []).filter((r) =>
-    isAgingEligible({
-      direction: r.direction,
-      status: r.status,
-      amount: Number(r.amount ?? 0),
-      tax_amount: Number(r.tax_amount ?? 0),
-      paid_amount: Number(r.paid_amount ?? 0),
-    }, direction),
+    isAgingEligible(
+      {
+        direction: r.direction,
+        status: r.status,
+        amount: Number(r.amount ?? 0),
+        tax_amount: Number(r.tax_amount ?? 0),
+        paid_amount: Number(r.paid_amount ?? 0),
+      },
+      direction,
+    ),
   );
   if (open.length === 0) {
     return { rows: [], base_currency: base, today, fx_missing_currencies: [] };

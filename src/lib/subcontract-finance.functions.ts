@@ -95,8 +95,7 @@ export const getSubcontractFinance = createServerFn({ method: "GET" })
         release_date: r.release_date as string,
         reason: (r.reason as string) ?? null,
         invoice_id: (r.invoice_id as string) ?? null,
-        invoice_number:
-          (r.invoices as { invoice_number: string } | null)?.invoice_number ?? null,
+        invoice_number: (r.invoices as { invoice_number: string } | null)?.invoice_number ?? null,
       })),
     };
   });

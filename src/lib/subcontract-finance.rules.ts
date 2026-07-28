@@ -23,9 +23,10 @@ export function isApInvoiceNumber(value: string | null | undefined): boolean {
 
 /** due_date = issue_date + payment terms (days). */
 export function apDueDate(issueDate: string, paymentTermsDays?: number | null): string {
-  const days = paymentTermsDays != null && Number.isFinite(Number(paymentTermsDays))
-    ? Math.max(0, Math.trunc(Number(paymentTermsDays)))
-    : DEFAULT_PAYMENT_TERMS_DAYS;
+  const days =
+    paymentTermsDays != null && Number.isFinite(Number(paymentTermsDays))
+      ? Math.max(0, Math.trunc(Number(paymentTermsDays)))
+      : DEFAULT_PAYMENT_TERMS_DAYS;
   const d = new Date(`${issueDate}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
@@ -84,8 +85,7 @@ export function checkRetentionRelease(input: {
   if (toCents(input.amount) > toCents(input.retentionHeld)) {
     return { ok: false, reason: "exceeds_held" };
   }
-  const dlpPassed =
-    !!input.defectsLiabilityEnd && input.defectsLiabilityEnd <= input.releaseDate;
+  const dlpPassed = !!input.defectsLiabilityEnd && input.defectsLiabilityEnd <= input.releaseDate;
   if (!dlpPassed && !input.canOverrideDlp) return { ok: false, reason: "before_dlp" };
   return { ok: true };
 }
