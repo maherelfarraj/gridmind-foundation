@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CompliancePanel } from "@/components/procurement/compliance-panel";
+import { SubFinancePanel } from "@/components/procurement/sub-finance-panel";
 import { SubScorecardPanel } from "@/components/procurement/sub-scorecard-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -318,6 +319,8 @@ function SubcontractDetail() {
           </CardContent>
         </Card>
       </section>
+
+      <SubFinancePanel subcontractId={subcontractId} currency={cur} canWrite={canWrite} />
 
       {sc.vendor_id ? (
         <section className="grid gap-6 lg:grid-cols-2">
