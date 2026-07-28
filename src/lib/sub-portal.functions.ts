@@ -177,7 +177,7 @@ export const submitSubPortalClaim = createServerFn({ method: "POST" })
       p_period_start: data.periodStart,
       p_period_end: data.periodEnd,
       p_lines: data.lines,
-      p_note: data.note ?? null,
+      p_note: data.note ?? undefined,
     });
     if (error) throw rpcError(error.message);
     const out = payload as unknown as { claim_id: string };
@@ -263,7 +263,7 @@ export const submitSubComplianceDocument = createServerFn({ method: "POST" })
       p_category: "vendor_compliance",
       p_file_path: data.path,
       p_file_name: name,
-      p_expires_on: data.expiresOn ?? null,
+      p_expires_on: data.expiresOn ?? undefined,
     });
     if (error) throw rpcError(error.message);
     return { id: id ? String(id) : null };
