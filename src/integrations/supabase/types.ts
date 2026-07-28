@@ -7688,6 +7688,8 @@ export type Database = {
           project_id: string | null
           retention_pct: number
           status: Database["public"]["Enums"]["invoice_status"]
+          subcontract_claim_id: string | null
+          subcontract_id: string | null
           tax_amount: number
           updated_at: string
           vendor_id: string | null
@@ -7712,6 +7714,8 @@ export type Database = {
           project_id?: string | null
           retention_pct?: number
           status?: Database["public"]["Enums"]["invoice_status"]
+          subcontract_claim_id?: string | null
+          subcontract_id?: string | null
           tax_amount?: number
           updated_at?: string
           vendor_id?: string | null
@@ -7736,6 +7740,8 @@ export type Database = {
           project_id?: string | null
           retention_pct?: number
           status?: Database["public"]["Enums"]["invoice_status"]
+          subcontract_claim_id?: string | null
+          subcontract_id?: string | null
           tax_amount?: number
           updated_at?: string
           vendor_id?: string | null
@@ -7774,6 +7780,20 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_subcontract_claim_id_fkey"
+            columns: ["subcontract_claim_id"]
+            isOneToOne: false
+            referencedRelation: "subcontract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
             referencedColumns: ["id"]
           },
           {
@@ -17052,6 +17072,74 @@ export type Database = {
           },
         ]
       }
+      subcontract_retention_releases: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          reason: string | null
+          release_date: string
+          released_by: string | null
+          subcontract_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+          release_date?: string
+          released_by?: string | null
+          subcontract_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+          release_date?: string
+          released_by?: string | null
+          subcontract_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_retention_releases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_retention_releases_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_retention_releases_released_by_fkey"
+            columns: ["released_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_retention_releases_subcontract_id_fkey"
+            columns: ["subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcontract_scorecards: {
         Row: {
           claim_accuracy: number | null
@@ -17133,6 +17221,7 @@ export type Database = {
           end_date: string | null
           id: string
           notes: string | null
+          payment_terms_days: number
           project_id: string
           retention_held: number
           retention_pct: number
@@ -17158,6 +17247,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           notes?: string | null
+          payment_terms_days?: number
           project_id: string
           retention_held?: number
           retention_pct?: number
@@ -17183,6 +17273,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           notes?: string | null
+          payment_terms_days?: number
           project_id?: string
           retention_held?: number
           retention_pct?: number
@@ -20577,6 +20668,10 @@ export type Database = {
           policyname: string
         }[]
       }
+      next_ap_invoice_number: {
+        Args: { p_company_id: string }
+        Returns: string
+      }
       next_bond_number: {
         Args: { p_company_id: string; p_kind: string }
         Returns: number
@@ -20834,6 +20929,10 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      sub_claim_generate_ap_invoice: {
+        Args: { p_claim_id: string }
+        Returns: string
+      }
       sub_compliance_expiry_sweep: { Args: never; Returns: Json }
       sub_compliance_gate: {
         Args: { p_subcontract_id: string }
@@ -20878,6 +20977,15 @@ export type Database = {
       subcontract_claim_recalc: {
         Args: { p_claim_id: string }
         Returns: undefined
+      }
+      subcontract_release_retention: {
+        Args: {
+          p_amount: number
+          p_reason?: string
+          p_release_date?: string
+          p_subcontract_id: string
+        }
+        Returns: Json
       }
       subcontract_retention_sync: {
         Args: { p_subcontract_id: string }
