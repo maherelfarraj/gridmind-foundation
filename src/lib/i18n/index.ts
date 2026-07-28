@@ -6,6 +6,10 @@ import { initReactI18next } from "react-i18next";
 
 import ar from "./ar.json";
 import en from "./en.json";
+import financeAr from "./finance.ar.json";
+import financeEn from "./finance.en.json";
+import procurementAr from "./procurement.ar.json";
+import procurementEn from "./procurement.en.json";
 
 export type Locale = "en" | "ar";
 
@@ -13,10 +17,13 @@ export const LOCALES: Locale[] = ["en", "ar"];
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_STORAGE_KEY = "gridmind-locale";
 
+// P-241 — module catalogs live in their own files so parallel module passes
+// never collide; they merge under the `financeMod` / `procurementMod` roots.
 export const resources = {
-  en: { translation: en },
-  ar: { translation: ar },
+  en: { translation: { ...en, financeMod: financeEn, procurementMod: procurementEn } },
+  ar: { translation: { ...ar, financeMod: financeAr, procurementMod: procurementAr } },
 } as const;
+
 
 export function isLocale(value: unknown): value is Locale {
   return value === "en" || value === "ar";

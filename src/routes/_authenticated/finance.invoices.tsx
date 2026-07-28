@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { MoneyCell } from "@/components/ui/num";
 import { InvoiceDetailDrawer } from "@/components/finance/invoice-detail-drawer";
 import { Inbox } from "lucide-react";
 import { downloadCsv } from "@/lib/csv";
 import { toInvoicesCsv } from "@/lib/invoices.csv";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { invoicesAccessQueryOptions, invoicesListQueryOptions } from "@/lib/invoices.query";
 import {
   INVOICE_DIRECTIONS,
@@ -72,6 +74,7 @@ function fmt(n: number, currency: string) {
 }
 
 function InvoicesPage() {
+  const { t } = useI18n();
   const [q, setQ] = useState("");
   const [direction, setDirection] = useState<InvoiceDirection | "all">("all");
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
@@ -93,8 +96,8 @@ function InvoicesPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Invoices"
-        description="Payable and receivable invoices across the company."
+        title={t("financeMod.invoices.title")}
+        description={t("financeMod.invoices.subtitle")}
         actions={
           <Button
             variant="outline"
@@ -107,17 +110,17 @@ function InvoicesPage() {
               )
             }
           >
-            <Download className="mr-2 size-4" /> Export CSV
+            <Download className="me-2 size-4" /> {t("financeMod.common.export")}
           </Button>
         }
       />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-64">
-          <Search className="pointer-events-none absolute left-2 top-2.5 size-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-2 top-2.5 size-4 text-muted-foreground" />
           <Input
-            className="pl-8"
-            placeholder="Search invoice or milestone…"
+            className="ps-8"
+            placeholder={t("financeMod.invoices.searchPlaceholder")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -127,10 +130,10 @@ function InvoicesPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All directions</SelectItem>
+            <SelectItem value="all">{t("financeMod.invoices.allDirections")}</SelectItem>
             {INVOICE_DIRECTIONS.map((d) => (
               <SelectItem key={d} value={d}>
-                {d === "payable" ? "Payable" : "Receivable"}
+                {d === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
               </SelectItem>
             ))}
           </SelectContent>
@@ -140,7 +143,7 @@ function InvoicesPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("financeMod.invoices.allStatuses")}</SelectItem>
             {INVOICE_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {invoiceStatusLabel(s)}
@@ -160,20 +163,20 @@ function InvoicesPage() {
         ) : rows.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title="No invoices yet"
-            description="Create receivable invoices from a contract's Bill milestone action, or ingest payable invoices from Procurement."
+            title={t("financeMod.invoices.empty")}
+            description={t("financeMod.invoices.createFromMilestone")}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice #</TableHead>
-                <TableHead>Direction</TableHead>
-                <TableHead>Milestone / Ref</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Tax</TableHead>
-                <TableHead>Due</TableHead>
+                <TableHead>{t("financeMod.invoices.columnInvoiceNumber")}</TableHead>
+                <TableHead>{t("financeMod.invoices.direction")}</TableHead>
+                <TableHead>{t("financeMod.invoices.columnMilestoneRef")}</TableHead>
+                <TableHead>{t("financeMod.common.status")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.common.amount")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.common.tax")}</TableHead>
+                <TableHead>{t("financeMod.common.dueDate")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,7 +189,7 @@ function InvoicesPage() {
                   <TableCell className="font-mono text-xs">{r.invoice_number}</TableCell>
                   <TableCell>
                     <Badge variant={r.direction === "payable" ? "destructive" : "secondary"}>
-                      {r.direction === "payable" ? "Payable" : "Receivable"}
+                      {r.direction === "payable" ? t("financeMod.invoices.payable") : t("financeMod.invoices.receivable")}
                     </Badge>
                   </TableCell>
                   <TableCell className="max-w-[24rem] truncate text-sm">
@@ -195,14 +198,14 @@ function InvoicesPage() {
                   <TableCell>
                     <span className="flex flex-wrap items-center gap-1">
                       <Badge variant="outline">{invoiceStatusLabel(r.status)}</Badge>
-                      {r.overdue && <Badge variant="destructive">Overdue</Badge>}
+                      {r.overdue && <Badge variant="destructive">{t("financeMod.invoices.overdueBadge")}</Badge>}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {fmt(r.amount, r.currency_code)}
+                  <TableCell>
+                    <MoneyCell>{fmt(r.amount, r.currency_code)}</MoneyCell>
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
-                    {fmt(r.tax_amount, r.currency_code)}
+                  <TableCell className="text-muted-foreground">
+                    <MoneyCell>{fmt(r.tax_amount, r.currency_code)}</MoneyCell>
                   </TableCell>
                   <TableCell className="text-sm">{r.due_date ?? "—"}</TableCell>
                 </TableRow>

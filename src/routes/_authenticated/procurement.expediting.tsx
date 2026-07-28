@@ -66,6 +66,9 @@ import {
   openPosForExpeditingQueryOptions,
 } from "@/lib/expediting-query";
 import { downloadCsv, toCsv } from "@/lib/csv";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { MoneyCell, Num } from "@/components/ui/num";
 
 export const Route = createFileRoute("/_authenticated/procurement/expediting")({
   head: () => ({
@@ -91,15 +94,18 @@ export const Route = createFileRoute("/_authenticated/procurement/expediting")({
 });
 
 function ExpeditingError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="rounded-md border border-destructive/40 bg-destructive/5 p-6">
       <div className="flex items-center gap-2 text-destructive">
         <AlertTriangle className="h-4 w-4" />
-        <span className="font-medium">Failed to load expediting log</span>
+        <span className="font-medium">{t("procurementMod.expediting.loadError")}</span>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">{errorMessage(error)}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {translateError(t, errorCodeOf(error), errorMessage(error))}
+      </p>
       <Button variant="outline" size="sm" className="mt-3" onClick={reset}>
-        Retry
+        {t("procurementMod.expediting.retry")}
       </Button>
     </div>
   );
@@ -120,6 +126,7 @@ function ExpeditingPending() {
 }
 
 function ExpeditingPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listFn = useServerFn(listExpediting);
   const kpiFn = useServerFn(getLongLeadKpi);
@@ -171,27 +178,27 @@ function ExpeditingPage() {
       updateFn({ data: vars as any }),
     onSuccess: () => {
       invalidate();
-      toast.success("Updated");
+      toast.success(t("procurementMod.expediting.updated"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const contactMutation = useMutation({
     mutationFn: (id: string) => contactFn({ data: { id } }),
     onSuccess: () => {
       invalidate();
-      toast.success("Vendor contact logged");
+      toast.success(t("procurementMod.expediting.vendorContactLogged"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const confirmMutation = useMutation({
     mutationFn: (id: string) => confirmEtaFn({ data: { id } }),
     onSuccess: () => {
       invalidate();
-      toast.success("ETA confirmed — vendor notified");
+      toast.success(t("procurementMod.expediting.etaConfirmedToast"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const counterMutation = useMutation({
@@ -199,18 +206,18 @@ function ExpeditingPage() {
       counterEtaFn({ data: vars }),
     onSuccess: () => {
       invalidate();
-      toast.success("Counter-proposal sent to vendor");
+      toast.success(t("procurementMod.expediting.counterProposalSent"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => {
       invalidate();
-      toast.success("Item removed");
+      toast.success(t("procurementMod.expediting.itemRemoved"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   const importMutation = useMutation({
@@ -219,12 +226,13 @@ function ExpeditingPage() {
       invalidate();
       qc.invalidateQueries({ queryKey: ["expediting", "open-pos"] });
       toast.success(
-        `Imported ${res.imported} item${res.imported === 1 ? "" : "s"}` +
-          (res.skipped > 0 ? ` · ${res.skipped} skipped` : ""),
+        t(res.imported === 1 ? "procurementMod.expediting.importedToast_one" : "procurementMod.expediting.importedToast_other", {
+          count: res.imported,
+        }) + (res.skipped > 0 ? t("procurementMod.expediting.importedSkipped", { count: res.skipped }) : ""),
       );
       setImportOpen(false);
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(translateError(t, errorCodeOf(e), errorMessage(e))),
   });
 
   function exportCsv() {
@@ -264,20 +272,20 @@ function ExpeditingPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Expediting log"
-        description="Chase deliveries against site-need dates and the Stage-3 exit gate."
+        title={t("procurementMod.expediting.title")}
+        description={t("procurementMod.expediting.subtitle")}
         actions={
           <>
             <Button variant="outline" size="sm" onClick={exportCsv}>
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              <Download className="me-2 h-4 w-4" />
+              {t("procurementMod.common.export")}
             </Button>
             {access.canWrite ? (
               <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add from PO
+                    <Plus className="me-2 h-4 w-4" />
+                    {t("procurementMod.expediting.addFromPo")}
                   </Button>
                 </DialogTrigger>
                 <ImportFromPoDialog
@@ -295,22 +303,26 @@ function ExpeditingPage() {
 
       <TooltipProvider>
         <KpiGrid columns={3}>
-          <KpiTile label="Open items" value={String(openCount)} hint="Not yet delivered" />
           <KpiTile
-            label="Delayed"
+            label={t("procurementMod.expediting.openItems")}
+            value={String(openCount)}
+            hint={t("procurementMod.expediting.openItemsHint")}
+          />
+          <KpiTile
+            label={t("procurementMod.expediting.delayed")}
             value={String(delayedCount)}
-            hint="ETA past site-need date"
+            hint={t("procurementMod.expediting.delayedHint")}
             status={delayedCount > 0 ? "bad" : "neutral"}
           />
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
                 <KpiTile
-                  label="Long-lead ready"
+                  label={t("procurementMod.expediting.longLeadReady")}
                   value={
                     kpi.total === 0 ? "—" : `${kpi.ready}/${kpi.total} · ${kpi.pct.toFixed(0)}%`
                   }
-                  hint="Delivered or ETA confirmed"
+                  hint={t("procurementMod.expediting.longLeadReadyHint")}
                   status={
                     kpi.total === 0
                       ? "neutral"
@@ -323,7 +335,7 @@ function ExpeditingPage() {
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent>Procure → Plan exit gate (≥95%)</TooltipContent>
+            <TooltipContent>{t("procurementMod.expediting.exitGateTooltip")}</TooltipContent>
           </Tooltip>
         </KpiGrid>
       </TooltipProvider>
@@ -334,28 +346,28 @@ function ExpeditingPage() {
           onValueChange={(v) => setStatusFilter(v as ExpeditingStatus | "all")}
         >
           <SelectTrigger className="w-52">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("procurementMod.common.status")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {EXPEDITING_STATUSES.map((s) => (
-              <SelectItem key={s} value={s} className="capitalize">
-                {s.replace("_", " ")}
+            <SelectItem value="all">{t("procurementMod.common.allStatuses")}</SelectItem>
+            {EXPEDITING_STATUSES.map((es) => (
+              <SelectItem key={es} value={es}>
+                {t(`procurementMod.expediting.statuses.${es}`)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <label className="flex items-center gap-2 text-sm">
           <Checkbox checked={longLeadOnly} onCheckedChange={(v) => setLongLeadOnly(!!v)} />
-          Long-lead only
+          {t("procurementMod.expediting.longLeadOnly")}
         </label>
       </div>
 
       {grouped.length === 0 ? (
         <EmptyState
           icon={Truck}
-          title="No items being expedited"
-          description="Import lines from an approved PO to begin."
+          title={t("procurementMod.expediting.emptyTitle")}
+          description={t("procurementMod.expediting.emptyDescription")}
         />
       ) : (
         <div className="space-y-6">
@@ -363,27 +375,27 @@ function ExpeditingPage() {
             <section
               key={projectId}
               className="rounded-md border border-border"
-              aria-label={`Project ${group.projectName}`}
+              aria-label={t("procurementMod.expediting.projectLabel", { name: group.projectName })}
             >
               <div className="flex items-center justify-between border-b border-border px-4 py-2">
                 <div className="font-medium">{group.projectName}</div>
                 <div className="text-xs text-muted-foreground">
-                  {group.items.length} item{group.items.length === 1 ? "" : "s"}
+                  {t(group.items.length === 1 ? "procurementMod.expediting.itemsCount_one" : "procurementMod.expediting.itemsCount_other", { count: group.items.length })}
                 </div>
               </div>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>PO</TableHead>
-                    <TableHead>Promised</TableHead>
-                    <TableHead>Window</TableHead>
-                    <TableHead>Site need</TableHead>
-                    <TableHead>ETA</TableHead>
-                    <TableHead>Confirmed</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Countdown</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colItem")}</TableHead>
+                    <TableHead>{t("procurementMod.common.po")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colPromised")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colWindow")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colSiteNeed")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.eta")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colConfirmed")}</TableHead>
+                    <TableHead>{t("procurementMod.common.status")}</TableHead>
+                    <TableHead>{t("procurementMod.expediting.colCountdown")}</TableHead>
+                    <TableHead className="text-end">{t("procurementMod.common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -456,6 +468,7 @@ function KpiCard({
 }
 
 function CountdownChip({ siteNeedDate }: { siteNeedDate: string }) {
+  const { t } = useI18n();
   const days = daysUntilNeed(siteNeedDate);
   if (days == null) return <span className="text-xs text-muted-foreground">—</span>;
   const tone =
@@ -466,7 +479,12 @@ function CountdownChip({ siteNeedDate }: { siteNeedDate: string }) {
         : days <= 21
           ? "text-secondary-foreground"
           : "text-muted-foreground";
-  const label = days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `${days}d`;
+  const label =
+    days < 0
+      ? t("procurementMod.expediting.overdueLabel", { count: Math.abs(days) })
+      : days === 0
+        ? t("procurementMod.expediting.todayLabel")
+        : t("procurementMod.expediting.daysLabel", { count: days });
   return <span className={`text-xs font-medium ${tone}`}>{label}</span>;
 }
 
@@ -487,6 +505,7 @@ function ExpeditingRowUI({
   onConfirmEta: () => void;
   onCounterPropose: (eta: string, comment: string) => void;
 }) {
+  const { t } = useI18n();
   const [eta, setEta] = useState(row.current_eta ?? "");
   const [counterOpen, setCounterOpen] = useState(false);
   const [counterEta, setCounterEta] = useState(row.current_eta ?? "");
@@ -506,15 +525,19 @@ function ExpeditingRowUI({
         <div className="flex items-center gap-2 pt-1">
           {row.is_long_lead ? (
             <Badge variant="secondary" className="text-[10px]">
-              Long lead
+              {t("procurementMod.expediting.longLead")}
             </Badge>
           ) : null}
           {row.last_vendor_contact_at ? (
             <span className="text-[10px] text-muted-foreground">
-              Contact {format(new Date(row.last_vendor_contact_at), "PP")}
+              {t("procurementMod.expediting.contactOn", {
+                date: format(new Date(row.last_vendor_contact_at), "PP"),
+              })}
             </span>
           ) : (
-            <span className="text-[10px] text-muted-foreground">No contact yet</span>
+            <span className="text-[10px] text-muted-foreground">
+              {t("procurementMod.expediting.noContactYet")}
+            </span>
           )}
         </div>
       </TableCell>
@@ -527,7 +550,9 @@ function ExpeditingRowUI({
           {row.po_number ?? "PO"}
         </Link>
         {row.po_line_no ? (
-          <div className="text-[10px] text-muted-foreground">Line {row.po_line_no}</div>
+          <div className="text-[10px] text-muted-foreground">
+            {t("procurementMod.expediting.line", { no: row.po_line_no })}
+          </div>
         ) : null}
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
@@ -550,7 +575,7 @@ function ExpeditingRowUI({
           onChange={(e) => setEta(e.target.value)}
           onBlur={commitEta}
           className="h-8 w-36"
-          aria-label="Current ETA"
+          aria-label={t("procurementMod.expediting.currentEtaLabel")}
         />
       </TableCell>
       <TableCell>
@@ -559,15 +584,17 @@ function ExpeditingRowUI({
             checked={row.eta_confirmed}
             disabled={!canWrite}
             onCheckedChange={(v) => onPatch({ eta_confirmed: !!v })}
-            aria-label="ETA confirmed"
+            aria-label={t("procurementMod.expediting.etaConfirmedLabel")}
           />
           {vendorProposed ? (
             <Badge className="bg-accent text-[10px] text-accent-foreground">
-              Vendor-proposed ETA
+              {t("procurementMod.expediting.vendorProposedEta")}
             </Badge>
           ) : null}
           {isCounterProposedNote(row.notes) && !row.eta_confirmed ? (
-            <span className="text-[10px] text-muted-foreground">Counter-proposed</span>
+            <span className="text-[10px] text-muted-foreground">
+              {t("procurementMod.expediting.counterProposed")}
+            </span>
           ) : null}
         </div>
       </TableCell>
@@ -577,29 +604,31 @@ function ExpeditingRowUI({
       <TableCell>
         <CountdownChip siteNeedDate={row.site_need_date} />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-end">
         <div className="flex flex-wrap justify-end gap-1">
           {canWrite && vendorProposed ? (
             <>
               <Button variant="outline" size="sm" onClick={onConfirmEta}>
-                Confirm ETA
+                {t("procurementMod.expediting.confirmEta")}
               </Button>
               <Dialog open={counterOpen} onOpenChange={setCounterOpen}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="sm">
-                    Counter
+                    {t("procurementMod.expediting.counter")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Counter-propose delivery date</DialogTitle>
+                    <DialogTitle>{t("procurementMod.expediting.counterDialogTitle")}</DialogTitle>
                     <DialogDescription>
-                      The vendor is notified and the ETA stays unconfirmed until they agree.
+                      {t("procurementMod.expediting.counterDialogDescription")}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <Label htmlFor={`counter-eta-${row.id}`}>Proposed ETA</Label>
+                      <Label htmlFor={`counter-eta-${row.id}`}>
+                        {t("procurementMod.expediting.proposedEtaLabel")}
+                      </Label>
                       <Input
                         id={`counter-eta-${row.id}`}
                         type="date"
@@ -608,18 +637,20 @@ function ExpeditingRowUI({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor={`counter-note-${row.id}`}>Comment</Label>
+                      <Label htmlFor={`counter-note-${row.id}`}>
+                        {t("procurementMod.expediting.commentLabel")}
+                      </Label>
                       <Input
                         id={`counter-note-${row.id}`}
                         value={counterComment}
                         onChange={(e) => setCounterComment(e.target.value)}
-                        placeholder="Why this date works better"
+                        placeholder={t("procurementMod.expediting.commentPlaceholder")}
                       />
                     </div>
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setCounterOpen(false)}>
-                      Cancel
+                      {t("procurementMod.expediting.cancel")}
                     </Button>
                     <Button
                       disabled={!counterEta || counterComment.trim() === ""}
@@ -629,7 +660,7 @@ function ExpeditingRowUI({
                         setCounterComment("");
                       }}
                     >
-                      Send counter-proposal
+                      {t("procurementMod.expediting.sendCounterProposal")}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -641,7 +672,7 @@ function ExpeditingRowUI({
             size="sm"
             disabled={!canWrite}
             onClick={onLogContact}
-            title="Log vendor contact"
+            title={t("procurementMod.expediting.logVendorContact")}
           >
             <MessageSquare className="h-4 w-4" />
           </Button>
@@ -650,12 +681,14 @@ function ExpeditingRowUI({
               variant="ghost"
               size="sm"
               onClick={() => {
-                if (confirm("Remove this expediting item?")) onDelete();
+                if (confirm(t("procurementMod.expediting.removeConfirm"))) onDelete();
               }}
-              title="Remove"
+              title={t("procurementMod.expediting.remove")}
             >
               <CheckCircle2 className="h-4 w-4 opacity-0" />
-              <span className="text-xs text-muted-foreground">Remove</span>
+              <span className="text-xs text-muted-foreground">
+                {t("procurementMod.expediting.remove")}
+              </span>
             </Button>
           ) : null}
         </div>
@@ -673,6 +706,7 @@ function ImportFromPoDialog({
   onImport: (poId: string, longLeadLineNos: number[]) => void;
   submitting: boolean;
 }) {
+  const { t } = useI18n();
   const { data: pos } = useSuspenseQuery(openPosForExpeditingQueryOptions(openPosFn));
   const [poId, setPoId] = useState<string>("");
   const [longLead, setLongLead] = useState<Set<number>>(new Set());
@@ -682,23 +716,25 @@ function ImportFromPoDialog({
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>Add items from a purchase order</DialogTitle>
+        <DialogTitle>{t("procurementMod.expediting.importDialogTitle")}</DialogTitle>
         <DialogDescription>
-          Import the PO's lines into the expediting log. Existing lines are skipped automatically.
-          Flag transformers, modules, and other long-lead items so they roll up into the Stage-3
-          exit-gate KPI.
+          {t("procurementMod.expediting.importDialogDescription")}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
         <div>
-          <Label className="text-xs uppercase tracking-wide">Purchase order</Label>
+          <Label className="text-xs uppercase tracking-wide">
+            {t("procurementMod.expediting.purchaseOrderLabel")}
+          </Label>
           <Select value={poId} onValueChange={setPoId}>
             <SelectTrigger>
-              <SelectValue placeholder="Pick an approved / issued PO" />
+              <SelectValue placeholder={t("procurementMod.expediting.pickPoPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {pos.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-muted-foreground">No open POs available</div>
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  {t("procurementMod.expediting.noOpenPos")}
+                </div>
               ) : (
                 pos.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
@@ -715,11 +751,11 @@ function ImportFromPoDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">Long-lead</TableHead>
-                  <TableHead>Line</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead>Site need</TableHead>
+                  <TableHead className="w-12">{t("procurementMod.expediting.colLongLead")}</TableHead>
+                  <TableHead>{t("procurementMod.common.line")}</TableHead>
+                  <TableHead>{t("procurementMod.common.description")}</TableHead>
+                  <TableHead className="text-end">{t("procurementMod.common.qtyShort")}</TableHead>
+                  <TableHead>{t("procurementMod.expediting.colSiteNeed")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -740,8 +776,8 @@ function ImportFromPoDialog({
                     </TableCell>
                     <TableCell className="font-mono text-xs">{l.line_no}</TableCell>
                     <TableCell>{l.description}</TableCell>
-                    <TableCell className="text-right">
-                      {l.qty} {l.uom}
+                    <TableCell className="text-end">
+                      <Num>{l.qty}</Num> {l.uom}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {l.site_need_date ?? selected.required_by_date ?? "—"}
@@ -755,7 +791,7 @@ function ImportFromPoDialog({
       </div>
       <DialogFooter>
         <Button disabled={!poId || submitting} onClick={() => onImport(poId, Array.from(longLead))}>
-          {submitting ? "Importing…" : "Import lines"}
+          {submitting ? t("procurementMod.expediting.importing") : t("procurementMod.expediting.importLines")}
         </Button>
       </DialogFooter>
     </DialogContent>

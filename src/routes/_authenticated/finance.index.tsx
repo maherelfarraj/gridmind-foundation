@@ -42,6 +42,7 @@ import {
 } from "@/lib/finance-cockpit.rules";
 import { financeAccessQueryOptions, financeCockpitQueryOptions } from "@/lib/finance-cockpit.query";
 import { formatMoney, formatNumber, formatRelative } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/finance/")({
   head: () => ({
@@ -92,16 +93,18 @@ function TileShell({ to, children }: { to?: string; children: React.ReactNode })
   );
 }
 
-const NA = <span className="text-muted-foreground">n/a</span>;
+
 
 function FinanceCockpitPage() {
+  const { t } = useI18n();
+  const NA = <span className="text-muted-foreground">{t("financeMod.common.na")}</span>;
   const navigate = useNavigate();
   const access = useQuery(financeAccessQueryOptions());
   const level = access.data?.level;
 
   useEffect(() => {
     if (level === "none") {
-      toast.error("Finance cockpit is restricted to finance and project administrators.");
+      toast.error(t("financeMod.cockpit.restricted"));
       void navigate({ to: "/dashboard", replace: true });
     }
   }, [level, navigate]);
@@ -141,11 +144,11 @@ function FinanceCockpitPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Finance cockpit"
-        description="Cash, receivables, commitments, approvals and exposure — every number traceable to its formula and source tables."
+        title={t("financeMod.cockpit.title")}
+        description={t("financeMod.cockpit.subtitle")}
         actions={
           <div className="flex items-center gap-2">
-            {level === "read" ? <Badge variant="outline">Read-only</Badge> : null}
+            {level === "read" ? <Badge variant="outline">{t("financeMod.cockpit.readOnly")}</Badge> : null}
             <Button
               variant="outline"
               size="sm"
@@ -155,7 +158,7 @@ function FinanceCockpitPage() {
               }}
             >
               <RefreshCw className="size-4" aria-hidden />
-              Refresh
+              {t("financeMod.cockpit.refresh")}
             </Button>
           </div>
         }
@@ -164,9 +167,9 @@ function FinanceCockpitPage() {
       {error ? (
         <Card className="flex flex-col items-start gap-3 border-destructive/40 p-5">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-destructive">Could not load finance data</p>
+            <p className="text-sm font-medium text-destructive">{t("financeMod.cockpit.couldNotLoad")}</p>
             <p className="text-sm text-muted-foreground">
-              {(error as Error).message || "Unexpected error."}
+              {(error as Error).message || t("financeMod.cockpit.unexpectedError")}
             </p>
           </div>
           <Button
@@ -177,7 +180,7 @@ function FinanceCockpitPage() {
               void aging.refetch();
             }}
           >
-            Retry
+            {t("financeMod.cockpit.retry")}
           </Button>
         </Card>
       ) : null}
@@ -185,11 +188,11 @@ function FinanceCockpitPage() {
       {isEmpty && !isLoading ? (
         <EmptyState
           icon={Coins}
-          title="No finance data yet"
-          description="No finance data yet — import budgets and record your first invoice."
+          title={t("financeMod.cockpit.noDataTitle")}
+          description={t("financeMod.cockpit.noDataDesc")}
           action={
             <Button asChild size="sm">
-              <Link to="/finance/invoices">Go to invoices</Link>
+              <Link to="/finance/invoices">{t("financeMod.cockpit.goToInvoices")}</Link>
             </Button>
           }
         />
@@ -201,7 +204,7 @@ function FinanceCockpitPage() {
           <KpiTile
             isLoading={isLoading}
             icon={Wallet}
-            label="Cash position (this month)"
+            label={t("financeMod.cockpit.cashPositionLabel")}
             value={data?.cash_position.available ? money(data.cash_position.value!.net) : NA}
             status={
               data?.cash_position.available
@@ -211,8 +214,8 @@ function FinanceCockpitPage() {
             hint={
               <span className="flex items-center gap-1.5">
                 {data?.cash_position.available
-                  ? `In ${money(data.cash_position.value!.inflow)} · Out ${money(data.cash_position.value!.outflow)}`
-                  : "Payments table unavailable"}
+                  ? t("financeMod.cockpit.cashPositionHint", { inflow: money(data.cash_position.value!.inflow), outflow: money(data.cash_position.value!.outflow) })
+                  : t("financeMod.cockpit.paymentsUnavailable")}
                 <FormulaInfo text={COCKPIT_FORMULAS.cash_position} />
               </span>
             }
@@ -223,12 +226,15 @@ function FinanceCockpitPage() {
           <KpiTile
             isLoading={isLoading}
             icon={Coins}
-            label="Receivables"
+            label={t("financeMod.cockpit.receivablesLabel")}
             value={aging.data ? money(aging.data.total_ar) : NA}
             hint={
               <span className="flex items-center gap-1.5">
                 <span className={aging.data?.overdue_ar ? "text-destructive" : undefined}>
-                  Overdue {aging.data ? money(aging.data.overdue_ar) : "n/a"}
+                  {t("financeMod.cockpit.overdueLabel", {
+                    amount: aging.data ? money(aging.data.overdue_ar) : t("financeMod.common.na"),
+                  })}
+
                 </span>
                 <FormulaInfo text={COCKPIT_FORMULAS.ar_total} />
               </span>
@@ -241,13 +247,13 @@ function FinanceCockpitPage() {
           <KpiTile
             isLoading={isLoading}
             icon={FileBarChart}
-            label="Open pay applications"
+            label={t("financeMod.cockpit.openPayAppsLabel")}
             value={data?.open_pay_apps.available ? money(data.open_pay_apps.value!.total) : NA}
             hint={
               <span className="flex items-center gap-1.5">
                 {data?.open_pay_apps.available
-                  ? `${formatNumber(data.open_pay_apps.value!.count)} submitted / certified`
-                  : "Pay applications table unavailable"}
+                  ? t("financeMod.cockpit.payAppsHint", { count: formatNumber(data.open_pay_apps.value!.count) })
+                  : t("financeMod.cockpit.payAppsUnavailable")}
                 <FormulaInfo text={COCKPIT_FORMULAS.open_pay_apps} />
               </span>
             }
@@ -257,13 +263,13 @@ function FinanceCockpitPage() {
         <KpiTile
           isLoading={isLoading}
           icon={Coins}
-          label="Budget vs actual"
+          label={t("financeMod.cockpit.budgetVsActualLabel")}
           value={
             data?.budget_vs_actual.available ? (
               <span className="flex flex-wrap items-baseline gap-2">
                 <span>{money(data.budget_vs_actual.value!.actual)}</span>
                 <span className="text-sm text-muted-foreground">
-                  of {money(data.budget_vs_actual.value!.budget)}
+                  {t("financeMod.cockpit.ofBudget", { amount: money(data.budget_vs_actual.value!.budget) })}
                 </span>
               </span>
             ) : (
@@ -279,8 +285,8 @@ function FinanceCockpitPage() {
             <span className="flex flex-col gap-1.5">
               <span className="flex items-center gap-1.5">
                 {data?.budget_vs_actual.value?.consumed_pct != null
-                  ? `${data.budget_vs_actual.value.consumed_pct.toFixed(1)}% consumed`
-                  : "No budgets"}
+                  ? t("financeMod.cockpit.consumedPct", { pct: data.budget_vs_actual.value.consumed_pct.toFixed(1) })
+                  : t("financeMod.cockpit.noBudgets")}
                 <FormulaInfo text={COCKPIT_FORMULAS.budget_vs_actual} />
               </span>
               {data?.budget_vs_actual.value?.consumed_pct != null ? (
@@ -307,7 +313,7 @@ function FinanceCockpitPage() {
           <KpiTile
             isLoading={isLoading}
             icon={Stamp}
-            label="Pending finance approvals"
+            label={t("financeMod.cockpit.pendingApprovalsLabel")}
             value={
               data?.pending_approvals.available
                 ? formatNumber(data.pending_approvals.value!.count)
@@ -320,7 +326,7 @@ function FinanceCockpitPage() {
             }
             hint={
               <span className="flex items-center gap-1.5">
-                Pay applications · change orders · invoices
+                {t("financeMod.cockpit.pendingApprovalsHint")}
                 <FormulaInfo text={COCKPIT_FORMULAS.pending_approvals} />
               </span>
             }
@@ -330,7 +336,7 @@ function FinanceCockpitPage() {
         <KpiTile
           isLoading={isLoading}
           icon={GitCompare}
-          label="Change-order exposure"
+          label={t("financeMod.cockpit.coExposureLabel")}
           value={
             data?.co_exposure.value?.pct != null
               ? `${data.co_exposure.value.pct.toFixed(1)}%`
@@ -346,8 +352,8 @@ function FinanceCockpitPage() {
           hint={
             <span className="flex items-center gap-1.5">
               {data?.co_exposure.available
-                ? `${money(data.co_exposure.value!.co_amount)} of ${money(data.co_exposure.value!.contract_value)}`
-                : "Change orders or contracts unavailable"}
+                ? t("financeMod.cockpit.coExposureHint", { co: money(data.co_exposure.value!.co_amount), contract: money(data.co_exposure.value!.contract_value) })
+                : t("financeMod.cockpit.coExposureUnavailable")}
               <FormulaInfo text={COCKPIT_FORMULAS.co_exposure} />
             </span>
           }
@@ -356,7 +362,7 @@ function FinanceCockpitPage() {
         <KpiTile
           isLoading={isLoading}
           icon={ShieldAlert}
-          label="SLA credits at risk"
+          label={t("financeMod.cockpit.slaCreditsLabel")}
           value={data?.sla_credits.available ? money(data.sla_credits.value!.total) : NA}
           status={
             data?.sla_credits.value?.total ? ("warning" as KpiStatus) : ("neutral" as KpiStatus)
@@ -364,8 +370,8 @@ function FinanceCockpitPage() {
           hint={
             <span className="flex items-center gap-1.5">
               {data?.sla_credits.available
-                ? `${formatNumber(data.sla_credits.value!.count)} open SLA records`
-                : "O&M module not installed"}
+                ? t("financeMod.cockpit.slaCreditsHint", { count: formatNumber(data.sla_credits.value!.count) })
+                : t("financeMod.cockpit.slaCreditsUnavailable")}
               <FormulaInfo text={COCKPIT_FORMULAS.sla_credits} />
             </span>
           }
@@ -375,7 +381,7 @@ function FinanceCockpitPage() {
           <KpiTile
             isLoading={isLoading}
             icon={ShieldAlert}
-            label="Bonds expiring ≤ 30 d"
+            label={t("financeMod.cockpit.bondsExpiringLabel")}
             value={
               data?.bonds_expiring_30.available
                 ? formatNumber(data.bonds_expiring_30.value!.count)
@@ -396,8 +402,8 @@ function FinanceCockpitPage() {
                           }).format(c.amount),
                         )
                         .join(" · ")
-                    : "No instruments expiring"
-                  : "Bonds module not installed"}
+                    : t("financeMod.cockpit.bondsExpiringHintNone")
+                  : t("financeMod.cockpit.bondsExpiringUnavailable")}
                 <FormulaInfo text={COCKPIT_FORMULAS.bonds_expiring_30} />
               </span>
             }
@@ -410,21 +416,21 @@ function FinanceCockpitPage() {
         <SectionHeader
           title={
             <span className="flex items-center gap-2">
-              AR aging
+              {t("financeMod.cockpit.agingTitle")}
               <FormulaInfo text={COCKPIT_FORMULAS.aging_chart} />
             </span>
           }
-          description="Open receivables by age bucket, in base currency."
+          description={t("financeMod.cockpit.agingDesc")}
           actions={
             <Button asChild variant="outline" size="sm">
-              <Link to="/finance/receivables">Open receivables</Link>
+              <Link to="/finance/receivables">{t("financeMod.cockpit.openReceivables")}</Link>
             </Button>
           }
         />
         {isLoading ? (
           <Skeleton className="h-8 w-full" />
         ) : agingTotal === 0 ? (
-          <EmptyState compact icon={Inbox} title="No open receivables" />
+          <EmptyState compact icon={Inbox} title={t("financeMod.cockpit.noOpenReceivables")} />
         ) : (
           <Link to="/finance/receivables" className="block space-y-3">
             <div className="flex h-4 w-full overflow-hidden rounded-full bg-muted">
@@ -455,20 +461,20 @@ function FinanceCockpitPage() {
         <SectionHeader
           title={
             <span className="flex items-center gap-2">
-              Cash flow — last 6 months
+              {t("financeMod.cockpit.cashTrendTitle")}
               <FormulaInfo text={COCKPIT_FORMULAS.cash_trend} />
             </span>
           }
           description={
             hasForecast
-              ? "Actual inflow, outflow and net, with forecast net dashed."
-              : "Actual inflow, outflow and net."
+              ? t("financeMod.cockpit.cashTrendDescForecast")
+              : t("financeMod.cockpit.cashTrendDescActual")
           }
         />
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : !data?.cash_trend.available ? (
-          <EmptyState compact icon={AlertTriangle} title="Cash flow data unavailable (n/a)" />
+          <EmptyState compact icon={AlertTriangle} title={t("financeMod.cockpit.cashFlowUnavailable")} />
         ) : (
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -488,7 +494,7 @@ function FinanceCockpitPage() {
                 <Area
                   type="monotone"
                   dataKey="inflow"
-                  name="Inflow"
+                  name={t("financeMod.cockpit.inflow")}
                   stroke="var(--color-chart-2)"
                   fill="var(--color-chart-2)"
                   fillOpacity={0.2}
@@ -496,7 +502,7 @@ function FinanceCockpitPage() {
                 <Area
                   type="monotone"
                   dataKey="outflow"
-                  name="Outflow"
+                  name={t("financeMod.cockpit.outflow")}
                   stroke="var(--color-chart-3)"
                   fill="var(--color-chart-3)"
                   fillOpacity={0.15}
@@ -504,7 +510,7 @@ function FinanceCockpitPage() {
                 <Area
                   type="monotone"
                   dataKey="net"
-                  name="Net"
+                  name={t("financeMod.cockpit.net")}
                   stroke="var(--color-chart-1)"
                   fill="var(--color-chart-1)"
                   fillOpacity={0.1}
@@ -513,7 +519,7 @@ function FinanceCockpitPage() {
                   <Area
                     type="monotone"
                     dataKey="forecast_net"
-                    name="Forecast net"
+                    name={t("financeMod.cockpit.forecastNet")}
                     stroke="var(--color-chart-5)"
                     strokeDasharray="5 4"
                     fill="none"
@@ -530,11 +536,11 @@ function FinanceCockpitPage() {
         <SectionHeader
           title={
             <span className="flex items-center gap-2">
-              Recent finance activity
+              {t("financeMod.cockpit.activityTitle")}
               <FormulaInfo text={COCKPIT_FORMULAS.activity} />
             </span>
           }
-          description="Newest finance audit events first."
+          description={t("financeMod.cockpit.activityDesc")}
         />
         {isLoading ? (
           <div className="space-y-2">
@@ -543,9 +549,9 @@ function FinanceCockpitPage() {
             ))}
           </div>
         ) : !data?.activity.available ? (
-          <EmptyState compact icon={AlertTriangle} title="Audit log unavailable (n/a)" />
+          <EmptyState compact icon={AlertTriangle} title={t("financeMod.cockpit.auditUnavailable")} />
         ) : data.activity.value!.length === 0 ? (
-          <EmptyState compact icon={Inbox} title="No finance activity yet" />
+          <EmptyState compact icon={Inbox} title={t("financeMod.cockpit.noActivity")} />
         ) : (
           <ul className="divide-y divide-border">
             {data.activity.value!.map((row) => (
@@ -554,8 +560,8 @@ function FinanceCockpitPage() {
                   {row.action}
                 </Badge>
                 <span className="text-muted-foreground">{row.entity}</span>
-                <span className="text-foreground">{row.actor_name ?? "System"}</span>
-                <span className="ml-auto text-xs text-muted-foreground">
+                <span className="text-foreground">{row.actor_name ?? t("financeMod.common.system")}</span>
+                <span className="ms-auto text-xs text-muted-foreground">
                   {formatRelative(row.created_at)}
                 </span>
               </li>

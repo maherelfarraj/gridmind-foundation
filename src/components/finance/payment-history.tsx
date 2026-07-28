@@ -7,8 +7,11 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyCell } from "@/components/ui/num";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { invoiceErrorMessage } from "@/lib/invoices.query";
 import { voidPayment } from "@/lib/payments.functions";
 import { invoicePaymentsQueryOptions } from "@/lib/payments.query";
@@ -27,6 +30,7 @@ export function PaymentHistory({
   currency: string;
   canVoid: boolean;
 }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const voidFn = useServerFn(voidPayment);
   const [voidingId, setVoidingId] = useState<string | null>(null);
@@ -40,26 +44,30 @@ export function PaymentHistory({
         qc.invalidateQueries({ queryKey: ["payments"] }),
         qc.invalidateQueries({ queryKey: ["invoices"] }),
       ]);
-      toast.success("Payment voided");
+      toast.success(t("financeMod.paymentHistory.paymentVoided"));
       setVoidingId(null);
       setReason("");
     },
-    onError: (err) => toast.error(invoiceErrorMessage(err)),
+    onError: (err) =>
+      toast.error(translateError(t, errorCodeOf(err), invoiceErrorMessage(err))),
   });
 
   if (q.isLoading) return <Skeleton className="h-24 w-full" />;
-  if (q.isError) return <p className="text-sm text-destructive">Could not load payment history.</p>;
+  if (q.isError)
+    return <p className="text-sm text-destructive">{t("financeMod.paymentHistory.couldNotLoad")}</p>;
 
   const rows = q.data?.rows ?? [];
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Payment history</h3>
+        <h3 className="text-sm font-semibold">{t("financeMod.paymentHistory.title")}</h3>
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="font-mono text-xs tabular-nums text-muted-foreground">
-              Balance {fmt(q.data?.balance ?? 0, currency)}
+              {t("financeMod.paymentHistory.balancePrefix", {
+                amount: fmt(q.data?.balance ?? 0, currency),
+              })}
             </span>
           </TooltipTrigger>
           <TooltipContent>{FORMULAS.balance}</TooltipContent>
@@ -67,7 +75,7 @@ export function PaymentHistory({
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
+        <p className="text-sm text-muted-foreground">{t("financeMod.paymentHistory.empty")}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {rows.map((p) => {
@@ -80,13 +88,9 @@ export function PaymentHistory({
                   </span>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span
-                        className={
-                          voided ? "font-mono tabular-nums line-through" : "font-mono tabular-nums"
-                        }
-                      >
+                      <MoneyCell className={voided ? "line-through" : undefined}>
                         {fmt(p.amount, p.currency_code)}
-                      </span>
+                      </MoneyCell>
                     </TooltipTrigger>
                     <TooltipContent>
                       {p.amount_base !== null
@@ -98,12 +102,16 @@ export function PaymentHistory({
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span>{p.payment_date}</span>
                   <span>{paymentMethodLabel(p.method)}</span>
-                  {p.bank_reference && <span>Ref {p.bank_reference}</span>}
+                  {p.bank_reference && (
+                    <span>{t("financeMod.paymentHistory.refPrefix", { reference: p.bank_reference })}</span>
+                  )}
                   <Badge variant="outline">{reconciliationLabel(p.reconciliation_status)}</Badge>
-                  {voided && <Badge variant="destructive">Voided</Badge>}
+                  {voided && <Badge variant="destructive">{t("financeMod.paymentHistory.voided")}</Badge>}
                 </div>
                 {voided && p.voided_reason && (
-                  <p className="text-xs text-muted-foreground">Reason: {p.voided_reason}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("financeMod.paymentHistory.reasonPrefix", { reason: p.voided_reason })}
+                  </p>
                 )}
                 {!voided && canVoid && (
                   <div className="pt-1">
@@ -112,7 +120,7 @@ export function PaymentHistory({
                         <Input
                           value={reason}
                           onChange={(e) => setReason(e.target.value)}
-                          placeholder="Void reason (required)"
+                          placeholder={t("financeMod.paymentHistory.voidReasonPlaceholder")}
                           className="h-8 text-xs"
                         />
                         <Button
@@ -121,10 +129,10 @@ export function PaymentHistory({
                           disabled={reason.trim().length < 3 || mutation.isPending}
                           onClick={() => mutation.mutate(p.id)}
                         >
-                          Void
+                          {t("financeMod.paymentHistory.void")}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setVoidingId(null)}>
-                          Cancel
+                          {t("financeMod.common.cancel")}
                         </Button>
                       </div>
                     ) : (
@@ -137,7 +145,7 @@ export function PaymentHistory({
                           setReason("");
                         }}
                       >
-                        Void payment
+                        {t("financeMod.paymentHistory.voidPayment")}
                       </Button>
                     )}
                   </div>

@@ -28,6 +28,7 @@ import { MatchStatusBadge } from "@/components/procurement/match-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MoneyCell } from "@/components/ui/num";
 import { getMatchVarianceKpi, listMatchablePos, listMatches } from "@/lib/match.functions";
 import { MATCH_STATUSES, type MatchStatus } from "@/lib/match-rules";
 import {
@@ -35,6 +36,7 @@ import {
   matchListQueryOptions,
   matchablePosQueryOptions,
 } from "@/lib/match-query";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/procurement/matches/")({
   head: () => ({
@@ -55,11 +57,14 @@ export const Route = createFileRoute("/_authenticated/procurement/matches/")({
 });
 
 function MatchesError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">Couldn’t load invoice matches</h2>
+      <h2 className="font-display text-lg font-semibold">
+        {t("procurementMod.match.loadErrorDescription")}
+      </h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
-      <Button onClick={() => reset()}>Try again</Button>
+      <Button onClick={() => reset()}>{t("procurementMod.match.tryAgain")}</Button>
     </div>
   );
 }
@@ -92,10 +97,15 @@ function varianceBadge(pct: number) {
   const abs = Math.abs(pct);
   const variant = abs >= 5 ? "destructive" : abs >= 1 ? "secondary" : "default";
   const sign = pct > 0 ? "+" : "";
-  return <Badge variant={variant}>{`${sign}${pct.toFixed(2)}%`}</Badge>;
+  return (
+    <Badge variant={variant}>
+      <span dir="ltr">{`${sign}${pct.toFixed(2)}%`}</span>
+    </Badge>
+  );
 }
 
 function MatchesIndex() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<MatchStatus | "all">("all");
   const navigate = useNavigate();
@@ -149,15 +159,15 @@ function MatchesIndex() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Three-way match"
-        description="Compare vendor invoices to POs and receipts — variance blocks payment release."
+        title={t("procurementMod.match.title")}
+        description={t("procurementMod.match.subtitle")}
         actions={
           <>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
-              <Download className="mr-2 h-4 w-4" /> Export CSV
+              <Download className="me-2 h-4 w-4" /> {t("procurementMod.match.exportCsv")}
             </Button>
             <Button size="sm" onClick={handleNew} disabled={posQuery.data.length === 0}>
-              <Plus className="mr-2 h-4 w-4" /> New match
+              <Plus className="me-2 h-4 w-4" /> {t("procurementMod.match.newMatch")}
             </Button>
           </>
         }
@@ -165,40 +175,45 @@ function MatchesIndex() {
 
       <KpiGrid columns={3}>
         <KpiTile
-          label="Avg variance this quarter"
+          label={t("procurementMod.match.avgVariance")}
           value={`${kpi.data.avgPct.toFixed(2)}%`}
-          hint={`${kpi.data.count} match${kpi.data.count === 1 ? "" : "es"}`}
+          hint={t(
+            kpi.data.count === 1
+              ? "procurementMod.match.avgVarianceHint_one"
+              : "procurementMod.match.avgVarianceHint_other",
+            { count: kpi.data.count },
+          )}
         />
         <KpiTile
-          label="Blocked"
+          label={t("procurementMod.match.blocked")}
           value={String(rows.filter((r) => r.payment_release_blocked).length)}
         />
         <KpiTile
-          label="Approved w/ variance"
+          label={t("procurementMod.match.approvedWithVariance")}
           value={String(rows.filter((r) => r.status === "approved_with_variance").length)}
         />
       </KpiGrid>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[220px] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            aria-label="Search invoice number"
-            placeholder="Search vendor invoice #"
-            className="pl-9"
+            aria-label={t("procurementMod.match.searchAriaLabel")}
+            placeholder={t("procurementMod.match.searchPlaceholder")}
+            className="ps-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Select value={status} onValueChange={(v) => setStatus(v as MatchStatus | "all")}>
           <SelectTrigger className="w-56">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("procurementMod.match.statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("procurementMod.common.allStatuses")}</SelectItem>
             {MATCH_STATUSES.map((s) => (
-              <SelectItem key={s} value={s} className="capitalize">
-                {s.replace(/_/g, " ")}
+              <SelectItem key={s} value={s}>
+                {t(`procurementMod.match.statuses.${s}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -208,21 +223,21 @@ function MatchesIndex() {
       {rows.length === 0 ? (
         <EmptyState
           icon={Scale}
-          title="No invoices matched yet"
-          description="Start one against an issued PO."
+          title={t("procurementMod.match.emptyTitle")}
+          description={t("procurementMod.match.emptyDescription")}
         />
       ) : (
         <div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>PO</TableHead>
-                <TableHead>GRN</TableHead>
-                <TableHead>Vendor invoice #</TableHead>
-                <TableHead className="text-right">Invoice</TableHead>
-                <TableHead className="text-right">PO total</TableHead>
-                <TableHead>Variance</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("procurementMod.common.po")}</TableHead>
+                <TableHead>{t("procurementMod.match.colGrn")}</TableHead>
+                <TableHead>{t("procurementMod.match.colVendorInvoice")}</TableHead>
+                <TableHead className="text-end">{t("procurementMod.match.colInvoice")}</TableHead>
+                <TableHead className="text-end">{t("procurementMod.match.colPoTotal")}</TableHead>
+                <TableHead>{t("procurementMod.match.variance")}</TableHead>
+                <TableHead>{t("procurementMod.common.status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -255,14 +270,20 @@ function MatchesIndex() {
                         {r.vendor_invoice_number}
                       </Link>
                       {r.payment_release_blocked && (
-                        <div className="text-xs text-destructive">Payment blocked</div>
+                        <div className="text-xs text-destructive">
+                          {t("procurementMod.match.paymentBlocked")}
+                        </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(r.invoice_amount, r.invoice_currency_code)}
+                    <TableCell>
+                      <MoneyCell className="font-medium">
+                        {formatCurrency(r.invoice_amount, r.invoice_currency_code)}
+                      </MoneyCell>
                     </TableCell>
-                    <TableCell className="text-right text-sm text-muted-foreground">
-                      {formatCurrency(r.po_total, r.invoice_currency_code)}
+                    <TableCell>
+                      <MoneyCell className="text-muted-foreground">
+                        {formatCurrency(r.po_total, r.invoice_currency_code)}
+                      </MoneyCell>
                     </TableCell>
                     <TableCell>{varianceBadge(pct)}</TableCell>
                     <TableCell>

@@ -36,10 +36,16 @@ describe("locale switching", () => {
           ? flatten(v as Record<string, unknown>, `${prefix}${k}.`)
           : [`${prefix}${k}`],
       );
-    expect(flatten(resources.ar.translation).sort()).toEqual(
-      flatten(resources.en.translation).sort(),
+    // Plural suffixes legitimately differ (Arabic has six categories), so
+    // parity is checked on the base key.
+    const base = (keys: string[]) => [
+      ...new Set(keys.map((k) => k.replace(/_(zero|one|two|few|many|other)$/, ""))),
+    ];
+    expect(base(flatten(resources.ar.translation)).sort()).toEqual(
+      base(flatten(resources.en.translation)).sort(),
     );
   });
+
 });
 
 describe("Arabic plural forms", () => {

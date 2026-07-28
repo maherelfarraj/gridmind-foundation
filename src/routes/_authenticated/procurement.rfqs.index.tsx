@@ -27,6 +27,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RfqStatusBadge } from "@/components/procurement/rfq-status-badge";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { getRfqWriteAccess, listRfqs, type RfqRow } from "@/lib/rfq.functions";
 import { RFQ_STATUSES, type RfqStatus } from "@/lib/rfq-rules";
 import { rfqWriteAccessQueryOptions, rfqsListQueryOptions } from "@/lib/rfq-query";
@@ -50,11 +51,12 @@ export const Route = createFileRoute("/_authenticated/procurement/rfqs/")({
 });
 
 function RfqsError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">Couldn’t load RFQs</h2>
+      <h2 className="font-display text-lg font-semibold">{t("procurementMod.rfqs.loadError")}</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
-      <Button onClick={() => reset()}>Try again</Button>
+      <Button onClick={() => reset()}>{t("procurementMod.common.tryAgain")}</Button>
     </div>
   );
 }
@@ -92,6 +94,7 @@ function downloadCsv(rows: RfqRow[]) {
 }
 
 function RfqsIndex() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<RfqStatus | "all">("all");
   const navigate = useNavigate();
@@ -114,8 +117,8 @@ function RfqsIndex() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="RFQs"
-        description="Invite vendors, collect bids, and level with TCO."
+        title={t("procurementMod.rfqs.title")}
+        description={t("procurementMod.rfqs.subtitle")}
         actions={
           <>
             <Button
@@ -123,12 +126,12 @@ function RfqsIndex() {
               onClick={() => downloadCsv(rows)}
               disabled={rows.length === 0}
             >
-              <Download className="mr-2 h-4 w-4" /> Export CSV
+              <Download className="me-2 h-4 w-4" /> {t("procurementMod.common.export")}
             </Button>
             {canAuthor && (
               <Button asChild>
                 <Link to="/procurement/rfqs/new">
-                  <Plus className="mr-2 h-4 w-4" /> New RFQ
+                  <Plus className="me-2 h-4 w-4" /> {t("procurementMod.rfqs.newRfq")}
                 </Link>
               </Button>
             )}
@@ -138,10 +141,10 @@ function RfqsIndex() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[240px] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
-            placeholder="Search title or RFQ number…"
+            className="ps-9"
+            placeholder={t("procurementMod.rfqs.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -151,7 +154,7 @@ function RfqsIndex() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("procurementMod.common.allStatuses")}</SelectItem>
             {RFQ_STATUSES.map((s) => (
               <SelectItem key={s} value={s} className="capitalize">
                 {s}
@@ -170,13 +173,13 @@ function RfqsIndex() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={MailPlus}
-          title="No RFQs yet"
-          description="Draft your first RFQ, invite vendors, and level bids in one workspace."
+          title={t("procurementMod.rfqs.emptyTitle")}
+          description={t("procurementMod.rfqs.emptyDescription")}
           action={
             canAuthor ? (
               <Button asChild>
                 <Link to="/procurement/rfqs/new">
-                  <Plus className="mr-2 h-4 w-4" /> New RFQ
+                  <Plus className="me-2 h-4 w-4" /> {t("procurementMod.rfqs.newRfq")}
                 </Link>
               </Button>
             ) : undefined
@@ -186,12 +189,12 @@ function RfqsIndex() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Number</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Due</TableHead>
-              <TableHead>Currency</TableHead>
+              <TableHead>{t("procurementMod.rfqs.colNumber")}</TableHead>
+              <TableHead>{t("procurementMod.rfqs.colTitle")}</TableHead>
+              <TableHead>{t("procurementMod.rfqs.colProject")}</TableHead>
+              <TableHead>{t("procurementMod.common.status")}</TableHead>
+              <TableHead>{t("procurementMod.rfqs.colDue")}</TableHead>
+              <TableHead>{t("procurementMod.rfqs.colCurrency")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -27,11 +27,13 @@ import {
 import { isAcknowledgeable, type AcknowledgmentStatus } from "@/lib/vendor-portal.rules";
 import { PageHeader } from "@/components/ui/page-header";
 import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
+import { MoneyCell } from "@/components/ui/num";
 import { formatDate, formatMoney } from "@/lib/format";
 import { listPos } from "@/lib/po.functions";
 import { PO_STATUSES, type PoStatus } from "@/lib/po-rules";
 import { posListQueryOptions } from "@/lib/po-query";
 import { statusLabel } from "@/components/ui/status-badge";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/procurement/pos/")({
   head: () => ({
@@ -56,11 +58,12 @@ export const Route = createFileRoute("/_authenticated/procurement/pos/")({
 });
 
 function PosError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 py-16 text-center">
-      <h2 className="font-display text-lg font-semibold">Couldn’t load POs</h2>
+      <h2 className="font-display text-lg font-semibold">{t("procurementMod.pos.loadError")}</h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
-      <Button onClick={() => reset()}>Try again</Button>
+      <Button onClick={() => reset()}>{t("procurementMod.common.tryAgain")}</Button>
     </div>
   );
 }
@@ -79,6 +82,7 @@ function usePoRows(search: string, status: PoStatus | "all") {
 }
 
 function PosIndex() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<PoStatus | "all">("all");
@@ -107,20 +111,20 @@ function PosIndex() {
   const columns: DataTableColumn<PoRow>[] = [
     {
       id: "po",
-      header: "PO #",
+      header: t("procurementMod.pos.colNumber"),
       cell: (r) => <span className="font-mono text-sm">{r.po_number}</span>,
     },
-    { id: "vendor", header: "Vendor", cell: (r) => r.vendor_name ?? "—" },
+    { id: "vendor", header: t("procurementMod.common.vendor"), cell: (r) => r.vendor_name ?? "—" },
     {
       id: "project",
-      header: "Project",
+      header: t("procurementMod.common.project"),
       hideBelow: "lg",
       cell: (r) => <span className="text-muted-foreground">{r.project_name ?? "—"}</span>,
     },
-    { id: "status", header: "Status", cell: (r) => <PoStatusBadge status={r.status} /> },
+    { id: "status", header: t("procurementMod.common.status"), cell: (r) => <PoStatusBadge status={r.status} /> },
     {
       id: "ack",
-      header: "Vendor ack",
+      header: t("procurementMod.pos.colVendorAck"),
       hideBelow: "lg",
       cell: (r) =>
         r.acknowledgment_status ? (
@@ -138,15 +142,15 @@ function PosIndex() {
     },
     {
       id: "total",
-      header: "Total",
+      header: t("procurementMod.pos.colTotal"),
       numeric: true,
       cell: (r) => (
-        <span className="font-medium">{formatMoney(r.total_amount, r.currency_code)}</span>
+        <MoneyCell className="font-medium">{formatMoney(r.total_amount, r.currency_code)}</MoneyCell>
       ),
     },
     {
       id: "created",
-      header: "Created",
+      header: t("procurementMod.pos.colCreated"),
       hideBelow: "md",
       cell: (r) => <span className="text-muted-foreground">{formatDate(r.created_at)}</span>,
     },
@@ -155,23 +159,27 @@ function PosIndex() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Purchase Orders"
-        description="Awarded RFQs create POs here; CFO approval is required above threshold."
+        title={t("procurementMod.pos.title")}
+        description={t("procurementMod.pos.subtitle")}
       />
 
       <KpiGrid columns={3}>
         <KpiTile
-          label="PO cycle time"
+          label={t("procurementMod.pos.cycleTime")}
           value={kpi.cycle != null ? `${kpi.cycle.toFixed(1)} d` : "—"}
-          hint="Created → Issued (avg)"
+          hint={t("procurementMod.pos.cycleTimeHint")}
         />
         <KpiTile
-          label="Pending approval"
+          label={t("procurementMod.pos.pendingApproval")}
           value={String(kpi.pending)}
-          hint="Awaiting CFO sign-off"
+          hint={t("procurementMod.pos.pendingApprovalHint")}
           status={kpi.pending > 0 ? "warning" : "neutral"}
         />
-        <KpiTile label="Total POs" value={String(kpi.total)} hint="Across all statuses" />
+        <KpiTile
+          label={t("procurementMod.pos.totalPos")}
+          value={String(kpi.total)}
+          hint={t("procurementMod.pos.totalPosHint")}
+        />
       </KpiGrid>
 
       <DataTable
@@ -180,8 +188,8 @@ function PosIndex() {
         getRowId={(r) => r.id}
         onRowClick={(r) => navigate({ to: "/procurement/pos/$poId", params: { poId: r.id } })}
         emptyIcon={Receipt}
-        emptyTitle="No POs yet"
-        emptyDescription="Award an RFQ to generate one."
+        emptyTitle={t("procurementMod.pos.emptyTitle")}
+        emptyDescription={t("procurementMod.pos.emptyDescription")}
         toolbar={{
           search: (
             <DataTableSearch
@@ -190,8 +198,8 @@ function PosIndex() {
                 setSearch(v);
                 setPage(1);
               }}
-              placeholder="Search PO number"
-              label="Search POs"
+              placeholder={t("procurementMod.pos.searchPlaceholder")}
+              label={t("procurementMod.pos.searchLabel")}
             />
           ),
           filters: (
@@ -202,11 +210,11 @@ function PosIndex() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-10 w-52" aria-label="Filter by status">
-                <SelectValue placeholder="Status" />
+              <SelectTrigger className="h-10 w-52" aria-label={t("procurementMod.pos.filterLabel")}>
+                <SelectValue placeholder={t("procurementMod.common.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="all">{t("procurementMod.common.allStatuses")}</SelectItem>
                 {PO_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {statusLabel(s)}
@@ -225,8 +233,8 @@ function PosIndex() {
           ),
           badge: <PoStatusBadge status={r.status} />,
           fields: [
-            { label: "Total", value: formatMoney(r.total_amount, r.currency_code) },
-            { label: "Created", value: formatDate(r.created_at) },
+            { label: t("procurementMod.pos.colTotal"), value: formatMoney(r.total_amount, r.currency_code) },
+            { label: t("procurementMod.pos.colCreated"), value: formatDate(r.created_at) },
           ],
         })}
       />

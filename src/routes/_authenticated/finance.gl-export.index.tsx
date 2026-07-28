@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { BookOpenCheck, Download, ListTree, ScrollText, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { errorCodeOf, translateError } from "@/lib/i18n/error-keys";
+import { MoneyCell, Num } from "@/components/ui/num";
+
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -55,6 +59,7 @@ export const Route = createFileRoute("/_authenticated/finance/gl-export/")({
 });
 
 function GlExportPage() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const workspace = useQuery(glWorkspaceQueryOptions());
   const preview = useServerFn(previewGlExport);
@@ -88,7 +93,7 @@ function GlExportPage() {
   const previewMutation = useMutation({
     mutationFn: () => preview({ data: { period_from: from, period_to: to } }),
     onSuccess: (data) => setResult(data),
-    onError: (err) => toast.error(glErrorInfo(err).message),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), glErrorInfo(err).message)),
   });
 
   const generateMutation = useMutation({
@@ -96,14 +101,20 @@ function GlExportPage() {
     onSuccess: (run) => {
       toast.success(
         run.superseded.length
-          ? `${run.run_number} generated — ${run.superseded.join(", ")} superseded.`
-          : `${run.run_number} generated with ${run.row_count} journal lines.`,
+          ? t("financeMod.glExport.toastRunSuperseded", {
+              run: run.run_number,
+              list: run.superseded.join(", "),
+            })
+          : t("financeMod.glExport.toastRunGenerated", {
+              run: run.run_number,
+              count: run.row_count,
+            }),
       );
       void queryClient.invalidateQueries({ queryKey: ["gl"] });
     },
     onError: (err) => {
       const info = glErrorInfo(err);
-      toast.error(info.message, {
+      toast.error(translateError(t, errorCodeOf(err), info.message), {
         description: info.unbalanced.length
           ? info.unbalanced.map((u) => `${u.source_number}: ${u.reason}`).join(" ")
           : undefined,
@@ -115,10 +126,15 @@ function GlExportPage() {
     mutationFn: (runId: string) => download({ data: { run_id: runId } }),
     onSuccess: (res) => {
       downloadCsv(`${res.run_number}.csv`, res.csv);
-      toast.success(`${res.run_number}.csv saved to ${res.file_path}`);
+      toast.success(
+        t("financeMod.glExport.toastCsvSaved", {
+          file: `${res.run_number}.csv`,
+          path: res.file_path,
+        }),
+      );
       void queryClient.invalidateQueries({ queryKey: ["gl"] });
     },
-    onError: (err) => toast.error(glErrorInfo(err).message),
+    onError: (err) => toast.error(translateError(t, errorCodeOf(err), glErrorInfo(err).message)),
   });
 
   const runs = workspace.data?.runs ?? [];
@@ -135,12 +151,12 @@ function GlExportPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="GL export"
-        description="Turn approved finance activity into a balanced double-entry journal your accountant can post."
+        title={t("financeMod.glExport.title")}
+        description={t("financeMod.glExport.subtitle")}
         actions={
           <Button variant="outline" asChild>
             <Link to="/finance/gl-export/mappings">
-              <ListTree className="mr-2 size-4" /> Chart of accounts
+              <ListTree className="me-2 size-4" /> {t("financeMod.glExport.chartOfAccounts")}
             </Link>
           </Button>
         }
@@ -149,7 +165,7 @@ function GlExportPage() {
       <section className="rounded-lg border border-border bg-card p-4">
         <div className="flex flex-wrap items-end gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="gl-from">Period from</Label>
+            <Label htmlFor="gl-from">{t("financeMod.glExport.fromLabel")}</Label>
             <Input
               id="gl-from"
               type="date"
@@ -159,7 +175,7 @@ function GlExportPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="gl-to">Period to</Label>
+            <Label htmlFor="gl-to">{t("financeMod.glExport.toLabel")}</Label>
             <Input
               id="gl-to"
               type="date"
@@ -172,41 +188,53 @@ function GlExportPage() {
             onClick={() => previewMutation.mutate()}
             disabled={!from || !to || previewMutation.isPending}
           >
-            <ScrollText className="mr-2 size-4" />
-            {previewMutation.isPending ? "Building…" : "Preview"}
+            <ScrollText className="me-2 size-4" />
+            {previewMutation.isPending
+              ? t("financeMod.glExport.previewing")
+              : t("financeMod.glExport.preview")}
           </Button>
           <Button
             variant="secondary"
             onClick={() => generateMutation.mutate()}
             disabled={!from || !to || !canWrite || generateMutation.isPending}
           >
-            <BookOpenCheck className="mr-2 size-4" />
-            {generateMutation.isPending ? "Generating…" : "Generate run"}
+            <BookOpenCheck className="me-2 size-4" />
+            {generateMutation.isPending
+              ? t("financeMod.glExport.generating")
+              : t("financeMod.glExport.generateAction")}
           </Button>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <Switch id="gl-group" checked={grouped} onCheckedChange={setGrouped} />
             <Label htmlFor="gl-group" className="text-sm text-muted-foreground">
-              Group by source
+              {t("financeMod.glExport.groupBySource")}
             </Label>
           </div>
         </div>
         {!canWrite ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            You can preview the journal, but only finance or company admins can generate and
-            download runs.
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("financeMod.glExport.writeHint")}</p>
         ) : null}
       </section>
 
       {result ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiTile label="Journal lines" value={String(result.lines.length)} />
-            <KpiTile label="Total debit" value={money.format(result.total_debit)} />
-            <KpiTile label="Total credit" value={money.format(result.total_credit)} />
             <KpiTile
-              label="Balance"
-              value={balanced ? "Balanced" : "Out of balance"}
+              label={t("financeMod.glExport.journalLines")}
+              value={String(result.lines.length)}
+            />
+            <KpiTile
+              label={t("financeMod.glExport.totalDebit")}
+              value={<Num>{money.format(result.total_debit)}</Num>}
+            />
+            <KpiTile
+              label={t("financeMod.glExport.totalCredit")}
+              value={<Num>{money.format(result.total_credit)}</Num>}
+            />
+            <KpiTile
+              label={t("financeMod.glExport.balance")}
+              value={
+                balanced ? t("financeMod.glExport.balanced") : t("financeMod.glExport.outOfBalance")
+              }
               status={balanced ? "good" : "bad"}
             />
           </div>
@@ -214,20 +242,19 @@ function GlExportPage() {
           {missingForRange.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-warning-foreground">
               <TriangleAlert className="size-4" />
-              <span>Mappings missing or disabled for activity in this range:</span>
+              <span>{t("financeMod.glExport.mappingsMissing")}</span>
               {missingForRange.map((ev) => (
                 <StatusBadge key={ev} status={ev} tone="attention" label={GL_EVENT_LABELS[ev]} />
               ))}
               <Button variant="link" asChild className="h-auto p-0">
-                <Link to="/finance/gl-export/mappings">Fix the chart of accounts</Link>
+                <Link to="/finance/gl-export/mappings">{t("financeMod.glExport.fixMappings")}</Link>
               </Button>
             </div>
           ) : null}
 
           {result.fx_missing.length > 0 ? (
             <p className="text-sm text-muted-foreground">
-              No FX rate to {base} for {result.fx_missing.join(", ")} — those documents were left
-              out rather than converted at a guessed rate.
+              {t("financeMod.glExport.fxMissing", { base, list: result.fx_missing.join(", ") })}
             </p>
           ) : null}
 
@@ -243,27 +270,27 @@ function GlExportPage() {
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Export runs</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t("financeMod.glExport.exportRuns")}</h2>
         {workspace.isLoading ? (
           <Skeleton className="h-32 w-full" />
         ) : runs.length === 0 ? (
           <EmptyState
             icon={BookOpenCheck}
-            title="No GL runs yet"
-            description="Pick a period, preview the journal and generate your first numbered run."
+            title={t("financeMod.glExport.noRuns")}
+            description={t("financeMod.glExport.noRunsDesc")}
           />
         ) : (
           <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Run</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead className="text-right">Lines</TableHead>
-                  <TableHead className="text-right">Debit</TableHead>
-                  <TableHead className="text-right">Credit</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">CSV</TableHead>
+                  <TableHead>{t("financeMod.glExport.runHeader")}</TableHead>
+                  <TableHead>{t("financeMod.glExport.periodHeader")}</TableHead>
+                  <TableHead className="text-end">{t("financeMod.glExport.linesHeader")}</TableHead>
+                  <TableHead className="text-end">{t("financeMod.glExport.debitHeader")}</TableHead>
+                  <TableHead className="text-end">{t("financeMod.glExport.creditHeader")}</TableHead>
+                  <TableHead>{t("common.status")}</TableHead>
+                  <TableHead className="text-end">{t("financeMod.glExport.csvHeader")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -271,26 +298,30 @@ function GlExportPage() {
                   <TableRow key={run.id}>
                     <TableCell className="font-medium">{run.run_number}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {run.period_from} → {run.period_to}
+                      <Num>
+                        {run.period_from} → {run.period_to}
+                      </Num>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{run.row_count}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {money.format(run.total_debit)}
+                    <TableCell className="text-end">
+                      <Num>{run.row_count}</Num>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {money.format(run.total_credit)}
+                    <TableCell className="text-end">
+                      <MoneyCell>{money.format(run.total_debit)}</MoneyCell>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <MoneyCell>{money.format(run.total_credit)}</MoneyCell>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={run.status} />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <Button
                         variant="ghost"
                         size="sm"
                         disabled={!canWrite || downloadMutation.isPending}
                         onClick={() => downloadMutation.mutate(run.id)}
                       >
-                        <Download className="mr-2 size-4" /> Download
+                        <Download className="me-2 size-4" /> {t("financeMod.glExport.download")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -301,11 +332,11 @@ function GlExportPage() {
         )}
         {mappings.length === 0 && !workspace.isLoading ? (
           <p className="text-sm text-muted-foreground">
-            No chart of accounts yet —{" "}
+            {t("financeMod.glExport.noMappings")}{" "}
             <Link to="/finance/gl-export/mappings" className="underline">
-              set your account mappings
+              {t("financeMod.glExport.setMappings")}
             </Link>{" "}
-            before generating.
+            {t("financeMod.glExport.beforeGenerating")}
           </p>
         ) : null}
       </section>
@@ -328,6 +359,7 @@ function JournalTable({
   totalCredit: number;
   balanced: boolean;
 }) {
+  const { t } = useI18n();
   const groups = useMemo(() => {
     if (!grouped) return [{ key: "all", label: "", lines }];
     const map = new Map<string, GlLine[]>();
@@ -347,8 +379,8 @@ function JournalTable({
     return (
       <EmptyState
         icon={ScrollText}
-        title="Nothing to post"
-        description="No ledger-eligible invoices, payments, retention, change orders or debit notes fall in this range."
+        title={t("financeMod.glExport.nothingToPost")}
+        description={t("financeMod.glExport.nothingToPostDesc")}
       />
     );
   }
@@ -360,32 +392,38 @@ function JournalTable({
           {group.label ? (
             <div className="border-b border-border px-4 py-2 text-sm font-medium">
               {group.label}{" "}
-              <span className="text-muted-foreground">({group.lines.length} lines)</span>
+              <span className="text-muted-foreground">
+                {group.lines.length === 1
+                  ? t("financeMod.glExport.lineCount_one", { count: group.lines.length })
+                  : t("financeMod.glExport.lineCount_other", { count: group.lines.length })}
+              </span>
             </div>
           ) : null}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">DR</TableHead>
-                <TableHead className="text-right">CR</TableHead>
-                <TableHead>Memo</TableHead>
-                <TableHead>Source</TableHead>
+                <TableHead>{t("common.date")}</TableHead>
+                <TableHead>{t("financeMod.glExport.accountHeader")}</TableHead>
+                <TableHead>{t("financeMod.glExport.nameHeader")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.glExport.dr")}</TableHead>
+                <TableHead className="text-end">{t("financeMod.glExport.cr")}</TableHead>
+                <TableHead>{t("financeMod.glExport.memoHeader")}</TableHead>
+                <TableHead>{t("financeMod.glExport.sourceHeader")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {group.lines.map((line) => (
                 <TableRow key={line.line_no}>
-                  <TableCell className="tabular-nums">{line.entry_date}</TableCell>
+                  <TableCell>
+                    <Num>{line.entry_date}</Num>
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{line.account_code}</TableCell>
                   <TableCell>{line.account_name}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {line.debit ? money.format(line.debit) : "—"}
+                  <TableCell className="text-end">
+                    <MoneyCell>{line.debit ? money.format(line.debit) : "—"}</MoneyCell>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {line.credit ? money.format(line.credit) : "—"}
+                  <TableCell className="text-end">
+                    <MoneyCell>{line.credit ? money.format(line.credit) : "—"}</MoneyCell>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{line.memo}</TableCell>
                   <TableCell className="text-muted-foreground">
@@ -404,9 +442,9 @@ function JournalTable({
             : "border-destructive/40 bg-destructive/10 text-destructive"
         }`}
       >
-        <span>Total DR {money.format(totalDebit)}</span>
-        <span>Total CR {money.format(totalCredit)}</span>
-        <span>{balanced ? "Balanced" : "Out of balance"}</span>
+        <Num>{t("financeMod.glExport.footerDr", { amount: money.format(totalDebit) })}</Num>
+        <Num>{t("financeMod.glExport.footerCr", { amount: money.format(totalCredit) })}</Num>
+        <span>{balanced ? t("financeMod.glExport.balanced") : t("financeMod.glExport.outOfBalance")}</span>
       </div>
     </div>
   );
