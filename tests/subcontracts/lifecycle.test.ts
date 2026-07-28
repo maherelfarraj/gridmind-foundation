@@ -18,9 +18,9 @@ import {
   EXPECTED,
   isSupabaseUp,
   rpc,
-  setupSubcontractFixture,
+  setupLifecycleFixture,
   submitClaim,
-  type SubcontractFixture,
+  type LifecycleFixture,
   tenantExists,
   tenantSurvivors,
   today,
@@ -32,12 +32,12 @@ const d = up ? describe : describe.skip;
 const n = (v: unknown): number => Number(v ?? 0);
 
 d("P-262 · subcontract lifecycle — $100k, 3 claims, retention to the cent", () => {
-  let fx: SubcontractFixture;
+  let fx: LifecycleFixture;
   const claimIds: string[] = [];
   let purged = false;
 
   beforeAll(async () => {
-    fx = await setupSubcontractFixture();
+    fx = await setupLifecycleFixture();
   }, 180_000);
 
   afterAll(async () => {

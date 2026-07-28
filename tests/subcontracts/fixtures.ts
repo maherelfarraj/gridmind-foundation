@@ -263,9 +263,7 @@ export interface SubcontractFixture extends LifecycleFixture {
   subUserB: { userId: string; client: Svc };
 }
 
-async function setup<T extends LifecycleFixture>(
-  mode: "lifecycle" | "isolation",
-): Promise<T> {
+async function setup<T extends LifecycleFixture>(mode: "lifecycle" | "isolation"): Promise<T> {
   const svc = serviceClient();
   const tenants: string[] = [];
   const users: string[] = [];
@@ -298,7 +296,6 @@ async function build(
   const admin = await createUser(svc, "p262-admin");
   users.push(admin.userId);
   await attachMember(svc, admin.userId, admin.email, companyId, ["company_admin"]);
-
 
   const stamp = crypto.randomUUID().slice(0, 6).toUpperCase();
   const project = await one<{ id: string }>(svc, "projects", {
