@@ -838,6 +838,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           expiry_date: string | null
+          grn_id: string | null
+          grn_line_no: number | null
           id: string
           manufacture_date: string | null
           purchase_order_id: string | null
@@ -851,6 +853,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expiry_date?: string | null
+          grn_id?: string | null
+          grn_line_no?: number | null
           id?: string
           manufacture_date?: string | null
           purchase_order_id?: string | null
@@ -864,6 +868,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expiry_date?: string | null
+          grn_id?: string | null
+          grn_line_no?: number | null
           id?: string
           manufacture_date?: string | null
           purchase_order_id?: string | null
@@ -884,6 +890,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_serial_tracking_grn_id_fkey"
+            columns: ["grn_id"]
+            isOneToOne: false
+            referencedRelation: "goods_receipts"
             referencedColumns: ["id"]
           },
           {
@@ -6588,6 +6601,10 @@ export type Database = {
           photos: Json
           po_id: string
           project_id: string
+          receipt_accuracy_m: number | null
+          receipt_geo_at: string | null
+          receipt_lat: number | null
+          receipt_lng: number | null
           received_at: string | null
           received_by: string | null
           status: Database["public"]["Enums"]["grn_status"]
@@ -6605,6 +6622,10 @@ export type Database = {
           photos?: Json
           po_id: string
           project_id: string
+          receipt_accuracy_m?: number | null
+          receipt_geo_at?: string | null
+          receipt_lat?: number | null
+          receipt_lng?: number | null
           received_at?: string | null
           received_by?: string | null
           status?: Database["public"]["Enums"]["grn_status"]
@@ -6622,6 +6643,10 @@ export type Database = {
           photos?: Json
           po_id?: string
           project_id?: string
+          receipt_accuracy_m?: number | null
+          receipt_geo_at?: string | null
+          receipt_lat?: number | null
+          receipt_lng?: number | null
           received_at?: string | null
           received_by?: string | null
           status?: Database["public"]["Enums"]["grn_status"]
