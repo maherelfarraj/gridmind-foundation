@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppBreadcrumbs, type BreadcrumbItemSpec } from "@/components/breadcrumbs";
 import { ActiveCompanyProvider, CompanySwitcher } from "@/components/company-switcher";
+import { DocumentSearchButton } from "@/components/document-search-button";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { OfflineBadge } from "@/components/offline/offline-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
