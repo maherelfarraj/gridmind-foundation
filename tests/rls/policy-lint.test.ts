@@ -96,14 +96,26 @@ describe.skipIf(!HAS_DB)("RLS policy lint (live schema)", () => {
   });
 
   it("R2: every tenant-table policy carries company scope, own-row scope, or denies all", () => {
+    // A policy gated ONLY on the platform-wide super_admin role is intentionally
+    // cross-tenant (platform operations); after stripping it nothing is left.
+    const isPlatformOnly = (expr: string) =>
+      /has_role\(auth\.uid\(\),\s*'super_admin'::app_role\)/.test(expr) &&
+      stripSuperAdmin(expr).replace(/[\s()]|and|or/gi, "") === "";
+
     const offenders = candidates()
       .filter((p) => {
         const expr = stripSuperAdmin(p.expr);
-        return !COMPANY_SCOPE.test(expr) && !OWN_ROW.test(expr) && !isDenyAll(p.expr);
+        return (
+          !COMPANY_SCOPE.test(expr) &&
+          !OWN_ROW.test(expr) &&
+          !isDenyAll(p.expr) &&
+          !isPlatformOnly(p.expr)
+        );
       })
       .map((p) => `${p.table}.${p.name} [${p.cmd}]`);
     expect(offenders, `unscoped tenant policy:\n${offenders.join("\n")}`).toEqual([]);
   });
+
 
 
   it("R3: every tenant table has RLS enabled and is not reachable without policies", () => {
