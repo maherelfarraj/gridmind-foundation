@@ -118,3 +118,52 @@ describe("assertInvoicePath", () => {
     expect(() => assertInvoicePath("co/invoices/mid/../x.pdf", "co", "mid")).toThrow();
   });
 });
+
+describe("partial-receipt amount basis (Batch 30 drill)", () => {
+  const poLines = [
+    { po_line_no: 1, qty: 40000, unit_price: 2.05 },
+    { po_line_no: 3, qty: 3000, unit_price: 8.6 },
+  ];
+
+  it("invoicing the received scope matches when priced at PO rates", () => {
+    const v = computeVariances({
+      poTotal: 107800,
+      poLines,
+      grnQtyByLine: { 1: 20000 },
+      invoiceAmount: 41000,
+      invoiceLines: [{ po_line_no: 1, qty: 20000, unit_price: 2.05 }],
+      expectedAmount: 41000,
+    });
+    expect(v.amount_variance).toBe(0);
+    expect(v.qty_variance_pct).toBe(0);
+    expect(
+      deriveMatchStatus({ variances: v, poTotal: 107800, expectedAmount: 41000, thresholdPct: 5 }),
+    ).toBe("matched");
+  });
+
+  it("over-invoicing the received qty blocks payment release", () => {
+    const v = computeVariances({
+      poTotal: 107800,
+      poLines,
+      grnQtyByLine: { 1: 20000 },
+      invoiceAmount: 53300,
+      invoiceLines: [{ po_line_no: 1, qty: 26000, unit_price: 2.05 }],
+      expectedAmount: 41000,
+    });
+    expect(v.qty_variance_pct).toBe(30);
+    expect(v.amount_variance).toBe(12300);
+    expect(
+      deriveMatchStatus({ variances: v, poTotal: 107800, expectedAmount: 41000, thresholdPct: 5 }),
+    ).toBe("variance_blocked");
+  });
+
+  it("without a GRN-scoped expectation the basis stays the PO total", () => {
+    const v = computeVariances({
+      poTotal: 107800,
+      poLines,
+      grnQtyByLine: { 1: 20000 },
+      invoiceAmount: 41000,
+    });
+    expect(v.amount_variance).toBe(-66800);
+  });
+});

@@ -375,25 +375,39 @@ export const createMatch = createServerFn({ method: "POST" })
       }
 
       const grnQty = await receivedQtyByLine(context, po.id);
+      const poLinesForMatch = po.lines.map((l) => ({
+        po_line_no: l.line_no,
+        qty: Number(l.qty || 0),
+        unit_price: Number(l.unit_price || 0),
+      }));
+      const invoiceLinesForMatch = data.invoice_lines?.map((l) => ({
+        po_line_no: l.po_line_no,
+        qty: l.qty,
+        unit_price: l.unit_price ?? null,
+      }));
+      // Partial deliveries invoice the received scope, not the whole PO —
+      // price the received qty of the invoiced lines at PO rates.
+      const expectedAmount =
+        data.goodsReceiptId && invoiceLinesForMatch && invoiceLinesForMatch.length > 0
+          ? invoiceLinesForMatch.reduce((sum, inv) => {
+              const poLine = poLinesForMatch.find((l) => l.po_line_no === inv.po_line_no);
+              const received = Number(grnQty.get(inv.po_line_no) ?? 0);
+              return sum + received * Number(poLine?.unit_price ?? 0);
+            }, 0)
+          : null;
       const variances = computeVariances({
         poTotal: po.total_amount,
-        poLines: po.lines.map((l) => ({
-          po_line_no: l.line_no,
-          qty: Number(l.qty || 0),
-          unit_price: Number(l.unit_price || 0),
-        })),
+        poLines: poLinesForMatch,
         grnQtyByLine: grnQty,
         invoiceAmount: data.invoice_amount,
-        invoiceLines: data.invoice_lines?.map((l) => ({
-          po_line_no: l.po_line_no,
-          qty: l.qty,
-          unit_price: l.unit_price ?? null,
-        })),
+        invoiceLines: invoiceLinesForMatch,
+        expectedAmount,
       });
       const threshold = data.variance_threshold_pct ?? 5;
       const derived = deriveMatchStatus({
         variances,
         poTotal: po.total_amount,
+        expectedAmount,
         thresholdPct: threshold,
       });
       const blocked = derived === "variance_blocked";

@@ -22,6 +22,12 @@ export interface VarianceInputs {
   grnQtyByLine: Map<number, number> | Record<number, number>;
   invoiceAmount: number;
   invoiceLines?: LineQty[]; // optional per-line invoiced qty/price
+  /**
+   * Amount the invoice is expected to carry. For a partial receipt this is
+   * the received scope priced at PO rates, not the whole PO. Defaults to
+   * `poTotal` (full-delivery invoices).
+   */
+  expectedAmount?: number | null;
 }
 
 export interface VarianceResult {
@@ -48,7 +54,9 @@ function toMap(m: Map<number, number> | Record<number, number>): Map<number, num
  */
 export function computeVariances(inputs: VarianceInputs): VarianceResult {
   const grn = toMap(inputs.grnQtyByLine);
-  const amount_variance = round2(Number(inputs.invoiceAmount || 0) - Number(inputs.poTotal || 0));
+  const basis =
+    inputs.expectedAmount == null ? Number(inputs.poTotal || 0) : Number(inputs.expectedAmount);
+  const amount_variance = round2(Number(inputs.invoiceAmount || 0) - basis);
 
   let qty_variance_pct: number | null = null;
   let price_variance_pct: number | null = null;
@@ -95,10 +103,13 @@ export function amountVariancePct(amount_variance: number, poTotal: number): num
 export function deriveMatchStatus(args: {
   variances: VarianceResult;
   poTotal: number;
+  /** Denominator for the amount variance %; defaults to `poTotal`. */
+  expectedAmount?: number | null;
   thresholdPct: number;
 }): Exclude<MatchStatus, "pending" | "approved_with_variance"> {
   const t = Math.abs(Number(args.thresholdPct || 0));
-  const amtPct = amountVariancePct(args.variances.amount_variance, args.poTotal);
+  const basis = args.expectedAmount == null ? args.poTotal : Number(args.expectedAmount);
+  const amtPct = amountVariancePct(args.variances.amount_variance, basis);
   const qty = args.variances.qty_variance_pct;
   const price = args.variances.price_variance_pct;
   const outOfTolerance =
