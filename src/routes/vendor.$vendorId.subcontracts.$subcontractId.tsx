@@ -346,10 +346,9 @@ function ClaimForm({
 
         <div className="space-y-3">
           {lines.map((line) => {
-            const value = entries[line.id] ?? "";
+            const value = entries[line.id];
             const max = remainingPct(line);
-            const invalid =
-              value !== "" && validateClaimLine(line, Number(value)) !== null ? true : false;
+            const invalid = value !== undefined && validateClaimLine(line, value) !== null;
             return (
               <div
                 key={line.id}
@@ -377,7 +376,7 @@ function ClaimForm({
                     max={max}
                     step="0.1"
                     aria-invalid={invalid}
-                    value={value}
+                    value={value ?? ""}
                     onChange={(e) =>
                       setEntries((prev) => ({ ...prev, [line.id]: Number(e.target.value) }))
                     }

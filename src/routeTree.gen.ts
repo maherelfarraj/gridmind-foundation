@@ -150,6 +150,7 @@ import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
+import { Route as VendorVendorIdSubcontractsSubcontractIdRouteImport } from './routes/vendor.$vendorId.subcontracts.$subcontractId'
 import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada-telemetry'
 import { Route as ApiPublicHooksPingRouteImport } from './routes/api/public/hooks/ping'
 import { Route as ApiPublicHooksEventsRouteImport } from './routes/api/public/hooks/events'
@@ -1065,6 +1066,12 @@ const AuthenticatedAdminTenantsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdminTenantsRouteRoute,
   } as any)
+const VendorVendorIdSubcontractsSubcontractIdRoute =
+  VendorVendorIdSubcontractsSubcontractIdRouteImport.update({
+    id: '/subcontracts/$subcontractId',
+    path: '/subcontracts/$subcontractId',
+    getParentRoute: () => VendorVendorIdRoute,
+  } as any)
 const ApiPublicHooksScadaTelemetryRoute =
   ApiPublicHooksScadaTelemetryRouteImport.update({
     id: '/api/public/hooks/scada-telemetry',
@@ -1921,6 +1928,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2160,6 +2168,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2412,6 +2421,7 @@ export interface FileRoutesById {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2665,6 +2675,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants/'
     | '/field/dpr/'
     | '/field/mobilization/'
@@ -2904,6 +2915,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants'
     | '/field/dpr'
     | '/field/mobilization'
@@ -3155,6 +3167,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
@@ -4242,6 +4255,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AuthenticatedAdminTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminTenantsRouteRoute
+    }
+    '/vendor/$vendorId/subcontracts/$subcontractId': {
+      id: '/vendor/$vendorId/subcontracts/$subcontractId'
+      path: '/subcontracts/$subcontractId'
+      fullPath: '/vendor/$vendorId/subcontracts/$subcontractId'
+      preLoaderRoute: typeof VendorVendorIdSubcontractsSubcontractIdRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/api/public/hooks/scada-telemetry': {
       id: '/api/public/hooks/scada-telemetry'
@@ -5762,6 +5782,7 @@ interface VendorVendorIdRouteChildren {
   VendorVendorIdInvoicesRoute: typeof VendorVendorIdInvoicesRoute
   VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
   VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
+  VendorVendorIdSubcontractsSubcontractIdRoute: typeof VendorVendorIdSubcontractsSubcontractIdRoute
   VendorVendorIdSubcontractsIndexRoute: typeof VendorVendorIdSubcontractsIndexRoute
 }
 
@@ -5771,6 +5792,8 @@ const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
   VendorVendorIdInvoicesRoute: VendorVendorIdInvoicesRoute,
   VendorVendorIdPosRoute: VendorVendorIdPosRoute,
   VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
+  VendorVendorIdSubcontractsSubcontractIdRoute:
+    VendorVendorIdSubcontractsSubcontractIdRoute,
   VendorVendorIdSubcontractsIndexRoute: VendorVendorIdSubcontractsIndexRoute,
 }
 
