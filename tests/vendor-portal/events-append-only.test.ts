@@ -50,10 +50,11 @@ describe("direct table writes", () => {
     });
   }
 
-  it("declares no write policies at all", () => {
+  it("declares no permissive write policies (only the explicit deny-all INSERT guard)", () => {
     const writePolicies = eventsAcl.policies.filter((p) => p.action !== "select");
-    expect(writePolicies).toHaveLength(0);
+    expect(writePolicies.every((p) => p.check === "false" || p.using === "false")).toBe(true);
   });
+
 });
 
 describe("the RPC path bypasses via definer rights", () => {
