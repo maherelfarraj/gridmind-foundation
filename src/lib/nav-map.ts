@@ -273,6 +273,13 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         moduleKey: "procurement",
+        label: "Receiving",
+        url: "/procurement/receiving",
+        icon: ClipboardCheck,
+      },
+
+      {
+        moduleKey: "procurement",
         label: "Invoice matching",
         url: "/procurement/matches",
         icon: Scale,

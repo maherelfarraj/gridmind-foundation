@@ -208,9 +208,39 @@ function ReceivingEditor({
   const [photos, setPhotos] = useState<string[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  // P-233 — GPS stamp captured at the moment of receipt.
+  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy_m: number | null } | null>(
+    null,
+  );
+  const [locating, setLocating] = useState(false);
+
+  const captureGeo = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Location is not available on this device");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeo({
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+          accuracy_m: pos.coords.accuracy == null ? null : Math.round(pos.coords.accuracy),
+        });
+        setLocating(false);
+        toast.success("Location captured");
+      },
+      () => {
+        setLocating(false);
+        toast.error("Couldn’t read your location");
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
+    );
+  };
 
   const saveDraft = useSaveGrnDraft(grnId);
   const confirm = useConfirmGrn(grnId);
+
 
   const badLines = useMemo(() => overReceivedLines(lines, receivable), [lines, receivable]);
   const anyDefectMissingNote = lines.some(
@@ -269,7 +299,9 @@ function ReceivingEditor({
     lines,
     notes: notes.trim() ? notes.trim() : null,
     photos,
+    geo,
   };
+
 
   return (
     <div className="page-shell max-w-3xl pb-32">
@@ -403,6 +435,24 @@ function ReceivingEditor({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Receipt location</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="outline" onClick={captureGeo} disabled={locating}>
+            {locating ? "Locating…" : geo ? "Re-capture GPS" : "Capture GPS"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            {geo
+              ? `${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}${
+                  geo.accuracy_m != null ? ` · ±${geo.accuracy_m} m` : ""
+                }`
+              : "Not captured — the receipt will be saved without a location stamp."}
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="space-y-1">
         <Label htmlFor="grn-notes">Notes</Label>
         <Textarea
@@ -413,6 +463,8 @@ function ReceivingEditor({
           placeholder="Anything the site team should know…"
         />
       </div>
+
+
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 p-3 backdrop-blur">
         <div className="mx-auto flex max-w-3xl flex-wrap gap-2">
