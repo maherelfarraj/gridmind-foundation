@@ -19872,6 +19872,10 @@ export type Database = {
         Returns: boolean
       }
       incorporate_change_order: { Args: { p_co_id: string }; Returns: Json }
+      invoice_settle_manual: {
+        Args: { p_invoice_id: string; p_paid_at?: string }
+        Returns: Json
+      }
       is_company_admin: { Args: { _company_id: string }; Returns: boolean }
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       is_export_locked: {
@@ -19974,6 +19978,10 @@ export type Database = {
           p_subject: string
         }
         Returns: string
+      }
+      recompute_invoice_payment_state: {
+        Args: { p_invoice_id: string }
+        Returns: undefined
       }
       redeem_invite: { Args: { p_token: string }; Returns: string }
       reopen_finance_period: {
