@@ -179,6 +179,7 @@ function DisclaimerBanner() {
 }
 
 function SourceTag({ source, overridden }: { source?: string; overridden?: boolean }) {
+  const { t } = useI18n();
   return (
     <span className="flex items-center gap-1.5">
       {source ? (
@@ -186,7 +187,7 @@ function SourceTag({ source, overridden }: { source?: string; overridden?: boole
       ) : null}
       {overridden ? (
         <Badge variant="outline" className="h-4 px-1 text-[10px]">
-          overridden
+          {t("pv.simulation.form.overridden")}
         </Badge>
       ) : null}
     </span>
@@ -512,7 +513,7 @@ function PvSimulationPage() {
                       <div className="space-y-1.5">
                         <div className="flex items-baseline justify-between gap-2">
                           <Label className="text-xs" htmlFor="gridLimitKw">
-                            Export limit / curtailment (kW)
+                            {t("pv.simulation.form.gridLimitLabel")}
                           </Label>
                           <SourceTag
                             source={sources.grid_limit_kw}

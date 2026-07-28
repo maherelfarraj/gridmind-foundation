@@ -129,17 +129,17 @@ function NewIncidentPage() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Basics</CardTitle>
+            <CardTitle className="text-base">{t("fieldMod.hse.incident.basics")}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="md:col-span-2 flex flex-col gap-1">
-              <Label>Project</Label>
+              <Label>{t("fieldMod.hse.incident.project")}</Label>
               <Select
                 value={form.watch("projectId")}
                 onValueChange={(v) => form.setValue("projectId", v, { shouldValidate: true })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
+                  <SelectValue placeholder={t("fieldMod.hse.incident.selectProject")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(projectsQuery.data ?? []).map((p) => (
@@ -156,7 +156,7 @@ function NewIncidentPage() {
               ) : null}
             </div>
             <div className="flex flex-col gap-1">
-              <Label>Type</Label>
+              <Label>{t("fieldMod.hse.incident.type")}</Label>
               <Select
                 value={form.watch("incidentType")}
                 onValueChange={(v) =>
@@ -176,7 +176,7 @@ function NewIncidentPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label>Severity</Label>
+              <Label>{t("fieldMod.hse.incident.severity")}</Label>
               <Select
                 value={form.watch("severity")}
                 onValueChange={(v) => form.setValue("severity", v as any, { shouldValidate: true })}
@@ -194,7 +194,7 @@ function NewIncidentPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="occurredAt">Occurred at</Label>
+              <Label htmlFor="occurredAt">{t("fieldMod.hse.incident.occurredAt")}</Label>
               <Input
                 id="occurredAt"
                 type="datetime-local"
@@ -205,20 +205,20 @@ function NewIncidentPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">{t("fieldMod.hse.incident.location")}</Label>
               <Input
                 id="location"
                 {...form.register("location")}
-                placeholder="Substation A / Row 12"
+                placeholder={t("fieldMod.hse.incident.locationPlaceholder")}
               />
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("fieldMod.hse.incident.descriptionField")}</Label>
               <Textarea
                 id="description"
                 rows={4}
                 {...form.register("description")}
-                placeholder="What happened?"
+                placeholder={t("fieldMod.hse.incident.descriptionPlaceholder")}
               />
               {form.formState.errors.description ? (
                 <span className="text-xs text-destructive">
@@ -227,12 +227,12 @@ function NewIncidentPage() {
               ) : null}
             </div>
             <div className="md:col-span-2 flex flex-col gap-1">
-              <Label htmlFor="persons">Persons involved</Label>
+              <Label htmlFor="persons">{t("fieldMod.hse.incident.personsInvolved")}</Label>
               <Textarea
                 id="persons"
                 rows={2}
                 {...form.register("personsInvolved")}
-                placeholder="Names or roles (optional)"
+                placeholder={t("fieldMod.hse.incident.personsPlaceholder")}
               />
             </div>
           </CardContent>
@@ -240,13 +240,13 @@ function NewIncidentPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">OSHA classification</CardTitle>
+            <CardTitle className="text-base">{t("fieldMod.hse.incident.oshaClassification")}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
-                <div className="text-sm font-medium">OSHA recordable</div>
-                <div className="text-xs text-muted-foreground">Counts toward TRIR</div>
+                <div className="text-sm font-medium">{t("fieldMod.hse.incident.oshaRecordable")}</div>
+                <div className="text-xs text-muted-foreground">{t("fieldMod.hse.incident.oshaRecordableHint")}</div>
               </div>
               <Switch
                 checked={form.watch("oshaRecordable")}
@@ -254,14 +254,14 @@ function NewIncidentPage() {
               />
             </div>
             <div className="flex items-center justify-between rounded-md border border-border p-3">
-              <div className="text-sm font-medium">Medical treatment</div>
+              <div className="text-sm font-medium">{t("fieldMod.hse.incident.medicalTreatment")}</div>
               <Switch
                 checked={form.watch("medicalTreatment")}
                 onCheckedChange={(v) => form.setValue("medicalTreatment", v)}
               />
             </div>
             <div className="flex items-center justify-between rounded-md border border-border p-3">
-              <div className="text-sm font-medium">Restricted duty</div>
+              <div className="text-sm font-medium">{t("fieldMod.hse.incident.restrictedDuty")}</div>
               <Switch
                 checked={form.watch("restrictedDuty")}
                 onCheckedChange={(v) => form.setValue("restrictedDuty", v)}
@@ -269,7 +269,7 @@ function NewIncidentPage() {
             </div>
             <div className="flex flex-col gap-1 rounded-md border border-border p-3">
               <Label htmlFor="daysAway" className="text-sm font-medium">
-                Days away from work
+                {t("fieldMod.hse.incident.daysAway")}
               </Label>
               <Input
                 id="daysAway"
@@ -283,19 +283,19 @@ function NewIncidentPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">Corrective actions</CardTitle>
+            <CardTitle className="text-base">{t("fieldMod.hse.incident.correctiveActions")}</CardTitle>
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => actions.append({ action: "", owner: "", due_date: null })}
             >
-              <Plus size={14} aria-hidden /> Add
+              <Plus size={14} aria-hidden /> {t("fieldMod.hse.incident.addAction")}
             </Button>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {actions.fields.length === 0 ? (
-              <EmptyState icon={ClipboardList} title="No corrective actions yet" compact />
+              <EmptyState icon={ClipboardList} title={t("fieldMod.hse.incident.noActions")} compact />
             ) : null}
             {actions.fields.map((f, i) => (
               <div
@@ -304,11 +304,11 @@ function NewIncidentPage() {
               >
                 <Input
                   {...form.register(`correctiveActions.${i}.action` as const)}
-                  placeholder="Action"
+                  placeholder={t("fieldMod.hse.incident.actionPlaceholder")}
                 />
                 <Input
                   {...form.register(`correctiveActions.${i}.owner` as const)}
-                  placeholder="Owner"
+                  placeholder={t("fieldMod.hse.incident.ownerPlaceholder")}
                 />
                 <Input type="date" {...form.register(`correctiveActions.${i}.due_date` as const)} />
                 <Button
@@ -316,7 +316,7 @@ function NewIncidentPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => actions.remove(i)}
-                  aria-label="Remove"
+                  aria-label={t("fieldMod.hse.incident.removeAction")}
                 >
                   <X size={16} aria-hidden />
                 </Button>
@@ -327,7 +327,7 @@ function NewIncidentPage() {
 
         {form.formState.errors.correctiveActions ? (
           <div className="flex items-center gap-2 text-sm text-destructive">
-            <AlertTriangle size={14} aria-hidden /> Please check corrective actions.
+            <AlertTriangle size={14} aria-hidden /> {t("fieldMod.hse.incident.checkActions")}
           </div>
         ) : null}
 

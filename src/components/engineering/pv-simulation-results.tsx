@@ -301,7 +301,7 @@ export function PvSimulationResults({ simulation }: { simulation: SimulationReco
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">P-scenarios</CardTitle>
+            <CardTitle className="text-base">{t("pv.simulation.results.pScenarios")}</CardTitle>
           </CardHeader>
           <CardContent className="h-72">
             {scenarioData.length === 0 ? (
@@ -373,7 +373,9 @@ export function PvSimulationResults({ simulation }: { simulation: SimulationReco
                   </p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="mb-1 text-xs font-medium text-muted-foreground">Inputs</p>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">
+                        {t("pv.simulation.results.inputs")}
+                      </p>
                       <ul className="space-y-1 text-xs">
                         {Object.entries(step.inputs).map(([k, v]) => (
                           <li key={k} className="flex justify-between gap-3">
@@ -385,7 +387,7 @@ export function PvSimulationResults({ simulation }: { simulation: SimulationReco
                     </div>
                     <div>
                       <p className="mb-1 text-xs font-medium text-muted-foreground">
-                        Input sources
+                        {t("pv.simulation.results.inputSources")}
                       </p>
                       <ul className="space-y-1 text-xs">
                         {Object.entries(step.input_sources).map(([k, v]) => (
@@ -409,6 +411,7 @@ export function PvSimulationResults({ simulation }: { simulation: SimulationReco
 
 /** Delta table between two simulations: headline metrics + each loss step. */
 export function PvSimulationCompare({ a, b }: { a: SimulationRecord; b: SimulationRecord }) {
+  const { t } = useI18n();
   const ra = resultOf(a);
   const rb = resultOf(b);
   if (!ra || !rb) {
@@ -451,7 +454,7 @@ export function PvSimulationCompare({ a, b }: { a: SimulationRecord; b: Simulati
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Metric</TableHead>
+            <TableHead>{t("pv.simulation.results.metric")}</TableHead>
             <TableHead className="text-right">{a.name}</TableHead>
             <TableHead className="text-right">{b.name}</TableHead>
             <TableHead className="text-right">Δ</TableHead>
@@ -477,7 +480,7 @@ export function PvSimulationCompare({ a, b }: { a: SimulationRecord; b: Simulati
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Loss step</TableHead>
+            <TableHead>{t("pv.simulation.results.lossStep")}</TableHead>
             <TableHead className="text-right">{a.name} (%)</TableHead>
             <TableHead className="text-right">{b.name} (%)</TableHead>
             <TableHead className="text-right">Δ</TableHead>

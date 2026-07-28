@@ -287,7 +287,16 @@
     "runButton": "Run simulation",
     "running": "Running…",
     "readOnlyNote": "Read-only — engineering roles can run simulations.",
-    "bessDisabledNote": "BESS inputs are disabled — no battery entry is configured for this project."
+    "bessDisabledNote": "BESS inputs are disabled — no battery entry is configured for this project.",
+    "overridden": "overridden",
+    "gridLimitLabel": "Export limit / curtailment (kW)"
+   },
+   "results": {
+    "pScenarios": "P-scenarios",
+    "inputs": "Inputs",
+    "inputSources": "Input sources",
+    "metric": "Metric",
+    "lossStep": "Loss step"
    }
   }
  },

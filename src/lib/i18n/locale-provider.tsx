@@ -4,14 +4,8 @@ import { useEffect, useMemo, useState, createContext, useContext, type ReactNode
 import { I18nextProvider, useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  dirFor,
-  getI18n,
-  isLocale,
-  type Locale,
-} from "./index";
+import { DEFAULT_LOCALE, dirFor, getI18n, isLocale, type Locale } from "./index";
+import { cachedLocaleFor, clearCachedLocale, writeCachedLocale } from "./locale-storage";
 
 interface LocaleContextValue {
   locale: Locale;
@@ -47,27 +41,48 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
   const i18n = useMemo(() => getI18n(DEFAULT_LOCALE), []);
 
-  // Hydrate from localStorage, then from the signed-in user's profile.
+  // Hydrate from the (user-scoped) cache, then from the signed-in profile.
   useEffect(() => {
-    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (isLocale(stored)) applyLocale(stored);
-
     let cancelled = false;
-    void (async () => {
+
+    async function hydrate() {
       const { data } = await supabase.auth.getUser();
-      const uid = data.user?.id;
-      if (!uid || cancelled) return;
+      const uid = data.user?.id ?? null;
+      if (cancelled) return;
+
+      const cached = cachedLocaleFor(uid);
+      if (cached) applyLocale(cached);
+
+      if (!uid) {
+        if (!cached) applyLocale(DEFAULT_LOCALE);
+        return;
+      }
       const { data: profile } = await supabase
         .from("profiles")
         .select("locale")
         .eq("id", uid)
         .maybeSingle();
+      if (cancelled) return;
       const next = (profile as { locale?: string } | null)?.locale;
-      if (!cancelled && isLocale(next)) applyLocale(next);
-    })();
+      // The profile always wins over the cache, and re-stamps it for this user.
+      applyLocale(isLocale(next) ? next : DEFAULT_LOCALE);
+      writeCachedLocale(uid, isLocale(next) ? next : DEFAULT_LOCALE);
+    }
+
+    void hydrate();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        clearCachedLocale();
+        applyLocale(DEFAULT_LOCALE);
+        return;
+      }
+      if (event === "SIGNED_IN") void hydrate();
+    });
 
     return () => {
       cancelled = true;
+      sub.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -80,14 +95,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   function setLocale(next: Locale) {
     applyLocale(next);
-    try {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
-    } catch {
-      /* storage unavailable — in-memory only */
-    }
     void (async () => {
       const { data } = await supabase.auth.getUser();
-      const uid = data.user?.id;
+      const uid = data.user?.id ?? null;
+      try {
+        writeCachedLocale(uid, next);
+      } catch {
+        /* storage unavailable — in-memory only */
+      }
       if (!uid) return;
       await supabase.from("profiles").update({ locale: next }).eq("id", uid);
     })();
