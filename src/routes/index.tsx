@@ -66,8 +66,8 @@ function LandingPage() {
         </p>
 
         <Button asChild size="lg" className="mt-10">
-          <Link to={signedIn ? "/dashboard" : "/login"}>
-            {signedIn ? "Go to dashboard" : "Sign in"}
+          <Link to={signedIn ? landing : "/login"}>
+            {signedIn ? "Open your workspace" : "Sign in"}
           </Link>
         </Button>
 
