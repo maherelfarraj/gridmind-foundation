@@ -68,12 +68,72 @@ export const grnLineSchema = z.object({
   defect_notes: z.string().trim().max(2000).nullable().optional(),
 });
 
+export const grnGeoSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  accuracy_m: z.number().min(0).max(100000).nullable().optional(),
+});
+export type GrnGeo = z.infer<typeof grnGeoSchema>;
+
 export const grnDraftPayload = z.object({
   lines: z.array(grnLineSchema).min(1),
   notes: z.string().trim().max(4000).nullable().optional(),
   photos: z.array(z.string().trim().min(3).max(500)).max(10).default([]),
+  geo: grnGeoSchema.nullable().optional(),
 });
 export type GrnDraftPayload = z.infer<typeof grnDraftPayload>;
+
+// ---------------------------------------------------------------------------
+// P-233 — lot / serial capture
+// ---------------------------------------------------------------------------
+export interface SerialRow {
+  sku: string;
+  batch_serial: string;
+  qty: number;
+  grn_line_no: number;
+}
+
+/**
+ * Expand each receipt line's lot/serial IDs into one traceability row per
+ * serial. Quantity is split evenly across the serials of a line (a single
+ * lot id therefore carries the whole received qty). Duplicate serials within
+ * one line are collapsed; blank entries are dropped.
+ */
+export function serialRowsFromLines(lines: GrnLine[]): SerialRow[] {
+  const out: SerialRow[] = [];
+  for (const l of lines) {
+    const ids = Array.from(
+      new Set((l.lot_ids ?? []).map((s) => String(s).trim()).filter((s) => s.length > 0)),
+    );
+    if (ids.length === 0) continue;
+    const per = Math.round((Number(l.qty_received || 0) / ids.length) * 1e6) / 1e6;
+    for (const id of ids) {
+      out.push({
+        sku: (l.description ?? "").trim() || `Line ${l.po_line_no}`,
+        batch_serial: id,
+        qty: per,
+        grn_line_no: l.po_line_no,
+      });
+    }
+  }
+  return out;
+}
+
+/** Serials that appear on more than one line of the same receipt. */
+export function duplicateSerials(lines: GrnLine[]): string[] {
+  const seen = new Map<string, number>();
+  for (const l of lines) {
+    for (const raw of new Set((l.lot_ids ?? []).map((s) => String(s).trim()))) {
+      if (!raw) continue;
+      seen.set(raw, (seen.get(raw) ?? 0) + 1);
+    }
+  }
+  return Array.from(seen.entries())
+    .filter(([, n]) => n > 1)
+    .map(([s]) => s)
+    .sort();
+}
+
 
 // ---------------------------------------------------------------------------
 // business rules
