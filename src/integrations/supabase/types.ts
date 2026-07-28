@@ -16692,6 +16692,57 @@ export type Database = {
           },
         ]
       }
+      subcontract_claim_messages: {
+        Row: {
+          author_id: string | null
+          author_type: string
+          body: string
+          claim_id: string
+          company_id: string
+          created_at: string
+          id: string
+          internal_only: boolean
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_type?: string
+          body: string
+          claim_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          internal_only?: boolean
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_type?: string
+          body?: string
+          claim_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          internal_only?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_claim_messages_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "subcontract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_claim_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcontract_claims: {
         Row: {
           approval_instance_id: string | null
@@ -18618,6 +18669,7 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          expires_on: string | null
           file_name: string | null
           file_size_bytes: number | null
           id: string
@@ -18633,6 +18685,7 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          expires_on?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
@@ -18648,6 +18701,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          expires_on?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
@@ -20629,9 +20683,32 @@ export type Database = {
         Returns: string
       }
       storage_company_id: { Args: { p_name: string }; Returns: string }
+      sub_portal_add_claim_message: {
+        Args: { p_body: string; p_claim_id: string }
+        Returns: string
+      }
+      sub_portal_get_claim: { Args: { p_claim_id: string }; Returns: Json }
+      sub_portal_get_subcontract: {
+        Args: { p_subcontract_id: string }
+        Returns: Json
+      }
       sub_portal_has_seat: {
         Args: { p_company_id: string; p_vendor_id: string }
         Returns: boolean
+      }
+      sub_portal_list_subcontracts: {
+        Args: { p_vendor_id: string }
+        Returns: Json
+      }
+      sub_portal_submit_claim: {
+        Args: {
+          p_lines: Json
+          p_note?: string
+          p_period_end: string
+          p_period_start: string
+          p_subcontract_id: string
+        }
+        Returns: Json
       }
       subcontract_claim_recalc: {
         Args: { p_claim_id: string }
@@ -20785,18 +20862,32 @@ export type Database = {
         Args: { p_lines: Json; p_po_id: string }
         Returns: number
       }
-      vendor_portal_register_document: {
-        Args: {
-          p_category: string
-          p_file_name?: string
-          p_file_path: string
-          p_file_size?: number
-          p_mime_type?: string
-          p_title: string
-          p_vendor_id: string
-        }
-        Returns: string
-      }
+      vendor_portal_register_document:
+        | {
+            Args: {
+              p_category: string
+              p_file_name?: string
+              p_file_path: string
+              p_file_size?: number
+              p_mime_type?: string
+              p_title: string
+              p_vendor_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_category: string
+              p_expires_on?: string
+              p_file_name?: string
+              p_file_path: string
+              p_file_size?: number
+              p_mime_type?: string
+              p_title: string
+              p_vendor_id: string
+            }
+            Returns: string
+          }
       vendor_portal_submit_invoice: {
         Args: {
           p_currency: string

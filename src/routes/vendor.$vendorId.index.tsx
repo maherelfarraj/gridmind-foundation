@@ -2,7 +2,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText, Inbox, Lock, PackageSearch, Receipt } from "lucide-react";
+import { FileText, HardHat, Inbox, Lock, PackageSearch, Receipt } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import {
   getVendorPortalPos,
   listMyVendorMemberships,
 } from "@/lib/vendor-portal.functions";
+import { listSubPortalSubcontracts } from "@/lib/sub-portal.functions";
 
 export const Route = createFileRoute("/vendor/$vendorId/")({
   head: () => ({
@@ -101,6 +102,11 @@ function VendorDashboard() {
   const deliveries = useVendorQuery("deliveries", vendorId, useServerFn(getVendorPortalDeliveries));
   const invoices = useVendorQuery("invoices", vendorId, useServerFn(getVendorPortalInvoices));
   const documents = useVendorQuery("documents", vendorId, useServerFn(getVendorPortalDocuments));
+  const subcontracts = useVendorQuery(
+    "subcontracts",
+    vendorId,
+    useServerFn(listSubPortalSubcontracts),
+  );
 
   if (membership && membership.status !== "active") {
     return (
@@ -144,6 +150,7 @@ function VendorDashboard() {
           <TabsTrigger value="pos">{t("portalMod.dashboard.tabPos")}</TabsTrigger>
           <TabsTrigger value="deliveries">{t("portalMod.dashboard.tabDeliveries")}</TabsTrigger>
           <TabsTrigger value="invoices">{t("portalMod.dashboard.tabInvoices")}</TabsTrigger>
+          <TabsTrigger value="subcontracts">{t("portalMod.sub.tab")}</TabsTrigger>
           <TabsTrigger value="documents">{t("portalMod.dashboard.tabDocuments")}</TabsTrigger>
         </TabsList>
 
@@ -290,6 +297,64 @@ function VendorDashboard() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatMoney(Number(inv.paid_amount ?? 0), inv.currency_code)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+
+        <TabsContent value="subcontracts" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/vendor/$vendorId/subcontracts" params={{ vendorId }}>
+                {t("portalMod.sub.listTitle")}
+              </Link>
+            </Button>
+          </div>
+          {subcontracts.isLoading || subcontracts.error ? (
+            <TabState loading={subcontracts.isLoading} error={subcontracts.error} />
+          ) : (subcontracts.data ?? []).length === 0 ? (
+            <EmptyState
+              icon={HardHat}
+              title={t("portalMod.sub.emptyTitle")}
+              description={t("portalMod.sub.emptyDesc")}
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("portalMod.sub.colSc")}</TableHead>
+                  <TableHead>{t("portalMod.sub.colProject")}</TableHead>
+                  <TableHead>{t("portalMod.sub.colStatus")}</TableHead>
+                  <TableHead className="text-right">{t("portalMod.sub.colValue")}</TableHead>
+                  <TableHead className="text-right">{t("portalMod.sub.colRetention")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(subcontracts.data ?? []).map((sc) => (
+                  <TableRow key={sc.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        to="/vendor/$vendorId/subcontracts/$subcontractId"
+                        params={{ vendorId, subcontractId: sc.id }}
+                        className="underline-offset-2 hover:underline"
+                      >
+                        {sc.subcontract_number ?? sc.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{sc.project_name ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {String(sc.status).replace(/_/g, " ")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatMoney(Number(sc.contract_value ?? 0), sc.currency_code)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatMoney(Number(sc.retention_held ?? 0), sc.currency_code)}
                     </TableCell>
                   </TableRow>
                 ))}

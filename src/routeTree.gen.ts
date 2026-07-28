@@ -130,6 +130,7 @@ import { Route as AuthenticatedAdminOpsAlertsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminTenantsRouteRouteImport } from './routes/_authenticated/admin.tenants.route'
+import { Route as VendorVendorIdSubcontractsIndexRouteImport } from './routes/vendor.$vendorId.subcontracts.index'
 import { Route as AuthenticatedQaqcPunchIndexRouteImport } from './routes/_authenticated/qaqc.punch.index'
 import { Route as AuthenticatedQaqcNcrsIndexRouteImport } from './routes/_authenticated/qaqc.ncrs.index'
 import { Route as AuthenticatedQaqcInspectionsIndexRouteImport } from './routes/_authenticated/qaqc.inspections.index'
@@ -149,6 +150,8 @@ import { Route as AuthenticatedFieldSubmittalsIndexRouteImport } from './routes/
 import { Route as AuthenticatedFieldMobilizationIndexRouteImport } from './routes/_authenticated/field.mobilization.index'
 import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authenticated/field.dpr.index'
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
+import { Route as VendorVendorIdSubcontractsSubcontractIdRouteImport } from './routes/vendor.$vendorId.subcontracts.$subcontractId'
+import { Route as VendorVendorIdClaimsClaimIdRouteImport } from './routes/vendor.$vendorId.claims.$claimId'
 import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada-telemetry'
 import { Route as ApiPublicHooksPingRouteImport } from './routes/api/public/hooks/ping'
 import { Route as ApiPublicHooksEventsRouteImport } from './routes/api/public/hooks/events'
@@ -944,6 +947,12 @@ const AuthenticatedAdminTenantsRouteRoute =
     path: '/tenants',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const VendorVendorIdSubcontractsIndexRoute =
+  VendorVendorIdSubcontractsIndexRouteImport.update({
+    id: '/subcontracts/',
+    path: '/subcontracts/',
+    getParentRoute: () => VendorVendorIdRoute,
+  } as any)
 const AuthenticatedQaqcPunchIndexRoute =
   AuthenticatedQaqcPunchIndexRouteImport.update({
     id: '/qaqc/punch/',
@@ -1057,6 +1066,18 @@ const AuthenticatedAdminTenantsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminTenantsRouteRoute,
+  } as any)
+const VendorVendorIdSubcontractsSubcontractIdRoute =
+  VendorVendorIdSubcontractsSubcontractIdRouteImport.update({
+    id: '/subcontracts/$subcontractId',
+    path: '/subcontracts/$subcontractId',
+    getParentRoute: () => VendorVendorIdRoute,
+  } as any)
+const VendorVendorIdClaimsClaimIdRoute =
+  VendorVendorIdClaimsClaimIdRouteImport.update({
+    id: '/claims/$claimId',
+    path: '/claims/$claimId',
+    getParentRoute: () => VendorVendorIdRoute,
   } as any)
 const ApiPublicHooksScadaTelemetryRoute =
   ApiPublicHooksScadaTelemetryRouteImport.update({
@@ -1914,6 +1935,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -1933,6 +1956,7 @@ export interface FileRoutesByFullPath {
   '/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts/': typeof VendorVendorIdSubcontractsIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2152,6 +2176,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
   '/field/dpr': typeof AuthenticatedFieldDprIndexRoute
   '/field/mobilization': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2171,6 +2197,7 @@ export interface FileRoutesByTo {
   '/qaqc/inspections': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/qaqc/ncrs': typeof AuthenticatedQaqcNcrsIndexRoute
   '/qaqc/punch': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts': typeof VendorVendorIdSubcontractsIndexRoute
   '/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2403,6 +2430,8 @@ export interface FileRoutesById {
   '/api/public/hooks/events': typeof ApiPublicHooksEventsRoute
   '/api/public/hooks/ping': typeof ApiPublicHooksPingRoute
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
+  '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
+  '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
   '/_authenticated/field/dpr/': typeof AuthenticatedFieldDprIndexRoute
   '/_authenticated/field/mobilization/': typeof AuthenticatedFieldMobilizationIndexRoute
@@ -2422,6 +2451,7 @@ export interface FileRoutesById {
   '/_authenticated/qaqc/inspections/': typeof AuthenticatedQaqcInspectionsIndexRoute
   '/_authenticated/qaqc/ncrs/': typeof AuthenticatedQaqcNcrsIndexRoute
   '/_authenticated/qaqc/punch/': typeof AuthenticatedQaqcPunchIndexRoute
+  '/vendor/$vendorId/subcontracts/': typeof VendorVendorIdSubcontractsIndexRoute
   '/_authenticated/om/scada/plants/$projectId': typeof AuthenticatedOmScadaPlantsProjectIdRoute
   '/_authenticated/procurement/subcontracts/claims/$claimId': typeof AuthenticatedProcurementSubcontractsClaimsClaimIdRoute
   '/_authenticated/projects/$projectId/commissioning/certificates': typeof AuthenticatedProjectsProjectIdCommissioningCertificatesRoute
@@ -2655,6 +2685,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/claims/$claimId'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants/'
     | '/field/dpr/'
     | '/field/mobilization/'
@@ -2674,6 +2706,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections/'
     | '/qaqc/ncrs/'
     | '/qaqc/punch/'
+    | '/vendor/$vendorId/subcontracts/'
     | '/om/scada/plants/$projectId'
     | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
@@ -2893,6 +2926,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/claims/$claimId'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants'
     | '/field/dpr'
     | '/field/mobilization'
@@ -2912,6 +2947,7 @@ export interface FileRouteTypes {
     | '/qaqc/inspections'
     | '/qaqc/ncrs'
     | '/qaqc/punch'
+    | '/vendor/$vendorId/subcontracts'
     | '/om/scada/plants/$projectId'
     | '/procurement/subcontracts/claims/$claimId'
     | '/projects/$projectId/commissioning/certificates'
@@ -3143,6 +3179,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/events'
     | '/api/public/hooks/ping'
     | '/api/public/hooks/scada-telemetry'
+    | '/vendor/$vendorId/claims/$claimId'
+    | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/_authenticated/admin/tenants/'
     | '/_authenticated/field/dpr/'
     | '/_authenticated/field/mobilization/'
@@ -3162,6 +3200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/qaqc/inspections/'
     | '/_authenticated/qaqc/ncrs/'
     | '/_authenticated/qaqc/punch/'
+    | '/vendor/$vendorId/subcontracts/'
     | '/_authenticated/om/scada/plants/$projectId'
     | '/_authenticated/procurement/subcontracts/claims/$claimId'
     | '/_authenticated/projects/$projectId/commissioning/certificates'
@@ -4090,6 +4129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTenantsRouteRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/vendor/$vendorId/subcontracts/': {
+      id: '/vendor/$vendorId/subcontracts/'
+      path: '/subcontracts'
+      fullPath: '/vendor/$vendorId/subcontracts/'
+      preLoaderRoute: typeof VendorVendorIdSubcontractsIndexRouteImport
+      parentRoute: typeof VendorVendorIdRoute
+    }
     '/_authenticated/qaqc/punch/': {
       id: '/_authenticated/qaqc/punch/'
       path: '/qaqc/punch'
@@ -4222,6 +4268,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AuthenticatedAdminTenantsIndexRouteImport
       parentRoute: typeof AuthenticatedAdminTenantsRouteRoute
+    }
+    '/vendor/$vendorId/subcontracts/$subcontractId': {
+      id: '/vendor/$vendorId/subcontracts/$subcontractId'
+      path: '/subcontracts/$subcontractId'
+      fullPath: '/vendor/$vendorId/subcontracts/$subcontractId'
+      preLoaderRoute: typeof VendorVendorIdSubcontractsSubcontractIdRouteImport
+      parentRoute: typeof VendorVendorIdRoute
+    }
+    '/vendor/$vendorId/claims/$claimId': {
+      id: '/vendor/$vendorId/claims/$claimId'
+      path: '/claims/$claimId'
+      fullPath: '/vendor/$vendorId/claims/$claimId'
+      preLoaderRoute: typeof VendorVendorIdClaimsClaimIdRouteImport
+      parentRoute: typeof VendorVendorIdRoute
     }
     '/api/public/hooks/scada-telemetry': {
       id: '/api/public/hooks/scada-telemetry'
@@ -5742,6 +5802,9 @@ interface VendorVendorIdRouteChildren {
   VendorVendorIdInvoicesRoute: typeof VendorVendorIdInvoicesRoute
   VendorVendorIdPosRoute: typeof VendorVendorIdPosRoute
   VendorVendorIdIndexRoute: typeof VendorVendorIdIndexRoute
+  VendorVendorIdClaimsClaimIdRoute: typeof VendorVendorIdClaimsClaimIdRoute
+  VendorVendorIdSubcontractsSubcontractIdRoute: typeof VendorVendorIdSubcontractsSubcontractIdRoute
+  VendorVendorIdSubcontractsIndexRoute: typeof VendorVendorIdSubcontractsIndexRoute
 }
 
 const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
@@ -5750,6 +5813,10 @@ const VendorVendorIdRouteChildren: VendorVendorIdRouteChildren = {
   VendorVendorIdInvoicesRoute: VendorVendorIdInvoicesRoute,
   VendorVendorIdPosRoute: VendorVendorIdPosRoute,
   VendorVendorIdIndexRoute: VendorVendorIdIndexRoute,
+  VendorVendorIdClaimsClaimIdRoute: VendorVendorIdClaimsClaimIdRoute,
+  VendorVendorIdSubcontractsSubcontractIdRoute:
+    VendorVendorIdSubcontractsSubcontractIdRoute,
+  VendorVendorIdSubcontractsIndexRoute: VendorVendorIdSubcontractsIndexRoute,
 }
 
 const VendorVendorIdRouteWithChildren = VendorVendorIdRoute._addFileChildren(
