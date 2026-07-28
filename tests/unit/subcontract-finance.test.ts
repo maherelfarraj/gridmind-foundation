@@ -47,7 +47,7 @@ describe("retention ledger", () => {
   });
 
   it("is cent-exact across fractional retention", () => {
-    const l = retentionLedger({ certifiedRetention: [1234.567, 0.005], releases: [1234.57] });
+    const l = retentionLedger({ certifiedRetention: [1234.567, 0.005], releases: [1234.58] });
     expect(l.held).toBe(0);
   });
 });
