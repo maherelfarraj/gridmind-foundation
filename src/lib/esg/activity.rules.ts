@@ -241,7 +241,7 @@ export function evidencePath(args: {
   activityId: string;
   fileName: string;
 }): string {
-  const safe = args.fileName.replace(/[^\w.\-]+/g, "_").slice(0, 120);
+  const safe = args.fileName.replace(/[^\w.-]+/g, "_").slice(0, 120);
   return `${args.companyId}/esg/evidence/${args.projectId}/${args.activityId}/${safe}`;
 }
 

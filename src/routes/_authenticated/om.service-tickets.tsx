@@ -54,24 +54,26 @@ export const Route = createFileRoute("/_authenticated/om/service-tickets")({
     ],
   }),
   component: ServiceTicketsPage,
-  errorComponent: ({ error, reset }) => {
-    const { t } = useI18n();
-    return (
-      <div className="page-shell">
-        <EmptyState
-          icon={ShieldAlert}
-          title={t("omMod.serviceTickets.loadFailed")}
-          description={error.message}
-          action={
-            <Button size="sm" onClick={reset}>
-              {t("omMod.common.retry")}
-            </Button>
-          }
-        />
-      </div>
-    );
-  },
+  errorComponent: ServiceTicketsError,
 });
+
+function ServiceTicketsError({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="page-shell">
+      <EmptyState
+        icon={ShieldAlert}
+        title={t("omMod.serviceTickets.loadFailed")}
+        description={error.message}
+        action={
+          <Button size="sm" onClick={reset}>
+            {t("omMod.common.retry")}
+          </Button>
+        }
+      />
+    </div>
+  );
+}
 
 function priorityBadge(p: WorkOrderPriority, t: ReturnType<typeof useI18n>["t"]) {
   const cls =
