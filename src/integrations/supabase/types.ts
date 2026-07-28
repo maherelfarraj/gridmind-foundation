@@ -13939,6 +13939,7 @@ export type Database = {
           id: string
           lead_time_days: number | null
           lines: Json
+          pre_award_status: Database["public"]["Enums"]["rfq_bid_status"] | null
           rfq_id: string
           status: Database["public"]["Enums"]["rfq_bid_status"]
           submitted_at: string | null
@@ -13956,6 +13957,9 @@ export type Database = {
           id?: string
           lead_time_days?: number | null
           lines?: Json
+          pre_award_status?:
+            | Database["public"]["Enums"]["rfq_bid_status"]
+            | null
           rfq_id: string
           status?: Database["public"]["Enums"]["rfq_bid_status"]
           submitted_at?: string | null
@@ -13973,6 +13977,9 @@ export type Database = {
           id?: string
           lead_time_days?: number | null
           lines?: Json
+          pre_award_status?:
+            | Database["public"]["Enums"]["rfq_bid_status"]
+            | null
           rfq_id?: string
           status?: Database["public"]["Enums"]["rfq_bid_status"]
           submitted_at?: string | null
