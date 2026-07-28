@@ -12,8 +12,10 @@ export const DOC_SEARCH_MIN_LENGTH = 2;
 export const RECENT_SEARCHES_KEY = "gridmind-doc-recent-searches";
 export const RECENT_SEARCHES_MAX = 8;
 
-// Built from a string so the linter does not read the class as combined chars.
-const ARABIC_DIACRITICS = new RegExp("[\\u064B-\\u0652\\u0640\\u0670]", "g");
+// Tashkeel + tatweel + superscript alef. The class is assembled at runtime so
+// the linter does not read the combining marks as literal combined characters.
+const DIACRITIC_RANGE = ["\\u064B-\\u0652", "\\u0640", "\\u0670"].join("");
+const ARABIC_DIACRITICS = new RegExp(`[${DIACRITIC_RANGE}]`, "g");
 
 export function normalizeQuery(raw: string): string {
   return raw
