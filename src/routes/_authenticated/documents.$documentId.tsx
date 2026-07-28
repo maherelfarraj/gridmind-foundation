@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ControlledCopiesTab } from "@/components/documents/controlled-copies-tab";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -123,6 +124,7 @@ function DocumentDetailPage() {
         <TabsList>
           <TabsTrigger value="overview">{t("engMod.docHistory.tabs.overview")}</TabsTrigger>
           <TabsTrigger value="history">{t("engMod.docHistory.tabs.history")}</TabsTrigger>
+          <TabsTrigger value="copies">{t("engMod.copies.tab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="pt-4">
@@ -185,6 +187,10 @@ function DocumentDetailPage() {
               </ol>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="copies" className="pt-4">
+          <ControlledCopiesTab record={record.data} />
         </TabsContent>
       </Tabs>
     </div>

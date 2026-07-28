@@ -2942,6 +2942,7 @@ export type Database = {
           copy_number: number
           created_at: string
           created_by: string | null
+          destroyed_at: string | null
           document_id: string
           holder_contact_id: string | null
           holder_name: string | null
@@ -2950,6 +2951,8 @@ export type Database = {
           issue_date: string
           location: string | null
           notes: string | null
+          recall_due_at: string | null
+          recall_reason: string | null
           recalled_at: string | null
           recalled_by: string | null
           returned_at: string | null
@@ -2963,6 +2966,7 @@ export type Database = {
           copy_number: number
           created_at?: string
           created_by?: string | null
+          destroyed_at?: string | null
           document_id: string
           holder_contact_id?: string | null
           holder_name?: string | null
@@ -2971,6 +2975,8 @@ export type Database = {
           issue_date?: string
           location?: string | null
           notes?: string | null
+          recall_due_at?: string | null
+          recall_reason?: string | null
           recalled_at?: string | null
           recalled_by?: string | null
           returned_at?: string | null
@@ -2984,6 +2990,7 @@ export type Database = {
           copy_number?: number
           created_at?: string
           created_by?: string | null
+          destroyed_at?: string | null
           document_id?: string
           holder_contact_id?: string | null
           holder_name?: string | null
@@ -2992,6 +2999,8 @@ export type Database = {
           issue_date?: string
           location?: string | null
           notes?: string | null
+          recall_due_at?: string | null
+          recall_reason?: string | null
           recalled_at?: string | null
           recalled_by?: string | null
           returned_at?: string | null
@@ -20837,6 +20846,35 @@ export type Database = {
         Args: { p_capacity: number; p_key: string; p_refill_per_sec: number }
         Returns: boolean
       }
+      controlled_copy_completeness: {
+        Args: { p_document_id: string }
+        Returns: {
+          closed: number
+          outstanding: number
+          recall_due: number
+          total: number
+        }[]
+      }
+      controlled_copy_queue: {
+        Args: { p_only_due?: boolean }
+        Returns: {
+          copy_number: number
+          doc_number: string
+          doc_status: string
+          document_id: string
+          holder_contact_id: string
+          holder_name: string
+          holder_user_id: string
+          id: string
+          issue_date: string
+          location: string
+          recall_due_at: string
+          recall_reason: string
+          revision_pinned: string
+          status: string
+          title: string
+        }[]
+      }
       create_impact_assessment: {
         Args: {
           p_company_id: string
@@ -21085,6 +21123,47 @@ export type Database = {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
       }
+      issue_controlled_copy: {
+        Args: {
+          p_document_id: string
+          p_holder_contact_id?: string
+          p_holder_name?: string
+          p_holder_user_id?: string
+          p_issue_date?: string
+          p_location?: string
+          p_notes?: string
+        }
+        Returns: {
+          company_id: string
+          copy_number: number
+          created_at: string
+          created_by: string | null
+          destroyed_at: string | null
+          document_id: string
+          holder_contact_id: string | null
+          holder_name: string | null
+          holder_user_id: string | null
+          id: string
+          issue_date: string
+          location: string | null
+          notes: string | null
+          recall_due_at: string | null
+          recall_reason: string | null
+          recalled_at: string | null
+          recalled_by: string | null
+          returned_at: string | null
+          revision_pinned: string
+          status: Database["public"]["Enums"]["controlled_copy_status"]
+          transmittal_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "controlled_copies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       leave_decide: {
         Args: { p_comment?: string; p_decision: string; p_leave_id: string }
         Returns: Json
@@ -21290,6 +21369,39 @@ export type Database = {
       proposal_pricing_decide: {
         Args: { p_comment?: string; p_decision: string; p_proposal_id: string }
         Returns: Json
+      }
+      recall_controlled_copy: {
+        Args: { p_copy_id: string; p_disposition?: string; p_notes?: string }
+        Returns: {
+          company_id: string
+          copy_number: number
+          created_at: string
+          created_by: string | null
+          destroyed_at: string | null
+          document_id: string
+          holder_contact_id: string | null
+          holder_name: string | null
+          holder_user_id: string | null
+          id: string
+          issue_date: string
+          location: string | null
+          notes: string | null
+          recall_due_at: string | null
+          recall_reason: string | null
+          recalled_at: string | null
+          recalled_by: string | null
+          returned_at: string | null
+          revision_pinned: string
+          status: Database["public"]["Enums"]["controlled_copy_status"]
+          transmittal_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "controlled_copies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       recompute_invoice_payment_state: {
         Args: { p_invoice_id: string }
