@@ -105,7 +105,7 @@ describe.skipIf(!HAS_DB)("RLS policy lint (live schema)", () => {
     const offenders: string[] = [];
     for (const [name, rls, policyCount, grantCount] of rows) {
       if (!tenantSet.has(name)) continue;
-      if (rls !== "t") offenders.push(`${name}: RLS disabled`);
+      if (rls !== "t" && rls !== "true") offenders.push(`${name}: RLS disabled`);
       else if (policyCount === "0" && grantCount !== "0")
         offenders.push(`${name}: zero policies but granted to anon/authenticated`);
     }
