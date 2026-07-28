@@ -22,6 +22,12 @@ export interface VarianceInputs {
   grnQtyByLine: Map<number, number> | Record<number, number>;
   invoiceAmount: number;
   invoiceLines?: LineQty[]; // optional per-line invoiced qty/price
+  /**
+   * Amount the invoice is expected to carry. For a partial receipt this is
+   * the received scope priced at PO rates, not the whole PO. Defaults to
+   * `poTotal` (full-delivery invoices).
+   */
+  expectedAmount?: number | null;
 }
 
 export interface VarianceResult {
