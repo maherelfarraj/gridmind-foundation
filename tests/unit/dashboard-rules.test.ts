@@ -15,7 +15,7 @@ describe("dashboard activity humanization", () => {
 
   it("humanizes entity names to singular labels", () => {
     expect(humanizeEntity("purchase_orders")).toBe("Purchase order");
-    expect(humanizeEntity("companies")).toBe("Companie");
+    expect(humanizeEntity("companies")).toBe("Company");
     expect(humanizeEntity("progress")).toBe("Progress");
   });
 
