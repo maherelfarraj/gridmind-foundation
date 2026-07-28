@@ -186,8 +186,27 @@ export const EXPECTED = {
 
 export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
   const svc = serviceClient();
+  const created: string[] = [];
+  const users: string[] = [];
+  try {
+    return await buildFixture(svc, created, users);
+  } catch (err) {
+    // A half-built fixture must never leak a tenant into the company count.
+    await purgeFixtureTenants(svc, created);
+    await deleteFixtureUsers(svc, users);
+    throw err;
+  }
+}
+
+async function buildFixture(
+  svc: SupabaseClient<Database>,
+  created: string[],
+  users: string[],
+): Promise<PortfolioFixture> {
   const { companyId } = await createTenant(svc, "agg");
+  created.push(companyId);
   const user = await createUser(svc, "p256-admin");
+  users.push(user.userId);
   await attachProfile(svc, user.userId, user.email, companyId, "company_admin");
 
   const stamp = crypto.randomUUID().slice(0, 6).toUpperCase();
