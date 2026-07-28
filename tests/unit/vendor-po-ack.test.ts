@@ -73,7 +73,6 @@ describe("parsePoLines", () => {
       amount: 10,
       site_need_date: null,
     });
-
   });
 });
 
