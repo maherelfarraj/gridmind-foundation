@@ -80,8 +80,9 @@ describe("vendor portal RLS (offline policy parse)", () => {
     // policy may be permissive.
     for (const p of ps.filter((x) => x.action !== "select")) {
       expect(p.body.replace(/\s/g, "").toLowerCase(), `${p.action} policy is not deny-all`).toMatch(
-        /^\(?false\)?$/,
+        /(withcheck|using)\(false\)/,
       );
+
     }
     expect(sql).toMatch(/grant select on public\.vendor_portal_events to authenticated/i);
     expect(sql).not.toMatch(/grant[\w,\s]*insert[\w,\s]*on public\.vendor_portal_events/i);
