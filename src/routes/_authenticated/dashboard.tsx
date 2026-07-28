@@ -8,6 +8,7 @@ import { KpiGrid, KpiTile } from "@/components/ui/kpi-tile";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardQueryOptions } from "@/lib/dashboard-query";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -30,35 +31,38 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery(dashboardQueryOptions());
 
   const punch = data?.openPunch;
   const tiles = [
     {
-      label: "Active projects",
+      label: t("dashboard.activeProjects"),
       value: data?.activeProjects ?? 0,
-      hint: "Across all lifecycle stages",
+      hint: t("dashboard.activeProjectsHint"),
       icon: Activity,
       to: "/projects",
     },
     {
-      label: "Open punchlist",
+      label: t("dashboard.openPunchlist"),
       value: punch?.total ?? 0,
-      hint: punch ? `A ${punch.a} · B ${punch.b} · C ${punch.c}` : "Items awaiting close-out",
+      hint: punch
+        ? t("dashboard.punchBreakdown", { a: punch.a, b: punch.b, c: punch.c })
+        : t("dashboard.openPunchlistHint"),
       icon: HardHat,
       to: "/qaqc/punch",
     },
     {
-      label: "In transit",
+      label: t("dashboard.inTransit"),
       value: data?.inTransit ?? 0,
-      hint: "POs issued, not fully received",
+      hint: t("dashboard.inTransitHint"),
       icon: Truck,
       to: "/procurement/expediting",
     },
     {
-      label: "O&M tickets",
+      label: t("dashboard.omTickets"),
       value: data?.openTickets ?? 0,
-      hint: "Open across sites",
+      hint: t("dashboard.omTicketsHint"),
       icon: Wrench,
       to: "/om/service-tickets",
     },
@@ -67,8 +71,8 @@ function DashboardPage() {
   return (
     <div className="page-shell">
       <PageHeader
-        title="Dashboard"
-        description="Overview of active EPC projects across engineering, procurement, field, and O&M."
+        title={t("dashboard.title")}
+        description={t("dashboard.subtitle")}
       />
 
       <KpiGrid>
@@ -86,10 +90,10 @@ function DashboardPage() {
         ))}
       </KpiGrid>
 
-      <section aria-label="Recent activity">
+      <section aria-label={t("dashboard.recentActivity")}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Recent activity</CardTitle>
+            <CardTitle className="text-lg">{t("dashboard.recentActivity")}</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -101,8 +105,8 @@ function DashboardPage() {
             ) : (data?.activity?.length ?? 0) === 0 ? (
               <EmptyState
                 icon={Inbox}
-                title="No recent activity"
-                description="New events will appear here as your team works across projects."
+                title={t("dashboard.noActivity")}
+                description={t("dashboard.noActivityDescription")}
                 compact
               />
             ) : (
@@ -114,8 +118,14 @@ function DashboardPage() {
                   >
                     <span className="min-w-0 truncate">
                       <span className="font-medium text-foreground">{item.actor}</span>{" "}
-                      <span className="text-muted-foreground">{item.action.toLowerCase()}</span>{" "}
-                      <span className="text-foreground">{item.entity}</span>
+                      <span className="text-muted-foreground">
+                        {t(`activity.actions.${item.actionKey}`, {
+                          defaultValue: item.action.toLowerCase(),
+                        })}
+                      </span>{" "}
+                      <span className="text-foreground">
+                        {t(`activity.entities.${item.entityKey}`, { defaultValue: item.entity })}
+                      </span>
                     </span>
                     <time className="text-xs text-muted-foreground" dateTime={item.created_at}>
                       {item.when}
