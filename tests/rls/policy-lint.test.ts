@@ -38,22 +38,38 @@ const ROLE_CHECK = /has_company_role\(|has_role\(/;
 /** Own-row ownership predicates — legitimately outside company scoping. */
 const OWN_ROW = /\b\w*(?:user_id|_by|_id)\s*=\s*auth\.uid\(\)|\bid\s*=\s*auth\.uid\(\)/;
 
-/** Deny-all policies (service-role only surfaces). */
-const DENY_ALL = /\(\s*false\s*\)|^\s*false\s*$/;
+/** Deny-all policies (every predicate is literally false). */
+function isDenyAll(expr: string): boolean {
+  const parts = expr.replace(/[()]/g, " ").split(/\s+/).filter(Boolean);
+  return parts.length > 0 && parts.every((p) => p.toLowerCase() === "false");
+}
+
+/**
+ * `super_admin` is a deliberate platform-wide role, not a tenant role, so a
+ * super_admin escape hatch is not the cross-tenant hole class. Strip those
+ * terms before evaluating the role-gate rule.
+ */
+function stripSuperAdmin(expr: string): string {
+  return expr.replace(/has_role\(auth\.uid\(\),\s*'super_admin'::app_role\)/g, "");
+}
 
 interface Policy {
   table: string;
   name: string;
   cmd: string;
   expr: string;
+  roles: string;
 }
 
 const policies: Policy[] = HAS_DB
   ? q(
-      `select tablename, policyname, cmd, coalesce(qual,'')||' '||coalesce(with_check,'')
+      `select tablename, policyname, cmd, coalesce(qual,'')||' '||coalesce(with_check,''), roles::text
        from pg_policies where schemaname='public' order by 1,2`,
-    ).map(([table, name, cmd, expr]) => ({ table, name, cmd, expr }))
+    ).map(([table, name, cmd, expr, roles]) => ({ table, name, cmd, expr, roles }))
   : [];
+
+/** Only policies reachable by app users (anon / authenticated) matter here. */
+const clientFacing = (p: Policy) => /anon|authenticated|public/.test(p.roles);
 
 const tenantTables: string[] = HAS_DB
   ? q(
@@ -66,29 +82,29 @@ const tenantTables: string[] = HAS_DB
 
 const tenantSet = new Set(tenantTables);
 
+const candidates = () => policies.filter((p) => tenantSet.has(p.table) && clientFacing(p));
+
 describe.skipIf(!HAS_DB)("RLS policy lint (live schema)", () => {
   it("R1: no role check without a row-level company scope on a tenant table", () => {
-    const offenders = policies
-      .filter(
-        (p) =>
-          tenantSet.has(p.table) && ROLE_CHECK.test(p.expr) && !COMPANY_SCOPE.test(p.expr),
-      )
+    const offenders = candidates()
+      .filter((p) => {
+        const expr = stripSuperAdmin(p.expr);
+        return ROLE_CHECK.test(expr) && !COMPANY_SCOPE.test(expr);
+      })
       .map((p) => `${p.table}.${p.name} [${p.cmd}]`);
     expect(offenders, `role check without company scope:\n${offenders.join("\n")}`).toEqual([]);
   });
 
   it("R2: every tenant-table policy carries company scope, own-row scope, or denies all", () => {
-    const offenders = policies
-      .filter(
-        (p) =>
-          tenantSet.has(p.table) &&
-          !COMPANY_SCOPE.test(p.expr) &&
-          !OWN_ROW.test(p.expr) &&
-          !DENY_ALL.test(p.expr),
-      )
+    const offenders = candidates()
+      .filter((p) => {
+        const expr = stripSuperAdmin(p.expr);
+        return !COMPANY_SCOPE.test(expr) && !OWN_ROW.test(expr) && !isDenyAll(p.expr);
+      })
       .map((p) => `${p.table}.${p.name} [${p.cmd}]`);
     expect(offenders, `unscoped tenant policy:\n${offenders.join("\n")}`).toEqual([]);
   });
+
 
   it("R3: every tenant table has RLS enabled and is not reachable without policies", () => {
     const rows = q(
