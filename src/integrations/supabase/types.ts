@@ -19696,6 +19696,7 @@ export type Database = {
           p_company_id: string
           p_email: string
           p_role: Database["public"]["Enums"]["app_role"]
+          p_vendor_id?: string
         }
         Returns: string
       }

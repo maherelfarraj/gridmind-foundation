@@ -219,13 +219,35 @@ export const resendInvite = createServerFn({ method: "POST" })
       .eq("id", data.inviteId)
       .eq("status", "pending");
 
+    // Vendor invites MUST carry the vendor linkage, otherwise redemption
+    // produces an orphan vendor_viewer with an empty portal.
+    let vendorId: string | null = null;
+    if (existing.role === "vendor_viewer") {
+      const { data: membership } = await context.supabase
+        .from("vendor_portal_memberships")
+        .select("vendor_id")
+        .eq("company_id", existing.company_id)
+        .eq("email", existing.email.toLowerCase())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ vendor_id: string }>();
+      vendorId = membership?.vendor_id ?? null;
+      if (!vendorId) {
+        throw new Error(
+          "This vendor invite has no vendor linkage. Re-issue it from Procurement → Vendors → Portal access.",
+        );
+      }
+    }
+
     const { data: token, error } = await context.supabase.rpc("create_invite", {
       p_company_id: existing.company_id,
       p_email: existing.email,
       p_role: existing.role,
-    });
+      ...(vendorId ? { p_vendor_id: vendorId } : {}),
+    } as never);
     if (error) throw new Error(error.message);
     if (!token) throw new Error("create_invite returned no token");
+
 
     await context.supabase.rpc("write_audit_log", {
       p_action: "invite.resent",
