@@ -227,7 +227,8 @@
     "Webhooks": "خطافات الويب",
     "API docs": "وثائق الواجهة البرمجية",
     "Profile": "الملف الشخصي",
-    "Company": "الشركة"
+    "Company": "الشركة",
+    "Portfolio": "المحفظة"
   },
   "chrome": {
     "brand": "GridMind EPC",
