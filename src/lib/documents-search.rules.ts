@@ -26,9 +26,12 @@ export function normalizeQuery(raw: string): string {
   for (const ch of raw.normalize("NFKC")) {
     const code = ch.codePointAt(0) ?? 0;
     if (isDiacritic(code)) continue;
-    if (ALEF_VARIANTS.has(code)) out += "\u0627"; // → ا
-    else if (code === 0x0649) out += "\u064a"; // alef maqsura → ي
-    else if (code === 0x0629) out += "\u0647"; // ta marbuta → ه
+    if (ALEF_VARIANTS.has(code))
+      out += "\u0627"; // → ا
+    else if (code === 0x0649)
+      out += "\u064a"; // alef maqsura → ي
+    else if (code === 0x0629)
+      out += "\u0647"; // ta marbuta → ه
     else out += ch;
   }
   return out.replace(/\s+/g, " ").trim();
