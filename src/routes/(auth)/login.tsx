@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { resolveLandingRoute } from "@/lib/portal-landing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
