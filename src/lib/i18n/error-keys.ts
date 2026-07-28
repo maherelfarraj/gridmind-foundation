@@ -33,6 +33,12 @@ export const ERROR_KEY_MAP: Record<string, string> = {
   invoice_number_required: "portalMod.errors.invoice_number_required",
   title_required: "portalMod.errors.title_required",
   quarantined: "portalMod.errors.quarantined",
+  subcontract_not_active: "portalMod.errors.subcontract_not_active",
+  invalid_period: "portalMod.errors.invalid_period",
+  claim_already_open: "portalMod.errors.claim_already_open",
+  claim_cumulative_out_of_range: "portalMod.errors.claim_cumulative_out_of_range",
+  line_not_on_subcontract: "portalMod.errors.line_not_on_subcontract",
+  message_required: "portalMod.errors.message_required",
   po_required: "portalMod.errors.po_required",
 };
 
