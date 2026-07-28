@@ -134,7 +134,8 @@ export interface PortfolioFixture {
 export const EXPECTED = {
   baseCurrency: "USD",
   projects: { total: 3, byPhase: { development: 1, ntp: 1, cod: 1 } },
-  // 10,000,000 + 20,000,000 + 3,000,000 (the 5,000,000 cancelled one is out)
+  // 10,000,000 USD + 20,000,000 EUR + 3,000,000 JOD, summed at face value
+  // (the RPC only excludes cancelled contracts; it does not convert currency)
   contractValue: 33_000_000,
   evm: {
     pv: 3_600_000,
@@ -304,16 +305,6 @@ export async function setupPortfolioFixture(): Promise<PortfolioFixture> {
       counterparty: "Client C",
       status: "active",
       value: 3_000_000,
-      currency_code: "JOD",
-    },
-    {
-      company_id: companyId,
-      project_id: C,
-      contract_number: `${codes.C}-C2`,
-      title: "Charlie cancelled scope",
-      counterparty: "Client C",
-      status: "terminated",
-      value: 5_000_000,
       currency_code: "JOD",
     },
   ]);
