@@ -208,9 +208,39 @@ function ReceivingEditor({
   const [photos, setPhotos] = useState<string[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  // P-233 — GPS stamp captured at the moment of receipt.
+  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy_m: number | null } | null>(
+    null,
+  );
+  const [locating, setLocating] = useState(false);
+
+  const captureGeo = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Location is not available on this device");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeo({
+          lat: Number(pos.coords.latitude.toFixed(6)),
+          lng: Number(pos.coords.longitude.toFixed(6)),
+          accuracy_m: pos.coords.accuracy == null ? null : Math.round(pos.coords.accuracy),
+        });
+        setLocating(false);
+        toast.success("Location captured");
+      },
+      () => {
+        setLocating(false);
+        toast.error("Couldn’t read your location");
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
+    );
+  };
 
   const saveDraft = useSaveGrnDraft(grnId);
   const confirm = useConfirmGrn(grnId);
+
 
   const badLines = useMemo(() => overReceivedLines(lines, receivable), [lines, receivable]);
   const anyDefectMissingNote = lines.some(
