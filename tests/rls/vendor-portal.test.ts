@@ -69,13 +69,24 @@ describe("vendor portal RLS (offline policy parse)", () => {
     expect(write?.body).toMatch(/company_admin/i);
   });
 
-  it("events are append-only: no INSERT/UPDATE/DELETE policies, admin-only SELECT", () => {
+  it("events are append-only: admin-only SELECT, every write policy denies all", () => {
     const ps = policies("vendor_portal_events");
-    expect(ps.map((p) => p.action)).toEqual(["select"]);
-    expect(ps[0].body).toMatch(/procurement_admin/i);
+    const select = ps.find((p) => p.action === "select");
+    expect(select, "no SELECT policy on vendor_portal_events").toBeTruthy();
+    expect(select!.body).toMatch(/procurement_admin/i);
+
+    // A later hardening migration added an explicit deny-all INSERT guard.
+    // Append-only is about semantics, not the policy-name list: no write
+    // policy may be permissive.
+    for (const p of ps.filter((x) => x.action !== "select")) {
+      expect(p.body.replace(/\s/g, "").toLowerCase(), `${p.action} policy is not deny-all`).toMatch(
+        /^\(?false\)?$/,
+      );
+    }
     expect(sql).toMatch(/grant select on public\.vendor_portal_events to authenticated/i);
     expect(sql).not.toMatch(/grant[\w,\s]*insert[\w,\s]*on public\.vendor_portal_events/i);
   });
+
 
   it("grants nothing to anon on either table", () => {
     expect(sql).not.toMatch(/grant[\s\S]{0,60}on public\.vendor_portal_\w+ to [^;]*anon/i);
