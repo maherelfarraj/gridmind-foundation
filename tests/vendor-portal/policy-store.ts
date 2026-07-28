@@ -39,6 +39,7 @@ interface ParsedPolicy {
   ownRow: boolean;
   memberScoped: boolean;
   notExternal: boolean;
+  denyAll: boolean;
   roles: string[];
 }
 
@@ -76,6 +77,7 @@ function parsePolicies(table: string): ParsedPolicy[] {
       ownRow: /user_id\s*=\s*auth\.uid\(\)/i.test(body),
       memberScoped: /is_company_member\(company_id\)/i.test(body),
       notExternal: /not\s+public\.is_external_viewer\(\)/i.test(body),
+      denyAll: /(with check|using)\s*\(\s*false\s*\)/i.test(body),
       roles: [...body.matchAll(/has_company_role\('(\w+)'/g)].map((r) => r[1]),
     };
   });

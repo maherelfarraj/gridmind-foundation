@@ -52,7 +52,7 @@ describe("direct table writes", () => {
 
   it("declares no permissive write policies (only the explicit deny-all INSERT guard)", () => {
     const writePolicies = eventsAcl.policies.filter((p) => p.action !== "select");
-    expect(writePolicies.every((p) => p.check === "false" || p.using === "false")).toBe(true);
+    expect(writePolicies.every((p) => p.denyAll)).toBe(true);
   });
 
 });
