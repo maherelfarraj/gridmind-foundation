@@ -129,7 +129,7 @@ describe("match exceptions + summary", () => {
 
   it("summarizes the dashboard counters", () => {
     const counts = summarizeReceiving({
-      drafts: 2,
+      openReceipts: 2,
       matches,
       etas: [
         {
@@ -156,5 +156,18 @@ describe("match exceptions + summary", () => {
       unconfirmed_etas: 1,
       late_lines: 1,
     });
+  });
+
+  it("counts has_defects receipts as open, not just drafts", () => {
+    const openRows = [
+      { id: "g1", status: "draft" },
+      { id: "g2", status: "has_defects" },
+    ];
+    const counts = summarizeReceiving({
+      openReceipts: openRows.length,
+      matches: [],
+      etas: [],
+    });
+    expect(counts.open_receipts).toBe(openRows.length);
   });
 });

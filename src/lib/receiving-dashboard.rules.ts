@@ -72,14 +72,18 @@ export interface ReceivingCounts {
   late_lines: number;
 }
 
+/**
+ * `openReceipts` is every receipt still in the open list (draft AND
+ * has_defects) so the KPI matches the rows rendered beneath it.
+ */
 export function summarizeReceiving(args: {
-  drafts: number;
+  openReceipts: number;
   matches: MatchExceptionRow[];
   etas: EtaRow[];
 }): ReceivingCounts {
   const ranked = rankBySlippage(args.etas);
   return {
-    open_receipts: args.drafts,
+    open_receipts: args.openReceipts,
     match_exceptions: matchExceptions(args.matches).length,
     unconfirmed_etas: args.etas.filter((e) => !e.eta_confirmed).length,
     late_lines: ranked.filter((r) => r.severity === "late").length,
