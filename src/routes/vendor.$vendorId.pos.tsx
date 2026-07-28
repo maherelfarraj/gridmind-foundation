@@ -4,7 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Lock, MapPin, PackageSearch } from "lucide-react";
+import { ArrowLeft, CalendarClock, Loader2, Lock, MapPin, PackageSearch } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,12 @@ import {
 import { VendorStateCard, VendorTableSkeleton } from "@/components/vendor-portal/state-cards";
 import { PoStatusStepper } from "@/components/vendor-portal/po-status-stepper";
 import { AcknowledgmentChip } from "@/components/vendor-portal/acknowledgment-chip";
+import {
+  ConfirmationChip,
+  ProposeDeliveryDialog,
+} from "@/components/vendor-portal/propose-delivery-dialog";
+import { useProposeDelivery, useVendorLineEtas } from "@/lib/vendor-portal-propose";
+import type { VendorLineEtaRow } from "@/lib/vendor-portal.functions";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { countdownLabel, parsePoLines, vendorPortalErrorCode } from "@/lib/vendor-portal.rules";
 import {
@@ -86,6 +92,10 @@ function VendorPoList() {
 
   const [linesPo, setLinesPo] = useState<VendorPoRow | null>(null);
   const [ackPo, setAckPo] = useState<VendorPoRow | null>(null);
+  const [proposePo, setProposePo] = useState<VendorPoRow | null>(null);
+
+  const { etaByKey } = useVendorLineEtas(vendorId);
+  const propose = useProposeDelivery(vendorId, () => setProposePo(null));
 
   const ack = useMutation({
     mutationFn: (args: { poId: string; decision: Decision; comment?: string }) =>
@@ -179,6 +189,7 @@ function VendorPoList() {
         <div className="space-y-3">
           {rows.map((po) => {
             const canAck = po.status === "issued" || po.status === "partially_received";
+            const canPropose = po.status !== "closed" && po.status !== "cancelled";
             const countdown = countdownLabel(po.required_by_date);
             return (
               <Card key={po.id}>
@@ -225,6 +236,12 @@ function VendorPoList() {
                     <Button variant="outline" size="sm" onClick={() => setLinesPo(po)}>
                       View lines
                     </Button>
+                    {canPropose ? (
+                      <Button variant="outline" size="sm" onClick={() => setProposePo(po)}>
+                        <CalendarClock className="mr-2 h-4 w-4" />
+                        Propose delivery
+                      </Button>
+                    ) : null}
                     {canAck ? (
                       <Button size="sm" onClick={() => setAckPo(po)}>
                         {po.acknowledgment_status ? "Re-acknowledge" : "Acknowledge"}
@@ -238,7 +255,22 @@ function VendorPoList() {
         </div>
       )}
 
-      <PoLinesDrawer po={linesPo} onClose={() => setLinesPo(null)} />
+      <PoLinesDrawer
+        po={linesPo}
+        etaByKey={etaByKey}
+        onClose={() => setLinesPo(null)}
+        onPropose={(po) => {
+          setLinesPo(null);
+          setProposePo(po);
+        }}
+      />
+      <ProposeDeliveryDialog
+        po={proposePo}
+        etaByKey={etaByKey}
+        submitting={propose.isPending}
+        onClose={() => setProposePo(null)}
+        onSubmit={(poId, poIssueDate, lines) => propose.mutate({ poId, poIssueDate, lines })}
+      />
       <AcknowledgeDialog
         po={ackPo}
         pending={ack.isPending}
@@ -249,14 +281,34 @@ function VendorPoList() {
   );
 }
 
-function PoLinesDrawer({ po, onClose }: { po: VendorPoRow | null; onClose: () => void }) {
+function PoLinesDrawer({
+  po,
+  etaByKey,
+  onClose,
+  onPropose,
+}: {
+  po: VendorPoRow | null;
+  etaByKey: Map<string, VendorLineEtaRow>;
+  onClose: () => void;
+  onPropose: (po: VendorPoRow) => void;
+}) {
   const lines = parsePoLines(po?.lines);
   return (
     <Drawer open={po !== null} onOpenChange={(o) => !o && onClose()}>
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{po?.po_number} — lines</DrawerTitle>
-          <DrawerDescription>Quantities, specifications and your agreed prices.</DrawerDescription>
+          <DrawerDescription>
+            Quantities, specifications, your agreed prices and per-line delivery status.
+          </DrawerDescription>
+          {po && lines.length > 0 ? (
+            <div className="pt-2">
+              <Button size="sm" onClick={() => onPropose(po)}>
+                <CalendarClock className="mr-2 h-4 w-4" />
+                Propose delivery dates
+              </Button>
+            </div>
+          ) : null}
         </DrawerHeader>
         <div className="max-h-[60vh] overflow-auto px-4 pb-8">
           {lines.length === 0 ? (
@@ -273,27 +325,38 @@ function PoLinesDrawer({ po, onClose }: { po: VendorPoRow | null; onClose: () =>
                   <TableHead>UoM</TableHead>
                   <TableHead className="text-right">Unit price</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Proposed ETA</TableHead>
+                  <TableHead>Delivery status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lines.map((l, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="font-medium">{l.description}</TableCell>
-                    <TableCell className="text-muted-foreground">{l.spec ?? "—"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{l.quantity}</TableCell>
-                    <TableCell>{l.uom ?? "—"}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatMoney(l.unit_price, po?.currency_code ?? "USD", {
-                        maximumFractionDigits: 2,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatMoney(l.amount, po?.currency_code ?? "USD", {
-                        maximumFractionDigits: 2,
-                      })}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {lines.map((l, i) => {
+                  const eta = etaByKey.get(`${po?.id}:${l.line_no}`);
+                  return (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium">{l.description}</TableCell>
+                      <TableCell className="text-muted-foreground">{l.spec ?? "—"}</TableCell>
+                      <TableCell className="text-right tabular-nums">{l.quantity}</TableCell>
+                      <TableCell>{l.uom ?? "—"}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatMoney(l.unit_price, po?.currency_code ?? "USD", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatMoney(l.amount, po?.currency_code ?? "USD", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {eta?.current_eta ? formatDate(eta.current_eta) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <ConfirmationChip eta={eta} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
