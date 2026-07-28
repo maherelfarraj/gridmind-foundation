@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { Check, Languages, LogOut, Settings, User as UserIcon } from "lucide-react";
 
 import { useAuth } from "@/routes/__root";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,8 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LOCALES, type Locale } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 function initialsFromEmail(email?: string | null): string {
   if (!email) return "?";
@@ -24,14 +29,20 @@ function initialsFromEmail(email?: string | null): string {
   return local.slice(0, 2).toUpperCase();
 }
 
+const LOCALE_LABEL_KEY: Record<Locale, string> = {
+  en: "common.english",
+  ar: "common.arabic",
+};
+
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const { t, locale, setLocale } = useI18n();
   const email = user?.email ?? "";
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ??
     (user?.user_metadata?.name as string | undefined) ??
     email.split("@")[0] ??
-    "Signed in";
+    t("common.signIn");
 
   return (
     <DropdownMenu>
@@ -40,7 +51,7 @@ export function UserMenu() {
           variant="ghost"
           size="icon"
           className="h-9 w-9 rounded-full"
-          aria-label="Account menu"
+          aria-label={t("common.accountMenu")}
         >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
@@ -60,15 +71,37 @@ export function UserMenu() {
         <DropdownMenuItem asChild>
           <Link to="/settings/profile" className="flex cursor-pointer items-center gap-2">
             <UserIcon className="h-4 w-4" />
-            <span>Profile</span>
+            <span>{t("common.profile")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/settings/company" className="flex cursor-pointer items-center gap-2">
             <Settings className="h-4 w-4" />
-            <span>Settings</span>
+            <span>{t("common.settings")}</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="gap-2">
+            <Languages className="h-4 w-4" />
+            <span>{t("common.language")}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {LOCALES.map((code) => (
+              <DropdownMenuItem
+                key={code}
+                onSelect={() => setLocale(code)}
+                className="gap-2"
+                data-testid={`locale-${code}`}
+              >
+                <Check
+                  className={`h-4 w-4 ${code === locale ? "opacity-100" : "opacity-0"}`}
+                  aria-hidden
+                />
+                <span>{t(LOCALE_LABEL_KEY[code])}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() => {
@@ -77,7 +110,7 @@ export function UserMenu() {
           className="gap-2 text-foreground"
         >
           <LogOut className="h-4 w-4" />
-          <span>Sign out</span>
+          <span>{t("common.signOut")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
