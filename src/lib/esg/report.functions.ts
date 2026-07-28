@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { assertRoles, audit, currentCompanyId, httpError } from "@/lib/cwp.server";
+import { settleEntityForInstance } from "@/lib/approval-settle.server";
 import { assertExportAllowed } from "@/lib/export-guard";
 import {
   buildReportPackage,
