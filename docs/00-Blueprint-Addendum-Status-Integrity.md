@@ -112,3 +112,28 @@ table carrying `company_id`, and writes an `ops.fixture_purge` audit row.
 **Invariant:** after any number of back-to-back full-suite runs,
 `select count(*) from public.companies` = **2**. Suite isolation must never
 depend on leftover fixtures.
+
+---
+
+## Cross-project RPC doctrine (P-256)
+
+Any RPC that reads *across* projects — the portfolio lens, and every future
+executive/roll-up surface — follows the **guard + audit** pattern established
+by `public.portfolio_guard(p_rpc text)`:
+
+1. `SECURITY DEFINER` with `set search_path = public`, `revoke all … from
+   public, anon`, `grant execute … to authenticated`.
+2. The guard rejects `auth.uid() is null` (anon) and any
+   `is_external_viewer()` caller — client, investor, lender and vendor
+   viewers never reach portfolio math.
+3. The tenant is resolved **from the caller's profile**, never from an
+   argument. A cross-tenant caller sees their own company or nothing.
+4. The guard writes one `ops.portfolio_view` audit row per call, carrying the
+   RPC name in `metadata.rpc`.
+5. Aggregation is **weighted** (ΣEV/ΣPV, recordables × 200,000 / Σhours) and
+   FX is frozen at entry (`amount_base`), never re-converted at read time.
+
+Proof suites: `tests/portfolio/aggregation.test.ts` (3-project fixture, every
+number hand-computed) and `tests/rls/portfolio.rls.test.ts` (four external
+roles, anon, cross-tenant isolation, audit row). Both tear their tenants down
+through `fixture_purge_tenants`.
