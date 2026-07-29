@@ -117,12 +117,12 @@ depend on leftover fixtures.
 
 ## Cross-project RPC doctrine (P-256)
 
-Any RPC that reads *across* projects — the portfolio lens, and every future
+Any RPC that reads _across_ projects — the portfolio lens, and every future
 executive/roll-up surface — follows the **guard + audit** pattern established
 by `public.portfolio_guard(p_rpc text)`:
 
 1. `SECURITY DEFINER` with `set search_path = public`, `revoke all … from
-   public, anon`, `grant execute … to authenticated`.
+public, anon`, `grant execute … to authenticated`.
 2. The guard rejects `auth.uid() is null` (anon) and any
    `is_external_viewer()` caller — client, investor, lender and vendor
    viewers never reach portfolio math.
@@ -148,7 +148,7 @@ external-party module (any counterparty that gets a seat in our app):
 1. **Vendor-portal definer pattern.** External parties never touch the raw
    tables. Every policy on `subcontracts`, `subcontract_lines`,
    `subcontract_claims`, `subcontract_claim_lines` and
-   `subcontract_retention_releases` is company-scoped *and* excludes
+   `subcontract_retention_releases` is company-scoped _and_ excludes
    `is_external_viewer()`; the sub reads and writes only through
    `SECURITY DEFINER` routines (`sub_portal_*`) that resolve company + vendor
    from the caller's **active seat**, never from the argument. `anon` holds no
@@ -170,3 +170,37 @@ reflection, release zeroing the ledger) and
 `tests/rls/subcontracts.rls.test.ts` (policy shape on all five tables plus
 live cross-tenant, cross-sub, anon, external-viewer and engine-freeze probes).
 Both tear their tenants down through `fixture_purge_tenants`.
+
+## Batch 35 — Document control doctrine
+
+Reference pattern for any controlled-artefact module:
+
+1. **Pinned transmittals.** A transmittal item pins `revision_pinned` at
+   insert time. Once the parent leaves `draft`, `transmittal_items_freeze()`
+   raises `transmittal_items_frozen` on every insert/update/delete, so what
+   was sent stays exactly what was sent even after the source document is
+   superseded. `transmittals_guard_delete()` mirrors this at the header level:
+   only a `draft` transmittal is deletable (`transmittal_not_draft`); the
+   freeze exempts the cascade of a draft delete, and system/maintenance paths
+   (`auth.uid() is null`) are exempt so fixture teardown stays possible.
+2. **Enforced supersedure.** `status` on `document_register` is derived, never
+   hand-set: `document_register_auto_supersede` flips the predecessor to
+   `superseded` and links `supersedes_id` forward, `document_history()` walks
+   the chain and `document_current_in_lineage()` resolves the head. This is
+   the derived-status doctrine applied to revisions rather than to workflow.
+3. **Controlled copies as obligations.** Copy numbers are allocated by
+   `issue_controlled_copy`, issuing against a non-current revision raises the
+   typed `doc_not_current` 409, and supersedure flags outstanding copies
+   `recall_due` — recall completeness is a computed ratio, not a checkbox.
+   Uncontrolled output is watermarked bilingually at export time.
+4. **Dossier-as-document.** The turnover dossier is not a download side
+   effect: it compiles, gap-checks, stamps COMPLETE/INCOMPLETE and then
+   self-registers as a `permanent` controlled document with its own DOC
+   number, so the deliverable is itself under document control.
+
+Proof suites: `tests/documents/lifecycle.test.ts` (3-deep supersedure chain,
+pinned transmittal items, copy numbering, recall math, retention classes,
+gapped vs clean dossier registration, P-264 search ranking/snippets) and
+`tests/rls/documents.rls.test.ts` (policy shape on all four tables plus live
+cross-tenant, anon, external-viewer, role-gate and freeze probes). Both tear
+their tenants down through `fixture_purge_tenants`.
