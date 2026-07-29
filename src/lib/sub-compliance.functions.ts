@@ -220,6 +220,39 @@ export const runComplianceSweep = createServerFn({ method: "POST" })
     const { data, error } = await context.supabase.rpc("sub_compliance_expiry_sweep");
     if (error) httpError(400, "sweep_failed", error.message);
     const res = (data ?? {}) as { refreshed?: number; alerts?: number };
+
+    // P-269 — expiry warnings to the affected subcontractors (non-blocking).
+    try {
+      const horizon = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+      const { data: docs } = await context.supabase
+        .from("subcontract_compliance_docs")
+        .select("id, company_id, vendor_id, doc_type, title, expiry_date")
+        .lte("expiry_date", horizon)
+        .not("expiry_date", "is", null)
+        .limit(200);
+      const { notify, recipientLocale, vendorEmail } = await import("@/lib/email/dispatch.server");
+      for (const raw of (docs ?? []) as Record<string, unknown>[]) {
+        const to = await vendorEmail(context.supabase, raw.vendor_id as string | undefined);
+        if (!to) continue;
+        await notify({
+          event: "compliance_expiry",
+          to,
+          companyId: (raw.company_id as string | undefined) ?? null,
+          entity: "subcontract_compliance_docs",
+          entityId: (raw.id as string | undefined) ?? null,
+          actorId: context.user?.id ?? null,
+          locale: await recipientLocale(context.supabase, to),
+          params: {
+            doc_type: raw.doc_type ?? "",
+            title: raw.title ?? "",
+            expiry_date: raw.expiry_date ?? "",
+          },
+        });
+      }
+    } catch {
+      /* notifications never fail the sweep */
+    }
+
     return { refreshed: Number(res.refreshed ?? 0), alerts: Number(res.alerts ?? 0) };
   });
 
