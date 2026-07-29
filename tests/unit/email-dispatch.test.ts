@@ -1,24 +1,17 @@
-// P-269 — dispatcher unit tests.
+// P-269 / P-270 — dispatcher unit tests (native email stack).
 import { describe, expect, it, vi } from "vitest";
 
 import { sendEventEmail, notify } from "@/lib/email/dispatch.server";
 import {
   EMAIL_EVENTS,
-  TEMPLATE_ENV_KEYS,
+  EVENT_LABELS,
+  EVENT_TEMPLATES,
   buildTemplateParams,
-  emailjsCredentials,
-  isEventConfigured,
   pickLocale,
-  resolveTemplateId,
 } from "@/lib/email/registry";
+import { TEMPLATES } from "@/lib/email-templates/registry";
 
-const FULL_ENV = {
-  EMAILJS_SERVICE_ID: "service_x",
-  EMAILJS_PUBLIC_KEY: "pub_x",
-  EMAILJS_PRIVATE_KEY: "priv_x",
-  EMAILJS_TEMPLATE_CLIENT_INVITE: "template_ci",
-  EMAILJS_TEMPLATE_ID: "template_report",
-};
+const ENV = { LOVABLE_API_KEY: "lk_test" };
 
 function fakeSupabase() {
   const rows: Record<string, unknown>[] = [];
@@ -35,83 +28,100 @@ function fakeSupabase() {
   } as never;
 }
 
+const okSend = () => vi.fn(async () => ({ sent: true }) as const);
+
 describe("registry", () => {
-  it("maps every event to a distinct secret name", () => {
-    const keys = EMAIL_EVENTS.map((e) => TEMPLATE_ENV_KEYS[e]);
-    expect(keys).toHaveLength(EMAIL_EVENTS.length);
-    expect(new Set(keys).size).toBe(EMAIL_EVENTS.length);
-    expect(keys.every((k) => k.startsWith("EMAILJS_TEMPLATE"))).toBe(true);
+  it("maps every event to a registered template", () => {
+    for (const event of EMAIL_EVENTS) {
+      const name = EVENT_TEMPLATES[event];
+      expect(name).toBeTruthy();
+      expect(TEMPLATES[name]).toBeDefined();
+    }
+    expect(new Set(Object.values(EVENT_TEMPLATES)).size).toBe(EMAIL_EVENTS.length);
   });
 
-  it("resolves template ids from env only", () => {
-    expect(resolveTemplateId("client_invite", FULL_ENV)).toBe("template_ci");
-    expect(resolveTemplateId("transmittal", FULL_ENV)).toBeNull();
-    expect(resolveTemplateId("client_invite", { EMAILJS_TEMPLATE_CLIENT_INVITE: "  " })).toBeNull();
+  it("carries bilingual labels for every event", () => {
+    for (const event of EMAIL_EVENTS) {
+      expect(EVENT_LABELS[event].en).toBeTruthy();
+      expect(EVENT_LABELS[event].ar).toBeTruthy();
+    }
   });
 
-  it("requires all three credentials", () => {
-    expect(emailjsCredentials(FULL_ENV)).not.toBeNull();
-    expect(emailjsCredentials({ ...FULL_ENV, EMAILJS_PRIVATE_KEY: undefined })).toBeNull();
-  });
-
-  it("reports per-event configuration", () => {
-    expect(isEventConfigured("client_invite", FULL_ENV)).toBe(true);
-    expect(isEventConfigured("payment", FULL_ENV)).toBe(false);
-  });
-
-  it("picks recipient locale and bilingual params", () => {
+  it("picks recipient locale and builds RTL props", () => {
     expect(pickLocale("ar")).toBe("ar");
     expect(pickLocale("ar-JO")).toBe("ar");
     expect(pickLocale(null)).toBe("en");
     const p = buildTemplateParams({ event: "payment", to: "a@b.c", locale: "ar-JO" });
     expect(p.dir).toBe("rtl");
-    expect(p.subject).toBe(p.subject_ar);
-    expect(p.subject_en).toBeTruthy();
+    expect(p.lang).toBe("ar");
+    expect(p.heading_ar).toBeTruthy();
+    expect(p.heading_en).toBeTruthy();
     expect(p.to_email).toBe("a@b.c");
+  });
+
+  it("maps params to bilingual labelled fields and absolutises the CTA", () => {
+    const p = buildTemplateParams({
+      event: "client_invite",
+      to: "a@b.c",
+      params: { role: "company_admin", accept_url: "/accept-invite?token=x" },
+      baseUrl: "https://gridmindepc.com",
+    });
+    expect(p.cta_url).toBe("https://gridmindepc.com/accept-invite?token=x");
+    expect(p.fields).toEqual([
+      { key: "role", label_en: "Role", label_ar: "الدور", value: "company_admin" },
+    ]);
   });
 });
 
 describe("sendEventEmail", () => {
   it("sends and audits email.sent", async () => {
     const sb = fakeSupabase();
-    const fetchImpl = vi.fn(async () => new Response("OK", { status: 200 }));
+    const send = okSend();
     const out = await sendEventEmail({
       event: "client_invite",
       to: "maher@next.jo",
       companyId: "c1",
       entity: "invites",
       entityId: "i1",
-      env: FULL_ENV,
-      fetchImpl: fetchImpl as unknown as typeof fetch,
+      env: ENV,
+      sendImpl: send as never,
       supabase: sb,
     });
     expect(out.status).toBe("sent");
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const body = JSON.parse((fetchImpl.mock.calls[0][1] as RequestInit).body as string);
-    expect(body.template_id).toBe("template_ci");
-    expect(body.service_id).toBe("service_x");
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0]).toBe("client-invite");
     const audit = (sb as unknown as { rows: Record<string, unknown>[] }).rows[0];
     expect(audit.action).toBe("email.sent");
     expect((audit.metadata as Record<string, unknown>).event_type).toBe("client_invite");
     expect((audit.metadata as Record<string, unknown>).recipient).toBe("maher@next.jo");
   });
 
-  it("degrades gracefully when secrets are missing", async () => {
+  it("degrades gracefully when the platform key is missing", async () => {
     const sb = fakeSupabase();
-    const fetchImpl = vi.fn();
+    const send = okSend();
     const out = await sendEventEmail({
       event: "transmittal",
       to: "x@y.z",
       companyId: "c1",
       env: {},
-      fetchImpl: fetchImpl as unknown as typeof fetch,
+      sendImpl: send as never,
       supabase: sb,
     });
     expect(out).toMatchObject({ status: "skipped", reason: "not_configured" });
-    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
     expect((sb as unknown as { rows: Record<string, unknown>[] }).rows[0].action).toBe(
       "email.skipped",
     );
+  });
+
+  it("treats a suppressed recipient as skipped, not failed", async () => {
+    const out = await sendEventEmail({
+      event: "payment",
+      to: "x@y.z",
+      env: ENV,
+      sendImpl: (async () => ({ sent: false, reason: "recipient_suppressed" })) as never,
+    });
+    expect(out).toMatchObject({ status: "skipped", reason: "recipient_suppressed" });
   });
 
   it("records failures without throwing (non-blocking)", async () => {
@@ -120,10 +130,10 @@ describe("sendEventEmail", () => {
       event: "client_invite",
       to: "x@y.z",
       companyId: "c1",
-      env: FULL_ENV,
-      fetchImpl: (async () => {
+      env: ENV,
+      sendImpl: (async () => {
         throw new Error("network down");
-      }) as unknown as typeof fetch,
+      }) as never,
       supabase: sb,
     });
     expect(out).toMatchObject({ status: "failed", error: "network down" });
@@ -132,19 +142,8 @@ describe("sendEventEmail", () => {
     );
   });
 
-  it("surfaces non-2xx as failed", async () => {
-    const out = await sendEventEmail({
-      event: "client_invite",
-      to: "x@y.z",
-      env: FULL_ENV,
-      fetchImpl: (async () =>
-        new Response("bad template", { status: 400 })) as unknown as typeof fetch,
-    });
-    expect(out.status).toBe("failed");
-  });
-
   it("skips empty recipients", async () => {
-    const out = await sendEventEmail({ event: "payment", to: "  ", env: FULL_ENV });
+    const out = await sendEventEmail({ event: "payment", to: "  ", env: ENV });
     expect(out).toMatchObject({ status: "skipped", reason: "no_recipient" });
   });
 
@@ -153,10 +152,10 @@ describe("sendEventEmail", () => {
       notify({
         event: "payment",
         to: "x@y.z",
-        env: FULL_ENV,
-        fetchImpl: (() => {
+        env: ENV,
+        sendImpl: (() => {
           throw new Error("boom");
-        }) as unknown as typeof fetch,
+        }) as never,
       }),
     ).resolves.toBeUndefined();
   });
