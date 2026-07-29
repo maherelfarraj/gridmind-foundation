@@ -196,7 +196,7 @@ d("P-268 · document tables — live isolation probes", () => {
       p_holder_name: "RLS holder",
     });
     if (copy.error) throw new Error(`probe copy: ${copy.error.message}`);
-    copyId = (copy.data as Array<{ id: string }>)[0].id;
+    copyId = (Array.isArray(copy.data) ? copy.data[0] : (copy.data as { id: string })).id;
   }, 300_000);
 
   afterAll(async () => {
@@ -296,7 +296,7 @@ d("P-268 · document tables — live isolation probes", () => {
       p_holder_name: "Engineering",
     });
     expect(issued.error).toBeNull();
-    const id = (issued.data as Array<{ id: string }>)[0].id;
+    const id = (Array.isArray(issued.data) ? issued.data[0] : (issued.data as { id: string })).id;
     const recalled = await rpc(E)("recall_controlled_copy", {
       p_copy_id: id,
       p_disposition: "recalled",

@@ -24,6 +24,9 @@ import {
 } from "@/lib/turnover-dossier.rules";
 
 import { EXPECTED, insertOne, isSupabaseUp, rpc, setupDocumentFixture } from "./fixtures";
+
+/** PostgREST returns a bare object for scalar-row RPCs and an array for TABLE ones. */
+const firstRow = <T,>(data: unknown): T => (Array.isArray(data) ? (data[0] as T) : (data as T));
 import type { DocumentFixture, Svc } from "./fixtures";
 
 const up = await isSupabaseUp();
@@ -174,7 +177,7 @@ d("P-268 · document control lifecycle", () => {
         p_location: holder,
       });
       if (error) throw new Error(`issue_controlled_copy: ${error.message}`);
-      copyNumbers.push((data as Array<{ copy_number: number }>)[0].copy_number);
+      copyNumbers.push(firstRow<{ copy_number: number }>(data).copy_number);
     }
 
     // 4 — recall flow: return copy #2, then supersede C with D
@@ -201,7 +204,7 @@ d("P-268 · document control lifecycle", () => {
     const { data: comp } = await rpc(A)("controlled_copy_completeness", {
       p_document_id: revs[2].id,
     });
-    const c0 = (comp as Array<Record<string, number>>)[0];
+    const c0 = firstRow<Record<string, number>>(comp);
     completenessAfterReturn = {
       total: c0.total,
       outstanding: c0.outstanding,
@@ -246,7 +249,7 @@ d("P-268 · document control lifecycle", () => {
       p_holder_name: "Site office",
     });
     if (freshErr) throw new Error(`issue on current: ${freshErr.message}`);
-    firstCopyOnCurrent = (fresh as Array<{ copy_number: number }>)[0].copy_number;
+    firstCopyOnCurrent = firstRow<{ copy_number: number }>(fresh).copy_number;
 
     // 5 — retention classes
     const { data: retention } = await A.from("document_register")
@@ -278,7 +281,7 @@ d("P-268 · document control lifecycle", () => {
       p_storage_path: null,
     });
     if (gapped.error) throw new Error(`dossier(gap): ${gapped.error.message}`);
-    const gappedRow = (gapped.data as Array<{ document_id: string; doc_number: string }>)[0];
+    const gappedRow = firstRow<{ document_id: string; doc_number: string }>(gapped.data);
 
     const clean = await rpc(A)("register_turnover_dossier", {
       p_project_id: fx.projectId,
@@ -288,7 +291,7 @@ d("P-268 · document control lifecycle", () => {
       p_storage_path: null,
     });
     if (clean.error) throw new Error(`dossier(clean): ${clean.error.message}`);
-    const cleanRow = (clean.data as Array<{ document_id: string; doc_number: string }>)[0];
+    const cleanRow = firstRow<{ document_id: string; doc_number: string }>(clean.data);
 
     const { data: dossierDocs } = await A.from("document_register")
       .select("id, doc_number, retention_class, status, metadata")
@@ -336,7 +339,7 @@ d("P-268 · document control lifecycle", () => {
     expect(chain).toEqual([...EXPECTED.chain, "D"]);
 
     const { data: current } = await rpc(A)("document_current_in_lineage", { p_doc_id: revs[0].id });
-    const head = (current as Array<{ current_revision: string; is_self: boolean }>)[0];
+    const head = firstRow<{ current_revision: string; is_self: boolean }>(current);
     expect(head.current_revision).toBe("D");
     expect(head.is_self).toBe(false);
   });
