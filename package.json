@@ -19,7 +19,7 @@
     "test:integrity": "vitest run --config vitest.config.all.ts --project all-db tests/integrity/status-consistency.test.ts"
   },
   "overrides": {
-    "entities": "^6.0.0"
+    "entities": "4.5.0"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -90,7 +90,11 @@
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^3.24.2",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.14",
+    "@lovable.dev/email-js": "0.1.0",
+    "@lovable.dev/webhooks-js": "^0.0.1",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -117,5 +121,10 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16",
     "vitest": "^4.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "entities": "4.5.0"
+    }
   }
 }
