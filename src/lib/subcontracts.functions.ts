@@ -728,6 +728,40 @@ export const decideClaim = createServerFn({ method: "POST" })
       data.claim_id,
       { comment: data.comment ?? null },
     );
+
+    // P-269 — certification notice to the subcontractor (non-blocking).
+    if (data.decision === "approved") {
+      const { data: claimRow } = await context.supabase
+        .from("subcontract_claims")
+        .select("claim_number, net_payable, company_id, subcontract_id")
+        .eq("id", data.claim_id)
+        .maybeSingle();
+      const c = (claimRow ?? {}) as Record<string, unknown>;
+      const { data: scRow } = await context.supabase
+        .from("subcontracts")
+        .select("vendor_id, subcontract_number, currency_code")
+        .eq("id", (c.subcontract_id as string) ?? "")
+        .maybeSingle();
+      const s = (scRow ?? {}) as Record<string, unknown>;
+      const { notify, recipientLocale, vendorEmail } = await import("@/lib/email/dispatch.server");
+      const subEmail = await vendorEmail(context.supabase, s.vendor_id as string | undefined);
+      await notify({
+        event: "claim_certified",
+        to: subEmail,
+        companyId: (c.company_id as string | undefined) ?? null,
+        entity: "subcontract_claims",
+        entityId: data.claim_id,
+        actorId: context.user?.id ?? null,
+        locale: await recipientLocale(context.supabase, subEmail ?? ""),
+        params: {
+          claim_number: c.claim_number ?? "",
+          subcontract_number: s.subcontract_number ?? "",
+          net_payable: c.net_payable ?? "",
+          currency: s.currency_code ?? "",
+        },
+      });
+    }
+
     return { ok: true };
   });
 
