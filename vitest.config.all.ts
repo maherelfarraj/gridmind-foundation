@@ -2,7 +2,13 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
 
-const alias = { "@": path.resolve(__dirname, "src") };
+const alias = {
+  "@": path.resolve(__dirname, "src"),
+  // React Email deep-imports entities v4 paths; jsdom needs modern entities.
+  "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities-v4/lib/decode.js"),
+  "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities-v4/lib/encode.js"),
+  "entities/lib/escape.js": path.resolve(__dirname, "node_modules/entities-v4/lib/escape.js"),
+};
 
 // Pure in-process suites: no database, safe to fan out wide.
 const UNIT_INCLUDE = [

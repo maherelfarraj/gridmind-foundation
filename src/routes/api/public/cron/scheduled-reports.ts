@@ -2,10 +2,11 @@
  * P-123 — Scheduled reports delivery cron.
  *
  * Selects `is_active AND next_run_at <= now()` rows from scheduled_reports
- * and delivers each via the same EmailJS pipeline as
- * sendScheduledReport (P-117). Failures set last_run_error and the loop
- * continues to the next schedule — one bad recipient must not stall the
- * queue. Successful delivery advances next_run_at via compute_next_run.
+ * and delivers each through the native email stack (Lovable managed sending
+ * on notify.gridmindepc.com), the same path as sendScheduledReport (P-117).
+ * Failures set last_run_error and the loop continues to the next schedule —
+ * one bad recipient must not stall the queue. Successful delivery advances
+ * next_run_at via compute_next_run.
  *
  * pg_cron registration:
  *   select cron.schedule(
@@ -22,40 +23,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { createServiceRoleClient } from "@/integrations/supabase/admin";
+import { sendEventEmail } from "@/lib/email/dispatch.server";
 import { guardPublicHook } from "@/lib/public-api/guard";
 
 const ROUTE = "cron:scheduled-reports";
 const MAX_PER_RUN = 50;
 
-async function renderPdfBase64(schedule: {
-  name: string;
-  report_type: string;
-  frequency: string;
-  template_sections: Record<string, unknown> | null;
-  companies: { name?: string } | null;
-  projects: { name?: string } | null;
-}): Promise<string> {
-  const { default: jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const companyName = schedule.companies?.name ?? "GridMind EPC";
-  doc.setFontSize(20);
-  doc.text(companyName, 40, 60);
-  doc.setFontSize(14);
-  doc.text(schedule.name, 40, 90);
-  doc.setFontSize(11);
-  doc.text(`Report type: ${schedule.report_type}`, 40, 120);
-  doc.text(`Frequency: ${schedule.frequency}`, 40, 140);
-  doc.text(`Project: ${schedule.projects?.name ?? "All projects (company-wide)"}`, 40, 160);
-  doc.text(`Generated: ${new Date().toISOString()}`, 40, 180);
-  const sections = Object.entries(schedule.template_sections ?? {})
-    .filter(([, v]) => v)
-    .map(([k]) => k);
-  if (sections.length) {
-    doc.text("Sections included:", 40, 210);
-    sections.forEach((s, i) => doc.text(`• ${s}`, 60, 230 + i * 18));
-  }
-  return doc.output("datauristring").split(",")[1] ?? "";
-}
 
 export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
   server: {
@@ -110,11 +83,8 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
               );
             }
 
-            const serviceId = process.env.EMAILJS_SERVICE_ID;
-            const templateId = process.env.EMAILJS_TEMPLATE_ID;
-            const publicKey = process.env.EMAILJS_PUBLIC_KEY;
-            const privateKey = process.env.EMAILJS_PRIVATE_KEY;
-            const emailjsReady = !!(serviceId && templateId && publicKey && privateKey);
+            const emailReady = !!process.env.LOVABLE_API_KEY;
+
 
             type Counts = {
               sent: number;
@@ -154,13 +124,13 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
                 companies: { name?: string } | null;
               };
 
-              if (!emailjsReady) {
+              if (!emailReady) {
                 await admin
                   .from("scheduled_reports")
                   .update({
                     last_run_at: nowIso,
                     last_run_status: "error",
-                    last_run_error: "emailjs_not_configured",
+                    last_run_error: "email_not_configured",
                   } as never)
                   .eq("id", schedule.id);
                 bump(schedule.company_id, { failed: 1 });
@@ -171,41 +141,40 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
               let recipientsFailed = 0;
               let lastError: string | null = null;
               try {
-                const pdfBase64 = await renderPdfBase64(schedule);
+                const sections = Object.entries(schedule.template_sections ?? {})
+                  .filter(([, v]) => v)
+                  .map(([k]) => k);
                 for (const to of schedule.recipients ?? []) {
-                  try {
-                    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        service_id: serviceId,
-                        template_id: templateId,
-                        user_id: publicKey,
-                        accessToken: privateKey,
-                        template_params: {
-                          to_email: to,
-                          report_name: schedule.name,
-                          period: schedule.frequency,
-                          company_name: schedule.companies?.name ?? "GridMind EPC",
-                          attachment_base64: pdfBase64,
-                        },
-                      }),
-                    });
-                    if (!res.ok) {
-                      recipientsFailed++;
-                      lastError = `HTTP ${res.status}`;
-                    } else {
-                      recipientsOk++;
-                    }
-                  } catch (e) {
+                  const outcome = await sendEventEmail({
+                    event: "scheduled_report",
+                    to,
+                    companyId: schedule.company_id,
+                    entity: "scheduled_reports",
+                    entityId: schedule.id,
+                    companyName: schedule.companies?.name ?? "GridMind EPC",
+                    idempotencyKey: `scheduled-report-${schedule.id}-${to}-${nowIso.slice(0, 13)}`,
+                    supabase: admin as never,
+                    params: {
+                      report_name: schedule.name,
+                      period: schedule.frequency,
+                      project_name: schedule.projects?.name ?? "All projects (company-wide)",
+                      sections,
+                      generated_at: nowIso,
+                    },
+                  });
+                  if (outcome.status === "sent") recipientsOk++;
+                  else if (outcome.status === "failed") {
                     recipientsFailed++;
-                    lastError = e instanceof Error ? e.message : String(e);
+                    lastError = outcome.error;
+                  } else {
+                    lastError = `skipped:${outcome.reason}`;
                   }
                 }
               } catch (e) {
                 lastError = e instanceof Error ? e.message : String(e);
                 recipientsFailed = (schedule.recipients ?? []).length;
               }
+
 
               const success = recipientsFailed === 0 && recipientsOk > 0;
               const { data: nextRun } = await admin.rpc("compute_next_run", {
@@ -242,7 +211,8 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
                 entity_id: null,
                 metadata: {
                   route: ROUTE,
-                  emailjs_configured: emailjsReady,
+                  email_configured: emailReady,
+                  email_stack: "lovable:notify.gridmindepc.com",
                   ...counts,
                 },
               } as never);
@@ -251,8 +221,10 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
             return Response.json({
               processed: (due.data ?? []).length,
               companies_affected: perCompany.size,
-              emailjs_configured: emailjsReady,
+              email_configured: emailReady,
+              email_stack: "lovable:notify.gridmindepc.com",
             });
+
           })();
           await admin.from("audit_logs").insert({
             company_id: null,
