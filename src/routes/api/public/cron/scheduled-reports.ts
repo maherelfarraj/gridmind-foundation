@@ -29,7 +29,6 @@ import { guardPublicHook } from "@/lib/public-api/guard";
 const ROUTE = "cron:scheduled-reports";
 const MAX_PER_RUN = 50;
 
-
 export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
   server: {
     handlers: {
@@ -84,7 +83,6 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
             }
 
             const emailReady = !!process.env.LOVABLE_API_KEY;
-
 
             type Counts = {
               sent: number;
@@ -175,7 +173,6 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
                 recipientsFailed = (schedule.recipients ?? []).length;
               }
 
-
               const success = recipientsFailed === 0 && recipientsOk > 0;
               const { data: nextRun } = await admin.rpc("compute_next_run", {
                 p_frequency: schedule.frequency,
@@ -224,7 +221,6 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
               email_configured: emailReady,
               email_stack: "lovable:notify.gridmindepc.com",
             });
-
           })();
           await admin.from("audit_logs").insert({
             company_id: null,

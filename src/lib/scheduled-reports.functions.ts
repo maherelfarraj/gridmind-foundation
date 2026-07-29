@@ -301,7 +301,6 @@ export const sendScheduledReport = createServerFn({ method: "POST" })
       }
     }
 
-
     // Advance schedule bookkeeping.
     const { data: nextRun } = await context.supabase.rpc(
       "compute_next_run" as never,

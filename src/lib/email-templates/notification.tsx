@@ -54,7 +54,12 @@ const brandBar: React.CSSProperties = {
   textTransform: "uppercase",
 };
 const h1: React.CSSProperties = { fontSize: "20px", margin: "26px 0 8px", color: INK };
-const p: React.CSSProperties = { fontSize: "14px", lineHeight: "22px", color: INK, margin: "0 0 8px" };
+const p: React.CSSProperties = {
+  fontSize: "14px",
+  lineHeight: "22px",
+  color: INK,
+  margin: "0 0 8px",
+};
 const secondary: React.CSSProperties = { ...p, color: MUTED };
 const rowLabel: React.CSSProperties = {
   fontSize: "12px",
@@ -151,7 +156,10 @@ function previewFor(event: EmailEvent): NotificationTemplateProps {
     companyName: "GridMind EPC",
     params:
       event === "client_invite" || event === "sub_invite"
-        ? { role: "company_admin", accept_url: "https://gridmind-sparkle.lovable.app/accept-invite" }
+        ? {
+            role: "company_admin",
+            accept_url: "https://gridmind-sparkle.lovable.app/accept-invite",
+          }
         : { subject: "Sample notification", title: "Sample" },
   });
 }
