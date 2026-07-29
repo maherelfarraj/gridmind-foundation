@@ -1,32 +1,34 @@
-// P-269 — EmailJS dispatcher (server-only).
+// P-269 / P-270 — Notification dispatcher (server-only).
 //
 // DOCTRINE (approved constraints)
 //   1. Email is a SIDE EFFECT, never a blocker. `sendEventEmail` never throws;
 //      it returns a typed outcome. Business operations complete regardless.
 //   2. Every attempt is audited: `email.sent` / `email.failed` / `email.skipped`
-//      rows carrying event type, recipient, template key and timestamp.
-//   3. Template ids come from the registry (secret lookup), never hardcoded.
-//   4. Missing secrets → `skipped: not_configured`, i.e. in-app only. Identical
-//      behaviour to the pre-dispatcher world.
-//   5. Recipient locale (profiles.locale, P-242) selects the language column;
-//      the template also receives both EN/AR strings for bilingual bodies.
+//      rows carrying event type, recipient, template name and timestamp.
+//   3. Templates live in the native registry (`src/lib/email-templates`) and
+//      ship through Lovable's managed sender on notify.gridmindepc.com.
+//      No third-party provider keys.
+//   4. Missing platform config (no LOVABLE_API_KEY) → `skipped: not_configured`,
+//      i.e. in-app only. Identical behaviour to the pre-dispatcher world.
+//   5. Recipient locale (profiles.locale, P-242) selects the primary language;
+//      the template renders both EN and AR with the right direction.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  buildTemplateParams,
-  emailjsCredentials,
-  resolveTemplateId,
-  TEMPLATE_ENV_KEYS,
-  type EmailEvent,
-  type EnvLike,
-} from "./registry";
+import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
-const EMAILJS_ENDPOINT = "https://api.emailjs.com/api/v1.0/email/send";
+import { EVENT_TEMPLATES, buildTemplateParams, type EmailEvent } from "./registry";
+
+export type EnvLike = Record<string, string | undefined>;
 
 export type EmailOutcome =
   | { status: "sent"; event: EmailEvent; to: string }
-  | { status: "skipped"; event: EmailEvent; to: string; reason: "not_configured" | "no_recipient" }
+  | {
+      status: "skipped";
+      event: EmailEvent;
+      to: string;
+      reason: "not_configured" | "no_recipient" | "recipient_suppressed";
+    }
   | { status: "failed"; event: EmailEvent; to: string; error: string };
 
 export interface SendEventEmailInput {
@@ -39,9 +41,11 @@ export interface SendEventEmailInput {
   locale?: string | null;
   companyName?: string | null;
   params?: Record<string, unknown>;
-  /** Test seams — production callers omit both. */
+  /** Dedupe key for retries of the same logical send. */
+  idempotencyKey?: string;
+  /** Test seams — production callers omit these. */
   env?: EnvLike;
-  fetchImpl?: typeof fetch;
+  sendImpl?: typeof sendTemplateEmail;
   supabase?: SupabaseClient | null;
 }
 
@@ -68,7 +72,7 @@ async function auditEmail(
       metadata: {
         event_type: input.event,
         recipient: outcome.to,
-        template_key: TEMPLATE_ENV_KEYS[input.event],
+        template_key: EVENT_TEMPLATES[input.event],
         sent_at: new Date().toISOString(),
         ...(outcome.status === "failed" ? { error: outcome.error } : {}),
         ...(outcome.status === "skipped" ? { reason: outcome.reason } : {}),
@@ -97,9 +101,7 @@ export async function sendEventEmail(input: SendEventEmailInput): Promise<EmailO
     return outcome;
   }
 
-  const creds = emailjsCredentials(env);
-  const templateId = resolveTemplateId(input.event, env);
-  if (!creds || !templateId) {
+  if (!env.LOVABLE_API_KEY) {
     const outcome: EmailOutcome = {
       status: "skipped",
       event: input.event,
@@ -110,37 +112,25 @@ export async function sendEventEmail(input: SendEventEmailInput): Promise<EmailO
     return outcome;
   }
 
-  const doFetch = input.fetchImpl ?? fetch;
+  const send = input.sendImpl ?? sendTemplateEmail;
   try {
-    const res = await doFetch(EMAILJS_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: creds.serviceId,
-        template_id: templateId,
-        user_id: creds.publicKey,
-        accessToken: creds.privateKey,
-        template_params: buildTemplateParams({
-          event: input.event,
-          to,
-          locale: input.locale,
-          companyName: input.companyName,
-          params: input.params,
-        }),
-      }),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      const outcome: EmailOutcome = {
-        status: "failed",
+    const result = await send(EVENT_TEMPLATES[input.event], to, {
+      templateData: buildTemplateParams({
         event: input.event,
         to,
-        error: `HTTP ${res.status}${body ? `: ${body.slice(0, 300)}` : ""}`,
-      };
-      await auditEmail(input.supabase, input, outcome);
-      return outcome;
-    }
-    const outcome: EmailOutcome = { status: "sent", event: input.event, to };
+        locale: input.locale,
+        companyName: input.companyName,
+        params: input.params,
+        baseUrl: env.APP_BASE_URL ?? env.VITE_APP_BASE_URL ?? "https://gridmindepc.com",
+      }) as unknown as Record<string, unknown>,
+      idempotencyKey:
+        input.idempotencyKey ??
+        (input.entityId ? `${input.event}-${input.entityId}-${to}` : undefined),
+    });
+    const outcome: EmailOutcome =
+      result.sent === false
+        ? { status: "skipped", event: input.event, to, reason: "recipient_suppressed" }
+        : { status: "sent", event: input.event, to };
     await auditEmail(input.supabase, input, outcome);
     return outcome;
   } catch (e) {
