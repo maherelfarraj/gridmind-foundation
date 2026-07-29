@@ -137,7 +137,8 @@ describe("sendEventEmail", () => {
       event: "client_invite",
       to: "x@y.z",
       env: FULL_ENV,
-      fetchImpl: (async () => new Response("bad template", { status: 400 })) as unknown as typeof fetch,
+      fetchImpl: (async () =>
+        new Response("bad template", { status: 400 })) as unknown as typeof fetch,
     });
     expect(out.status).toBe("failed");
   });
