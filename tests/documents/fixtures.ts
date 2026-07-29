@@ -149,7 +149,7 @@ export async function setupDocumentFixture(): Promise<DocumentFixture> {
       code: `P268-${token.slice(-6).toUpperCase()}`,
       name: `P268 document control ${token}`,
       archetype: "utility_pv",
-      phase: "construction",
+      phase: "ntp",
       status: "active",
       created_by: admin.userId,
     });
