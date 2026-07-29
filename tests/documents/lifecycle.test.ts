@@ -26,7 +26,7 @@ import {
 import { EXPECTED, insertOne, isSupabaseUp, rpc, setupDocumentFixture } from "./fixtures";
 
 /** PostgREST returns a bare object for scalar-row RPCs and an array for TABLE ones. */
-const firstRow = <T,>(data: unknown): T => (Array.isArray(data) ? (data[0] as T) : (data as T));
+const firstRow = <T>(data: unknown): T => (Array.isArray(data) ? (data[0] as T) : (data as T));
 import type { DocumentFixture, Svc } from "./fixtures";
 
 const up = await isSupabaseUp();
@@ -262,7 +262,8 @@ d("P-268 · document control lifecycle", () => {
     }>) {
       if (row.retention_class === "transient") {
         transientDays = Math.round(
-          (Date.parse(row.retention_expires_at!) - Date.parse(row.retention_starts_at)) / 86_400_000,
+          (Date.parse(row.retention_expires_at!) - Date.parse(row.retention_starts_at)) /
+            86_400_000,
         );
       } else {
         permanentExpiry = row.retention_expires_at;
@@ -440,27 +441,68 @@ d("P-268 · document control lifecycle", () => {
         return {
           ...c,
           items: [
-            { reference: "D-01", title: "Trench", revision: "D", status: "issued", documentDate: null, gapReason: GAP_REASON.drawingNotIfc },
-            { reference: "D-02", title: "Earthing", revision: "B", status: "issued", documentDate: null, gapReason: GAP_REASON.drawingNotIfc },
-            { reference: "D-03", title: "Layout", revision: "C", status: "issued", documentDate: null },
+            {
+              reference: "D-01",
+              title: "Trench",
+              revision: "D",
+              status: "issued",
+              documentDate: null,
+              gapReason: GAP_REASON.drawingNotIfc,
+            },
+            {
+              reference: "D-02",
+              title: "Earthing",
+              revision: "B",
+              status: "issued",
+              documentDate: null,
+              gapReason: GAP_REASON.drawingNotIfc,
+            },
+            {
+              reference: "D-03",
+              title: "Layout",
+              revision: "C",
+              status: "issued",
+              documentDate: null,
+            },
           ],
         };
       }
       return {
         ...c,
-        items: [{ reference: `${c.key}-1`, title: c.title, revision: "A", status: "issued", documentDate: null }],
+        items: [
+          {
+            reference: `${c.key}-1`,
+            title: c.title,
+            revision: "A",
+            status: "issued",
+            documentDate: null,
+          },
+        ],
       };
     });
 
     const gaps = detectGaps(chapters);
     expect(gaps.map((g) => g.chapter).sort()).toEqual(["as_builts", "warranties"]);
     expect(gapCount(gaps)).toBe(3); // 2 non-IFC drawings + 1 empty required chapter
-    expect(gaps.find((g) => g.chapter === "as_builts")!.detail).toBe(`2 ${GAP_REASON.drawingNotIfc}`);
+    expect(gaps.find((g) => g.chapter === "as_builts")!.detail).toBe(
+      `2 ${GAP_REASON.drawingNotIfc}`,
+    );
     expect(isComplete(chapters)).toBe(false);
 
     const filled = chapters.map((c) =>
       c.key === "warranties"
-        ? { ...c, items: [{ reference: "W-1", title: "Inverter warranty", revision: "A", status: "issued", documentDate: null }] }
+        ? {
+            ...c,
+            items: [
+              {
+                reference: "W-1",
+                title: "Inverter warranty",
+                revision: "A",
+                status: "issued",
+                documentDate: null,
+              },
+            ],
+          }
         : { ...c, items: (c.items ?? []).map(({ ...i }) => ({ ...i, gapReason: null })) },
     );
     expect(detectGaps(filled)).toEqual([]);
@@ -496,7 +538,10 @@ d("P-268 · document control lifecycle", () => {
       p_status: "superseded",
     });
     expect((superseded.data as Array<{ id: string }>).map((r) => r.id).sort()).toEqual(
-      revs.slice(0, 3).map((r) => r.id).sort(),
+      revs
+        .slice(0, 3)
+        .map((r) => r.id)
+        .sort(),
     );
 
     const scoped = await rpc(A)("search_documents", {
