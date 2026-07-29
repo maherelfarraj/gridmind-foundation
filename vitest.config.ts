@@ -4,7 +4,13 @@ import path from "node:path";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      // React Email deep-imports entities v4 paths; jsdom needs modern entities.
+      "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities-v4/lib/decode.js"),
+      "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities-v4/lib/encode.js"),
+      "entities/lib/escape.js": path.resolve(__dirname, "node_modules/entities-v4/lib/escape.js"),
+    },
   },
   test: {
     name: "unit",
