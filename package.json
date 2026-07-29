@@ -19,7 +19,7 @@
     "test:integrity": "vitest run --config vitest.config.all.ts --project all-db tests/integrity/status-consistency.test.ts"
   },
   "overrides": {
-    "entities": "^6.0.0"
+    "entities": "4.5.0"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
