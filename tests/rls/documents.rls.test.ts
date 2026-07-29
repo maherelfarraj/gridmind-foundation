@@ -341,9 +341,9 @@ d("P-268 · document tables — live isolation probes", () => {
       .eq("transmittal_id", transmittalId);
     expect(frozenEdit?.message ?? "").toMatch(/transmittal_items_frozen/);
 
-    // Deleting an issued transmittal cascades into its frozen items → refused.
+    // An issued transmittal is the record of what was sent → deletion refused.
     const { error: delIssued } = await A.from("transmittals").delete().eq("id", transmittalId);
-    expect(delIssued?.message ?? "").toMatch(/transmittal_items_frozen/);
+    expect(delIssued?.message ?? "").toMatch(/transmittal_not_draft/);
 
     // A draft transmittal deletes cleanly — draft-only deletion.
     const draft = await insertOne<{ id: string }>(A, "transmittals", {
