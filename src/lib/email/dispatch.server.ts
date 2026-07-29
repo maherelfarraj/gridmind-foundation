@@ -184,3 +184,21 @@ export async function recipientLocale(
     return null;
   }
 }
+
+/** Vendor / subcontractor contact email. Never throws. */
+export async function vendorEmail(
+  supabase: SupabaseClient | null | undefined,
+  vendorId: string | null | undefined,
+): Promise<string | null> {
+  if (!supabase || !vendorId) return null;
+  try {
+    const { data } = await supabase
+      .from("vendors")
+      .select("email")
+      .eq("id", vendorId)
+      .maybeSingle<{ email: string | null }>();
+    return data?.email ?? null;
+  } catch {
+    return null;
+  }
+}
