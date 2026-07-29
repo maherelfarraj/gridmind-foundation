@@ -160,7 +160,22 @@ export const createInvite = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     if (!token) throw new Error("create_invite returned no token");
-    return { token, acceptUrl: acceptUrlFor(token) };
+    const acceptUrl = acceptUrlFor(token);
+
+    // P-269 — outbound notification. Side effect only: a failed send never
+    // invalidates the invite that was just created.
+    const { notify, recipientLocale } = await import("@/lib/email/dispatch.server");
+    await notify({
+      event: "client_invite",
+      to: data.email,
+      companyId: data.companyId,
+      entity: "invites",
+      actorId: context.user?.id ?? null,
+      locale: await recipientLocale(context.supabase, data.email),
+      params: { accept_url: acceptUrl, role: data.role },
+    });
+
+    return { token, acceptUrl };
   });
 
 export const revokeInvite = createServerFn({ method: "POST" })
