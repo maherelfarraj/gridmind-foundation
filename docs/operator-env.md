@@ -35,6 +35,25 @@ GridMind EPC runs on Lovable Cloud. The Supabase pair is injected automatically 
 | `EMAILJS_TEMPLATE_ID`           | `sendScheduledReport` (P-117)                             | optional             | Lovable Cloud secret store           | Template params: `to_email`, `report_name`, `period`, `attachment_base64`, `company_name`.                                                                                                                                                  |
 | `EMAILJS_PUBLIC_KEY`            | `sendScheduledReport` (P-117)                             | optional             | Lovable Cloud secret store           | EmailJS public (user) key.                                                                                                                                                                                                                  |
 | `EMAILJS_PRIVATE_KEY`           | `sendScheduledReport` (P-117)                             | optional             | Lovable Cloud secret store           | EmailJS private key for REST auth.                                                                                                                                                                                                          |
+| `EMAILJS_TEMPLATE_CLIENT_INVITE` | Dispatcher event `client_invite` (P-269)                 | optional             | Lovable Cloud secret store           | Missing → in-app only for that event.                                                                                                                                                                                                       |
+| `EMAILJS_TEMPLATE_SUB_INVITE`   | Dispatcher event `sub_invite` (P-269)                     | optional             | Lovable Cloud secret store           | Vendor/subcontractor portal invitation.                                                                                                                                                                                                     |
+| `EMAILJS_TEMPLATE_TRANSMITTAL`  | Dispatcher event `transmittal` (P-269)                    | optional             | Lovable Cloud secret store           | Sent on `sendTransmittal`, to `transmittals.recipient_email`.                                                                                                                                                                               |
+| `EMAILJS_TEMPLATE_CLAIM_SUBMITTED` | Dispatcher event `claim_submitted` (P-269)             | optional             | Lovable Cloud secret store           | Acknowledgement to the subcontractor.                                                                                                                                                                                                       |
+| `EMAILJS_TEMPLATE_CLAIM_CERTIFIED` | Dispatcher event `claim_certified` (P-269)             | optional             | Lovable Cloud secret store           | Sent only on an `approved` decision.                                                                                                                                                                                                        |
+| `EMAILJS_TEMPLATE_PAYMENT`      | Dispatcher event `payment` (P-269)                        | optional             | Lovable Cloud secret store           | Payment advice to the payee vendor.                                                                                                                                                                                                         |
+| `EMAILJS_TEMPLATE_COMPLIANCE_EXPIRY` | Dispatcher event `compliance_expiry` (P-269)         | optional             | Lovable Cloud secret store           | Emitted by the compliance sweep for docs expiring within 30 days.                                                                                                                                                                           |
+
+### Notification dispatcher doctrine (P-269)
+
+- Email is a **side effect**: `notify()` never throws; the business operation always completes.
+- Every attempt writes an audit row — `email.sent` / `email.failed` / `email.skipped` — with
+  `event_type`, `recipient`, `template_key`, `sent_at`.
+- Template IDs are resolved from secrets via `src/lib/email/registry.ts`; none are hardcoded.
+- Missing secrets → `skipped: not_configured`, i.e. in-app notification only (unchanged behaviour).
+- Bilingual: every send carries `lang`/`dir` from the recipient's `profiles.locale` (P-242) plus
+  `subject_en` / `subject_ar` so one EmailJS template can render EN or AR.
+
+
 
 ## Client selection cheat sheet
 
