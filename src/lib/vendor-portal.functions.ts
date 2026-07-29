@@ -465,6 +465,19 @@ export const inviteVendorContact = createServerFn({ method: "POST" })
         expires_at: expiresAt,
       });
 
+      // P-269 — subcontractor/vendor portal invitation email (non-blocking).
+      const { notify, recipientLocale } = await import("@/lib/email/dispatch.server");
+      await notify({
+        event: "sub_invite",
+        to: data.email,
+        companyId,
+        entity: "vendor_portal_memberships",
+        entityId: membershipId,
+        actorId: context.user?.id ?? null,
+        locale: await recipientLocale(context.supabase, data.email),
+        params: { accept_url: `/accept-invite?token=${String(token)}`, expires_at: expiresAt },
+      });
+
       return { membership_id: membershipId, token: String(token), expires_at: expiresAt };
     },
   );

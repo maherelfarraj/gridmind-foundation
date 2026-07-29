@@ -239,6 +239,28 @@ export const sendTransmittal = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!updated) httpError(404, "transmittal_not_found");
     await audit(context, "transmittal.send", "transmittals", data.id, {});
+
+    // P-269 — notify the external recipient (NEPCO, consultant, sub).
+    const row = updated as any;
+    const { notify, recipientLocale } = await import("@/lib/email/dispatch.server");
+    await notify({
+      event: "transmittal",
+      to: row.recipient_email ?? null,
+      companyId,
+      entity: "transmittals",
+      entityId: data.id,
+      actorId: context.user?.id ?? null,
+      locale: await recipientLocale(context.supabase, row.recipient_email ?? ""),
+      params: {
+        transmittal_number: row.transmittal_number,
+        subject: row.subject,
+        from_party: row.from_party,
+        to_party: row.to_party,
+        response_due: row.response_due ?? "",
+        item_count: Array.isArray(row.items) ? row.items.length : 0,
+      },
+    });
+
     return {
       ...(updated as unknown as TransmittalRow),
       items: ((updated as any).items ?? []) as TransmittalItem[],
