@@ -98,6 +98,31 @@ export const recordPayment = createServerFn({ method: "POST" })
         amount: data.amount,
         balance_after: applied.balance_after,
       });
+
+      // P-269 — payment advice to the counterparty (non-blocking side effect).
+      const { notify, recipientLocale, vendorEmail } = await import("@/lib/email/dispatch.server");
+      const payee = await vendorEmail(
+        context.supabase,
+        (invoice as unknown as { vendor_id?: string | null }).vendor_id,
+      );
+      await notify({
+        event: "payment",
+        to: payee,
+        companyId: invoice.company_id,
+        entity: "payments",
+        entityId: payment.id,
+        actorId: context.user?.id ?? null,
+        locale: await recipientLocale(context.supabase, payee ?? ""),
+        params: {
+          invoice_number: (invoice as unknown as { invoice_number?: string }).invoice_number ?? "",
+          amount: data.amount,
+          currency: payment.currency_code,
+          payment_date: data.payment_date,
+          balance_after: applied.balance_after,
+          method: data.method,
+        },
+      });
+
       return {
         payment,
         invoice_status: applied.status,
