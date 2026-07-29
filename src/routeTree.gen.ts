@@ -156,6 +156,7 @@ import { Route as AuthenticatedFieldDprIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminTenantsIndexRouteImport } from './routes/_authenticated/admin.tenants.index'
 import { Route as VendorVendorIdSubcontractsSubcontractIdRouteImport } from './routes/vendor.$vendorId.subcontracts.$subcontractId'
 import { Route as VendorVendorIdClaimsClaimIdRouteImport } from './routes/vendor.$vendorId.claims.$claimId'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksScadaTelemetryRouteImport } from './routes/api/public/hooks/scada-telemetry'
@@ -1110,6 +1111,12 @@ const VendorVendorIdClaimsClaimIdRoute =
     path: '/claims/$claimId',
     getParentRoute: () => VendorVendorIdRoute,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
   id: '/lovable/email/auth/webhook',
   path: '/lovable/email/auth/webhook',
@@ -1989,6 +1996,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
   '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
@@ -2237,6 +2245,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
   '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsIndexRoute
@@ -2498,6 +2507,7 @@ export interface FileRoutesById {
   '/api/public/hooks/scada-telemetry': typeof ApiPublicHooksScadaTelemetryRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/vendor/$vendorId/claims/$claimId': typeof VendorVendorIdClaimsClaimIdRoute
   '/vendor/$vendorId/subcontracts/$subcontractId': typeof VendorVendorIdSubcontractsSubcontractIdRoute
   '/_authenticated/admin/tenants/': typeof AuthenticatedAdminTenantsIndexRoute
@@ -2760,6 +2770,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/scada-telemetry'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
     | '/vendor/$vendorId/claims/$claimId'
     | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants/'
@@ -3008,6 +3019,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/scada-telemetry'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
     | '/vendor/$vendorId/claims/$claimId'
     | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/admin/tenants'
@@ -3268,6 +3280,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/scada-telemetry'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
     | '/vendor/$vendorId/claims/$claimId'
     | '/vendor/$vendorId/subcontracts/$subcontractId'
     | '/_authenticated/admin/tenants/'
@@ -3370,6 +3383,7 @@ export interface RootRouteChildren {
   ApiPublicHooksScadaTelemetryRoute: typeof ApiPublicHooksScadaTelemetryRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -4402,6 +4416,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/$vendorId/claims/$claimId'
       preLoaderRoute: typeof VendorVendorIdClaimsClaimIdRouteImport
       parentRoute: typeof VendorVendorIdRoute
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/auth/webhook': {
       id: '/lovable/email/auth/webhook'
@@ -6015,6 +6036,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksScadaTelemetryRoute: ApiPublicHooksScadaTelemetryRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
