@@ -238,16 +238,12 @@ export const sendScheduledReport = createServerFn({ method: "POST" })
     if (!row) httpError(404, "not_found");
     const schedule = row as any;
 
-    // EmailJS secrets — read at handler runtime, not module scope.
-    const serviceId = process.env.EMAILJS_SERVICE_ID;
-    const templateId = process.env.EMAILJS_TEMPLATE_ID;
-    const publicKey = process.env.EMAILJS_PUBLIC_KEY;
-    const privateKey = process.env.EMAILJS_PRIVATE_KEY;
-    if (!serviceId || !templateId || !publicKey || !privateKey) {
+    // Native email stack (notify.gridmindepc.com). LOVABLE_API_KEY is injected
+    // by the platform; read at handler runtime, never at module scope.
+    if (!process.env.LOVABLE_API_KEY) {
       const outcome = {
         status: "error" as const,
-        error:
-          "EmailJS not configured — add EMAILJS_SERVICE_ID/TEMPLATE_ID/PUBLIC_KEY/PRIVATE_KEY in Secrets",
+        error: "email_not_configured",
       };
       await context.supabase
         .from("scheduled_reports" as never)
@@ -260,64 +256,51 @@ export const sendScheduledReport = createServerFn({ method: "POST" })
       httpError(400, outcome.error);
     }
 
-    // Build a minimal branded PDF summary. The scheduled-report container is
-    // deliberately lightweight — per-report deep aggregation lives with the
-    // dedicated report modules (P-092, P-110). This is the delivery envelope.
-    const { default: jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    // The scheduled-report container is deliberately lightweight — per-report
+    // deep aggregation lives with the dedicated report modules (P-092, P-110).
+    // Managed sending carries no attachments, so the email is a branded summary
+    // envelope and the full report is generated in-app.
     const companyName = schedule.companies?.name ?? "GridMind EPC";
-    doc.setFontSize(20);
-    doc.text(companyName, 40, 60);
-    doc.setFontSize(14);
-    doc.text(schedule.name, 40, 90);
-    doc.setFontSize(11);
-    doc.text(`Report type: ${schedule.report_type}`, 40, 120);
-    doc.text(`Frequency: ${schedule.frequency}`, 40, 140);
-    doc.text(`Project: ${schedule.projects?.name ?? "All projects (company-wide)"}`, 40, 160);
-    doc.text(`Generated: ${new Date().toISOString()}`, 40, 180);
     const sections = Object.entries(schedule.template_sections ?? {})
       .filter(([, v]) => v)
       .map(([k]) => k);
-    if (sections.length) {
-      doc.text("Sections included:", 40, 210);
-      sections.forEach((s, i) => doc.text(`• ${s}`, 60, 230 + i * 18));
-    }
-    const pdfBase64 = doc.output("datauristring").split(",")[1] ?? "";
 
-    // Deliver one message per recipient (EmailJS is per-send).
+    const { sendEventEmail } = await import("@/lib/email/dispatch.server");
+    const { recipientLocale } = await import("@/lib/email/dispatch.server");
+
     let ok = 0;
     let failed = 0;
     let lastError: string | null = null;
     for (const to of schedule.recipients as string[]) {
-      try {
-        const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            service_id: serviceId,
-            template_id: templateId,
-            user_id: publicKey,
-            accessToken: privateKey,
-            template_params: {
-              to_email: to,
-              report_name: schedule.name,
-              period: schedule.frequency,
-              company_name: companyName,
-              attachment_base64: pdfBase64,
-            },
-          }),
-        });
-        if (!res.ok) {
-          failed++;
-          lastError = `HTTP ${res.status}: ${await res.text().catch(() => "")}`;
-        } else {
-          ok++;
-        }
-      } catch (e) {
+      const outcome = await sendEventEmail({
+        event: "scheduled_report",
+        to,
+        companyId: schedule.company_id,
+        entity: "scheduled_reports",
+        entityId: schedule.id,
+        actorId: context.user?.id ?? null,
+        companyName,
+        locale: await recipientLocale(context.supabase, to),
+        idempotencyKey: `scheduled-report-${schedule.id}-${to}-${new Date().toISOString().slice(0, 13)}`,
+        supabase: context.supabase,
+        params: {
+          report_name: schedule.name,
+          period: schedule.frequency,
+          project_name: schedule.projects?.name ?? "All projects (company-wide)",
+          sections,
+          generated_at: new Date().toISOString(),
+        },
+      });
+      if (outcome.status === "sent") ok++;
+      else if (outcome.status === "failed") {
         failed++;
-        lastError = e instanceof Error ? e.message : String(e);
+        lastError = outcome.error;
+      } else {
+        // Suppressed / unconfigured recipients are not delivery failures.
+        lastError = `skipped:${outcome.reason}`;
       }
     }
+
 
     // Advance schedule bookkeeping.
     const { data: nextRun } = await context.supabase.rpc(
