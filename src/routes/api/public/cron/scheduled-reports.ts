@@ -242,7 +242,8 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
                 entity_id: null,
                 metadata: {
                   route: ROUTE,
-                  emailjs_configured: emailjsReady,
+                  email_configured: emailReady,
+                  email_stack: "lovable:notify.gridmindepc.com",
                   ...counts,
                 },
               } as never);
@@ -251,8 +252,10 @@ export const Route = createFileRoute("/api/public/cron/scheduled-reports")({
             return Response.json({
               processed: (due.data ?? []).length,
               companies_affected: perCompany.size,
-              emailjs_configured: emailjsReady,
+              email_configured: emailReady,
+              email_stack: "lovable:notify.gridmindepc.com",
             });
+
           })();
           await admin.from("audit_logs").insert({
             company_id: null,
