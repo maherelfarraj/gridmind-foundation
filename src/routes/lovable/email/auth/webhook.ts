@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "gridmind-sparkle"
+const SITE_NAME = "GridMind EPC"
 const SENDER_DOMAIN = "notify.gridmindepc.com"
 const ROOT_DOMAIN = "gridmindepc.com"
 const FROM_DOMAIN = "notify.gridmindepc.com"

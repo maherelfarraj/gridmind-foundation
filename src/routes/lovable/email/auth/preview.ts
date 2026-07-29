@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "gridmind-sparkle"
+const SITE_NAME = "GridMind EPC"
 const ROOT_DOMAIN = "gridmindepc.com"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
