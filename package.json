@@ -69,6 +69,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "entities": "^8.0.0",
     "entities-v4": "npm:entities@4.5.0",
     "i18next": "^26.3.6",
     "idb": "^8.0.3",
