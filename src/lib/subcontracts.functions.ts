@@ -643,7 +643,7 @@ export const submitClaimForCertification = createServerFn({ method: "POST" })
 
     const { data: sc } = await context.supabase
       .from("subcontracts")
-      .select("title, subcontract_number, currency_code")
+      .select("title, subcontract_number, currency_code, vendor_id, company_id")
       .eq("id", claim.subcontract_id)
       .maybeSingle();
     const scRow = (sc ?? {}) as Record<string, unknown>;
@@ -685,6 +685,26 @@ export const submitClaimForCertification = createServerFn({ method: "POST" })
       instance_id: instanceId ?? null,
       net_payable: claim.net_payable,
     });
+
+    // P-269 — acknowledge to the subcontractor (non-blocking).
+    const { notify, recipientLocale, vendorEmail } = await import("@/lib/email/dispatch.server");
+    const subEmail = await vendorEmail(context.supabase, scRow.vendor_id as string | undefined);
+    await notify({
+      event: "claim_submitted",
+      to: subEmail,
+      companyId: (scRow.company_id as string | undefined) ?? null,
+      entity: "subcontract_claims",
+      entityId: claim.id,
+      actorId: context.user?.id ?? null,
+      locale: await recipientLocale(context.supabase, subEmail ?? ""),
+      params: {
+        claim_number: claim.claim_number ?? "",
+        subcontract_number: scRow.subcontract_number ?? "",
+        net_payable: claim.net_payable,
+        currency: scRow.currency_code ?? "",
+      },
+    });
+
     return { instance_id: (instanceId as string | null) ?? null };
   });
 
