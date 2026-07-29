@@ -61,7 +61,7 @@ GridMind EPC runs on Lovable Cloud. The Supabase pair is injected automatically 
 
 ## Local / preview environments
 
-Lovable Cloud injects every `SUPABASE_*` and `VITE_SUPABASE_*` value for both preview and published deployments. Operators do not hand-copy them. Operator-supplied secrets (`PUBLIC_HOOK_*`, `ESIGN_*`, `CALENDAR_WEBHOOK_SECRET`, `EMAILJS_*`) must be set explicitly in each environment where the feature is enabled.
+Lovable Cloud injects every `SUPABASE_*` and `VITE_SUPABASE_*` value for both preview and published deployments. Operators do not hand-copy them. Operator-supplied secrets (`PUBLIC_HOOK_*`, `ESIGN_*`, `CALENDAR_WEBHOOK_SECRET`) must be set explicitly in each environment where the feature is enabled.
 
 ---
 
@@ -133,7 +133,7 @@ Schedule a **quarterly** review of the allowlist and active API keys — revoke 
 
 ### 6. Pre-flight checklist
 
-- [ ] All required secrets present (`SUPABASE_*`, `PUBLIC_HOOK_SIGNING_SECRET`, integrator-specific `ESIGN_*` / `CALENDAR_WEBHOOK_SECRET` / `EMAILJS_*` where applicable).
+- [ ] All required secrets present (`SUPABASE_*`, `PUBLIC_HOOK_SIGNING_SECRET`, integrator-specific `ESIGN_*` / `CALENDAR_WEBHOOK_SECRET` where applicable).
 - [ ] `PUBLIC_HOOK_IP_ALLOWLIST` CSV parses (test locally: guard rejects the whole list closed if any entry is malformed).
 - [ ] pg_cron schedules registered (`escalations */5 * * * *`, `pm-work-orders` `*/15 * * * *`, `scheduled-reports` `*/15 * * * *`, `audit-retention` `17 3 * * *`, `webhook-dispatch` `*/5 * * * *`).
 - [ ] Latest migrations applied.
