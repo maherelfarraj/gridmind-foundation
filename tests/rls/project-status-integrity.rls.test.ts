@@ -235,7 +235,6 @@ d("project status completion integrity", () => {
       status: "pending",
     });
     if (rejectedSiblingError) throw rejectedSiblingError;
-
   }, 180_000);
 
   afterAll(async () => {
@@ -294,17 +293,13 @@ d("project status completion integrity", () => {
       .from("approvals")
       .update({ approver_id: companyAdminA.userId })
       .eq("id", genericBlocked.approvalId);
-    expect(approvalReassignment.error?.message).toContain(
-      "HANDOVER_GATE_DECISION_REQUIRED",
-    );
+    expect(approvalReassignment.error?.message).toContain("HANDOVER_GATE_DECISION_REQUIRED");
 
     const instanceReassignment = await companyAdminA.client
       .from("approval_instances")
       .update({ entity_type: "legacy" })
       .eq("id", genericBlocked.instanceId);
-    expect(instanceReassignment.error?.message).toContain(
-      "HANDOVER_GATE_DECISION_REQUIRED",
-    );
+    expect(instanceReassignment.error?.message).toContain("HANDOVER_GATE_DECISION_REQUIRED");
 
     const phaseRewrite = await projectAdminA.client
       .from("project_phase_gates")
@@ -324,11 +319,7 @@ d("project status completion integrity", () => {
     const [{ data: project }, { data: gate }, { data: approval }, { data: instance }] =
       await Promise.all([
         svc.from("projects").select("status").eq("id", genericBlocked.projectId).single(),
-        svc
-          .from("project_phase_gates")
-          .select("status")
-          .eq("id", genericBlocked.gateId)
-          .single(),
+        svc.from("project_phase_gates").select("status").eq("id", genericBlocked.gateId).single(),
         svc.from("approvals").select("status").eq("id", genericBlocked.approvalId).single(),
         svc
           .from("approval_instances")
@@ -429,11 +420,7 @@ d("project status completion integrity", () => {
       await Promise.all([
         svc.from("projects").select("status").eq("id", atomic.projectId).single(),
         svc.from("project_phase_gates").select("status").eq("id", atomic.gateId).single(),
-        svc
-          .from("approval_instances")
-          .select("status")
-          .eq("id", atomic.instanceId)
-          .single(),
+        svc.from("approval_instances").select("status").eq("id", atomic.instanceId).single(),
       ]);
     expect(firstProject?.status).toBe("active");
     expect(firstGate?.status).toBe("in_review");
@@ -464,23 +451,18 @@ d("project status completion integrity", () => {
       { data: approval },
       { data: siblingApproval },
       { data: instance },
-    ] =
-      await Promise.all([
-        svc.from("projects").select("status").eq("id", atomic.projectId).single(),
-        svc.from("project_phase_gates").select("status").eq("id", atomic.gateId).single(),
-        svc.from("approvals").select("status").eq("id", atomic.approvalId).single(),
-        svc
-          .from("approvals")
-          .select("status")
-          .eq("instance_id", atomic.instanceId)
-          .eq("approver_id", projectAdminA2.userId)
-          .single(),
-        svc
-          .from("approval_instances")
-          .select("status")
-          .eq("id", atomic.instanceId)
-          .single(),
-      ]);
+    ] = await Promise.all([
+      svc.from("projects").select("status").eq("id", atomic.projectId).single(),
+      svc.from("project_phase_gates").select("status").eq("id", atomic.gateId).single(),
+      svc.from("approvals").select("status").eq("id", atomic.approvalId).single(),
+      svc
+        .from("approvals")
+        .select("status")
+        .eq("instance_id", atomic.instanceId)
+        .eq("approver_id", projectAdminA2.userId)
+        .single(),
+      svc.from("approval_instances").select("status").eq("id", atomic.instanceId).single(),
+    ]);
     expect(project?.status).toBe("completed");
     expect(gate?.status).toBe("approved");
     expect(approval?.status).toBe("approved");
@@ -520,11 +502,7 @@ d("project status completion integrity", () => {
         .eq("instance_id", rejected.instanceId)
         .eq("approver_id", projectAdminA2.userId)
         .single(),
-      svc
-        .from("approval_instances")
-        .select("status")
-        .eq("id", rejected.instanceId)
-        .single(),
+      svc.from("approval_instances").select("status").eq("id", rejected.instanceId).single(),
     ]);
     expect(project?.status).toBe("active");
     expect(gate?.status).toBe("open");
@@ -553,11 +531,7 @@ d("project status completion integrity", () => {
         .select("status")
         .eq("id", legacyCompanyApproval.gateId)
         .single(),
-      svc
-        .from("approvals")
-        .select("status")
-        .eq("id", legacyCompanyApproval.approvalId)
-        .single(),
+      svc.from("approvals").select("status").eq("id", legacyCompanyApproval.approvalId).single(),
     ]);
     expect(project?.status).toBe("active");
     expect(gate?.status).toBe("in_review");
@@ -591,16 +565,8 @@ d("project status completion integrity", () => {
     expect(replacementDecision.error).toBeNull();
 
     const [{ data: completed }, { data: retiredLegacy }] = await Promise.all([
-      svc
-        .from("projects")
-        .select("status")
-        .eq("id", legacyCompanyApproval.projectId)
-        .single(),
-      svc
-        .from("approvals")
-        .select("status")
-        .eq("id", legacyCompanyApproval.approvalId)
-        .single(),
+      svc.from("projects").select("status").eq("id", legacyCompanyApproval.projectId).single(),
+      svc.from("approvals").select("status").eq("id", legacyCompanyApproval.approvalId).single(),
     ]);
     expect(completed?.status).toBe("completed");
     expect(retiredLegacy?.status).toBe("skipped");

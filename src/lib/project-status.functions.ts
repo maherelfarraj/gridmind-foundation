@@ -13,13 +13,15 @@ import {
 export const completeProject = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth, requireSupabaseAuth])
   .inputValidator((input: unknown) => projectStatusInput.parse(input))
-  .handler(async ({ data, context }): Promise<ProjectStatusResult> =>
-    completeProjectStatus(context, data.projectId),
+  .handler(
+    async ({ data, context }): Promise<ProjectStatusResult> =>
+      completeProjectStatus(context, data.projectId),
   );
 
 export const reopenProject = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth, requireSupabaseAuth])
   .inputValidator((input: unknown) => reopenProjectInput.parse(input))
-  .handler(async ({ data, context }): Promise<ProjectStatusResult> =>
-    reopenProjectStatus(context, data.projectId, data.reason),
+  .handler(
+    async ({ data, context }): Promise<ProjectStatusResult> =>
+      reopenProjectStatus(context, data.projectId, data.reason),
   );

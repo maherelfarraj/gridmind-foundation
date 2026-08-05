@@ -6,13 +6,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import {
-  requireSupabaseAuth as requireSupabaseAuthMiddleware,
-} from "@/integrations/supabase/auth-middleware";
-import {
-  decideHandoverGate,
-  resolveGateApproverIds,
-} from "@/lib/project-status.server";
+import { requireSupabaseAuth as requireSupabaseAuthMiddleware } from "@/integrations/supabase/auth-middleware";
+import { decideHandoverGate, resolveGateApproverIds } from "@/lib/project-status.server";
 
 const PHASE_ORDER = ["development", "ntp", "cod", "handover"] as const;
 type Phase = (typeof PHASE_ORDER)[number];

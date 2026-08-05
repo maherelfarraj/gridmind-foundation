@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import * as z from "zod";
 export const projectStatusInput = z.object({ projectId: z.string().uuid() });
 
 export const reopenProjectInput = projectStatusInput.extend({

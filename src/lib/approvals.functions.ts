@@ -8,9 +8,7 @@ import {
   requireSupabaseAuth,
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
-import {
-  requireSupabaseAuth as requireSupabaseAuthMiddleware,
-} from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth as requireSupabaseAuthMiddleware } from "@/integrations/supabase/auth-middleware";
 import {
   approvalRuleInputSchema,
   cancelInstanceSchema,

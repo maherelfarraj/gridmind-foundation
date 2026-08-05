@@ -62,9 +62,7 @@ export function ProjectLifecycleActions({ project }: { project: ProjectDetail })
       toast.success(t("engMod.projectDetail.lifecycle.completeSuccess"));
     },
     onError: (error: unknown) =>
-      toast.error(
-        errorMessage(error, t("engMod.projectDetail.lifecycle.completeFailed")),
-      ),
+      toast.error(errorMessage(error, t("engMod.projectDetail.lifecycle.completeFailed"))),
   });
 
   const reopenMutation = useMutation({
@@ -134,9 +132,7 @@ export function ProjectLifecycleActions({ project }: { project: ProjectDetail })
       <AlertDialog open={completeOpen} onOpenChange={setCompleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("engMod.projectDetail.lifecycle.completeTitle")}
-            </AlertDialogTitle>
+            <AlertDialogTitle>{t("engMod.projectDetail.lifecycle.completeTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("engMod.projectDetail.lifecycle.completeDescription")}
             </AlertDialogDescription>
