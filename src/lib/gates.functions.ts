@@ -6,6 +6,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import {
+  requireSupabaseAuth as requireSupabaseAuthMiddleware,
+} from "@/integrations/supabase/auth-middleware";
+import {
+  decideHandoverGate,
+  resolveGateApproverIds,
+} from "@/lib/project-status.server";
 
 const PHASE_ORDER = ["development", "ntp", "cod", "handover"] as const;
 type Phase = (typeof PHASE_ORDER)[number];
@@ -230,7 +237,7 @@ export const updateGateChecklistItemMeta = createServerFn({ method: "POST" })
 const requestInput = z.object({ gate_id: z.string().uuid() });
 
 export const requestGateTransition = createServerFn({ method: "POST" })
-  .middleware([attachSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuthMiddleware])
   .inputValidator((input: unknown) => requestInput.parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
@@ -250,11 +257,17 @@ export const requestGateTransition = createServerFn({ method: "POST" })
       if (it?.required !== false && !it?.done) httpError(409, "checklist_incomplete");
     }
 
+    // Final completion is owned by project admins; earlier phase gates retain
+    // the existing company-admin approval path. Resolve approvers before
+    // creating the instance so a missing role cannot leave an orphan workflow.
+    const approverIds = await resolveGateApproverIds(context, gate.company_id, gate.phase);
+
     const { data: inst, error: iErr } = await context.supabase
       .from("approval_instances")
       .insert({
         company_id: gate.company_id,
         entity: "project_phase_gate",
+        entity_type: "project_phase_gate",
         entity_id: gate.id,
         requested_by: context.user.id,
         metadata: { project_id: gate.project_id, phase: gate.phase },
@@ -262,16 +275,6 @@ export const requestGateTransition = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (iErr) throw iErr;
-
-    const { data: admins, error: aErr } = await context.supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("company_id", gate.company_id)
-      .eq("role", "company_admin");
-    if (aErr) throw aErr;
-
-    const approverIds = Array.from(new Set((admins ?? []).map((r: any) => r.user_id as string)));
-    if (approverIds.length === 0) httpError(409, "no_approvers");
 
     const { error: apErr } = await context.supabase.from("approvals").insert(
       approverIds.map((uid) => ({
@@ -313,7 +316,7 @@ const decideInput = z.object({
 });
 
 export const decideGateTransition = createServerFn({ method: "POST" })
-  .middleware([attachSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuthMiddleware])
   .inputValidator((input: unknown) => decideInput.parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
@@ -335,7 +338,9 @@ export const decideGateTransition = createServerFn({ method: "POST" })
       .maybeSingle();
     if (iErr) throw iErr;
     if (!instance) httpError(404, "instance_not_found");
-    if (instance.status !== "pending") httpError(409, "instance_decided");
+    if (instance.status !== "pending" && instance.status !== "in_progress") {
+      httpError(409, "instance_decided");
+    }
 
     const gateId = instance.entity_id as string;
     const { data: gate, error: gErr } = await context.supabase
@@ -345,6 +350,16 @@ export const decideGateTransition = createServerFn({ method: "POST" })
       .maybeSingle();
     if (gErr) throw gErr;
     if (!gate) httpError(404, "gate_not_found");
+
+    // The final approval + project completion must be one database transaction.
+    // The RPC enforces the project_admin role and uses the governed completion
+    // engine, so no partial approved-gate/completion state can be committed.
+    if (gate.phase === "handover") {
+      await decideHandoverGate(context, approval.id, data.decision, data.comment);
+      return { ok: true };
+    }
+
+    if (instance.status !== "pending") httpError(409, "instance_decided");
 
     const nowIso = new Date().toISOString();
 
@@ -384,9 +399,8 @@ export const decideGateTransition = createServerFn({ method: "POST" })
       // Advance project phase.
       const idx = PHASE_ORDER.indexOf(gate.phase as Phase);
       const nextPhase = idx >= 0 && idx < PHASE_ORDER.length - 1 ? PHASE_ORDER[idx + 1] : null;
-      const projUpdate: { phase?: Phase; status?: string } = {};
+      const projUpdate: { phase?: Phase } = {};
       if (nextPhase) projUpdate.phase = nextPhase;
-      if (gate.phase === "handover") projUpdate.status = "completed";
       if (Object.keys(projUpdate).length > 0) {
         const { error: pErr } = await context.supabase
           .from("projects")

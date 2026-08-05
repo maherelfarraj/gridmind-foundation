@@ -91,6 +91,24 @@ prompt or the PR description, which side of the doctrine it is on:
 There is no third option. A status column whose side is undeclared is the
 exact shape of the defect that produced the orphan-bid incident.
 
+### Owned lifecycle exception — `projects.status`
+
+`projects.status` is the sole source of truth for the project lifecycle and is
+therefore **owned**, not derived from a phase-gate row. The final handover gate
+invokes the governed `project_complete` engine as a lifecycle event; it does
+not grant application code permission to write `completed` directly.
+Transitions into or out of `completed` are guarded by the database:
+
+- `project_complete` requires the caller's company-scoped `project_admin` role,
+  the `handover` phase, and an approved handover gate.
+- `decide_handover_gate` records each assigned project-admin approval, completes
+  the project only after all approvals, and atomically closes the workflow on
+  rejection.
+- `project_reopen` is a separate, audited `company_admin` operation with a
+  mandatory reason.
+- Direct authenticated updates into or out of `completed` raise
+  `PROJECT_STATUS_TRANSITION_REQUIRED`.
+
 ---
 
 ## Test-suite tenant hygiene (P-250)

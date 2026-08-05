@@ -9,6 +9,9 @@ import {
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
 import {
+  requireSupabaseAuth as requireSupabaseAuthMiddleware,
+} from "@/integrations/supabase/auth-middleware";
+import {
   approvalRuleInputSchema,
   cancelInstanceSchema,
   decideApprovalSchema,
@@ -18,6 +21,7 @@ import {
 import { settleEntityForApproval } from "@/lib/approval-settle.server";
 import { settlePoAfterDecision } from "@/lib/po-approval.server";
 import { settleAfterDecision } from "@/lib/scada-actions.server";
+import { decideHandoverGate, isHandoverGateApproval } from "@/lib/project-status.server";
 
 function httpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
@@ -266,10 +270,24 @@ export const startApprovalInstance = createServerFn({ method: "POST" })
   });
 
 export const decideApproval = createServerFn({ method: "POST" })
-  .middleware([attachSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuthMiddleware])
   .inputValidator((raw: unknown) => decideApprovalSchema.parse(raw))
   .handler(async ({ context, data }) => {
     requireSupabaseAuth(context);
+
+    // Final handover approval owns project completion and must settle the
+    // approval, gate, and project in one database transaction. The database
+    // also rejects direct use of decide_approval for this entity class.
+    if (await isHandoverGateApproval(context, data.approval_id)) {
+      await decideHandoverGate(
+        context,
+        data.approval_id,
+        data.decision === "approved" ? "approve" : "reject",
+        data.comment,
+      );
+      return { ok: true };
+    }
+
     const { error } = await context.supabase.rpc("decide_approval", {
       p_approval_id: data.approval_id,
       p_decision: data.decision,

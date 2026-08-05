@@ -8,6 +8,9 @@ import {
   type AuthContext,
 } from "@/integrations/supabase/auth-attacher";
 import {
+  requireSupabaseAuth as requireSupabaseAuthMiddleware,
+} from "@/integrations/supabase/auth-middleware";
+import {
   getHandoverBoardInput,
   signCccTransferInput,
   type HandoverPrereqKey,
@@ -17,6 +20,7 @@ import {
   autoCompleteHandoverChecklist,
   checkHandoverPrereqs,
 } from "@/lib/handover.server";
+import { resolveGateApproverIds } from "@/lib/project-status.server";
 
 // ---------------------------------------------------------------------------
 // helpers (mirrors commissioning-certificates.functions.ts)
@@ -208,8 +212,8 @@ export const getHandoverBoard = createServerFn({ method: "GET" })
 // signCccTransfer — after CCC certificate is signed on the certificates page,
 // this endpoint re-validates the prerequisite gauntlet, auto-completes the
 // Handover gate checklist, and routes the gate into `in_review`. The existing
-// P-040 `decideGateTransition` then advances projects.phase → 'handover' and
-// projects.status → 'completed' on approval.
+// P-040 `decideGateTransition` then completes the project through the governed
+// project-admin handover path on approval.
 // ---------------------------------------------------------------------------
 export interface SignCccResult {
   ok: true;
@@ -218,7 +222,7 @@ export interface SignCccResult {
 }
 
 export const signCccTransfer = createServerFn({ method: "POST" })
-  .middleware([attachSupabaseAuth])
+  .middleware([attachSupabaseAuth, requireSupabaseAuthMiddleware])
   .inputValidator((raw: unknown) => signCccTransferInput.parse(raw))
   .handler(async ({ data, context }): Promise<SignCccResult> => {
     requireSupabaseAuth(context);
@@ -268,6 +272,10 @@ export const signCccTransfer = createServerFn({ method: "POST" })
       };
     }
 
+    // Resolve final-gate approvers before mutating the gate so a missing
+    // project-admin assignment leaves the workflow untouched.
+    const approverIds = await resolveGateApproverIds(context, companyId, "handover");
+
     const nowIso = new Date().toISOString();
     const nextChecklist = autoCompleteHandoverChecklist(gate.checklist, context.user!.id, nowIso);
 
@@ -285,6 +293,7 @@ export const signCccTransfer = createServerFn({ method: "POST" })
       .insert({
         company_id: companyId,
         entity: "project_phase_gate",
+        entity_type: "project_phase_gate",
         entity_id: gate.id,
         requested_by: context.user!.id,
         metadata: {
@@ -296,17 +305,6 @@ export const signCccTransfer = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (iErr) throw iErr;
-
-    const { data: admins, error: aErr } = await context.supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("company_id", companyId)
-      .eq("role", "company_admin");
-    if (aErr) throw aErr;
-    const approverIds = Array.from(
-      new Set(((admins ?? []) as { user_id: string }[]).map((r) => r.user_id)),
-    );
-    if (approverIds.length === 0) httpError(409, "no_approvers");
 
     const { error: apErr } = await context.supabase.from("approvals").insert(
       approverIds.map((uid) => ({

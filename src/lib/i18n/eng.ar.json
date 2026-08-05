@@ -488,6 +488,30 @@
       "inProgress": "التعبئة: قيد التنفيذ",
       "notStarted": "التعبئة: لم تبدأ"
     },
+    "lifecycle": {
+      "complete": "إكمال المشروع",
+      "completing": "جارٍ الإكمال…",
+      "completeTitle": "هل تريد إكمال هذا المشروع؟",
+      "completeDescription": "يسجّل هذا الإجراء الإكمال النهائي لأعمال EPC. يجب أن يكون المشروع في مرحلة التسليم وأن تكون البوابة النهائية معتمدة.",
+      "confirmComplete": "إكمال المشروع",
+      "completeSuccess": "تم تسجيل المشروع كمكتمل.",
+      "completeFailed": "تعذّر إكمال المشروع.",
+      "reopen": "إعادة فتح المشروع",
+      "reopening": "جارٍ إعادة الفتح…",
+      "reopenTitle": "هل تريد إعادة فتح هذا المشروع؟",
+      "reopenDescription": "أدخل سببًا لسجل التدقيق. تعيد إعادة الفتح المشروع إلى الحالة النشطة مع الاحتفاظ بسجل التسليم.",
+      "reopenPlaceholder": "سبب إعادة الفتح…",
+      "confirmReopen": "إعادة فتح المشروع",
+      "reopenSuccess": "تمت إعادة فتح المشروع.",
+      "reopenFailed": "تعذّرت إعادة فتح المشروع.",
+      "cancel": "إلغاء",
+      "blockers": {
+        "already_completed": "هذا المشروع مكتمل بالفعل.",
+        "project_admin_required": "يمكن لمسؤول المشروع فقط إكمال هذا المشروع.",
+        "handover_phase_required": "انقل المشروع إلى مرحلة التسليم قبل إكماله.",
+        "handover_gate_approval_required": "اعتمد بوابة التسليم النهائية قبل إكمال المشروع."
+      }
+    },
     "sectionsAriaLabel": "أقسام المشروع",
     "unexpectedError": "خطأ غير متوقع.",
     "tabs": {

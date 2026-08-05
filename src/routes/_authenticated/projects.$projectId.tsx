@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/projects/phase-badge";
 import { PhaseGateStepper } from "@/components/projects/phase-gate-stepper";
+import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { projectDetailQueryOptions } from "@/lib/projects-detail-query";
 import { DEPARTMENT_LABELS, type ProjectDepartment } from "@/lib/schemas/project-wizard";
 import { ARCHETYPES } from "@/components/wizard/archetype-catalog";
@@ -128,6 +129,7 @@ function ProjectDetailLayout() {
                 {project.status}
               </span>
               <MobilizationHeaderChip projectId={projectId} />
+              <ProjectLifecycleActions project={project} />
             </div>
           }
         />

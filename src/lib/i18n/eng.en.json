@@ -479,6 +479,30 @@
       "inProgress": "Mobilization: in progress",
       "notStarted": "Mobilization: not started"
     },
+    "lifecycle": {
+      "complete": "Complete project",
+      "completing": "Completing…",
+      "completeTitle": "Complete this project?",
+      "completeDescription": "This records final EPC completion. The project must be in handover with an approved final gate.",
+      "confirmComplete": "Complete project",
+      "completeSuccess": "Project marked completed.",
+      "completeFailed": "Could not complete the project.",
+      "reopen": "Reopen project",
+      "reopening": "Reopening…",
+      "reopenTitle": "Reopen this project?",
+      "reopenDescription": "Enter an audit reason. Reopening returns the project to active status while retaining its handover history.",
+      "reopenPlaceholder": "Reason for reopening…",
+      "confirmReopen": "Reopen project",
+      "reopenSuccess": "Project reopened.",
+      "reopenFailed": "Could not reopen the project.",
+      "cancel": "Cancel",
+      "blockers": {
+        "already_completed": "This project is already completed.",
+        "project_admin_required": "Only a project admin can complete this project.",
+        "handover_phase_required": "Move the project to handover before completion.",
+        "handover_gate_approval_required": "Approve the final handover gate before completion."
+      }
+    },
     "sectionsAriaLabel": "Project sections",
     "unexpectedError": "Unexpected error.",
     "tabs": {
