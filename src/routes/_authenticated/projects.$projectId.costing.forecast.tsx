@@ -41,6 +41,9 @@ import {
   costingWorkspaceQueryOptions,
 } from "@/lib/costing.query";
 import { canTransitionAccrual, formatCostingMoney, monthKey } from "@/lib/costing.rules";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing/forecast")({
   head: () => ({
@@ -73,7 +76,18 @@ function ForecastView() {
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: costingWorkspaceQueryOptions(projectId).queryKey });
 
-  const defaultCurrency = data.rollups[0]?.currency_code ?? "USD";
+  const baseCurrency = data.baseCurrency;
+  const rateOf = (code: string) =>
+    code === baseCurrency ? 1 : (data.fxRates.find((r) => r.currency_code === code)?.rate ?? 0);
+  const rateInfo = (code: string) => data.fxRates.find((r) => r.currency_code === code) ?? null;
+  const currencyOptions = Array.from(
+    new Set([
+      baseCurrency,
+      ...data.fxRates.map((r) => r.currency_code),
+      ...data.forecasts.map((f) => f.currency_code),
+      ...data.accruals.map((a) => a.currency_code),
+    ]),
+  );
   const thisMonth = monthKey(new Date().toISOString().slice(0, 10));
 
   const [fCode, setFCode] = useState("");
@@ -83,6 +97,19 @@ function ForecastView() {
   const [aPeriod, setAPeriod] = useState(thisMonth.slice(0, 7));
   const [aAmount, setAAmount] = useState("");
   const [aDesc, setADesc] = useState("");
+  const [fCurrency, setFCurrency] = useState(baseCurrency);
+  const [aCurrency, setACurrency] = useState(baseCurrency);
+  const [overrideOn, setOverrideOn] = useState(false);
+  const [overrideRate, setOverrideRate] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
+  const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [showBase, setShowBase] = useState(true);
+
+  const override =
+    overrideOn && Number(overrideRate) > 0 && overrideReason.trim().length >= 3
+      ? { rate: Number(overrideRate), reason: overrideReason.trim() }
+      : null;
+  const missingRate = (code: string) => code !== baseCurrency && rateOf(code) <= 0 && !override;
 
   const saveForecast = useMutation({
     mutationFn: () =>
@@ -92,7 +119,8 @@ function ForecastView() {
           cost_code_id: fCode,
           period: `${fPeriod}-01`,
           etc_amount: Number(fAmount),
-          currency_code: defaultCurrency,
+          currency_code: fCurrency,
+          fx_override: override,
         },
       }),
     onSuccess: async () => {
@@ -111,8 +139,9 @@ function ForecastView() {
           cost_code_id: aCode,
           period: `${aPeriod}-01`,
           amount: Number(aAmount),
-          currency_code: defaultCurrency,
+          currency_code: aCurrency,
           description: aDesc || undefined,
+          fx_override: override,
         },
       }),
     onSuccess: async () => {
@@ -177,7 +206,7 @@ function ForecastView() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="f-amount">
-                  {t("financeMod.costing.forecast.etcLabel", { currency: defaultCurrency })}
+                  {t("financeMod.costing.forecast.etcLabel", { currency: fCurrency })}
                 </Label>
                 <Input
                   id="f-amount"
@@ -188,9 +217,33 @@ function ForecastView() {
                 />
               </div>
             </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex w-40 flex-col gap-1.5">
+                <Label htmlFor="f-currency">{t("financeMod.costing.fx.currency")}</Label>
+                <Select value={fCurrency} onValueChange={setFCurrency}>
+                  <SelectTrigger id="f-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencyOptions.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <FxHint
+                code={fCurrency}
+                base={baseCurrency}
+                info={rateInfo(fCurrency)}
+                override={override}
+                t={t}
+              />
+            </div>
             <Button
               className="self-start"
-              disabled={!fCode || !fAmount || saveForecast.isPending}
+              disabled={!fCode || !fAmount || missingRate(fCurrency) || saveForecast.isPending}
               onClick={() => saveForecast.mutate()}
             >
               {t("financeMod.costing.forecast.saveForecast")}
@@ -228,7 +281,7 @@ function ForecastView() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="a-amount">
-                  {t("financeMod.costing.forecast.amountLabel", { currency: defaultCurrency })}
+                  {t("financeMod.costing.forecast.amountLabel", { currency: aCurrency })}
                 </Label>
                 <Input
                   id="a-amount"
@@ -248,15 +301,163 @@ function ForecastView() {
                 placeholder={t("financeMod.costing.forecast.descriptionPlaceholder")}
               />
             </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex w-40 flex-col gap-1.5">
+                <Label htmlFor="a-currency">{t("financeMod.costing.fx.currency")}</Label>
+                <Select value={aCurrency} onValueChange={setACurrency}>
+                  <SelectTrigger id="a-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencyOptions.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <FxHint
+                code={aCurrency}
+                base={baseCurrency}
+                info={rateInfo(aCurrency)}
+                override={override}
+                t={t}
+              />
+            </div>
             <Button
               className="self-start"
-              disabled={!aCode || !aAmount || addAccrual.isPending}
+              disabled={!aCode || !aAmount || missingRate(aCurrency) || addAccrual.isPending}
               onClick={() => addAccrual.mutate()}
             >
               {t("financeMod.costing.forecast.createAccrual")}
             </Button>
           </Card>
         </div>
+      ) : null}
+
+      {canWrite ? (
+        <Card className="flex flex-col gap-3 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                {t("financeMod.costing.fx.overrideTitle")}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {t("financeMod.costing.fx.overrideBody", { base: baseCurrency })}
+              </p>
+            </div>
+            <Switch
+              checked={overrideOn}
+              onCheckedChange={setOverrideOn}
+              aria-label={t("financeMod.costing.fx.overrideTitle")}
+            />
+          </div>
+          {overrideOn ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fx-rate">{t("financeMod.costing.fx.rate")}</Label>
+                <Input
+                  id="fx-rate"
+                  inputMode="decimal"
+                  value={overrideRate}
+                  onChange={(e) => setOverrideRate(e.target.value)}
+                  placeholder="1.0000"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fx-reason">{t("financeMod.costing.fx.reason")}</Label>
+                <Input
+                  id="fx-reason"
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  placeholder={t("financeMod.costing.fx.reasonPlaceholder")}
+                />
+              </div>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {data.fxMissing.length > 0 ? (
+        <Alert variant="destructive">
+          <AlertTitle>{t("financeMod.costing.fx.missingTitle")}</AlertTitle>
+          <AlertDescription>
+            {t("financeMod.costing.fx.missingBody", {
+              currencies: data.fxMissing.join(", "),
+              base: baseCurrency,
+            })}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
+          <SelectTrigger className="w-48" aria-label={t("financeMod.costing.fx.currencyFilter")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("financeMod.costing.fx.allCurrencies")}</SelectItem>
+            {currencyOptions.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Switch checked={showBase} onCheckedChange={setShowBase} />
+          {t("financeMod.costing.fx.showBase", { base: baseCurrency })}
+        </label>
+      </div>
+
+      {data.currencySubtotals.length > 0 ? (
+        <Card className="flex flex-col gap-2 p-4">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t("financeMod.costing.fx.subtotalsTitle")}
+          </h3>
+          <div className="rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("financeMod.costing.fx.currency")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.forecast.etc")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.forecast.amount")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.fx.inBase", { base: baseCurrency })}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.currencySubtotals.map((s) => (
+                  <TableRow key={s.currency_code}>
+                    <TableCell className="font-medium">{s.currency_code}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCostingMoney(s.forecast_txn, s.currency_code)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCostingMoney(s.accrual_txn, s.currency_code)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCostingMoney(s.forecast_base + s.accrual_base, baseCurrency)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("financeMod.costing.fx.totalsNote", {
+              base: baseCurrency,
+              eac: formatCostingMoney(data.baseRollup.eac, baseCurrency),
+              vac: formatCostingMoney(data.baseRollup.variance_at_completion, baseCurrency),
+            })}
+          </p>
+        </Card>
       ) : null}
 
       <section className="flex flex-col gap-2">
@@ -283,12 +484,19 @@ function ForecastView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.forecasts.map((f) => (
+                {data.forecasts
+                  .filter((f) => currencyFilter === "all" || f.currency_code === currencyFilter)
+                  .map((f) => (
                   <TableRow key={f.id}>
                     <TableCell className="font-medium">{f.cost_code ?? "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{f.period.slice(0, 7)}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatCostingMoney(f.etc_amount, f.currency_code)}
+                      {showBase && f.currency_code !== baseCurrency ? (
+                        <span className="block text-xs text-muted-foreground">
+                          {formatCostingMoney(f.etc_amount_base, baseCurrency)}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-muted-foreground">{f.notes ?? "—"}</TableCell>
                   </TableRow>
@@ -326,15 +534,31 @@ function ForecastView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.accruals.map((a) => (
+                {data.accruals
+                  .filter((a) => currencyFilter === "all" || a.currency_code === currencyFilter)
+                  .map((a) => (
                   <TableRow key={a.id}>
                     <TableCell className="font-medium">{a.cost_code ?? "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{a.period.slice(0, 7)}</TableCell>
                     <TableCell>
-                      <StatusBadge status={a.status} />
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={a.status} />
+                        {a.currency_code !== baseCurrency ? (
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {a.fx_locked_at
+                              ? t("financeMod.costing.fx.locked", { rate: a.fx_rate })
+                              : t("financeMod.costing.fx.indicative", { rate: a.fx_rate })}
+                          </Badge>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatCostingMoney(a.amount, a.currency_code)}
+                      {showBase && a.currency_code !== baseCurrency ? (
+                        <span className="block text-xs text-muted-foreground">
+                          {formatCostingMoney(a.amount_base, baseCurrency)}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -342,7 +566,7 @@ function ForecastView() {
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={transition.isPending}
+                            disabled={transition.isPending || a.fx_rate <= 0}
                             onClick={() => transition.mutate({ id: a.id, action: "approve" })}
                           >
                             {t("financeMod.costing.forecast.approve")}
@@ -368,5 +592,45 @@ function ForecastView() {
         )}
       </section>
     </div>
+  );
+}
+
+/** Inline effective-rate hint with stale / missing warnings. */
+function FxHint({
+  code,
+  base,
+  info,
+  override,
+  t,
+}: {
+  code: string;
+  base: string;
+  info: { rate: number; as_of: string | null; stale: boolean } | null;
+  override: { rate: number; reason: string } | null;
+  t: (key: string, vars?: Record<string, unknown>) => string;
+}) {
+  if (code === base) return null;
+  if (override) {
+    return (
+      <p className="text-xs text-primary">
+        {t("financeMod.costing.fx.usingOverride", { rate: override.rate, base })}
+      </p>
+    );
+  }
+  if (!info || info.rate <= 0) {
+    return (
+      <p className="text-xs text-destructive">
+        {t("financeMod.costing.fx.noRate", { code, base })}
+      </p>
+    );
+  }
+  return (
+    <p className={info.stale ? "text-xs text-warning-foreground" : "text-xs text-muted-foreground"}>
+      {t(info.stale ? "financeMod.costing.fx.staleRate" : "financeMod.costing.fx.effectiveRate", {
+        rate: info.rate,
+        base,
+        date: info.as_of ?? "—",
+      })}
+    </p>
   );
 }
