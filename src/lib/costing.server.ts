@@ -63,13 +63,23 @@ export async function costingAudit(
 // ---------------------------------------------------------------------------
 // Row shapes returned to the client
 // ---------------------------------------------------------------------------
-export interface CostingAccrualRow {
+export interface CostingFxSnapshot {
+  base_currency_code: string;
+  fx_rate: number;
+  fx_rate_date: string | null;
+  fx_source: "parity" | "table" | "manual";
+  fx_override_reason: string | null;
+  fx_locked_at: string | null;
+}
+
+export interface CostingAccrualRow extends CostingFxSnapshot {
   id: string;
   project_id: string;
   cost_code_id: string;
   cost_code: string | null;
   period: string;
   amount: number;
+  amount_base: number;
   currency_code: string;
   status: "draft" | "approved" | "reversed";
   description: string | null;
@@ -79,13 +89,14 @@ export interface CostingAccrualRow {
   created_at: string;
 }
 
-export interface CostingForecastRow {
+export interface CostingForecastRow extends CostingFxSnapshot {
   id: string;
   project_id: string;
   cost_code_id: string;
   cost_code: string | null;
   period: string;
   etc_amount: number;
+  etc_amount_base: number;
   currency_code: string;
   notes: string | null;
 }
@@ -107,8 +118,10 @@ export interface CostingInvoiceRow {
   direction: string;
   status: string;
   amount: number;
+  amount_base: number;
   paid_amount: number;
   currency_code: string;
+  cost_code_id: string | null;
   issue_date: string | null;
   due_date: string | null;
 }
@@ -119,22 +132,47 @@ export interface CostingPaymentRow {
   direction: string;
   record_status: string;
   amount: number;
+  amount_base: number;
   currency_code: string;
+  cost_code_id: string | null;
   payment_date: string | null;
   method: string | null;
 }
 
+export interface CostingCommitmentRow extends CostingCommitmentInput {
+  amount_base: number;
+  cost_code_id: string | null;
+}
+
+export interface CostingCurrencySubtotal {
+  currency_code: string;
+  forecast_txn: number;
+  forecast_base: number;
+  accrual_txn: number;
+  accrual_base: number;
+}
+
 export interface CostingWorkspaceData {
   project: { id: string; name: string; code: string };
+  /** Reporting/base currency for the project. */
+  baseCurrency: string;
+  /** currency -> rate into base, plus the effective date used. */
+  fxRates: { currency_code: string; rate: number; as_of: string | null; stale: boolean }[];
+  fxMissing: string[];
   rollups: CostingRollup[];
-  commitments: CostingCommitmentInput[];
+  /** Single reconciled roll-up expressed in project currency. */
+  baseRollup: CbsMetrics;
+  cbs: CbsRow[];
+  currencySubtotals: CostingCurrencySubtotal[];
+  commitments: CostingCommitmentRow[];
   contracts: CostingContractRow[];
   invoices: CostingInvoiceRow[];
   payments: CostingPaymentRow[];
   accruals: CostingAccrualRow[];
   forecasts: CostingForecastRow[];
-  costCodes: { id: string; code: string; name: string }[];
+  costCodes: { id: string; code: string; name: string; parent_id: string | null }[];
 }
+
 
 // ---------------------------------------------------------------------------
 // Loader
