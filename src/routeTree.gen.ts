@@ -187,6 +187,7 @@ import { Route as AuthenticatedProjectsProjectIdHseRouteImport } from './routes/
 import { Route as AuthenticatedProjectsProjectIdGatesRouteImport } from './routes/_authenticated/projects.$projectId.gates'
 import { Route as AuthenticatedProjectsProjectIdFinanceRouteImport } from './routes/_authenticated/projects.$projectId.finance'
 import { Route as AuthenticatedProjectsProjectIdEngineeringRouteImport } from './routes/_authenticated/projects.$projectId.engineering'
+import { Route as AuthenticatedProjectsProjectIdCostingRouteImport } from './routes/_authenticated/projects.$projectId.costing'
 import { Route as AuthenticatedProjectsProjectIdConstructionRouteImport } from './routes/_authenticated/projects.$projectId.construction'
 import { Route as AuthenticatedProjectsProjectIdConfigRouteImport } from './routes/_authenticated/projects.$projectId.config'
 import { Route as AuthenticatedProcurementVendorsNewRouteImport } from './routes/_authenticated/procurement.vendors.new'
@@ -1290,6 +1291,12 @@ const AuthenticatedProjectsProjectIdEngineeringRoute =
     path: '/engineering',
     getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingRoute =
+  AuthenticatedProjectsProjectIdCostingRouteImport.update({
+    id: '/costing',
+    path: '/costing',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdConstructionRoute =
   AuthenticatedProjectsProjectIdConstructionRouteImport.update({
     id: '/construction',
@@ -1966,6 +1973,7 @@ export interface FileRoutesByFullPath {
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
+  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -2216,6 +2224,7 @@ export interface FileRoutesByTo {
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
+  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
   '/projects/$projectId/hse': typeof AuthenticatedProjectsProjectIdHseRoute
@@ -2477,6 +2486,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/_authenticated/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
+  '/_authenticated/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
   '/_authenticated/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   '/_authenticated/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/_authenticated/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -2740,6 +2750,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors/new'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
+    | '/projects/$projectId/costing'
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/finance'
     | '/projects/$projectId/gates'
@@ -2990,6 +3001,7 @@ export interface FileRouteTypes {
     | '/procurement/vendors/new'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
+    | '/projects/$projectId/costing'
     | '/projects/$projectId/finance'
     | '/projects/$projectId/gates'
     | '/projects/$projectId/hse'
@@ -3250,6 +3262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement/vendors/new'
     | '/_authenticated/projects/$projectId/config'
     | '/_authenticated/projects/$projectId/construction'
+    | '/_authenticated/projects/$projectId/costing'
     | '/_authenticated/projects/$projectId/engineering'
     | '/_authenticated/projects/$projectId/finance'
     | '/_authenticated/projects/$projectId/gates'
@@ -4634,6 +4647,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdRoute
     }
+    '/_authenticated/projects/$projectId/costing': {
+      id: '/_authenticated/projects/$projectId/costing'
+      path: '/costing'
+      fullPath: '/projects/$projectId/costing'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
     '/_authenticated/projects/$projectId/construction': {
       id: '/_authenticated/projects/$projectId/construction'
       path: '/construction'
@@ -5576,6 +5596,7 @@ const AuthenticatedProjectsProjectIdPlanningRouteWithChildren =
 interface AuthenticatedProjectsProjectIdRouteChildren {
   AuthenticatedProjectsProjectIdConfigRoute: typeof AuthenticatedProjectsProjectIdConfigRoute
   AuthenticatedProjectsProjectIdConstructionRoute: typeof AuthenticatedProjectsProjectIdConstructionRoute
+  AuthenticatedProjectsProjectIdCostingRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
   AuthenticatedProjectsProjectIdEngineeringRoute: typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   AuthenticatedProjectsProjectIdFinanceRoute: typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   AuthenticatedProjectsProjectIdGatesRoute: typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -5600,6 +5621,8 @@ const AuthenticatedProjectsProjectIdRouteChildren: AuthenticatedProjectsProjectI
       AuthenticatedProjectsProjectIdConfigRoute,
     AuthenticatedProjectsProjectIdConstructionRoute:
       AuthenticatedProjectsProjectIdConstructionRoute,
+    AuthenticatedProjectsProjectIdCostingRoute:
+      AuthenticatedProjectsProjectIdCostingRoute,
     AuthenticatedProjectsProjectIdEngineeringRoute:
       AuthenticatedProjectsProjectIdEngineeringRouteWithChildren,
     AuthenticatedProjectsProjectIdFinanceRoute:
@@ -6041,13 +6064,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
