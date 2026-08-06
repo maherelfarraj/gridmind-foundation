@@ -46,7 +46,9 @@ export function CostCodeDrawer({
     return Boolean(costCodeId && scope.ids.has(costCodeId));
   };
 
-  const pos = data.commitments.filter((c) => c.kind === "purchase_order" && inScope(c.cost_code_id));
+  const pos = data.commitments.filter(
+    (c) => c.kind === "purchase_order" && inScope(c.cost_code_id),
+  );
   const subs = data.commitments.filter((c) => c.kind === "subcontract" && inScope(c.cost_code_id));
   const cos = data.commitments.filter((c) => c.kind === "change_order" && inScope(c.cost_code_id));
   const invoices = data.invoices.filter((i) => inScope(i.cost_code_id));
@@ -59,7 +61,11 @@ export function CostCodeDrawer({
       <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
         <SheetHeader>
           <SheetTitle>
-            {row ? (row.is_unassigned ? L("unassigned", "Unassigned") : `${row.code} — ${row.name}`) : ""}
+            {row
+              ? row.is_unassigned
+                ? L("unassigned", "Unassigned")
+                : `${row.code} — ${row.name}`
+              : ""}
           </SheetTitle>
           <SheetDescription>
             {row

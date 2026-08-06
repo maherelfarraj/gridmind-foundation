@@ -49,66 +49,70 @@ export function CostingKpis({
       <KpiGrid columns={4} label={`Budget position (${c})`}>
         <MetricTile metric="original" onMetric={onMetric} active={activeMetric === "original"}>
           <KpiTile
-          icon={Layers}
-          label={`Original budget (${c})`}
-          value={m(rollup.original)}
-          hint="Baseline at award"
-        />
+            icon={Layers}
+            label={`Original budget (${c})`}
+            value={m(rollup.original)}
+            hint="Baseline at award"
+          />
         </MetricTile>
-        <MetricTile metric="approved_changes" onMetric={onMetric} active={activeMetric === "approved_changes"}>
+        <MetricTile
+          metric="approved_changes"
+          onMetric={onMetric}
+          active={activeMetric === "approved_changes"}
+        >
           <KpiTile
-          icon={FileStack}
-          label="Approved changes"
-          value={m(rollup.approved_changes)}
-          hint="Incorporated change orders"
-        />
+            icon={FileStack}
+            label="Approved changes"
+            value={m(rollup.approved_changes)}
+            hint="Incorporated change orders"
+          />
         </MetricTile>
         <MetricTile metric="current" onMetric={onMetric} active={activeMetric === "current"}>
           <KpiTile icon={Banknote} label="Current budget" value={m(rollup.current)} />
         </MetricTile>
         <MetricTile metric="available" onMetric={onMetric} active={activeMetric === "available"}>
           <KpiTile
-          icon={PiggyBank}
-          label="Available budget"
-          status={availStatus}
-          value={m(rollup.available)}
-          hint="Current − max(committed, actual + accruals)"
-        />
+            icon={PiggyBank}
+            label="Available budget"
+            status={availStatus}
+            value={m(rollup.available)}
+            hint="Current − max(committed, actual + accruals)"
+          />
         </MetricTile>
       </KpiGrid>
 
       <KpiGrid columns={4} label={`Cost position (${c})`}>
         <MetricTile metric="committed" onMetric={onMetric} active={activeMetric === "committed"}>
           <KpiTile
-          icon={Receipt}
-          label="Committed cost"
-          value={m(rollup.committed)}
-          hint={`PO ${m(rollup.committed_po)} · Sub ${m(rollup.committed_subcontract)} · CO ${m(rollup.committed_change_order)}`}
-        />
+            icon={Receipt}
+            label="Committed cost"
+            value={m(rollup.committed)}
+            hint={`PO ${m(rollup.committed_po)} · Sub ${m(rollup.committed_subcontract)} · CO ${m(rollup.committed_change_order)}`}
+          />
         </MetricTile>
         <MetricTile metric="actual" onMetric={onMetric} active={activeMetric === "actual"}>
           <KpiTile
-          icon={Coins}
-          label="Actual cost"
-          value={m(rollup.actual)}
-          hint="Booked payable invoices"
-        />
+            icon={Coins}
+            label="Actual cost"
+            value={m(rollup.actual)}
+            hint="Booked payable invoices"
+          />
         </MetricTile>
         <MetricTile metric="accruals" onMetric={onMetric} active={activeMetric === "accruals"}>
           <KpiTile
-          icon={Scale}
-          label="Accruals"
-          value={m(rollup.accruals)}
-          hint="Approved entries only"
-        />
+            icon={Scale}
+            label="Accruals"
+            value={m(rollup.accruals)}
+            hint="Approved entries only"
+          />
         </MetricTile>
         <MetricTile metric="etc" onMetric={onMetric} active={activeMetric === "etc"}>
           <KpiTile
-          icon={TrendingUp}
-          label="ETC"
-          value={m(rollup.etc)}
-          hint={rollup.has_forecast ? "From forecast periods" : "Residual estimate"}
-        />
+            icon={TrendingUp}
+            label="ETC"
+            value={m(rollup.etc)}
+            hint={rollup.has_forecast ? "From forecast periods" : "Residual estimate"}
+          />
         </MetricTile>
       </KpiGrid>
 
@@ -116,30 +120,38 @@ export function CostingKpis({
         <MetricTile metric="eac" onMetric={onMetric} active={activeMetric === "eac"}>
           <KpiTile icon={Target} label="EAC" value={m(rollup.eac)} hint="Actual + accruals + ETC" />
         </MetricTile>
-        <MetricTile metric="variance_at_completion" onMetric={onMetric} active={activeMetric === "variance_at_completion"}>
+        <MetricTile
+          metric="variance_at_completion"
+          onMetric={onMetric}
+          active={activeMetric === "variance_at_completion"}
+        >
           <KpiTile
-          icon={Scale}
-          label="Variance at completion"
-          status={vacStatus}
-          value={m(rollup.variance_at_completion)}
-          hint="Current budget − EAC"
-        />
+            icon={Scale}
+            label="Variance at completion"
+            status={vacStatus}
+            value={m(rollup.variance_at_completion)}
+            hint="Current budget − EAC"
+          />
         </MetricTile>
         <MetricTile metric="paid" onMetric={onMetric} active={activeMetric === "paid"}>
           <KpiTile
-          icon={Wallet}
-          label="Paid"
-          value={m(rollup.paid)}
-          hint="Recorded payable payments"
-        />
+            icon={Wallet}
+            label="Paid"
+            value={m(rollup.paid)}
+            hint="Recorded payable payments"
+          />
         </MetricTile>
-        <MetricTile metric="outstanding" onMetric={onMetric} active={activeMetric === "outstanding"}>
+        <MetricTile
+          metric="outstanding"
+          onMetric={onMetric}
+          active={activeMetric === "outstanding"}
+        >
           <KpiTile
-          icon={HandCoins}
-          label="Outstanding"
-          value={m(rollup.outstanding)}
-          hint="Actual − paid"
-        />
+            icon={HandCoins}
+            label="Outstanding"
+            value={m(rollup.outstanding)}
+            hint="Actual − paid"
+          />
         </MetricTile>
       </KpiGrid>
     </div>

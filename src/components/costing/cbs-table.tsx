@@ -115,7 +115,8 @@ export function CbsTable({ rows, currency, highlight, onSelect, labels = {} }: C
     });
 
   const expandAll = () => setCollapsed(new Set());
-  const collapseAll = () => setCollapsed(new Set(rows.filter((r) => r.has_children).map((r) => r.id)));
+  const collapseAll = () =>
+    setCollapsed(new Set(rows.filter((r) => r.has_children).map((r) => r.id)));
 
   const exportCsv = () => {
     const header = [

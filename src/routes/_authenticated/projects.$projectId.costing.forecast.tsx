@@ -487,20 +487,22 @@ function ForecastView() {
                 {data.forecasts
                   .filter((f) => currencyFilter === "all" || f.currency_code === currencyFilter)
                   .map((f) => (
-                  <TableRow key={f.id}>
-                    <TableCell className="font-medium">{f.cost_code ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{f.period.slice(0, 7)}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatCostingMoney(f.etc_amount, f.currency_code)}
-                      {showBase && f.currency_code !== baseCurrency ? (
-                        <span className="block text-xs text-muted-foreground">
-                          {formatCostingMoney(f.etc_amount_base, baseCurrency)}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{f.notes ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
+                    <TableRow key={f.id}>
+                      <TableCell className="font-medium">{f.cost_code ?? "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {f.period.slice(0, 7)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCostingMoney(f.etc_amount, f.currency_code)}
+                        {showBase && f.currency_code !== baseCurrency ? (
+                          <span className="block text-xs text-muted-foreground">
+                            {formatCostingMoney(f.etc_amount_base, baseCurrency)}
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{f.notes ?? "—"}</TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>
@@ -537,55 +539,57 @@ function ForecastView() {
                 {data.accruals
                   .filter((a) => currencyFilter === "all" || a.currency_code === currencyFilter)
                   .map((a) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-medium">{a.cost_code ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{a.period.slice(0, 7)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={a.status} />
-                        {a.currency_code !== baseCurrency ? (
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {a.fx_locked_at
-                              ? t("financeMod.costing.fx.locked", { rate: a.fx_rate })
-                              : t("financeMod.costing.fx.indicative", { rate: a.fx_rate })}
-                          </Badge>
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">{a.cost_code ?? "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {a.period.slice(0, 7)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={a.status} />
+                          {a.currency_code !== baseCurrency ? (
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {a.fx_locked_at
+                                ? t("financeMod.costing.fx.locked", { rate: a.fx_rate })
+                                : t("financeMod.costing.fx.indicative", { rate: a.fx_rate })}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCostingMoney(a.amount, a.currency_code)}
+                        {showBase && a.currency_code !== baseCurrency ? (
+                          <span className="block text-xs text-muted-foreground">
+                            {formatCostingMoney(a.amount_base, baseCurrency)}
+                          </span>
                         ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatCostingMoney(a.amount, a.currency_code)}
-                      {showBase && a.currency_code !== baseCurrency ? (
-                        <span className="block text-xs text-muted-foreground">
-                          {formatCostingMoney(a.amount_base, baseCurrency)}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {canWrite && canTransitionAccrual(a.status, "approve") ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={transition.isPending || a.fx_rate <= 0}
-                            onClick={() => transition.mutate({ id: a.id, action: "approve" })}
-                          >
-                            {t("financeMod.costing.forecast.approve")}
-                          </Button>
-                        ) : null}
-                        {canWrite && canTransitionAccrual(a.status, "reverse") ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={transition.isPending}
-                            onClick={() => transition.mutate({ id: a.id, action: "reverse" })}
-                          >
-                            {t("financeMod.costing.forecast.reverse")}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {canWrite && canTransitionAccrual(a.status, "approve") ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={transition.isPending || a.fx_rate <= 0}
+                              onClick={() => transition.mutate({ id: a.id, action: "approve" })}
+                            >
+                              {t("financeMod.costing.forecast.approve")}
+                            </Button>
+                          ) : null}
+                          {canWrite && canTransitionAccrual(a.status, "reverse") ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={transition.isPending}
+                              onClick={() => transition.mutate({ id: a.id, action: "reverse" })}
+                            >
+                              {t("financeMod.costing.forecast.reverse")}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>
