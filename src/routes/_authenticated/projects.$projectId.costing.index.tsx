@@ -1,9 +1,13 @@
-// GC-01 — Costing overview: KPI roll-up + drill-down links into the cost stack.
+// GC-01/GC-02 — Costing overview: KPI roll-up, CBS drill-down, source drawer.
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Calculator } from "lucide-react";
 
 import { CostingKpis } from "@/components/costing/costing-kpis";
+import { CbsTable, type CbsMetricKey } from "@/components/costing/cbs-table";
+import { CostCodeDrawer } from "@/components/costing/cost-code-drawer";
+import type { CbsRow } from "@/lib/costing.cbs";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
