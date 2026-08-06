@@ -30,7 +30,8 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
       { title: "Commitments — GridMind EPC" },
       {
         name: "description",
-        content: "Approved purchase orders, subcontracts and change orders committing project cost.",
+        content:
+          "Approved purchase orders, subcontracts and change orders committing project cost.",
       },
     ],
   }),

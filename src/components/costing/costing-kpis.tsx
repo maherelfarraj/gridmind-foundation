@@ -65,8 +65,18 @@ export function CostingKpis({ rollup }: { rollup: CostingRollup }) {
           value={m(rollup.committed)}
           hint={`PO ${m(rollup.committed_po)} · Sub ${m(rollup.committed_subcontract)} · CO ${m(rollup.committed_change_order)}`}
         />
-        <KpiTile icon={Coins} label="Actual cost" value={m(rollup.actual)} hint="Booked payable invoices" />
-        <KpiTile icon={Scale} label="Accruals" value={m(rollup.accruals)} hint="Approved entries only" />
+        <KpiTile
+          icon={Coins}
+          label="Actual cost"
+          value={m(rollup.actual)}
+          hint="Booked payable invoices"
+        />
+        <KpiTile
+          icon={Scale}
+          label="Accruals"
+          value={m(rollup.accruals)}
+          hint="Approved entries only"
+        />
         <KpiTile
           icon={TrendingUp}
           label="ETC"
@@ -84,7 +94,12 @@ export function CostingKpis({ rollup }: { rollup: CostingRollup }) {
           value={m(rollup.variance_at_completion)}
           hint="Current budget − EAC"
         />
-        <KpiTile icon={Wallet} label="Paid" value={m(rollup.paid)} hint="Recorded payable payments" />
+        <KpiTile
+          icon={Wallet}
+          label="Paid"
+          value={m(rollup.paid)}
+          hint="Recorded payable payments"
+        />
         <KpiTile
           icon={HandCoins}
           label="Outstanding"

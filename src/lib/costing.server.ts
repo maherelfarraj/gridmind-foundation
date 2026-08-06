@@ -146,57 +146,86 @@ export async function loadCostingWorkspace(
   const project = await loadCostingProject(ctx, projectId);
   const sb = ctx.supabase as any;
 
-  const [budgetsQ, posQ, subsQ, cosQ, contractsQ, invoicesQ, paymentsQ, accrualsQ, forecastsQ, codesQ] =
-    await Promise.all([
-      sb
-        .from("budgets")
-        .select("original_amount, approved_changes, current_amount, currency_code")
-        .eq("project_id", projectId),
-      sb
-        .from("purchase_orders")
-        .select("id, po_number, status, total_amount, currency_code, vendor:vendor_id(name)")
-        .eq("project_id", projectId),
-      sb
-        .from("subcontracts")
-        .select("id, subcontract_number, title, status, contract_value, currency_code, vendor:vendor_id(name)")
-        .eq("project_id", projectId),
-      sb
-        .from("change_orders")
-        .select("id, co_number, title, status, amount, currency_code")
-        .eq("project_id", projectId),
-      sb
-        .from("contracts")
-        .select("id, contract_number, title, counterparty, contract_type, status, value, currency_code")
-        .eq("project_id", projectId)
-        .order("contract_number", { ascending: true }),
-      sb
-        .from("invoices")
-        .select("id, invoice_number, direction, status, amount, paid_amount, currency_code, issue_date, due_date")
-        .eq("project_id", projectId)
-        .order("issue_date", { ascending: false }),
-      sb
-        .from("payments")
-        .select("id, payment_number, direction, record_status, amount, currency_code, payment_date, method")
-        .eq("project_id", projectId)
-        .order("payment_date", { ascending: false }),
-      sb
-        .from("cost_accruals")
-        .select("*, cost_code:cost_code_id(code)")
-        .eq("project_id", projectId)
-        .order("period", { ascending: false }),
-      sb
-        .from("cost_forecast_periods")
-        .select("*, cost_code:cost_code_id(code)")
-        .eq("project_id", projectId)
-        .order("period", { ascending: true }),
-      sb
-        .from("cost_codes")
-        .select("id, code, name")
-        .eq("project_id", projectId)
-        .order("code", { ascending: true }),
-    ]);
+  const [
+    budgetsQ,
+    posQ,
+    subsQ,
+    cosQ,
+    contractsQ,
+    invoicesQ,
+    paymentsQ,
+    accrualsQ,
+    forecastsQ,
+    codesQ,
+  ] = await Promise.all([
+    sb
+      .from("budgets")
+      .select("original_amount, approved_changes, current_amount, currency_code")
+      .eq("project_id", projectId),
+    sb
+      .from("purchase_orders")
+      .select("id, po_number, status, total_amount, currency_code, vendor:vendor_id(name)")
+      .eq("project_id", projectId),
+    sb
+      .from("subcontracts")
+      .select(
+        "id, subcontract_number, title, status, contract_value, currency_code, vendor:vendor_id(name)",
+      )
+      .eq("project_id", projectId),
+    sb
+      .from("change_orders")
+      .select("id, co_number, title, status, amount, currency_code")
+      .eq("project_id", projectId),
+    sb
+      .from("contracts")
+      .select(
+        "id, contract_number, title, counterparty, contract_type, status, value, currency_code",
+      )
+      .eq("project_id", projectId)
+      .order("contract_number", { ascending: true }),
+    sb
+      .from("invoices")
+      .select(
+        "id, invoice_number, direction, status, amount, paid_amount, currency_code, issue_date, due_date",
+      )
+      .eq("project_id", projectId)
+      .order("issue_date", { ascending: false }),
+    sb
+      .from("payments")
+      .select(
+        "id, payment_number, direction, record_status, amount, currency_code, payment_date, method",
+      )
+      .eq("project_id", projectId)
+      .order("payment_date", { ascending: false }),
+    sb
+      .from("cost_accruals")
+      .select("*, cost_code:cost_code_id(code)")
+      .eq("project_id", projectId)
+      .order("period", { ascending: false }),
+    sb
+      .from("cost_forecast_periods")
+      .select("*, cost_code:cost_code_id(code)")
+      .eq("project_id", projectId)
+      .order("period", { ascending: true }),
+    sb
+      .from("cost_codes")
+      .select("id, code, name")
+      .eq("project_id", projectId)
+      .order("code", { ascending: true }),
+  ]);
 
-  for (const q of [budgetsQ, posQ, subsQ, cosQ, contractsQ, invoicesQ, paymentsQ, accrualsQ, forecastsQ, codesQ]) {
+  for (const q of [
+    budgetsQ,
+    posQ,
+    subsQ,
+    cosQ,
+    contractsQ,
+    invoicesQ,
+    paymentsQ,
+    accrualsQ,
+    forecastsQ,
+    codesQ,
+  ]) {
     if (q?.error) throw q.error;
   }
 

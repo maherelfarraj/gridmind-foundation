@@ -133,7 +133,9 @@ function InvoicesView() {
                       <TableCell>
                         <StatusBadge status={p.record_status} />
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{p.payment_date ?? "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {p.payment_date ?? "—"}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">{p.method ?? "—"}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatCostingMoney(p.amount, p.currency_code)}

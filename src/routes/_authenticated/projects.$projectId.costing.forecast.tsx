@@ -34,7 +34,11 @@ import {
   transitionCostAccrual,
   upsertCostForecast,
 } from "@/lib/costing.functions";
-import { costingAccessQueryOptions, costingErrorMessage, costingWorkspaceQueryOptions } from "@/lib/costing.query";
+import {
+  costingAccessQueryOptions,
+  costingErrorMessage,
+  costingWorkspaceQueryOptions,
+} from "@/lib/costing.query";
 import { canTransitionAccrual, formatCostingMoney, monthKey } from "@/lib/costing.rules";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing/forecast")({

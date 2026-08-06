@@ -34,12 +34,7 @@ export const COMMITTED_SUBCONTRACT_STATUSES = ["active", "complete"] as const;
 /** Approved but not yet incorporated into the budget baseline. */
 export const COMMITTED_CHANGE_ORDER_STATUSES = ["approved"] as const;
 
-export const BOOKED_INVOICE_STATUSES = [
-  "approved",
-  "sent",
-  "partially_paid",
-  "paid",
-] as const;
+export const BOOKED_INVOICE_STATUSES = ["approved", "sent", "partially_paid", "paid"] as const;
 
 export function isCommittedPo(status: string): boolean {
   return (COMMITTED_PO_STATUSES as readonly string[]).includes(status);

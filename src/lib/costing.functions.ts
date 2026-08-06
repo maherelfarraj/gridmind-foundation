@@ -45,7 +45,8 @@ export const upsertCostForecast = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => forecastUpsertSchema.parse(input))
   .handler(async ({ data, context }): Promise<{ id: string }> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES))) costingHttpError(403, "forbidden");
+    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
+      costingHttpError(403, "forbidden");
     const project = await loadCostingProject(context, data.projectId);
     const { data: row, error } = await (context.supabase as any)
       .from("cost_forecast_periods")
@@ -78,7 +79,8 @@ export const deleteCostForecast = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => forecastDeleteSchema.parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES))) costingHttpError(403, "forbidden");
+    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
+      costingHttpError(403, "forbidden");
     const { error } = await (context.supabase as any)
       .from("cost_forecast_periods")
       .delete()
@@ -93,7 +95,8 @@ export const createCostAccrual = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => accrualCreateSchema.parse(input))
   .handler(async ({ data, context }): Promise<{ id: string }> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES))) costingHttpError(403, "forbidden");
+    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
+      costingHttpError(403, "forbidden");
     const project = await loadCostingProject(context, data.projectId);
     const { data: row, error } = await (context.supabase as any)
       .from("cost_accruals")
@@ -123,7 +126,8 @@ export const transitionCostAccrual = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => accrualTransitionSchema.parse(input))
   .handler(async ({ data, context }): Promise<{ status: AccrualStatus }> => {
     requireSupabaseAuth(context);
-    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES))) costingHttpError(403, "forbidden");
+    if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
+      costingHttpError(403, "forbidden");
     const sb = context.supabase as any;
     const { data: current, error: loadErr } = await sb
       .from("cost_accruals")
