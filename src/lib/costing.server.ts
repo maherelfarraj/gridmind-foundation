@@ -2,7 +2,7 @@
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { loadFxRates, resolveBaseCurrency } from "@/lib/ar-aging.server";
 import { buildCbsTree, type CbsMetrics, type CbsRow } from "@/lib/costing.cbs";
-import { convertMoney, sumMoney } from "@/lib/costing.fx";
+import { convertMoney, resolveFx, sumMoney } from "@/lib/costing.fx";
 import {
   computeCostingRollup,
   type CostingAccrualInput,
@@ -538,4 +538,64 @@ export async function loadCostingWorkspace(
     })),
   };
 
+}
+
+// ---------------------------------------------------------------------------
+// GC-02 — FX resolution for costing writes (forecasts + accruals)
+// ---------------------------------------------------------------------------
+export interface CostingFxResult {
+  base_currency_code: string;
+  fx_rate: number | null;
+  fx_rate_date: string | null;
+  fx_source: "parity" | "table" | "manual";
+  fx_override_reason: string | null;
+  stale: boolean;
+  missing: boolean;
+}
+
+/**
+ * Resolve the effective-dated rate for one transaction currency into the
+ * project's reporting currency. Manual overrides win, same-currency is parity,
+ * otherwise the latest fx_rates row on or before `onDate` is used.
+ */
+export async function resolveCostingFx(
+  ctx: AuthContext,
+  projectId: string,
+  txnCurrency: string,
+  onDate: string,
+  override?: { rate: number; reason: string } | null,
+): Promise<CostingFxResult> {
+  const base = (await resolveBaseCurrency(ctx, projectId)).toUpperCase();
+  const txn = txnCurrency.toUpperCase();
+
+  let tableRate: { rate: number; as_of: string } | null = null;
+  if (!override && txn !== base) {
+    const { data } = await (ctx.supabase as any)
+      .from("fx_rates")
+      .select("rate, as_of")
+      .eq("base_code", txn)
+      .eq("quote_code", base)
+      .lte("as_of", onDate)
+      .order("as_of", { ascending: false })
+      .limit(1);
+    const row = (data ?? [])[0];
+    if (row) tableRate = { rate: Number(row.rate), as_of: row.as_of as string };
+  }
+
+  const res = resolveFx({
+    txnCurrency: txn,
+    baseCurrency: base,
+    onDate,
+    tableRate,
+    override: override ?? null,
+  });
+  return {
+    base_currency_code: base,
+    fx_rate: res.rate,
+    fx_rate_date: res.rate_date,
+    fx_source: res.source,
+    fx_override_reason: res.override_reason,
+    stale: res.stale,
+    missing: res.missing,
+  };
 }
