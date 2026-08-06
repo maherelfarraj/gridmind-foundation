@@ -247,6 +247,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport }
 import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
 import { Route as AuthenticatedProjectsProjectIdCostingInvoicesRouteImport } from './routes/_authenticated/projects.$projectId.costing.invoices'
+import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } from './routes/_authenticated/projects.$projectId.costing.forecast'
 import { Route as AuthenticatedProjectsProjectIdCostingContractsRouteImport } from './routes/_authenticated/projects.$projectId.costing.contracts'
 import { Route as AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport } from './routes/_authenticated/projects.$projectId.costing.commitments'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTurnoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.turnover'
@@ -1657,6 +1658,12 @@ const AuthenticatedProjectsProjectIdCostingInvoicesRoute =
     path: '/invoices',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingForecastRoute =
+  AuthenticatedProjectsProjectIdCostingForecastRouteImport.update({
+    id: '/forecast',
+    path: '/forecast',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCostingContractsRoute =
   AuthenticatedProjectsProjectIdCostingContractsRouteImport.update({
     id: '/contracts',
@@ -2065,6 +2072,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2318,6 +2326,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2585,6 +2594,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
   '/_authenticated/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/_authenticated/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/_authenticated/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/_authenticated/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2853,6 +2863,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
+    | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3106,6 +3117,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/turnover'
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
+    | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3372,6 +3384,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/commissioning/turnover'
     | '/_authenticated/projects/$projectId/costing/commitments'
     | '/_authenticated/projects/$projectId/costing/contracts'
+    | '/_authenticated/projects/$projectId/costing/forecast'
     | '/_authenticated/projects/$projectId/costing/invoices'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/civil-features'
@@ -5117,6 +5130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/forecast': {
+      id: '/_authenticated/projects/$projectId/costing/forecast'
+      path: '/forecast'
+      fullPath: '/projects/$projectId/costing/forecast'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/contracts': {
       id: '/_authenticated/projects/$projectId/costing/contracts'
       path: '/contracts'
@@ -5497,6 +5517,7 @@ const AuthenticatedProcurementVendorsRouteWithChildren =
 interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingCommitmentsRoute: typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   AuthenticatedProjectsProjectIdCostingContractsRoute: typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  AuthenticatedProjectsProjectIdCostingForecastRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   AuthenticatedProjectsProjectIdCostingInvoicesRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   AuthenticatedProjectsProjectIdCostingIndexRoute: typeof AuthenticatedProjectsProjectIdCostingIndexRoute
 }
@@ -5507,6 +5528,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingCommitmentsRoute,
     AuthenticatedProjectsProjectIdCostingContractsRoute:
       AuthenticatedProjectsProjectIdCostingContractsRoute,
+    AuthenticatedProjectsProjectIdCostingForecastRoute:
+      AuthenticatedProjectsProjectIdCostingForecastRoute,
     AuthenticatedProjectsProjectIdCostingInvoicesRoute:
       AuthenticatedProjectsProjectIdCostingInvoicesRoute,
     AuthenticatedProjectsProjectIdCostingIndexRoute:
