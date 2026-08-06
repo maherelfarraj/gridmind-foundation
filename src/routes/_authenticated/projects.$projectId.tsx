@@ -148,6 +148,8 @@ function ProjectDetailLayout() {
         {DEPT_TABS.filter((t) => deptSet.has(t.dept)).map((t) => (
           <TabLink key={t.key} to={t.key} label={t.label} projectId={projectId} />
         ))}
+        {/* GC-01 — unified costing workspace */}
+        <TabLink to="costing" label="Costing" projectId={projectId} />
       </nav>
 
       {/* Outlet */}
