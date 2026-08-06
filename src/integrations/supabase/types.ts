@@ -1676,6 +1676,7 @@ export type Database = {
           co_number: string
           company_id: string
           contract_id: string | null
+          cost_code_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string | null
@@ -1699,6 +1700,7 @@ export type Database = {
           co_number: string
           company_id: string
           contract_id?: string | null
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
@@ -1722,6 +1724,7 @@ export type Database = {
           co_number?: string
           company_id?: string
           contract_id?: string | null
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
@@ -1756,6 +1759,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_orders_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
             referencedColumns: ["id"]
           },
           {
@@ -3064,14 +3074,22 @@ export type Database = {
       cost_accruals: {
         Row: {
           amount: number
+          amount_base: number
           approved_at: string | null
           approved_by: string | null
+          base_currency_code: string
           company_id: string
           cost_code_id: string
           created_at: string
           created_by: string | null
           currency_code: string
           description: string | null
+          fx_locked_at: string | null
+          fx_locked_by: string | null
+          fx_override_reason: string | null
+          fx_rate: number
+          fx_rate_date: string | null
+          fx_source: string
           id: string
           period: string
           project_id: string
@@ -3083,14 +3101,22 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_base?: number
           approved_at?: string | null
           approved_by?: string | null
+          base_currency_code: string
           company_id: string
           cost_code_id: string
           created_at?: string
           created_by?: string | null
           currency_code?: string
           description?: string | null
+          fx_locked_at?: string | null
+          fx_locked_by?: string | null
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
           id?: string
           period: string
           project_id: string
@@ -3102,14 +3128,22 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_base?: number
           approved_at?: string | null
           approved_by?: string | null
+          base_currency_code?: string
           company_id?: string
           cost_code_id?: string
           created_at?: string
           created_by?: string | null
           currency_code?: string
           description?: string | null
+          fx_locked_at?: string | null
+          fx_locked_by?: string | null
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
           id?: string
           period?: string
           project_id?: string
@@ -3226,12 +3260,20 @@ export type Database = {
       }
       cost_forecast_periods: {
         Row: {
+          base_currency_code: string
           company_id: string
           cost_code_id: string
           created_at: string
           created_by: string | null
           currency_code: string
           etc_amount: number
+          etc_amount_base: number
+          fx_locked_at: string | null
+          fx_locked_by: string | null
+          fx_override_reason: string | null
+          fx_rate: number
+          fx_rate_date: string | null
+          fx_source: string
           id: string
           notes: string | null
           period: string
@@ -3239,12 +3281,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          base_currency_code: string
           company_id: string
           cost_code_id: string
           created_at?: string
           created_by?: string | null
           currency_code?: string
           etc_amount?: number
+          etc_amount_base?: number
+          fx_locked_at?: string | null
+          fx_locked_by?: string | null
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
           id?: string
           notes?: string | null
           period: string
@@ -3252,12 +3302,20 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          base_currency_code?: string
           company_id?: string
           cost_code_id?: string
           created_at?: string
           created_by?: string | null
           currency_code?: string
           etc_amount?: number
+          etc_amount_base?: number
+          fx_locked_at?: string | null
+          fx_locked_by?: string | null
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
           id?: string
           notes?: string | null
           period?: string
@@ -8117,6 +8175,7 @@ export type Database = {
           amount: number
           company_id: string
           contract_id: string | null
+          cost_code_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -8143,6 +8202,7 @@ export type Database = {
           amount?: number
           company_id: string
           contract_id?: string | null
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code: string
@@ -8169,6 +8229,7 @@ export type Database = {
           amount?: number
           company_id?: string
           contract_id?: string | null
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -8204,6 +8265,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
             referencedColumns: ["id"]
           },
           {
@@ -12868,6 +12936,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           company_id: string
+          cost_code_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -12902,6 +12971,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           company_id: string
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code: string
@@ -12936,6 +13006,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           company_id?: string
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -12980,6 +13051,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
             referencedColumns: ["id"]
           },
           {
@@ -17659,6 +17737,7 @@ export type Database = {
           certified_to_date: number
           company_id: string
           contract_value: number
+          cost_code_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -17685,6 +17764,7 @@ export type Database = {
           certified_to_date?: number
           company_id: string
           contract_value?: number
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code: string
@@ -17711,6 +17791,7 @@ export type Database = {
           certified_to_date?: number
           company_id?: string
           contract_value?: number
+          cost_code_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -17739,6 +17820,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
             referencedColumns: ["id"]
           },
           {
