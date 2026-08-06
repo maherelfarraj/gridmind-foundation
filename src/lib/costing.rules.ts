@@ -60,6 +60,16 @@ export function isCountedAccrual(status: string): boolean {
   return status === "approved";
 }
 
+/** Does this commitment row contribute to committed cost? Single source of truth. */
+export function isCommittedCommitment(row: {
+  kind: "purchase_order" | "subcontract" | "change_order";
+  status: string;
+}): boolean {
+  if (row.kind === "purchase_order") return isCommittedPo(row.status);
+  if (row.kind === "subcontract") return isCommittedSubcontract(row.status);
+  return isCommittedChangeOrder(row.status);
+}
+
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
