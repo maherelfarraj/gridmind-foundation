@@ -15,13 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { costingWorkspaceQueryOptions } from "@/lib/costing.query";
 import { formatCostingMoney, isCommittedCommitment } from "@/lib/costing.rules";
 
-const KIND_LABEL = {
-  purchase_order: "Purchase order",
-  subcontract: "Subcontract",
-  change_order: "Change order",
+const KIND_KEY = {
+  purchase_order: "purchaseOrder",
+  subcontract: "subcontract",
+  change_order: "changeOrder",
 } as const;
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing/commitments")({
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
 });
 
 function CommitmentsView() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data } = useSuspenseQuery(costingWorkspaceQueryOptions(projectId));
   const rows = data.commitments;
@@ -50,26 +52,26 @@ function CommitmentsView() {
     <div className="flex flex-col gap-4">
       <PageHeader
         as="h2"
-        title="Commitments"
-        description="Committed cost = approved POs + active subcontracts + approved change orders, less cancellations."
+        title={t("financeMod.costing.commitments.title")}
+        description={t("financeMod.costing.commitments.description")}
       />
       {rows.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title="No commitments"
-          description="Issued purchase orders, subcontracts and approved change orders appear here."
+          title={t("financeMod.costing.commitments.emptyTitle")}
+          description={t("financeMod.costing.commitments.emptyBody")}
         />
       ) : (
         <div className="rounded-lg border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Reference</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Counterparty</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Counts</TableHead>
+                <TableHead>{t("financeMod.costing.commitments.reference")}</TableHead>
+                <TableHead>{t("financeMod.costing.commitments.type")}</TableHead>
+                <TableHead>{t("financeMod.costing.commitments.counterparty")}</TableHead>
+                <TableHead>{t("financeMod.costing.commitments.status")}</TableHead>
+                <TableHead className="text-right">{t("financeMod.costing.commitments.amount")}</TableHead>
+                <TableHead className="text-right">{t("financeMod.costing.commitments.counts")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,7 +80,7 @@ function CommitmentsView() {
                 return (
                   <TableRow key={`${r.kind}-${r.id}`}>
                     <TableCell className="font-medium">{r.reference}</TableCell>
-                    <TableCell className="text-muted-foreground">{KIND_LABEL[r.kind]}</TableCell>
+                    <TableCell className="text-muted-foreground">{t(`financeMod.costing.commitments.${KIND_KEY[r.kind]}`)}</TableCell>
                     <TableCell className="text-muted-foreground">{r.counterparty ?? "—"}</TableCell>
                     <TableCell>
                       <StatusBadge status={r.status} />
@@ -90,7 +92,7 @@ function CommitmentsView() {
                       <StatusBadge
                         status={counts ? "committed" : "excluded"}
                         tone={counts ? "positive" : "inactive"}
-                        label={counts ? "Committed" : "Excluded"}
+                        label={t(`financeMod.costing.commitments.${counts ? "included" : "excluded"}`)}
                       />
                     </TableCell>
                   </TableRow>

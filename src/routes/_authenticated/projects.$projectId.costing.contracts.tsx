@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { costingWorkspaceQueryOptions } from "@/lib/costing.query";
 import { formatCostingMoney } from "@/lib/costing.rules";
 
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
 });
 
 function ContractsView() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data } = useSuspenseQuery(costingWorkspaceQueryOptions(projectId));
 
@@ -39,26 +41,26 @@ function ContractsView() {
     <div className="flex flex-col gap-4">
       <PageHeader
         as="h2"
-        title="Contracts"
-        description="Head contracts and subcontracts recognised in the project cost position."
+        title={t("financeMod.costing.contracts.title")}
+        description={t("financeMod.costing.contracts.description")}
       />
       {data.contracts.length === 0 ? (
         <EmptyState
           icon={FileSignature}
-          title="No contracts"
-          description="Contracts and subcontracts linked to this project will appear here."
+          title={t("financeMod.costing.contracts.emptyTitle")}
+          description={t("financeMod.costing.contracts.emptyBody")}
         />
       ) : (
         <div className="rounded-lg border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Number</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Counterparty</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>{t("financeMod.costing.contracts.number")}</TableHead>
+                <TableHead>{t("financeMod.costing.contracts.contractTitle")}</TableHead>
+                <TableHead>{t("financeMod.costing.contracts.counterparty")}</TableHead>
+                <TableHead>{t("financeMod.costing.contracts.type")}</TableHead>
+                <TableHead>{t("financeMod.costing.contracts.status")}</TableHead>
+                <TableHead className="text-right">{t("financeMod.costing.contracts.value")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
