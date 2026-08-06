@@ -273,7 +273,13 @@ export async function loadCostingWorkspace(
     if (q?.error) throw q.error;
   }
 
-  const budgets = (budgetsQ.data ?? []).map((b: any) => ({
+  const budgets: {
+    cost_code_id: string | null;
+    original_amount: number;
+    approved_changes: number;
+    current_amount: number;
+    currency_code: string;
+  }[] = (budgetsQ.data ?? []).map((b: any) => ({
     cost_code_id: (b.cost_code_id as string | null) ?? null,
     original_amount: Number(b.original_amount ?? 0),
     approved_changes: Number(b.approved_changes ?? 0),
