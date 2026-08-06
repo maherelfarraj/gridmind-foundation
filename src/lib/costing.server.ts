@@ -1,5 +1,8 @@
-// GC-01 — Server-only loaders + aggregation for the project Costing workspace.
+// GC-01/GC-02 — Server-only loaders + aggregation for the project Costing workspace.
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
+import { loadFxRates, resolveBaseCurrency } from "@/lib/ar-aging.server";
+import { buildCbsTree, type CbsMetrics, type CbsRow } from "@/lib/costing.cbs";
+import { convertMoney, sumMoney } from "@/lib/costing.fx";
 import {
   computeCostingRollup,
   type CostingAccrualInput,
@@ -9,6 +12,7 @@ import {
   type CostingPaymentInput,
   type CostingRollup,
 } from "@/lib/costing.rules";
+
 
 export function costingHttpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
