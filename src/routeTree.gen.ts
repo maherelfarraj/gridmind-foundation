@@ -223,6 +223,7 @@ import { Route as AuthenticatedFieldDprDprIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedCrmOpportunitiesOpportunityIdRouteImport } from './routes/_authenticated/crm.opportunities.$opportunityId'
 import { Route as AuthenticatedAdminTenantsCompanyIdRouteImport } from './routes/_authenticated/admin.tenants.$companyId'
 import { Route as AuthenticatedProjectsProjectIdEngineeringIndexRouteImport } from './routes/_authenticated/projects.$projectId.engineering.index'
+import { Route as AuthenticatedProjectsProjectIdCostingIndexRouteImport } from './routes/_authenticated/projects.$projectId.costing.index'
 import { Route as AuthenticatedProjectsProjectIdCommissioningIndexRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.index'
 import { Route as AuthenticatedProjectsProjectIdPlanningWbsRouteImport } from './routes/_authenticated/projects.$projectId.planning.wbs'
 import { Route as AuthenticatedProjectsProjectIdPlanningScheduleRouteImport } from './routes/_authenticated/projects.$projectId.planning.schedule'
@@ -1507,6 +1508,12 @@ const AuthenticatedProjectsProjectIdEngineeringIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProjectsProjectIdEngineeringRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingIndexRoute =
+  AuthenticatedProjectsProjectIdCostingIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCommissioningIndexRoute =
   AuthenticatedProjectsProjectIdCommissioningIndexRouteImport.update({
     id: '/commissioning/',
@@ -1973,7 +1980,7 @@ export interface FileRoutesByFullPath {
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
-  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
+  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRouteWithChildren
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -2057,6 +2064,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/commissioning/': typeof AuthenticatedProjectsProjectIdCommissioningIndexRoute
+  '/projects/$projectId/costing/': typeof AuthenticatedProjectsProjectIdCostingIndexRoute
   '/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
@@ -2224,7 +2232,6 @@ export interface FileRoutesByTo {
   '/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
-  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
   '/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
   '/projects/$projectId/hse': typeof AuthenticatedProjectsProjectIdHseRoute
@@ -2305,6 +2312,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/projects/$projectId/commissioning': typeof AuthenticatedProjectsProjectIdCommissioningIndexRoute
+  '/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingIndexRoute
   '/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
@@ -2486,7 +2494,7 @@ export interface FileRoutesById {
   '/_authenticated/procurement/vendors/new': typeof AuthenticatedProcurementVendorsNewRoute
   '/_authenticated/projects/$projectId/config': typeof AuthenticatedProjectsProjectIdConfigRoute
   '/_authenticated/projects/$projectId/construction': typeof AuthenticatedProjectsProjectIdConstructionRoute
-  '/_authenticated/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRoute
+  '/_authenticated/projects/$projectId/costing': typeof AuthenticatedProjectsProjectIdCostingRouteWithChildren
   '/_authenticated/projects/$projectId/engineering': typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   '/_authenticated/projects/$projectId/finance': typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   '/_authenticated/projects/$projectId/gates': typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -2570,6 +2578,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/planning/schedule': typeof AuthenticatedProjectsProjectIdPlanningScheduleRoute
   '/_authenticated/projects/$projectId/planning/wbs': typeof AuthenticatedProjectsProjectIdPlanningWbsRoute
   '/_authenticated/projects/$projectId/commissioning/': typeof AuthenticatedProjectsProjectIdCommissioningIndexRoute
+  '/_authenticated/projects/$projectId/costing/': typeof AuthenticatedProjectsProjectIdCostingIndexRoute
   '/_authenticated/projects/$projectId/engineering/': typeof AuthenticatedProjectsProjectIdEngineeringIndexRoute
   '/_authenticated/projects/$projectId/engineering/drawings/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId': typeof AuthenticatedProjectsProjectIdEngineeringSldCadDrawingIdRoute
@@ -2834,6 +2843,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/commissioning/'
+    | '/projects/$projectId/costing/'
     | '/projects/$projectId/engineering/'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/sld-cad/$drawingId'
@@ -3001,7 +3011,6 @@ export interface FileRouteTypes {
     | '/procurement/vendors/new'
     | '/projects/$projectId/config'
     | '/projects/$projectId/construction'
-    | '/projects/$projectId/costing'
     | '/projects/$projectId/finance'
     | '/projects/$projectId/gates'
     | '/projects/$projectId/hse'
@@ -3082,6 +3091,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/planning/schedule'
     | '/projects/$projectId/planning/wbs'
     | '/projects/$projectId/commissioning'
+    | '/projects/$projectId/costing'
     | '/projects/$projectId/engineering'
     | '/projects/$projectId/engineering/drawings/$drawingId'
     | '/projects/$projectId/engineering/sld-cad/$drawingId'
@@ -3346,6 +3356,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/planning/schedule'
     | '/_authenticated/projects/$projectId/planning/wbs'
     | '/_authenticated/projects/$projectId/commissioning/'
+    | '/_authenticated/projects/$projectId/costing/'
     | '/_authenticated/projects/$projectId/engineering/'
     | '/_authenticated/projects/$projectId/engineering/drawings/$drawingId'
     | '/_authenticated/projects/$projectId/engineering/sld-cad/$drawingId'
@@ -4899,6 +4910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdEngineeringIndexRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdEngineeringRoute
     }
+    '/_authenticated/projects/$projectId/costing/': {
+      id: '/_authenticated/projects/$projectId/costing/'
+      path: '/'
+      fullPath: '/projects/$projectId/costing/'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingIndexRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/commissioning/': {
       id: '/_authenticated/projects/$projectId/commissioning/'
       path: '/commissioning'
@@ -5416,6 +5434,21 @@ const AuthenticatedProcurementVendorsRouteWithChildren =
     AuthenticatedProcurementVendorsRouteChildren,
   )
 
+interface AuthenticatedProjectsProjectIdCostingRouteChildren {
+  AuthenticatedProjectsProjectIdCostingIndexRoute: typeof AuthenticatedProjectsProjectIdCostingIndexRoute
+}
+
+const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsProjectIdCostingRouteChildren =
+  {
+    AuthenticatedProjectsProjectIdCostingIndexRoute:
+      AuthenticatedProjectsProjectIdCostingIndexRoute,
+  }
+
+const AuthenticatedProjectsProjectIdCostingRouteWithChildren =
+  AuthenticatedProjectsProjectIdCostingRoute._addFileChildren(
+    AuthenticatedProjectsProjectIdCostingRouteChildren,
+  )
+
 interface AuthenticatedProjectsProjectIdEngineeringDrawingsRouteChildren {
   AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsDrawingIdRoute
   AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute: typeof AuthenticatedProjectsProjectIdEngineeringDrawingsIndexRoute
@@ -5596,7 +5629,7 @@ const AuthenticatedProjectsProjectIdPlanningRouteWithChildren =
 interface AuthenticatedProjectsProjectIdRouteChildren {
   AuthenticatedProjectsProjectIdConfigRoute: typeof AuthenticatedProjectsProjectIdConfigRoute
   AuthenticatedProjectsProjectIdConstructionRoute: typeof AuthenticatedProjectsProjectIdConstructionRoute
-  AuthenticatedProjectsProjectIdCostingRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+  AuthenticatedProjectsProjectIdCostingRoute: typeof AuthenticatedProjectsProjectIdCostingRouteWithChildren
   AuthenticatedProjectsProjectIdEngineeringRoute: typeof AuthenticatedProjectsProjectIdEngineeringRouteWithChildren
   AuthenticatedProjectsProjectIdFinanceRoute: typeof AuthenticatedProjectsProjectIdFinanceRouteWithChildren
   AuthenticatedProjectsProjectIdGatesRoute: typeof AuthenticatedProjectsProjectIdGatesRoute
@@ -5622,7 +5655,7 @@ const AuthenticatedProjectsProjectIdRouteChildren: AuthenticatedProjectsProjectI
     AuthenticatedProjectsProjectIdConstructionRoute:
       AuthenticatedProjectsProjectIdConstructionRoute,
     AuthenticatedProjectsProjectIdCostingRoute:
-      AuthenticatedProjectsProjectIdCostingRoute,
+      AuthenticatedProjectsProjectIdCostingRouteWithChildren,
     AuthenticatedProjectsProjectIdEngineeringRoute:
       AuthenticatedProjectsProjectIdEngineeringRouteWithChildren,
     AuthenticatedProjectsProjectIdFinanceRoute:
