@@ -49,7 +49,9 @@ function InvoicesView() {
       />
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.invoices.invoices")}</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          {t("financeMod.costing.invoices.invoices")}
+        </h3>
         {data.invoices.length === 0 ? (
           <EmptyState
             icon={Receipt}
@@ -65,9 +67,15 @@ function InvoicesView() {
                   <TableHead>{t("financeMod.costing.invoices.direction")}</TableHead>
                   <TableHead>{t("financeMod.costing.invoices.status")}</TableHead>
                   <TableHead>{t("financeMod.costing.invoices.due")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.invoices.amount")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.invoices.paid")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.invoices.inActual")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.invoices.amount")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.invoices.paid")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.invoices.inActual")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -91,7 +99,9 @@ function InvoicesView() {
                         <StatusBadge
                           status={booked ? "included" : "excluded"}
                           tone={booked ? "positive" : "inactive"}
-                          label={t(`financeMod.costing.invoices.${booked ? "included" : "excluded"}`)}
+                          label={t(
+                            `financeMod.costing.invoices.${booked ? "included" : "excluded"}`,
+                          )}
                         />
                       </TableCell>
                     </TableRow>
@@ -104,7 +114,9 @@ function InvoicesView() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.invoices.payments")}</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          {t("financeMod.costing.invoices.payments")}
+        </h3>
         {data.payments.length === 0 ? (
           <EmptyState
             icon={Receipt}
@@ -121,8 +133,12 @@ function InvoicesView() {
                   <TableHead>{t("financeMod.costing.invoices.status")}</TableHead>
                   <TableHead>{t("financeMod.costing.invoices.date")}</TableHead>
                   <TableHead>{t("financeMod.costing.invoices.method")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.invoices.amount")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.invoices.inPaid")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.invoices.amount")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.invoices.inPaid")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -146,7 +162,9 @@ function InvoicesView() {
                         <StatusBadge
                           status={counted ? "included" : "excluded"}
                           tone={counted ? "positive" : "inactive"}
-                          label={t(`financeMod.costing.invoices.${counted ? "included" : "excluded"}`)}
+                          label={t(
+                            `financeMod.costing.invoices.${counted ? "included" : "excluded"}`,
+                          )}
                         />
                       </TableCell>
                     </TableRow>

@@ -60,7 +60,9 @@ function ContractsView() {
                 <TableHead>{t("financeMod.costing.contracts.counterparty")}</TableHead>
                 <TableHead>{t("financeMod.costing.contracts.type")}</TableHead>
                 <TableHead>{t("financeMod.costing.contracts.status")}</TableHead>
-                <TableHead className="text-right">{t("financeMod.costing.contracts.value")}</TableHead>
+                <TableHead className="text-right">
+                  {t("financeMod.costing.contracts.value")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

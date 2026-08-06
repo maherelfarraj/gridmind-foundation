@@ -146,7 +146,9 @@ function ForecastView() {
       {canWrite ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="flex flex-col gap-3 p-4">
-            <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.forecast.addForecast")}</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              {t("financeMod.costing.forecast.addForecast")}
+            </h3>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="f-code">{t("financeMod.costing.forecast.costCode")}</Label>
@@ -173,7 +175,9 @@ function ForecastView() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="f-amount">{t("financeMod.costing.forecast.etcLabel", { currency: defaultCurrency })}</Label>
+                <Label htmlFor="f-amount">
+                  {t("financeMod.costing.forecast.etcLabel", { currency: defaultCurrency })}
+                </Label>
                 <Input
                   id="f-amount"
                   inputMode="decimal"
@@ -193,7 +197,9 @@ function ForecastView() {
           </Card>
 
           <Card className="flex flex-col gap-3 p-4">
-            <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.forecast.newAccrual")}</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              {t("financeMod.costing.forecast.newAccrual")}
+            </h3>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="a-code">{t("financeMod.costing.forecast.costCode")}</Label>
@@ -220,7 +226,9 @@ function ForecastView() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="a-amount">{t("financeMod.costing.forecast.amountLabel", { currency: defaultCurrency })}</Label>
+                <Label htmlFor="a-amount">
+                  {t("financeMod.costing.forecast.amountLabel", { currency: defaultCurrency })}
+                </Label>
                 <Input
                   id="a-amount"
                   inputMode="decimal"
@@ -251,7 +259,9 @@ function ForecastView() {
       ) : null}
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.forecast.periodsTitle")}</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          {t("financeMod.costing.forecast.periodsTitle")}
+        </h3>
         {data.forecasts.length === 0 ? (
           <EmptyState
             icon={TrendingUp}
@@ -265,7 +275,9 @@ function ForecastView() {
                 <TableRow>
                   <TableHead>{t("financeMod.costing.forecast.costCode")}</TableHead>
                   <TableHead>{t("financeMod.costing.forecast.period")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.forecast.etc")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.forecast.etc")}
+                  </TableHead>
                   <TableHead>{t("financeMod.costing.forecast.notes")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -287,7 +299,9 @@ function ForecastView() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.forecast.accrualsTitle")}</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          {t("financeMod.costing.forecast.accrualsTitle")}
+        </h3>
         {data.accruals.length === 0 ? (
           <EmptyState
             icon={TrendingUp}
@@ -302,8 +316,12 @@ function ForecastView() {
                   <TableHead>{t("financeMod.costing.forecast.costCode")}</TableHead>
                   <TableHead>{t("financeMod.costing.forecast.period")}</TableHead>
                   <TableHead>{t("financeMod.costing.forecast.status")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.forecast.amount")}</TableHead>
-                  <TableHead className="text-right">{t("financeMod.costing.forecast.actions")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.forecast.amount")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("financeMod.costing.forecast.actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

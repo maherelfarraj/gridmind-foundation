@@ -70,8 +70,12 @@ function CommitmentsView() {
                 <TableHead>{t("financeMod.costing.commitments.type")}</TableHead>
                 <TableHead>{t("financeMod.costing.commitments.counterparty")}</TableHead>
                 <TableHead>{t("financeMod.costing.commitments.status")}</TableHead>
-                <TableHead className="text-right">{t("financeMod.costing.commitments.amount")}</TableHead>
-                <TableHead className="text-right">{t("financeMod.costing.commitments.counts")}</TableHead>
+                <TableHead className="text-right">
+                  {t("financeMod.costing.commitments.amount")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("financeMod.costing.commitments.counts")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,7 +84,9 @@ function CommitmentsView() {
                 return (
                   <TableRow key={`${r.kind}-${r.id}`}>
                     <TableCell className="font-medium">{r.reference}</TableCell>
-                    <TableCell className="text-muted-foreground">{t(`financeMod.costing.commitments.${KIND_KEY[r.kind]}`)}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {t(`financeMod.costing.commitments.${KIND_KEY[r.kind]}`)}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{r.counterparty ?? "—"}</TableCell>
                     <TableCell>
                       <StatusBadge status={r.status} />
@@ -92,7 +98,9 @@ function CommitmentsView() {
                       <StatusBadge
                         status={counts ? "committed" : "excluded"}
                         tone={counts ? "positive" : "inactive"}
-                        label={t(`financeMod.costing.commitments.${counts ? "included" : "excluded"}`)}
+                        label={t(
+                          `financeMod.costing.commitments.${counts ? "included" : "excluded"}`,
+                        )}
                       />
                     </TableCell>
                   </TableRow>
