@@ -160,8 +160,13 @@ export function resolveFx(input: FxResolveInput): FxResolution {
 }
 
 /** Approval gate: a row may only be approved with a usable, non-missing rate. */
-export function canApproveWithFx(fx: { rate: number | null; missing?: boolean }): boolean {
-  return !fx.missing && fx.rate != null && fx.rate > 0;
+export function canApproveWithFx(fx: {
+  rate?: number | null;
+  fx_rate?: number | null;
+  missing?: boolean;
+}): boolean {
+  const rate = fx.rate ?? fx.fx_rate ?? null;
+  return !fx.missing && rate != null && rate > 0;
 }
 
 /**
