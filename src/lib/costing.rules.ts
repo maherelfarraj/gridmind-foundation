@@ -18,6 +18,8 @@
 //   outstanding= actual - paid
 import { z } from "zod";
 
+import { fxOverrideSchema } from "@/lib/costing.fx";
+
 // ---------------------------------------------------------------------------
 // Status sets
 // ---------------------------------------------------------------------------
@@ -286,6 +288,8 @@ export const forecastUpsertSchema = z.object({
   etc_amount: z.number().nonnegative().max(999_999_999_999),
   currency_code: z.string().trim().length(3),
   notes: z.string().trim().max(1000).nullable().optional(),
+  /** Controlled manual FX override; requires a reason and is audited. */
+  fx_override: fxOverrideSchema,
 });
 
 export const forecastDeleteSchema = z.object({ id: z.string().uuid() });
@@ -297,6 +301,8 @@ export const accrualCreateSchema = z.object({
   amount: z.number().positive().max(999_999_999_999),
   currency_code: z.string().trim().length(3),
   description: z.string().trim().max(1000).nullable().optional(),
+  /** Controlled manual FX override; requires a reason and is audited. */
+  fx_override: fxOverrideSchema,
 });
 
 export const accrualTransitionSchema = z.object({

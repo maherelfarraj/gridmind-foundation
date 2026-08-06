@@ -1,9 +1,13 @@
-// GC-01 — Costing overview: KPI roll-up + drill-down links into the cost stack.
+// GC-01/GC-02 — Costing overview: KPI roll-up, CBS drill-down, source drawer.
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Calculator } from "lucide-react";
 
 import { CostingKpis } from "@/components/costing/costing-kpis";
+import { CbsTable, type CbsMetricKey } from "@/components/costing/cbs-table";
+import { CostCodeDrawer } from "@/components/costing/cost-code-drawer";
+import type { CbsRow } from "@/lib/costing.cbs";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -39,6 +43,42 @@ function CostingOverview() {
   const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data } = useSuspenseQuery(costingWorkspaceQueryOptions(projectId));
+  const [metric, setMetric] = useState<CbsMetricKey | null>(null);
+  const [selected, setSelected] = useState<CbsRow | null>(null);
+
+  const cbsLabels: Record<string, string> = {
+    costCode: t("financeMod.costing.cbs.costCode"),
+    original: t("financeMod.costing.kpi.original"),
+    approvedChanges: t("financeMod.costing.kpi.approvedChanges"),
+    current: t("financeMod.costing.kpi.current"),
+    committed: t("financeMod.costing.kpi.committed"),
+    actual: t("financeMod.costing.kpi.actual"),
+    accruals: t("financeMod.costing.kpi.accruals"),
+    etc: t("financeMod.costing.kpi.etc"),
+    eac: t("financeMod.costing.kpi.eac"),
+    vac: t("financeMod.costing.kpi.vac"),
+    available: t("financeMod.costing.kpi.available"),
+    consumed: t("financeMod.costing.cbs.consumed"),
+    search: t("financeMod.costing.cbs.search"),
+    filter: t("financeMod.costing.cbs.filter"),
+    filterAll: t("financeMod.costing.cbs.filterAll"),
+    filterOver: t("financeMod.costing.cbs.filterOver"),
+    filterUnder: t("financeMod.costing.cbs.filterUnder"),
+    filterNoBudget: t("financeMod.costing.cbs.filterNoBudget"),
+    filterActivity: t("financeMod.costing.cbs.filterActivity"),
+    expandAll: t("financeMod.costing.cbs.expandAll"),
+    collapseAll: t("financeMod.costing.cbs.collapseAll"),
+    exportCsv: t("financeMod.costing.cbs.exportCsv"),
+    emptyTitle: t("financeMod.costing.cbs.emptyTitle"),
+    emptyBody: t("financeMod.costing.cbs.emptyBody"),
+    unassigned: t("financeMod.costing.cbs.unassigned"),
+    purchaseOrders: t("financeMod.costing.cbs.purchaseOrders"),
+    subcontracts: t("financeMod.costing.cbs.subcontracts"),
+    changeOrders: t("financeMod.costing.tabs.changeOrders"),
+    invoices: t("financeMod.costing.cbs.invoices"),
+    payments: t("financeMod.costing.cbs.payments"),
+    forecasts: t("financeMod.costing.cbs.forecasts"),
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,7 +104,33 @@ function CostingOverview() {
           }
         />
       ) : (
-        data.rollups.map((r) => <CostingKpis key={r.currency_code} rollup={r} />)
+        <>
+          <CostingKpis
+            rollup={{
+              ...data.baseRollup,
+              currency_code: data.baseCurrency,
+              has_forecast: data.forecasts.length > 0,
+            }}
+            activeMetric={metric}
+            onMetric={(m) => setMetric((prev) => (prev === m ? null : m))}
+          />
+          <CbsTable
+            rows={data.cbs}
+            currency={data.baseCurrency}
+            highlight={metric}
+            labels={cbsLabels}
+            onSelect={setSelected}
+          />
+          <CostCodeDrawer
+            row={selected}
+            rows={data.cbs}
+            data={data}
+            labels={cbsLabels}
+            onOpenChange={(open) => {
+              if (!open) setSelected(null);
+            }}
+          />
+        </>
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -75,6 +141,7 @@ function CostingOverview() {
           to="/projects/$projectId/costing/commitments"
           projectId={projectId}
         />
+
         <DrillCard
           title={t("financeMod.costing.tabs.contracts")}
           value={data.contracts.length}
