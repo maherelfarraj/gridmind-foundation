@@ -3061,6 +3061,88 @@ export type Database = {
           },
         ]
       }
+      cost_accruals: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          cost_code_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          description: string | null
+          id: string
+          period: string
+          project_id: string
+          reversal_reason: string | null
+          reversed_at: string | null
+          reversed_by: string | null
+          status: Database["public"]["Enums"]["cost_accrual_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          cost_code_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string | null
+          id?: string
+          period: string
+          project_id: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
+          status?: Database["public"]["Enums"]["cost_accrual_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          cost_code_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string | null
+          id?: string
+          period?: string
+          project_id?: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
+          status?: Database["public"]["Enums"]["cost_accrual_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_accruals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_accruals_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_accruals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cost_codes: {
         Row: {
           code: string
@@ -3138,6 +3220,70 @@ export type Database = {
             columns: ["wbs_item_id"]
             isOneToOne: false
             referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cost_forecast_periods: {
+        Row: {
+          company_id: string
+          cost_code_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          etc_amount: number
+          id: string
+          notes: string | null
+          period: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          cost_code_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          etc_amount?: number
+          id?: string
+          notes?: string | null
+          period: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          cost_code_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          etc_amount?: number
+          id?: string
+          notes?: string | null
+          period?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_forecast_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_forecast_periods_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_forecast_periods_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -22080,6 +22226,7 @@ export type Database = {
         | "lease"
         | "other"
       controlled_copy_status: "issued" | "returned" | "recalled" | "destroyed"
+      cost_accrual_status: "draft" | "approved" | "reversed"
       cwp_status:
         | "draft"
         | "planned"
@@ -22920,6 +23067,7 @@ export const Constants = {
         "other",
       ],
       controlled_copy_status: ["issued", "returned", "recalled", "destroyed"],
+      cost_accrual_status: ["draft", "approved", "reversed"],
       cwp_status: [
         "draft",
         "planned",
