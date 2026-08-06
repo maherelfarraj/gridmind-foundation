@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { costingWorkspaceQueryOptions } from "@/lib/costing.query";
 import { formatCostingMoney } from "@/lib/costing.rules";
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
 });
 
 function CostingOverview() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data } = useSuspenseQuery(costingWorkspaceQueryOptions(projectId));
 
@@ -42,22 +44,22 @@ function CostingOverview() {
     <div className="flex flex-col gap-6">
       <PageHeader
         as="h2"
-        title="Cost position"
-        description="Live roll-up of budget, commitments, actuals, accruals and forecast for this project."
+        title={t("financeMod.costing.overview.title")}
+        description={t("financeMod.costing.overview.description")}
       />
 
       {data.rollups.length === 0 ? (
         <EmptyState
           icon={Calculator}
-          title="No cost data yet"
-          description="Add cost codes and budgets to start tracking the project cost position."
+          title={t("financeMod.costing.overview.emptyTitle")}
+          description={t("financeMod.costing.overview.emptyBody")}
           action={
             <Link
               to="/projects/$projectId/finance/budget"
               params={{ projectId }}
               className="text-sm font-medium text-primary hover:underline"
             >
-              Go to budget
+              {t("financeMod.costing.overview.goToBudget")}
             </Link>
           }
         />
@@ -67,14 +69,14 @@ function CostingOverview() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <DrillCard
-          title="Commitments"
+          title={t("financeMod.costing.tabs.commitments")}
           value={data.commitments.length}
-          hint="Purchase orders, subcontracts and change orders"
+          hint={t("financeMod.costing.commitments.description")}
           to="/projects/$projectId/costing/commitments"
           projectId={projectId}
         />
         <DrillCard
-          title="Contracts"
+          title={t("financeMod.costing.tabs.contracts")}
           value={data.contracts.length}
           hint={
             data.contracts.length > 0
@@ -82,15 +84,15 @@ function CostingOverview() {
                   data.contracts.reduce((a, c) => a + c.value, 0),
                   data.contracts[0].currency_code,
                 )
-              : "No contracts"
+              : t("financeMod.costing.overview.noContracts")
           }
           to="/projects/$projectId/costing/contracts"
           projectId={projectId}
         />
         <DrillCard
-          title="Invoices & payments"
+          title={t("financeMod.costing.tabs.invoicesPayments")}
           value={data.invoices.length}
-          hint={`${data.payments.length} payments recorded`}
+          hint={t("financeMod.costing.overview.paymentsRecorded", { count: data.payments.length })}
           to="/projects/$projectId/costing/invoices"
           projectId={projectId}
         />

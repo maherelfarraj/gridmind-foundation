@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/locale-provider";
 import { costingWorkspaceQueryOptions } from "@/lib/costing.query";
 import { formatCostingMoney, isBookedInvoice, isRecordedPayment } from "@/lib/costing.rules";
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
 });
 
 function InvoicesView() {
+  const { t } = useI18n();
   const { projectId } = Route.useParams();
   const { data } = useSuspenseQuery(costingWorkspaceQueryOptions(projectId));
 
@@ -42,30 +44,30 @@ function InvoicesView() {
     <div className="flex flex-col gap-6">
       <PageHeader
         as="h2"
-        title="Invoices and payments"
-        description="Actual cost comes from booked payable invoices; paid comes from recorded payable payments."
+        title={t("financeMod.costing.invoices.title")}
+        description={t("financeMod.costing.invoices.description")}
       />
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">Invoices</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.invoices.invoices")}</h3>
         {data.invoices.length === 0 ? (
           <EmptyState
             icon={Receipt}
-            title="No invoices"
-            description="Vendor and client invoices for this project appear here."
+            title={t("financeMod.costing.invoices.emptyInvoicesTitle")}
+            description={t("financeMod.costing.invoices.emptyInvoicesBody")}
           />
         ) : (
           <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Number</TableHead>
-                  <TableHead>Direction</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
-                  <TableHead className="text-right">In actual cost</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.number")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.direction")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.status")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.due")}</TableHead>
+                  <TableHead className="text-right">{t("financeMod.costing.invoices.amount")}</TableHead>
+                  <TableHead className="text-right">{t("financeMod.costing.invoices.paid")}</TableHead>
+                  <TableHead className="text-right">{t("financeMod.costing.invoices.inActual")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -89,7 +91,7 @@ function InvoicesView() {
                         <StatusBadge
                           status={booked ? "included" : "excluded"}
                           tone={booked ? "positive" : "inactive"}
-                          label={booked ? "Included" : "Excluded"}
+                          label={t(`financeMod.costing.invoices.${booked ? "included" : "excluded"}`)}
                         />
                       </TableCell>
                     </TableRow>
@@ -102,25 +104,25 @@ function InvoicesView() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-foreground">Payments</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t("financeMod.costing.invoices.payments")}</h3>
         {data.payments.length === 0 ? (
           <EmptyState
             icon={Receipt}
-            title="No payments"
-            description="Recorded payments against project invoices appear here."
+            title={t("financeMod.costing.invoices.emptyPaymentsTitle")}
+            description={t("financeMod.costing.invoices.emptyPaymentsBody")}
           />
         ) : (
           <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Number</TableHead>
-                  <TableHead>Direction</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">In paid</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.number")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.direction")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.status")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.date")}</TableHead>
+                  <TableHead>{t("financeMod.costing.invoices.method")}</TableHead>
+                  <TableHead className="text-right">{t("financeMod.costing.invoices.amount")}</TableHead>
+                  <TableHead className="text-right">{t("financeMod.costing.invoices.inPaid")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -144,7 +146,7 @@ function InvoicesView() {
                         <StatusBadge
                           status={counted ? "included" : "excluded"}
                           tone={counted ? "positive" : "inactive"}
-                          label={counted ? "Included" : "Excluded"}
+                          label={t(`financeMod.costing.invoices.${counted ? "included" : "excluded"}`)}
                         />
                       </TableCell>
                     </TableRow>
