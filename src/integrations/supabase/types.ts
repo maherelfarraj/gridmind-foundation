@@ -1666,6 +1666,592 @@ export type Database = {
           },
         ]
       }
+      cashflow_adjustments: {
+        Row: {
+          amount: number
+          authorized_at: string | null
+          authorized_by: string | null
+          bucket_date: string
+          category: string
+          company_id: string
+          counterparty: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          effective_period: string
+          evidence_reference: string | null
+          id: string
+          prepared_by: string | null
+          project_id: string
+          reason: string
+          row_version: number
+          status: Database["public"]["Enums"]["cashflow_adjustment_status"]
+          supersedes_id: string | null
+          updated_at: string
+          version_no: number
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          authorized_at?: string | null
+          authorized_by?: string | null
+          bucket_date: string
+          category?: string
+          company_id: string
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          effective_period: string
+          evidence_reference?: string | null
+          id?: string
+          prepared_by?: string | null
+          project_id: string
+          reason: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["cashflow_adjustment_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version_no?: number
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          authorized_at?: string | null
+          authorized_by?: string | null
+          bucket_date?: string
+          category?: string
+          company_id?: string
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          direction?: Database["public"]["Enums"]["cash_flow_direction"]
+          effective_period?: string
+          evidence_reference?: string | null
+          id?: string
+          prepared_by?: string | null
+          project_id?: string
+          reason?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["cashflow_adjustment_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version_no?: number
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_adjustments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_adjustments_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cashflow_adjustments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_adjustments_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_adjustments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_events: {
+        Row: {
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          entity_id: string | null
+          entity_type: string
+          event_type: string
+          from_status: string | null
+          id: string
+          project_id: string | null
+          snapshot_id: string | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          project_id?: string | null
+          snapshot_id?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          project_id?: string | null
+          snapshot_id?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_events_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_exceptions: {
+        Row: {
+          code: string
+          company_id: string
+          context: Json
+          created_at: string
+          id: string
+          message: string
+          project_id: string
+          severity: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id: string
+        }
+        Insert: {
+          code: string
+          company_id: string
+          context?: Json
+          created_at?: string
+          id?: string
+          message: string
+          project_id: string
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id: string
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          context?: Json
+          created_at?: string
+          id?: string
+          message?: string
+          project_id?: string
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_exceptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_exceptions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_exceptions_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_settings: {
+        Row: {
+          advance_recovery_pct: number
+          bucket_granularity: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          horizon_buckets: number
+          id: string
+          include_accruals: boolean
+          include_commitments: boolean
+          include_tax: boolean
+          min_liquidity_amount: number
+          opening_cash: number
+          payment_lag_days: number
+          project_id: string
+          receipt_lag_days: number
+          retention_release_lag_days: number
+          updated_at: string
+        }
+        Insert: {
+          advance_recovery_pct?: number
+          bucket_granularity?: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          horizon_buckets?: number
+          id?: string
+          include_accruals?: boolean
+          include_commitments?: boolean
+          include_tax?: boolean
+          min_liquidity_amount?: number
+          opening_cash?: number
+          payment_lag_days?: number
+          project_id: string
+          receipt_lag_days?: number
+          retention_release_lag_days?: number
+          updated_at?: string
+        }
+        Update: {
+          advance_recovery_pct?: number
+          bucket_granularity?: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          horizon_buckets?: number
+          id?: string
+          include_accruals?: boolean
+          include_commitments?: boolean
+          include_tax?: boolean
+          min_liquidity_amount?: number
+          opening_cash?: number
+          payment_lag_days?: number
+          project_id?: string
+          receipt_lag_days?: number
+          retention_release_lag_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_settings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_snapshot_lines: {
+        Row: {
+          amount_native: number
+          amount_reporting: number
+          bucket_end: string
+          bucket_start: string
+          category: string
+          company_id: string
+          cost_code_id: string | null
+          counterparty: string | null
+          created_at: string
+          currency_code: string
+          date_basis: Database["public"]["Enums"]["cashflow_date_basis"]
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate: number | null
+          fx_rate_date: string | null
+          fx_source: string | null
+          fx_stale: boolean
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          snapshot_id: string
+          sort_order: number
+          source: Database["public"]["Enums"]["cashflow_source"]
+        }
+        Insert: {
+          amount_native: number
+          amount_reporting: number
+          bucket_end: string
+          bucket_start: string
+          category?: string
+          company_id: string
+          cost_code_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency_code: string
+          date_basis?: Database["public"]["Enums"]["cashflow_date_basis"]
+          direction: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          snapshot_id: string
+          sort_order?: number
+          source: Database["public"]["Enums"]["cashflow_source"]
+        }
+        Update: {
+          amount_native?: number
+          amount_reporting?: number
+          bucket_end?: string
+          bucket_start?: string
+          category?: string
+          company_id?: string
+          cost_code_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency_code?: string
+          date_basis?: Database["public"]["Enums"]["cashflow_date_basis"]
+          direction?: Database["public"]["Enums"]["cash_flow_direction"]
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          snapshot_id?: string
+          sort_order?: number
+          source?: Database["public"]["Enums"]["cashflow_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_snapshot_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshot_lines_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshot_lines_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshot_lines_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_snapshots: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          bucket_granularity: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id: string
+          correction_reason: string | null
+          created_at: string
+          created_by: string | null
+          data_date: string
+          evm_report_id: string | null
+          forecast_version_id: string | null
+          fx_provenance: Json
+          horizon_buckets: number
+          id: string
+          inclusion_rules: Json
+          opening_cash: number
+          period_month: string
+          prepared_at: string | null
+          prepared_by: string | null
+          project_currency: string
+          project_id: string
+          quality: Json
+          reporting_currency: string
+          row_version: number
+          schedule_baseline_id: string | null
+          status: Database["public"]["Enums"]["cashflow_snapshot_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          supersedes_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bucket_granularity?: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id: string
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date: string
+          evm_report_id?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          horizon_buckets?: number
+          id?: string
+          inclusion_rules?: Json
+          opening_cash?: number
+          period_month: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency: string
+          project_id: string
+          quality?: Json
+          reporting_currency: string
+          row_version?: number
+          schedule_baseline_id?: string | null
+          status?: Database["public"]["Enums"]["cashflow_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bucket_granularity?: Database["public"]["Enums"]["cashflow_bucket_granularity"]
+          company_id?: string
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date?: string
+          evm_report_id?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          horizon_buckets?: number
+          id?: string
+          inclusion_rules?: Json
+          opening_cash?: number
+          period_month?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency?: string
+          project_id?: string
+          quality?: Json
+          reporting_currency?: string
+          row_version?: number
+          schedule_baseline_id?: string | null
+          status?: Database["public"]["Enums"]["cashflow_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_evm_report_id_fkey"
+            columns: ["evm_report_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_forecast_version_id_fkey"
+            columns: ["forecast_version_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_project_currency_fkey"
+            columns: ["project_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_reporting_currency_fkey"
+            columns: ["reporting_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_schedule_baseline_id_fkey"
+            columns: ["schedule_baseline_id"]
+            isOneToOne: false
+            referencedRelation: "baseline_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cashflow_snapshots_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "cashflow_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_orders: {
         Row: {
           amount: number
@@ -8342,6 +8928,171 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "forecast_versions"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      funding_allocations: {
+        Row: {
+          allocated_amount: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          effective_from: string | null
+          effective_to: string | null
+          facility_id: string
+          id: string
+          notes: string | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_amount: number
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          effective_from?: string | null
+          effective_to?: string | null
+          facility_id: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_amount?: number
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          facility_id?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funding_allocations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funding_allocations_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "funding_allocations_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "funding_facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funding_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funding_facilities: {
+        Row: {
+          available_from: string | null
+          bank_facility_id: string | null
+          committed_amount: number
+          company_id: string
+          covenants: Json
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          drawdown_schedule: Json
+          expiry_date: string | null
+          facility_kind: string
+          fee_assumptions: Json
+          id: string
+          lender_name: string | null
+          name: string
+          notes: string | null
+          repayment_schedule: Json
+          row_version: number
+          status: Database["public"]["Enums"]["funding_facility_status"]
+          updated_at: string
+        }
+        Insert: {
+          available_from?: string | null
+          bank_facility_id?: string | null
+          committed_amount: number
+          company_id: string
+          covenants?: Json
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          drawdown_schedule?: Json
+          expiry_date?: string | null
+          facility_kind?: string
+          fee_assumptions?: Json
+          id?: string
+          lender_name?: string | null
+          name: string
+          notes?: string | null
+          repayment_schedule?: Json
+          row_version?: number
+          status?: Database["public"]["Enums"]["funding_facility_status"]
+          updated_at?: string
+        }
+        Update: {
+          available_from?: string | null
+          bank_facility_id?: string | null
+          committed_amount?: number
+          company_id?: string
+          covenants?: Json
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          drawdown_schedule?: Json
+          expiry_date?: string | null
+          facility_kind?: string
+          fee_assumptions?: Json
+          id?: string
+          lender_name?: string | null
+          name?: string
+          notes?: string | null
+          repayment_schedule?: Json
+          row_version?: number
+          status?: Database["public"]["Enums"]["funding_facility_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funding_facilities_bank_facility_id_fkey"
+            columns: ["bank_facility_id"]
+            isOneToOne: false
+            referencedRelation: "bank_facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funding_facilities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funding_facilities_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -24884,6 +25635,30 @@ export type Database = {
         | "cancelled"
       cash_flow_direction: "inflow" | "outflow"
       cash_flow_kind: "forecast" | "actual"
+      cashflow_adjustment_status: "draft" | "approved" | "void"
+      cashflow_bucket_granularity: "month" | "week"
+      cashflow_date_basis:
+        | "actual"
+        | "due_date"
+        | "payment_terms"
+        | "milestone"
+        | "phasing"
+        | "fallback"
+      cashflow_snapshot_status:
+        | "working"
+        | "submitted"
+        | "approved"
+        | "superseded"
+      cashflow_source:
+        | "actual"
+        | "invoice"
+        | "commitment"
+        | "accrual"
+        | "forecast"
+        | "retention"
+        | "advance"
+        | "tax"
+        | "adjustment"
       change_order_status:
         | "draft"
         | "submitted"
@@ -25123,6 +25898,7 @@ export type Database = {
         | "submitted"
         | "approved"
         | "superseded"
+      funding_facility_status: "planned" | "active" | "expired" | "cancelled"
       gl_event_type:
         | "invoice_receivable_issued"
         | "invoice_payable_received"
@@ -25782,6 +26558,33 @@ export const Constants = {
       ],
       cash_flow_direction: ["inflow", "outflow"],
       cash_flow_kind: ["forecast", "actual"],
+      cashflow_adjustment_status: ["draft", "approved", "void"],
+      cashflow_bucket_granularity: ["month", "week"],
+      cashflow_date_basis: [
+        "actual",
+        "due_date",
+        "payment_terms",
+        "milestone",
+        "phasing",
+        "fallback",
+      ],
+      cashflow_snapshot_status: [
+        "working",
+        "submitted",
+        "approved",
+        "superseded",
+      ],
+      cashflow_source: [
+        "actual",
+        "invoice",
+        "commitment",
+        "accrual",
+        "forecast",
+        "retention",
+        "advance",
+        "tax",
+        "adjustment",
+      ],
       change_order_status: [
         "draft",
         "submitted",
@@ -26048,6 +26851,7 @@ export const Constants = {
         "approved",
         "superseded",
       ],
+      funding_facility_status: ["planned", "active", "expired", "cancelled"],
       gl_event_type: [
         "invoice_receivable_issued",
         "invoice_payable_received",
