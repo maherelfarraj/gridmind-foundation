@@ -67,6 +67,9 @@ import {
 
 const sbOf = (ctx: AuthContext) => ctx.supabase as any;
 
+/** Reporting calendar for EVM periods; costing periods are UTC month buckets. */
+const EVM_TZ = "UTC";
+
 function isMissingObject(err: unknown): boolean {
   const code = (err as { code?: string } | null)?.code;
   return code === "42P01" || code === "42883" || code === "PGRST202";
