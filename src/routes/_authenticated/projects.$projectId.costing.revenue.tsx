@@ -37,7 +37,7 @@ import {
   transitionRecognitionSnapshot,
 } from "@/lib/recognition.functions";
 import { recognitionWorkspaceQueryOptions } from "@/lib/recognition.query";
-import { RECOGNITION_DISCLAIMER } from "@/lib/recognition.rules";
+import { RECOGNITION_DISCLAIMER } from "@/lib/recognition.server";
 
 const K = "financeMod.costing.recognition";
 
@@ -413,7 +413,7 @@ function RecognitionCockpit() {
                   <span>{t(`${K}.reconciliation.${c.code}`)}</span>
                   <StatusBadge
                     status={c.ok ? "passed" : "failed"}
-                    tone={c.ok ? "success" : "critical"}
+                    tone={c.ok ? "positive" : "critical"}
                     label={c.ok ? t(`${K}.reconciliation.ok`) : `Δ ${c.delta}`}
                   />
                 </li>
@@ -439,7 +439,7 @@ function RecognitionCockpit() {
                         e.severity === "critical"
                           ? "critical"
                           : e.severity === "warning"
-                            ? "warning"
+                            ? "attention"
                             : "neutral"
                       }
                       label={t(`${K}.severity.${e.severity}`)}
