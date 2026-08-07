@@ -520,7 +520,7 @@ export async function computeEvm(
   },
 ): Promise<EvmComputed> {
   const project = await loadCostingProject(ctx, input.project_id);
-  const period = input.period ?? currentReportingPeriod();
+  const period = input.period ?? currentReportingPeriod(EVM_TZ);
   const data_date = input.data_date ?? periodEndOf(period);
   const settings = await loadEvmSettings(ctx, input.project_id);
   const eac_method = input.eac_method ?? settings.official_eac_method;
@@ -1174,7 +1174,7 @@ export async function loadPortfolioEvm(
   ctx: AuthContext,
   filter: PortfolioEvmFilter,
 ): Promise<PortfolioEvmData> {
-  const period = filter.period ?? currentReportingPeriod();
+  const period = filter.period ?? currentReportingPeriod(EVM_TZ);
   const asOf = periodEndOf(period);
 
   // Set-based: one query for reports, one for projects, one for exceptions,
