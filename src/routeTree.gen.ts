@@ -265,6 +265,7 @@ import { Route as AuthenticatedProjectsProjectIdCostingContractsRouteImport } fr
 import { Route as AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport } from './routes/_authenticated/projects.$projectId.costing.commitments'
 import { Route as AuthenticatedProjectsProjectIdCostingClosePackRouteImport } from './routes/_authenticated/projects.$projectId.costing.close-pack'
 import { Route as AuthenticatedProjectsProjectIdCostingCloseRouteImport } from './routes/_authenticated/projects.$projectId.costing.close'
+import { Route as AuthenticatedProjectsProjectIdCostingCashFlowRouteImport } from './routes/_authenticated/projects.$projectId.costing.cash-flow'
 import { Route as AuthenticatedProjectsProjectIdCommissioningTurnoverRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.turnover'
 import { Route as AuthenticatedProjectsProjectIdCommissioningPunchRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.punch'
 import { Route as AuthenticatedProjectsProjectIdCommissioningPerformanceRouteImport } from './routes/_authenticated/projects.$projectId.commissioning.performance'
@@ -1780,6 +1781,12 @@ const AuthenticatedProjectsProjectIdCostingCloseRoute =
     path: '/close',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingCashFlowRoute =
+  AuthenticatedProjectsProjectIdCostingCashFlowRouteImport.update({
+    id: '/cash-flow',
+    path: '/cash-flow',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCommissioningTurnoverRoute =
   AuthenticatedProjectsProjectIdCommissioningTurnoverRouteImport.update({
     id: '/commissioning/turnover',
@@ -2184,6 +2191,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
+  '/projects/$projectId/costing/cash-flow': typeof AuthenticatedProjectsProjectIdCostingCashFlowRoute
   '/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
@@ -2452,6 +2460,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
+  '/projects/$projectId/costing/cash-flow': typeof AuthenticatedProjectsProjectIdCostingCashFlowRoute
   '/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
@@ -2735,6 +2744,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/commissioning/performance': typeof AuthenticatedProjectsProjectIdCommissioningPerformanceRoute
   '/_authenticated/projects/$projectId/commissioning/punch': typeof AuthenticatedProjectsProjectIdCommissioningPunchRoute
   '/_authenticated/projects/$projectId/commissioning/turnover': typeof AuthenticatedProjectsProjectIdCommissioningTurnoverRoute
+  '/_authenticated/projects/$projectId/costing/cash-flow': typeof AuthenticatedProjectsProjectIdCostingCashFlowRoute
   '/_authenticated/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/_authenticated/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/_authenticated/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
@@ -3019,6 +3029,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
+    | '/projects/$projectId/costing/cash-flow'
     | '/projects/$projectId/costing/close'
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
@@ -3287,6 +3298,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/commissioning/performance'
     | '/projects/$projectId/commissioning/punch'
     | '/projects/$projectId/commissioning/turnover'
+    | '/projects/$projectId/costing/cash-flow'
     | '/projects/$projectId/costing/close'
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
@@ -3569,6 +3581,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/commissioning/performance'
     | '/_authenticated/projects/$projectId/commissioning/punch'
     | '/_authenticated/projects/$projectId/commissioning/turnover'
+    | '/_authenticated/projects/$projectId/costing/cash-flow'
     | '/_authenticated/projects/$projectId/costing/close'
     | '/_authenticated/projects/$projectId/costing/close-pack'
     | '/_authenticated/projects/$projectId/costing/commitments'
@@ -5450,6 +5463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingCloseRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/cash-flow': {
+      id: '/_authenticated/projects/$projectId/costing/cash-flow'
+      path: '/cash-flow'
+      fullPath: '/projects/$projectId/costing/cash-flow'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingCashFlowRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/commissioning/turnover': {
       id: '/_authenticated/projects/$projectId/commissioning/turnover'
       path: '/commissioning/turnover'
@@ -5858,6 +5878,7 @@ const AuthenticatedProcurementVendorsRouteWithChildren =
   )
 
 interface AuthenticatedProjectsProjectIdCostingRouteChildren {
+  AuthenticatedProjectsProjectIdCostingCashFlowRoute: typeof AuthenticatedProjectsProjectIdCostingCashFlowRoute
   AuthenticatedProjectsProjectIdCostingCloseRoute: typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   AuthenticatedProjectsProjectIdCostingClosePackRoute: typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   AuthenticatedProjectsProjectIdCostingCommitmentsRoute: typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
@@ -5872,6 +5893,8 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
 
 const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsProjectIdCostingRouteChildren =
   {
+    AuthenticatedProjectsProjectIdCostingCashFlowRoute:
+      AuthenticatedProjectsProjectIdCostingCashFlowRoute,
     AuthenticatedProjectsProjectIdCostingCloseRoute:
       AuthenticatedProjectsProjectIdCostingCloseRoute,
     AuthenticatedProjectsProjectIdCostingClosePackRoute:
@@ -6551,13 +6574,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
