@@ -1348,6 +1348,97 @@
         "watermarkFrozen": "Frozen snapshot",
         "watermarkWorking": "Working / indicative"
       }
+    },
+    "contingency": {
+      "title": "Contingency & risk exposure",
+      "description": "Governed contingency pools, drawdown approvals and probability-weighted risk exposure. Nothing here mutates approved cost, forecast or cash-flow snapshots.",
+      "kpi": {
+        "original": "Original contingency",
+        "balance": "Remaining balance",
+        "drawn": "Approved drawdown",
+        "pending": "Pending requests",
+        "exposure": "P80 risk exposure",
+        "cover": "Cover ratio",
+        "coverHelp": "Remaining balance divided by P80 exposure. Below 1.00 the pool is under-funded."
+      },
+      "pools": {
+        "title": "Contingency pools",
+        "description": "Each pool carries its own basis and currency. Balances move only on approved movements.",
+        "caption": "Contingency pools with original amount, drawdown and remaining balance",
+        "name": "Pool",
+        "basis": "Basis",
+        "status": "Status",
+        "original": "Original",
+        "drawn": "Drawn",
+        "released": "Released",
+        "balance": "Balance",
+        "utilization": "Utilised",
+        "emptyTitle": "No contingency pools yet",
+        "emptyBody": "Create a pool to start governing drawdowns against it.",
+        "create": "Create pool",
+        "created": "Contingency pool created.",
+        "overDrawn": "Over-drawn"
+      },
+      "movements": {
+        "title": "Drawdown ledger",
+        "description": "Draws, releases and transfers. Approved movements are immutable.",
+        "caption": "Contingency movements with kind, amount, status and reason",
+        "date": "Effective",
+        "pool": "Pool",
+        "kind": "Kind",
+        "amount": "Amount",
+        "reason": "Reason",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No movements recorded against these pools yet.",
+        "request": "Request movement",
+        "requested": "Movement submitted for approval.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "approved": "Movement approved.",
+        "rejected": "Movement rejected.",
+        "rejectPrompt": "Reason for rejection",
+        "kinds": {
+          "draw": "Draw",
+          "release": "Release",
+          "transfer_in": "Transfer in",
+          "transfer_out": "Transfer out"
+        },
+        "statuses": {
+          "pending": "Pending",
+          "approved": "Approved",
+          "rejected": "Rejected"
+        }
+      },
+      "exposure": {
+        "title": "Quantified risk exposure",
+        "description": "Expected value and P50/P80 bands from the quantified risk register. Closed and realised risks are excluded.",
+        "caption": "Quantified risks with cost range, probability and expected value",
+        "risk": "Risk",
+        "range": "Cost range",
+        "probability": "Probability",
+        "expected": "Expected value",
+        "days": "Schedule days",
+        "empty": "No risks have been quantified yet.",
+        "expectedTotal": "Expected value",
+        "p50": "P50",
+        "p80": "P80",
+        "sigma": "Standard deviation",
+        "daysExpected": "Expected schedule impact"
+      },
+      "form": {
+        "poolName": "Pool name",
+        "poolBasis": "Basis",
+        "currency": "Currency",
+        "amount": "Amount",
+        "effectiveDate": "Effective date",
+        "reason": "Reason",
+        "kind": "Kind",
+        "pool": "Pool",
+        "submit": "Submit",
+        "cancel": "Cancel"
+      },
+      "readOnly": "You have view-only access to contingency governance."
     }
   }
 }

@@ -3302,6 +3302,217 @@ export type Database = {
           },
         ]
       }
+      contingency_movements: {
+        Row: {
+          amount: number
+          change_order_id: string | null
+          company_id: string
+          counterparty_pool_id: string | null
+          created_at: string
+          currency_code: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          effective_date: string
+          id: string
+          kind: Database["public"]["Enums"]["contingency_movement_kind"]
+          pool_id: string
+          project_id: string
+          reason: string
+          requested_by: string | null
+          risk_id: string | null
+          status: Database["public"]["Enums"]["contingency_movement_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          change_order_id?: string | null
+          company_id: string
+          counterparty_pool_id?: string | null
+          created_at?: string
+          currency_code: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          effective_date: string
+          id?: string
+          kind: Database["public"]["Enums"]["contingency_movement_kind"]
+          pool_id: string
+          project_id: string
+          reason: string
+          requested_by?: string | null
+          risk_id?: string | null
+          status?: Database["public"]["Enums"]["contingency_movement_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          change_order_id?: string | null
+          company_id?: string
+          counterparty_pool_id?: string | null
+          created_at?: string
+          currency_code?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          effective_date?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["contingency_movement_kind"]
+          pool_id?: string
+          project_id?: string
+          reason?: string
+          requested_by?: string | null
+          risk_id?: string | null
+          status?: Database["public"]["Enums"]["contingency_movement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contingency_movements_change_order_id_fkey"
+            columns: ["change_order_id"]
+            isOneToOne: false
+            referencedRelation: "change_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_counterparty_pool_id_fkey"
+            columns: ["counterparty_pool_id"]
+            isOneToOne: false
+            referencedRelation: "contingency_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contingency_movements_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "contingency_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_movements_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contingency_pools: {
+        Row: {
+          basis: string | null
+          company_id: string
+          cost_code_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          id: string
+          name: string
+          original_amount: number
+          project_id: string
+          status: Database["public"]["Enums"]["contingency_pool_status"]
+          updated_at: string
+        }
+        Insert: {
+          basis?: string | null
+          company_id: string
+          cost_code_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          id?: string
+          name: string
+          original_amount?: number
+          project_id: string
+          status?: Database["public"]["Enums"]["contingency_pool_status"]
+          updated_at?: string
+        }
+        Update: {
+          basis?: string | null
+          company_id?: string
+          cost_code_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          id?: string
+          name?: string
+          original_amount?: number
+          project_id?: string
+          status?: Database["public"]["Enums"]["contingency_pool_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contingency_pools_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_pools_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_pools_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contingency_pools_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contingency_pools_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contour_lines: {
         Row: {
           company_id: string
@@ -17962,6 +18173,96 @@ export type Database = {
           },
         ]
       }
+      risk_quantifications: {
+        Row: {
+          company_id: string
+          cost_high: number
+          cost_low: number
+          cost_most_likely: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          distribution: Database["public"]["Enums"]["risk_distribution"]
+          id: string
+          notes: string | null
+          probability_pct: number
+          project_id: string
+          risk_id: string
+          schedule_days_impact: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          cost_high?: number
+          cost_low?: number
+          cost_most_likely?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          distribution?: Database["public"]["Enums"]["risk_distribution"]
+          id?: string
+          notes?: string | null
+          probability_pct?: number
+          project_id: string
+          risk_id: string
+          schedule_days_impact?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          cost_high?: number
+          cost_low?: number
+          cost_most_likely?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          distribution?: Database["public"]["Enums"]["risk_distribution"]
+          id?: string
+          notes?: string | null
+          probability_pct?: number
+          project_id?: string
+          risk_id?: string
+          schedule_days_impact?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_quantifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_quantifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_quantifications_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "risk_quantifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_quantifications_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: true
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string
@@ -25699,6 +26000,13 @@ export type Database = {
         | "earth_resistance"
         | "functional"
         | "other"
+      contingency_movement_kind:
+        | "draw"
+        | "release"
+        | "transfer_in"
+        | "transfer_out"
+      contingency_movement_status: "pending" | "approved" | "rejected"
+      contingency_pool_status: "draft" | "active" | "closed"
       contract_status:
         | "draft"
         | "negotiation"
@@ -26191,6 +26499,7 @@ export type Database = {
         | "rejected"
         | "withdrawn"
       rfq_status: "draft" | "issued" | "closed" | "awarded" | "cancelled"
+      risk_distribution: "triangular" | "pert"
       risk_status: "open" | "mitigating" | "realized" | "closed"
       rtv_status: "requested" | "approved" | "shipped" | "credited" | "closed"
       safety_obs_type: "safe_act" | "unsafe_act" | "unsafe_condition"
@@ -26633,6 +26942,14 @@ export const Constants = {
         "functional",
         "other",
       ],
+      contingency_movement_kind: [
+        "draw",
+        "release",
+        "transfer_in",
+        "transfer_out",
+      ],
+      contingency_movement_status: ["pending", "approved", "rejected"],
+      contingency_pool_status: ["draft", "active", "closed"],
       contract_status: [
         "draft",
         "negotiation",
@@ -27177,6 +27494,7 @@ export const Constants = {
         "withdrawn",
       ],
       rfq_status: ["draft", "issued", "closed", "awarded", "cancelled"],
+      risk_distribution: ["triangular", "pert"],
       risk_status: ["open", "mitigating", "realized", "closed"],
       rtv_status: ["requested", "approved", "shipped", "credited", "closed"],
       safety_obs_type: ["safe_act", "unsafe_act", "unsafe_condition"],
