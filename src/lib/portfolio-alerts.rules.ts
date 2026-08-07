@@ -101,6 +101,34 @@ export const DEFAULT_ALERT_CONFIGS: Record<AlertRuleType, AlertRuleConfig> = {
   liquidity_shortfall: mk("liquidity_shortfall", "critical", 0, "currency", 0, 24),
   funding_headroom: mk("funding_headroom", "high", 0.9, "ratio", 0, 48),
   covenant_breach: mk("covenant_breach", "critical", 0, "count", 0, 24),
+  revenue_margin_erosion: mk("revenue_margin_erosion", "high", 5, "percent", 0, 48),
+  revenue_loss_making: mk("revenue_loss_making", "critical", 0, "currency", 0, 24),
+  recognition_basis_stale: mk("recognition_basis_stale", "high", 45, "days", 5, 48),
+  recognition_fx_missing: mk("recognition_fx_missing", "critical", 0, "count", 0, 24),
+  revenue_reversal_material: mk("revenue_reversal_material", "critical", 50000, "currency", 0, 24),
+  wip_underbilling_age: mk("wip_underbilling_age", "high", 60, "days", 0, 48),
+  contract_liability_movement: mk("contract_liability_movement", "medium", 20, "percent", 0, 72),
+  unapproved_variation_exposure: mk(
+    "unapproved_variation_exposure",
+    "medium",
+    100000,
+    "currency",
+    0,
+    72,
+  ),
+  retention_release_overdue: mk("retention_release_overdue", "medium", 0, "days", 0, 72),
+  recognition_billing_lag: mk("recognition_billing_lag", "medium", 60, "days", 0, 72),
+  recognition_reconciliation_failed: mk(
+    "recognition_reconciliation_failed",
+    "critical",
+    0,
+    "count",
+    0,
+    24,
+  ),
+  recognition_adjustment_pending: mk("recognition_adjustment_pending", "medium", 0, "count", 0, 72),
+  recognition_approval_delay: mk("recognition_approval_delay", "high", 7, "days", 0, 48),
+
 };
 
 function mk(
