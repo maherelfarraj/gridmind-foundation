@@ -1288,24 +1288,46 @@ export async function saveFundingFacility(
     created_by: ctx.user?.id ?? null,
     updated_at: new Date().toISOString(),
   };
-  const saved = input.id
-    ? await one<{ id: string }>(
-        sbOf(ctx)
-          .from("funding_facilities")
-          .update(payload)
-          .eq("id", input.id)
-          .select("id")
-          .single(),
-      )
-    : await one<{ id: string }>(
-        sbOf(ctx).from("funding_facilities").insert(payload).select("id").single(),
+  let saved: { id: string } | null = null;
+  if (input.id) {
+    // Optimistic concurrency: the caller must echo the row_version it read.
+    if (typeof input.row_version !== "number") {
+      costingHttpError(
+        409,
+        "row_version_required",
+        "Reload the facility before saving — its version is unknown.",
       );
+    }
+    const updated = await rows<{ id: string }>(
+      sbOf(ctx)
+        .from("funding_facilities")
+        .update({ ...payload, row_version: input.row_version! + 1 })
+        .eq("id", input.id)
+        .eq("row_version", input.row_version!)
+        .select("id"),
+    );
+    if (updated.length === 0) {
+      costingHttpError(
+        409,
+        "facility_version_conflict",
+        "This facility changed since you loaded it. Reload and reapply your edit.",
+      );
+    }
+    saved = updated[0]!;
+  } else {
+    saved = await one<{ id: string }>(
+      sbOf(ctx).from("funding_facilities").insert(payload).select("id").single(),
+    );
+  }
   if (!saved) costingHttpError(500, "funding_facility_save_failed");
   await costingAudit(ctx, "cashflow.facility.saved", "funding_facilities", saved!.id, {
     name: input.name,
+    mode: input.id ? "update" : "create",
+    ...(input.id ? { row_version: input.row_version } : {}),
   });
   return { id: saved!.id };
 }
+
 
 export async function saveFundingAllocation(
   ctx: AuthContext,
