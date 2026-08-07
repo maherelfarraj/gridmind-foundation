@@ -335,9 +335,7 @@ function FxRatesSettings() {
                     <TableCell>
                       <StatusBadge
                         status={r.is_manual ? "manual" : "imported"}
-                        label={
-                          r.is_manual ? t("adminMod.fxPage.filterManual") : r.source
-                        }
+                        label={r.is_manual ? t("adminMod.fxPage.filterManual") : r.source}
                       />
                     </TableCell>
                     <TableCell className="text-muted-foreground">{r.provider ?? "—"}</TableCell>
