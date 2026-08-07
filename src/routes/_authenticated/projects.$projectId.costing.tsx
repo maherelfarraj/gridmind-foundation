@@ -20,6 +20,7 @@ const TABS: Tab[] = [
   { label: "Forecast", to: "/costing/forecast" },
   { label: "Versions", to: "/costing/versions" },
   { label: "Close", to: "/costing/close" },
+  { label: "Earned value", to: "/costing/evm" },
 ];
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing")({

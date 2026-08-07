@@ -666,6 +666,56 @@
         "title": "لا يوجد سيناريو",
         "description": "قد يكون هذا السيناريو محذوفاً أو غير مشترك معك."
       }
+    },
+    "evm": {
+      "title": "Portfolio earned value",
+      "description": "Consolidated EVM for {{period}} in {{currency}}.",
+      "back": "Back to costing",
+      "export": "Export CSV",
+      "kpiGroup": "Portfolio earned value indicators",
+      "kpi": {
+        "bac": "BAC",
+        "pv": "PV",
+        "ev": "EV",
+        "ac": "AC",
+        "cpi": "CPI",
+        "spi": "SPI",
+        "sv": "SV",
+        "cv": "CV",
+        "eac": "EAC",
+        "etc": "ETC",
+        "vac": "VAC",
+        "tcpi": "TCPI",
+        "delay": "Earned delay (days)"
+      },
+      "included": "Projects included",
+      "excluded": "Projects excluded",
+      "mapping": "Mapping completeness",
+      "excludedHint": "Excluded for missing FX rates: {{projects}}",
+      "quadrants": "Performance quadrants",
+      "quadrant": {
+        "on_track": "On track",
+        "cost_risk": "Cost risk",
+        "schedule_risk": "Schedule risk",
+        "both_risk": "Cost & schedule risk",
+        "unknown": "Unknown"
+      },
+      "table": {
+        "title": "Projects",
+        "caption": "Earned value by project",
+        "project": "Project",
+        "status": "Status",
+        "blockers": "Blockers",
+        "fxMissing": "FX rate missing",
+        "emptyTitle": "No EVM snapshots",
+        "emptyBody": "Calculate an EVM snapshot on a project to see portfolio performance."
+      },
+      "movers": {
+        "title": "Largest movers",
+        "empty": "No prior-period comparison available.",
+        "cpi": "CPI Δ",
+        "spi": "SPI Δ"
+      }
     }
   }
 }
