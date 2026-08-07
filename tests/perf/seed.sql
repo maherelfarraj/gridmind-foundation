@@ -33,7 +33,7 @@ from perf_ids p, generate_series(1, :projects) g;
 -- ---------------------------------------------------------------------------
 insert into public.cashflow_snapshots (
   id, company_id, project_id, period_month, data_date, status, version_no,
-  reporting_currency, project_currency, prepared_by
+  reporting_currency, project_currency
 )
 select md5('gc15-perf::cs::' || g || '::' || m || '::' || v)::uuid,
        p.company_id,
