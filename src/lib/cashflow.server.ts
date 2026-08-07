@@ -1374,6 +1374,65 @@ export async function deleteFundingAllocation(ctx: AuthContext, id: string): Pro
   await costingAudit(ctx, "cashflow.allocation.deleted", "funding_allocations", id, {});
 }
 
+// --- Funding management workspace (facilities + allocations + audit trail) ---
+export interface AllocationRow {
+  id: string;
+  facility_id: string;
+  project_id: string;
+  allocated_amount: number;
+  currency_code: string;
+  effective_from: string | null;
+  effective_to: string | null;
+  notes: string | null;
+  updated_at: string | null;
+}
+
+export interface FundingAuditRow {
+  id: string;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  created_at: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface FundingWorkspace {
+  facilities: FacilityRow[];
+  allocations: AllocationRow[];
+  projects: { id: string; name: string; code: string }[];
+  audit: FundingAuditRow[];
+  access: { canWrite: boolean };
+}
+
+export async function loadFundingWorkspace(ctx: AuthContext): Promise<FundingWorkspace> {
+  const canWrite = await hasAnyCostingRole(ctx, COSTING_WRITE_ROLES);
+  const [facilities, allocations, projects, audit] = await Promise.all([
+    listFundingFacilities(ctx),
+    rows<AllocationRow>(
+      sbOf(ctx)
+        .from("funding_allocations")
+        .select(
+          "id, facility_id, project_id, allocated_amount, currency_code, effective_from, effective_to, notes, updated_at",
+        )
+        .order("updated_at", { ascending: false }),
+    ),
+    rows<{ id: string; name: string; code: string }>(
+      sbOf(ctx).from("projects").select("id, name, code").order("name", { ascending: true }),
+    ),
+    rows<FundingAuditRow>(
+      sbOf(ctx)
+        .from("audit_logs")
+        .select("id, action, entity, entity_id, created_at, metadata")
+        .in("entity", ["funding_facilities", "funding_allocations"])
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ),
+  ]);
+  return { facilities, allocations, projects, audit, access: { canWrite } };
+}
+
+
+
 async function currentCompanyId(ctx: AuthContext): Promise<string> {
   const row = await one<{ company_id: string }>(
     sbOf(ctx)
