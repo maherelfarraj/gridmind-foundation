@@ -19,6 +19,7 @@ export const AUDIT_GROUPS = [
   "policy",
   "export",
   "view",
+  "alert",
 ] as const;
 export type AuditGroup = (typeof AUDIT_GROUPS)[number];
 
@@ -152,6 +153,37 @@ export const PORTFOLIO_AUDIT_ACTIONS: readonly AuditActionSpec[] = [
     group: "view",
     severity: "warning",
     expectsEntity: true,
+  },
+  // GC-10 — finance alerts & escalations
+  {
+    action: "costing.portfolio.alerts_evaluated",
+    group: "alert",
+    severity: "info",
+    expectsEntity: false,
+  },
+  {
+    action: "costing.portfolio.alerts_export",
+    group: "alert",
+    severity: "info",
+    expectsEntity: false,
+  },
+  {
+    action: "costing.portfolio.alert_acknowledged",
+    group: "alert",
+    severity: "info",
+    expectsEntity: true,
+  },
+  {
+    action: "costing.portfolio.alert_snoozed",
+    group: "alert",
+    severity: "warning",
+    expectsEntity: true,
+  },
+  {
+    action: "costing.portfolio.alert_config_updated",
+    group: "alert",
+    severity: "warning",
+    expectsEntity: false,
   },
 ] as const;
 
