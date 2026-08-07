@@ -160,6 +160,26 @@ export async function assertCostingPeriodOpen(
   });
 }
 
+/**
+ * Find the first month at or after `fromMonth` whose costing period is open.
+ * Used by next-open-period reversals when the original month is locked.
+ */
+export async function findNextOpenPeriod(
+  ctx: AuthContext,
+  companyId: string,
+  projectId: string | null,
+  fromMonth: string,
+  horizonMonths = 24,
+): Promise<string | null> {
+  let month = periodMonthOf(fromMonth);
+  for (let i = 0; i < horizonMonths; i += 1) {
+    const state = await loadPeriodState(ctx, companyId, projectId, month);
+    if (state === "open") return month;
+    month = nextPeriodMonth(month);
+  }
+  return null;
+}
+
 export async function hasCloseRole(ctx: AuthContext): Promise<boolean> {
   const results = await Promise.all(
     COSTING_CLOSE_ROLES.map((r) => ctx.supabase.rpc("has_company_role", { p_role: r as any })),
