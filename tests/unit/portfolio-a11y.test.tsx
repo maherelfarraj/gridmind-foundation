@@ -1,7 +1,32 @@
 // Hardening — accessibility semantics and filter/pagination correctness for the
 // Portfolio Cost & Close governance surfaces (audit trail, saved views).
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// The table is rendered outside a router in these semantic proofs; the stub keeps
+// anchor semantics (href, aria-label, focus order) that the assertions care about.
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    params,
+    children,
+    ...rest
+  }: {
+    to: string;
+    params?: Record<string, string>;
+    children?: React.ReactNode;
+  } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    const href = Object.entries(params ?? {}).reduce(
+      (acc, [k, v]) => acc.replace(`$${k}`, v),
+      to,
+    );
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    );
+  },
+}));
 
 import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { LocaleProvider } from "@/lib/i18n/locale-provider";
