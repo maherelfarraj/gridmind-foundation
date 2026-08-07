@@ -33,6 +33,31 @@ function qFail(sql: string): string {
   }
 }
 
+/**
+ * Run a psql script in ONE session and return every line the script tagged
+ * with `FP:`. Errors are tolerated (the probes below are expected to fail);
+ * the script itself recovers through savepoints.
+ */
+function script(sql: string): string[] {
+  let out = "";
+  try {
+    out = execFileSync("psql", ["-Atq", "-F", "\u0001"], {
+      encoding: "utf8",
+      input: sql,
+      maxBuffer: 32 * 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+  } catch (e) {
+    const err = e as { stdout?: Buffer | string };
+    out = String(err.stdout ?? "");
+  }
+  return out
+    .split("\n")
+    .filter((l) => l.startsWith("FP:"))
+    .map((l) => l.slice(3));
+}
+
+
 const TABLES = [
   "cashflow_settings",
   "cashflow_snapshots",
