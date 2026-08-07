@@ -431,7 +431,7 @@ function ContractsClaimsCockpit() {
       </Card>
 
       <section aria-labelledby="cc-register">
-        <SectionHeader id="cc-register" title={t(`${K}.sections.register`)} />
+        <SectionHeader title={t(`${K}.sections.register`)} />
         {data.claims.length === 0 ? (
           <EmptyState title={t(`${K}.empty.claims`)} description={t(`${K}.empty.claimsHint`)} />
         ) : (
@@ -511,7 +511,7 @@ function ContractsClaimsCockpit() {
       </section>
 
       <section aria-labelledby="cc-deadlines">
-        <SectionHeader id="cc-deadlines" title={t(`${K}.sections.deadlines`)} />
+        <SectionHeader title={t(`${K}.sections.deadlines`)} />
         {data.deadlines.length === 0 ? (
           <EmptyState title={t(`${K}.empty.deadlines`)} />
         ) : (
@@ -548,7 +548,7 @@ function ContractsClaimsCockpit() {
       </section>
 
       <section aria-labelledby="cc-alerts">
-        <SectionHeader id="cc-alerts" title={t(`${K}.sections.alerts`)} />
+        <SectionHeader title={t(`${K}.sections.alerts`)} />
         {data.alerts.length === 0 ? (
           <EmptyState title={t(`${K}.empty.alerts`)} />
         ) : (
@@ -604,12 +604,12 @@ function ContractsClaimsCockpit() {
       </section>
 
       <section aria-labelledby="cc-appendix">
-        <SectionHeader id="cc-appendix" title={t(`${K}.sections.appendix`)} />
+        <SectionHeader title={t(`${K}.sections.appendix`)} />
         <ContractsClaimsAppendixCard appendix={appendix} currency={currency} />
       </section>
 
       <section aria-labelledby="cc-timeline">
-        <SectionHeader id="cc-timeline" title={t(`${K}.sections.timeline`)} />
+        <SectionHeader title={t(`${K}.sections.timeline`)} />
         {data.timeline.length === 0 ? (
           <EmptyState title={t(`${K}.empty.timeline`)} />
         ) : (
