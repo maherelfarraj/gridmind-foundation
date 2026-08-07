@@ -315,11 +315,21 @@ export function RecognitionManagement({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(
             [
-              ["rec-variations", t(`${K}.manage.policy.variations`), includeVariations, setIncludeVariations],
+              [
+                "rec-variations",
+                t(`${K}.manage.policy.variations`),
+                includeVariations,
+                setIncludeVariations,
+              ],
               ["rec-claims", t(`${K}.manage.policy.claims`), includeClaims, setIncludeClaims],
               ["rec-loss", t(`${K}.manage.policy.lossProvision`), lossProvision, setLossProvision],
               ["rec-cap", t(`${K}.manage.policy.capProgress`), capProgress, setCapProgress],
-              ["rec-reversal", t(`${K}.manage.policy.allowReversal`), allowReversal, setAllowReversal],
+              [
+                "rec-reversal",
+                t(`${K}.manage.policy.allowReversal`),
+                allowReversal,
+                setAllowReversal,
+              ],
             ] as [string, string, boolean, (v: boolean) => void][]
           ).map(([id, label, value, set]) => (
             <div key={id} className="flex items-center justify-between gap-2">

@@ -134,7 +134,6 @@ export const DEFAULT_ALERT_CONFIGS: Record<AlertRuleType, AlertRuleConfig> = {
   ),
   recognition_adjustment_pending: mk("recognition_adjustment_pending", "medium", 0, "count", 0, 72),
   recognition_approval_delay: mk("recognition_approval_delay", "high", 7, "days", 0, 48),
-
 };
 
 function mk(
