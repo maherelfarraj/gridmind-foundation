@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/locale-provider";
-import type { ClaimsAppendix } from "@/lib/contracts-claims.server";
+import type { ClaimsAppendix, PortfolioClaimsView } from "@/lib/contracts-claims.server";
 
 const K = "financeMod.costing.contractsClaims";
 
@@ -192,6 +192,81 @@ export function ContractsClaimsAppendixCard({
       ) : null}
 
       <p className="text-xs text-muted-foreground">{appendix.disclaimer}</p>
+    </Card>
+  );
+}
+
+/** GC-16 — consolidated contract & claims appendix for the portfolio pack. */
+export function PortfolioClaimsAppendixCard({
+  data,
+  currency = "USD",
+}: {
+  data: PortfolioClaimsView;
+  currency?: string;
+}) {
+  const { t } = useI18n();
+  const P = "portfolioMod.costing.contractsClaims";
+  const totals = data.totals;
+
+  return (
+    <Card className="flex flex-col gap-4 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">{t(`${P}.title`)}</h2>
+          <p className="text-xs text-muted-foreground">{t(`${P}.subtitle`)}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Field label={t(`${P}.kpi.liveExposure`)} value={money(totals.live_exposure, currency)} />
+        <Field label={t(`${P}.kpi.approved`)} value={money(totals.approved, currency)} />
+        <Field
+          label={t(`${P}.kpi.unapproved`)}
+          value={money(totals.unapproved_exposure, currency)}
+        />
+        <Field label={t(`${P}.kpi.ld`)} value={money(totals.ld_exposure, currency)} />
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead scope="col">{t(`${P}.table.project`)}</TableHead>
+            <TableHead scope="col" className="text-end">
+              {t(`${P}.table.approved`)}
+            </TableHead>
+            <TableHead scope="col" className="text-end">
+              {t(`${P}.table.exposure`)}
+            </TableHead>
+            <TableHead scope="col" className="text-end">
+              {t(`${P}.table.overdue`)}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.projects.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="text-muted-foreground">
+                {t(`${P}.empty.title`)}
+              </TableCell>
+            </TableRow>
+          ) : (
+            data.projects.map((p) => (
+              <TableRow key={p.project_id}>
+                <TableCell>{p.project_name}</TableCell>
+                <TableCell className="text-end tabular-nums">
+                  {money(p.totals.approved, currency)}
+                </TableCell>
+                <TableCell className="text-end tabular-nums">
+                  {money(p.totals.live_exposure, currency)}
+                </TableCell>
+                <TableCell className="text-end tabular-nums">{p.overdue_deadlines}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      <p className="text-xs text-muted-foreground">{data.disclaimer}</p>
     </Card>
   );
 }
