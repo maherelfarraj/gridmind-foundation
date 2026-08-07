@@ -250,11 +250,7 @@ function CashCockpit() {
         <TabsContent value="profile" className="pt-4">
           <Card className="flex flex-col gap-3 p-4">
             <h2 className="text-sm font-semibold text-foreground">{t(`${K}.buckets.title`)}</h2>
-            <CashBucketChart
-              buckets={c.buckets}
-              currency={currency}
-              granularity={c.granularity}
-            />
+            <CashBucketChart buckets={c.buckets} currency={currency} granularity={c.granularity} />
           </Card>
         </TabsContent>
 

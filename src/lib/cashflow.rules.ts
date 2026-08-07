@@ -209,7 +209,10 @@ export function expectedCashDate(input: ExpectedDateInput): ExpectedDate {
   if (input.dueDate) return { date: input.dueDate.slice(0, 10), basis: "due_date" };
   if (input.milestoneDate) return { date: input.milestoneDate.slice(0, 10), basis: "milestone" };
   if (input.documentDate && input.termsDays != null && Number.isFinite(input.termsDays)) {
-    return { date: addDays(input.documentDate.slice(0, 10), Number(input.termsDays)), basis: "payment_terms" };
+    return {
+      date: addDays(input.documentDate.slice(0, 10), Number(input.termsDays)),
+      basis: "payment_terms",
+    };
   }
   return { date: input.fallbackDate.slice(0, 10), basis: "fallback" };
 }
@@ -427,7 +430,13 @@ export interface FacilityModel {
   status: "planned" | "active" | "expired" | "cancelled";
   drawdown_schedule: { date: string; amount: number }[];
   repayment_schedule: { date: string; amount: number }[];
-  covenants: { code: string; label?: string; metric: string; operator: ">=" | "<="; threshold: number }[];
+  covenants: {
+    code: string;
+    label?: string;
+    metric: string;
+    operator: ">=" | "<=";
+    threshold: number;
+  }[];
   /** Amount of this facility ring-fenced to the project under review. */
   allocated_amount?: number | null;
   /** Rate into reporting currency; null when unavailable. */
@@ -464,7 +473,8 @@ function scheduleTotal(rows: readonly { date: string; amount: number }[], asOf: 
 
 export function facilityState(f: FacilityModel, asOf: string): FacilityState {
   const rate = f.fx_rate ?? null;
-  const conv = (amount: number) => (rate == null ? 0 : fromMinor(Math.round(toMinor(amount) * rate)));
+  const conv = (amount: number) =>
+    rate == null ? 0 : fromMinor(Math.round(toMinor(amount) * rate));
   const drawnMinor = scheduleTotal(f.drawdown_schedule ?? [], asOf);
   const repaidMinor = scheduleTotal(f.repayment_schedule ?? [], asOf);
   const outstandingNative = fromMinor(Math.max(0, drawnMinor - repaidMinor));
@@ -495,8 +505,7 @@ export function facilityState(f: FacilityModel, asOf: string): FacilityState {
     utilization_pct: utilization,
     available,
     expires_in_days: expiresIn,
-    refinancing_window:
-      expiresIn != null && expiresIn >= 0 && expiresIn <= REFINANCING_WINDOW_DAYS,
+    refinancing_window: expiresIn != null && expiresIn >= 0 && expiresIn <= REFINANCING_WINDOW_DAYS,
     fx_missing: rate == null,
   };
 }
@@ -568,8 +577,7 @@ export function checkCovenants(
         breached = c.operator === ">=" ? value < threshold : value > threshold;
         if (!breached) {
           const margin = Math.abs(threshold) * COVENANT_NEAR_MARGIN;
-          near =
-            c.operator === ">=" ? value - threshold <= margin : threshold - value <= margin;
+          near = c.operator === ">=" ? value - threshold <= margin : threshold - value <= margin;
         }
       }
       out.push({
@@ -632,7 +640,11 @@ export interface ReconciliationResult {
   differences: { dimension: string; difference: number }[];
 }
 
-function groupKey(l: CashLine, dim: ReconciliationRow["dimension"], granularity: BucketGranularity) {
+function groupKey(
+  l: CashLine,
+  dim: ReconciliationRow["dimension"],
+  granularity: BucketGranularity,
+) {
   switch (dim) {
     case "source":
       return l.source;
@@ -831,8 +843,10 @@ export function applyCashScenario(
   const shocked = 1 + (a.fx_shock_pct ?? 0) / 100;
   const out = lines.map((l) => {
     let date = l.date;
-    if (l.direction === "inflow" && a.receipt_delay_days) date = addDays(date, a.receipt_delay_days);
-    if (l.direction === "outflow" && a.payment_delay_days) date = addDays(date, a.payment_delay_days);
+    if (l.direction === "inflow" && a.receipt_delay_days)
+      date = addDays(date, a.receipt_delay_days);
+    if (l.direction === "outflow" && a.payment_delay_days)
+      date = addDays(date, a.payment_delay_days);
     if (l.source === "forecast" && a.cost_phasing_shift_days)
       date = addDays(date, a.cost_phasing_shift_days);
     const reporting =
@@ -885,11 +899,23 @@ export function compareScenario(
     delta: a == null || b == null ? null : fromMinor(toMinor(b) - toMinor(a)),
   });
   return [
-    pair("peak_funding_need", basis.measures.peak_funding_need, scenario.measures.peak_funding_need),
-    pair("minimum_liquidity", basis.measures.minimum_liquidity, scenario.measures.minimum_liquidity),
+    pair(
+      "peak_funding_need",
+      basis.measures.peak_funding_need,
+      scenario.measures.peak_funding_need,
+    ),
+    pair(
+      "minimum_liquidity",
+      basis.measures.minimum_liquidity,
+      scenario.measures.minimum_liquidity,
+    ),
     pair("net_cash_flow", basis.measures.net_cash_flow, scenario.measures.net_cash_flow),
     pair("headroom", basis.funding.headroom, scenario.funding.headroom),
-    pair("unfunded_requirement", basis.funding.unfunded_requirement, scenario.funding.unfunded_requirement),
+    pair(
+      "unfunded_requirement",
+      basis.funding.unfunded_requirement,
+      scenario.funding.unfunded_requirement,
+    ),
     {
       metric: "runway_buckets",
       basis: basis.measures.runway_buckets,
@@ -988,7 +1014,12 @@ export function assessCashQuality(f: QualityFacts): CashflowException[] {
     if (c.breached)
       push("covenant_breach", "blocker", `Covenant ${c.code} is breached.`, covenantCtx);
     else if (c.near_breach)
-      push("covenant_breach", "warning", `Covenant ${c.code} is close to its threshold.`, covenantCtx);
+      push(
+        "covenant_breach",
+        "warning",
+        `Covenant ${c.code} is close to its threshold.`,
+        covenantCtx,
+      );
   }
   for (const s of f.facilities) {
     if (s.refinancing_window)
@@ -1081,9 +1112,17 @@ export function cashSupersedePlan(current: {
   correction_reason?: string | null;
 }): SupersedePlan {
   if (current.status !== "approved")
-    return { ok: false, reason: "cashflow_supersede_requires_approved", nextVersionNo: current.version_no };
+    return {
+      ok: false,
+      reason: "cashflow_supersede_requires_approved",
+      nextVersionNo: current.version_no,
+    };
   if (!current.correction_reason || current.correction_reason.trim().length < 8)
-    return { ok: false, reason: "cashflow_correction_reason_required", nextVersionNo: current.version_no };
+    return {
+      ok: false,
+      reason: "cashflow_correction_reason_required",
+      nextVersionNo: current.version_no,
+    };
   return { ok: true, nextVersionNo: current.version_no + 1 };
 }
 

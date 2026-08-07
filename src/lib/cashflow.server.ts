@@ -415,7 +415,11 @@ export function buildCashLineDrafts(
         reference_type: c.kind,
         reference_id: c.id,
         suppression_key: `cc:${c.cost_code_id}:${bucket}`,
-        dateInput: { documentDate: dataDate, termsDays: settings.payment_lag_days, fallbackDate: period },
+        dateInput: {
+          documentDate: dataDate,
+          termsDays: settings.payment_lag_days,
+          fallbackDate: period,
+        },
       });
     }
   }
@@ -462,7 +466,11 @@ export function buildCashLineDrafts(
         reference_type: "contracts",
         reference_id: c.id,
         suppression_key: null,
-        dateInput: { documentDate: dataDate, termsDays: settings.receipt_lag_days, fallbackDate: period },
+        dateInput: {
+          documentDate: dataDate,
+          termsDays: settings.receipt_lag_days,
+          fallbackDate: period,
+        },
       });
     }
   }
@@ -549,8 +557,7 @@ async function loadFacilityModels(
   const models = raw.map((f) => {
     const allocated = allocations
       .filter(
-        (a) =>
-          a["facility_id"] === f["id"] && (projectId == null || a["project_id"] === projectId),
+        (a) => a["facility_id"] === f["id"] && (projectId == null || a["project_id"] === projectId),
       )
       .reduce((sum, a) => sum + toMinor(Number(a["allocated_amount"]) || 0), 0);
     return {
@@ -567,7 +574,9 @@ async function loadFacilityModels(
       repayment_schedule: Array.isArray(f["repayment_schedule"])
         ? (f["repayment_schedule"] as { date: string; amount: number }[])
         : [],
-      covenants: Array.isArray(f["covenants"]) ? (f["covenants"] as FacilityModel["covenants"]) : [],
+      covenants: Array.isArray(f["covenants"])
+        ? (f["covenants"] as FacilityModel["covenants"])
+        : [],
       allocated_amount: allocated > 0 ? fromMinor(allocated) : projectId == null ? null : 0,
       fx_rate: null,
     } satisfies FacilityModel;
@@ -588,7 +597,12 @@ export async function computeCashflow(
 
   const ws = await loadCostingWorkspace(ctx, input.project_id);
   const reporting = (input.currency ?? ws.baseCurrency).toUpperCase();
-  const drafts = buildCashLineDrafts(ws, { ...settings, bucket_granularity: granularity }, period, dataDate);
+  const drafts = buildCashLineDrafts(
+    ws,
+    { ...settings, bucket_granularity: granularity },
+    period,
+    dataDate,
+  );
 
   const adjustments = (await loadAdjustments(ctx, input.project_id)).filter(
     (a) => a.status === "authorized",
@@ -715,7 +729,8 @@ export async function computeCashflow(
     ? Math.max(
         0,
         Math.round(
-          (Date.parse(`${dataDate}T00:00:00Z`) - Date.parse(forecastVersion.approved_at)) / 86_400_000,
+          (Date.parse(`${dataDate}T00:00:00Z`) - Date.parse(forecastVersion.approved_at)) /
+            86_400_000,
         ),
       )
     : null;
@@ -1213,9 +1228,15 @@ export async function decideCashflowAdjustment(
     input.id,
     { event: input.decision, from_status: current!.status, reason: input.reason ?? null },
   );
-  await costingAudit(ctx, `cashflow.adjustment.${input.decision}`, "cashflow_adjustments", input.id, {
-    project_id: current!.project_id,
-  });
+  await costingAudit(
+    ctx,
+    `cashflow.adjustment.${input.decision}`,
+    "cashflow_adjustments",
+    input.id,
+    {
+      project_id: current!.project_id,
+    },
+  );
   return { status: input.decision === "authorize" ? "authorized" : "voided" };
 }
 
@@ -1332,7 +1353,11 @@ export async function deleteFundingAllocation(ctx: AuthContext, id: string): Pro
 
 async function currentCompanyId(ctx: AuthContext): Promise<string> {
   const row = await one<{ company_id: string }>(
-    sbOf(ctx).from("profiles").select("company_id").eq("id", ctx.user?.id ?? "").maybeSingle(),
+    sbOf(ctx)
+      .from("profiles")
+      .select("company_id")
+      .eq("id", ctx.user?.id ?? "")
+      .maybeSingle(),
   );
   if (!row?.company_id) costingHttpError(403, "no_company_context");
   return row!.company_id;
@@ -1639,9 +1664,9 @@ export async function loadPortfolioCashflow(
     const sameCurrency = snap.reporting_currency.toUpperCase() === reporting;
     const rate = sameCurrency
       ? 1
-      : ((snap.fx_provenance as unknown as { rates?: CashFxEntry[] })?.rates ?? []).find(
+      : (((snap.fx_provenance as unknown as { rates?: CashFxEntry[] })?.rates ?? []).find(
           (f) => f.currency_code === reporting,
-        )?.rate ?? null;
+        )?.rate ?? null);
     out.push({
       project_id: p.id,
       project_code: p.code,

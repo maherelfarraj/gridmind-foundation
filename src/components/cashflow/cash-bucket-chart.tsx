@@ -101,9 +101,7 @@ export function CashBucketChart({
           {buckets.map((b) => (
             <TableRow key={b.start}>
               <TableCell className="font-medium">{bucketLabel(b.start, granularity)}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {money(b.inflow, currency)}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">{money(b.inflow, currency)}</TableCell>
               <TableCell className="text-right tabular-nums">
                 {money(b.outflow, currency)}
               </TableCell>
