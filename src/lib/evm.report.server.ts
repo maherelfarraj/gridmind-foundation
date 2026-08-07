@@ -7,6 +7,7 @@
 //
 // Reads are set-based: a fixed number of queries per project regardless of how
 // many WBS items, tasks or mappings exist.
+import type { Json } from "@/integrations/supabase/types";
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import { resolveFx, sumMoney, toMinor } from "@/lib/costing.fx";
 import { currentReportingPeriod, mostRestrictiveState } from "@/lib/costing.periods";
@@ -35,6 +36,7 @@ import {
   eacMethodDistribution,
   earnedDelayDays,
   EVM_GATE_BLOCKED,
+  EVM_REPORT_FROZEN,
   EVM_VERSION_CONFLICT,
   performanceExceptions,
   periodEndOf,
@@ -42,6 +44,7 @@ import {
   plannedValue,
   quadrantOf,
   reconcile,
+  type Reconciliation,
   rollUp,
   sumCores,
   supersedePlan,
@@ -403,23 +406,44 @@ export async function saveProgressOverride(
   await requireEvmWrite(ctx);
   const project = await loadCostingProject(ctx, input.project_id);
   await assertPeriodOpenForEvm(ctx, input.project_id, input.period);
+  await assertReportOpen(ctx, input.project_id, input.period);
   const { period, ...rest } = input;
+
+  // The uniqueness index is expression-based (NULL scope ids collapse to the
+  // nil UUID), so the conflict target cannot be expressed to PostgREST.
+  // Resolve the existing row explicitly instead of relying on upsert.
+  const scopeQuery = sbOf(ctx)
+    .from("evm_progress_overrides")
+    .select("id")
+    .eq("project_id", input.project_id)
+    .eq("period_month", period);
+  const wbsId = (rest["wbs_item_id"] as string | null) ?? null;
+  const taskId = (rest["schedule_task_id"] as string | null) ?? null;
+  const scoped = (wbsId ? scopeQuery.eq("wbs_item_id", wbsId) : scopeQuery.is("wbs_item_id", null));
+  const existing = await one<{ id: string }>(
+    (taskId ? scoped.eq("schedule_task_id", taskId) : scoped.is("schedule_task_id", null)).maybeSingle(),
+  );
+
+  const payload = {
+    ...rest,
+    period_month: period,
+    company_id: project.company_id,
+    approved_by: ctx.user?.id ?? null,
+    approved_at: new Date().toISOString(),
+  };
   const saved = await one<{ id: string }>(
-    sbOf(ctx)
-      .from("evm_progress_overrides")
-      .upsert(
-        {
-          ...rest,
-          period_month: period,
-          company_id: project.company_id,
-          approved_by: ctx.user?.id ?? null,
-          approved_at: new Date().toISOString(),
-          created_by: ctx.user?.id ?? null,
-        },
-        { onConflict: "project_id,period_month,wbs_item_id,schedule_task_id" },
-      )
-      .select("id")
-      .single(),
+    existing
+      ? sbOf(ctx)
+          .from("evm_progress_overrides")
+          .update(payload)
+          .eq("id", existing.id)
+          .select("id")
+          .single()
+      : sbOf(ctx)
+          .from("evm_progress_overrides")
+          .insert({ ...payload, created_by: ctx.user?.id ?? null })
+          .select("id")
+          .single(),
   );
   await costingAudit(ctx, "evm.progress.overridden", "evm_progress_overrides", saved?.id ?? null, {
     project_id: input.project_id,
@@ -432,6 +456,7 @@ export async function saveProgressOverride(
   });
   return saved?.id ?? "";
 }
+
 
 export async function deleteProgressOverride(ctx: AuthContext, overrideId: string): Promise<void> {
   await requireEvmWrite(ctx);
@@ -460,6 +485,31 @@ async function assertPeriodOpenForEvm(ctx: AuthContext, projectId: string, perio
     costingHttpError(409, "costing_period_hard_closed", "The reporting period is closed.");
   }
 }
+
+/**
+ * Progress and mapping inputs may only move while the period's report is still
+ * a working calculation. Once submitted or approved the snapshot is evidence.
+ */
+async function assertReportOpen(ctx: AuthContext, projectId: string, period: string) {
+  const report = await one<{ status: ReportStatus }>(
+    sbOf(ctx)
+      .from("evm_reports")
+      .select("status")
+      .eq("project_id", projectId)
+      .eq("period_month", period)
+      .neq("status", "superseded")
+      .maybeSingle(),
+  );
+  if (report && report.status !== "working") {
+    costingHttpError(
+      409,
+      EVM_REPORT_FROZEN,
+      "The EVM report for this period is submitted or approved.",
+    );
+  }
+}
+
+
 
 // ---------------------------------------------------------------------------
 // Authoritative compute
@@ -786,9 +836,9 @@ export interface EvmReportRow {
   ac_basis: AcBasis;
   official_eac_method: EacMethod;
   cost_basis: string;
-  fx_provenance: Record<string, unknown>;
-  totals: Record<string, unknown>;
-  quality: Record<string, unknown>;
+  fx_provenance: Record<string, Json>;
+  totals: Record<string, Json>;
+  quality: Record<string, Json>;
   supersedes_id: string | null;
   superseded_by_id: string | null;
   correction_reason: string | null;
@@ -855,7 +905,7 @@ export async function saveEvmReport(
     cost_basis: computed.cost_basis,
     mapping_version_id: computed.mapping_version_id,
     schedule_baseline_id: computed.schedule_baseline_id,
-    fx_provenance: computed.fx as unknown as Record<string, unknown>,
+    fx_provenance: computed.fx as unknown as Record<string, Json>,
     totals: {
       project: computed.total,
       reporting: computed.total_reporting,
@@ -1095,14 +1145,129 @@ export interface EvmWorkspaceData {
   }[];
   period_state: string;
   can_write: boolean;
+  /** True when the figures come from a frozen snapshot rather than a recalculation. */
+  frozen: boolean;
+}
+
+/**
+ * Rebuild the reported figures from the frozen snapshot. Approved (and
+ * submitted) reports are evidence: they are read back exactly as stored, with
+ * their own FX rate and basis, and are never re-rated when source data moves.
+ */
+async function frozenComputed(
+  ctx: AuthContext,
+  report: EvmReportRow,
+  settings: EvmSettings,
+): Promise<EvmComputed> {
+  const [lineRows, exceptionRows, project] = await Promise.all([
+    rows<Record<string, unknown>>(
+      sbOf(ctx)
+        .from("evm_report_lines")
+        .select("*")
+        .eq("report_id", report.id)
+        .order("sort_order", { ascending: true }),
+    ),
+    rows<Record<string, unknown>>(
+      sbOf(ctx).from("evm_exceptions").select("*").eq("report_id", report.id),
+    ),
+    loadCostingProject(ctx, report.project_id),
+  ]);
+
+  const nodes: EvmNode[] = lineRows.map((l) => {
+    const measures = l["measures"] as EvmMeasures;
+    return {
+      key: String(l["id"]),
+      parent_key: (l["parent_line_id"] as string | null) ?? null,
+      label: String(l["label"] ?? ""),
+      level: Number(l["level"] ?? 0),
+      wbs_item_id: (l["wbs_item_id"] as string | null) ?? null,
+      cost_code_id: (l["cost_code_id"] as string | null) ?? null,
+      schedule_task_id: (l["schedule_task_id"] as string | null) ?? null,
+      progress_method: (l["progress_method"] ?? "physical_pct") as ProgressMethod,
+      allocation_pct: Number(l["allocation_pct"] ?? 100),
+      calculated_pct: l["calculated_pct"] === null ? null : Number(l["calculated_pct"]),
+      applied_pct: l["applied_pct"] === null ? null : Number(l["applied_pct"]),
+      overridden:
+        l["applied_pct"] !== null &&
+        l["calculated_pct"] !== null &&
+        Number(l["applied_pct"]) !== Number(l["calculated_pct"]),
+      core: {
+        bac: measures?.bac ?? Number(l["bac"] ?? 0),
+        pv: measures?.pv ?? null,
+        ev: measures?.ev ?? null,
+        ac: measures?.ac ?? null,
+        bottom_up_etc: measures?.etc ?? null,
+      },
+      measures,
+    };
+  });
+
+  const totals = report.totals as {
+    project?: EvmMeasures;
+    reporting?: EvmMeasures | null;
+    delay_days?: number | null;
+    reconciliation?: ReturnType<typeof reconcile>;
+  };
+  const quality = report.quality as {
+    unmapped_pct?: number | null;
+    blockers?: number;
+    warnings?: number;
+    ready_to_approve?: boolean;
+  };
+  const exceptions: EvmException[] = exceptionRows.map((e) => ({
+    code: String(e["code"]) as EvmException["code"],
+    severity: String(e["severity"]) as EvmException["severity"],
+    blocking: Boolean(e["blocking"]),
+    title: String(e["title"] ?? ""),
+    detail: String(e["detail"] ?? ""),
+    current_value: e["current_value"] === null ? null : Number(e["current_value"]),
+    threshold_value: e["threshold_value"] === null ? null : Number(e["threshold_value"]),
+    value_unit: (e["value_unit"] as EvmException["value_unit"]) ?? null,
+  }));
+
+  const total =
+    totals?.project ?? computeMeasures({ bac: 0, pv: null, ev: null, ac: null, bottom_up_etc: null });
+  return {
+    project: {
+      id: report.project_id,
+      code: (project as { code?: string }).code ?? "",
+      name: (project as { name?: string }).name ?? "",
+    },
+    period_month: report.period_month,
+    data_date: report.data_date,
+    project_currency: report.project_currency,
+    reporting_currency: report.reporting_currency,
+    fx: report.fx_provenance as unknown as EvmFx,
+    ac_basis: report.ac_basis,
+    eac_method: report.official_eac_method,
+    cost_basis: report.cost_basis,
+    mapping_version_id: (report as { mapping_version_id?: string | null }).mapping_version_id ?? null,
+    schedule_baseline_id:
+      (report as { schedule_baseline_id?: string | null }).schedule_baseline_id ?? null,
+    nodes,
+    total,
+    total_reporting: totals?.reporting ?? null,
+    delay_days: totals?.delay_days ?? null,
+    quality: {
+      unmapped_pct: quality?.unmapped_pct ?? null,
+      blockers: quality?.blockers ?? exceptions.filter((e) => e.blocking).length,
+      warnings: quality?.warnings ?? exceptions.filter((e) => e.severity === "warning").length,
+      ready_to_approve: quality?.ready_to_approve !== false,
+      exceptions: exceptions.filter((e) => e.code.startsWith("data_") || e.blocking),
+    } as EvmComputed["quality"],
+    performance: exceptions.filter((e) => !e.code.startsWith("data_") && !e.blocking),
+    reconciliation:
+      totals?.reconciliation ??
+      ({ ok: true, lines: [], leaf_bac: 0, total_bac: 0, difference: 0 } as Reconciliation),
+    settings,
+  };
 }
 
 export async function loadEvmWorkspace(
   ctx: AuthContext,
   input: { project_id: string; period?: string; currency?: string },
 ): Promise<EvmWorkspaceData> {
-  const computed = await computeEvm(ctx, input);
-  const [history, state, can_write] = await Promise.all([
+  const [history, can_write] = await Promise.all([
     rows<EvmReportRow>(
       sbOf(ctx)
         .from("evm_reports")
@@ -1112,13 +1277,21 @@ export async function loadEvmWorkspace(
         .order("version_no", { ascending: false })
         .limit(24),
     ),
-    periodState(ctx, input.project_id, computed.period_month),
     hasAnyCostingRole(ctx, COSTING_WRITE_ROLES),
   ]);
 
+  const focus = input.period ?? history.find((h) => h.status !== "superseded")?.period_month;
   const report =
-    history.find((h) => h.period_month === computed.period_month && h.status !== "superseded") ??
-    null;
+    history.find((h) => h.period_month === focus && h.status !== "superseded") ??
+    (focus ? null : null);
+
+  // Frozen once submitted: read the snapshot back rather than recalculating.
+  const frozen = report !== null && report.status !== "working";
+  const computed = frozen
+    ? await frozenComputed(ctx, report, await loadEvmSettings(ctx, input.project_id))
+    : await computeEvm(ctx, input);
+  const state = await periodState(ctx, input.project_id, computed.period_month);
+
 
   const trend: TrendPoint[] = history
     .filter((h) => h.status === "approved" || h.status === "submitted")
@@ -1155,6 +1328,7 @@ export async function loadEvmWorkspace(
     events,
     period_state: state,
     can_write,
+    frozen,
   };
 }
 
@@ -1378,5 +1552,53 @@ export async function loadEvmAppendix(
       title: e.title,
     })),
     reconciliation: { ok: c.reconciliation.ok, difference: c.reconciliation.difference },
+  };
+}
+
+/**
+ * Paginated line detail served straight from the persisted snapshot so large
+ * WBS trees never round-trip the full report to the browser.
+ */
+export async function loadEvmDetail(
+  ctx: AuthContext,
+  input: { report_id: string; page: number; page_size: number; cost_code_id?: string; wbs_item_id?: string },
+): Promise<{ rows: Record<string, Json>[]; total: number; page: number; page_size: number }> {
+  const from = (input.page - 1) * input.page_size;
+  let q = sbOf(ctx)
+    .from("evm_report_lines")
+    .select("*", { count: "exact" })
+    .eq("report_id", input.report_id);
+  if (input.cost_code_id) q = q.eq("cost_code_id", input.cost_code_id);
+  if (input.wbs_item_id) q = q.eq("wbs_item_id", input.wbs_item_id);
+  const { data, count, error } = await q
+    .order("sort_order", { ascending: true })
+    .range(from, from + input.page_size - 1);
+  if (error) throw error;
+  return {
+    rows: (data ?? []) as Record<string, Json>[],
+    total: count ?? 0,
+    page: input.page,
+    page_size: input.page_size,
+  };
+}
+
+/** Portfolio management-pack appendix: one governed line per project. */
+export async function loadPortfolioEvmAppendix(
+  ctx: AuthContext,
+  filter: PortfolioEvmFilter,
+): Promise<{
+  period: string;
+  reporting_currency: string;
+  totals: PortfolioEvmData["totals"];
+  rows: PortfolioEvmRow[];
+  mapping_completeness_pct: number | null;
+}> {
+  const data = await loadPortfolioEvm(ctx, filter);
+  return {
+    period: data.period,
+    reporting_currency: data.reporting_currency,
+    totals: data.totals,
+    rows: data.rows,
+    mapping_completeness_pct: data.mapping_completeness_pct,
   };
 }

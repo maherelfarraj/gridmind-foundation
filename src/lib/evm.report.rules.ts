@@ -453,24 +453,11 @@ export function computeMeasures(core: EvmCore, method: EacMethod = "bottom_up"):
 }
 
 /**
- * Calendar slip in days: how far back the data date sits from the point where
- * the baseline planned exactly the value already earned. Distinct from SV,
- * which is money. Null when it cannot be established.
+ * Calendar slip in days is derived from earned progress against the baseline
+ * curve (see `earnedDelayDays`). Schedule variance in currency (SV) is a
+ * separate measure and the two are never presented interchangeably.
  */
-export function scheduleDelayDays(input: {
-  ev: number | null;
-  baseline_start: string | null;
-  baseline_finish: string | null;
-  data_date: string;
-}): number | null {
-  const { ev } = input;
-  if (ev === null) return null;
-  const s = input.baseline_start ? dayMs(input.baseline_start) : null;
-  const e = input.baseline_finish ? dayMs(input.baseline_finish) : null;
-  const t = dayMs(input.data_date);
-  if (s === null || e === null || t === null || e <= s) return null;
-  return null; // placeholder replaced below by earnedDelayDays
-}
+
 
 /**
  * Days between the data date and the baseline date at which the earned
@@ -1424,3 +1411,19 @@ export const DEFAULT_GATE_POLICY: GatePolicy = {
   gate_max_unmapped_pct: 5,
   gate_block_on_stale_progress: true,
 };
+
+export const EVM_CSV_KINDS = ["detail", "trend", "mappings", "exceptions", "formulas"] as const;
+
+export const evmCsvSchema = z.object({
+  project_id: z.string().uuid(),
+  period: monthSchema.optional(),
+  currency: currencySchema.optional(),
+  kind: z.enum(EVM_CSV_KINDS).default("detail"),
+});
+
+export const evmMappingVersionSchema = z.object({
+  project_id: z.string().uuid(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const evmIdSchema = z.object({ id: z.string().uuid() });

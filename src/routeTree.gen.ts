@@ -258,6 +258,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from
 import { Route as AuthenticatedProjectsProjectIdCostingVersionsRouteImport } from './routes/_authenticated/projects.$projectId.costing.versions'
 import { Route as AuthenticatedProjectsProjectIdCostingInvoicesRouteImport } from './routes/_authenticated/projects.$projectId.costing.invoices'
 import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } from './routes/_authenticated/projects.$projectId.costing.forecast'
+import { Route as AuthenticatedProjectsProjectIdCostingEvmRouteImport } from './routes/_authenticated/projects.$projectId.costing.evm'
 import { Route as AuthenticatedProjectsProjectIdCostingContractsRouteImport } from './routes/_authenticated/projects.$projectId.costing.contracts'
 import { Route as AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport } from './routes/_authenticated/projects.$projectId.costing.commitments'
 import { Route as AuthenticatedProjectsProjectIdCostingClosePackRouteImport } from './routes/_authenticated/projects.$projectId.costing.close-pack'
@@ -1735,6 +1736,12 @@ const AuthenticatedProjectsProjectIdCostingForecastRoute =
     path: '/forecast',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingEvmRoute =
+  AuthenticatedProjectsProjectIdCostingEvmRouteImport.update({
+    id: '/evm',
+    path: '/evm',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCostingContractsRoute =
   AuthenticatedProjectsProjectIdCostingContractsRouteImport.update({
     id: '/contracts',
@@ -2166,6 +2173,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -2431,6 +2439,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -2711,6 +2720,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/_authenticated/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/_authenticated/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  '/_authenticated/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/_authenticated/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/_authenticated/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/_authenticated/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -2992,6 +3002,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
+    | '/projects/$projectId/costing/evm'
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/versions'
@@ -3257,6 +3268,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
+    | '/projects/$projectId/costing/evm'
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/versions'
@@ -3536,6 +3548,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/costing/close-pack'
     | '/_authenticated/projects/$projectId/costing/commitments'
     | '/_authenticated/projects/$projectId/costing/contracts'
+    | '/_authenticated/projects/$projectId/costing/evm'
     | '/_authenticated/projects/$projectId/costing/forecast'
     | '/_authenticated/projects/$projectId/costing/invoices'
     | '/_authenticated/projects/$projectId/costing/versions'
@@ -5362,6 +5375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/evm': {
+      id: '/_authenticated/projects/$projectId/costing/evm'
+      path: '/evm'
+      fullPath: '/projects/$projectId/costing/evm'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingEvmRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/contracts': {
       id: '/_authenticated/projects/$projectId/costing/contracts'
       path: '/contracts'
@@ -5799,6 +5819,7 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingClosePackRoute: typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   AuthenticatedProjectsProjectIdCostingCommitmentsRoute: typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   AuthenticatedProjectsProjectIdCostingContractsRoute: typeof AuthenticatedProjectsProjectIdCostingContractsRoute
+  AuthenticatedProjectsProjectIdCostingEvmRoute: typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   AuthenticatedProjectsProjectIdCostingForecastRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   AuthenticatedProjectsProjectIdCostingInvoicesRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   AuthenticatedProjectsProjectIdCostingVersionsRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -5815,6 +5836,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingCommitmentsRoute,
     AuthenticatedProjectsProjectIdCostingContractsRoute:
       AuthenticatedProjectsProjectIdCostingContractsRoute,
+    AuthenticatedProjectsProjectIdCostingEvmRoute:
+      AuthenticatedProjectsProjectIdCostingEvmRoute,
     AuthenticatedProjectsProjectIdCostingForecastRoute:
       AuthenticatedProjectsProjectIdCostingForecastRoute,
     AuthenticatedProjectsProjectIdCostingInvoicesRoute:
@@ -6482,13 +6505,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
