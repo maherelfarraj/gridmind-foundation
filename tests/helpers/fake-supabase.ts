@@ -147,16 +147,23 @@ class Query implements PromiseLike<{
   }
 
   private matched(): Row[] {
-    let out = this.rows().filter((r) => this.filters.every((f) => f(r)));
+    const base = this.rows();
+    let out = base.filter((r) => this.filters.every((f) => f(r)));
     if (this.orderKey) {
       const k = this.orderKey;
+      // Ties break on insertion order. Real Postgres orders monotonic columns
+      // (started_at, created_at) with sub-millisecond resolution; JS `Date` is
+      // millisecond-granular, so two rows written in the same tick would
+      // otherwise sort arbitrarily and make ordered reads non-deterministic.
+      const seq = new Map(base.map((r, i) => [r, i] as const));
       out = [...out].sort((a, b) => {
         const av = a[k] as never;
         const bv = b[k] as never;
-        const cmp = av === bv ? 0 : av > bv ? 1 : -1;
+        const cmp = av === bv ? (seq.get(a) ?? 0) - (seq.get(b) ?? 0) : av > bv ? 1 : -1;
         return this.orderAsc ? cmp : -cmp;
       });
     }
+
     if (this.limitN != null) out = out.slice(0, this.limitN);
     return out;
   }

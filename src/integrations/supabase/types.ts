@@ -22052,6 +22052,40 @@ export type Database = {
         Args: { p_company_ids: string[] }
         Returns: number
       }
+      fx_import_runs_recent: {
+        Args: { p_limit?: number }
+        Returns: {
+          actor_kind: string
+          base_currency: string | null
+          company_id: string | null
+          created_at: string
+          diagnostics: Json
+          duration_ms: number | null
+          error_code: string | null
+          error_summary: string | null
+          failed_count: number
+          finished_at: string | null
+          id: string
+          imported_count: number
+          missing_codes: string[]
+          observation_date: string | null
+          provider: string
+          requested_count: number
+          requested_currencies: string[]
+          skipped_count: number
+          started_at: string
+          status: string
+          trigger: string
+          triggered_by: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "fx_import_runs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       generate_implementation_tasks: {
         Args: { p_change_request_id: string }
         Returns: number
