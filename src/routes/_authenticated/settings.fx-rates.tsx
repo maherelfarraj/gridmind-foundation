@@ -24,6 +24,7 @@ import {
 import { downloadCsv, objectsToCsv } from "@/lib/csv";
 import { syncFxRatesNow, upsertManualFxRate } from "@/lib/fx.functions";
 import { fxAdminQueryOptions, fxErrorMessage } from "@/lib/fx.query";
+import { useI18n } from "@/lib/i18n/locale-provider";
 
 export const Route = createFileRoute("/_authenticated/settings/fx-rates")({
   head: () => ({
@@ -49,6 +50,7 @@ export const Route = createFileRoute("/_authenticated/settings/fx-rates")({
 const today = () => new Date().toISOString().slice(0, 10);
 
 function FxRatesSettings() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const { data } = useSuspenseQuery(fxAdminQueryOptions());
   const syncFn = useServerFn(syncFxRatesNow);
@@ -68,9 +70,16 @@ function FxRatesSettings() {
     mutationFn: () => syncFn(),
     onSuccess: (r) => {
       if (r.status === "success") {
-        toast.success(`Imported ${r.imported} rate(s) observed ${r.observationDate}.`);
+        toast.success(
+          t("adminMod.fxPage.syncSuccess", { count: r.imported, date: r.observationDate }),
+        );
       } else {
-        toast.error(`Sync ${r.status}: ${r.error ?? "no details"}`);
+        toast.error(
+          t("adminMod.fxPage.syncFailed", {
+            status: r.status,
+            reason: r.error ?? t("adminMod.fxPage.noDetails"),
+          }),
+        );
       }
       void qc.invalidateQueries({ queryKey: ["fx"] });
     },
@@ -89,7 +98,7 @@ function FxRatesSettings() {
         },
       }),
     onSuccess: () => {
-      toast.success("Manual rate saved.");
+      toast.success(t("adminMod.fxPage.manualSaved"));
       setForm((f) => ({ ...f, base_code: "", rate: "", reason: "" }));
       void qc.invalidateQueries({ queryKey: ["fx"] });
     },
@@ -107,7 +116,7 @@ function FxRatesSettings() {
   }, [data.rates, search, sourceFilter]);
 
   const freshnessValue = data.freshness.lastObservationDate
-    ? `${data.freshness.businessDaysStale}d`
+    ? `${data.freshness.businessDaysStale}`
     : "—";
 
   const manualValid =
@@ -116,87 +125,107 @@ function FxRatesSettings() {
     Number(form.rate) > 0 &&
     form.reason.trim().length >= 3;
 
+  const filters = [
+    { key: "all" as const, label: t("adminMod.fxPage.filterAll") },
+    { key: "imported" as const, label: t("adminMod.fxPage.filterImported") },
+    { key: "manual" as const, label: t("adminMod.fxPage.filterManual") },
+  ];
+
   return (
     <div className="page-shell">
       <PageHeader
-        title="FX Rate Management"
-        description={`Automatic import from ${data.settings.provider} at ${data.settings.schedule_time} ${data.settings.schedule_timezone}. The internal rate ledger stays authoritative.`}
+        title={t("adminMod.fxPage.title")}
+        description={t("adminMod.fxPage.subtitle", {
+          provider: data.settings.provider,
+          time: data.settings.schedule_time,
+          tz: data.settings.schedule_timezone,
+        })}
         actions={
           data.canManage ? (
             <Button
               onClick={() => {
-                if (window.confirm("Run an exchange-rate import now?")) sync.mutate();
+                if (window.confirm(t("adminMod.fxPage.confirmSync"))) sync.mutate();
               }}
               disabled={sync.isPending}
             >
               <RefreshCw className="size-4" aria-hidden />
-              {sync.isPending ? "Syncing…" : "Sync now"}
+              {sync.isPending ? t("adminMod.fxPage.syncing") : t("adminMod.fxPage.syncNow")}
             </Button>
           ) : null
         }
       />
 
-      <KpiGrid label="Exchange-rate feed status">
+      <KpiGrid label={t("adminMod.fxPage.statusLabel")}>
         <KpiTile
-          label="Provider"
-          value={data.settings.enabled ? "Enabled" : "Disabled"}
+          label={t("adminMod.fxPage.provider")}
+          value={
+            data.settings.enabled ? t("adminMod.fxPage.enabled") : t("adminMod.fxPage.disabled")
+          }
           hint={data.settings.provider}
         />
         <KpiTile
-          label="Last observation"
+          label={t("adminMod.fxPage.lastObservation")}
           value={data.freshness.lastObservationDate ?? "—"}
-          hint={data.lastSuccess ? "Last successful run" : "No successful run yet"}
-        />
-        <KpiTile
-          label="Business days stale"
-          value={freshnessValue}
           hint={
-            data.freshness.nonPublicationDay
-              ? "Non-publication day — no failure"
-              : data.freshness.stale
-                ? `Above ${data.settings.staleness_business_days}-day threshold`
-                : "Within threshold"
+            data.lastSuccess ? t("adminMod.fxPage.lastSuccess") : t("adminMod.fxPage.noSuccess")
           }
         />
         <KpiTile
-          label="Unsupported currencies"
+          label={t("adminMod.fxPage.daysStale")}
+          value={freshnessValue}
+          hint={
+            data.freshness.nonPublicationDay
+              ? t("adminMod.fxPage.nonPublication")
+              : data.freshness.stale
+                ? t("adminMod.fxPage.aboveThreshold", {
+                    days: data.settings.staleness_business_days,
+                  })
+                : t("adminMod.fxPage.withinThreshold")
+          }
+        />
+        <KpiTile
+          label={t("adminMod.fxPage.unsupported")}
           value={String(data.missingCurrencies.length)}
-          hint={data.missingCurrencies.join(", ") || "All covered"}
+          hint={data.missingCurrencies.join(", ") || t("adminMod.fxPage.allCovered")}
         />
       </KpiGrid>
 
       {data.freshness.stale && !data.freshness.nonPublicationDay ? (
         <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
-          The latest successful observation is older than the configured threshold. Rates remain
-          usable; approvals are blocked only where no valid rate exists.
+          {t("adminMod.fxPage.staleWarning")}
         </p>
       ) : null}
 
       {data.lastFailure ? (
         <p className="text-sm text-muted-foreground">
-          Last failure {new Date(data.lastFailure.started_at).toLocaleString()} —{" "}
-          {data.lastFailure.error_summary ?? "no details"}
+          {t("adminMod.fxPage.lastFailure", {
+            when: new Date(data.lastFailure.started_at).toLocaleString(),
+            reason: data.lastFailure.error_summary ?? t("adminMod.fxPage.noDetails"),
+          })}
         </p>
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-foreground">Recent import runs</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("adminMod.fxPage.runsTitle")}</h2>
         {data.runs.length === 0 ? (
-          <EmptyState title="No import runs yet" description="Run a sync to populate history." />
+          <EmptyState
+            title={t("adminMod.fxPage.noRunsTitle")}
+            description={t("adminMod.fxPage.noRunsDesc")}
+          />
         ) : (
           <div className="overflow-x-auto rounded-md border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Started</TableHead>
-                  <TableHead>Trigger</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Observed</TableHead>
-                  <TableHead className="text-right">Requested</TableHead>
-                  <TableHead className="text-right">Imported</TableHead>
-                  <TableHead className="text-right">Skipped</TableHead>
-                  <TableHead className="text-right">Duration</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t("adminMod.fxPage.started")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.trigger")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.status")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.observed")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.fxPage.requested")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.fxPage.imported")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.fxPage.skipped")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.fxPage.duration")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.notes")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -228,24 +257,26 @@ function FxRatesSettings() {
 
       <section className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-medium text-foreground">Rate ledger</h2>
+          <h2 className="text-sm font-medium text-foreground">
+            {t("adminMod.fxPage.ledgerTitle")}
+          </h2>
           <div className="flex flex-wrap items-center gap-2">
             <Input
               className="h-10 w-44"
-              placeholder="Search pair (e.g. EURUSD)"
+              placeholder={t("adminMod.fxPage.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search currency pair"
+              aria-label={t("adminMod.fxPage.searchPair")}
             />
-            <div className="flex gap-1" role="group" aria-label="Filter by source">
-              {(["all", "imported", "manual"] as const).map((k) => (
+            <div className="flex gap-1" role="group" aria-label={t("adminMod.fxPage.filterSource")}>
+              {filters.map((f) => (
                 <Button
-                  key={k}
+                  key={f.key}
                   size="sm"
-                  variant={sourceFilter === k ? "default" : "outline"}
-                  onClick={() => setSourceFilter(k)}
+                  variant={sourceFilter === f.key ? "default" : "outline"}
+                  onClick={() => setSourceFilter(f.key)}
                 >
-                  {k}
+                  {f.label}
                 </Button>
               ))}
             </div>
@@ -270,24 +301,27 @@ function FxRatesSettings() {
               }
             >
               <Download className="size-4" aria-hidden />
-              Export
+              {t("adminMod.fxPage.export")}
             </Button>
           </div>
         </div>
 
         {rates.length === 0 ? (
-          <EmptyState title="No rates match" description="Adjust the search or source filter." />
+          <EmptyState
+            title={t("adminMod.fxPage.noRatesTitle")}
+            description={t("adminMod.fxPage.noRatesDesc")}
+          />
         ) : (
           <div className="overflow-x-auto rounded-md border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Pair</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
-                  <TableHead>As of</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Imported</TableHead>
+                  <TableHead>{t("adminMod.fxPage.pair")}</TableHead>
+                  <TableHead className="text-right">{t("adminMod.fxPage.rate")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.asOf")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.source")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.provider")}</TableHead>
+                  <TableHead>{t("adminMod.fxPage.importedOn")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -301,7 +335,9 @@ function FxRatesSettings() {
                     <TableCell>
                       <StatusBadge
                         status={r.is_manual ? "manual" : "imported"}
-                        label={r.is_manual ? "Manual" : r.source}
+                        label={
+                          r.is_manual ? t("adminMod.fxPage.filterManual") : r.source
+                        }
                       />
                     </TableCell>
                     <TableCell className="text-muted-foreground">{r.provider ?? "—"}</TableCell>
@@ -319,14 +355,14 @@ function FxRatesSettings() {
       {data.canManage ? (
         <section className="space-y-4 rounded-md border border-border p-6">
           <div>
-            <h2 className="text-sm font-medium text-foreground">Manual rate entry</h2>
-            <p className="text-xs text-muted-foreground">
-              Manual rates always take precedence over imported rates for the same pair and date.
-            </p>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.fxPage.manualTitle")}
+            </h2>
+            <p className="text-xs text-muted-foreground">{t("adminMod.fxPage.manualDesc")}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-5">
             <div className="space-y-2">
-              <Label htmlFor="fx-base">From</Label>
+              <Label htmlFor="fx-base">{t("adminMod.fxPage.from")}</Label>
               <Input
                 id="fx-base"
                 maxLength={3}
@@ -335,7 +371,7 @@ function FxRatesSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fx-quote">To</Label>
+              <Label htmlFor="fx-quote">{t("adminMod.fxPage.to")}</Label>
               <Input
                 id="fx-quote"
                 maxLength={3}
@@ -344,7 +380,7 @@ function FxRatesSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fx-rate">Rate</Label>
+              <Label htmlFor="fx-rate">{t("adminMod.fxPage.rate")}</Label>
               <Input
                 id="fx-rate"
                 type="number"
@@ -355,7 +391,7 @@ function FxRatesSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fx-date">Effective date</Label>
+              <Label htmlFor="fx-date">{t("adminMod.fxPage.effectiveDate")}</Label>
               <Input
                 id="fx-date"
                 type="date"
@@ -364,7 +400,7 @@ function FxRatesSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fx-reason">Reason</Label>
+              <Label htmlFor="fx-reason">{t("adminMod.fxPage.reason")}</Label>
               <Input
                 id="fx-reason"
                 value={form.reason}
@@ -377,7 +413,7 @@ function FxRatesSettings() {
               onClick={() => addManual.mutate()}
               disabled={!manualValid || addManual.isPending}
             >
-              {addManual.isPending ? "Saving…" : "Save manual rate"}
+              {addManual.isPending ? t("adminMod.fxPage.saving") : t("adminMod.fxPage.saveManual")}
             </Button>
           </div>
         </section>
