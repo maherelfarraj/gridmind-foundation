@@ -169,6 +169,7 @@ import { Route as ApiPublicHooksEchoRouteImport } from './routes/api/public/hook
 import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
 import { Route as ApiPublicCronStorageCheckRouteImport } from './routes/api/public/cron/storage-check'
 import { Route as ApiPublicCronScheduledReportsRouteImport } from './routes/api/public/cron/scheduled-reports'
+import { Route as ApiPublicCronPortfolioAlertsRouteImport } from './routes/api/public/cron/portfolio-alerts'
 import { Route as ApiPublicCronPmWorkOrdersRouteImport } from './routes/api/public/cron/pm-work-orders'
 import { Route as ApiPublicCronIngestionRetryRouteImport } from './routes/api/public/cron/ingestion-retry'
 import { Route as ApiPublicCronFxRatesRouteImport } from './routes/api/public/cron/fx-rates'
@@ -206,6 +207,7 @@ import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedPortfolioCostingAuditRouteImport } from './routes/_authenticated/portfolio.costing.audit'
+import { Route as AuthenticatedPortfolioCostingAlertsRouteImport } from './routes/_authenticated/portfolio.costing.alerts'
 import { Route as AuthenticatedOmScadaMappingsRouteImport } from './routes/_authenticated/om.scada.mappings'
 import { Route as AuthenticatedOmScadaIngestionHealthRouteImport } from './routes/_authenticated/om.scada.ingestion-health'
 import { Route as AuthenticatedOmScadaImportRouteImport } from './routes/_authenticated/om.scada.import'
@@ -1199,6 +1201,12 @@ const ApiPublicCronScheduledReportsRoute =
     path: '/api/public/cron/scheduled-reports',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPortfolioAlertsRoute =
+  ApiPublicCronPortfolioAlertsRouteImport.update({
+    id: '/api/public/cron/portfolio-alerts',
+    path: '/api/public/cron/portfolio-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPmWorkOrdersRoute =
   ApiPublicCronPmWorkOrdersRouteImport.update({
     id: '/api/public/cron/pm-work-orders',
@@ -1416,6 +1424,12 @@ const AuthenticatedPortfolioCostingAuditRoute =
   AuthenticatedPortfolioCostingAuditRouteImport.update({
     id: '/audit',
     path: '/audit',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
+const AuthenticatedPortfolioCostingAlertsRoute =
+  AuthenticatedPortfolioCostingAlertsRouteImport.update({
+    id: '/alerts',
+    path: '/alerts',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
 const AuthenticatedOmScadaMappingsRoute =
@@ -2061,6 +2075,7 @@ export interface FileRoutesByFullPath {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2098,6 +2113,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2325,6 +2341,7 @@ export interface FileRoutesByTo {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2360,6 +2377,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2600,6 +2618,7 @@ export interface FileRoutesById {
   '/_authenticated/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/_authenticated/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/_authenticated/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/_authenticated/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/_authenticated/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2637,6 +2656,7 @@ export interface FileRoutesById {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2878,6 +2898,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
@@ -2915,6 +2936,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3142,6 +3164,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
@@ -3177,6 +3200,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3416,6 +3440,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/scada/import'
     | '/_authenticated/om/scada/ingestion-health'
     | '/_authenticated/om/scada/mappings'
+    | '/_authenticated/portfolio/costing/alerts'
     | '/_authenticated/portfolio/costing/audit'
     | '/_authenticated/portfolio/costing/pack'
     | '/_authenticated/procurement/matches/$matchId'
@@ -3453,6 +3478,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3565,6 +3591,7 @@ export interface RootRouteChildren {
   ApiPublicCronFxRatesRoute: typeof ApiPublicCronFxRatesRoute
   ApiPublicCronIngestionRetryRoute: typeof ApiPublicCronIngestionRetryRoute
   ApiPublicCronPmWorkOrdersRoute: typeof ApiPublicCronPmWorkOrdersRoute
+  ApiPublicCronPortfolioAlertsRoute: typeof ApiPublicCronPortfolioAlertsRoute
   ApiPublicCronScheduledReportsRoute: typeof ApiPublicCronScheduledReportsRoute
   ApiPublicCronStorageCheckRoute: typeof ApiPublicCronStorageCheckRoute
   ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
@@ -4699,6 +4726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronScheduledReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/portfolio-alerts': {
+      id: '/api/public/cron/portfolio-alerts'
+      path: '/api/public/cron/portfolio-alerts'
+      fullPath: '/api/public/cron/portfolio-alerts'
+      preLoaderRoute: typeof ApiPublicCronPortfolioAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/pm-work-orders': {
       id: '/api/public/cron/pm-work-orders'
       path: '/api/public/cron/pm-work-orders'
@@ -4956,6 +4990,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/portfolio/costing/audit'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingAuditRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
+    '/_authenticated/portfolio/costing/alerts': {
+      id: '/_authenticated/portfolio/costing/alerts'
+      path: '/alerts'
+      fullPath: '/portfolio/costing/alerts'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingAlertsRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
     '/_authenticated/om/scada/mappings': {
@@ -5572,12 +5613,15 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedPortfolioCostingRouteChildren {
+  AuthenticatedPortfolioCostingAlertsRoute: typeof AuthenticatedPortfolioCostingAlertsRoute
   AuthenticatedPortfolioCostingAuditRoute: typeof AuthenticatedPortfolioCostingAuditRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
 }
 
 const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingRouteChildren =
   {
+    AuthenticatedPortfolioCostingAlertsRoute:
+      AuthenticatedPortfolioCostingAlertsRoute,
     AuthenticatedPortfolioCostingAuditRoute:
       AuthenticatedPortfolioCostingAuditRoute,
     AuthenticatedPortfolioCostingPackRoute:
@@ -6400,6 +6444,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronFxRatesRoute: ApiPublicCronFxRatesRoute,
   ApiPublicCronIngestionRetryRoute: ApiPublicCronIngestionRetryRoute,
   ApiPublicCronPmWorkOrdersRoute: ApiPublicCronPmWorkOrdersRoute,
+  ApiPublicCronPortfolioAlertsRoute: ApiPublicCronPortfolioAlertsRoute,
   ApiPublicCronScheduledReportsRoute: ApiPublicCronScheduledReportsRoute,
   ApiPublicCronStorageCheckRoute: ApiPublicCronStorageCheckRoute,
   ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,

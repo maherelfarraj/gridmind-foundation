@@ -441,6 +441,100 @@
       "deleteDescription": "“{{name}}” will be removed for you and anyone it is shared with. This cannot be undone.",
       "confirmDelete": "Delete view",
       "cancel": "Cancel"
+    },
+    "alerts": {
+      "title": "Portfolio finance alerts",
+      "subtitle": "Proactive escalations across FX gaps, stale forecasts, EAC deterioration, budget breaches and close readiness.",
+      "link": "Finance alerts",
+      "back": "Back to portfolio",
+      "tableCaption": "Open and recently resolved portfolio finance alerts.",
+      "companyScope": "Company-wide",
+      "threshold": "Threshold {{value}}",
+      "ageDays": "{{days}} d",
+      "occurrences": "Seen {{count}}×",
+      "tier": "Escalation tier {{tier}}",
+      "ackOverdue": "Acknowledgement overdue",
+      "acknowledge": "Acknowledge",
+      "acknowledgeOne": "Acknowledge alert: {{title}}",
+      "acknowledged": "Alert acknowledged.",
+      "snooze": "Snooze",
+      "snoozeOne": "Snooze alert: {{title}}",
+      "snoozed": "Alert snoozed for 7 days.",
+      "evaluateNow": "Evaluate now",
+      "evaluated": "Evaluation complete — {{created}} new, {{resolved}} resolved.",
+      "exportCsv": "Export CSV",
+      "exportFailed": "The alert export could not be generated.",
+      "actionFailed": "That action could not be completed.",
+      "col": {
+        "severity": "Severity",
+        "rule": "Alert",
+        "scope": "Scope",
+        "value": "Value",
+        "status": "Status",
+        "age": "Age",
+        "actions": "Actions"
+      },
+      "severity": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "status": {
+        "open": "Open",
+        "acknowledged": "Acknowledged",
+        "snoozed": "Snoozed",
+        "resolved": "Resolved"
+      },
+      "rule": {
+        "fx_missing": "Missing FX rate",
+        "forecast_stale": "Stale forecast",
+        "eac_deterioration": "EAC deterioration",
+        "budget_breach": "Budget breach",
+        "commitment_breach": "Commitment breach",
+        "actual_breach": "Actual cost breach",
+        "checklist_overdue": "Close checklist overdue",
+        "exception_aging": "Ageing exception",
+        "evidence_missing": "Missing approval evidence",
+        "close_readiness": "Close readiness at risk",
+        "period_reopened": "Period reopened",
+        "audit_gap": "Audit gap"
+      },
+      "filters": {
+        "legend": "Filter portfolio finance alerts",
+        "any": "Any",
+        "status": "Status",
+        "severity": "Severity",
+        "rule": "Alert type",
+        "project": "Project",
+        "owner": "Owner",
+        "overdue": "SLA",
+        "overdueOnly": "Overdue only"
+      },
+      "kpi": {
+        "open": "Open alerts",
+        "critical": "Critical & high",
+        "ackOverdue": "Acknowledgement overdue",
+        "projects": "Projects affected",
+        "oldest": "Oldest {{days}} d"
+      },
+      "pagination": {
+        "label": "Alerts pagination",
+        "status": "Page {{page}} of {{pages}}",
+        "prev": "Previous",
+        "next": "Next",
+        "announce": "{{count}} alerts, showing {{shown}} on page {{page}} of {{pages}}."
+      },
+      "empty": {
+        "title": "No finance alerts",
+        "description": "Nothing breached a configured threshold for this filter. Run an evaluation to refresh."
+      },
+      "error": {
+        "title": "Alerts unavailable",
+        "description": "Portfolio finance alerts are restricted to finance leadership, or the evaluation could not be read."
+      },
+      "appendixHeading": "Appendix — finance alerts",
+      "appendixDescription": "{{open}} open alerts ({{critical}} critical or high) across {{projects}} projects."
     }
   }
 }

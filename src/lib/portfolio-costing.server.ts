@@ -236,7 +236,24 @@ export async function loadPortfolioCosting(
     );
   }
   const companyId = await currentCompanyId(ctx);
+  return buildPortfolioCosting(ctx, companyId, query);
+}
+
+/**
+ * Authorization-free core so background evaluators (GC-10 alerts) can reuse
+ * the *same* authoritative aggregation for a company they were handed, instead
+ * of re-implementing the money. Callers are responsible for authorizing first:
+ * `loadPortfolioCosting` does it for user sessions, the scheduled evaluator
+ * runs service-role and is guarded by the public-hook cron guard.
+ */
+export async function buildPortfolioCosting(
+  ctx: AuthContext,
+  companyId: string,
+  query: PortfolioCostingQuery = {},
+  opts: { audit?: boolean } = {},
+): Promise<PortfolioCostingData> {
   const settings = await loadCostingSettings(ctx, companyId);
+
   const today = reportingToday(settings.reporting_timezone);
   const currentPeriod = currentReportingPeriod(settings.reporting_timezone);
   const period = query.period ?? currentPeriod;
@@ -557,15 +574,18 @@ export async function loadPortfolioCosting(
     })
     .filter((x): x is { eac: number; budget_current: number } => x !== null);
 
-  await costingAudit(ctx, "costing.portfolio.view", "forecast_versions", null, {
-    company_id: companyId,
-    period,
-    reporting_currency,
-    basis,
-    projects: built.length,
-    included: consolidation.included,
-    excluded: consolidation.excluded.length,
-  });
+  if (opts.audit !== false) {
+    await costingAudit(ctx, "costing.portfolio.view", "forecast_versions", null, {
+      company_id: companyId,
+      period,
+      reporting_currency,
+      basis,
+      projects: built.length,
+      included: consolidation.included,
+      excluded: consolidation.excluded.length,
+    });
+  }
+
 
   return {
     company_id: companyId,

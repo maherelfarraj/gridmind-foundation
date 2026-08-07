@@ -12314,6 +12314,270 @@ export type Database = {
           },
         ]
       }
+      portfolio_alert_configs: {
+        Row: {
+          ack_sla_hours: number
+          company_id: string
+          created_at: string
+          enabled: boolean
+          escalate_roles: Database["public"]["Enums"]["app_role"][]
+          id: string
+          lead_days: number
+          notify_roles: Database["public"]["Enums"]["app_role"][]
+          rule_type: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity: Database["public"]["Enums"]["portfolio_alert_severity"]
+          threshold_unit: string
+          threshold_value: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          ack_sla_hours?: number
+          company_id: string
+          created_at?: string
+          enabled?: boolean
+          escalate_roles?: Database["public"]["Enums"]["app_role"][]
+          id?: string
+          lead_days?: number
+          notify_roles?: Database["public"]["Enums"]["app_role"][]
+          rule_type: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity?: Database["public"]["Enums"]["portfolio_alert_severity"]
+          threshold_unit?: string
+          threshold_value?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          ack_sla_hours?: number
+          company_id?: string
+          created_at?: string
+          enabled?: boolean
+          escalate_roles?: Database["public"]["Enums"]["app_role"][]
+          id?: string
+          lead_days?: number
+          notify_roles?: Database["public"]["Enums"]["app_role"][]
+          rule_type?: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity?: Database["public"]["Enums"]["portfolio_alert_severity"]
+          threshold_unit?: string
+          threshold_value?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_alert_configs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alert_configs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_alert_events: {
+        Row: {
+          actor_id: string | null
+          alert_id: string
+          company_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          severity:
+            | Database["public"]["Enums"]["portfolio_alert_severity"]
+            | null
+        }
+        Insert: {
+          actor_id?: string | null
+          alert_id: string
+          company_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          severity?:
+            | Database["public"]["Enums"]["portfolio_alert_severity"]
+            | null
+        }
+        Update: {
+          actor_id?: string | null
+          alert_id?: string
+          company_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          severity?:
+            | Database["public"]["Enums"]["portfolio_alert_severity"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_alert_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alert_events_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alert_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_alerts: {
+        Row: {
+          ack_due_at: string | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          company_id: string
+          context: Json
+          created_at: string
+          currency_code: string | null
+          current_value: number | null
+          deep_link: string | null
+          detail: string | null
+          entity_id: string | null
+          entity_table: string | null
+          escalated_at: string | null
+          escalation_tier: number
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          next_evaluation_at: string | null
+          occurrence_count: number
+          owner_id: string | null
+          period_month: string | null
+          project_id: string | null
+          reopen_count: number
+          resolved_at: string | null
+          rule_type: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity: Database["public"]["Enums"]["portfolio_alert_severity"]
+          snoozed_until: string | null
+          status: Database["public"]["Enums"]["portfolio_alert_state"]
+          threshold_value: number | null
+          title: string
+          updated_at: string
+          value_unit: string
+        }
+        Insert: {
+          ack_due_at?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id: string
+          context?: Json
+          created_at?: string
+          currency_code?: string | null
+          current_value?: number | null
+          deep_link?: string | null
+          detail?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          escalated_at?: string | null
+          escalation_tier?: number
+          fingerprint: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          next_evaluation_at?: string | null
+          occurrence_count?: number
+          owner_id?: string | null
+          period_month?: string | null
+          project_id?: string | null
+          reopen_count?: number
+          resolved_at?: string | null
+          rule_type: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity?: Database["public"]["Enums"]["portfolio_alert_severity"]
+          snoozed_until?: string | null
+          status?: Database["public"]["Enums"]["portfolio_alert_state"]
+          threshold_value?: number | null
+          title: string
+          updated_at?: string
+          value_unit?: string
+        }
+        Update: {
+          ack_due_at?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id?: string
+          context?: Json
+          created_at?: string
+          currency_code?: string | null
+          current_value?: number | null
+          deep_link?: string | null
+          detail?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          escalated_at?: string | null
+          escalation_tier?: number
+          fingerprint?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          next_evaluation_at?: string | null
+          occurrence_count?: number
+          owner_id?: string | null
+          period_month?: string | null
+          project_id?: string | null
+          reopen_count?: number
+          resolved_at?: string | null
+          rule_type?: Database["public"]["Enums"]["portfolio_alert_rule_type"]
+          severity?: Database["public"]["Enums"]["portfolio_alert_severity"]
+          snoozed_until?: string | null
+          status?: Database["public"]["Enums"]["portfolio_alert_state"]
+          threshold_value?: number | null
+          title?: string
+          updated_at?: string
+          value_unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_alerts_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alerts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_alerts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_saved_views: {
         Row: {
           company_id: string
@@ -22844,6 +23108,10 @@ export type Database = {
         }
         Returns: string
       }
+      portfolio_alerts_try_lock: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
       portfolio_cash_curve: {
         Args: { p_months?: number }
         Returns: {
@@ -23995,6 +24263,21 @@ export type Database = {
         | "received"
         | "closed"
         | "cancelled"
+      portfolio_alert_rule_type:
+        | "fx_missing"
+        | "forecast_stale"
+        | "eac_deterioration"
+        | "budget_breach"
+        | "commitment_breach"
+        | "actual_breach"
+        | "checklist_overdue"
+        | "exception_aging"
+        | "evidence_missing"
+        | "close_readiness"
+        | "period_reopened"
+        | "audit_gap"
+      portfolio_alert_severity: "critical" | "high" | "medium" | "low"
+      portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       project_archetype:
         | "utility_pv"
         | "standalone_bess"
@@ -24891,6 +25174,22 @@ export const Constants = {
         "closed",
         "cancelled",
       ],
+      portfolio_alert_rule_type: [
+        "fx_missing",
+        "forecast_stale",
+        "eac_deterioration",
+        "budget_breach",
+        "commitment_breach",
+        "actual_breach",
+        "checklist_overdue",
+        "exception_aging",
+        "evidence_missing",
+        "close_readiness",
+        "period_reopened",
+        "audit_gap",
+      ],
+      portfolio_alert_severity: ["critical", "high", "medium", "low"],
+      portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],
       project_archetype: [
         "utility_pv",
         "standalone_bess",
