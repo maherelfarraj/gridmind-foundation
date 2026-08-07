@@ -14,6 +14,7 @@ import {
   type AccrualStatus,
 } from "@/lib/costing.rules";
 import { canApproveWithFx, convertMoney, reverseSnapshot } from "@/lib/costing.fx";
+import { assertCostingPeriodOpen } from "@/lib/costing.close.server";
 import {
   COSTING_WRITE_ROLES,
   costingAudit,
@@ -50,6 +51,10 @@ export const upsertCostForecast = createServerFn({ method: "POST" })
     if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
       costingHttpError(403, "forbidden");
     const project = await loadCostingProject(context, data.projectId);
+    // GC-03 — the one authoritative period gate, on this row's own business date.
+    await assertCostingPeriodOpen(context, project.company_id, project.id, data.period, {
+      entity: "cost_forecast_periods",
+    });
     const fx = await resolveCostingFx(
       context,
       project.id,
@@ -111,10 +116,19 @@ export const deleteCostForecast = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
       costingHttpError(403, "forbidden");
-    const { error } = await (context.supabase as any)
+    const sb = context.supabase as any;
+    const { data: row, error: loadErr } = await sb
       .from("cost_forecast_periods")
-      .delete()
-      .eq("id", data.id);
+      .select("id, company_id, project_id, period")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (loadErr) throw loadErr;
+    if (!row) costingHttpError(404, "forecast_not_found");
+    await assertCostingPeriodOpen(context, row.company_id, row.project_id, row.period, {
+      entity: "cost_forecast_periods",
+      entityId: data.id,
+    });
+    const { error } = await sb.from("cost_forecast_periods").delete().eq("id", data.id);
     if (error) throw error;
     await costingAudit(context, "costing.forecast.delete", "cost_forecast_periods", data.id, {});
     return { ok: true };
@@ -128,6 +142,9 @@ export const createCostAccrual = createServerFn({ method: "POST" })
     if (!(await hasAnyCostingRole(context, COSTING_WRITE_ROLES)))
       costingHttpError(403, "forbidden");
     const project = await loadCostingProject(context, data.projectId);
+    await assertCostingPeriodOpen(context, project.company_id, project.id, data.period, {
+      entity: "cost_accruals",
+    });
     const fx = await resolveCostingFx(
       context,
       project.id,
@@ -183,12 +200,19 @@ export const transitionCostAccrual = createServerFn({ method: "POST" })
     const { data: current, error: loadErr } = await sb
       .from("cost_accruals")
       .select(
-        "id, status, project_id, period, amount, amount_base, currency_code, base_currency_code, fx_rate, fx_rate_date, fx_source, fx_locked_at",
+        "id, status, company_id, project_id, period, amount, amount_base, currency_code, base_currency_code, fx_rate, fx_rate_date, fx_source, fx_locked_at",
       )
       .eq("id", data.id)
       .maybeSingle();
     if (loadErr) throw loadErr;
     if (!current) costingHttpError(404, "accrual_not_found");
+    await assertCostingPeriodOpen(
+      context,
+      current.company_id as string,
+      current.project_id as string,
+      current.period as string,
+      { entity: "cost_accruals", entityId: data.id },
+    );
     const from = current.status as AccrualStatus;
     if (!canTransitionAccrual(from, data.action)) {
       costingHttpError(409, "invalid_transition", `Cannot ${data.action} a ${from} accrual.`);
