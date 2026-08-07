@@ -784,7 +784,6 @@ export interface PortfolioProjectInput {
   submitted_at?: string | null;
 }
 
-
 export interface PortfolioRecognitionRollup {
   projects: number;
   approved_projects: number;
@@ -1042,7 +1041,6 @@ export const DEFAULT_ALERT_THRESHOLDS: AlertThresholds = {
   billing_lag_days: 60,
   approval_delay_days: 7,
 };
-
 
 export function fingerprint(parts: readonly (string | number)[]): string {
   return parts.map((p) => String(p).toLowerCase().replace(/\s+/g, "-")).join(":");

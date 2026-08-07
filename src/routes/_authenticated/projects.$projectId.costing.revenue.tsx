@@ -537,11 +537,7 @@ function RecognitionCockpit() {
           </Card>
         </>
       )}
-      <RecognitionManagement
-        projectId={projectId}
-        workspace={data}
-        currentUserId={currentUserId}
-      />
+      <RecognitionManagement projectId={projectId} workspace={data} currentUserId={currentUserId} />
     </div>
   );
 }

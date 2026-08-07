@@ -60,7 +60,6 @@ export const savedViewConfigSchema = z
   })
   .strict();
 
-
 export type SavedViewConfig = z.infer<typeof savedViewConfigSchema>;
 
 export const DEFAULT_SAVED_VIEW_CONFIG: SavedViewConfig = savedViewConfigSchema.parse({});

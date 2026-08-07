@@ -90,7 +90,8 @@ const ruleTypes = (out: { rule_type: string }[]) => out.map((c) => c.rule_type);
 
 describe("alert configuration", () => {
   it("ships a safe default for every rule family", () => {
-    expect(ALERT_RULE_TYPES).toHaveLength(15);
+    // 15 costing/liquidity families + the 13 GC-15 recognition families.
+    expect(ALERT_RULE_TYPES).toHaveLength(28);
     for (const r of ALERT_RULE_TYPES) {
       const cfg = DEFAULT_ALERT_CONFIGS[r];
       expect(cfg.enabled).toBe(true);

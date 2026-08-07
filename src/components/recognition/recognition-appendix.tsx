@@ -197,9 +197,7 @@ export function RecognitionAppendixCard({ appendix }: { appendix: RecognitionApp
           ) : (
             <ul className="list-disc ps-4 text-xs text-destructive">
               {failed.map((r) => (
-                <li key={r.code}>
-                  {t(`${K}.reconciliation.${r.code}`, { defaultValue: r.code })}
-                </li>
+                <li key={r.code}>{t(`${K}.reconciliation.${r.code}`, { defaultValue: r.code })}</li>
               ))}
             </ul>
           )}
@@ -267,9 +265,7 @@ export function PortfolioRecognitionAppendixCard({ data }: { data: PortfolioReco
           <h2 className="text-sm font-semibold text-foreground">
             {t(`${K}.appendix.portfolioTitle`)}
           </h2>
-          <p className="text-xs text-muted-foreground">
-            {t(`${K}.appendix.portfolioDescription`)}
-          </p>
+          <p className="text-xs text-muted-foreground">{t(`${K}.appendix.portfolioDescription`)}</p>
         </div>
         <span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
           {t(`${K}.appendix.nonPosting`)}
@@ -277,10 +273,7 @@ export function PortfolioRecognitionAppendixCard({ data }: { data: PortfolioReco
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Field
-          label={t(`${K}.kpi.cumulativeRevenue`)}
-          value={money(totals.revenue, currency)}
-        />
+        <Field label={t(`${K}.kpi.cumulativeRevenue`)} value={money(totals.revenue, currency)} />
         <Field
           label={t(`${K}.appendix.periodRevenue`)}
           value={money(totals.period_revenue, currency)}
