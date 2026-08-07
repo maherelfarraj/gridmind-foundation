@@ -263,6 +263,7 @@ import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } fro
 import { Route as AuthenticatedProjectsProjectIdCostingEvmMappingsRouteImport } from './routes/_authenticated/projects.$projectId.costing.evm-mappings'
 import { Route as AuthenticatedProjectsProjectIdCostingEvmRouteImport } from './routes/_authenticated/projects.$projectId.costing.evm'
 import { Route as AuthenticatedProjectsProjectIdCostingContractsRouteImport } from './routes/_authenticated/projects.$projectId.costing.contracts'
+import { Route as AuthenticatedProjectsProjectIdCostingContingencyRouteImport } from './routes/_authenticated/projects.$projectId.costing.contingency'
 import { Route as AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport } from './routes/_authenticated/projects.$projectId.costing.commitments'
 import { Route as AuthenticatedProjectsProjectIdCostingClosePackRouteImport } from './routes/_authenticated/projects.$projectId.costing.close-pack'
 import { Route as AuthenticatedProjectsProjectIdCostingCloseRouteImport } from './routes/_authenticated/projects.$projectId.costing.close'
@@ -1770,6 +1771,12 @@ const AuthenticatedProjectsProjectIdCostingContractsRoute =
     path: '/contracts',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingContingencyRoute =
+  AuthenticatedProjectsProjectIdCostingContingencyRouteImport.update({
+    id: '/contingency',
+    path: '/contingency',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCostingCommitmentsRoute =
   AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport.update({
     id: '/commitments',
@@ -2203,6 +2210,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
+  '/projects/$projectId/costing/contingency': typeof AuthenticatedProjectsProjectIdCostingContingencyRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
@@ -2473,6 +2481,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
+  '/projects/$projectId/costing/contingency': typeof AuthenticatedProjectsProjectIdCostingContingencyRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
@@ -2758,6 +2767,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/costing/close': typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   '/_authenticated/projects/$projectId/costing/close-pack': typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   '/_authenticated/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
+  '/_authenticated/projects/$projectId/costing/contingency': typeof AuthenticatedProjectsProjectIdCostingContingencyRoute
   '/_authenticated/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/_authenticated/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   '/_authenticated/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
@@ -3044,6 +3054,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/close'
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
+    | '/projects/$projectId/costing/contingency'
     | '/projects/$projectId/costing/contracts'
     | '/projects/$projectId/costing/evm'
     | '/projects/$projectId/costing/evm-mappings'
@@ -3314,6 +3325,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/close'
     | '/projects/$projectId/costing/close-pack'
     | '/projects/$projectId/costing/commitments'
+    | '/projects/$projectId/costing/contingency'
     | '/projects/$projectId/costing/contracts'
     | '/projects/$projectId/costing/evm'
     | '/projects/$projectId/costing/evm-mappings'
@@ -3598,6 +3610,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/costing/close'
     | '/_authenticated/projects/$projectId/costing/close-pack'
     | '/_authenticated/projects/$projectId/costing/commitments'
+    | '/_authenticated/projects/$projectId/costing/contingency'
     | '/_authenticated/projects/$projectId/costing/contracts'
     | '/_authenticated/projects/$projectId/costing/evm'
     | '/_authenticated/projects/$projectId/costing/evm-mappings'
@@ -5462,6 +5475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingContractsRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/contingency': {
+      id: '/_authenticated/projects/$projectId/costing/contingency'
+      path: '/contingency'
+      fullPath: '/projects/$projectId/costing/contingency'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingContingencyRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/commitments': {
       id: '/_authenticated/projects/$projectId/costing/commitments'
       path: '/commitments'
@@ -5905,6 +5925,7 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingCloseRoute: typeof AuthenticatedProjectsProjectIdCostingCloseRoute
   AuthenticatedProjectsProjectIdCostingClosePackRoute: typeof AuthenticatedProjectsProjectIdCostingClosePackRoute
   AuthenticatedProjectsProjectIdCostingCommitmentsRoute: typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
+  AuthenticatedProjectsProjectIdCostingContingencyRoute: typeof AuthenticatedProjectsProjectIdCostingContingencyRoute
   AuthenticatedProjectsProjectIdCostingContractsRoute: typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   AuthenticatedProjectsProjectIdCostingEvmRoute: typeof AuthenticatedProjectsProjectIdCostingEvmRoute
   AuthenticatedProjectsProjectIdCostingEvmMappingsRoute: typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
@@ -5924,6 +5945,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingClosePackRoute,
     AuthenticatedProjectsProjectIdCostingCommitmentsRoute:
       AuthenticatedProjectsProjectIdCostingCommitmentsRoute,
+    AuthenticatedProjectsProjectIdCostingContingencyRoute:
+      AuthenticatedProjectsProjectIdCostingContingencyRoute,
     AuthenticatedProjectsProjectIdCostingContractsRoute:
       AuthenticatedProjectsProjectIdCostingContractsRoute,
     AuthenticatedProjectsProjectIdCostingEvmRoute:
@@ -6597,3 +6620,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
