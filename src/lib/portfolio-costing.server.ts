@@ -76,7 +76,7 @@ function prevPeriodMonth(month: string): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
 }
 
-async function currentCompanyId(ctx: AuthContext): Promise<string> {
+export async function currentCompanyId(ctx: AuthContext): Promise<string> {
   const { data, error } = await sbOf(ctx)
     .from("profiles")
     .select("company_id")

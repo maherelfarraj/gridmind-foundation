@@ -293,6 +293,140 @@
       "budget": "Budget {{value}}",
       "movement": "Period movement",
       "materiality": "Materiality: {{pct}} or {{abs}}"
+    },
+    "audit": {
+      "title": "Portfolio audit trail",
+      "subtitle": "Immutable record of every approval, rate selection, close transition and export behind the consolidated position.",
+      "link": "Audit trail",
+      "back": "Back to portfolio",
+      "heading": "Recent governance activity",
+      "description": "The latest immutable events for this reporting period.",
+      "none": "No recorded activity for this period yet.",
+      "exportCsv": "Export CSV",
+      "exportFailed": "The audit export could not be generated.",
+      "unattributed": "System",
+      "companyScope": "Company-wide",
+      "appendixHeading": "Appendix — audit trail",
+      "appendixDescription": "Generated {{generated}}. Unresolved audit gaps: {{gaps}}.",
+      "col": {
+        "when": "When",
+        "actor": "Actor",
+        "action": "Action",
+        "severity": "Severity",
+        "scope": "Scope",
+        "change": "Change"
+      },
+      "severity": {
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Informational"
+      },
+      "group": {
+        "forecast": "Forecast",
+        "snapshot": "Snapshot",
+        "fx": "FX",
+        "period": "Period",
+        "checklist": "Checklist",
+        "exception": "Exception",
+        "evidence": "Evidence",
+        "policy": "Policy",
+        "export": "Export",
+        "view": "Saved view"
+      },
+      "action": {
+        "costing_forecast_version_create": "Snapshot created",
+        "costing_forecast_version_refresh": "Snapshot refreshed",
+        "costing_forecast_version_submit": "Forecast submitted",
+        "costing_forecast_version_recall": "Forecast recalled",
+        "costing_forecast_version_approve": "Forecast approved",
+        "costing_forecast_upsert": "Forecast line saved",
+        "costing_forecast_delete": "Forecast line deleted",
+        "fx_rate_manual_upsert": "FX rate set manually",
+        "fx_import": "FX rates imported",
+        "fx_settings_update": "FX settings changed",
+        "fx_alerts_settings_update": "FX alert settings changed",
+        "period_close": "Period closed",
+        "period_reopen": "Period reopened",
+        "costing_period_adjustment": "Soft-lock adjustment posted",
+        "costing_period_blocked": "Posting blocked by period gate",
+        "costing_close_ready": "Close marked ready",
+        "costing_settings_update": "Costing policy changed",
+        "costing_checklist_assigned": "Checklist item assigned",
+        "costing_checklist_ready": "Checklist item completed",
+        "costing_exception_updated": "Exception updated",
+        "costing_checklist_evidence_linked": "Evidence attached",
+        "costing_checklist_evidence_unlinked": "Evidence removed",
+        "costing_accrual_create": "Accrual raised",
+        "costing_accrual_reverse": "Accrual reversed",
+        "costing_portfolio_view": "Portfolio viewed",
+        "costing_portfolio_export": "Portfolio exported",
+        "costing_portfolio_pack": "Management pack generated",
+        "costing_portfolio_view_saved": "Saved view created",
+        "costing_portfolio_view_updated": "Saved view updated",
+        "costing_portfolio_view_shared": "Saved view sharing changed",
+        "costing_portfolio_view_default": "Default view changed",
+        "costing_portfolio_view_deleted": "Saved view deleted"
+      },
+      "gap": {
+        "unknown_project": "Referenced project is no longer resolvable",
+        "missing_entity": "Event has no entity reference",
+        "unattributed": "No signed-in actor recorded"
+      },
+      "filters": {
+        "from": "From",
+        "to": "To",
+        "actor": "Actor",
+        "group": "Area",
+        "severity": "Severity",
+        "project": "Project",
+        "correlation": "Correlation id",
+        "any": "Any"
+      },
+      "kpi": {
+        "total": "Matching events",
+        "onPage": "On this page",
+        "actors": "Distinct actors",
+        "gaps": "Audit gaps"
+      },
+      "pagination": {
+        "status": "Page {{page}} of {{pages}}",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "empty": {
+        "title": "No audit events",
+        "description": "No events match the current filters."
+      },
+      "error": {
+        "title": "Audit trail unavailable",
+        "description": "You may not have the finance role required to read the audit trail."
+      }
+    },
+    "views": {
+      "label": "Saved view",
+      "placeholder": "Choose a saved view",
+      "none": "No saved views yet",
+      "save": "Save view",
+      "saved": "View saved.",
+      "updated": "View updated.",
+      "deleted": "View deleted.",
+      "duplicated": "View duplicated.",
+      "failed": "That change could not be saved.",
+      "updateFromFilters": "Update from filters",
+      "setDefault": "Set as default",
+      "unsetDefault": "Clear default",
+      "share": "Share with company",
+      "unshare": "Make private",
+      "delete": "Delete",
+      "duplicate": "Duplicate",
+      "defaultBadge": "Default",
+      "sharedBadge": "Shared",
+      "ownedBy": "Owned by {{name}}",
+      "someone": "another user",
+      "copyOf": "Copy of {{name}}",
+      "dialogTitle": "Save this view",
+      "dialogDescription": "Saves the current reporting period, currency and rate basis. Private to you until you share it.",
+      "nameLabel": "View name"
     }
   }
 }

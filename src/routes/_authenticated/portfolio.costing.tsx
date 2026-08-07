@@ -1,7 +1,7 @@
 // GC-08 — Portfolio Cost & Close: company-wide consolidated cost position and
 // close oversight. Read-only; every authorization and formula lives server-side.
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
@@ -10,14 +10,17 @@ import {
   Download,
   FileText,
   Gauge,
+  ScrollText,
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
+import { SavedViewsBar } from "@/components/portfolio/saved-views-bar";
 import { CostingConsolidationTable } from "@/components/portfolio/costing-consolidation-table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,11 @@ import { formatCurrency, formatNumber } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import { getPortfolioCostingCsv } from "@/lib/portfolio-costing.functions";
 import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
+import {
+  portfolioAuditQueryOptions,
+  savedViewsQueryOptions,
+} from "@/lib/portfolio-governance.query";
+import { resolveEntrySearch } from "@/lib/portfolio-views.rules";
 
 const K = "portfolioMod.costing";
 
@@ -122,6 +130,25 @@ function PortfolioCostingPage() {
   const setSearch = (patch: Partial<typeof search>) =>
     void navigate({ search: (prev) => ({ ...prev, ...patch }) });
 
+  // A personal default view seeds the filters on entry, but explicit URL
+  // parameters always win so a shared link renders identically for everyone.
+  const savedViews = useQuery(savedViewsQueryOptions());
+  const defaultApplied = useRef(false);
+  useEffect(() => {
+    if (defaultApplied.current || !savedViews.data) return;
+    defaultApplied.current = true;
+    const def = savedViews.data.find((v) => v.is_default && v.is_owner) ?? null;
+    if (!def) return;
+    const next = resolveEntrySearch(search, def);
+    if (
+      next.period === search.period &&
+      next.currency === search.currency &&
+      next.basis === search.basis
+    )
+      return;
+    void navigate({ search: () => next });
+  }, [savedViews.data, search, navigate]);
+
   async function onExportCsv() {
     setDownloading(true);
     try {
@@ -151,6 +178,11 @@ function PortfolioCostingPage() {
               <Download className="size-4" /> {t(`${K}.export.csv`)}
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/audit" search={{}}>
+                <ScrollText className="size-4" /> {t(`${K}.audit.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/pack" search={search}>
                 <FileText className="size-4" /> {t(`${K}.export.pack`)}
               </Link>
@@ -158,6 +190,10 @@ function PortfolioCostingPage() {
           </div>
         }
       />
+
+      <Suspense fallback={<Skeleton className="h-20 w-full" />}>
+        <SavedViewsBar search={search} onApply={(next) => void navigate({ search: () => next })} />
+      </Suspense>
 
       <Card className="flex flex-wrap items-end gap-4 p-4">
         <div className="space-y-1">
@@ -395,11 +431,31 @@ function PortfolioCostingPage() {
         )}
       </section>
 
+      <section className="space-y-3">
+        <SectionHeader title={t(`${K}.audit.heading`)} description={t(`${K}.audit.description`)} />
+        <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+          <RecentAudit period={data.period} />
+        </Suspense>
+      </section>
+
       <p className="text-muted-foreground text-xs">
         {data.reconciliation.ok
           ? t(`${K}.reconciliation.ok`, { count: data.reconciliation.lines.length })
           : t(`${K}.reconciliation.failed`, { value: money(data.reconciliation.difference) })}
       </p>
     </div>
+  );
+}
+
+function RecentAudit({ period }: { period: string }) {
+  const { t } = useI18n();
+  const { data } = useSuspenseQuery(portfolioAuditQueryOptions({ period, page: 1, page_size: 10 }));
+  if (data.events.length === 0) {
+    return <p className="text-muted-foreground text-sm">{t(`${K}.audit.none`)}</p>;
+  }
+  return (
+    <Card className="overflow-x-auto p-0">
+      <AuditTrailTable events={data.events} period={period} />
+    </Card>
   );
 }
