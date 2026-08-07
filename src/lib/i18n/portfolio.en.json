@@ -286,6 +286,13 @@
     "empty": {
       "title": "No projects in scope",
       "description": "Create a project and approve a forecast version to see it consolidated here."
+    },
+    "trend": {
+      "heading": "Portfolio EAC trend",
+      "description": "Prior approved period ({{prior}}) against the current period ({{period}}), consolidated.",
+      "budget": "Budget {{value}}",
+      "movement": "Period movement",
+      "materiality": "Materiality: {{pct}} or {{abs}}"
     }
   }
 }

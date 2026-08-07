@@ -299,6 +299,45 @@ function PortfolioCostingPage() {
 
       <section className="space-y-3">
         <SectionHeader
+          title={t(`${K}.trend.heading`)}
+          description={t(`${K}.trend.description`, {
+            prior: data.prior_period.slice(0, 7),
+            period: data.period.slice(0, 7),
+          })}
+        />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {data.trend.map((pt) => (
+            <Card key={pt.period} className="space-y-1 p-4">
+              <div className="text-muted-foreground text-xs">{pt.period.slice(0, 7)}</div>
+              <div className="text-lg font-semibold tabular-nums">{money(pt.eac)}</div>
+              <div className="text-muted-foreground text-xs">
+                {t(`${K}.trend.budget`, { value: money(pt.budget_current) })}
+              </div>
+            </Card>
+          ))}
+          <Card className="space-y-1 p-4">
+            <div className="text-muted-foreground text-xs">{t(`${K}.trend.movement`)}</div>
+            <div
+              className={
+                deltaEac > 0
+                  ? "text-destructive text-lg font-semibold tabular-nums"
+                  : "text-lg font-semibold tabular-nums"
+              }
+            >
+              {money(deltaEac)}
+            </div>
+            <div className="text-muted-foreground text-xs">
+              {t(`${K}.trend.materiality`, {
+                pct: `${formatNumber(data.materiality.pct * 100, locale, { maximumFractionDigits: 1 })}%`,
+                abs: money(data.materiality.abs),
+              })}
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <SectionHeader
           title={t(`${K}.movers.heading`)}
           description={t(`${K}.movers.description`)}
         />
