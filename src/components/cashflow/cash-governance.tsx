@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { money, percent } from "@/components/cashflow/cash-format";
+import { money } from "@/components/cashflow/cash-format";
 import type { CashflowStatus } from "@/lib/cashflow.rules";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
