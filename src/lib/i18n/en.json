@@ -20,7 +20,8 @@
     "noData": "No data yet",
     "goHome": "Go home",
     "tryAgain": "Try again",
-    "pageNotFound": "Page not found"
+    "pageNotFound": "Page not found",
+    "skipToContent": "Skip to main content"
   },
   "nav": {
     "dashboard": "Dashboard",
