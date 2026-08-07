@@ -168,6 +168,7 @@ import { Route as ApiPublicCronStorageCheckRouteImport } from './routes/api/publ
 import { Route as ApiPublicCronScheduledReportsRouteImport } from './routes/api/public/cron/scheduled-reports'
 import { Route as ApiPublicCronPmWorkOrdersRouteImport } from './routes/api/public/cron/pm-work-orders'
 import { Route as ApiPublicCronIngestionRetryRouteImport } from './routes/api/public/cron/ingestion-retry'
+import { Route as ApiPublicCronFxRatesRouteImport } from './routes/api/public/cron/fx-rates'
 import { Route as ApiPublicCronFinanceAlertsRouteImport } from './routes/api/public/cron/finance-alerts'
 import { Route as ApiPublicCronComplianceExpiryRouteImport } from './routes/api/public/cron/compliance-expiry'
 import { Route as ApiPublicCronBondExpiryRouteImport } from './routes/api/public/cron/bond-expiry'
@@ -1184,6 +1185,11 @@ const ApiPublicCronIngestionRetryRoute =
     path: '/api/public/cron/ingestion-retry',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronFxRatesRoute = ApiPublicCronFxRatesRouteImport.update({
+  id: '/api/public/cron/fx-rates',
+  path: '/api/public/cron/fx-rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronFinanceAlertsRoute =
   ApiPublicCronFinanceAlertsRouteImport.update({
     id: '/api/public/cron/finance-alerts',
@@ -2028,6 +2034,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
   '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
@@ -2282,6 +2289,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
   '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
@@ -2550,6 +2558,7 @@ export interface FileRoutesById {
   '/api/public/cron/bond-expiry': typeof ApiPublicCronBondExpiryRoute
   '/api/public/cron/compliance-expiry': typeof ApiPublicCronComplianceExpiryRoute
   '/api/public/cron/finance-alerts': typeof ApiPublicCronFinanceAlertsRoute
+  '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
@@ -2819,6 +2828,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bond-expiry'
     | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
     | '/api/public/cron/scheduled-reports'
@@ -3073,6 +3083,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bond-expiry'
     | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
     | '/api/public/cron/scheduled-reports'
@@ -3340,6 +3351,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/bond-expiry'
     | '/api/public/cron/compliance-expiry'
     | '/api/public/cron/finance-alerts'
+    | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
     | '/api/public/cron/scheduled-reports'
@@ -3448,6 +3460,7 @@ export interface RootRouteChildren {
   ApiPublicCronBondExpiryRoute: typeof ApiPublicCronBondExpiryRoute
   ApiPublicCronComplianceExpiryRoute: typeof ApiPublicCronComplianceExpiryRoute
   ApiPublicCronFinanceAlertsRoute: typeof ApiPublicCronFinanceAlertsRoute
+  ApiPublicCronFxRatesRoute: typeof ApiPublicCronFxRatesRoute
   ApiPublicCronIngestionRetryRoute: typeof ApiPublicCronIngestionRetryRoute
   ApiPublicCronPmWorkOrdersRoute: typeof ApiPublicCronPmWorkOrdersRoute
   ApiPublicCronScheduledReportsRoute: typeof ApiPublicCronScheduledReportsRoute
@@ -4575,6 +4588,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/ingestion-retry'
       fullPath: '/api/public/cron/ingestion-retry'
       preLoaderRoute: typeof ApiPublicCronIngestionRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/fx-rates': {
+      id: '/api/public/cron/fx-rates'
+      path: '/api/public/cron/fx-rates'
+      fullPath: '/api/public/cron/fx-rates'
+      preLoaderRoute: typeof ApiPublicCronFxRatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/finance-alerts': {
@@ -6173,6 +6193,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBondExpiryRoute: ApiPublicCronBondExpiryRoute,
   ApiPublicCronComplianceExpiryRoute: ApiPublicCronComplianceExpiryRoute,
   ApiPublicCronFinanceAlertsRoute: ApiPublicCronFinanceAlertsRoute,
+  ApiPublicCronFxRatesRoute: ApiPublicCronFxRatesRoute,
   ApiPublicCronIngestionRetryRoute: ApiPublicCronIngestionRetryRoute,
   ApiPublicCronPmWorkOrdersRoute: ApiPublicCronPmWorkOrdersRoute,
   ApiPublicCronScheduledReportsRoute: ApiPublicCronScheduledReportsRoute,
@@ -6189,13 +6210,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
