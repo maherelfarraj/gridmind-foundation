@@ -1533,6 +1533,119 @@
         "expired": "Expired",
         "cancelled": "Cancelled"
       }
+    },
+    "recognition": {
+      "title": "Revenue & WIP recognition",
+      "subtitle": "Governed percentage-of-completion revenue, contract asset and contract liability — non-posting.",
+      "disclaimerTitle": "Non-posting control",
+      "basis": {
+        "title": "Recognition basis",
+        "hint": "Anchored to contract value, approved forecast/EAC, approved progress and the billing cut-off.",
+        "period": "Period",
+        "dataDate": "Data date",
+        "provenance": "Version {{version}} · policy {{policy}} · {{method}} · {{currency}} · billing cut-off {{cutoff}}"
+      },
+      "actions": {
+        "build": "Build snapshot",
+        "submit": "Submit for review",
+        "approve": "Approve",
+        "reopen": "Reopen",
+        "correct": "Correct & supersede",
+        "correctionReason": "Correction requested from the recognition cockpit."
+      },
+      "toast": {
+        "built": "Recognition snapshot built.",
+        "transitioned": "Snapshot status updated.",
+        "corrected": "Snapshot superseded and rebuilt."
+      },
+      "empty": {
+        "title": "No recognition snapshot",
+        "description": "Build a snapshot for the period to see governed revenue, WIP and margin."
+      },
+      "status": {
+        "working": "Working",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "superseded": "Superseded"
+      },
+      "severity": {
+        "info": "Info",
+        "warning": "Warning",
+        "critical": "Critical"
+      },
+      "method": {
+        "cost_to_cost": "Cost-to-cost",
+        "milestone": "Milestone",
+        "output": "Output",
+        "straight_line": "Straight-line",
+        "completed_contract": "Completed contract",
+        "manual": "Manual"
+      },
+      "kpi": {
+        "cumulativeRevenue": "Cumulative revenue",
+        "periodRevenue": "This period: {{value}}",
+        "margin": "Gross margin",
+        "grossProfit": "Gross profit: {{value}}",
+        "contractAsset": "Contract asset (WIP)",
+        "underbilling": "Underbilled work",
+        "contractLiability": "Contract liability",
+        "overbilling": "Overbilled / deferred",
+        "billed": "Billed to date",
+        "cash": "Cash received: {{value}}",
+        "lossProvision": "Expected loss provision"
+      },
+      "obligations": {
+        "title": "Performance obligations",
+        "hint": "Drill-down by obligation with its own method and progress basis.",
+        "code": "Obligation",
+        "method": "Method",
+        "price": "Transaction price",
+        "progress": "Progress",
+        "revenue": "Revenue",
+        "billed": "Billed",
+        "wip": "Contract asset",
+        "deferred": "Contract liability"
+      },
+      "retention": {
+        "title": "Retention & advances",
+        "hint": "Withheld retention and advance recovery against billings.",
+        "withheld": "Retention receivable",
+        "advance": "Advance balance",
+        "remaining": "Remaining revenue"
+      },
+      "reconciliation": {
+        "title": "Reconciliation",
+        "hint": "Project → obligation → period identities must hold exactly.",
+        "ok": "Balanced",
+        "cumulative_revenue_rollup": "Cumulative revenue roll-up",
+        "period_revenue_rollup": "Period revenue roll-up",
+        "billed_rollup": "Billings roll-up",
+        "wip_identity": "WIP identity",
+        "gross_profit_identity": "Gross profit identity",
+        "period_movement_identity": "Period movement identity"
+      },
+      "exceptions": {
+        "title": "Exceptions",
+        "hint": "Critical exceptions block approval.",
+        "none": "No exceptions raised."
+      },
+      "sensitivity": {
+        "title": "Non-posting sensitivity",
+        "hint": "What-if only — official snapshots are never changed.",
+        "eacUplift": "EAC uplift %",
+        "run": "Run sensitivity",
+        "revenueDelta": "Revenue delta",
+        "marginDelta": "Gross profit delta",
+        "lossDelta": "Loss provision delta"
+      },
+      "history": {
+        "title": "Audit history",
+        "hint": "Append-only recognition events.",
+        "when": "When",
+        "event": "Event",
+        "from": "From",
+        "to": "To"
+      }
     }
   }
 }
