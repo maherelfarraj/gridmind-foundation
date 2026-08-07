@@ -94,7 +94,10 @@ export class FrankfurterProvider implements FxRateProvider {
           }
           lastError = err;
         } else if ((err as { name?: string })?.name === "AbortError") {
-          lastError = new FxProviderError("timeout", `Provider timed out after ${this.timeoutMs}ms`);
+          lastError = new FxProviderError(
+            "timeout",
+            `Provider timed out after ${this.timeoutMs}ms`,
+          );
         } else {
           lastError = new FxProviderError(
             "network",
@@ -115,7 +118,9 @@ export class FrankfurterProvider implements FxRateProvider {
     if (!parsed.success) {
       throw new FxProviderError("invalid_response", "Provider currency list failed validation");
     }
-    return Object.keys(parsed.data).map((c) => c.toUpperCase()).sort();
+    return Object.keys(parsed.data)
+      .map((c) => c.toUpperCase())
+      .sort();
   }
 
   async latest(anchor: string, symbols: string[]): Promise<FxProviderObservation> {

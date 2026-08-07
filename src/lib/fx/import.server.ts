@@ -40,7 +40,11 @@ export const FX_SETTINGS_FALLBACK: FxProviderSettings = {
 };
 
 export async function loadFxSettings(admin: Admin): Promise<FxProviderSettings> {
-  const { data } = await admin.from("fx_provider_settings").select("*").eq("id", true).maybeSingle();
+  const { data } = await admin
+    .from("fx_provider_settings")
+    .select("*")
+    .eq("id", true)
+    .maybeSingle();
   if (!data) return { ...FX_SETTINGS_FALLBACK };
   return {
     provider: data.provider ?? FX_SETTINGS_FALLBACK.provider,
@@ -105,8 +109,12 @@ export async function collectCurrencyScope(
   ]);
 
   return {
-    quotes: Array.from(quotes).filter((c) => knownSet.has(c)).sort(),
-    transactions: Array.from(transactions).filter((c) => knownSet.has(c)).sort(),
+    quotes: Array.from(quotes)
+      .filter((c) => knownSet.has(c))
+      .sort(),
+    transactions: Array.from(transactions)
+      .filter((c) => knownSet.has(c))
+      .sort(),
     known,
   };
 }
@@ -129,10 +137,7 @@ export interface RunFxImportOptions {
   provider?: FxRateProvider;
 }
 
-export async function runFxImport(
-  admin: Admin,
-  opts: RunFxImportOptions,
-): Promise<FxImportResult> {
+export async function runFxImport(admin: Admin, opts: RunFxImportOptions): Promise<FxImportResult> {
   const startedAt = Date.now();
   const settings = await loadFxSettings(admin);
   const provider = opts.provider ?? new FrankfurterProvider();

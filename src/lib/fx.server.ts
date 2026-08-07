@@ -90,7 +90,9 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
     sb.from("fx_import_runs").select("*").order("started_at", { ascending: false }).limit(25),
     sb
       .from("fx_rates")
-      .select("id, base_code, quote_code, rate, as_of, source, provider, provider_observed_on, imported_at")
+      .select(
+        "id, base_code, quote_code, rate, as_of, source, provider, provider_observed_on, imported_at",
+      )
       .order("as_of", { ascending: false })
       .limit(500),
     sb.from("currencies").select("code, name, minor_unit").order("code"),

@@ -2,10 +2,7 @@
 // staleness, and manual-rate preservation. No live network calls.
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  FrankfurterProvider,
-  assertAllowedFxUrl,
-} from "@/lib/fx/frankfurter.server";
+import { FrankfurterProvider, assertAllowedFxUrl } from "@/lib/fx/frankfurter.server";
 import {
   FxProviderError,
   assessFreshness,
@@ -50,14 +47,24 @@ describe("provider URL allowlist", () => {
 
 describe("response schema validation", () => {
   it("parses a valid payload", () => {
-    const o = parseFrankfurterLatest({ amount: 1, base: "USD", date: "2026-08-06", rates: { EUR: 0.8664 } });
+    const o = parseFrankfurterLatest({
+      amount: 1,
+      base: "USD",
+      date: "2026-08-06",
+      rates: { EUR: 0.8664 },
+    });
     expect(o.anchor).toBe("USD");
     expect(o.observedOn).toBe("2026-08-06");
     expect(o.rates["EUR"]).toBe(0.8664);
   });
 
   it("normalizes non-unit amounts", () => {
-    const o = parseFrankfurterLatest({ amount: 100, base: "USD", date: "2026-08-06", rates: { EUR: 86.64 } });
+    const o = parseFrankfurterLatest({
+      amount: 100,
+      base: "USD",
+      date: "2026-08-06",
+      rates: { EUR: 86.64 },
+    });
     expect(o.rates["EUR"]).toBeCloseTo(0.8664, 8);
   });
 
@@ -109,7 +116,6 @@ describe("import planning and coverage", () => {
       "GBP",
     ]);
   });
-
 
   it("separates unsupported currencies from payload defects", () => {
     const plan = buildImportPlan(
@@ -181,7 +187,13 @@ describe("idempotent persistence", () => {
 
   it("updates an imported rate that changed", () => {
     const d = decidePersistence(planned, "2026-08-06", [
-      { base_code: "EUR", quote_code: "USD", as_of: "2026-08-06", source: "frankfurter", rate: 1.1 },
+      {
+        base_code: "EUR",
+        quote_code: "USD",
+        as_of: "2026-08-06",
+        source: "frankfurter",
+        rate: 1.1,
+      },
     ]);
     expect(d.upserts.map((u) => u.base_code)).toEqual(["EUR", "GBP"]);
   });

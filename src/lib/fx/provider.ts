@@ -69,10 +69,7 @@ export const frankfurterLatestSchema = z.object({
   rates: z.record(z.string().regex(isoCode), z.number().positive().finite()),
 });
 
-export const frankfurterCurrenciesSchema = z.record(
-  z.string().regex(isoCode),
-  z.string().min(1),
-);
+export const frankfurterCurrenciesSchema = z.record(z.string().regex(isoCode), z.string().min(1));
 
 /** Strictly validate + normalize a provider payload into an observation. */
 export function parseFrankfurterLatest(
@@ -209,7 +206,6 @@ export function buildImportPlan(
 
   return { requested, planned, unsupported, missing };
 }
-
 
 // ---------------------------------------------------------------------------
 // Business-day aware staleness

@@ -215,7 +215,8 @@ function FxRatesSettings() {
                       {r.duration_ms == null ? "—" : `${r.duration_ms} ms`}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {r.error_summary ?? (r.missing_codes.length ? r.missing_codes.join(", ") : "—")}
+                      {r.error_summary ??
+                        (r.missing_codes.length ? r.missing_codes.join(", ") : "—")}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -266,7 +267,6 @@ function FxRatesSettings() {
                     })),
                   ),
                 )
-
               }
             >
               <Download className="size-4" aria-hidden />
@@ -373,7 +373,10 @@ function FxRatesSettings() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button onClick={() => addManual.mutate()} disabled={!manualValid || addManual.isPending}>
+            <Button
+              onClick={() => addManual.mutate()}
+              disabled={!manualValid || addManual.isPending}
+            >
               {addManual.isPending ? "Saving…" : "Save manual rate"}
             </Button>
           </div>
