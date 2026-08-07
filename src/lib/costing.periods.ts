@@ -257,14 +257,12 @@ export function evaluateCloseReadiness(facts: ReadinessFacts): {
       key: "missing_fx",
       severity: "blocker",
       count: unratedAccruals.length + unratedForecasts.length,
-      detail: {
-        currencies: [
-          ...new Set([
-            ...unratedAccruals.map((a) => a.currency_code),
-            ...unratedForecasts.map((f) => f.currency_code),
-          ]),
-        ].sort(),
-      },
+      currencies: [
+        ...new Set([
+          ...unratedAccruals.map((a) => a.currency_code),
+          ...unratedForecasts.map((f) => f.currency_code),
+        ]),
+      ].sort(),
     });
   }
 
