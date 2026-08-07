@@ -30,7 +30,7 @@ export const savedViewConfigSchema = z
   .object({
     version: z.literal(SAVED_VIEW_CONFIG_VERSION).default(SAVED_VIEW_CONFIG_VERSION),
     /** Which dashboard the view belongs to; older rows default to cost & close. */
-    scope: z.enum(["costing", "revenue_wip"]).default("costing"),
+    scope: z.enum(["costing", "revenue_wip", "contracts_claims"]).default("costing"),
     period: z
       .string()
       .regex(/^\d{4}-\d{2}-01$/)
