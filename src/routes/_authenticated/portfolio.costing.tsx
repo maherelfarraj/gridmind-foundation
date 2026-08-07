@@ -10,6 +10,7 @@ import {
   Download,
   FileText,
   Gauge,
+  LineChart,
   ScrollText,
   TrendingUp,
   Wallet,
@@ -180,6 +181,11 @@ function PortfolioCostingPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/audit" search={{}}>
                 <ScrollText className="size-4" /> {t(`${K}.audit.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/scenarios" search={{}}>
+                <LineChart className="size-4" /> {t(`${K}.scenarios.link`)}
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">

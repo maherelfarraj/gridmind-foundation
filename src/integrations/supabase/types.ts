@@ -12635,6 +12635,260 @@ export type Database = {
           },
         ]
       }
+      portfolio_scenario_assumptions: {
+        Row: {
+          amount: number | null
+          company_id: string
+          cost_code_id: string | null
+          created_at: string
+          currency_code: string | null
+          delay_months: number | null
+          driver: Database["public"]["Enums"]["portfolio_scenario_driver"]
+          id: string
+          label: string | null
+          note: string | null
+          pct: number | null
+          period_month: string | null
+          probability: number | null
+          project_id: string | null
+          scenario_id: string
+          sort_order: number
+          source_id: string | null
+          source_table: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          company_id: string
+          cost_code_id?: string | null
+          created_at?: string
+          currency_code?: string | null
+          delay_months?: number | null
+          driver: Database["public"]["Enums"]["portfolio_scenario_driver"]
+          id?: string
+          label?: string | null
+          note?: string | null
+          pct?: number | null
+          period_month?: string | null
+          probability?: number | null
+          project_id?: string | null
+          scenario_id: string
+          sort_order?: number
+          source_id?: string | null
+          source_table?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          company_id?: string
+          cost_code_id?: string | null
+          created_at?: string
+          currency_code?: string | null
+          delay_months?: number | null
+          driver?: Database["public"]["Enums"]["portfolio_scenario_driver"]
+          id?: string
+          label?: string | null
+          note?: string | null
+          pct?: number | null
+          period_month?: string | null
+          probability?: number | null
+          project_id?: string | null
+          scenario_id?: string
+          sort_order?: number
+          source_id?: string | null
+          source_table?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_scenario_assumptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenario_assumptions_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenario_assumptions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenario_assumptions_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_scenario_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          id: string
+          scenario_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          scenario_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          scenario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_scenario_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenario_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenario_events_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_scenarios: {
+        Row: {
+          archived_at: string | null
+          company_id: string
+          config: Json
+          config_version: number
+          copied_from_id: string | null
+          created_at: string
+          fx_mode: Database["public"]["Enums"]["portfolio_scenario_fx_mode"]
+          fx_shock_pct: number
+          horizon_months: number
+          id: string
+          locked_at: string | null
+          locked_by: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          purpose: string | null
+          reporting_currency: string
+          revision: number
+          source_basis: string
+          source_period: string
+          source_versions: Json
+          status: Database["public"]["Enums"]["portfolio_scenario_status"]
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          company_id: string
+          config?: Json
+          config_version?: number
+          copied_from_id?: string | null
+          created_at?: string
+          fx_mode?: Database["public"]["Enums"]["portfolio_scenario_fx_mode"]
+          fx_shock_pct?: number
+          horizon_months?: number
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          purpose?: string | null
+          reporting_currency: string
+          revision?: number
+          source_basis?: string
+          source_period: string
+          source_versions?: Json
+          status?: Database["public"]["Enums"]["portfolio_scenario_status"]
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          company_id?: string
+          config?: Json
+          config_version?: number
+          copied_from_id?: string | null
+          created_at?: string
+          fx_mode?: Database["public"]["Enums"]["portfolio_scenario_fx_mode"]
+          fx_shock_pct?: number
+          horizon_months?: number
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          purpose?: string | null
+          reporting_currency?: string
+          revision?: number
+          source_basis?: string
+          source_period?: string
+          source_versions?: Json
+          status?: Database["public"]["Enums"]["portfolio_scenario_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_scenarios_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenarios_copied_from_id_fkey"
+            columns: ["copied_from_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_scenarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenarios_locked_by_fkey"
+            columns: ["locked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_scenarios_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppa_terms: {
         Row: {
           annual_energy_mwh: number | null
@@ -24278,6 +24532,21 @@ export type Database = {
         | "audit_gap"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
+      portfolio_scenario_driver:
+        | "etc_adjust"
+        | "commitment_timing"
+        | "cash_timing"
+        | "change_probability"
+        | "risk_threat"
+        | "risk_opportunity"
+        | "contingency_draw"
+        | "contingency_release"
+        | "schedule_delay"
+        | "escalation"
+        | "inflation"
+        | "fx_shock"
+      portfolio_scenario_fx_mode: "snapshot" | "current" | "shock"
+      portfolio_scenario_status: "draft" | "shared" | "locked" | "archived"
       project_archetype:
         | "utility_pv"
         | "standalone_bess"
@@ -25190,6 +25459,22 @@ export const Constants = {
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],
+      portfolio_scenario_driver: [
+        "etc_adjust",
+        "commitment_timing",
+        "cash_timing",
+        "change_probability",
+        "risk_threat",
+        "risk_opportunity",
+        "contingency_draw",
+        "contingency_release",
+        "schedule_delay",
+        "escalation",
+        "inflation",
+        "fx_shock",
+      ],
+      portfolio_scenario_fx_mode: ["snapshot", "current", "shock"],
+      portfolio_scenario_status: ["draft", "shared", "locked", "archived"],
       project_archetype: [
         "utility_pv",
         "standalone_bess",
