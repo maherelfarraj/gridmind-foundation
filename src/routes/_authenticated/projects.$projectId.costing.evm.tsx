@@ -1,9 +1,9 @@
 // GC-12 — Project EVM cockpit: basis, measures, gates, detail, trend and governance.
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -155,6 +155,15 @@ function EvmCockpit() {
               disabled={recalc.isPending || !data.can_write || data.frozen}
             >
               <RefreshCw className="size-4" /> {t(`${K}.actions.recalculate`)}
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link
+                to="/projects/$projectId/costing/evm-mappings"
+                params={{ projectId }}
+                search={{ period: data.computed.period_month }}
+              >
+                <Settings2 className="size-4" /> {t(`${K}.mapping.title`)}
+              </Link>
             </Button>
             <Button size="sm" variant="outline" onClick={() => void exportCsv("detail")}>
               <Download className="size-4" /> {t(`${K}.actions.exportDetail`)}

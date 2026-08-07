@@ -259,6 +259,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from
 import { Route as AuthenticatedProjectsProjectIdCostingVersionsRouteImport } from './routes/_authenticated/projects.$projectId.costing.versions'
 import { Route as AuthenticatedProjectsProjectIdCostingInvoicesRouteImport } from './routes/_authenticated/projects.$projectId.costing.invoices'
 import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } from './routes/_authenticated/projects.$projectId.costing.forecast'
+import { Route as AuthenticatedProjectsProjectIdCostingEvmMappingsRouteImport } from './routes/_authenticated/projects.$projectId.costing.evm-mappings'
 import { Route as AuthenticatedProjectsProjectIdCostingEvmRouteImport } from './routes/_authenticated/projects.$projectId.costing.evm'
 import { Route as AuthenticatedProjectsProjectIdCostingContractsRouteImport } from './routes/_authenticated/projects.$projectId.costing.contracts'
 import { Route as AuthenticatedProjectsProjectIdCostingCommitmentsRouteImport } from './routes/_authenticated/projects.$projectId.costing.commitments'
@@ -1743,6 +1744,12 @@ const AuthenticatedProjectsProjectIdCostingForecastRoute =
     path: '/forecast',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingEvmMappingsRoute =
+  AuthenticatedProjectsProjectIdCostingEvmMappingsRouteImport.update({
+    id: '/evm-mappings',
+    path: '/evm-mappings',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCostingEvmRoute =
   AuthenticatedProjectsProjectIdCostingEvmRouteImport.update({
     id: '/evm',
@@ -2182,6 +2189,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
+  '/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -2449,6 +2457,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
+  '/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -2731,6 +2740,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/costing/commitments': typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   '/_authenticated/projects/$projectId/costing/contracts': typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   '/_authenticated/projects/$projectId/costing/evm': typeof AuthenticatedProjectsProjectIdCostingEvmRoute
+  '/_authenticated/projects/$projectId/costing/evm-mappings': typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
   '/_authenticated/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/_authenticated/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/_authenticated/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -3014,6 +3024,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
     | '/projects/$projectId/costing/evm'
+    | '/projects/$projectId/costing/evm-mappings'
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/versions'
@@ -3281,6 +3292,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/commitments'
     | '/projects/$projectId/costing/contracts'
     | '/projects/$projectId/costing/evm'
+    | '/projects/$projectId/costing/evm-mappings'
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/versions'
@@ -3562,6 +3574,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/costing/commitments'
     | '/_authenticated/projects/$projectId/costing/contracts'
     | '/_authenticated/projects/$projectId/costing/evm'
+    | '/_authenticated/projects/$projectId/costing/evm-mappings'
     | '/_authenticated/projects/$projectId/costing/forecast'
     | '/_authenticated/projects/$projectId/costing/invoices'
     | '/_authenticated/projects/$projectId/costing/versions'
@@ -5395,6 +5408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/evm-mappings': {
+      id: '/_authenticated/projects/$projectId/costing/evm-mappings'
+      path: '/evm-mappings'
+      fullPath: '/projects/$projectId/costing/evm-mappings'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/evm': {
       id: '/_authenticated/projects/$projectId/costing/evm'
       path: '/evm'
@@ -5843,6 +5863,7 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingCommitmentsRoute: typeof AuthenticatedProjectsProjectIdCostingCommitmentsRoute
   AuthenticatedProjectsProjectIdCostingContractsRoute: typeof AuthenticatedProjectsProjectIdCostingContractsRoute
   AuthenticatedProjectsProjectIdCostingEvmRoute: typeof AuthenticatedProjectsProjectIdCostingEvmRoute
+  AuthenticatedProjectsProjectIdCostingEvmMappingsRoute: typeof AuthenticatedProjectsProjectIdCostingEvmMappingsRoute
   AuthenticatedProjectsProjectIdCostingForecastRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   AuthenticatedProjectsProjectIdCostingInvoicesRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   AuthenticatedProjectsProjectIdCostingVersionsRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
@@ -5861,6 +5882,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingContractsRoute,
     AuthenticatedProjectsProjectIdCostingEvmRoute:
       AuthenticatedProjectsProjectIdCostingEvmRoute,
+    AuthenticatedProjectsProjectIdCostingEvmMappingsRoute:
+      AuthenticatedProjectsProjectIdCostingEvmMappingsRoute,
     AuthenticatedProjectsProjectIdCostingForecastRoute:
       AuthenticatedProjectsProjectIdCostingForecastRoute,
     AuthenticatedProjectsProjectIdCostingInvoicesRoute:

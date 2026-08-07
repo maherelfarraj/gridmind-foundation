@@ -26,6 +26,8 @@ import {
   deleteProgressOverride,
   listMappingVersions,
   listMappings,
+  listProgressOverrides,
+  loadEvmScopeCatalog,
   loadEvmAppendix,
   loadEvmCsv,
   loadEvmDetail,
@@ -39,13 +41,30 @@ import {
   saveProgressOverride,
   supersedeEvmReport,
   transitionEvmReport,
+  type EvmScopeCatalog,
   type EvmSettings,
   type EvmWorkspaceData,
   type MappingVersionRow,
   type PortfolioEvmData,
 } from "@/lib/evm.report.server";
 
-export type { EvmWorkspaceData, PortfolioEvmData, EvmSettings, MappingVersionRow };
+export type { EvmWorkspaceData, PortfolioEvmData, EvmSettings, MappingVersionRow, EvmScopeCatalog };
+
+export const getEvmScopeCatalog = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => evmQuerySchema.pick({ project_id: true }).parse(input))
+  .handler(async ({ data, context }): Promise<EvmScopeCatalog> => {
+    requireSupabaseAuth(context);
+    return loadEvmScopeCatalog(context, data.project_id);
+  });
+
+export const getEvmOverrides = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => evmQuerySchema.parse(input))
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    return listProgressOverrides(context, data.project_id, data.period ?? "");
+  });
 
 export const getEvmWorkspace = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
