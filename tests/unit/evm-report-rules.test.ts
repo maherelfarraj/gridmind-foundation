@@ -56,10 +56,12 @@ describe("calculateProgress", () => {
   });
 
   it("physical_pct clamps and rounds reported progress", () => {
-    expect(calculateProgress({ method: "physical_pct", physical_pct: 43.45678 }).calculated_pct).toBe(
-      43.4568,
+    expect(
+      calculateProgress({ method: "physical_pct", physical_pct: 43.45678 }).calculated_pct,
+    ).toBe(43.4568);
+    expect(calculateProgress({ method: "physical_pct", physical_pct: 140 }).calculated_pct).toBe(
+      100,
     );
-    expect(calculateProgress({ method: "physical_pct", physical_pct: 140 }).calculated_pct).toBe(100);
     expect(calculateProgress({ method: "physical_pct", physical_pct: -5 }).calculated_pct).toBe(0);
   });
 
@@ -149,9 +151,9 @@ describe("applyOverride", () => {
     };
     expect(evmOverrideSchema.safeParse({ ...base, evidence_ref: "DOC-1" }).success).toBe(true);
     expect(evmOverrideSchema.safeParse({ ...base, evidence_ref: "" }).success).toBe(false);
-    expect(evmOverrideSchema.safeParse({ ...base, evidence_ref: "D", reason: "short" }).success).toBe(
-      false,
-    );
+    expect(
+      evmOverrideSchema.safeParse({ ...base, evidence_ref: "D", reason: "short" }).success,
+    ).toBe(false);
     expect(
       evmOverrideSchema.safeParse({
         ...base,
@@ -246,10 +248,20 @@ describe("planned value phasing", () => {
 
   it("returns null when baseline dates are missing rather than phasing at zero", () => {
     expect(
-      plannedPercent({ bac: 100, baseline_start: null, baseline_finish: null, data_date: "2026-01-06" }),
+      plannedPercent({
+        bac: 100,
+        baseline_start: null,
+        baseline_finish: null,
+        data_date: "2026-01-06",
+      }),
     ).toBeNull();
     expect(
-      plannedValue({ bac: 100, baseline_start: "2026-01-01", baseline_finish: null, data_date: "2026-01-06" }),
+      plannedValue({
+        bac: 100,
+        baseline_start: "2026-01-01",
+        baseline_finish: null,
+        data_date: "2026-01-06",
+      }),
     ).toBeNull();
   });
 });
@@ -322,7 +334,13 @@ describe("computeMeasures", () => {
   });
 
   it("rounds money to two decimals deterministically", () => {
-    const m = computeMeasures({ bac: 1000.005, pv: 333.333, ev: 333.335, ac: 111.111, bottom_up_etc: 0 });
+    const m = computeMeasures({
+      bac: 1000.005,
+      pv: 333.333,
+      ev: 333.335,
+      ac: 111.111,
+      bottom_up_etc: 0,
+    });
     expect(m.bac).toBe(1000.01);
     expect(m.pv).toBe(333.33);
     expect(Number.isInteger(Math.round(m.ac! * 100))).toBe(true);
@@ -624,8 +642,26 @@ describe("exports and appendix", () => {
 
   it("analyses period-over-period deltas", () => {
     const points = [
-      { period_month: "2026-02-01", pv: 400, ev: 350, ac: 380, cpi: 0.92, spi: 0.88, eac: 1100, bac: 1000 },
-      { period_month: "2026-03-01", pv: 500, ev: 400, ac: 500, cpi: 0.8, spi: 0.8, eac: 1250, bac: 1000 },
+      {
+        period_month: "2026-02-01",
+        pv: 400,
+        ev: 350,
+        ac: 380,
+        cpi: 0.92,
+        spi: 0.88,
+        eac: 1100,
+        bac: 1000,
+      },
+      {
+        period_month: "2026-03-01",
+        pv: 500,
+        ev: 400,
+        ac: 500,
+        cpi: 0.8,
+        spi: 0.8,
+        eac: 1250,
+        bac: 1000,
+      },
     ];
     const a = analyseTrend(points, DEFAULT_PERFORMANCE_POLICY);
     expect(a.points).toHaveLength(2);

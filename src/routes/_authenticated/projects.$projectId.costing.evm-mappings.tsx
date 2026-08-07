@@ -208,11 +208,7 @@ function EvmMappingWorkspace() {
         description={t(`${K}.mapping.description`)}
         actions={
           <Button asChild variant="outline" size="sm">
-            <Link
-              to="/projects/$projectId/costing/evm"
-              params={{ projectId }}
-              search={{ period }}
-            >
+            <Link to="/projects/$projectId/costing/evm" params={{ projectId }} search={{ period }}>
               <ArrowLeft className="size-4" /> {t(`${K}.mapping.backToCockpit`)}
             </Link>
           </Button>

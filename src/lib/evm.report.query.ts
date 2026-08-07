@@ -18,7 +18,11 @@ export function evmWorkspaceQueryOptions(projectId: string, period?: string, cur
     queryKey: ["evm", "workspace", projectId, period ?? "current", currency ?? "default"],
     queryFn: () =>
       getEvmWorkspace({
-        data: { project_id: projectId, ...(period ? { period } : {}), ...(currency ? { currency } : {}) },
+        data: {
+          project_id: projectId,
+          ...(period ? { period } : {}),
+          ...(currency ? { currency } : {}),
+        },
       }),
     staleTime: 10_000,
   });

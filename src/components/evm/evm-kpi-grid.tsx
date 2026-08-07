@@ -2,7 +2,13 @@
 import { Activity, Banknote, Clock, Gauge, LineChart, Target } from "lucide-react";
 
 import { KpiTile } from "@/components/ui/kpi-tile";
-import { indexTone, days as fmtDays, money, ratio, varianceTone } from "@/components/evm/evm-format";
+import {
+  indexTone,
+  days as fmtDays,
+  money,
+  ratio,
+  varianceTone,
+} from "@/components/evm/evm-format";
 import type { EvmMeasures } from "@/lib/evm.report.rules";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
@@ -30,10 +36,30 @@ export function EvmKpiGrid({
       role="group"
       aria-label={t(`${K}.kpi.groupLabel`)}
     >
-      <KpiTile label={t(`${K}.kpi.pv`)} value={money(m.pv, currency)} icon={LineChart} hint={t(`${K}.kpi.pvHint`)} />
-      <KpiTile label={t(`${K}.kpi.ev`)} value={money(m.ev, currency)} icon={Activity} hint={t(`${K}.kpi.evHint`)} />
-      <KpiTile label={t(`${K}.kpi.ac`)} value={money(m.ac, currency)} icon={Banknote} hint={t(`${K}.kpi.acHint`)} />
-      <KpiTile label={t(`${K}.kpi.bac`)} value={money(m.bac, currency)} icon={Target} hint={t(`${K}.kpi.bacHint`)} />
+      <KpiTile
+        label={t(`${K}.kpi.pv`)}
+        value={money(m.pv, currency)}
+        icon={LineChart}
+        hint={t(`${K}.kpi.pvHint`)}
+      />
+      <KpiTile
+        label={t(`${K}.kpi.ev`)}
+        value={money(m.ev, currency)}
+        icon={Activity}
+        hint={t(`${K}.kpi.evHint`)}
+      />
+      <KpiTile
+        label={t(`${K}.kpi.ac`)}
+        value={money(m.ac, currency)}
+        icon={Banknote}
+        hint={t(`${K}.kpi.acHint`)}
+      />
+      <KpiTile
+        label={t(`${K}.kpi.bac`)}
+        value={money(m.bac, currency)}
+        icon={Target}
+        hint={t(`${K}.kpi.bacHint`)}
+      />
       <KpiTile
         label={t(`${K}.kpi.cpi`)}
         value={ratio(m.cpi)}
@@ -60,8 +86,16 @@ export function EvmKpiGrid({
         status={varianceTone(m.sv)}
         hint={t(`${K}.kpi.svHint`)}
       />
-      <KpiTile label={t(`${K}.kpi.eac`)} value={money(m.eac, currency)} hint={t(`${K}.method.${m.eac_method}`)} />
-      <KpiTile label={t(`${K}.kpi.etc`)} value={money(m.etc, currency)} hint={t(`${K}.kpi.etcHint`)} />
+      <KpiTile
+        label={t(`${K}.kpi.eac`)}
+        value={money(m.eac, currency)}
+        hint={t(`${K}.method.${m.eac_method}`)}
+      />
+      <KpiTile
+        label={t(`${K}.kpi.etc`)}
+        value={money(m.etc, currency)}
+        hint={t(`${K}.kpi.etcHint`)}
+      />
       <KpiTile
         label={t(`${K}.kpi.vac`)}
         value={money(m.vac, currency)}

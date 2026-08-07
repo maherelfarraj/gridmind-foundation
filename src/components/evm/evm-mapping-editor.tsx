@@ -325,9 +325,7 @@ export function EvmMappingEditor({
                     max={100}
                     step="0.01"
                     value={draft.allocation_pct}
-                    onChange={(e) =>
-                      setDraft({ ...draft, allocation_pct: Number(e.target.value) })
-                    }
+                    onChange={(e) => setDraft({ ...draft, allocation_pct: Number(e.target.value) })}
                   />
                 </div>
 

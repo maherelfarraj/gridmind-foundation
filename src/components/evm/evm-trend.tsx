@@ -1,5 +1,13 @@
 // GC-12 — Period trend with a chart plus the equivalent data table.
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -16,18 +24,14 @@ import { useI18n } from "@/lib/i18n/locale-provider";
 
 const K = "financeMod.costing.evm";
 
-export function EvmTrend({
-  analysis,
-  currency,
-}: {
-  analysis: TrendAnalysis;
-  currency: string;
-}) {
+export function EvmTrend({ analysis, currency }: { analysis: TrendAnalysis; currency: string }) {
   const { t } = useI18n();
   const points = analysis.points;
 
   if (points.length === 0) {
-    return <EmptyState title={t(`${K}.trend.emptyTitle`)} description={t(`${K}.trend.emptyBody`)} />;
+    return (
+      <EmptyState title={t(`${K}.trend.emptyTitle`)} description={t(`${K}.trend.emptyBody`)} />
+    );
   }
 
   const chartData = points.map((p) => ({
@@ -52,8 +56,20 @@ export function EvmTrend({
                 color: "var(--color-popover-foreground)",
               }}
             />
-            <Line type="monotone" dataKey="cpi" stroke="var(--color-primary)" dot={false} strokeWidth={2} />
-            <Line type="monotone" dataKey="spi" stroke="var(--color-accent)" dot={false} strokeWidth={2} />
+            <Line
+              type="monotone"
+              dataKey="cpi"
+              stroke="var(--color-primary)"
+              dot={false}
+              strokeWidth={2}
+            />
+            <Line
+              type="monotone"
+              dataKey="spi"
+              stroke="var(--color-accent)"
+              dot={false}
+              strokeWidth={2}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>

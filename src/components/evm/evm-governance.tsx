@@ -23,7 +23,12 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { formulaRows, money } from "@/components/evm/evm-format";
-import { EAC_METHODS, type EacMethod, type EvmMeasures, type ReportStatus } from "@/lib/evm.report.rules";
+import {
+  EAC_METHODS,
+  type EacMethod,
+  type EvmMeasures,
+  type ReportStatus,
+} from "@/lib/evm.report.rules";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
 const K = "financeMod.costing.evm";
@@ -37,7 +42,13 @@ export interface BasisFields {
   schedule_baseline_id: string | null;
   project_currency: string;
   reporting_currency: string;
-  fx: { rate: number | null; as_of: string | null; source: string | null; stale: boolean; missing: boolean };
+  fx: {
+    rate: number | null;
+    as_of: string | null;
+    source: string | null;
+    stale: boolean;
+    missing: boolean;
+  };
   status: ReportStatus | "working";
   version_no: number | null;
   frozen: boolean;
@@ -170,7 +181,9 @@ export function EvmLifecycleCard({
             <p className="text-xs text-muted-foreground">{t(`${K}.lifecycle.reasonHint`)}</p>
           </div>
           {blockers > 0 ? (
-            <p className="text-xs text-destructive">{t(`${K}.lifecycle.blocked`, { count: blockers })}</p>
+            <p className="text-xs text-destructive">
+              {t(`${K}.lifecycle.blocked`, { count: blockers })}
+            </p>
           ) : null}
         </>
       )}
@@ -215,7 +228,9 @@ export function EvmFormulaCard({
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.key} aria-current={official === methodOf(r.key) ? "true" : undefined}>
-              <TableCell className="text-foreground">{t(`${K}.method.${methodOf(r.key)}`)}</TableCell>
+              <TableCell className="text-foreground">
+                {t(`${K}.method.${methodOf(r.key)}`)}
+              </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {t(`${K}.formulaExpr.${methodOf(r.key)}`)}
               </TableCell>

@@ -59,9 +59,7 @@ export function EvmAppendixCard({ appendix }: { appendix: EvmAppendix }) {
         </div>
         <StatusBadge
           status={frozen ? "approved" : "draft"}
-          label={
-            frozen ? t(`${K}.appendix.watermarkFrozen`) : t(`${K}.appendix.watermarkWorking`)
-          }
+          label={frozen ? t(`${K}.appendix.watermarkFrozen`) : t(`${K}.appendix.watermarkWorking`)}
         />
       </div>
 

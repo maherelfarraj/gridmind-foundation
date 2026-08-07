@@ -59,9 +59,14 @@ export const Route = createFileRoute("/_authenticated/portfolio/costing/evm")({
   errorComponent: ({ error }) => (
     <Card className="p-6 text-sm text-destructive">{costingErrorMessage(error)}</Card>
   ),
-  notFoundComponent: () => <Card className="p-6 text-sm">Not found.</Card>,
+  notFoundComponent: PortfolioEvmNotFound,
   component: PortfolioEvmPage,
 });
+
+function PortfolioEvmNotFound() {
+  const { t } = useI18n();
+  return <Card className="p-6 text-sm">{t(`${K}.notFound`)}</Card>;
+}
 
 function PortfolioEvmPage() {
   const { t } = useI18n();
@@ -136,15 +141,35 @@ function PortfolioEvmPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" role="group" aria-label={t(`${K}.kpiGroup`)}>
+      <div
+        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        role="group"
+        aria-label={t(`${K}.kpiGroup`)}
+      >
         <KpiTile label={t(`${K}.kpi.bac`)} value={money(totals.bac, currency)} />
         <KpiTile label={t(`${K}.kpi.ev`)} value={money(totals.ev, currency)} />
         <KpiTile label={t(`${K}.kpi.ac`)} value={money(totals.ac, currency)} />
         <KpiTile label={t(`${K}.kpi.eac`)} value={money(totals.eac, currency)} />
-        <KpiTile label={t(`${K}.kpi.cpi`)} value={ratio(totals.cpi)} status={indexTone(totals.cpi, 1)} />
-        <KpiTile label={t(`${K}.kpi.spi`)} value={ratio(totals.spi)} status={indexTone(totals.spi, 1)} />
-        <KpiTile label={t(`${K}.kpi.cv`)} value={money(totals.cv, currency)} status={varianceTone(totals.cv)} />
-        <KpiTile label={t(`${K}.kpi.vac`)} value={money(totals.vac, currency)} status={varianceTone(totals.vac)} />
+        <KpiTile
+          label={t(`${K}.kpi.cpi`)}
+          value={ratio(totals.cpi)}
+          status={indexTone(totals.cpi, 1)}
+        />
+        <KpiTile
+          label={t(`${K}.kpi.spi`)}
+          value={ratio(totals.spi)}
+          status={indexTone(totals.spi, 1)}
+        />
+        <KpiTile
+          label={t(`${K}.kpi.cv`)}
+          value={money(totals.cv, currency)}
+          status={varianceTone(totals.cv)}
+        />
+        <KpiTile
+          label={t(`${K}.kpi.vac`)}
+          value={money(totals.vac, currency)}
+          status={varianceTone(totals.vac)}
+        />
       </div>
 
       <Card className="flex flex-wrap items-center gap-6 p-4 text-sm">
@@ -238,12 +263,20 @@ function PortfolioEvmPage() {
                             label={t(`financeMod.costing.evm.status.${r.status}`)}
                           />
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">{money(m.bac, currency)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{money(m.ev, currency)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{money(m.ac, currency)}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {money(m.bac, currency)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {money(m.ev, currency)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {money(m.ac, currency)}
+                        </TableCell>
                         <TableCell className="text-right tabular-nums">{ratio(m.cpi)}</TableCell>
                         <TableCell className="text-right tabular-nums">{ratio(m.spi)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{money(m.eac, currency)}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {money(m.eac, currency)}
+                        </TableCell>
                         <TableCell className="text-right tabular-nums">{r.blockers}</TableCell>
                       </TableRow>
                     );

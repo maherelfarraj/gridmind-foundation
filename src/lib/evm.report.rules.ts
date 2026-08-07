@@ -187,7 +187,11 @@ export function calculateProgress(input: ProgressInput): ProgressResult {
       const done = ms
         .filter((x) => x.complete)
         .reduce((s, x) => s + (finite(x.weight_pct) ?? 0), 0);
-      return { calculated_pct: roundRatio(clampPct((done / totalWeight) * 100)), method: m, gap: null };
+      return {
+        calculated_pct: roundRatio(clampPct((done / totalWeight) * 100)),
+        method: m,
+        gap: null,
+      };
     }
     case "units_complete": {
       const done = finite(input.units_complete);
@@ -424,8 +428,10 @@ export function computeMeasures(core: EvmCore, method: EacMethod = "bottom_up"):
   const remainingWork = ev !== null ? sumMoney([bac, -ev]) : null;
   const fundsToBac = ac !== null ? sumMoney([bac, -ac]) : null;
   const fundsToEac = ac !== null && eac !== null ? sumMoney([eac, -ac]) : null;
-  const tcpi_bac = fundsToBac !== null && toMinor(fundsToBac) > 0 ? ratio(remainingWork, fundsToBac) : null;
-  const tcpi_eac = fundsToEac !== null && toMinor(fundsToEac) > 0 ? ratio(remainingWork, fundsToEac) : null;
+  const tcpi_bac =
+    fundsToBac !== null && toMinor(fundsToBac) > 0 ? ratio(remainingWork, fundsToBac) : null;
+  const tcpi_eac =
+    fundsToEac !== null && toMinor(fundsToEac) > 0 ? ratio(remainingWork, fundsToEac) : null;
 
   return {
     bac,
@@ -457,7 +463,6 @@ export function computeMeasures(core: EvmCore, method: EacMethod = "bottom_up"):
  * curve (see `earnedDelayDays`). Schedule variance in currency (SV) is a
  * separate measure and the two are never presented interchangeably.
  */
-
 
 /**
  * Days between the data date and the baseline date at which the earned
@@ -505,7 +510,10 @@ export interface EvmNode {
  */
 export function rollUp(
   leaves: readonly EvmNode[],
-  parents: readonly Omit<EvmNode, "core" | "measures" | "calculated_pct" | "applied_pct" | "overridden">[],
+  parents: readonly Omit<
+    EvmNode,
+    "core" | "measures" | "calculated_pct" | "applied_pct" | "overridden"
+  >[],
   method: EacMethod,
 ): EvmNode[] {
   const childrenOf = new Map<string, string[]>();
@@ -530,9 +538,7 @@ export function rollUp(
     });
     byKey.set(p.key, built[built.length - 1]!);
   }
-  return [...leaves, ...built].sort(
-    (a, b) => a.level - b.level || a.key.localeCompare(b.key),
-  );
+  return [...leaves, ...built].sort((a, b) => a.level - b.level || a.key.localeCompare(b.key));
 }
 
 function collectDescendants(
@@ -709,7 +715,12 @@ export function assessQuality(input: QualityInput, policy: GatePolicy): QualityR
     });
   }
   const counted: [ExceptionCode, number, ExceptionSeverity, string][] = [
-    ["missing_baseline_dates", input.missing_baseline_dates, "blocker", "Scope without baseline dates"],
+    [
+      "missing_baseline_dates",
+      input.missing_baseline_dates,
+      "blocker",
+      "Scope without baseline dates",
+    ],
     ["missing_budget", input.missing_budget, "warning", "Scope without budget"],
     [
       "stale_progress",
@@ -717,7 +728,12 @@ export function assessQuality(input: QualityInput, policy: GatePolicy): QualityR
       policy.gate_block_on_stale_progress ? "blocker" : "warning",
       "Stale or unapproved progress",
     ],
-    ["future_dated_progress", input.future_dated_progress, "blocker", "Progress reported after the data date"],
+    [
+      "future_dated_progress",
+      input.future_dated_progress,
+      "blocker",
+      "Progress reported after the data date",
+    ],
     ["missing_actuals", input.missing_actuals, "warning", "Scope without actual cost"],
   ];
   for (const [code, count, severity, title] of counted) {
@@ -778,34 +794,106 @@ export function performanceExceptions(
     v !== null && toMinor(v) < 0 && isMaterial(v, m.bac, policy);
 
   if (m.cpi !== null && m.cpi < policy.cpi_threshold) {
-    out.push(exception("cpi_deterioration", "warning", "Cost performance below threshold", m.cpi, policy.cpi_threshold, "ratio"));
+    out.push(
+      exception(
+        "cpi_deterioration",
+        "warning",
+        "Cost performance below threshold",
+        m.cpi,
+        policy.cpi_threshold,
+        "ratio",
+      ),
+    );
   }
   if (m.spi !== null && m.spi < policy.spi_threshold) {
-    out.push(exception("spi_deterioration", "warning", "Schedule performance below threshold", m.spi, policy.spi_threshold, "ratio"));
+    out.push(
+      exception(
+        "spi_deterioration",
+        "warning",
+        "Schedule performance below threshold",
+        m.spi,
+        policy.spi_threshold,
+        "ratio",
+      ),
+    );
   }
   if (adverse(m.cv)) {
-    out.push(exception("adverse_cv", "warning", "Adverse cost variance", m.cv, policy.variance_threshold_amount, "currency"));
+    out.push(
+      exception(
+        "adverse_cv",
+        "warning",
+        "Adverse cost variance",
+        m.cv,
+        policy.variance_threshold_amount,
+        "currency",
+      ),
+    );
   }
   if (adverse(m.sv)) {
-    out.push(exception("adverse_sv", "warning", "Adverse schedule variance", m.sv, policy.variance_threshold_amount, "currency"));
+    out.push(
+      exception(
+        "adverse_sv",
+        "warning",
+        "Adverse schedule variance",
+        m.sv,
+        policy.variance_threshold_amount,
+        "currency",
+      ),
+    );
   }
   if (adverse(m.vac)) {
-    out.push(exception("adverse_vac", "warning", "Adverse variance at completion", m.vac, policy.variance_threshold_amount, "currency"));
+    out.push(
+      exception(
+        "adverse_vac",
+        "warning",
+        "Adverse variance at completion",
+        m.vac,
+        policy.variance_threshold_amount,
+        "currency",
+      ),
+    );
   }
   if (m.tcpi_eac !== null && m.tcpi_eac > policy.tcpi_feasibility_limit) {
-    out.push(exception("tcpi_infeasible", "blocker", "To-complete index is not achievable", m.tcpi_eac, policy.tcpi_feasibility_limit, "ratio"));
+    out.push(
+      exception(
+        "tcpi_infeasible",
+        "blocker",
+        "To-complete index is not achievable",
+        m.tcpi_eac,
+        policy.tcpi_feasibility_limit,
+        "ratio",
+      ),
+    );
   }
   if (m.percent_complete !== null && m.percent_spent !== null) {
     const gap = roundRatio(m.percent_spent - m.percent_complete);
     if (gap > policy.variance_threshold_pct) {
-      out.push(exception("progress_cost_mismatch", "warning", "Spend outpaces progress", gap, policy.variance_threshold_pct, "percent"));
+      out.push(
+        exception(
+          "progress_cost_mismatch",
+          "warning",
+          "Spend outpaces progress",
+          gap,
+          policy.variance_threshold_pct,
+          "percent",
+        ),
+      );
     }
   }
   const bu = opts.bottom_up_eac ?? m.eac_bottom_up;
   if (bu !== null && m.eac_cpi !== null) {
     const diff = sumMoney([m.eac_cpi, -bu]);
     if (isMaterial(diff, m.bac, policy)) {
-      out.push(exception("forecast_divergence", "warning", "Index forecast diverges from bottom-up forecast", diff, policy.variance_threshold_amount, "currency"));
+      out.push(
+        exception(
+          "forecast_divergence",
+          "warning",
+          "Index forecast diverges from bottom-up forecast",
+          diff,
+          policy.variance_threshold_amount,
+          "currency",
+        ),
+      );
     }
   }
   return out;
@@ -899,9 +987,10 @@ export function analyseTrend(
   };
   const cpi_delta = delta((p) => p.cpi);
   const spi_delta = delta((p) => p.spi);
-  const eac_delta = last && prior && last.eac !== null && prior.eac !== null
-    ? sumMoney([last.eac, -prior.eac])
-    : null;
+  const eac_delta =
+    last && prior && last.eac !== null && prior.eac !== null
+      ? sumMoney([last.eac, -prior.eac])
+      : null;
   return {
     points: sorted,
     cpi_delta,
@@ -979,7 +1068,12 @@ export function supersedePlan(input: {
 }): { ok: boolean; error: string | null; next_version_no: number; supersedes_id: string } {
   const reasonOk = String(input.reason ?? "").trim().length >= 8;
   if (input.current.status !== "approved") {
-    return { ok: false, error: EVM_INVALID_TRANSITION, next_version_no: 0, supersedes_id: input.current.id };
+    return {
+      ok: false,
+      error: EVM_INVALID_TRANSITION,
+      next_version_no: 0,
+      supersedes_id: input.current.id,
+    };
   }
   return {
     ok: reasonOk,
@@ -1072,7 +1166,10 @@ export function consolidateEvm(
 
 export type Quadrant = "on_track" | "cost_risk" | "schedule_risk" | "both_risk" | "unknown";
 
-export function quadrantOf(m: Pick<EvmMeasures, "cpi" | "spi">, policy: PerformancePolicy): Quadrant {
+export function quadrantOf(
+  m: Pick<EvmMeasures, "cpi" | "spi">,
+  policy: PerformancePolicy,
+): Quadrant {
   if (m.cpi === null || m.spi === null) return "unknown";
   const cost = m.cpi < policy.cpi_threshold;
   const sched = m.spi < policy.spi_threshold;
@@ -1096,11 +1193,22 @@ export function topAdverseMovers(rows: readonly PortfolioEvmRow[], limit = 5): M
   return rows
     .map((r) => {
       const cpi_delta =
-        r.project.cpi !== null && r.prior_cpi !== null ? roundRatio(r.project.cpi - r.prior_cpi) : null;
+        r.project.cpi !== null && r.prior_cpi !== null
+          ? roundRatio(r.project.cpi - r.prior_cpi)
+          : null;
       const spi_delta =
-        r.project.spi !== null && r.prior_spi !== null ? roundRatio(r.project.spi - r.prior_spi) : null;
+        r.project.spi !== null && r.prior_spi !== null
+          ? roundRatio(r.project.spi - r.prior_spi)
+          : null;
       const movement = Math.min(cpi_delta ?? 0, spi_delta ?? 0);
-      return { project_id: r.project_id, code: r.code, name: r.name, cpi_delta, spi_delta, movement };
+      return {
+        project_id: r.project_id,
+        code: r.code,
+        name: r.name,
+        cpi_delta,
+        spi_delta,
+        movement,
+      };
     })
     .filter((m) => m.movement < 0)
     .sort((a, b) => a.movement - b.movement || a.code.localeCompare(b.code))
@@ -1210,7 +1318,14 @@ export function buildTrendCsv(points: readonly TrendPoint[]): string {
 
 export function buildMappingCsv(mappings: readonly MappingRow[]): string {
   return csvRows(
-    ["scope_key", "wbs_item_id", "schedule_task_id", "cost_code_id", "allocation_pct", "progress_method"],
+    [
+      "scope_key",
+      "wbs_item_id",
+      "schedule_task_id",
+      "cost_code_id",
+      "allocation_pct",
+      "progress_method",
+    ],
     [...mappings]
       .sort((a, b) => scopeKeyOf(a).localeCompare(scopeKeyOf(b)) || a.id.localeCompare(b.id))
       .map((m) => [
@@ -1226,7 +1341,16 @@ export function buildMappingCsv(mappings: readonly MappingRow[]): string {
 
 export function buildExceptionCsv(exceptions: readonly EvmException[]): string {
   return csvRows(
-    ["code", "severity", "blocking", "title", "detail", "current_value", "threshold_value", "value_unit"],
+    [
+      "code",
+      "severity",
+      "blocking",
+      "title",
+      "detail",
+      "current_value",
+      "threshold_value",
+      "value_unit",
+    ],
     [...exceptions]
       .sort((a, b) => a.code.localeCompare(b.code))
       .map((e) => [
@@ -1266,9 +1390,25 @@ export interface EvmAppendix {
   period_month: string;
   data_date: string;
   status: ReportStatus;
-  basis: { cost_basis: string; ac_basis: AcBasis; eac_method: EacMethod; schedule_baseline: string | null };
-  fx: { reporting_currency: string; project_currency: string; rate: number | null; as_of: string | null; source: string | null };
-  approvals: { prepared_by: string | null; submitted_by: string | null; approved_by: string | null; approved_at: string | null };
+  basis: {
+    cost_basis: string;
+    ac_basis: AcBasis;
+    eac_method: EacMethod;
+    schedule_baseline: string | null;
+  };
+  fx: {
+    reporting_currency: string;
+    project_currency: string;
+    rate: number | null;
+    as_of: string | null;
+    source: string | null;
+  };
+  approvals: {
+    prepared_by: string | null;
+    submitted_by: string | null;
+    approved_by: string | null;
+    approved_at: string | null;
+  };
   measures: EvmMeasures;
   quality_gaps: { code: ExceptionCode; severity: ExceptionSeverity; title: string }[];
   reconciliation: { ok: boolean; difference: number };
@@ -1385,7 +1525,11 @@ export const EVM_PAGE_SIZES = [25, 50, 100, 200] as const;
 export const evmDetailFilterSchema = z.object({
   report_id: z.string().uuid(),
   page: z.number().int().min(1).default(1),
-  page_size: z.number().int().refine((n) => (EVM_PAGE_SIZES as readonly number[]).includes(n)).default(50),
+  page_size: z
+    .number()
+    .int()
+    .refine((n) => (EVM_PAGE_SIZES as readonly number[]).includes(n))
+    .default(50),
   cost_code_id: z.string().uuid().optional(),
   wbs_item_id: z.string().uuid().optional(),
 });

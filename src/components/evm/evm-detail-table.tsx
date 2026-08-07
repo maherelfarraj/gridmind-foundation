@@ -49,7 +49,9 @@ export function EvmDetailTable({
   }
 
   if (nodes.length === 0) {
-    return <EmptyState title={t(`${K}.detail.emptyTitle`)} description={t(`${K}.detail.emptyBody`)} />;
+    return (
+      <EmptyState title={t(`${K}.detail.emptyTitle`)} description={t(`${K}.detail.emptyBody`)} />
+    );
   }
 
   return (
@@ -108,7 +110,9 @@ export function EvmDetailTable({
                         onClick={() => toggle(n.key)}
                       >
                         {collapsed.has(n.key) ? "+" : "−"}
-                        <span className="sr-only">{t(`${K}.detail.toggle`, { scope: n.label })}</span>
+                        <span className="sr-only">
+                          {t(`${K}.detail.toggle`, { scope: n.label })}
+                        </span>
                       </Button>
                     ) : (
                       <span className="inline-block w-6" aria-hidden="true" />
@@ -122,28 +126,44 @@ export function EvmDetailTable({
                         {n.label}
                       </button>
                     ) : (
-                      <span className={cn(n.level === 0 && "font-medium text-foreground")}>{n.label}</span>
+                      <span className={cn(n.level === 0 && "font-medium text-foreground")}>
+                        {n.label}
+                      </span>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {t(`${K}.progressMethod.${n.progress_method}`)}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{percent(n.allocation_pct)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {percent(n.allocation_pct)}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {percent(n.applied_pct)}
                   {n.overridden ? (
                     <span className="ms-1 text-xs text-warning">{t(`${K}.detail.overridden`)}</span>
                   ) : null}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.bac, currency)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.pv, currency)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.ev, currency)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.ac, currency)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.bac, currency)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.pv, currency)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.ev, currency)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.ac, currency)}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{ratio(n.measures.cpi)}</TableCell>
                 <TableCell className="text-right tabular-nums">{ratio(n.measures.spi)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.eac, currency)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(n.measures.vac, currency)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.eac, currency)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {money(n.measures.vac, currency)}
+                </TableCell>
               </TableRow>
             );
           })}
