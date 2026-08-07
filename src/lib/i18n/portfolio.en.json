@@ -156,5 +156,136 @@
     "forbidden": "Executive report requires finance or company admin access",
     "failed": "Export failed",
     "englishNote": "The report is issued in English for client and lender use."
+  },
+  "costing": {
+    "title": "Portfolio Cost & Close",
+    "subtitle": "Consolidated multi-currency cost position and period-close oversight across every project.",
+    "filters": {
+      "period": "Reporting period",
+      "currency": "Reporting currency",
+      "basis": "Consolidation rate basis",
+      "basisPeriodEnd": "Period-end closing rate",
+      "basisLatest": "Latest available rate",
+      "basis_period_end": "Period-end closing rate",
+      "basis_latest": "Latest available rate",
+      "rateNote": "Rates effective {{date}}. Project figures come from frozen snapshots and are translated once."
+    },
+    "kpi": {
+      "budget": "Current budget",
+      "committed": "Committed",
+      "actual": "Actual",
+      "eac": "EAC",
+      "vac": "VAC",
+      "closeReady": "Close ready",
+      "inCurrency": "Consolidated in {{currency}}",
+      "vsPrior": "{{value}} vs prior approved period",
+      "closeHint": "{{overdue}} overdue items · {{blockers}} blocking exceptions"
+    },
+    "gate": {
+      "officialTitle": "Official consolidation",
+      "officialBody": "Every project contributes an approved snapshot translated at a real rate.",
+      "managementTitle": "Management view only",
+      "reason": {
+        "missing_rate": "{{count}} project(s) excluded: no exchange rate into the reporting currency.",
+        "no_snapshot": "{{count}} project(s) have no forecast snapshot for this period.",
+        "indicative_snapshot": "{{count}} project(s) contribute an unapproved (indicative) snapshot.",
+        "period_open": "{{count}} project(s) are still in an open period."
+      }
+    },
+    "consolidation": {
+      "heading": "Consolidated cost position",
+      "description": "All amounts in {{currency}} for {{period}}, translated once from each project's frozen snapshot.",
+      "excluded": "Excluded from the totals: {{list}}"
+    },
+    "table": {
+      "project": "Project",
+      "basis": "Snapshot",
+      "budgetCurrent": "Current budget",
+      "committed": "Committed",
+      "actual": "Actual",
+      "accruals": "Accruals",
+      "etc": "ETC",
+      "eac": "EAC",
+      "vac": "VAC",
+      "available": "Available",
+      "paid": "Paid",
+      "consumed": "Consumed",
+      "total": "Portfolio total",
+      "includedProjects": "{{count}} project(s) included"
+    },
+    "basis": {
+      "approved": "Approved",
+      "indicative": "Indicative",
+      "none": "No snapshot"
+    },
+    "flags": {
+      "rateMissing": "Rate missing",
+      "rateMissingHint": "No {{from}} → {{to}} rate on or before the consolidation date.",
+      "stale": "Stale rate"
+    },
+    "movers": {
+      "heading": "Biggest EAC movements",
+      "description": "Against each project's prior approved snapshot, in project currency.",
+      "baseline": "vs baseline {{value}} · {{pct}} vs prior",
+      "none": "No EAC movement against the prior approved period.",
+      "noExplanation": "Material movement without a written explanation."
+    },
+    "close": {
+      "heading": "Close oversight",
+      "description": "Checklist, exception and lock position for {{period}}.",
+      "state": "Period state",
+      "checklist": "Checklist",
+      "overdue": "Overdue",
+      "blockers": "Blockers",
+      "warnings": "Warnings",
+      "gate": "Close gate",
+      "lastAction": "Last action",
+      "progress": "{{done}} of {{total}} done",
+      "noChecklist": "No checklist generated",
+      "ready": "Ready",
+      "blocked": "Blocked"
+    },
+    "reconciliation": {
+      "ok": "Reconciled: {{count}} project line(s) tie to the published portfolio total.",
+      "failed": "Reconciliation difference of {{value}} — totals must not be relied on."
+    },
+    "export": {
+      "csv": "Export CSV",
+      "pack": "Management pack",
+      "failed": "Export failed."
+    },
+    "pack": {
+      "title": "Portfolio management pack — {{period}}",
+      "description": "Consolidated in {{currency}} at rates effective {{date}}.",
+      "back": "Back to dashboard",
+      "print": "Print",
+      "period": "Period",
+      "rateDate": "Rate date",
+      "status": "Basis",
+      "official": "Official consolidation",
+      "management": "Management view",
+      "projects": "Projects included",
+      "fxHeading": "FX attribution and reconciliation",
+      "fxNote": "Each project's EAC is translated exactly once, at the rate shown.",
+      "fromCurrency": "Project currency",
+      "rate": "Rate",
+      "rateAsOf": "Rate as of",
+      "rateSource": "Source",
+      "projectEac": "EAC (project currency)",
+      "reportingEac": "EAC (reporting currency)",
+      "source": {
+        "parity": "Parity",
+        "table": "Rate table",
+        "manual": "Manual"
+      }
+    },
+    "error": {
+      "title": "Portfolio cost & close unavailable",
+      "description": "You need a finance leadership role to view consolidated cost and close data."
+    },
+    "empty": {
+      "title": "No projects in scope",
+      "description": "Create a project and approve a forecast version to see it consolidated here."
+    }
   }
 }

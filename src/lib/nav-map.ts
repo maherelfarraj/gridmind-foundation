@@ -130,6 +130,13 @@ export const NAV_GROUPS: NavGroup[] = [
         alwaysVisible: true,
         hideFromExternalViewers: true,
       },
+      {
+        moduleKey: "planning_budget",
+        label: "Portfolio Cost & Close",
+        url: "/portfolio/costing",
+        icon: Coins,
+        hideFromExternalViewers: true,
+      },
     ],
   },
   {

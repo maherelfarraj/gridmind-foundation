@@ -124,7 +124,7 @@ describe("portfolio i18n", () => {
   });
 
   it("ships no English-only strings in the UI", () => {
-    const route = read("src/routes/_authenticated/portfolio.tsx");
+    const route = read("src/routes/_authenticated/portfolio.index.tsx");
     expect(route).toContain('t("portfolioMod.title")');
     expect(route).not.toMatch(/title="[A-Za-z ]{4,}"/);
   });
