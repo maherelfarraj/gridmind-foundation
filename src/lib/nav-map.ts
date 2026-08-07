@@ -815,6 +815,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Receipt,
       },
       {
+        moduleKey: "admin",
+        label: "FX rates",
+        url: "/settings/fx-rates",
+        icon: Receipt,
+      },
+
+      {
         moduleKey: "engineering",
         label: "SLD symbol registry",
         url: "/settings/sld-symbols",
