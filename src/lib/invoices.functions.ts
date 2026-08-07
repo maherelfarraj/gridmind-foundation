@@ -270,6 +270,11 @@ export const markInvoicePaid = createServerFn({ method: "POST" })
       context.supabase,
       (cur as { company_id: string }).company_id,
       data.paid_at ?? new Date().toISOString().slice(0, 10),
+      {
+        entity: "invoices",
+        entityId: invoice.id,
+        projectId: (cur as { project_id?: string | null }).project_id ?? null,
+      },
     );
 
     if (invoice.direction === "payable") {
@@ -347,8 +352,6 @@ export const billMilestone = createServerFn({ method: "POST" })
       if (!(await hasAnyRole(context, FINANCE_ROLES))) httpError(403, "forbidden");
       const companyId = await currentCompanyId(context as AuthContext & { user: { id: string } });
 
-      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
-
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")
         .select("*")
@@ -357,6 +360,14 @@ export const billMilestone = createServerFn({ method: "POST" })
       if (cErr) throw cErr;
       if (!cRaw) httpError(404, "contract_not_found");
       const contract = cRaw as ContractRow;
+
+      // Gate on the contract's project so a project-scoped costing lock applies.
+      await assertPeriodOpen(
+        context.supabase,
+        companyId,
+        new Date().toISOString().slice(0, 10),
+        { entity: "invoices", projectId: contract.project_id ?? null },
+      );
       if (!["signed", "active"].includes(contract.status)) {
         httpError(400, "contract_not_signed", "Contract must be signed or active.");
       }

@@ -773,7 +773,8 @@
       "costCode": "Cost code",
       "unassigned": "Unassigned",
       "deltaEac": "Δ EAC",
-      "deltaEtc": "Δ ETC"
+      "deltaEtc": "Δ ETC",
+      "exportCsv": "Export CSV"
     }
   }
 }

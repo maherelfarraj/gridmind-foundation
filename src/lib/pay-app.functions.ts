@@ -367,6 +367,7 @@ export const certifyPayApplication = createServerFn({ method: "POST" })
       context.supabase,
       (cur as { company_id: string }).company_id,
       row.period_end,
+      { entity: "pay_applications", entityId: row.id, projectId: row.project_id },
     );
     try {
       validateCertifyInput(row.lines);
@@ -427,6 +428,7 @@ export const approvePayApplication = createServerFn({ method: "POST" })
       context.supabase,
       (cur as { company_id: string }).company_id,
       row.period_end,
+      { entity: "pay_applications", entityId: row.id, projectId: row.project_id },
     );
     const { data: cRaw, error: cErr } = await context.supabase
       .from("contracts")
@@ -548,7 +550,12 @@ export const generatePayAppInvoice = createServerFn({ method: "POST" })
         httpError(400, "not_approved", "Only approved pay applications can be invoiced.");
       }
       if (row.invoice_id) httpError(400, "already_invoiced");
-      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10));
+      await assertPeriodOpen(
+        context.supabase,
+        companyId,
+        new Date().toISOString().slice(0, 10),
+        { entity: "pay_applications", entityId: row.id, projectId: row.project_id },
+      );
 
       const { data: cRaw, error: cErr } = await context.supabase
         .from("contracts")

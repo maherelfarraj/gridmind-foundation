@@ -160,6 +160,26 @@ export async function assertCostingPeriodOpen(
   });
 }
 
+/**
+ * Find the first month at or after `fromMonth` whose costing period is open.
+ * Used by next-open-period reversals when the original month is locked.
+ */
+export async function findNextOpenPeriod(
+  ctx: AuthContext,
+  companyId: string,
+  projectId: string | null,
+  fromMonth: string,
+  horizonMonths = 24,
+): Promise<string | null> {
+  let month = periodMonthOf(fromMonth);
+  for (let i = 0; i < horizonMonths; i += 1) {
+    const state = await loadPeriodState(ctx, companyId, projectId, month);
+    if (state === "open") return month;
+    month = nextPeriodMonth(month);
+  }
+  return null;
+}
+
 export async function hasCloseRole(ctx: AuthContext): Promise<boolean> {
   const results = await Promise.all(
     COSTING_CLOSE_ROLES.map((r) => ctx.supabase.rpc("has_company_role", { p_role: r as any })),
@@ -505,6 +525,7 @@ export async function notifyPeriodTransition(
     period: string;
     state: CostingPeriodState;
     reason: string | null;
+    rowVersion?: number | null;
   },
 ): Promise<number> {
   try {
@@ -515,7 +536,13 @@ export async function notifyPeriodTransition(
       .select("id")
       .eq("company_id", args.companyId)
       .eq("type", type)
-      .contains("metadata", { period: args.period, project_id: args.projectId })
+      .contains("metadata", {
+        period: args.period,
+        project_id: args.projectId,
+        // row_version makes the key one-per-transition, so lock -> reopen ->
+        // lock notifies twice while a repeated idempotent call never does.
+        row_version: args.rowVersion ?? null,
+      })
       .limit(1);
     if ((existing ?? []).length > 0) return 0;
 
@@ -541,6 +568,7 @@ export async function notifyPeriodTransition(
           project_id: args.projectId,
           state: args.state,
           reason: args.reason,
+          row_version: args.rowVersion ?? null,
         },
       })),
     );
@@ -637,6 +665,7 @@ export async function transitionPeriod(
     period: input.period,
     state,
     reason: input.reason ?? null,
+    rowVersion,
   });
 
   return { state, rowVersion, notified };

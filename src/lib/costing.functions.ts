@@ -14,7 +14,12 @@ import {
   type AccrualStatus,
 } from "@/lib/costing.rules";
 import { canApproveWithFx, convertMoney, reverseSnapshot } from "@/lib/costing.fx";
-import { assertCostingPeriodOpen } from "@/lib/costing.close.server";
+import {
+  assertCostingPeriodOpen,
+  findNextOpenPeriod,
+  loadPeriodState,
+} from "@/lib/costing.close.server";
+import { nextPeriodMonth, periodMonthOf } from "@/lib/costing.periods";
 import {
   COSTING_WRITE_ROLES,
   costingAudit,
@@ -206,19 +211,102 @@ export const transitionCostAccrual = createServerFn({ method: "POST" })
       .maybeSingle();
     if (loadErr) throw loadErr;
     if (!current) costingHttpError(404, "accrual_not_found");
-    await assertCostingPeriodOpen(
+    const from0 = current.status as AccrualStatus;
+
+    // A reversal of a row whose own period is closed is NOT blocked: it is
+    // posted into the next open period, referencing the original and reusing
+    // its locked FX. Everything else is gated on the row's own period.
+    const originalState = await loadPeriodState(
       context,
       current.company_id as string,
       current.project_id as string,
       current.period as string,
-      { entity: "cost_accruals", entityId: data.id },
     );
-    const from = current.status as AccrualStatus;
+    const reversalIntoNextPeriod = data.action === "reverse" && originalState !== "open";
+    if (!reversalIntoNextPeriod) {
+      await assertCostingPeriodOpen(
+        context,
+        current.company_id as string,
+        current.project_id as string,
+        current.period as string,
+        { entity: "cost_accruals", entityId: data.id },
+      );
+    }
+    const from = from0;
     if (!canTransitionAccrual(from, data.action)) {
       costingHttpError(409, "invalid_transition", `Cannot ${data.action} a ${from} accrual.`);
     }
     const next = nextAccrualStatus(from, data.action);
     const userId = (context as any).user.id;
+
+    if (reversalIntoNextPeriod) {
+      const target = await findNextOpenPeriod(
+        context,
+        current.company_id as string,
+        current.project_id as string,
+        nextPeriodMonth(periodMonthOf(current.period as string)),
+      );
+      if (!target) {
+        costingHttpError(
+          409,
+          "costing_period_no_open_period",
+          "No open costing period is available to post this reversal into.",
+        );
+      }
+      const negated = reverseSnapshot({
+        amount: Number(current.amount),
+        amount_base: Number(current.amount_base ?? 0),
+        fx_rate: Number(current.fx_rate ?? 1),
+        fx_rate_date: (current.fx_rate_date as string | null) ?? null,
+        fx_source: (current.fx_source ?? "parity") as "parity" | "table" | "manual",
+      });
+      const now = new Date().toISOString();
+      const { data: ins, error: insErr } = await sb
+        .from("cost_accruals")
+        .insert({
+          company_id: current.company_id,
+          project_id: current.project_id,
+          cost_code_id: current.cost_code_id,
+          period: target,
+          amount: negated.amount,
+          amount_base: negated.amount_base,
+          currency_code: current.currency_code,
+          base_currency_code: current.base_currency_code,
+          fx_rate: negated.fx_rate,
+          fx_rate_date: negated.fx_rate_date,
+          fx_source: negated.fx_source,
+          description: data.reason
+            ? `Reversal of accrual ${data.id}: ${data.reason}`
+            : `Reversal of accrual ${data.id}`,
+          reversal_reason: data.reason ?? null,
+          reverses_accrual_id: data.id,
+          status: "reversed",
+          approved_by: userId,
+          approved_at: now,
+          reversed_by: userId,
+          reversed_at: now,
+          fx_locked_at: (current.fx_locked_at as string | null) ?? now,
+          fx_locked_by: userId,
+          created_by: userId,
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      await costingAudit(context, "costing.accrual.reverse", "cost_accruals", ins.id as string, {
+        from,
+        to: "reversed",
+        reverses_accrual_id: data.id,
+        original_period: current.period,
+        posted_period: target,
+        original_period_state: originalState,
+        reversal_amount: negated.amount,
+        reversal_amount_base: negated.amount_base,
+        fx_rate: negated.fx_rate,
+        fx_source: negated.fx_source,
+        re_rated: false,
+      });
+      return { status: "reversed" };
+    }
 
     let patch: Record<string, unknown>;
     let auditExtra: Record<string, unknown> = {};
