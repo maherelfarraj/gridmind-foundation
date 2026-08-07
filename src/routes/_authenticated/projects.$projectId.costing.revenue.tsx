@@ -82,9 +82,9 @@ function RecognitionCockpit() {
   const [period, setPeriod] = useState(data.snapshot?.period_month ?? monthStart(todayIso()));
   const [dataDate, setDataDate] = useState(data.snapshot?.data_date ?? todayIso());
   const [eacUplift, setEacUplift] = useState(10);
-  const [stress, setStress] = useState<Awaited<ReturnType<typeof runRecognitionSensitivity>> | null>(
-    null,
-  );
+  const [stress, setStress] = useState<Awaited<
+    ReturnType<typeof runRecognitionSensitivity>
+  > | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["recognition"] });
   const onError = (e: unknown) => toast.error(costingErrorMessage(e));
@@ -123,8 +123,7 @@ function RecognitionCockpit() {
   });
 
   const correctMutation = useMutation({
-    mutationFn: (reason: string) =>
-      correct({ data: { snapshot_id: data.snapshot!.id, reason } }),
+    mutationFn: (reason: string) => correct({ data: { snapshot_id: data.snapshot!.id, reason } }),
     onSuccess: () => {
       toast.success(t(`${K}.toast.corrected`));
       void invalidate();
@@ -161,10 +160,7 @@ function RecognitionCockpit() {
         description={t(`${K}.subtitle`)}
         actions={
           snapshot ? (
-            <StatusBadge
-              status={snapshot.status}
-              label={t(`${K}.status.${snapshot.status}`)}
-            />
+            <StatusBadge status={snapshot.status} label={t(`${K}.status.${snapshot.status}`)} />
           ) : null
         }
       />

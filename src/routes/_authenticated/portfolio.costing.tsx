@@ -195,6 +195,11 @@ function PortfolioCostingPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/revenue-wip" search={{}}>
+                <Coins className="size-4" /> {t(`${K}.revenue.title`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/funding" search={{}}>
                 <Landmark className="size-4" /> {t(`${K}.funding.link`)}
               </Link>

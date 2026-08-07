@@ -206,6 +206,7 @@ import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_a
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedPortfolioCostingScenariosRouteImport } from './routes/_authenticated/portfolio.costing.scenarios'
+import { Route as AuthenticatedPortfolioCostingRevenueWipRouteImport } from './routes/_authenticated/portfolio.costing.revenue-wip'
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedPortfolioCostingFundingRouteImport } from './routes/_authenticated/portfolio.costing.funding'
 import { Route as AuthenticatedPortfolioCostingEvmRouteImport } from './routes/_authenticated/portfolio.costing.evm'
@@ -1429,6 +1430,12 @@ const AuthenticatedPortfolioCostingScenariosRoute =
     path: '/scenarios',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
+const AuthenticatedPortfolioCostingRevenueWipRoute =
+  AuthenticatedPortfolioCostingRevenueWipRouteImport.update({
+    id: '/revenue-wip',
+    path: '/revenue-wip',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedPortfolioCostingPackRoute =
   AuthenticatedPortfolioCostingPackRouteImport.update({
     id: '/pack',
@@ -2144,6 +2151,7 @@ export interface FileRoutesByFullPath {
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
+  '/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2419,6 +2427,7 @@ export interface FileRoutesByTo {
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
+  '/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2705,6 +2714,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/_authenticated/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
+  '/_authenticated/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
   '/_authenticated/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2994,6 +3004,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/evm'
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
+    | '/portfolio/costing/revenue-wip'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -3269,6 +3280,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/evm'
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
+    | '/portfolio/costing/revenue-wip'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -3554,6 +3566,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio/costing/evm'
     | '/_authenticated/portfolio/costing/funding'
     | '/_authenticated/portfolio/costing/pack'
+    | '/_authenticated/portfolio/costing/revenue-wip'
     | '/_authenticated/portfolio/costing/scenarios'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
@@ -5102,6 +5115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioCostingScenariosRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
+    '/_authenticated/portfolio/costing/revenue-wip': {
+      id: '/_authenticated/portfolio/costing/revenue-wip'
+      path: '/revenue-wip'
+      fullPath: '/portfolio/costing/revenue-wip'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingRevenueWipRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/portfolio/costing/pack': {
       id: '/_authenticated/portfolio/costing/pack'
       path: '/pack'
@@ -5799,6 +5819,7 @@ interface AuthenticatedPortfolioCostingRouteChildren {
   AuthenticatedPortfolioCostingEvmRoute: typeof AuthenticatedPortfolioCostingEvmRoute
   AuthenticatedPortfolioCostingFundingRoute: typeof AuthenticatedPortfolioCostingFundingRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
+  AuthenticatedPortfolioCostingRevenueWipRoute: typeof AuthenticatedPortfolioCostingRevenueWipRoute
   AuthenticatedPortfolioCostingScenariosRoute: typeof AuthenticatedPortfolioCostingScenariosRoute
 }
 
@@ -5816,6 +5837,8 @@ const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingR
       AuthenticatedPortfolioCostingFundingRoute,
     AuthenticatedPortfolioCostingPackRoute:
       AuthenticatedPortfolioCostingPackRoute,
+    AuthenticatedPortfolioCostingRevenueWipRoute:
+      AuthenticatedPortfolioCostingRevenueWipRoute,
     AuthenticatedPortfolioCostingScenariosRoute:
       AuthenticatedPortfolioCostingScenariosRoute,
   }

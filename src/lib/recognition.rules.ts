@@ -14,14 +14,19 @@
 //     through the governed constraint percentage.
 import { z } from "zod";
 
-
 import { DEFAULT_MINOR_UNIT, roundMoney, toMinor } from "@/lib/costing.fx";
 
 // ---------------------------------------------------------------------------
 // Vocabulary
 // ---------------------------------------------------------------------------
 /** JSON-safe payload type — server functions must return serialisable data. */
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 export type JsonRecord = { [key: string]: JsonValue };
 
 export const RECOGNITION_DISCLAIMER =
@@ -348,10 +353,14 @@ export function computeLine(
   const flags: RecognitionFlag[] = [];
   const method = o.method ?? policy.default_method;
   const basis: ProgressBasis =
-    o.progress_basis ?? (method === "cost_to_cost" ? "cost" : method === "manual" ? "manual" : "output");
+    o.progress_basis ??
+    (method === "cost_to_cost" ? "cost" : method === "manual" ? "manual" : "output");
 
   const adj = (kind: AdjustmentKind): number =>
-    addMoney((o.adjustments ?? []).filter((a) => a.kind === kind).map((a) => a.amount), mu);
+    addMoney(
+      (o.adjustments ?? []).filter((a) => a.kind === kind).map((a) => a.amount),
+      mu,
+    );
 
   // --- transaction price ---------------------------------------------------
   const base = roundMoney(num(o.base_price), mu);
@@ -513,8 +522,7 @@ export function rollupLines(
   lines: readonly RecognitionLine[],
   minorUnit = DEFAULT_MINOR_UNIT,
 ): RecognitionTotals {
-  const s = (pick: (l: RecognitionLine) => number): number =>
-    addMoney(lines.map(pick), minorUnit);
+  const s = (pick: (l: RecognitionLine) => number): number => addMoney(lines.map(pick), minorUnit);
 
   const cumulative = s((l) => l.cumulative_revenue);
   const gross = s((l) => l.gross_profit);
@@ -579,9 +587,21 @@ export function reconcile(
   const sum = (pick: (l: RecognitionLine) => number): number =>
     addMoney(lines.map(pick), minorUnit);
   return [
-    check("cumulative_revenue_rollup", sum((l) => l.cumulative_revenue), totals.cumulative_revenue),
-    check("period_revenue_rollup", sum((l) => l.period_revenue), totals.period_revenue),
-    check("billed_rollup", sum((l) => l.billed_to_date), totals.billed_to_date),
+    check(
+      "cumulative_revenue_rollup",
+      sum((l) => l.cumulative_revenue),
+      totals.cumulative_revenue,
+    ),
+    check(
+      "period_revenue_rollup",
+      sum((l) => l.period_revenue),
+      totals.period_revenue,
+    ),
+    check(
+      "billed_rollup",
+      sum((l) => l.billed_to_date),
+      totals.billed_to_date,
+    ),
     check(
       "wip_identity",
       subMoney(totals.contract_asset, totals.contract_liability, minorUnit),
@@ -594,13 +614,19 @@ export function reconcile(
     ),
     check(
       "period_movement_identity",
-      subMoney(totals.cumulative_revenue, sum((l) => l.prior_revenue), minorUnit),
+      subMoney(
+        totals.cumulative_revenue,
+        sum((l) => l.prior_revenue),
+        minorUnit,
+      ),
       totals.period_revenue,
     ),
   ];
 }
 
-export function reconciliationFailures(checks: readonly ReconciliationCheck[]): ReconciliationCheck[] {
+export function reconciliationFailures(
+  checks: readonly ReconciliationCheck[],
+): ReconciliationCheck[] {
   return checks.filter((c) => !c.ok);
 }
 
@@ -920,7 +946,9 @@ export function applySensitivity(
       ),
       fx_rate: o.fx_rate == null ? null : o.fx_rate * fxFactor,
       manual_progress:
-        o.manual_progress == null ? null : clamp01(o.manual_progress + (s.progress_delta_pp ?? 0) / 100),
+        o.manual_progress == null
+          ? null
+          : clamp01(o.manual_progress + (s.progress_delta_pp ?? 0) / 100),
       adjustments: [
         ...(o.adjustments ?? []),
         ...(s.progress_delta_pp
@@ -940,11 +968,7 @@ export function applySensitivity(
       period_revenue: subMoney(stressed.period_revenue, base.period_revenue, minorUnit),
       gross_profit: subMoney(stressed.gross_profit, base.gross_profit, minorUnit),
       contract_asset: subMoney(stressed.contract_asset, base.contract_asset, minorUnit),
-      contract_liability: subMoney(
-        stressed.contract_liability,
-        base.contract_liability,
-        minorUnit,
-      ),
+      contract_liability: subMoney(stressed.contract_liability, base.contract_liability, minorUnit),
       loss_provision: subMoney(stressed.loss_provision, base.loss_provision, minorUnit),
     },
   };
@@ -1066,7 +1090,10 @@ export function evaluateRecognitionAlerts(
         context: { contract_liability: t.contract_liability },
       });
 
-    if (t.constrained_consideration > 0 && t.constrained_consideration >= thresholds.exposure_amount)
+    if (
+      t.constrained_consideration > 0 &&
+      t.constrained_consideration >= thresholds.exposure_amount
+    )
       push({
         rule_type: "unapproved_variation_exposure",
         severity: "warning",
@@ -1084,9 +1111,7 @@ export function evaluateRecognitionAlerts(
 // Validation schemas
 // ---------------------------------------------------------------------------
 const uuid = z.string().uuid();
-const monthStart = z
-  .string()
-  .regex(/^\d{4}-\d{2}-01$/, "Period must be the first day of a month.");
+const monthStart = z.string().regex(/^\d{4}-\d{2}-01$/, "Period must be the first day of a month.");
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 export const recognitionSettingsSchema = z.object({
