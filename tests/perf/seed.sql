@@ -13,8 +13,7 @@ set transaction isolation level repeatable read;
 create temporary table perf_ids on commit drop as
 select
   md5('gc15-perf::company')::uuid                                     as company_id,
-  md5('gc15-perf::actor::prepared')::uuid                             as prepared_by,
-  md5('gc15-perf::actor::approver')::uuid                             as approved_by;
+  md5('gc15-perf::company')::uuid                                     as ns;
 
 insert into public.companies (id, name, slug)
 select company_id, 'GC15 Perf Fixture (rolled back)', 'gc15-perf-fixture' from perf_ids;
@@ -43,7 +42,7 @@ select md5('gc15-perf::cs::' || g || '::' || m || '::' || v)::uuid,
        (date '2019-01-31' + (m || ' months')::interval)::date,
        case when v = :versions then 'submitted' else 'superseded' end::cashflow_snapshot_status,
        v,
-       'USD', 'USD', p.prepared_by
+       'USD', 'USD'
 from perf_ids p,
      generate_series(1, :projects) g,
      generate_series(0, :periods - 1) m,
@@ -75,7 +74,7 @@ where s.company_id = (select company_id from perf_ids)
 -- ---------------------------------------------------------------------------
 insert into public.recognition_snapshots (
   id, company_id, project_id, period_month, data_date, billing_cutoff, status,
-  version_no, reporting_currency, project_currency, prepared_by
+  version_no, reporting_currency, project_currency
 )
 select md5('gc15-perf::rs::' || g || '::' || m || '::' || v)::uuid,
        p.company_id,
@@ -85,7 +84,7 @@ select md5('gc15-perf::rs::' || g || '::' || m || '::' || v)::uuid,
        (date '2019-01-31' + (m || ' months')::interval)::date,
        case when v = :versions then 'submitted' else 'superseded' end::recognition_snapshot_status,
        v,
-       'USD', 'USD', p.prepared_by
+       'USD', 'USD'
 from perf_ids p,
      generate_series(1, :projects) g,
      generate_series(0, :periods - 1) m,
