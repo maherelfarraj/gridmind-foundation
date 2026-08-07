@@ -7,7 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Activity, FileSpreadsheet, TrendingUp, Wallet } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { money, percent } from "@/components/cashflow/cash-format";
@@ -29,6 +29,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { costingErrorMessage } from "@/lib/costing.query";
+import { RecognitionManagement } from "@/components/recognition/recognition-manage";
+import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   buildRecognitionSnapshot,
@@ -85,6 +87,11 @@ function RecognitionCockpit() {
   const [stress, setStress] = useState<Awaited<
     ReturnType<typeof runRecognitionSensitivity>
   > | null>(null);
+
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data: u }) => setCurrentUserId(u.user?.id ?? null));
+  }, []);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["recognition"] });
   const onError = (e: unknown) => toast.error(costingErrorMessage(e));
@@ -530,6 +537,11 @@ function RecognitionCockpit() {
           </Card>
         </>
       )}
+      <RecognitionManagement
+        projectId={projectId}
+        workspace={data}
+        currentUserId={currentUserId}
+      />
     </div>
   );
 }
