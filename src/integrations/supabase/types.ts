@@ -26078,6 +26078,9 @@ export type Database = {
         | "evm_tcpi_infeasible"
         | "evm_mapping_gap"
         | "evm_forecast_divergence"
+        | "liquidity_shortfall"
+        | "funding_headroom"
+        | "covenant_breach"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       portfolio_scenario_driver:
@@ -27049,6 +27052,9 @@ export const Constants = {
         "evm_tcpi_infeasible",
         "evm_mapping_gap",
         "evm_forecast_divergence",
+        "liquidity_shortfall",
+        "funding_headroom",
+        "covenant_breach",
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],

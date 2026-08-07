@@ -897,6 +897,7 @@ export async function saveCashflowSnapshot(
     totals: {
       measures: computed.measures,
       funding: computed.funding,
+      covenants: computed.covenants,
       conversion: computed.conversion,
       reconciliation: {
         balanced: computed.reconciliation.balanced,

@@ -6,6 +6,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { Suspense } from "react";
 import { z } from "zod";
 
+import { PortfolioCashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { PortfolioEvmAppendixCard } from "@/components/evm/evm-appendix";
 import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
@@ -27,6 +28,7 @@ import { useI18n } from "@/lib/i18n/locale-provider";
 import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
 import { portfolioAlertAppendixQueryOptions } from "@/lib/portfolio-alerts.query";
 import { portfolioAuditQueryOptions } from "@/lib/portfolio-governance.query";
+import { portfolioCashflowAppendixQueryOptions } from "@/lib/cashflow.query";
 import { portfolioEvmAppendixQueryOptions } from "@/lib/evm.report.query";
 
 const K = "portfolioMod.costing";
@@ -182,6 +184,10 @@ function PackView() {
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <PortfolioCashAppendix period={data.period} currency={cur} />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
@@ -194,6 +200,16 @@ function PortfolioEvmAppendix({ period, currency }: { period: string; currency: 
   return (
     <section className="space-y-3">
       <PortfolioEvmAppendixCard data={data} />
+    </section>
+  );
+}
+
+/** GC-13 — consolidated cash-flow & liquidity appendix for the period. */
+function PortfolioCashAppendix({ period, currency }: { period: string; currency: string }) {
+  const { data } = useSuspenseQuery(portfolioCashflowAppendixQueryOptions({ period, currency }));
+  return (
+    <section className="space-y-3">
+      <PortfolioCashAppendixCard data={data} />
     </section>
   );
 }

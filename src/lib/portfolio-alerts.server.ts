@@ -25,6 +25,7 @@ import {
   type AlertRuleConfig,
   type AlertRuleType,
   type AlertSummary,
+  type LiquidityAlertRow,
   type OpenException,
 } from "@/lib/portfolio-alerts.rules";
 import { specOf } from "@/lib/portfolio-audit.rules";
@@ -95,6 +96,64 @@ const ALERT_COLUMNS =
  * of queries regardless of project count) and every write is batched, so a
  * repeat run touches the same rows instead of creating new ones.
  */
+
+/**
+ * GC-13 — reads the latest non-superseded governed cash-flow snapshot per
+ * project and projects it into the liquidity alert families. It reads only;
+ * approved snapshots are never re-rated here.
+ */
+async function loadLiquidityAlertRows(
+  ctx: AuthContext,
+  companyId: string,
+  period: string,
+  projects: readonly { project_id: string; code: string }[],
+): Promise<LiquidityAlertRow[]> {
+  type Snap = {
+    id: string;
+    project_id: string;
+    reporting_currency: string;
+    version_no: number;
+    totals: Record<string, unknown> | null;
+  };
+  const snaps = await rows<Snap>(
+    sbOf(ctx)
+      .from("cashflow_snapshots")
+      .select("id, project_id, reporting_currency, version_no, totals")
+      .eq("company_id", companyId)
+      .eq("period_month", period)
+      .neq("status", "superseded")
+      .order("version_no", { ascending: false }),
+  );
+  const codeById = new Map(projects.map((p) => [p.project_id, p.code]));
+  const seen = new Set<string>();
+  const out: LiquidityAlertRow[] = [];
+  for (const snap of snaps) {
+    if (seen.has(snap.project_id)) continue;
+    seen.add(snap.project_id);
+    const totals = (snap.totals ?? {}) as {
+      measures?: { minimum_liquidity?: number; first_shortfall_bucket?: string | null };
+      funding?: { unfunded_requirement?: number; utilization_pct?: number | null };
+      covenants?: { facility_id?: string; code?: string; breached?: boolean }[];
+    };
+    out.push({
+      project_id: snap.project_id,
+      code: codeById.get(snap.project_id) ?? snap.project_id.slice(0, 8),
+      snapshot_id: snap.id,
+      currency_code: snap.reporting_currency,
+      first_shortfall_bucket: totals.measures?.first_shortfall_bucket ?? null,
+      minimum_liquidity: Number(totals.measures?.minimum_liquidity ?? 0),
+      unfunded_requirement: Number(totals.funding?.unfunded_requirement ?? 0),
+      utilization_pct:
+        totals.funding?.utilization_pct == null ? null : Number(totals.funding.utilization_pct),
+      breached_covenants: (totals.covenants ?? [])
+        .filter((c) => c.breached)
+        .map((c) => ({ facility_id: String(c.facility_id ?? ""), code: String(c.code ?? "") })),
+    });
+  }
+  return out;
+}
+
+/** Evaluates every alert family for a company period and syncs the register. */
 export async function evaluateCompanyAlerts(
   ctx: AuthContext,
   companyId: string,
@@ -152,6 +211,8 @@ export async function evaluateCompanyAlerts(
     return !l.actor_id || (spec.expectsEntity && !l.entity_id);
   }).length;
 
+  const liquidity = await loadLiquidityAlertRows(ctx, companyId, period, data.rows);
+
   const candidates = evaluatePortfolioAlerts({
     period,
     today: data.today,
@@ -162,6 +223,7 @@ export async function evaluateCompanyAlerts(
     exceptions,
     reopened,
     audit_gaps,
+    liquidity,
   });
 
   const existing = await rows<ExistingRow>(
