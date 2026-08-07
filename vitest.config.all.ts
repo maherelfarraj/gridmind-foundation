@@ -32,6 +32,7 @@ const DB_INCLUDE = [
   "tests/portfolio/**/*.test.ts",
   "tests/subcontracts/**/*.test.ts",
   "tests/documents/**/*.test.ts",
+  "tests/perf/**/*.test.ts",
 ];
 
 export default defineConfig({
