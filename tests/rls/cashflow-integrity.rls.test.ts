@@ -446,11 +446,12 @@ d("cash flow invariants — authoritative data is never touched", () => {
   it.each(OPERATIONS)(
     "an attempted %s leaves every authoritative table byte-identical after rollback",
     (_label, sql) => {
-      const before = fingerprint();
-      qFail(`begin; ${sql}; rollback;`);
-      expect(fingerprint()).toBe(before);
+      const [before, after] = probe(sql);
+      expect(before).not.toBe("before-missing");
+      expect(after).toBe(before);
     },
   );
+
 
   it("cannot mutate frozen snapshots or history from an unprivileged session", () => {
     for (const sql of [
