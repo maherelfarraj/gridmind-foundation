@@ -3096,6 +3096,7 @@ export type Database = {
           reversal_reason: string | null
           reversed_at: string | null
           reversed_by: string | null
+          reverses_accrual_id: string | null
           status: Database["public"]["Enums"]["cost_accrual_status"]
           updated_at: string
         }
@@ -3123,6 +3124,7 @@ export type Database = {
           reversal_reason?: string | null
           reversed_at?: string | null
           reversed_by?: string | null
+          reverses_accrual_id?: string | null
           status?: Database["public"]["Enums"]["cost_accrual_status"]
           updated_at?: string
         }
@@ -3150,6 +3152,7 @@ export type Database = {
           reversal_reason?: string | null
           reversed_at?: string | null
           reversed_by?: string | null
+          reverses_accrual_id?: string | null
           status?: Database["public"]["Enums"]["cost_accrual_status"]
           updated_at?: string
         }
@@ -3173,6 +3176,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_accruals_reverses_accrual_id_fkey"
+            columns: ["reverses_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "cost_accruals"
             referencedColumns: ["id"]
           },
         ]
