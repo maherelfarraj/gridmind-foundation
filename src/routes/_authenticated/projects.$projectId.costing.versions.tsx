@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { GitCompare, History, RefreshCw } from "lucide-react";
+import { Download, GitCompare, History, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,17 @@ import {
   createForecastVersion,
   refreshForecastVersion,
 } from "@/lib/costing.close.functions";
-import { costingCloseQueryOptions, forecastCompareQueryOptions } from "@/lib/costing.close.query";
+import {
+  costingCloseQueryOptions,
+  forecastCompareQueryOptions,
+  forecastVersionDetailQueryOptions,
+} from "@/lib/costing.close.query";
+import {
+  buildForecastCompareCsv,
+  buildForecastVersionCsv,
+  forecastVersionCsvFilename,
+} from "@/lib/costing.versions.csv";
+import { downloadCsv } from "@/lib/csv";
 import { costingErrorMessage } from "@/lib/costing.query";
 import { formatCostingMoney } from "@/lib/costing.rules";
 import {
@@ -100,6 +110,41 @@ function VersionsView() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["costing"] });
   const money = (n: number) => formatCostingMoney(n, data.baseCurrency);
   const signed = (n: number) => `${n > 0 ? "+" : ""}${money(n)}`;
+
+  const exportVersion = useMutation({
+    mutationFn: async (v: (typeof versions)[number]) => {
+      const detail = await qc.fetchQuery(forecastVersionDetailQueryOptions(v.id));
+      const header = {
+        version_no: v.version_no,
+        status: v.status,
+        reporting_period: v.reporting_period,
+        base_currency_code: data.baseCurrency,
+        project_name: data.projectName ?? null,
+        approved_at: v.approved_at ?? null,
+      };
+      downloadCsv(
+        forecastVersionCsvFilename(header),
+        buildForecastVersionCsv(header, detail.lines, v.totals ?? null),
+      );
+    },
+    onError: (e) => toast.error(costingErrorMessage(e)),
+  });
+
+  const exportCompare = () => {
+    if (!compare.data) return;
+    const label = (id: string) => {
+      const v = versions.find((x) => x.id === id);
+      return v ? `v${v.version_no}` : "none";
+    };
+    downloadCsv(
+      `forecast-compare-${fromId === "none" ? "none" : label(fromId)}-${label(toId)}.csv`,
+      buildForecastCompareCsv(
+        fromId === "none" ? "none" : label(fromId),
+        label(toId),
+        compare.data,
+      ),
+    );
+  };
 
   const create = useMutation({
     mutationFn: () => createFn({ data: { projectId, period: data.focusPeriod } }),
@@ -210,8 +255,18 @@ function VersionsView() {
                     {money(Number(v.totals?.vac ?? 0))}
                   </TableCell>
                   <TableCell className="text-end">
-                    {data.canClose ? (
-                      <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label={t("financeMod.costing.versions.exportCsv")}
+                        onClick={() => exportVersion.mutate(v)}
+                        disabled={exportVersion.isPending}
+                      >
+                        <Download className="size-4" />
+                      </Button>
+                      {data.canClose ? (
+                        <>
                         {v.status === "working" ? (
                           <>
                             <Button
@@ -269,8 +324,9 @@ function VersionsView() {
                             </Button>
                           </>
                         ) : null}
-                      </div>
-                    ) : null}
+                        </>
+                      ) : null}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -320,6 +376,11 @@ function VersionsView() {
 
         {compare.data ? (
           <>
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={exportCompare}>
+                <Download className="size-4" /> {t("financeMod.costing.versions.exportCsv")}
+              </Button>
+            </div>
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {(
                 [
