@@ -34,6 +34,7 @@ import {
   saveCashflowAdjustment,
   saveCashflowSettings,
   saveCashflowSnapshot,
+  loadFundingWorkspace,
   saveFundingAllocation,
   saveFundingFacility,
   supersedeCashflowSnapshot,
@@ -134,6 +135,13 @@ export const getFundingFacilities = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<FacilityRow[]> => {
     requireSupabaseAuth(context);
     return listFundingFacilities(context);
+  });
+
+export const getFundingWorkspace = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<FundingWorkspace> => {
+    requireSupabaseAuth(context);
+    return loadFundingWorkspace(context);
   });
 
 export const saveFundingFacilityFn = createServerFn({ method: "POST" })
