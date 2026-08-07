@@ -6772,6 +6772,762 @@ export type Database = {
           },
         ]
       }
+      evm_events: {
+        Row: {
+          actor_id: string | null
+          company_id: string
+          context: Json
+          created_at: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["evm_report_status"] | null
+          id: string
+          project_id: string
+          reason: string | null
+          report_id: string | null
+          to_status: Database["public"]["Enums"]["evm_report_status"] | null
+        }
+        Insert: {
+          actor_id?: string | null
+          company_id: string
+          context?: Json
+          created_at?: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["evm_report_status"] | null
+          id?: string
+          project_id: string
+          reason?: string | null
+          report_id?: string | null
+          to_status?: Database["public"]["Enums"]["evm_report_status"] | null
+        }
+        Update: {
+          actor_id?: string | null
+          company_id?: string
+          context?: Json
+          created_at?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["evm_report_status"] | null
+          id?: string
+          project_id?: string
+          reason?: string | null
+          report_id?: string | null
+          to_status?: Database["public"]["Enums"]["evm_report_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_exceptions: {
+        Row: {
+          blocking: boolean
+          code: string
+          company_id: string
+          created_at: string
+          current_value: number | null
+          detail: string | null
+          entity_id: string | null
+          entity_table: string | null
+          id: string
+          linked_ref: string | null
+          period_month: string
+          project_id: string
+          report_id: string | null
+          severity: string
+          threshold_value: number | null
+          title: string
+          value_unit: string | null
+        }
+        Insert: {
+          blocking?: boolean
+          code: string
+          company_id: string
+          created_at?: string
+          current_value?: number | null
+          detail?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          id?: string
+          linked_ref?: string | null
+          period_month: string
+          project_id: string
+          report_id?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title: string
+          value_unit?: string | null
+        }
+        Update: {
+          blocking?: boolean
+          code?: string
+          company_id?: string
+          created_at?: string
+          current_value?: number | null
+          detail?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          id?: string
+          linked_ref?: string | null
+          period_month?: string
+          project_id?: string
+          report_id?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title?: string
+          value_unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_exceptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_exceptions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_exceptions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_mapping_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          note: string | null
+          project_id: string
+          row_version: number
+          status: Database["public"]["Enums"]["evm_mapping_status"]
+          superseded_by_id: string | null
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          note?: string | null
+          project_id: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["evm_mapping_status"]
+          superseded_by_id?: string | null
+          updated_at?: string
+          version_no: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          note?: string | null
+          project_id?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["evm_mapping_status"]
+          superseded_by_id?: string | null
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_mapping_versions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mapping_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mapping_versions_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "evm_mapping_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_mappings: {
+        Row: {
+          allocation_pct: number
+          company_id: string
+          cost_code_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          mapping_version_id: string
+          milestone_weights: Json | null
+          note: string | null
+          planned_units: number | null
+          progress_method: Database["public"]["Enums"]["evm_progress_method"]
+          project_id: string
+          schedule_task_id: string | null
+          sort_order: number
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          allocation_pct?: number
+          company_id: string
+          cost_code_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mapping_version_id: string
+          milestone_weights?: Json | null
+          note?: string | null
+          planned_units?: number | null
+          progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          project_id: string
+          schedule_task_id?: string | null
+          sort_order?: number
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          allocation_pct?: number
+          company_id?: string
+          cost_code_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mapping_version_id?: string
+          milestone_weights?: Json | null
+          note?: string | null
+          planned_units?: number | null
+          progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          project_id?: string
+          schedule_task_id?: string | null
+          sort_order?: number
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_mappings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mappings_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mappings_mapping_version_id_fkey"
+            columns: ["mapping_version_id"]
+            isOneToOne: false
+            referencedRelation: "evm_mapping_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mappings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mappings_schedule_task_id_fkey"
+            columns: ["schedule_task_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_mappings_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_progress_overrides: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          calculated_pct: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          evidence_ref: string
+          id: string
+          override_pct: number
+          period_month: string
+          project_id: string
+          reason: string
+          schedule_task_id: string | null
+          updated_at: string
+          wbs_item_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          calculated_pct?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          evidence_ref: string
+          id?: string
+          override_pct: number
+          period_month: string
+          project_id: string
+          reason: string
+          schedule_task_id?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          calculated_pct?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          evidence_ref?: string
+          id?: string
+          override_pct?: number
+          period_month?: string
+          project_id?: string
+          reason?: string
+          schedule_task_id?: string | null
+          updated_at?: string
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_progress_overrides_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_progress_overrides_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_progress_overrides_schedule_task_id_fkey"
+            columns: ["schedule_task_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_progress_overrides_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_report_lines: {
+        Row: {
+          ac: number
+          allocation_pct: number
+          applied_pct: number | null
+          bac: number
+          calculated_pct: number | null
+          company_id: string
+          cost_code_id: string | null
+          created_at: string
+          eac: number | null
+          etc: number | null
+          ev: number
+          id: string
+          label: string
+          level: number
+          measures: Json
+          parent_line_id: string | null
+          progress_method: Database["public"]["Enums"]["evm_progress_method"]
+          pv: number
+          report_id: string
+          schedule_task_id: string | null
+          sort_order: number
+          wbs_item_id: string | null
+        }
+        Insert: {
+          ac?: number
+          allocation_pct?: number
+          applied_pct?: number | null
+          bac?: number
+          calculated_pct?: number | null
+          company_id: string
+          cost_code_id?: string | null
+          created_at?: string
+          eac?: number | null
+          etc?: number | null
+          ev?: number
+          id?: string
+          label: string
+          level?: number
+          measures?: Json
+          parent_line_id?: string | null
+          progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          pv?: number
+          report_id: string
+          schedule_task_id?: string | null
+          sort_order?: number
+          wbs_item_id?: string | null
+        }
+        Update: {
+          ac?: number
+          allocation_pct?: number
+          applied_pct?: number | null
+          bac?: number
+          calculated_pct?: number | null
+          company_id?: string
+          cost_code_id?: string | null
+          created_at?: string
+          eac?: number | null
+          etc?: number | null
+          ev?: number
+          id?: string
+          label?: string
+          level?: number
+          measures?: Json
+          parent_line_id?: string | null
+          progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          pv?: number
+          report_id?: string
+          schedule_task_id?: string | null
+          sort_order?: number
+          wbs_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_report_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_report_lines_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_report_lines_parent_line_id_fkey"
+            columns: ["parent_line_id"]
+            isOneToOne: false
+            referencedRelation: "evm_report_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_report_lines_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_report_lines_schedule_task_id_fkey"
+            columns: ["schedule_task_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_report_lines_wbs_item_id_fkey"
+            columns: ["wbs_item_id"]
+            isOneToOne: false
+            referencedRelation: "wbs_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_reports: {
+        Row: {
+          ac_basis: string
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          correction_reason: string | null
+          cost_basis: string
+          created_at: string
+          created_by: string | null
+          data_date: string
+          eac_override_reason: string | null
+          forecast_version_id: string | null
+          fx_provenance: Json
+          id: string
+          mapping_version_id: string | null
+          official_eac_method: Database["public"]["Enums"]["evm_eac_method"]
+          period_month: string
+          prepared_at: string | null
+          prepared_by: string | null
+          project_currency: string
+          project_id: string
+          quality: Json
+          reporting_currency: string
+          row_version: number
+          schedule_baseline_id: string | null
+          status: Database["public"]["Enums"]["evm_report_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          supersedes_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          ac_basis?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          correction_reason?: string | null
+          cost_basis?: string
+          created_at?: string
+          created_by?: string | null
+          data_date: string
+          eac_override_reason?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          id?: string
+          mapping_version_id?: string | null
+          official_eac_method?: Database["public"]["Enums"]["evm_eac_method"]
+          period_month: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency: string
+          project_id: string
+          quality?: Json
+          reporting_currency: string
+          row_version?: number
+          schedule_baseline_id?: string | null
+          status?: Database["public"]["Enums"]["evm_report_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          ac_basis?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          correction_reason?: string | null
+          cost_basis?: string
+          created_at?: string
+          created_by?: string | null
+          data_date?: string
+          eac_override_reason?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          id?: string
+          mapping_version_id?: string | null
+          official_eac_method?: Database["public"]["Enums"]["evm_eac_method"]
+          period_month?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency?: string
+          project_id?: string
+          quality?: Json
+          reporting_currency?: string
+          row_version?: number
+          schedule_baseline_id?: string | null
+          status?: Database["public"]["Enums"]["evm_report_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_forecast_version_id_fkey"
+            columns: ["forecast_version_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_mapping_version_id_fkey"
+            columns: ["mapping_version_id"]
+            isOneToOne: false
+            referencedRelation: "evm_mapping_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_schedule_baseline_id_fkey"
+            columns: ["schedule_baseline_id"]
+            isOneToOne: false
+            referencedRelation: "baseline_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_reports_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evm_settings: {
+        Row: {
+          company_id: string
+          cpi_threshold: number
+          created_at: string
+          default_progress_method: Database["public"]["Enums"]["evm_progress_method"]
+          gate_block_on_stale_progress: boolean
+          gate_block_on_unmapped: boolean
+          gate_max_unmapped_pct: number
+          id: string
+          include_accruals_in_ac: boolean
+          official_eac_method: Database["public"]["Enums"]["evm_eac_method"]
+          progress_stale_days: number
+          project_id: string
+          spi_threshold: number
+          tcpi_feasibility_limit: number
+          updated_at: string
+          updated_by: string | null
+          variance_threshold_amount: number
+          variance_threshold_pct: number
+        }
+        Insert: {
+          company_id: string
+          cpi_threshold?: number
+          created_at?: string
+          default_progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          gate_block_on_stale_progress?: boolean
+          gate_block_on_unmapped?: boolean
+          gate_max_unmapped_pct?: number
+          id?: string
+          include_accruals_in_ac?: boolean
+          official_eac_method?: Database["public"]["Enums"]["evm_eac_method"]
+          progress_stale_days?: number
+          project_id: string
+          spi_threshold?: number
+          tcpi_feasibility_limit?: number
+          updated_at?: string
+          updated_by?: string | null
+          variance_threshold_amount?: number
+          variance_threshold_pct?: number
+        }
+        Update: {
+          company_id?: string
+          cpi_threshold?: number
+          created_at?: string
+          default_progress_method?: Database["public"]["Enums"]["evm_progress_method"]
+          gate_block_on_stale_progress?: boolean
+          gate_block_on_unmapped?: boolean
+          gate_max_unmapped_pct?: number
+          id?: string
+          include_accruals_in_ac?: boolean
+          official_eac_method?: Database["public"]["Enums"]["evm_eac_method"]
+          progress_stale_days?: number
+          project_id?: string
+          spi_threshold?: number
+          tcpi_feasibility_limit?: number
+          updated_at?: string
+          updated_by?: string | null
+          variance_threshold_amount?: number
+          variance_threshold_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evm_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evm_settings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evm_snapshots: {
         Row: {
           actual_cost: number
@@ -24329,6 +25085,17 @@ export type Database = {
         | "client_notification"
         | "lender_report_exception"
         | "performance_ld_assessment"
+      evm_eac_method: "bottom_up" | "cpi" | "cpi_spi" | "ac_plus_remaining"
+      evm_mapping_status: "draft" | "approved" | "superseded"
+      evm_progress_method:
+        | "weighted_milestone"
+        | "physical_pct"
+        | "units_complete"
+        | "zero_hundred"
+        | "twenty_eighty"
+        | "fifty_fifty"
+        | "level_of_effort"
+      evm_report_status: "working" | "submitted" | "approved" | "superseded"
       expediting_status: "on_track" | "at_risk" | "delayed" | "delivered"
       facility_type:
         | "term_loan"
@@ -24530,6 +25297,11 @@ export type Database = {
         | "close_readiness"
         | "period_reopened"
         | "audit_gap"
+        | "evm_cpi_deterioration"
+        | "evm_spi_deterioration"
+        | "evm_tcpi_infeasible"
+        | "evm_mapping_gap"
+        | "evm_forecast_divergence"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       portfolio_scenario_driver:
@@ -25233,6 +26005,18 @@ export const Constants = {
         "lender_report_exception",
         "performance_ld_assessment",
       ],
+      evm_eac_method: ["bottom_up", "cpi", "cpi_spi", "ac_plus_remaining"],
+      evm_mapping_status: ["draft", "approved", "superseded"],
+      evm_progress_method: [
+        "weighted_milestone",
+        "physical_pct",
+        "units_complete",
+        "zero_hundred",
+        "twenty_eighty",
+        "fifty_fifty",
+        "level_of_effort",
+      ],
+      evm_report_status: ["working", "submitted", "approved", "superseded"],
       expediting_status: ["on_track", "at_risk", "delayed", "delivered"],
       facility_type: [
         "term_loan",
@@ -25456,6 +26240,11 @@ export const Constants = {
         "close_readiness",
         "period_reopened",
         "audit_gap",
+        "evm_cpi_deterioration",
+        "evm_spi_deterioration",
+        "evm_tcpi_infeasible",
+        "evm_mapping_gap",
+        "evm_forecast_divergence",
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],
