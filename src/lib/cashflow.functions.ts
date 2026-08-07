@@ -45,6 +45,7 @@ import {
   type CashflowSettings,
   type CashflowWorkspaceData,
   type FacilityRow,
+  type FundingWorkspace,
   type PortfolioCashData,
 } from "@/lib/cashflow.server";
 
@@ -55,6 +56,7 @@ export type {
   CashflowSettings,
   CashflowWorkspaceData,
   FacilityRow,
+  FundingWorkspace,
   PortfolioCashData,
 };
 
