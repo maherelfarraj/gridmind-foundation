@@ -380,7 +380,8 @@
         "severity": "Severity",
         "project": "Project",
         "correlation": "Correlation id",
-        "any": "Any"
+        "any": "Any",
+        "legend": "Audit filters"
       },
       "kpi": {
         "total": "Matching events",
@@ -391,7 +392,9 @@
       "pagination": {
         "status": "Page {{page}} of {{pages}}",
         "prev": "Previous",
-        "next": "Next"
+        "next": "Next",
+        "label": "Audit trail pagination",
+        "announce": "{{count}} matching events. Showing {{shown}} on page {{page}} of {{pages}}."
       },
       "empty": {
         "title": "No audit events",
@@ -400,7 +403,10 @@
       "error": {
         "title": "Audit trail unavailable",
         "description": "You may not have the finance role required to read the audit trail."
-      }
+      },
+      "tableCaption": "Audit events: time, actor, action, severity, scope and change.",
+      "scopeLink": "Open costing close for project {{code}}",
+      "gapPrefix": "Audit gap:"
     },
     "views": {
       "label": "Saved view",
@@ -426,7 +432,14 @@
       "copyOf": "Copy of {{name}}",
       "dialogTitle": "Save this view",
       "dialogDescription": "Saves the current reporting period, currency and rate basis. Private to you until you share it.",
-      "nameLabel": "View name"
+      "nameLabel": "View name",
+      "rename": "Rename",
+      "renameTitle": "Rename saved view",
+      "renameDescription": "Only you can rename a view you own. Shared recipients keep access under the new name.",
+      "deleteTitle": "Delete this saved view?",
+      "deleteDescription": "“{{name}}” will be removed for you and anyone it is shared with. This cannot be undone.",
+      "confirmDelete": "Delete view",
+      "cancel": "Cancel"
     }
   }
 }
