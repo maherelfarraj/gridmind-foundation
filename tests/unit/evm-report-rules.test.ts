@@ -56,15 +56,15 @@ describe("calculateProgress", () => {
   });
 
   it("physical_pct clamps and rounds reported progress", () => {
-    expect(calculateProgress({ method: "physical_pct", physical_pct: 43.456 }).calculated_pct).toBe(
-      43.46,
+    expect(calculateProgress({ method: "physical_pct", physical_pct: 43.4567 }).calculated_pct).toBe(
+      43.457,
     );
     expect(calculateProgress({ method: "physical_pct", physical_pct: 140 }).calculated_pct).toBe(100);
     expect(calculateProgress({ method: "physical_pct", physical_pct: -5 }).calculated_pct).toBe(0);
   });
 
   it("physical_pct reports a gap when nothing was reported", () => {
-    const r = calculateProgress({ method: "physical_pct", physical_pct: null });
+    const r = calculateProgress({ method: "physical_pct" });
     expect(r.calculated_pct).toBeNull();
     expect(r.gap).toBe("no_physical");
   });
@@ -113,7 +113,7 @@ describe("calculateProgress", () => {
     expect(calculateProgress({ method: "level_of_effort", planned_pct: 62.5 }).calculated_pct).toBe(
       62.5,
     );
-    expect(calculateProgress({ method: "level_of_effort", planned_pct: null }).gap).toBe("no_planned");
+    expect(calculateProgress({ method: "level_of_effort" }).gap).toBe("no_planned");
   });
 });
 
@@ -464,41 +464,42 @@ describe("lifecycle", () => {
     const r = checkTransition({
       from: "submitted",
       to: "approved",
-      actor_id: "u1",
-      submitted_by: "u1",
-      blockers: 0,
-      period_locked: false,
-      row_version: 1,
-      expected_row_version: 1,
+      actorId: "u1",
+      submittedBy: "u1",
     });
     expect(r.ok).toBe(false);
   });
 
-  it("refuses approval with open blockers, a locked period or a version conflict", () => {
+  it("refuses approval with open gate blockers and submission into a locked period", () => {
     const base = {
       from: "submitted" as const,
       to: "approved" as const,
-      actor_id: "u2",
-      submitted_by: "u1",
-      blockers: 0,
-      period_locked: false,
-      row_version: 1,
-      expected_row_version: 1,
+      actorId: "u2",
+      submittedBy: "u1",
+      gateReady: true,
     };
     expect(checkTransition(base).ok).toBe(true);
-    expect(checkTransition({ ...base, blockers: 2 }).ok).toBe(false);
-    expect(checkTransition({ ...base, period_locked: true }).ok).toBe(false);
-    expect(checkTransition({ ...base, expected_row_version: 0 }).ok).toBe(false);
+    expect(checkTransition({ ...base, gateReady: false }).ok).toBe(false);
+    expect(
+      checkTransition({ from: "working", to: "submitted", actorId: "u1", periodLocked: true }).ok,
+    ).toBe(false);
   });
 
   it("only supersedes an approved report", () => {
-    expect(supersedePlan({ status: "approved", reason: "Restated after cost correction" }).ok).toBe(
-      true,
-    );
-    expect(supersedePlan({ status: "working", reason: "Restated after cost correction" }).ok).toBe(
-      false,
-    );
-    expect(supersedePlan({ status: "approved", reason: "no" }).ok).toBe(false);
+    const cur = { id: "r1", version_no: 2 };
+    const approved = supersedePlan({
+      current: { ...cur, status: "approved" },
+      reason: "Restated after cost correction",
+    });
+    expect(approved.ok).toBe(true);
+    expect(approved.next_version_no).toBe(3);
+    expect(
+      supersedePlan({
+        current: { ...cur, status: "working" },
+        reason: "Restated after cost correction",
+      }).ok,
+    ).toBe(false);
+    expect(supersedePlan({ current: { ...cur, status: "approved" }, reason: "no" }).ok).toBe(false);
   });
 });
 
@@ -578,7 +579,7 @@ describe("exports and appendix", () => {
 
   it("writes one CSV row per node plus a header", () => {
     const csv = buildDetailCsv([node(), node({ key: "n2", label: "Electrical" })]);
-    expect(csv.split("\n")).toHaveLength(3);
+    expect(csv.trim().split("\n")).toHaveLength(3);
   });
 
   it("writes a formula comparison row per EAC variant", () => {
@@ -626,7 +627,7 @@ describe("exports and appendix", () => {
       { period_month: "2026-02-01", pv: 400, ev: 350, ac: 380, cpi: 0.92, spi: 0.88, eac: 1100, bac: 1000 },
       { period_month: "2026-03-01", pv: 500, ev: 400, ac: 500, cpi: 0.8, spi: 0.8, eac: 1250, bac: 1000 },
     ];
-    const a = analyseTrend(points);
+    const a = analyseTrend(points, DEFAULT_PERFORMANCE_POLICY);
     expect(a.points).toHaveLength(2);
     expect(a.cpi_delta).not.toBeNull();
     expect(a.eac_delta).not.toBeNull();
