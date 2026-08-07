@@ -33,6 +33,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as VendorVendorIdIndexRouteImport } from './routes/vendor.$vendorId.index'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
+import { Route as AuthenticatedPortfolioIndexRouteImport } from './routes/_authenticated/portfolio.index'
 import { Route as AuthenticatedHseIndexRouteImport } from './routes/_authenticated/hse.index'
 import { Route as AuthenticatedFinanceIndexRouteImport } from './routes/_authenticated/finance.index'
 import { Route as AuthenticatedEstimatingIndexRouteImport } from './routes/_authenticated/estimating.index'
@@ -84,6 +85,7 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
+import { Route as AuthenticatedPortfolioCostingRouteImport } from './routes/_authenticated/portfolio.costing'
 import { Route as AuthenticatedOmWorkOrdersRouteImport } from './routes/_authenticated/om.work-orders'
 import { Route as AuthenticatedOmWarrantiesRouteImport } from './routes/_authenticated/om.warranties'
 import { Route as AuthenticatedOmServiceTicketsRouteImport } from './routes/_authenticated/om.service-tickets'
@@ -202,6 +204,7 @@ import { Route as AuthenticatedProcurementReceiptsGrnIdRouteImport } from './rou
 import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_authenticated/procurement.pos.$poId'
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
+import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedOmScadaMappingsRouteImport } from './routes/_authenticated/om.scada.mappings'
 import { Route as AuthenticatedOmScadaIngestionHealthRouteImport } from './routes/_authenticated/om.scada.ingestion-health'
 import { Route as AuthenticatedOmScadaImportRouteImport } from './routes/_authenticated/om.scada.import'
@@ -401,6 +404,12 @@ const AuthenticatedProjectsIndexRoute =
     id: '/projects/',
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPortfolioIndexRoute =
+  AuthenticatedPortfolioIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedHseIndexRoute = AuthenticatedHseIndexRouteImport.update({
   id: '/hse/',
@@ -696,6 +705,12 @@ const AuthenticatedProcurementExpeditingRoute =
     id: '/procurement/expediting',
     path: '/procurement/expediting',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPortfolioCostingRoute =
+  AuthenticatedPortfolioCostingRouteImport.update({
+    id: '/costing',
+    path: '/costing',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedOmWorkOrdersRoute =
   AuthenticatedOmWorkOrdersRouteImport.update({
@@ -1390,6 +1405,12 @@ const AuthenticatedProcurementMatchesMatchIdRoute =
     path: '/$matchId',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
   } as any)
+const AuthenticatedPortfolioCostingPackRoute =
+  AuthenticatedPortfolioCostingPackRouteImport.update({
+    id: '/pack',
+    path: '/pack',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedOmScadaMappingsRoute =
   AuthenticatedOmScadaMappingsRouteImport.update({
     id: '/om/scada/mappings',
@@ -1897,7 +1918,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/portfolio': typeof AuthenticatedPortfolioRoute
+  '/portfolio': typeof AuthenticatedPortfolioRouteWithChildren
   '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -1955,6 +1976,7 @@ export interface FileRoutesByFullPath {
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
+  '/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2006,6 +2028,7 @@ export interface FileRoutesByFullPath {
   '/estimating/': typeof AuthenticatedEstimatingIndexRoute
   '/finance/': typeof AuthenticatedFinanceIndexRoute
   '/hse/': typeof AuthenticatedHseIndexRoute
+  '/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
@@ -2031,6 +2054,7 @@ export interface FileRoutesByFullPath {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -2167,7 +2191,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/portfolio': typeof AuthenticatedPortfolioRoute
   '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -2223,6 +2246,7 @@ export interface FileRoutesByTo {
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
+  '/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/receiving': typeof AuthenticatedProcurementReceivingRoute
@@ -2267,6 +2291,7 @@ export interface FileRoutesByTo {
   '/estimating': typeof AuthenticatedEstimatingIndexRoute
   '/finance': typeof AuthenticatedFinanceIndexRoute
   '/hse': typeof AuthenticatedHseIndexRoute
+  '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/vendor/$vendorId': typeof VendorVendorIdIndexRoute
@@ -2292,6 +2317,7 @@ export interface FileRoutesByTo {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -2429,7 +2455,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
+  '/_authenticated/portfolio': typeof AuthenticatedPortfolioRouteWithChildren
   '/_authenticated/timesheets': typeof AuthenticatedTimesheetsRoute
   '/po/$token': typeof PoTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -2487,6 +2513,7 @@ export interface FileRoutesById {
   '/_authenticated/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/_authenticated/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/_authenticated/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
+  '/_authenticated/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2538,6 +2565,7 @@ export interface FileRoutesById {
   '/_authenticated/estimating/': typeof AuthenticatedEstimatingIndexRoute
   '/_authenticated/finance/': typeof AuthenticatedFinanceIndexRoute
   '/_authenticated/hse/': typeof AuthenticatedHseIndexRoute
+  '/_authenticated/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/vendor/$vendorId/': typeof VendorVendorIdIndexRoute
@@ -2563,6 +2591,7 @@ export interface FileRoutesById {
   '/_authenticated/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/_authenticated/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/_authenticated/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
   '/_authenticated/procurement/pos/$poId': typeof AuthenticatedProcurementPosPoIdRoute
@@ -2761,6 +2790,7 @@ export interface FileRouteTypes {
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
+    | '/portfolio/costing'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -2812,6 +2842,7 @@ export interface FileRouteTypes {
     | '/estimating/'
     | '/finance/'
     | '/hse/'
+    | '/portfolio/'
     | '/projects/'
     | '/proposals/'
     | '/vendor/$vendorId/'
@@ -2837,6 +2868,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -2973,7 +3005,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/approvals'
     | '/dashboard'
-    | '/portfolio'
     | '/timesheets'
     | '/po/$token'
     | '/share/$token'
@@ -3029,6 +3060,7 @@ export interface FileRouteTypes {
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
+    | '/portfolio/costing'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/receiving'
@@ -3073,6 +3105,7 @@ export interface FileRouteTypes {
     | '/estimating'
     | '/finance'
     | '/hse'
+    | '/portfolio'
     | '/projects'
     | '/proposals'
     | '/vendor/$vendorId'
@@ -3098,6 +3131,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
     | '/procurement/pos/$poId'
@@ -3292,6 +3326,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/service-tickets'
     | '/_authenticated/om/warranties'
     | '/_authenticated/om/work-orders'
+    | '/_authenticated/portfolio/costing'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -3343,6 +3378,7 @@ export interface FileRouteTypes {
     | '/_authenticated/estimating/'
     | '/_authenticated/finance/'
     | '/_authenticated/hse/'
+    | '/_authenticated/portfolio/'
     | '/_authenticated/projects/'
     | '/_authenticated/proposals/'
     | '/vendor/$vendorId/'
@@ -3368,6 +3404,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/scada/import'
     | '/_authenticated/om/scada/ingestion-health'
     | '/_authenticated/om/scada/mappings'
+    | '/_authenticated/portfolio/costing/pack'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
     | '/_authenticated/procurement/pos/$poId'
@@ -3696,6 +3733,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/portfolio/': {
+      id: '/_authenticated/portfolio/'
+      path: '/'
+      fullPath: '/portfolio/'
+      preLoaderRoute: typeof AuthenticatedPortfolioIndexRouteImport
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/hse/': {
       id: '/_authenticated/hse/'
@@ -4053,6 +4097,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/expediting'
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/portfolio/costing': {
+      id: '/_authenticated/portfolio/costing'
+      path: '/costing'
+      fullPath: '/portfolio/costing'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingRouteImport
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/om/work-orders': {
       id: '/_authenticated/om/work-orders'
@@ -4880,6 +4931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementMatchesMatchIdRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
     }
+    '/_authenticated/portfolio/costing/pack': {
+      id: '/_authenticated/portfolio/costing/pack'
+      path: '/pack'
+      fullPath: '/portfolio/costing/pack'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingPackRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/om/scada/mappings': {
       id: '/_authenticated/om/scada/mappings'
       path: '/om/scada/mappings'
@@ -5493,6 +5551,38 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedPortfolioCostingRouteChildren {
+  AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
+}
+
+const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingRouteChildren =
+  {
+    AuthenticatedPortfolioCostingPackRoute:
+      AuthenticatedPortfolioCostingPackRoute,
+  }
+
+const AuthenticatedPortfolioCostingRouteWithChildren =
+  AuthenticatedPortfolioCostingRoute._addFileChildren(
+    AuthenticatedPortfolioCostingRouteChildren,
+  )
+
+interface AuthenticatedPortfolioRouteChildren {
+  AuthenticatedPortfolioCostingRoute: typeof AuthenticatedPortfolioCostingRouteWithChildren
+  AuthenticatedPortfolioIndexRoute: typeof AuthenticatedPortfolioIndexRoute
+}
+
+const AuthenticatedPortfolioRouteChildren: AuthenticatedPortfolioRouteChildren =
+  {
+    AuthenticatedPortfolioCostingRoute:
+      AuthenticatedPortfolioCostingRouteWithChildren,
+    AuthenticatedPortfolioIndexRoute: AuthenticatedPortfolioIndexRoute,
+  }
+
+const AuthenticatedPortfolioRouteWithChildren =
+  AuthenticatedPortfolioRoute._addFileChildren(
+    AuthenticatedPortfolioRouteChildren,
+  )
+
 interface AuthenticatedProcurementMatchesRouteChildren {
   AuthenticatedProcurementMatchesMatchIdRoute: typeof AuthenticatedProcurementMatchesMatchIdRoute
   AuthenticatedProcurementMatchesNewRoute: typeof AuthenticatedProcurementMatchesNewRoute
@@ -5900,7 +5990,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
+  AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRouteWithChildren
   AuthenticatedTimesheetsRoute: typeof AuthenticatedTimesheetsRoute
   AuthenticatedChangesIdRoute: typeof AuthenticatedChangesIdRoute
   AuthenticatedChangesDashboardRoute: typeof AuthenticatedChangesDashboardRoute
@@ -6038,7 +6128,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
+  AuthenticatedPortfolioRoute: AuthenticatedPortfolioRouteWithChildren,
   AuthenticatedTimesheetsRoute: AuthenticatedTimesheetsRoute,
   AuthenticatedChangesIdRoute: AuthenticatedChangesIdRoute,
   AuthenticatedChangesDashboardRoute: AuthenticatedChangesDashboardRoute,

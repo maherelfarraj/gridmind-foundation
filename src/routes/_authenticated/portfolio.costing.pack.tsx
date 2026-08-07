@@ -1,0 +1,180 @@
+// GC-08 — Printable management pack: consolidated position, close matrix,
+// FX attribution and reconciliation for one reporting period.
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowLeft, Printer } from "lucide-react";
+import { z } from "zod";
+
+import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
+import { CostingConsolidationTable } from "@/components/portfolio/costing-consolidation-table";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader, SectionHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatCurrency, formatNumber } from "@/lib/i18n/format";
+import { useI18n } from "@/lib/i18n/locale-provider";
+import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
+
+const K = "portfolioMod.costing";
+
+const searchSchema = z.object({
+  period: z
+    .string()
+    .regex(/^\d{4}-\d{2}-01$/)
+    .optional(),
+  currency: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .optional(),
+  basis: z.enum(["period_end", "latest"]).optional(),
+});
+
+export const Route = createFileRoute("/_authenticated/portfolio/costing/pack")({
+  validateSearch: searchSchema,
+  head: () => ({
+    meta: [
+      { title: "Portfolio management pack | GridMind EPC" },
+      {
+        name: "description",
+        content:
+          "Printable portfolio management pack: consolidated cost position, variance, close status and FX attribution.",
+      },
+      { property: "og:title", content: "Portfolio management pack | GridMind EPC" },
+      {
+        property: "og:description",
+        content: "Board-ready consolidated cost and close pack for the project portfolio.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  pendingComponent: () => <Skeleton className="h-64 w-full" />,
+  component: PackView,
+});
+
+function PackView() {
+  const { t, locale } = useI18n();
+  const search = Route.useSearch();
+  const { data } = useSuspenseQuery(portfolioCostingQueryOptions(search));
+  const cur = data.reporting_currency;
+
+  return (
+    <div className="page-shell">
+      <PageHeader
+        title={t(`${K}.pack.title`, { period: data.period.slice(0, 7) })}
+        description={t(`${K}.pack.description`, { currency: cur, date: data.rate_date })}
+        actions={
+          <div className="flex gap-2 print:hidden">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing">
+                <ArrowLeft className="size-4" /> {t(`${K}.pack.back`)}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="size-4" /> {t(`${K}.pack.print`)}
+            </Button>
+          </div>
+        }
+      />
+
+      <Card className="flex flex-wrap gap-6 p-4 text-sm">
+        <Field label={t(`${K}.pack.period`)} value={data.period.slice(0, 7)} />
+        <Field label={t(`${K}.filters.currency`)} value={cur} />
+        <Field label={t(`${K}.filters.basis`)} value={t(`${K}.filters.basis_${data.basis}`)} />
+        <Field label={t(`${K}.pack.rateDate`)} value={data.rate_date} />
+        <Field
+          label={t(`${K}.pack.status`)}
+          value={data.gate.official ? t(`${K}.pack.official`) : t(`${K}.pack.management`)}
+        />
+        <Field
+          label={t(`${K}.pack.projects`)}
+          value={`${data.consolidation.included}/${data.rows.length}`}
+        />
+      </Card>
+
+      <section className="space-y-3">
+        <SectionHeader title={t(`${K}.consolidation.heading`)} />
+        <Card className="overflow-x-auto p-0">
+          <CostingConsolidationTable rows={data.rows} consolidation={data.consolidation} />
+        </Card>
+      </section>
+
+      <section className="space-y-3">
+        <SectionHeader title={t(`${K}.pack.fxHeading`)} description={t(`${K}.pack.fxNote`)} />
+        <Card className="overflow-x-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t(`${K}.table.project`)}</TableHead>
+                <TableHead>{t(`${K}.pack.fromCurrency`)}</TableHead>
+                <TableHead className="text-end">{t(`${K}.pack.rate`)}</TableHead>
+                <TableHead>{t(`${K}.pack.rateAsOf`)}</TableHead>
+                <TableHead>{t(`${K}.pack.rateSource`)}</TableHead>
+                <TableHead className="text-end">{t(`${K}.pack.projectEac`)}</TableHead>
+                <TableHead className="text-end">{t(`${K}.pack.reportingEac`)}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.reconciliation.lines.map((l) => (
+                <TableRow key={l.project_id}>
+                  <TableCell>{l.code}</TableCell>
+                  <TableCell>{l.currency}</TableCell>
+                  <TableCell className="text-end tabular-nums">
+                    {l.rate === null
+                      ? "—"
+                      : formatNumber(l.rate, locale, { maximumFractionDigits: 6 })}
+                  </TableCell>
+                  <TableCell>
+                    {data.rows.find((r) => r.project_id === l.project_id)?.rate.as_of ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    {t(
+                      `${K}.pack.source.${data.rows.find((r) => r.project_id === l.project_id)?.rate.source ?? "table"}`,
+                    )}
+                  </TableCell>
+                  <TableCell className="text-end tabular-nums">
+                    {formatCurrency(l.project_eac, locale, l.currency)}
+                  </TableCell>
+                  <TableCell className="text-end tabular-nums">
+                    {l.reporting_eac === null ? "—" : formatCurrency(l.reporting_eac, locale, cur)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+        <p className="text-muted-foreground text-xs">
+          {data.reconciliation.ok
+            ? t(`${K}.reconciliation.ok`, { count: data.reconciliation.lines.length })
+            : t(`${K}.reconciliation.failed`, {
+                value: formatCurrency(data.reconciliation.difference, locale, cur),
+              })}
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <SectionHeader title={t(`${K}.close.heading`)} />
+        <Card className="overflow-x-auto p-0">
+          <CostingCloseMatrix rows={data.rows} period={data.period} />
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-muted-foreground text-xs">{label}</div>
+      <div className="font-medium">{value}</div>
+    </div>
+  );
+}
