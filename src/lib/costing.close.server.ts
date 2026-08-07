@@ -505,6 +505,7 @@ export async function notifyPeriodTransition(
     period: string;
     state: CostingPeriodState;
     reason: string | null;
+    rowVersion?: number | null;
   },
 ): Promise<number> {
   try {
@@ -515,7 +516,13 @@ export async function notifyPeriodTransition(
       .select("id")
       .eq("company_id", args.companyId)
       .eq("type", type)
-      .contains("metadata", { period: args.period, project_id: args.projectId })
+      .contains("metadata", {
+        period: args.period,
+        project_id: args.projectId,
+        // row_version makes the key one-per-transition, so lock -> reopen ->
+        // lock notifies twice while a repeated idempotent call never does.
+        row_version: args.rowVersion ?? null,
+      })
       .limit(1);
     if ((existing ?? []).length > 0) return 0;
 
@@ -541,6 +548,7 @@ export async function notifyPeriodTransition(
           project_id: args.projectId,
           state: args.state,
           reason: args.reason,
+          row_version: args.rowVersion ?? null,
         },
       })),
     );
@@ -637,6 +645,7 @@ export async function transitionPeriod(
     period: input.period,
     state,
     reason: input.reason ?? null,
+    rowVersion,
   });
 
   return { state, rowVersion, notified };
