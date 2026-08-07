@@ -3356,6 +3356,459 @@ export type Database = {
           },
         ]
       }
+      costing_checklist_evidence: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_id: string
+          id: string
+          item_id: string
+          label: string | null
+          project_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_id: string
+          id?: string
+          item_id: string
+          label?: string | null
+          project_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          item_id?: string
+          label?: string | null
+          project_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_checklist_evidence_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_evidence_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_evidence_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "costing_checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_evidence_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_checklist_items: {
+        Row: {
+          assignee_id: string | null
+          category: string
+          company_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          instructions: string | null
+          is_required: boolean
+          notes: string | null
+          owner_role: Database["public"]["Enums"]["app_role"] | null
+          period_month: string
+          project_id: string
+          ready_at: string | null
+          requires_evidence: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_id: string | null
+          row_version: number
+          run_id: string
+          seq: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["costing_checklist_item_status"]
+          title: string
+          updated_at: string
+          waived_at: string | null
+          waived_by: string | null
+          waiver_reason: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          category?: string
+          company_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          notes?: string | null
+          owner_role?: Database["public"]["Enums"]["app_role"] | null
+          period_month: string
+          project_id: string
+          ready_at?: string | null
+          requires_evidence?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_id?: string | null
+          row_version?: number
+          run_id: string
+          seq: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["costing_checklist_item_status"]
+          title: string
+          updated_at?: string
+          waived_at?: string | null
+          waived_by?: string | null
+          waiver_reason?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          category?: string
+          company_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          notes?: string | null
+          owner_role?: Database["public"]["Enums"]["app_role"] | null
+          period_month?: string
+          project_id?: string
+          ready_at?: string | null
+          requires_evidence?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_id?: string | null
+          row_version?: number
+          run_id?: string
+          seq?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["costing_checklist_item_status"]
+          title?: string
+          updated_at?: string
+          waived_at?: string | null
+          waived_by?: string | null
+          waiver_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_checklist_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "costing_checklist_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_checklist_runs: {
+        Row: {
+          company_id: string
+          created_at: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          period_month: string
+          project_id: string
+          template_id: string | null
+          template_name: string
+          template_version: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          period_month: string
+          project_id: string
+          template_id?: string | null
+          template_name: string
+          template_version?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          period_month?: string
+          project_id?: string
+          template_id?: string | null
+          template_name?: string
+          template_version?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_checklist_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_runs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "costing_checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_checklist_template_items: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          due_day_offset: number
+          id: string
+          instructions: string | null
+          is_required: boolean
+          owner_role: Database["public"]["Enums"]["app_role"] | null
+          requires_evidence: boolean
+          seq: number
+          template_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          due_day_offset?: number
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          owner_role?: Database["public"]["Enums"]["app_role"] | null
+          requires_evidence?: boolean
+          seq: number
+          template_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          due_day_offset?: number
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          owner_role?: Database["public"]["Enums"]["app_role"] | null
+          requires_evidence?: boolean
+          seq?: number
+          template_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_checklist_template_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_checklist_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "costing_checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_checklist_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_checklist_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_exceptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          due_date: string | null
+          entity_id: string | null
+          entity_table: string | null
+          exception_type: string
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          owner_id: string | null
+          period_month: string
+          project_id: string
+          reopen_count: number
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          row_version: number
+          severity: Database["public"]["Enums"]["costing_exception_severity"]
+          source: string
+          status: Database["public"]["Enums"]["costing_exception_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          detail?: Json
+          due_date?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          exception_type: string
+          fingerprint: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          owner_id?: string | null
+          period_month: string
+          project_id: string
+          reopen_count?: number
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_version?: number
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          source?: string
+          status?: Database["public"]["Enums"]["costing_exception_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: Json
+          due_date?: string | null
+          entity_id?: string | null
+          entity_table?: string | null
+          exception_type?: string
+          fingerprint?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          owner_id?: string | null
+          period_month?: string
+          project_id?: string
+          reopen_count?: number
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_version?: number
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          source?: string
+          status?: Database["public"]["Enums"]["costing_exception_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_exceptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_exceptions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       costing_periods: {
         Row: {
           company_id: string
@@ -3427,6 +3880,8 @@ export type Database = {
       }
       costing_settings: {
         Row: {
+          allow_self_review: boolean
+          block_on_warnings: boolean
           company_id: string
           created_at: string
           id: string
@@ -3436,6 +3891,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_self_review?: boolean
+          block_on_warnings?: boolean
           company_id: string
           created_at?: string
           id?: string
@@ -3445,6 +3902,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_self_review?: boolean
+          block_on_warnings?: boolean
           company_id?: string
           created_at?: string
           id?: string
@@ -21833,6 +22292,17 @@ export type Database = {
           title: string
         }[]
       }
+      costing_close_blockers: {
+        Args: {
+          p_company_id: string
+          p_period_month: string
+          p_project_id: string
+        }
+        Returns: {
+          count: number
+          key: string
+        }[]
+      }
       costing_period_state: {
         Args: { p_company_id: string; p_date: string; p_project_id: string }
         Returns: string
@@ -22019,6 +22489,18 @@ export type Database = {
           deleted_count: number
           entity: string
         }[]
+      }
+      ensure_costing_checklist: {
+        Args: {
+          p_company_id: string
+          p_period_month: string
+          p_project_id: string
+        }
+        Returns: string
+      }
+      ensure_costing_checklist_template: {
+        Args: { p_company_id: string }
+        Returns: string
       }
       ensure_pv_layout_rule: { Args: { p_company_id: string }; Returns: string }
       ensure_pv_simulation_rule: {
@@ -22487,6 +22969,50 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_costing_exception: {
+        Args: {
+          p_due_date?: string
+          p_expected_version: number
+          p_id: string
+          p_note?: string
+          p_owner_id?: string
+          p_status: Database["public"]["Enums"]["costing_exception_status"]
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          due_date: string | null
+          entity_id: string | null
+          entity_table: string | null
+          exception_type: string
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          owner_id: string | null
+          period_month: string
+          project_id: string
+          reopen_count: number
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          row_version: number
+          severity: Database["public"]["Enums"]["costing_exception_severity"]
+          source: string
+          status: Database["public"]["Enums"]["costing_exception_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "costing_exceptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_share_link: { Args: { p_token_hash: string }; Returns: Json }
       rfq_unaward_line: { Args: { p_award_id: string }; Returns: Json }
       save_pv_layout_blocks: {
@@ -22694,6 +23220,71 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_costing_checklist_item: {
+        Args: {
+          p_assignee_id?: string
+          p_clear_assignee?: boolean
+          p_expected_version: number
+          p_item_id: string
+          p_notes?: string
+          p_reviewer_id?: string
+          p_status?: Database["public"]["Enums"]["costing_checklist_item_status"]
+          p_waiver_reason?: string
+        }
+        Returns: {
+          assignee_id: string | null
+          category: string
+          company_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          instructions: string | null
+          is_required: boolean
+          notes: string | null
+          owner_role: Database["public"]["Enums"]["app_role"] | null
+          period_month: string
+          project_id: string
+          ready_at: string | null
+          requires_evidence: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_id: string | null
+          row_version: number
+          run_id: string
+          seq: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["costing_checklist_item_status"]
+          title: string
+          updated_at: string
+          waived_at: string | null
+          waived_by: string | null
+          waiver_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "costing_checklist_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_costing_exception: {
+        Args: {
+          p_company_id: string
+          p_detail?: Json
+          p_entity_id?: string
+          p_entity_table?: string
+          p_exception_type: string
+          p_fingerprint: string
+          p_period_month: string
+          p_project_id: string
+          p_severity: Database["public"]["Enums"]["costing_exception_severity"]
+          p_source: string
+          p_title: string
+        }
+        Returns: string
       }
       vendor_portal_accept_invites: { Args: never; Returns: number }
       vendor_portal_acknowledge_po: {
@@ -23015,6 +23606,18 @@ export type Database = {
         | "other"
       controlled_copy_status: "issued" | "returned" | "recalled" | "destroyed"
       cost_accrual_status: "draft" | "approved" | "reversed"
+      costing_checklist_item_status:
+        | "pending"
+        | "in_progress"
+        | "ready_for_review"
+        | "completed"
+        | "waived"
+      costing_exception_severity: "blocker" | "warning"
+      costing_exception_status:
+        | "open"
+        | "in_progress"
+        | "resolved"
+        | "accepted_risk"
       costing_period_state: "open" | "soft_locked" | "hard_closed"
       cwp_status:
         | "draft"
@@ -23862,6 +24465,20 @@ export const Constants = {
       ],
       controlled_copy_status: ["issued", "returned", "recalled", "destroyed"],
       cost_accrual_status: ["draft", "approved", "reversed"],
+      costing_checklist_item_status: [
+        "pending",
+        "in_progress",
+        "ready_for_review",
+        "completed",
+        "waived",
+      ],
+      costing_exception_severity: ["blocker", "warning"],
+      costing_exception_status: [
+        "open",
+        "in_progress",
+        "resolved",
+        "accepted_risk",
+      ],
       costing_period_state: ["open", "soft_locked", "hard_closed"],
       cwp_status: [
         "draft",
