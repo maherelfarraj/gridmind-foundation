@@ -29,7 +29,23 @@ export const ALERT_RULE_TYPES = [
   "liquidity_shortfall",
   "funding_headroom",
   "covenant_breach",
+  // GC-15 — governed revenue / WIP recognition families. They are evaluated
+  // from approved recognition snapshots and never re-derive money here.
+  "revenue_margin_erosion",
+  "revenue_loss_making",
+  "recognition_basis_stale",
+  "recognition_fx_missing",
+  "revenue_reversal_material",
+  "wip_underbilling_age",
+  "contract_liability_movement",
+  "unapproved_variation_exposure",
+  "retention_release_overdue",
+  "recognition_billing_lag",
+  "recognition_reconciliation_failed",
+  "recognition_adjustment_pending",
+  "recognition_approval_delay",
 ] as const;
+
 export type AlertRuleType = (typeof ALERT_RULE_TYPES)[number];
 
 export const ALERT_SEVERITIES = ["critical", "high", "medium", "low"] as const;
