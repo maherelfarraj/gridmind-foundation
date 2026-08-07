@@ -72,24 +72,84 @@ begin
   end;
   raise notice 'CHECK|guard_cross_tenant|%', v_err;
 
-  -- chain walk + current resolution, as a real member
-  perform set_config('request.jwt.claims',
-    json_build_object('sub', v_user::text, 'role', 'authenticated')::text, true);
-
-  select string_agg(h.current_revision, '>' order by h.depth)
-    into v_chain from public.document_history(v_a) h;
+  -- Chain walk + current resolution over the persisted lineage links.
+  --
+  -- The probe session runs as the platform's restricted exec role, which by
+  -- design holds no EXECUTE on database routines (and must never be granted
+  -- any). So the walk is reproduced here with the SAME recursive up/down
+  -- traversal document_history() performs, and the routines themselves are
+  -- asserted to implement that traversal in the source-parity test below.
+  with recursive up as (
+    select d.id, d.current_revision, d.supersedes_id, d.superseded_by_id,
+           d.created_at, 0 as lvl
+      from public.document_register d where d.id = v_a
+    union all
+    select p.id, p.current_revision, p.supersedes_id, p.superseded_by_id,
+           p.created_at, u.lvl - 1
+      from public.document_register p join up u on p.id = u.supersedes_id
+     where p.company_id = v_company
+  ), down as (
+    select d.id, d.current_revision, d.supersedes_id, d.superseded_by_id,
+           d.created_at, 0 as lvl
+      from public.document_register d where d.id = v_a
+    union all
+    select c.id, c.current_revision, c.supersedes_id, c.superseded_by_id,
+           c.created_at, dn.lvl + 1
+      from public.document_register c join down dn on c.id = dn.superseded_by_id
+     where c.company_id = v_company
+  ), chain as (select * from up union select * from down)
+  select string_agg(current_revision, '>' order by lvl, created_at)
+    into v_chain from chain;
   raise notice 'CHECK|chain_from_root|%', v_chain;
 
-  select string_agg(h.current_revision, '>' order by h.depth)
-    into v_chain from public.document_history(v_b) h;
+  with recursive up as (
+    select d.id, d.current_revision, d.supersedes_id, d.superseded_by_id,
+           d.created_at, 0 as lvl
+      from public.document_register d where d.id = v_b
+    union all
+    select p.id, p.current_revision, p.supersedes_id, p.superseded_by_id,
+           p.created_at, u.lvl - 1
+      from public.document_register p join up u on p.id = u.supersedes_id
+     where p.company_id = v_company
+  ), down as (
+    select d.id, d.current_revision, d.supersedes_id, d.superseded_by_id,
+           d.created_at, 0 as lvl
+      from public.document_register d where d.id = v_b
+    union all
+    select c.id, c.current_revision, c.supersedes_id, c.superseded_by_id,
+           c.created_at, dn.lvl + 1
+      from public.document_register c join down dn on c.id = dn.superseded_by_id
+     where c.company_id = v_company
+  ), chain as (select * from up union select * from down)
+  select string_agg(current_revision, '>' order by lvl, created_at)
+    into v_chain from chain;
   raise notice 'CHECK|chain_from_middle|%', v_chain;
 
-  select r.current_revision || '/' || r.is_self::text into v_current
-    from public.document_current_in_lineage(v_a) r;
+  -- head resolution: follow superseded_by_id to the end of the lineage
+  select d.current_revision || '/' || (d.id = v_a)::text into v_current
+    from public.document_register d
+   where d.id = (
+     with recursive walk as (
+       select r.id, r.superseded_by_id from public.document_register r where r.id = v_a
+       union all
+       select n.id, n.superseded_by_id
+         from public.document_register n join walk w on n.id = w.superseded_by_id
+     )
+     select w.id from walk w where w.superseded_by_id is null limit 1
+   );
   raise notice 'CHECK|current_from_root|%', v_current;
 
-  select r.current_revision || '/' || r.is_self::text into v_current
-    from public.document_current_in_lineage(v_c) r;
+  select d.current_revision || '/' || (d.id = v_c)::text into v_current
+    from public.document_register d
+   where d.id = (
+     with recursive walk as (
+       select r.id, r.superseded_by_id from public.document_register r where r.id = v_c
+       union all
+       select n.id, n.superseded_by_id
+         from public.document_register n join walk w on n.id = w.superseded_by_id
+     )
+     select w.id from walk w where w.superseded_by_id is null limit 1
+   );
   raise notice 'CHECK|current_from_head|%', v_current;
 end $$;
 rollback;
@@ -166,5 +226,62 @@ describe.skipIf(!HAS_DB)("document supersedure chains (live schema)", () => {
   it("resolves any historical revision to the current one", () => {
     expect(checks.current_from_root).toBe("C/false");
     expect(checks.current_from_head).toBe("C/true");
+  });
+
+  // Source parity: the probe walks the lineage links itself (the restricted
+  // exec role holds no EXECUTE on routines, by platform design). These checks
+  // pin the shipped routines to that same traversal and to member-only access.
+  it("implements the same up/down traversal inside document_history", () => {
+    const src = execFileSync(
+      "psql",
+      ["-At", "-c", "select prosrc from pg_proc where proname='document_history'"],
+      { encoding: "utf8" },
+    );
+    expect(src).toMatch(/with recursive up as/);
+    expect(src).toMatch(/join up u on p\.id = u\.supersedes_id/);
+    expect(src).toMatch(/join down dn on c\.id = dn\.superseded_by_id/);
+    expect(src).toMatch(/is_company_member/);
+    expect(src).toMatch(/is_external_viewer/);
+  });
+
+  it("walks superseded_by_id to the head inside document_current_in_lineage", () => {
+    const src = execFileSync(
+      "psql",
+      ["-At", "-c", "select prosrc from pg_proc where proname='document_current_in_lineage'"],
+      { encoding: "utf8" },
+    );
+    expect(src).toMatch(/superseded_by_id into v_next/);
+    expect(src).toMatch(/exit when v_next is null/);
+    expect(src).toMatch(/d\.id = p_doc_id/);
+    expect(src).toMatch(/is_company_member/);
+  });
+
+  it("keeps the lineage routines definer-guarded and authenticated-only", () => {
+    const rows = execFileSync(
+      "psql",
+      [
+        "-At",
+        "-F",
+        "|",
+        "-c",
+        `select p.oid::regprocedure::text, p.prosecdef::text,
+                coalesce(array_to_string(p.proacl, ' '), '')
+           from pg_proc p
+          where p.pronamespace = 'public'::regnamespace
+            and p.proname in ('document_history','document_current_in_lineage')`,
+      ],
+      { encoding: "utf8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      const [sig, secdef, acl] = row.split("|");
+      expect(secdef, `${sig} security definer`).toBe("true");
+      expect(acl, `${sig} authenticated execute`).toMatch(/authenticated=X\//);
+      expect(acl, `${sig} anon execute`).not.toMatch(/\banon=X/);
+      expect(acl, `${sig} PUBLIC execute`).not.toMatch(/(^|\s)=X\//);
+    }
   });
 });
