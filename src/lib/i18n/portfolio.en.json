@@ -534,7 +534,36 @@
         "description": "Portfolio finance alerts are restricted to finance leadership, or the evaluation could not be read."
       },
       "appendixHeading": "Appendix — finance alerts",
-      "appendixDescription": "{{open}} open alerts ({{critical}} critical or high) across {{projects}} projects."
+      "appendixDescription": "{{open}} open alerts ({{critical}} critical or high) across {{projects}} projects.",
+      "config": {
+        "heading": "Alert configuration",
+        "caption": "Company thresholds, lead times and acknowledgement SLAs for every alert rule.",
+        "show": "Configure thresholds",
+        "hide": "Hide configuration",
+        "enabled": "Enabled",
+        "enabledFor": "Enable alert rule: {{rule}}",
+        "severityFor": "Severity for {{rule}}",
+        "threshold": "Threshold",
+        "thresholdFor": "Threshold for {{rule}} in {{unit}}",
+        "leadDays": "Lead days",
+        "leadDaysFor": "Lead days for {{rule}}",
+        "slaHours": "Ack SLA (h)",
+        "slaHoursFor": "Acknowledgement SLA in hours for {{rule}}",
+        "save": "Save",
+        "saveFor": "Save configuration for {{rule}}",
+        "saved": "Alert configuration saved.",
+        "unit": {
+          "percent": "%",
+          "ratio": "ratio",
+          "days": "days",
+          "count": "count",
+          "currency": "currency"
+        },
+        "invalid": {
+          "threshold_required": "This rule needs a threshold value.",
+          "threshold_out_of_range": "That threshold is outside the allowed range."
+        }
+      }
     }
   }
 }
