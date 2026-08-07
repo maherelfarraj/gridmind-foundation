@@ -128,7 +128,13 @@ const PROBES: Probe[] = [
     key: "claims_project_register",
     title: "GC-16 open contract-claim register by project",
     relation: "contract_claims",
-    allowedIndexes: ["contract_claims_project_idx", "contract_claims_company_idx"],
+    allowedIndexes: [
+      "contract_claims_project_idx",
+      "contract_claims_company_idx",
+      // The planner may prefer the narrower unique (project_id, claim_ref)
+      // index for this predicate; either choice is index-backed.
+      "contract_claims_project_id_claim_ref_key",
+    ],
     budgetMs: 50,
     sql: `select claim_ref, status, approved_amount, at_risk_amount, updated_at
             from public.contract_claims
