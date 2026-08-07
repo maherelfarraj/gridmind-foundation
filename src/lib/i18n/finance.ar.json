@@ -1117,6 +1117,232 @@
         "project": "المشروع"
       },
       "notFound": "لم يتم العثور على المشروع."
+    },
+    "cashFlow": {
+      "title": "التدفق النقدي والسيولة",
+      "description": "توقعات التدفق النقدي المحوكمة من التكاليف والفواتير والمدفوعات المعتمدة.",
+      "notFound": "This cash-flow view is not available.",
+      "actions": {
+        "recalculate": "Recalculate",
+        "exportBuckets": "Export buckets",
+        "exportLines": "Export lines",
+        "exportExceptions": "Export exceptions"
+      },
+      "tabs": {
+        "profile": "منحنى النقد",
+        "funding": "التمويل",
+        "quality": "بوابات الجودة",
+        "scenario": "السيناريوهات",
+        "governance": "الحوكمة"
+      },
+      "kpi": {
+        "groupLabel": "Liquidity indicators",
+        "openingCash": "Opening cash",
+        "openingCashHint": "Balance carried into the horizon.",
+        "inflow": "Inflows",
+        "inflowHint": "Expected receipts across the horizon.",
+        "outflow": "Outflows",
+        "outflowHint": "Expected payments across the horizon.",
+        "closingCash": "Closing cash",
+        "closingCashHint": "Balance at the end of the horizon.",
+        "peakFunding": "Peak funding need",
+        "peakFundingHint": "Deepest cash trough, shown positive.",
+        "minLiquidity": "Minimum liquidity",
+        "minLiquidityHint": "Lowest closing balance in any bucket.",
+        "unfunded": "Unfunded requirement",
+        "unfundedHint": "Requirement not covered by available facilities.",
+        "runway": "Runway (buckets)",
+        "runwayHint": "Buckets sustained at current burn. Facility utilisation {{utilization}}."
+      },
+      "granularity": {
+        "month": "Monthly",
+        "week": "Weekly"
+      },
+      "direction": {
+        "inflow": "Inflow",
+        "outflow": "Outflow"
+      },
+      "status": {
+        "working": "Working",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "superseded": "Superseded"
+      },
+      "severity": {
+        "blocker": "Blocker",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "buckets": {
+        "title": "Time-phased cash profile",
+        "caption": "Cash inflows, outflows and closing balance by bucket",
+        "bucket": "Bucket",
+        "inflow": "Inflow",
+        "outflow": "Outflow",
+        "net": "Net",
+        "closing": "Closing cash",
+        "emptyTitle": "No cash buckets",
+        "emptyBody": "No timed receipts or payments were derived for this horizon."
+      },
+      "basis": {
+        "title": "Calculation basis",
+        "description": "Every figure is traceable to its source, period and rate.",
+        "period": "Period",
+        "dataDate": "Data date",
+        "granularity": "Granularity",
+        "horizon": "Horizon buckets",
+        "status": "Status",
+        "version": "Version",
+        "periodState": "Period state",
+        "projectCurrency": "Project currency",
+        "reportingCurrency": "Reporting currency",
+        "openingCash": "Opening cash",
+        "minLiquidity": "Minimum liquidity",
+        "forecastVersion": "Forecast version",
+        "fx": "FX provenance",
+        "fxNone": "No conversion required.",
+        "fxMissing": "Missing rates: {{currencies}}",
+        "frozenNote": "This snapshot is frozen and is replayed from stored lines — it is never re-rated."
+      },
+      "gates": {
+        "ready": "Ready to approve",
+        "notReady": "Not ready to approve",
+        "summary": "{{blockers}} blockers, {{warnings}} warnings",
+        "clear": "No exceptions.",
+        "issue": "Issue",
+        "severity": "Severity",
+        "detail": "Detail",
+        "dataTitle": "Data quality gates",
+        "dataDescription": "Blockers must be cleared before approval."
+      },
+      "reconciliation": {
+        "title": "Reconciliation",
+        "description": "Totals must tie out across every analytical dimension.",
+        "balanced": "Ties out",
+        "unbalanced": "Mismatch",
+        "dimension": "Dimension",
+        "key": "Key",
+        "dim": {
+          "source": "Source",
+          "cost_code": "Cost code",
+          "counterparty": "Counterparty",
+          "period": "Period",
+          "direction": "Direction"
+        }
+      },
+      "facilities": {
+        "title": "Funding facilities",
+        "description": "Committed funding, drawdowns and headroom in reporting currency.",
+        "caption": "Funding facilities",
+        "name": "Facility",
+        "allocated": "Allocated",
+        "outstanding": "Outstanding",
+        "headroom": "Headroom",
+        "utilization": "Utilisation",
+        "state": "State",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "refinancing": "Refinancing window ({{days}} days)",
+        "fxMissing": "FX rate missing",
+        "emptyTitle": "No facilities",
+        "emptyBody": "Add a funding facility to monitor headroom and covenants."
+      },
+      "covenants": {
+        "title": "Covenants",
+        "description": "Facility covenants tested against the current liquidity position.",
+        "empty": "No covenants defined.",
+        "code": "Covenant",
+        "metric": "Metric",
+        "threshold": "Threshold",
+        "value": "Value",
+        "state": "State",
+        "breached": "Breached",
+        "near": "Near breach",
+        "ok": "Compliant"
+      },
+      "maturity": {
+        "title": "Maturity ladder",
+        "description": "Outstanding balances by facility expiry bucket.",
+        "empty": "No dated maturities.",
+        "bucket": "Bucket",
+        "amount": "Outstanding",
+        "facilities": "Facilities"
+      },
+      "adjustments": {
+        "title": "Manual adjustments",
+        "description": "Governed manual entries: prepared and authorised by different people.",
+        "date": "Bucket date",
+        "direction": "Direction",
+        "category": "Category",
+        "counterparty": "Counterparty",
+        "amount": "Amount ({{currency}})",
+        "amountShort": "Amount",
+        "evidence": "Evidence reference",
+        "reason": "Reason",
+        "create": "Add adjustment",
+        "authorize": "Authorise",
+        "void": "Void",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No manual adjustments."
+      },
+      "adjustmentStatus": {
+        "draft": "Draft",
+        "authorized": "Authorised",
+        "voided": "Voided"
+      },
+      "lifecycle": {
+        "title": "Snapshot lifecycle",
+        "description": "Submit, approve, return or supersede the governed snapshot.",
+        "reason": "Reason",
+        "reasonPlaceholder": "Required for return and supersede.",
+        "submit": "Submit",
+        "approve": "Approve",
+        "return": "Return",
+        "supersede": "Supersede",
+        "blocked": "{{blockers}} blockers must be cleared first."
+      },
+      "scenario": {
+        "title": "Liquidity scenarios",
+        "description": "Non-posting overlays: nothing is written and no snapshot is changed.",
+        "receiptDelay": "Receipt delay (days)",
+        "paymentDelay": "Payment delay (days)",
+        "costShift": "Cost phasing shift (days)",
+        "fxShock": "FX shock (%)",
+        "facilityChange": "Facility change (%)",
+        "contingencyDraw": "Contingency draw",
+        "run": "Run scenario",
+        "reset": "Reset",
+        "empty": "Run a scenario to compare against the basis.",
+        "metric": "Measure",
+        "basis": "Basis",
+        "overlay": "Scenario",
+        "delta": "Delta",
+        "metrics": {
+          "peak_funding_need": "Peak funding need",
+          "minimum_liquidity": "Minimum liquidity",
+          "net_cash_flow": "Net cash flow",
+          "headroom": "Headroom",
+          "unfunded_requirement": "Unfunded requirement",
+          "runway_buckets": "Runway (buckets)",
+          "first_shortfall_bucket": "First shortfall bucket"
+        }
+      },
+      "history": {
+        "title": "Snapshot history",
+        "description": "Approved versions and correction reasons.",
+        "empty": "No snapshots yet."
+      },
+      "toast": {
+        "recalculated": "Cash flow recalculated.",
+        "submitted": "Snapshot submitted.",
+        "approved": "Snapshot approved.",
+        "returned": "Snapshot returned to working.",
+        "superseded": "Snapshot superseded.",
+        "adjustmentSaved": "Adjustment saved.",
+        "adjustmentDecided": "Adjustment updated."
+      },
+      "exception": {}
     }
   }
 }
