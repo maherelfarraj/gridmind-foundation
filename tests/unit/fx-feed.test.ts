@@ -104,11 +104,12 @@ describe("import planning and coverage", () => {
   const supported = ["EUR", "GBP", "CHF", "USD"];
 
   it("deduplicates requested currencies and drops the quote currency", () => {
-    expect(planRequestedCurrencies(["eur", "EUR", "USD", "gbp", "bad"], "USD")).toEqual([
+    expect(planRequestedCurrencies(["eur", "EUR", "USD", "gbp", "e", ""], "USD")).toEqual([
       "EUR",
       "GBP",
     ]);
   });
+
 
   it("separates unsupported currencies from payload defects", () => {
     const plan = buildImportPlan(
