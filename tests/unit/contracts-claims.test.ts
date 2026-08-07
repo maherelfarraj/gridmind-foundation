@@ -80,9 +80,7 @@ describe("claim state machine", () => {
 
 describe("segregation of duties and delegation", () => {
   it("rejects self-approval by the submitter", () => {
-    expect(
-      violatesSegregation({ to: "approved", actorId: "u1", preparedBy: "u1" }),
-    ).toBe(true);
+    expect(violatesSegregation({ to: "approved", actorId: "u1", preparedBy: "u1" })).toBe(true);
     expect(
       violatesSegregation({ to: "approved", actorId: "u1", preparedBy: "u0", submittedBy: "u1" }),
     ).toBe(true);

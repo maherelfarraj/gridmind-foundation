@@ -442,10 +442,7 @@ function PortfolioContractsClaimsPage() {
                       className="flex flex-wrap items-center justify-between gap-2 text-sm"
                     >
                       <span className="flex items-center gap-2">
-                        <StatusBadge
-                          status={String(a["severity"])}
-                          label={String(a["severity"])}
-                        />
+                        <StatusBadge status={String(a["severity"])} label={String(a["severity"])} />
                         <span className="text-foreground">{String(a["title"])}</span>
                       </span>
                       <span className="text-xs tabular-nums text-muted-foreground">
@@ -487,8 +484,8 @@ function ConcentrationCard({
             <li key={r.project_id} className="flex justify-between gap-2">
               <span className="truncate text-foreground">{r.project_name}</span>
               <span className="tabular-nums text-muted-foreground">
-                {money(r.value)} ·{" "}
-                {formatNumber(r.share_pct, locale, { maximumFractionDigits: 1 })}%
+                {money(r.value)} · {formatNumber(r.share_pct, locale, { maximumFractionDigits: 1 })}
+                %
               </span>
             </li>
           ))}
