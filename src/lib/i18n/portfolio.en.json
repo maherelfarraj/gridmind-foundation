@@ -380,6 +380,7 @@
         "severity": "Severity",
         "project": "Project",
         "correlation": "Correlation id",
+        "correlationHint": "Filter applies automatically shortly after you stop typing.",
         "any": "Any",
         "legend": "Audit filters"
       },
