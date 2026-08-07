@@ -270,9 +270,13 @@ function AuditPage() {
             <Input
               id="correlation"
               className="w-52"
-              value={search.correlation_id ?? ""}
-              onChange={(e) => setSearch({ correlation_id: e.target.value || undefined })}
+              value={correlation}
+              aria-describedby="correlation-hint"
+              onChange={(e) => setCorrelation(e.target.value)}
             />
+            <p id="correlation-hint" className="sr-only">
+              {t(`${K}.filters.correlationHint`)}
+            </p>
           </div>
         </fieldset>
       </Card>
