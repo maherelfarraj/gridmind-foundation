@@ -288,3 +288,49 @@
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Respect the OS "reduce motion" setting across every animated primitive. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print/PDF semantics for management packs: no app chrome, no clipped tables. */
+@media print {
+  [data-print-hide],
+  nav[data-app-nav],
+  aside[data-app-sidebar] {
+    display: none !important;
+  }
+
+  .page-shell {
+    padding: 0 !important;
+  }
+
+  table {
+    break-inside: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    break-inside: avoid;
+  }
+
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
