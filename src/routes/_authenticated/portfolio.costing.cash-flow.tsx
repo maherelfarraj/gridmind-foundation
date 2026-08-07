@@ -206,7 +206,10 @@ function PortfolioCashPage() {
       </KpiGrid>
 
       <section className="flex flex-col gap-3">
-        <SectionHeader title={t(`${K}.heatmap.title`)} description={t(`${K}.heatmap.description`)} />
+        <SectionHeader
+          title={t(`${K}.heatmap.title`)}
+          description={t(`${K}.heatmap.description`)}
+        />
         {data.rows.length === 0 ? (
           <EmptyState title={t(`${K}.empty.title`)} description={t(`${K}.empty.body`)} />
         ) : (
@@ -355,9 +358,7 @@ function PortfolioCashPage() {
                       <TableCell className="text-end tabular-nums">
                         {money(m.amount, currency)}
                       </TableCell>
-                      <TableCell className="text-end tabular-nums">
-                        {m.facilities.length}
-                      </TableCell>
+                      <TableCell className="text-end tabular-nums">{m.facilities.length}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

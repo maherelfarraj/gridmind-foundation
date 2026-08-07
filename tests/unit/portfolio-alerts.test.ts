@@ -612,7 +612,9 @@ describe("liquidity alert families", () => {
 
   it("raises a cash shortfall when closing cash turns negative", () => {
     const out = evaluatePortfolioAlerts(
-      input({ liquidity: [liq({ first_shortfall_bucket: "2026-07-01", minimum_liquidity: -500 })] }),
+      input({
+        liquidity: [liq({ first_shortfall_bucket: "2026-07-01", minimum_liquidity: -500 })],
+      }),
     );
     const hit = out.find((c) => c.rule_type === "liquidity_shortfall")!;
     expect(hit.severity).toBe("critical");

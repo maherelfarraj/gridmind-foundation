@@ -244,9 +244,7 @@ export function PortfolioCashAppendixCard({ data }: { data: PortfolioCashAppendi
               <TableCell>
                 <StatusBadge
                   status={r.status === "approved" ? "approved" : "draft"}
-                  label={
-                    r.status ? t(`${K}.status.${r.status}`, { defaultValue: r.status }) : "—"
-                  }
+                  label={r.status ? t(`${K}.status.${r.status}`, { defaultValue: r.status }) : "—"}
                 />
               </TableCell>
               <TableCell className="text-end tabular-nums">
