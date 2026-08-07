@@ -14,7 +14,11 @@ import {
   type AccrualStatus,
 } from "@/lib/costing.rules";
 import { canApproveWithFx, convertMoney, reverseSnapshot } from "@/lib/costing.fx";
-import { assertCostingPeriodOpen, findNextOpenPeriod } from "@/lib/costing.close.server";
+import {
+  assertCostingPeriodOpen,
+  findNextOpenPeriod,
+  loadPeriodState,
+} from "@/lib/costing.close.server";
 import { nextPeriodMonth, periodMonthOf } from "@/lib/costing.periods";
 import {
   COSTING_WRITE_ROLES,
@@ -212,7 +216,12 @@ export const transitionCostAccrual = createServerFn({ method: "POST" })
     // A reversal of a row whose own period is closed is NOT blocked: it is
     // posted into the next open period, referencing the original and reusing
     // its locked FX. Everything else is gated on the row's own period.
-    const originalState = await loadAccrualPeriodState(context, current);
+    const originalState = await loadPeriodState(
+      context,
+      current.company_id as string,
+      current.project_id as string,
+      current.period as string,
+    );
     const reversalIntoNextPeriod = data.action === "reverse" && originalState !== "open";
     if (!reversalIntoNextPeriod) {
       await assertCostingPeriodOpen(
