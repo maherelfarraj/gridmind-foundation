@@ -119,7 +119,7 @@ function VersionsView() {
         status: v.status,
         reporting_period: v.reporting_period,
         base_currency_code: data.baseCurrency,
-        project_name: data.projectName ?? null,
+        project_name: data.project.name,
         approved_at: v.approved_at ?? null,
       };
       downloadCsv(
