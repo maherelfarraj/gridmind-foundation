@@ -441,6 +441,100 @@
       "deleteDescription": "سيتم حذف «{{name}}» لك ولكل من تمت مشاركته معه. لا يمكن التراجع.",
       "confirmDelete": "حذف العرض",
       "cancel": "إلغاء"
+    },
+    "alerts": {
+      "title": "تنبيهات مالية للمحفظة",
+      "subtitle": "تصعيدات استباقية لفجوات أسعار الصرف والتوقعات القديمة وتدهور التكلفة النهائية وتجاوزات الموازنة وجاهزية الإقفال.",
+      "link": "التنبيهات المالية",
+      "back": "العودة إلى المحفظة",
+      "tableCaption": "التنبيهات المالية المفتوحة والمغلقة حديثاً للمحفظة.",
+      "companyScope": "على مستوى الشركة",
+      "threshold": "الحد {{value}}",
+      "ageDays": "{{days}} يوم",
+      "occurrences": "تكرر {{count}}×",
+      "tier": "مستوى التصعيد {{tier}}",
+      "ackOverdue": "تأخر الإقرار",
+      "acknowledge": "إقرار",
+      "acknowledgeOne": "إقرار التنبيه: {{title}}",
+      "acknowledged": "تم إقرار التنبيه.",
+      "snooze": "تأجيل",
+      "snoozeOne": "تأجيل التنبيه: {{title}}",
+      "snoozed": "تم تأجيل التنبيه سبعة أيام.",
+      "evaluateNow": "تقييم الآن",
+      "evaluated": "اكتمل التقييم — {{created}} جديد، {{resolved}} مغلق.",
+      "exportCsv": "تصدير CSV",
+      "exportFailed": "تعذّر إنشاء ملف التصدير.",
+      "actionFailed": "تعذّر تنفيذ الإجراء.",
+      "col": {
+        "severity": "الخطورة",
+        "rule": "التنبيه",
+        "scope": "النطاق",
+        "value": "القيمة",
+        "status": "الحالة",
+        "age": "العمر",
+        "actions": "إجراءات"
+      },
+      "severity": {
+        "critical": "حرج",
+        "high": "مرتفع",
+        "medium": "متوسط",
+        "low": "منخفض"
+      },
+      "status": {
+        "open": "مفتوح",
+        "acknowledged": "مُقَر",
+        "snoozed": "مؤجل",
+        "resolved": "مغلق"
+      },
+      "rule": {
+        "fx_missing": "سعر صرف مفقود",
+        "forecast_stale": "توقع قديم",
+        "eac_deterioration": "تدهور التكلفة النهائية",
+        "budget_breach": "تجاوز الموازنة",
+        "commitment_breach": "تجاوز الالتزامات",
+        "actual_breach": "تجاوز التكلفة الفعلية",
+        "checklist_overdue": "قائمة إقفال متأخرة",
+        "exception_aging": "استثناء متقادم",
+        "evidence_missing": "أدلة اعتماد مفقودة",
+        "close_readiness": "جاهزية الإقفال معرضة للخطر",
+        "period_reopened": "إعادة فتح الفترة",
+        "audit_gap": "فجوة تدقيق"
+      },
+      "filters": {
+        "legend": "تصفية التنبيهات المالية",
+        "any": "الكل",
+        "status": "الحالة",
+        "severity": "الخطورة",
+        "rule": "نوع التنبيه",
+        "project": "المشروع",
+        "owner": "المسؤول",
+        "overdue": "اتفاقية الخدمة",
+        "overdueOnly": "المتأخر فقط"
+      },
+      "kpi": {
+        "open": "تنبيهات مفتوحة",
+        "critical": "حرج ومرتفع",
+        "ackOverdue": "إقرار متأخر",
+        "projects": "مشاريع متأثرة",
+        "oldest": "الأقدم {{days}} يوم"
+      },
+      "pagination": {
+        "label": "ترقيم التنبيهات",
+        "status": "صفحة {{page}} من {{pages}}",
+        "prev": "السابق",
+        "next": "التالي",
+        "announce": "{{count}} تنبيه، عرض {{shown}} في الصفحة {{page}} من {{pages}}."
+      },
+      "empty": {
+        "title": "لا توجد تنبيهات مالية",
+        "description": "لم يتجاوز أي بند الحدود المهيأة ضمن هذه التصفية. شغّل تقييماً للتحديث."
+      },
+      "error": {
+        "title": "التنبيهات غير متاحة",
+        "description": "التنبيهات المالية مقتصرة على قيادة المالية، أو تعذّرت قراءة التقييم."
+      },
+      "appendixHeading": "ملحق — التنبيهات المالية",
+      "appendixDescription": "{{open}} تنبيه مفتوح ({{critical}} حرج أو مرتفع) عبر {{projects}} مشروع."
     }
   }
 }
