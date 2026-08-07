@@ -41,7 +41,7 @@ d("finance-close tables — grants and RLS", () => {
 
   it.each(TABLES)("%s exists with RLS enabled", (t) => {
     expect(acl.get(t)).toBeDefined();
-    expect(acl.get(t)!.endsWith("|t")).toBe(true);
+    expect(acl.get(t)!.endsWith("|true")).toBe(true);
   });
 
   it.each(TABLES)("%s grants nothing to anon or PUBLIC", (t) => {
