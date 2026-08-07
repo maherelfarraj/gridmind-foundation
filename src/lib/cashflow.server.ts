@@ -32,6 +32,7 @@ import {
   fundingPosition,
   hasBlocker,
   maturityLadder,
+  SOURCE_PRECEDENCE,
   reconcileCashflow,
   CASHFLOW_SNAPSHOT_FROZEN,
   CASHFLOW_VERSION_CONFLICT,
@@ -1914,6 +1915,33 @@ export interface CashflowAppendix {
   project_name: string;
   period: string;
   status: CashflowStatus | null;
+  /** Governance basis of every figure in this appendix. */
+  basis: "approved" | "indicative";
+  version_no: number | null;
+  frozen: boolean;
+  period_state: string;
+  approvals: {
+    prepared_by: string | null;
+    submitted_by: string | null;
+    approved_by: string | null;
+    approved_at: string | null;
+    correction_reason: string | null;
+  };
+  provenance: {
+    data_date: string;
+    granularity: string;
+    horizon_buckets: number;
+    forecast_version_id: string | null;
+    source_precedence: string[];
+    line_counts: Record<string, number>;
+    suppressed_lines: number;
+    fx_entries: number;
+    fx_missing: string[];
+    fx_stale: boolean;
+  };
+  reconciliation: ReconciliationResult;
+  /** No scenario overlay is ever applied to a pack appendix. */
+  scenario_watermark: "governed-basis-no-scenario-overlay";
   reporting_currency: string;
   measures: LiquidityMeasures;
   funding: FundingPosition;
@@ -1932,11 +1960,40 @@ export async function loadCashflowAppendix(
 ): Promise<CashflowAppendix> {
   const ws = await loadCashflowWorkspace(ctx, input);
   const c = ws.computed;
+  const counts: Record<string, number> = {};
+  for (const l of c.lines) counts[l.source] = (counts[l.source] ?? 0) + 1;
   return {
     project_code: ws.project.code,
     project_name: ws.project.name,
     period: c.period_month,
     status: ws.snapshot?.status ?? null,
+    basis: ws.snapshot?.status === "approved" ? "approved" : "indicative",
+    version_no: ws.snapshot?.version_no ?? null,
+    frozen: ws.frozen,
+    period_state: ws.period_state,
+    approvals: {
+      prepared_by: ws.snapshot?.prepared_by ?? null,
+      submitted_by: ws.snapshot?.submitted_by ?? null,
+      approved_by: ws.snapshot?.approved_by ?? null,
+      approved_at: ws.snapshot?.approved_at ?? null,
+      correction_reason: ws.snapshot?.correction_reason ?? null,
+    },
+    provenance: {
+      data_date: c.data_date,
+      granularity: c.granularity,
+      horizon_buckets: c.horizon_buckets,
+      forecast_version_id: c.forecast_version_id,
+      source_precedence: Object.entries(SOURCE_PRECEDENCE)
+        .sort((a, b) => a[1] - b[1])
+        .map(([k]) => k),
+      line_counts: counts,
+      suppressed_lines: c.suppressed.length,
+      fx_entries: c.fx.length,
+      fx_missing: c.fx_missing,
+      fx_stale: c.fx.some((f) => f.stale),
+    },
+    reconciliation: c.reconciliation,
+    scenario_watermark: "governed-basis-no-scenario-overlay",
     reporting_currency: c.reporting_currency,
     measures: c.measures,
     funding: c.funding,

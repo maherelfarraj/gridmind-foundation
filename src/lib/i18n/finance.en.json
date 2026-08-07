@@ -1346,7 +1346,26 @@
         "description": "Basis, provenance, reconciliation, exceptions and approvals behind the reported liquidity position.",
         "project": "Project",
         "watermarkFrozen": "Frozen snapshot",
-        "watermarkWorking": "Working / indicative"
+        "watermarkWorking": "Working / indicative",
+        "basis": {
+          "approved": "Approved basis",
+          "indicative": "Indicative basis"
+        },
+        "scenarioWatermark": "No scenario overlay applied",
+        "version": "Snapshot version",
+        "periodState": "Period state",
+        "dataDate": "Data date",
+        "horizon": "Horizon",
+        "preparedBy": "Prepared by",
+        "submittedBy": "Submitted by",
+        "approvedBy": "Approved by",
+        "forecastVersion": "Forecast version",
+        "precedence": "Source precedence",
+        "lineCounts": "Lines by source",
+        "suppressed": "Suppressed lines",
+        "fxMissing": "FX missing",
+        "correctionReason": "Correction reason",
+        "coverage": "Coverage"
       }
     },
     "contingency": {

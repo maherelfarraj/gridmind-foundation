@@ -415,4 +415,56 @@ d("cash flow invariants — authoritative data is never touched", () => {
       expect(qFail(`begin; ${sql}; rollback;`)).not.toBe("");
     }
   });
+
+  // --- GC-13c hardening -----------------------------------------------------
+  it("frozen snapshot lines are protected by a database trigger, not only by policy", () => {
+    const [row] = q(
+      `select tgname, p.proname, p.prosecdef, coalesce(array_to_string(p.proconfig,','),'')
+         from pg_trigger t
+         join pg_class c on c.oid = t.tgrelid
+         join pg_proc p on p.oid = t.tgfoid
+        where not t.tgisinternal and c.relname = 'cashflow_snapshot_lines'
+          and tgname = 'trg_cashflow_lines_frozen'`,
+    );
+    expect(row?.[1]).toBe("cashflow_lines_frozen_guard");
+    expect(row?.[2]).toBe("t");
+    expect(row?.[3]).toContain("search_path=public");
+  });
+
+  it("funding facility versions are incremented by the database", () => {
+    const [row] = q(
+      `select tgname from pg_trigger t join pg_class c on c.oid = t.tgrelid
+        where not t.tgisinternal and c.relname='funding_facilities'
+          and tgname='trg_funding_facilities_version'`,
+    );
+    expect(row?.[0]).toBe("trg_funding_facilities_version");
+  });
+
+  it("the new cash-flow guards are not executable by anon or authenticated", () => {
+    const rows = q(
+      `select p.proname, coalesce(array_to_string(p.proacl,' | '),'DEFAULT')
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname='public'
+          and p.proname in ('cashflow_lines_frozen_guard','funding_facilities_version_guard')`,
+    );
+    expect(rows.length).toBe(2);
+    for (const [, acl] of rows) {
+      expect(acl).not.toContain("anon=X");
+      expect(acl).not.toContain("authenticated=X");
+    }
+  });
+
+  it("every cash-flow and funding update policy carries both USING and WITH CHECK", () => {
+    const rows = q(
+      `select tablename, policyname, ${flat("qual")}, ${flat("with_check")}
+         from pg_policies
+        where schemaname='public' and cmd in ('UPDATE','ALL')
+          and (tablename like 'cashflow%' or tablename like 'funding%')`,
+    );
+    expect(rows.length).toBeGreaterThan(0);
+    for (const [table, policy, using, check] of rows) {
+      expect(`${table}.${policy}:${using}`).toContain("is_company_member");
+      expect(`${table}.${policy}:${check}`).toContain("is_company_member");
+    }
+  });
 });

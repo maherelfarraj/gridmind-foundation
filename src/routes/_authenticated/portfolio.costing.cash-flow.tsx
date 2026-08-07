@@ -2,12 +2,17 @@
 // concentration and maturity across the portfolio. Read-only; every figure comes
 // from governed project snapshots translated once at their declared rate.
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { CashBucketChart } from "@/components/cashflow/cash-bucket-chart";
 import { money, percent } from "@/components/cashflow/cash-format";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,6 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { aggregatePortfolioCurve, portfolioStress } from "@/lib/cashflow.rules";
+import type { PortfolioStressAssumptions } from "@/lib/cashflow.rules";
 import { portfolioCashflowQueryOptions } from "@/lib/cashflow.query";
 import { costingErrorMessage } from "@/lib/costing.query";
 import { downloadCsv, toCsv } from "@/lib/csv";
@@ -106,6 +113,26 @@ function PortfolioCashPage() {
   const currency = data.reporting_currency;
   const totals = data.totals;
   const conc = concentration(data.rows);
+  const navigate = useNavigate();
+  const [stress, setStress] = useState<PortfolioStressAssumptions>({
+    receipt_delay_buckets: 0,
+    outflow_uplift_pct: 0,
+    fx_shock_pct: 0,
+    facility_change_pct: 0,
+  });
+  const curve = useMemo(() => aggregatePortfolioCurve(data.rows), [data.rows]);
+  const stressed = useMemo(
+    () => portfolioStress(data.rows, totals.available_funding, stress),
+    [data.rows, totals.available_funding, stress],
+  );
+  const stressActive = Object.values(stress).some((v) => Number(v) !== 0);
+
+  function setSearch(patch: Record<string, unknown>) {
+    void navigate({
+      to: "/portfolio/costing/cash-flow",
+      search: (prev) => ({ ...prev, ...patch }),
+    });
+  }
   const maxNeed = Math.max(1, ...data.rows.map((r) => Math.max(0, r.measures.peak_funding_need)));
 
   function onExport() {
@@ -204,6 +231,134 @@ function PortfolioCashPage() {
           })}
         />
       </KpiGrid>
+
+      <Card className="flex flex-wrap items-end gap-4 p-4">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="pf-period">{t(`${F}.basis.period`)}</Label>
+          <Input
+            id="pf-period"
+            type="month"
+            className="w-40"
+            value={(search.period ?? data.period).slice(0, 7)}
+            onChange={(e) =>
+              setSearch({ period: e.target.value ? `${e.target.value}-01` : undefined })
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="pf-currency">{t(`${F}.basis.reportingCurrency`)}</Label>
+          <Input
+            id="pf-currency"
+            className="w-28 uppercase"
+            maxLength={3}
+            value={search.currency ?? currency}
+            onChange={(e) => {
+              const v = e.target.value.toUpperCase();
+              setSearch({ currency: /^[A-Z]{3}$/.test(v) ? v : undefined });
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-2 pb-2">
+          <Checkbox
+            id="pf-approved"
+            checked={search.only_approved ?? false}
+            onCheckedChange={(v) => setSearch({ only_approved: v === true ? true : undefined })}
+          />
+          <Label htmlFor="pf-approved">{t(`${K}.filters.onlyApproved`)}</Label>
+        </div>
+      </Card>
+
+      <section className="flex flex-col gap-3">
+        <SectionHeader title={t(`${K}.curve.title`)} description={t(`${K}.curve.description`)} />
+        <Card className="p-4">
+          <CashBucketChart
+            buckets={stressActive ? stressed.stressed_curve : curve}
+            currency={currency}
+            granularity="month"
+          />
+        </Card>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <SectionHeader title={t(`${K}.stress.title`)} description={t(`${K}.stress.description`)} />
+        <Card className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-end gap-4">
+            {(
+              [
+                ["receipt_delay_buckets", `${K}.stress.receiptDelay`],
+                ["outflow_uplift_pct", `${K}.stress.outflowUplift`],
+                ["fx_shock_pct", `${K}.stress.fxShock`],
+                ["facility_change_pct", `${K}.stress.facilityChange`],
+              ] as const
+            ).map(([key, label]) => (
+              <div key={key} className="flex flex-col gap-1">
+                <Label htmlFor={`stress-${key}`}>{t(label)}</Label>
+                <Input
+                  id={`stress-${key}`}
+                  type="number"
+                  className="w-32"
+                  value={String(stress[key] ?? 0)}
+                  onChange={(e) =>
+                    setStress((prev) => ({ ...prev, [key]: Number(e.target.value) || 0 }))
+                  }
+                />
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setStress({
+                  receipt_delay_buckets: 0,
+                  outflow_uplift_pct: 0,
+                  fx_shock_pct: 0,
+                  facility_change_pct: 0,
+                })
+              }
+            >
+              {t(`${K}.stress.reset`)}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">{t(`${K}.stress.watermark`)}</p>
+          <Table>
+            <caption className="sr-only">{t(`${K}.stress.title`)}</caption>
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col">{t(`${K}.stress.metric`)}</TableHead>
+                <TableHead scope="col" className="text-end">
+                  {t(`${K}.stress.basis`)}
+                </TableHead>
+                <TableHead scope="col" className="text-end">
+                  {t(`${K}.stress.scenario`)}
+                </TableHead>
+                <TableHead scope="col" className="text-end">
+                  {t(`${K}.stress.delta`)}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {stressed.comparison
+                .filter((c) => c.basis !== null || c.scenario !== null)
+                .map((c) => (
+                  <TableRow key={c.metric}>
+                    <TableCell className="text-foreground">
+                      {t(`${F}.scenario.metric.${c.metric}`, { defaultValue: c.metric })}
+                    </TableCell>
+                    <TableCell className="text-end tabular-nums">
+                      {c.basis == null ? "—" : money(c.basis, currency)}
+                    </TableCell>
+                    <TableCell className="text-end tabular-nums">
+                      {c.scenario == null ? "—" : money(c.scenario, currency)}
+                    </TableCell>
+                    <TableCell className="text-end tabular-nums">
+                      {c.delta == null ? "—" : money(c.delta, currency)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </section>
 
       <section className="flex flex-col gap-3">
         <SectionHeader

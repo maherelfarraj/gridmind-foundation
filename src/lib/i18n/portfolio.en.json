@@ -753,6 +753,27 @@
       "empty": {
         "title": "No cash-flow snapshots",
         "body": "Calculate a project cash-flow snapshot to consolidate liquidity."
+      },
+      "filters": {
+        "onlyApproved": "Approved snapshots only"
+      },
+      "curve": {
+        "title": "Consolidated cash curve",
+        "description": "Portfolio inflows, outflows and closing cash by month, translated once at each snapshot's declared rate."
+      },
+      "stress": {
+        "title": "Portfolio stress comparison",
+        "description": "Non-posting overlay. Governed snapshots, lines and facilities are never modified.",
+        "receiptDelay": "Receipt delay (buckets)",
+        "outflowUplift": "Outflow uplift (%)",
+        "fxShock": "FX shock (%)",
+        "facilityChange": "Facility change (%)",
+        "reset": "Reset",
+        "watermark": "Indicative overlay — not part of the approved basis.",
+        "metric": "Metric",
+        "basis": "Governed basis",
+        "scenario": "Stressed",
+        "delta": "Delta"
       }
     }
   }
