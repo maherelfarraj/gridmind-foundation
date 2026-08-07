@@ -120,6 +120,22 @@ function AuditPage() {
   const setSearch = (patch: Partial<typeof search>) =>
     void navigate({ search: (prev) => ({ ...prev, page: 1, ...patch }) });
 
+  // Free-text correlation lookup is debounced so a typed id costs one query,
+  // not one per keystroke. The URL stays the source of truth.
+  const urlCorrelation = search.correlation_id ?? "";
+  const [correlation, setCorrelation] = useState(urlCorrelation);
+  const lastUrlCorrelation = useRef(urlCorrelation);
+  if (lastUrlCorrelation.current !== urlCorrelation) {
+    lastUrlCorrelation.current = urlCorrelation;
+    if (correlation !== urlCorrelation) setCorrelation(urlCorrelation);
+  }
+  useEffect(() => {
+    if (correlation === urlCorrelation) return;
+    const id = setTimeout(() => setSearch({ correlation_id: correlation || undefined }), 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [correlation, urlCorrelation]);
+
   async function onExport() {
     setDownloading(true);
     try {
