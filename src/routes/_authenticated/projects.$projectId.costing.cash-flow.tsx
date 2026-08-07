@@ -225,7 +225,7 @@ function CashCockpit() {
           fx: c.fx.map((f) => ({
             currency_code: f.currency_code,
             rate: f.rate,
-            as_of: f.as_of,
+            rate_date: f.rate_date,
             source: f.source,
           })),
           fx_missing: c.fx_missing,

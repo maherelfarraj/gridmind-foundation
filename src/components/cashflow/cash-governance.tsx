@@ -23,7 +23,7 @@ export interface CashBasis {
   frozen: boolean;
   period_state: string;
   forecast_version_id: string | null;
-  fx: { currency_code: string; rate: number; as_of: string; source: string }[];
+  fx: { currency_code: string; rate: number | null; rate_date: string | null; source: string }[];
   fx_missing: string[];
   opening_cash: number;
   min_liquidity: number;
@@ -84,9 +84,10 @@ export function CashBasisCard({ basis }: { basis: CashBasis }) {
         ) : (
           <ul className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             {basis.fx.map((f) => (
-              <li key={`${f.currency_code}-${f.as_of}`} className="tabular-nums">
-                {f.currency_code} → {basis.reporting_currency} {f.rate.toFixed(6)} ({f.source}{" "}
-                {f.as_of.slice(0, 10)})
+              <li key={`${f.currency_code}-${f.rate_date ?? "na"}`} className="tabular-nums">
+                {f.currency_code} → {basis.reporting_currency}{" "}
+                {f.rate === null ? "—" : f.rate.toFixed(6)} ({f.source}{" "}
+                {f.rate_date ? f.rate_date.slice(0, 10) : "—"})
               </li>
             ))}
           </ul>
