@@ -242,12 +242,7 @@ describe("reconcile", () => {
 describe("buildConsolidationCsv", () => {
   it("emits one line per project plus a total row", () => {
     const rows = [row()];
-    const csv = buildConsolidationCsv(rows, consolidate(rows, "USD"), {
-      currency: "USD",
-      period: "2026-03-01",
-      basis: "period_end",
-      rateDate: "2026-03-31",
-    });
+    const csv = buildConsolidationCsv(rows, consolidate(rows, "USD"), "2026-03-01");
     const lines = csv.trim().split("\n");
     expect(lines[0]).toContain("project_code");
     expect(csv).toContain("P-1");
