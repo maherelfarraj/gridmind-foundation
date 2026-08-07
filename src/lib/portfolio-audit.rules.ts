@@ -273,7 +273,26 @@ export const AUDIT_METADATA_ALLOWLIST = [
   "rows",
   "correlation_id",
   "request_id",
+  // GC-10 — finance alerts
+  "alert_id",
+  "rule_type",
+  "fingerprint",
+  "current_value",
+  "threshold_value",
+  "unit",
+  "enabled",
+  "lead_days",
+  "ack_sla_hours",
+  "snoozed_until",
+  "tier",
+  "evaluated",
+  "created",
+  "reopened",
+  "resolved",
+  "escalated",
+  "notified",
 ] as const;
+
 
 const ALLOWED = new Set<string>(AUDIT_METADATA_ALLOWLIST);
 
