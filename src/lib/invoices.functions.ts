@@ -362,12 +362,10 @@ export const billMilestone = createServerFn({ method: "POST" })
       const contract = cRaw as ContractRow;
 
       // Gate on the contract's project so a project-scoped costing lock applies.
-      await assertPeriodOpen(
-        context.supabase,
-        companyId,
-        new Date().toISOString().slice(0, 10),
-        { entity: "invoices", projectId: contract.project_id ?? null },
-      );
+      await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10), {
+        entity: "invoices",
+        projectId: contract.project_id ?? null,
+      });
       if (!["signed", "active"].includes(contract.status)) {
         httpError(400, "contract_not_signed", "Contract must be signed or active.");
       }

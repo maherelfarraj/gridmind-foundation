@@ -1,7 +1,11 @@
 // GC-03 — CSV export for frozen forecast-version snapshots and comparisons.
 // Pure string building: no re-rating, no rounding beyond 2dp presentation.
 import { toCsv } from "@/lib/csv";
-import type { ForecastDiff, ForecastSnapshotLine, ForecastSnapshotTotals } from "@/lib/costing.versions";
+import type {
+  ForecastDiff,
+  ForecastSnapshotLine,
+  ForecastSnapshotTotals,
+} from "@/lib/costing.versions";
 
 const money = (n: number | null | undefined) => (n == null ? "" : Number(n).toFixed(2));
 

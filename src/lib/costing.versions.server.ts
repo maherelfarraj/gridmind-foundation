@@ -102,7 +102,9 @@ export async function createVersionFromLive(
   if (lines.length > 0) {
     const { error: lineErr } = await sb
       .from("forecast_version_lines")
-      .insert(lineRows(lines, { id: header.id, company_id: project.company_id, project_id: project.id }));
+      .insert(
+        lineRows(lines, { id: header.id, company_id: project.company_id, project_id: project.id }),
+      );
     if (lineErr) throw lineErr;
   }
 
@@ -130,10 +132,16 @@ export async function refreshVersionSnapshot(
       `Only a working version can be refreshed (this one is ${version.status}).`,
     );
   }
-  await assertCostingPeriodOpen(ctx, version.company_id, version.project_id, version.reporting_period, {
-    entity: "forecast_versions",
-    entityId: versionId,
-  });
+  await assertCostingPeriodOpen(
+    ctx,
+    version.company_id,
+    version.project_id,
+    version.reporting_period,
+    {
+      entity: "forecast_versions",
+      entityId: versionId,
+    },
+  );
 
   const ws = await loadCostingWorkspace(ctx, version.project_id);
   const lines = buildSnapshotLines(ws, version.reporting_period);
@@ -194,10 +202,16 @@ export async function applyVersionAction(
     );
   }
 
-  await assertCostingPeriodOpen(ctx, version.company_id, version.project_id, version.reporting_period, {
-    entity: "forecast_versions",
-    entityId: version.id,
-  });
+  await assertCostingPeriodOpen(
+    ctx,
+    version.company_id,
+    version.project_id,
+    version.reporting_period,
+    {
+      entity: "forecast_versions",
+      entityId: version.id,
+    },
+  );
 
   const userId = (ctx as any).user?.id ?? null;
 
