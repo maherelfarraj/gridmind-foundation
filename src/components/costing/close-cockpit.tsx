@@ -512,7 +512,7 @@ export function CloseCockpit({ projectId, period }: CloseCockpitProps) {
                           ))
                         )}
                         <Button asChild size="sm" variant="ghost" className="h-6 px-2">
-                          <Link to="/projects/$projectId/documents" params={{ projectId }}>
+                          <Link to="/documents/search">
                             {t(`${K}.manageEvidence`)}
                           </Link>
                         </Button>
