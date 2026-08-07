@@ -183,11 +183,7 @@ export function CashLifecycleCard({
       </div>
 
       {blockers > 0 ? (
-        <p className="text-xs text-destructive">
-          {t(`${K}.lifecycle.blocked`, { blockers, pct: percent(null) })
-            .replace(" —", "")
-            .trim()}
-        </p>
+        <p className="text-xs text-destructive">{t(`${K}.lifecycle.blocked`, { blockers })}</p>
       ) : null}
     </Card>
   );
