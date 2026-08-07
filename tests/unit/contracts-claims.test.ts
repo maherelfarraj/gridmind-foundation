@@ -81,14 +81,20 @@ describe("claim state machine", () => {
 describe("segregation of duties and delegation", () => {
   it("rejects self-approval by the submitter", () => {
     expect(
-      violatesSegregation({ actor_id: "u1", submitted_by: "u1", to: "approved" }),
+      violatesSegregation({ to: "approved", actorId: "u1", preparedBy: "u1" }),
     ).toBe(true);
+    expect(
+      violatesSegregation({ to: "approved", actorId: "u1", preparedBy: "u0", submittedBy: "u1" }),
+    ).toBe(true);
+    expect(violatesSegregation({ to: "approved", actorId: null, preparedBy: "u0" })).toBe(true);
   });
 
   it("permits a different approver", () => {
     expect(
-      violatesSegregation({ actor_id: "u2", submitted_by: "u1", to: "approved" }),
+      violatesSegregation({ to: "approved", actorId: "u2", preparedBy: "u1", submittedBy: "u1" }),
     ).toBe(false);
+    // Non-approval transitions are never segregation-gated.
+    expect(violatesSegregation({ to: "draft", actorId: "u1", preparedBy: "u1" })).toBe(false);
   });
 
   it("enforces the delegation bands", () => {
