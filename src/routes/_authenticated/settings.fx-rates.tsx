@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { downloadCsv } from "@/lib/csv";
+import { downloadCsv, objectsToCsv } from "@/lib/csv";
 import { syncFxRatesNow, upsertManualFxRate } from "@/lib/fx.functions";
 import { fxAdminQueryOptions, fxErrorMessage } from "@/lib/fx.query";
 
