@@ -9,6 +9,7 @@
 // All money arithmetic goes through the costing minor-unit helpers so that
 // project -> CBS -> counterparty -> period and project -> portfolio totals
 // reconcile exactly.
+import { z } from "zod";
 import { fromMinor, roundMoney, toMinor } from "@/lib/costing.fx";
 
 // ---------------------------------------------------------------------------
@@ -1071,3 +1072,155 @@ export function cashSupersedePlan(current: {
     return { ok: false, reason: "cashflow_correction_reason_required", nextVersionNo: current.version_no };
   return { ok: true, nextVersionNo: current.version_no + 1 };
 }
+
+// ---------------------------------------------------------------------------
+// Input schemas (shared by server functions and UI forms)
+// ---------------------------------------------------------------------------
+const monthSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-01$/, "Expected the first day of a month (YYYY-MM-01).");
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected an ISO date (YYYY-MM-DD).");
+const currencySchema = z.string().trim().length(3).toUpperCase();
+const reasonSchema = z.string().trim().min(8).max(2000);
+
+export const cashflowQuerySchema = z.object({
+  project_id: z.string().uuid(),
+  period: monthSchema.optional(),
+  granularity: z.enum(BUCKET_GRANULARITIES).optional(),
+});
+export type CashflowQueryInput = z.infer<typeof cashflowQuerySchema>;
+
+export const cashflowSettingsSchema = z.object({
+  project_id: z.string().uuid(),
+  bucket_granularity: z.enum(BUCKET_GRANULARITIES).optional(),
+  horizon_buckets: z.number().int().min(1).max(120).optional(),
+  receipt_lag_days: z.number().int().min(0).max(365).optional(),
+  payment_lag_days: z.number().int().min(0).max(365).optional(),
+  retention_release_lag_days: z.number().int().min(0).max(1095).optional(),
+  advance_recovery_pct: z.number().min(0).max(100).optional(),
+  include_tax: z.boolean().optional(),
+  include_commitments: z.boolean().optional(),
+  include_accruals: z.boolean().optional(),
+  min_liquidity_amount: z.number().min(0).optional(),
+  opening_cash: z.number().optional(),
+});
+export type CashflowSettingsInput = z.infer<typeof cashflowSettingsSchema>;
+
+export const cashflowCalculateSchema = z.object({
+  project_id: z.string().uuid(),
+  period: monthSchema,
+  data_date: dateSchema.optional(),
+  granularity: z.enum(BUCKET_GRANULARITIES).optional(),
+  horizon_buckets: z.number().int().min(1).max(120).optional(),
+  currency: currencySchema.optional(),
+  forecast_version_id: z.string().uuid().nullish(),
+  evm_report_id: z.string().uuid().nullish(),
+});
+export type CashflowCalculateInput = z.infer<typeof cashflowCalculateSchema>;
+
+export const cashflowTransitionSchema = z
+  .object({
+    snapshot_id: z.string().uuid(),
+    to: z.enum(CASHFLOW_STATUSES),
+    reason: reasonSchema.optional(),
+    row_version: z.number().int().positive().optional(),
+  })
+  .superRefine((v, ctx) => {
+    if ((v.to === "working" || v.to === "superseded") && !v.reason) {
+      ctx.addIssue({ code: "custom", path: ["reason"], message: "A reason is required." });
+    }
+  });
+export type CashflowTransitionInput = z.infer<typeof cashflowTransitionSchema>;
+
+export const cashflowSupersedeSchema = z.object({
+  snapshot_id: z.string().uuid(),
+  reason: reasonSchema,
+});
+
+export const cashflowIdSchema = z.object({ id: z.string().uuid() });
+
+export const cashflowAdjustmentSchema = z.object({
+  id: z.string().uuid().optional(),
+  project_id: z.string().uuid(),
+  effective_period: monthSchema,
+  bucket_date: dateSchema,
+  direction: z.enum(["inflow", "outflow"]),
+  category: z.string().trim().min(2).max(80),
+  counterparty: z.string().trim().max(160).nullish(),
+  amount: z.number().refine((n) => n !== 0, "Amount must not be zero."),
+  currency_code: currencySchema,
+  reason: reasonSchema,
+  evidence_reference: z.string().trim().max(240).nullish(),
+});
+export type CashflowAdjustmentInput = z.infer<typeof cashflowAdjustmentSchema>;
+
+export const fundingFacilitySchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(2).max(160),
+  lender_name: z.string().trim().max(160).nullish(),
+  facility_kind: z.string().trim().max(60).nullish(),
+  bank_facility_id: z.string().uuid().nullish(),
+  committed_amount: z.number().min(0),
+  currency_code: currencySchema,
+  available_from: dateSchema.nullish(),
+  expiry_date: dateSchema.nullish(),
+  status: z.enum(["planned", "active", "expired", "cancelled"]).optional(),
+  drawdown_schedule: z.array(z.object({ date: dateSchema, amount: z.number() })).optional(),
+  repayment_schedule: z.array(z.object({ date: dateSchema, amount: z.number() })).optional(),
+  covenants: z
+    .array(
+      z.object({
+        code: z.string().trim().min(1).max(60),
+        label: z.string().trim().max(160).optional(),
+        metric: z.string().trim().min(1).max(60),
+        operator: z.enum([">=", "<="]),
+        threshold: z.number(),
+      }),
+    )
+    .optional(),
+  notes: z.string().trim().max(2000).nullish(),
+  row_version: z.number().int().positive().optional(),
+});
+export type FundingFacilityInput = z.infer<typeof fundingFacilitySchema>;
+
+export const fundingAllocationSchema = z.object({
+  id: z.string().uuid().optional(),
+  facility_id: z.string().uuid(),
+  project_id: z.string().uuid(),
+  allocated_amount: z.number().min(0),
+  currency_code: currencySchema,
+  effective_from: dateSchema.nullish(),
+  effective_to: dateSchema.nullish(),
+  notes: z.string().trim().max(2000).nullish(),
+});
+export type FundingAllocationInput = z.infer<typeof fundingAllocationSchema>;
+
+export const cashScenarioSchema = z.object({
+  project_id: z.string().uuid(),
+  period: monthSchema.optional(),
+  receipt_delay_days: z.number().int().min(-365).max(365).optional(),
+  payment_delay_days: z.number().int().min(-365).max(365).optional(),
+  cost_phasing_shift_days: z.number().int().min(-365).max(365).optional(),
+  fx_shock_pct: z.number().min(-90).max(200).optional(),
+  facility_change_pct: z.number().min(-100).max(500).optional(),
+  contingency_draw_amount: z.number().min(0).optional(),
+  contingency_draw_date: dateSchema.nullish(),
+});
+export type CashScenarioInput = z.infer<typeof cashScenarioSchema>;
+
+export const portfolioCashFilterSchema = z.object({
+  period: monthSchema.optional(),
+  granularity: z.enum(BUCKET_GRANULARITIES).optional(),
+  currency: currencySchema.optional(),
+  project_ids: z.array(z.string().uuid()).max(200).optional(),
+  status: z.enum(CASHFLOW_STATUSES).optional(),
+  only_approved: z.boolean().optional(),
+});
+export type PortfolioCashFilter = z.infer<typeof portfolioCashFilterSchema>;
+
+export const cashflowCsvSchema = z.object({
+  project_id: z.string().uuid(),
+  period: monthSchema.optional(),
+  kind: z.enum(["buckets", "lines", "reconciliation", "facilities", "exceptions"]),
+});
+export type CashflowCsvInput = z.infer<typeof cashflowCsvSchema>;
