@@ -362,12 +362,12 @@ function AlertsPage() {
         <KpiTile
           label={t(`${K}.kpi.critical`)}
           value={String(s.by_severity.critical + s.by_severity.high)}
-          status={s.by_severity.critical > 0 ? "critical" : "good"}
+          status={s.by_severity.critical > 0 ? "bad" : "good"}
         />
         <KpiTile
           label={t(`${K}.kpi.ackOverdue`)}
           value={String(s.ack_overdue)}
-          status={s.ack_overdue > 0 ? "critical" : "good"}
+          status={s.ack_overdue > 0 ? "bad" : "good"}
         />
         <KpiTile
           label={t(`${K}.kpi.projects`)}

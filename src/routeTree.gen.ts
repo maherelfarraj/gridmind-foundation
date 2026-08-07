@@ -207,6 +207,7 @@ import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedPortfolioCostingAuditRouteImport } from './routes/_authenticated/portfolio.costing.audit'
+import { Route as AuthenticatedPortfolioCostingAlertsRouteImport } from './routes/_authenticated/portfolio.costing.alerts'
 import { Route as AuthenticatedOmScadaMappingsRouteImport } from './routes/_authenticated/om.scada.mappings'
 import { Route as AuthenticatedOmScadaIngestionHealthRouteImport } from './routes/_authenticated/om.scada.ingestion-health'
 import { Route as AuthenticatedOmScadaImportRouteImport } from './routes/_authenticated/om.scada.import'
@@ -1425,6 +1426,12 @@ const AuthenticatedPortfolioCostingAuditRoute =
     path: '/audit',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
+const AuthenticatedPortfolioCostingAlertsRoute =
+  AuthenticatedPortfolioCostingAlertsRouteImport.update({
+    id: '/alerts',
+    path: '/alerts',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedOmScadaMappingsRoute =
   AuthenticatedOmScadaMappingsRouteImport.update({
     id: '/om/scada/mappings',
@@ -2068,6 +2075,7 @@ export interface FileRoutesByFullPath {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2333,6 +2341,7 @@ export interface FileRoutesByTo {
   '/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2609,6 +2618,7 @@ export interface FileRoutesById {
   '/_authenticated/om/scada/import': typeof AuthenticatedOmScadaImportRoute
   '/_authenticated/om/scada/ingestion-health': typeof AuthenticatedOmScadaIngestionHealthRoute
   '/_authenticated/om/scada/mappings': typeof AuthenticatedOmScadaMappingsRoute
+  '/_authenticated/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/_authenticated/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2888,6 +2898,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
@@ -3153,6 +3164,7 @@ export interface FileRouteTypes {
     | '/om/scada/import'
     | '/om/scada/ingestion-health'
     | '/om/scada/mappings'
+    | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/pack'
     | '/procurement/matches/$matchId'
@@ -3428,6 +3440,7 @@ export interface FileRouteTypes {
     | '/_authenticated/om/scada/import'
     | '/_authenticated/om/scada/ingestion-health'
     | '/_authenticated/om/scada/mappings'
+    | '/_authenticated/portfolio/costing/alerts'
     | '/_authenticated/portfolio/costing/audit'
     | '/_authenticated/portfolio/costing/pack'
     | '/_authenticated/procurement/matches/$matchId'
@@ -4979,6 +4992,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioCostingAuditRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
+    '/_authenticated/portfolio/costing/alerts': {
+      id: '/_authenticated/portfolio/costing/alerts'
+      path: '/alerts'
+      fullPath: '/portfolio/costing/alerts'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingAlertsRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/om/scada/mappings': {
       id: '/_authenticated/om/scada/mappings'
       path: '/om/scada/mappings'
@@ -5593,12 +5613,15 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedPortfolioCostingRouteChildren {
+  AuthenticatedPortfolioCostingAlertsRoute: typeof AuthenticatedPortfolioCostingAlertsRoute
   AuthenticatedPortfolioCostingAuditRoute: typeof AuthenticatedPortfolioCostingAuditRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
 }
 
 const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingRouteChildren =
   {
+    AuthenticatedPortfolioCostingAlertsRoute:
+      AuthenticatedPortfolioCostingAlertsRoute,
     AuthenticatedPortfolioCostingAuditRoute:
       AuthenticatedPortfolioCostingAuditRoute,
     AuthenticatedPortfolioCostingPackRoute:
