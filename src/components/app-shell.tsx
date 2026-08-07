@@ -24,6 +24,12 @@ export function AppShell({ children, breadcrumbs }: AppShellProps) {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background">
+          <a
+            href="#main-content"
+            className="sr-only rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
+          >
+            {t("common.skipToContent")}
+          </a>
           <header className="sticky top-0 z-20 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border bg-background/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:flex sm:h-14 sm:px-4">
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger className="text-foreground" />
@@ -40,7 +46,7 @@ export function AppShell({ children, breadcrumbs }: AppShellProps) {
               <UserMenu />
             </div>
           </header>
-          <main className="flex-1 p-4 sm:p-6">{children}</main>
+          <main id="main-content" tabIndex={-1} className="flex-1 p-4 sm:p-6">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </ActiveCompanyProvider>

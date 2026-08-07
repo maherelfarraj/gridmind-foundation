@@ -167,6 +167,24 @@ export function isPortfolioAuditAction(action: string): boolean {
   return SPEC_BY_ACTION.has(action);
 }
 
+/**
+ * Resolves action/group/severity filters into the single allowlist the query
+ * sends to Postgres. Severity MUST be resolved here rather than filtered off
+ * the returned page: filtering after `range()` would leave `count` describing
+ * a different result set, so page totals and the "matching events" KPI would
+ * disagree with the rows on screen.
+ */
+export function actionsForFilter(
+  filter: Pick<Partial<AuditFilter>, "action" | "group" | "severity">,
+): string[] {
+  return PORTFOLIO_AUDIT_ACTIONS.filter(
+    (s) =>
+      (!filter.action || s.action === filter.action) &&
+      (!filter.group || s.group === filter.group) &&
+      (!filter.severity || s.severity === filter.severity),
+  ).map((s) => s.action);
+}
+
 // ---------------------------------------------------------------------------
 // Redaction
 // ---------------------------------------------------------------------------

@@ -2,10 +2,21 @@
 // Private by default; sharing is server-authorized and owner-only to mutate.
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bookmark, Check, Copy, Share2, Star, Trash2 } from "lucide-react";
+import { Bookmark, Check, Copy, Pencil, Share2, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +27,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +67,8 @@ export function SavedViewsBar({
   const { data: views } = useSuspenseQuery(savedViewsQueryOptions());
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
 
   const create = useServerFn(createPortfolioView);
   const update = useServerFn(updatePortfolioView);
@@ -87,11 +101,13 @@ export function SavedViewsBar({
   const patchMutation = useMutation({
     mutationFn: (input: {
       id: string;
+      name?: string;
       is_shared?: boolean;
       is_default?: boolean;
       config?: ReturnType<typeof searchToConfig>;
     }) => update({ data: input }),
     onSuccess: () => {
+      setRenameOpen(false);
       toast.success(t(`${K}.updated`));
       void invalidate();
     },
@@ -156,9 +172,44 @@ export function SavedViewsBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => setSaveOpen(true)}>
-          <Bookmark className="size-4" /> {t(`${K}.save`)}
-        </Button>
+        <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Bookmark className="size-4" /> {t(`${K}.save`)}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveMutation.mutate();
+              }}
+            >
+              <DialogHeader>
+                <DialogTitle>{t(`${K}.dialogTitle`)}</DialogTitle>
+                <DialogDescription>{t(`${K}.dialogDescription`)}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-1 py-4">
+                <Label htmlFor="view-name">{t(`${K}.nameLabel`)}</Label>
+                <Input
+                  id="view-name"
+                  value={name}
+                  maxLength={80}
+                  required
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  disabled={name.trim().length === 0 || saveMutation.isPending}
+                >
+                  {t(`${K}.save`)}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
         {selected ? (
           <>
             {selected.is_owner ? (
@@ -194,13 +245,76 @@ export function SavedViewsBar({
                   <Share2 className="size-4" />{" "}
                   {selected.is_shared ? t(`${K}.unshare`) : t(`${K}.share`)}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteMutation.mutate(selected.id)}
+                <Dialog
+                  open={renameOpen}
+                  onOpenChange={(open) => {
+                    setRenameOpen(open);
+                    if (open) setRenameValue(selected.name);
+                  }}
                 >
-                  <Trash2 className="size-4" /> {t(`${K}.delete`)}
-                </Button>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Pencil className="size-4" /> {t(`${K}.rename`)}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        patchMutation.mutate({ id: selected.id, name: renameValue.trim() });
+                      }}
+                    >
+                      <DialogHeader>
+                        <DialogTitle>{t(`${K}.renameTitle`)}</DialogTitle>
+                        <DialogDescription>{t(`${K}.renameDescription`)}</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-1 py-4">
+                        <Label htmlFor="view-rename">{t(`${K}.nameLabel`)}</Label>
+                        <Input
+                          id="view-rename"
+                          value={renameValue}
+                          maxLength={80}
+                          required
+                          onChange={(e) => setRenameValue(e.target.value)}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          type="submit"
+                          disabled={renameValue.trim().length === 0 || patchMutation.isPending}
+                        >
+                          {t(`${K}.rename`)}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="size-4" /> {t(`${K}.delete`)}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t(`${K}.deleteTitle`)}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t(`${K}.deleteDescription`, { name: selected.name })}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t(`${K}.cancel`)}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          setSelectedId("");
+                          deleteMutation.mutate(selected.id);
+                        }}
+                      >
+                        {t(`${K}.confirmDelete`)}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </>
             ) : (
               <Badge variant="muted">
@@ -213,32 +327,6 @@ export function SavedViewsBar({
           </>
         ) : null}
       </div>
-
-      <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t(`${K}.dialogTitle`)}</DialogTitle>
-            <DialogDescription>{t(`${K}.dialogDescription`)}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-1">
-            <Label htmlFor="view-name">{t(`${K}.nameLabel`)}</Label>
-            <Input
-              id="view-name"
-              value={name}
-              maxLength={80}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => saveMutation.mutate()}
-              disabled={name.trim().length === 0 || saveMutation.isPending}
-            >
-              {t(`${K}.save`)}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

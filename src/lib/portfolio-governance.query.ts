@@ -2,13 +2,16 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getPortfolioAudit } from "@/lib/portfolio-audit.functions";
-import type { AuditFilter } from "@/lib/portfolio-audit.rules";
+import { auditFilterSchema, type AuditFilter } from "@/lib/portfolio-audit.rules";
 import { getSavedViews } from "@/lib/portfolio-views.functions";
 
 export function portfolioAuditQueryOptions(filter: AuditFilter) {
+  // Normalise before hashing so `{page:1}` and `{page:1,page_size:50}` share a
+  // cache entry instead of firing two identical requests.
+  const normalized = auditFilterSchema.parse(filter);
   return queryOptions({
-    queryKey: ["portfolio", "audit", filter],
-    queryFn: () => getPortfolioAudit({ data: filter }),
+    queryKey: ["portfolio", "audit", normalized],
+    queryFn: () => getPortfolioAudit({ data: normalized }),
     staleTime: 10_000,
   });
 }

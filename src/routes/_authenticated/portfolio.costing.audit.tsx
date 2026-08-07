@@ -160,7 +160,9 @@ function AuditPage() {
         }
       />
 
-      <Card className="flex flex-wrap items-end gap-4 p-4">
+      <Card className="p-4">
+        <fieldset className="flex flex-wrap items-end gap-4">
+          <legend className="sr-only">{t(`${K}.filters.legend`)}</legend>
         <div className="space-y-1">
           <Label htmlFor="from">{t(`${K}.filters.from`)}</Label>
           <Input
@@ -272,7 +274,17 @@ function AuditPage() {
             onChange={(e) => setSearch({ correlation_id: e.target.value || undefined })}
           />
         </div>
+        </fieldset>
       </Card>
+
+      <p className="sr-only" role="status" aria-live="polite">
+        {t(`${K}.pagination.announce`, {
+          count: rec.total,
+          shown: rec.page_count,
+          page: filter.page,
+          pages,
+        })}
+      </p>
 
       <KpiGrid columns={4} label={t(`${K}.title`)}>
         <KpiTile label={t(`${K}.kpi.total`)} value={String(rec.total)} icon={ScrollText} />
@@ -298,7 +310,7 @@ function AuditPage() {
         </Card>
       )}
 
-      <div className="flex items-center justify-between">
+      <nav aria-label={t(`${K}.pagination.label`)} className="flex items-center justify-between">
         <p className="text-muted-foreground text-xs">
           {t(`${K}.pagination.status`, { page: filter.page, pages })}
         </p>
@@ -320,7 +332,7 @@ function AuditPage() {
             {t(`${K}.pagination.next`)}
           </Button>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

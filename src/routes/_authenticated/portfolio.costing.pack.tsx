@@ -194,7 +194,14 @@ function AuditAppendix({ period }: { period: string }) {
       <SectionHeader
         title={t(`${K}.audit.appendixHeading`)}
         description={t(`${K}.audit.appendixDescription`, {
-          generated: formatDate(new Date(), locale, { dateStyle: "medium", timeStyle: "short" }),
+          // Latest recorded event, not `new Date()`: a render-time clock diverges
+          // between SSR and hydration and makes printed packs non-reproducible.
+          generated: data.events[0]
+            ? formatDate(data.events[0].created_at, locale, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            : formatDate(period, locale, { dateStyle: "medium" }),
           gaps: formatNumber(data.reconciliation.gaps, locale),
         })}
       />

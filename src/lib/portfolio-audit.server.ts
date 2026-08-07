@@ -8,6 +8,7 @@ import { hasCloseRole } from "@/lib/costing.close.server";
 import { costingAudit, costingHttpError } from "@/lib/costing.server";
 import {
   AUDIT_ACTION_KEYS,
+  actionsForFilter,
   buildDiff,
   reconcileAudit,
   redactMetadata,
@@ -68,11 +69,7 @@ export async function loadPortfolioAudit(
 ): Promise<PortfolioAuditData> {
   const companyId = await requirePortfolioAuditAccess(ctx);
 
-  const actions = filter.action
-    ? AUDIT_ACTION_KEYS.filter((a) => a === filter.action)
-    : filter.group
-      ? AUDIT_ACTION_KEYS.filter((a) => specOf(a)?.group === filter.group)
-      : AUDIT_ACTION_KEYS;
+  const actions = actionsForFilter(filter);
 
   const from = (filter.page - 1) * filter.page_size;
   const to = from + filter.page_size - 1;
@@ -149,12 +146,10 @@ export async function loadPortfolioAudit(
     };
   });
 
-  const filtered = filter.severity ? events.filter((e) => e.severity === filter.severity) : events;
-
   return {
     company_id: companyId,
-    events: filtered,
-    reconciliation: reconcileAudit(filtered, count ?? filtered.length),
+    events,
+    reconciliation: reconcileAudit(events, count ?? events.length),
     page: filter.page,
     page_size: filter.page_size,
     actors: profiles
