@@ -24,6 +24,9 @@ import { DEFAULT_MINOR_UNIT, roundMoney, toMinor } from "@/lib/costing.fx";
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 export type JsonRecord = { [key: string]: JsonValue };
 
+export const RECOGNITION_DISCLAIMER =
+  "Non-posting management information. Recognition figures are governed controls output and do not create, replace or post accounting journal entries.";
+
 export const RECOGNITION_METHODS = [
   "cost_to_cost",
   "milestone",

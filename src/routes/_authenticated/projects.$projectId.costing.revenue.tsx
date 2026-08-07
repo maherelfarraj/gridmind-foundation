@@ -37,7 +37,7 @@ import {
   transitionRecognitionSnapshot,
 } from "@/lib/recognition.functions";
 import { recognitionWorkspaceQueryOptions } from "@/lib/recognition.query";
-import { RECOGNITION_DISCLAIMER } from "@/lib/recognition.server";
+import { RECOGNITION_DISCLAIMER } from "@/lib/recognition.rules";
 
 const K = "financeMod.costing.recognition";
 

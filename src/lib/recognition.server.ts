@@ -18,6 +18,7 @@ import {
   evaluateRecognitionAlerts,
   isFrozen,
   reconcile,
+  RECOGNITION_DISCLAIMER,
   rollupLines,
   rollupPortfolio,
   concentrationBy,
@@ -43,6 +44,8 @@ import {
   type SnapshotTransitionInput,
   type PortfolioRecognitionQuery,
 } from "@/lib/recognition.rules";
+
+export { RECOGNITION_DISCLAIMER };
 
 export const RECOGNITION_WRITE_ROLES = ["finance_admin", "project_admin", "company_admin"] as const;
 export const RECOGNITION_APPROVE_ROLES = ["finance_admin", "company_admin"] as const;
@@ -1378,8 +1381,6 @@ export interface RecognitionAppendix {
   adjustments: { kind: string; amount: number; reason: string; status: string }[];
 }
 
-export const RECOGNITION_DISCLAIMER =
-  "Non-posting management information. Recognition figures are governed controls output and do not create, replace or post accounting journal entries.";
 
 export async function loadRecognitionAppendix(
   ctx: AuthContext,
