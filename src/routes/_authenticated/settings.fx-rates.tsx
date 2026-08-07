@@ -1,9 +1,9 @@
 // FX-01 — FX Rate Management (finance/company admin).
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { downloadCsv, objectsToCsv } from "@/lib/csv";
-import { syncFxRatesNow, upsertManualFxRate } from "@/lib/fx.functions";
+import { Switch } from "@/components/ui/switch";
+import { syncFxRatesNow, updateFxAlertSettings, upsertManualFxRate } from "@/lib/fx.functions";
 import { fxAdminQueryOptions, fxErrorMessage } from "@/lib/fx.query";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
@@ -55,6 +56,20 @@ function FxRatesSettings() {
   const { data } = useSuspenseQuery(fxAdminQueryOptions());
   const syncFn = useServerFn(syncFxRatesNow);
   const manualFn = useServerFn(upsertManualFxRate);
+  const alertsFn = useServerFn(updateFxAlertSettings);
+
+  const [runFilter, setRunFilter] = useState<"all" | "success" | "failed" | "manual">("all");
+  const [openRun, setOpenRun] = useState<string | null>(null);
+  const [lastRun, setLastRun] = useState<{
+    runId: string | null;
+    status: string;
+    imported: number;
+    skipped: number;
+    failed: number;
+    observationDate: string | null;
+    error: string | null;
+  } | null>(null);
+  const [alerts, setAlerts] = useState(data.alertSettings);
 
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<"all" | "manual" | "imported">("all");
@@ -69,6 +84,16 @@ function FxRatesSettings() {
   const sync = useMutation({
     mutationFn: () => syncFn(),
     onSuccess: (r) => {
+      setLastRun({
+        runId: r.runId,
+        status: r.status,
+        imported: r.imported,
+        skipped: r.skipped,
+        failed: r.failed,
+        observationDate: r.observationDate,
+        error: r.error,
+      });
+      if (r.runId) setOpenRun(r.runId);
       if (r.status === "success") {
         toast.success(
           t("adminMod.fxPage.syncSuccess", { count: r.imported, date: r.observationDate }),
@@ -105,6 +130,21 @@ function FxRatesSettings() {
     onError: (e) => toast.error(fxErrorMessage(e)),
   });
 
+  const saveAlerts = useMutation({
+    mutationFn: () => alertsFn({ data: alerts }),
+    onSuccess: () => {
+      toast.success(t("adminMod.fxPage.alertsSaved"));
+      void qc.invalidateQueries({ queryKey: ["fx"] });
+    },
+    onError: (e) => toast.error(fxErrorMessage(e)),
+  });
+
+  const runs = useMemo(() => {
+    if (runFilter === "all") return data.runs;
+    if (runFilter === "manual") return data.runs.filter((r) => r.trigger === "manual");
+    return data.runs.filter((r) => r.status === runFilter);
+  }, [data.runs, runFilter]);
+
   const rates = useMemo(() => {
     const q = search.trim().toUpperCase();
     return data.rates.filter((r) => {
@@ -124,6 +164,13 @@ function FxRatesSettings() {
     /^[A-Za-z]{3}$/.test(form.quote_code) &&
     Number(form.rate) > 0 &&
     form.reason.trim().length >= 3;
+
+  const runFilters = [
+    { key: "all" as const, label: t("adminMod.fxPage.filterAll") },
+    { key: "success" as const, label: t("adminMod.fxPage.filterSuccess") },
+    { key: "failed" as const, label: t("adminMod.fxPage.filterFailed") },
+    { key: "manual" as const, label: t("adminMod.fxPage.filterManualRuns") },
+  ];
 
   const filters = [
     { key: "all" as const, label: t("adminMod.fxPage.filterAll") },
@@ -157,11 +204,13 @@ function FxRatesSettings() {
 
       <KpiGrid label={t("adminMod.fxPage.statusLabel")}>
         <KpiTile
-          label={t("adminMod.fxPage.provider")}
-          value={
-            data.settings.enabled ? t("adminMod.fxPage.enabled") : t("adminMod.fxPage.disabled")
+          label={t("adminMod.fxPage.health")}
+          value={t(`adminMod.fxPage.healthStatus.${data.health.status}`)}
+          hint={
+            data.settings.enabled
+              ? `${data.settings.provider} · ${t("adminMod.fxPage.enabled")}`
+              : `${data.settings.provider} · ${t("adminMod.fxPage.disabled")}`
           }
-          hint={data.settings.provider}
         />
         <KpiTile
           label={t("adminMod.fxPage.lastObservation")}
@@ -190,6 +239,60 @@ function FxRatesSettings() {
         />
       </KpiGrid>
 
+      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        <StatusBadge
+          status={data.health.status}
+          label={t(`adminMod.fxPage.healthStatus.${data.health.status}`)}
+        />
+        <span>
+          {t("adminMod.fxPage.lastAttempt")}:{" "}
+          {data.health.lastAttemptAt ? new Date(data.health.lastAttemptAt).toLocaleString() : "—"}
+        </span>
+        <span>
+          {t("adminMod.fxPage.nextRun")}:{" "}
+          {data.health.nextScheduledRun
+            ? new Date(data.health.nextScheduledRun).toLocaleString()
+            : "—"}
+        </span>
+        {data.health.consecutiveFailures > 0 ? (
+          <span>
+            {t("adminMod.fxPage.consecutiveFailures", {
+              count: data.health.consecutiveFailures,
+            })}
+          </span>
+        ) : null}
+      </div>
+
+      {data.health.reasons.length > 0 ? (
+        <ul className="list-inside list-disc rounded-md border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          {data.health.reasons.map((r) => (
+            <li key={r}>{t(`adminMod.fxPage.healthReason.${r}`, { defaultValue: r })}</li>
+          ))}
+        </ul>
+      ) : null}
+
+      {lastRun ? (
+        <div className="rounded-md border border-border px-4 py-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge status={lastRun.status} />
+            <span className="text-muted-foreground">
+              {t("adminMod.fxPage.syncResult", {
+                imported: lastRun.imported,
+                skipped: lastRun.skipped,
+                failed: lastRun.failed,
+                date: lastRun.observationDate ?? "—",
+              })}
+            </span>
+            {lastRun.runId ? (
+              <Button size="sm" variant="outline" onClick={() => setOpenRun(lastRun.runId)}>
+                {t("adminMod.fxPage.viewRun")}
+              </Button>
+            ) : null}
+          </div>
+          {lastRun.error ? <p className="mt-1 text-muted-foreground">{lastRun.error}</p> : null}
+        </div>
+      ) : null}
+
       {data.freshness.stale && !data.freshness.nonPublicationDay ? (
         <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
           {t("adminMod.fxPage.staleWarning")}
@@ -206,8 +309,57 @@ function FxRatesSettings() {
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium text-foreground">{t("adminMod.fxPage.runsTitle")}</h2>
-        {data.runs.length === 0 ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-medium text-foreground">{t("adminMod.fxPage.runsTitle")}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex gap-1" role="group" aria-label={t("adminMod.fxPage.filterRuns")}>
+              {runFilters.map((f) => (
+                <Button
+                  key={f.key}
+                  size="sm"
+                  variant={runFilter === f.key ? "default" : "outline"}
+                  onClick={() => setRunFilter(f.key)}
+                >
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadCsv(
+                  "fx-import-runs.csv",
+                  objectsToCsv(
+                    runs.map((r) => ({
+                      started_at: r.started_at,
+                      finished_at: r.finished_at ?? "",
+                      provider: r.provider,
+                      trigger: r.trigger,
+                      actor_kind: r.actor_kind,
+                      status: r.status,
+                      observation_date: r.observation_date ?? "",
+                      base_currency: r.base_currency ?? "",
+                      requested_currencies: r.requested_currencies.join(" "),
+                      requested: r.requested_count,
+                      imported: r.imported_count,
+                      skipped: r.skipped_count,
+                      failed: r.failed_count,
+                      missing: r.missing_codes.join(" "),
+                      error_code: r.error_code ?? "",
+                      error_summary: r.error_summary ?? "",
+                      duration_ms: r.duration_ms ?? "",
+                    })),
+                  ),
+                )
+              }
+            >
+              <Download className="size-4" aria-hidden />
+              {t("adminMod.fxPage.export")}
+            </Button>
+          </div>
+        </div>
+        {runs.length === 0 ? (
           <EmptyState
             title={t("adminMod.fxPage.noRunsTitle")}
             description={t("adminMod.fxPage.noRunsDesc")}
@@ -229,25 +381,93 @@ function FxRatesSettings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.runs.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>{new Date(r.started_at).toLocaleString()}</TableCell>
-                    <TableCell>{r.trigger}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={r.status} />
-                    </TableCell>
-                    <TableCell>{r.observation_date ?? "—"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.requested_count}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.imported_count}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.skipped_count}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {r.duration_ms == null ? "—" : `${r.duration_ms} ms`}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {r.error_summary ??
-                        (r.missing_codes.length ? r.missing_codes.join(", ") : "—")}
-                    </TableCell>
-                  </TableRow>
+                {runs.map((r) => (
+                  <Fragment key={r.id}>
+                    <TableRow>
+                      <TableCell>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-start"
+                          onClick={() => setOpenRun(openRun === r.id ? null : r.id)}
+                          aria-expanded={openRun === r.id}
+                        >
+                          {openRun === r.id ? (
+                            <ChevronDown className="size-4" aria-hidden />
+                          ) : (
+                            <ChevronRight className="size-4" aria-hidden />
+                          )}
+                          {new Date(r.started_at).toLocaleString()}
+                        </button>
+                      </TableCell>
+                      <TableCell>{r.trigger}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={r.status} />
+                      </TableCell>
+                      <TableCell>{r.observation_date ?? "—"}</TableCell>
+                      <TableCell className="text-right tabular-nums">{r.requested_count}</TableCell>
+                      <TableCell className="text-right tabular-nums">{r.imported_count}</TableCell>
+                      <TableCell className="text-right tabular-nums">{r.skipped_count}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {r.duration_ms == null ? "—" : `${r.duration_ms} ms`}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {r.error_summary ??
+                          (r.missing_codes.length ? r.missing_codes.join(", ") : "—")}
+                      </TableCell>
+                    </TableRow>
+                    {openRun === r.id ? (
+                      <TableRow>
+                        <TableCell colSpan={9} className="bg-muted/30 text-xs">
+                          <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.runId")}:{" "}
+                              </dt>
+                              <dd className="inline font-mono">{r.id}</dd>
+                            </div>
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.actor")}:{" "}
+                              </dt>
+                              <dd className="inline">{r.actor_kind}</dd>
+                            </div>
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.baseCurrency")}:{" "}
+                              </dt>
+                              <dd className="inline">{r.base_currency ?? "—"}</dd>
+                            </div>
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.requestedCurrencies")}:{" "}
+                              </dt>
+                              <dd className="inline">{r.requested_currencies.join(", ") || "—"}</dd>
+                            </div>
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.failed")}:{" "}
+                              </dt>
+                              <dd className="inline tabular-nums">{r.failed_count}</dd>
+                            </div>
+                            <div>
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.errorCode")}:{" "}
+                              </dt>
+                              <dd className="inline">{r.error_code ?? "—"}</dd>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <dt className="inline text-muted-foreground">
+                                {t("adminMod.fxPage.diagnostics")}:{" "}
+                              </dt>
+                              <dd className="mt-1 whitespace-pre-wrap break-words font-mono">
+                                {JSON.stringify(r.diagnostics)}
+                              </dd>
+                            </div>
+                          </dl>
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
@@ -349,6 +569,101 @@ function FxRatesSettings() {
           </div>
         )}
       </section>
+
+      {data.canManage ? (
+        <section className="space-y-4 rounded-md border border-border p-6">
+          <div>
+            <h2 className="text-sm font-medium text-foreground">
+              {t("adminMod.fxPage.alertsTitle")}
+            </h2>
+            <p className="text-xs text-muted-foreground">{t("adminMod.fxPage.alertsDesc")}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch
+              id="fx-alerts-enabled"
+              checked={alerts.enabled}
+              onCheckedChange={(v) => setAlerts((a) => ({ ...a, enabled: v }))}
+            />
+            <Label htmlFor="fx-alerts-enabled">{t("adminMod.fxPage.alertsEnabled")}</Label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="fx-notify-role">{t("adminMod.fxPage.notifyRole")}</Label>
+              <select
+                id="fx-notify-role"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={alerts.notify_role}
+                onChange={(e) =>
+                  setAlerts((a) => ({
+                    ...a,
+                    notify_role: e.target.value as typeof a.notify_role,
+                  }))
+                }
+              >
+                <option value="finance_admin">finance_admin</option>
+                <option value="company_admin">company_admin</option>
+                <option value="billing_admin">billing_admin</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fx-failure-threshold">{t("adminMod.fxPage.failureThreshold")}</Label>
+              <Input
+                id="fx-failure-threshold"
+                type="number"
+                min="1"
+                max="20"
+                value={alerts.failure_threshold}
+                onChange={(e) =>
+                  setAlerts((a) => ({ ...a, failure_threshold: Number(e.target.value) }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fx-stale-days">{t("adminMod.fxPage.staleThreshold")}</Label>
+              <Input
+                id="fx-stale-days"
+                type="number"
+                min="1"
+                max="30"
+                value={alerts.stale_business_days}
+                onChange={(e) =>
+                  setAlerts((a) => ({ ...a, stale_business_days: Number(e.target.value) }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fx-large-move">{t("adminMod.fxPage.largeMovePct")}</Label>
+              <Input
+                id="fx-large-move"
+                type="number"
+                min="0"
+                step="0.1"
+                value={alerts.large_move_pct ?? ""}
+                placeholder={t("adminMod.fxPage.optional")}
+                onChange={(e) =>
+                  setAlerts((a) => ({
+                    ...a,
+                    large_move_pct: e.target.value === "" ? null : Number(e.target.value),
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch
+              id="fx-alert-missing"
+              checked={alerts.alert_missing_currency}
+              onCheckedChange={(v) => setAlerts((a) => ({ ...a, alert_missing_currency: v }))}
+            />
+            <Label htmlFor="fx-alert-missing">{t("adminMod.fxPage.alertMissingCurrency")}</Label>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => saveAlerts.mutate()} disabled={saveAlerts.isPending}>
+              {saveAlerts.isPending ? t("adminMod.fxPage.saving") : t("adminMod.fxPage.saveAlerts")}
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {data.canManage ? (
         <section className="space-y-4 rounded-md border border-border p-6">
