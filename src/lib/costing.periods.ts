@@ -218,7 +218,7 @@ export interface ReadinessItem {
   severity: ReadinessSeverity;
   count: number;
   /** Stable machine detail for the UI; text is localised client-side. */
-  detail?: Record<string, unknown>;
+  currencies?: string[];
 }
 
 export interface ReadinessFacts {
