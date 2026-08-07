@@ -76,10 +76,10 @@ describe("assertPeriodOpen — one authoritative gate", () => {
     } catch (err) {
       thrown = err;
     }
-    expect(isCostingPeriodError(thrown)).toBe(true);
-    expect((thrown as { statusCode: number }).statusCode).toBe(409);
     expect((thrown as { code: string }).code).toBe("costing_period_hard_closed");
+    expect((thrown as { statusCode: number }).statusCode).toBe(409);
     expect((thrown as { period: string }).period).toBe("2026-02");
+    expect(isCostingPeriodError({ message: "costing_period_hard_closed: x" })).toBe(true);
     expect(sb.inserted).toHaveLength(1);
     expect(sb.inserted[0].entity).toBe("cost_accruals");
   });
