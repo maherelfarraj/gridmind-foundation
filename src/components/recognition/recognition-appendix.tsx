@@ -196,8 +196,8 @@ export function RecognitionAppendixCard({ appendix }: { appendix: RecognitionApp
           ) : (
             <ul className="list-disc ps-4 text-xs text-destructive">
               {failed.map((r) => (
-                <li key={r.check}>
-                  {t(`${K}.reconciliation.${r.check}`, { defaultValue: r.check })}
+                <li key={r.code}>
+                  {t(`${K}.reconciliation.${r.code}`, { defaultValue: r.check })}
                 </li>
               ))}
             </ul>
@@ -257,7 +257,7 @@ export function RecognitionAppendixCard({ appendix }: { appendix: RecognitionApp
 export function PortfolioRecognitionAppendixCard({ data }: { data: PortfolioRecognitionView }) {
   const { t } = useI18n();
   const currency = data.reporting_currency;
-  const totals = data.totals;
+  const totals = data.rollup.totals;
 
   return (
     <Card className="flex flex-col gap-4 p-4">
