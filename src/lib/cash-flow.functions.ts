@@ -186,7 +186,10 @@ export const createCashFlow = createServerFn({ method: "POST" })
     const project = await loadProject(context, data.projectId);
     const baseCurrency = await loadBaseCurrency(context, project.id);
     const period = normalizePeriod(data.period);
-    await assertPeriodOpen(context.supabase, project.company_id, period);
+    await assertPeriodOpen(context.supabase, project.company_id, period, {
+      entity: "cash_flows",
+      projectId: project.id,
+    });
 
     const fxRate = await resolveFxRate(context, data.currencyCode, baseCurrency, period);
     const amountBase = Number((data.amount * fxRate).toFixed(2));
@@ -256,6 +259,11 @@ export const voidCashFlow = createServerFn({ method: "POST" })
       context.supabase,
       (existing as any).company_id,
       (existing as any).period,
+      {
+        entity: "cash_flows",
+        entityId: (existing as any).id,
+        projectId: (existing as any).project_id ?? null,
+      },
     );
 
     const { data: updated, error } = await context.supabase

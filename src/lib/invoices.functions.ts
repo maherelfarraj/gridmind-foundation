@@ -270,6 +270,11 @@ export const markInvoicePaid = createServerFn({ method: "POST" })
       context.supabase,
       (cur as { company_id: string }).company_id,
       data.paid_at ?? new Date().toISOString().slice(0, 10),
+      {
+        entity: "invoices",
+        entityId: invoice.id,
+        projectId: (cur as { project_id?: string | null }).project_id ?? null,
+      },
     );
 
     if (invoice.direction === "payable") {

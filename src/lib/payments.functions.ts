@@ -70,7 +70,11 @@ export const recordPayment = createServerFn({ method: "POST" })
       const roles = invoice.direction === "payable" ? PAYABLE_PAYMENT_ROLES : FINANCE_ROLES;
       if (!(await hasAnyRole(context, roles))) httpError(403, "forbidden");
 
-      await assertPeriodOpen(context.supabase, invoice.company_id, data.payment_date);
+      await assertPeriodOpen(context.supabase, invoice.company_id, data.payment_date, {
+        entity: "payments",
+        entityId: invoice.id,
+        projectId: invoice.project_id,
+      });
       assertPaymentAllowed(invoice, data.amount);
       await assertMatchNotBlocked(context, invoice);
 
@@ -150,10 +154,12 @@ export const voidPayment = createServerFn({ method: "POST" })
     if (!pRaw) httpError(404, "payment_not_found");
     const payment = toPaymentRow(pRaw as Record<string, unknown>);
     if (payment.record_status === "voided") httpError(422, "already_voided");
+    const voidInvoice = await loadInvoiceForPayment(context, payment.invoice_id);
     await assertPeriodOpen(
       context.supabase,
       (pRaw as { company_id: string }).company_id,
       payment.payment_date,
+      { entity: "payments", entityId: payment.id, projectId: voidInvoice.project_id },
     );
 
     const { error: vErr } = await context.supabase
@@ -196,7 +202,11 @@ export const approveInvoice = createServerFn({ method: "POST" })
         `Invoice status "${invoice.status}" cannot be approved.`,
       );
     }
-    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso());
+    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso(), {
+      entity: "invoices",
+      entityId: invoice.id,
+      projectId: invoice.project_id,
+    });
     const { error } = await context.supabase
       .from("invoices")
       .update({ status: "approved" } as never)
@@ -222,7 +232,11 @@ export const markInvoiceSent = createServerFn({ method: "POST" })
     if (invoice.status !== "approved") {
       httpError(422, "invalid_transition", "Only approved invoices can be marked as sent.");
     }
-    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso());
+    await assertPeriodOpen(context.supabase, invoice.company_id, todayIso(), {
+      entity: "invoices",
+      entityId: invoice.id,
+      projectId: invoice.project_id,
+    });
     const { error } = await context.supabase
       .from("invoices")
       .update({ status: "sent" } as never)
