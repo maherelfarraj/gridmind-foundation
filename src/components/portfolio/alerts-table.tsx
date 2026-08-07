@@ -30,9 +30,9 @@ const SEVERITY_TONE: Record<AlertSeverity, StatusTone> = {
 
 const STATUS_TONE: Record<AlertStatus, StatusTone> = {
   open: "attention",
-  acknowledged: "info",
+  acknowledged: "active",
   snoozed: "neutral",
-  resolved: "good",
+  resolved: "positive",
 };
 
 export function AlertsTable({
@@ -69,7 +69,11 @@ export function AlertsTable({
         {alerts.map((a) => (
           <TableRow key={a.id}>
             <TableCell>
-              <StatusBadge tone={SEVERITY_TONE[a.severity]} label={t(`${K}.severity.${a.severity}`)} />
+              <StatusBadge
+                status={a.severity}
+                tone={SEVERITY_TONE[a.severity]}
+                label={t(`${K}.severity.${a.severity}`)}
+              />
             </TableCell>
             <TableCell>
               <span className="font-medium">
@@ -107,6 +111,7 @@ export function AlertsTable({
             </TableCell>
             <TableCell className="text-xs">
               <StatusBadge
+                status={a.effective_status}
                 tone={STATUS_TONE[a.effective_status]}
                 label={t(`${K}.status.${a.effective_status}`)}
               />
