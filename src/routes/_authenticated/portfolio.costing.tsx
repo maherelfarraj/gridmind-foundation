@@ -336,8 +336,6 @@ function PortfolioCostingPage() {
         </div>
       </section>
 
-
-
       <section className="space-y-3">
         <SectionHeader
           title={t(`${K}.movers.heading`)}
