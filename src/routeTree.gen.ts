@@ -59,6 +59,7 @@ import { Route as AuthenticatedSettingsPortalMembersRouteImport } from './routes
 import { Route as AuthenticatedSettingsPortalAuditRouteImport } from './routes/_authenticated/settings.portal-audit'
 import { Route as AuthenticatedSettingsPermissionsSimulatorRouteImport } from './routes/_authenticated/settings.permissions-simulator'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated/settings.modules'
+import { Route as AuthenticatedSettingsFxRatesRouteImport } from './routes/_authenticated/settings.fx-rates'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
 import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_authenticated/settings.company'
 import { Route as AuthenticatedSettingsApprovalRulesRouteImport } from './routes/_authenticated/settings.approval-rules'
@@ -543,6 +544,12 @@ const AuthenticatedSettingsModulesRoute =
   AuthenticatedSettingsModulesRouteImport.update({
     id: '/settings/modules',
     path: '/settings/modules',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsFxRatesRoute =
+  AuthenticatedSettingsFxRatesRouteImport.update({
+    id: '/settings/fx-rates',
+    path: '/settings/fx-rates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsDepartmentsRoute =
@@ -1951,6 +1958,7 @@ export interface FileRoutesByFullPath {
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/portal-audit': typeof AuthenticatedSettingsPortalAuditRoute
@@ -2208,6 +2216,7 @@ export interface FileRoutesByTo {
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/settings/portal-audit': typeof AuthenticatedSettingsPortalAuditRoute
@@ -2475,6 +2484,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
   '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
+  '/_authenticated/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/permissions-simulator': typeof AuthenticatedSettingsPermissionsSimulatorRoute
   '/_authenticated/settings/portal-audit': typeof AuthenticatedSettingsPortalAuditRoute
@@ -2745,6 +2755,7 @@ export interface FileRouteTypes {
     | '/settings/approval-rules'
     | '/settings/company'
     | '/settings/departments'
+    | '/settings/fx-rates'
     | '/settings/modules'
     | '/settings/permissions-simulator'
     | '/settings/portal-audit'
@@ -3002,6 +3013,7 @@ export interface FileRouteTypes {
     | '/settings/approval-rules'
     | '/settings/company'
     | '/settings/departments'
+    | '/settings/fx-rates'
     | '/settings/modules'
     | '/settings/permissions-simulator'
     | '/settings/portal-audit'
@@ -3268,6 +3280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/approval-rules'
     | '/_authenticated/settings/company'
     | '/_authenticated/settings/departments'
+    | '/_authenticated/settings/fx-rates'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/permissions-simulator'
     | '/_authenticated/settings/portal-audit'
@@ -3825,6 +3838,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/modules'
       fullPath: '/settings/modules'
       preLoaderRoute: typeof AuthenticatedSettingsModulesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/fx-rates': {
+      id: '/_authenticated/settings/fx-rates'
+      path: '/settings/fx-rates'
+      fullPath: '/settings/fx-rates'
+      preLoaderRoute: typeof AuthenticatedSettingsFxRatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/departments': {
@@ -5882,6 +5902,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsApprovalRulesRoute: typeof AuthenticatedSettingsApprovalRulesRoute
   AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
+  AuthenticatedSettingsFxRatesRoute: typeof AuthenticatedSettingsFxRatesRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsPermissionsSimulatorRoute: typeof AuthenticatedSettingsPermissionsSimulatorRoute
   AuthenticatedSettingsPortalAuditRoute: typeof AuthenticatedSettingsPortalAuditRoute
@@ -6040,6 +6061,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsApprovalRulesRoute,
   AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
+  AuthenticatedSettingsFxRatesRoute: AuthenticatedSettingsFxRatesRoute,
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsPermissionsSimulatorRoute:
     AuthenticatedSettingsPermissionsSimulatorRoute,
