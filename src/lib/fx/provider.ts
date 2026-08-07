@@ -322,19 +322,19 @@ export function decidePersistence(
 }
 
 /**
- * Atomicity gate: the payload must cover every requested currency before any
- * write is committed. Callers preserve the last successful data on rejection.
+ * Atomicity gate. A currency the provider does not list is an expected
+ * coverage gap (manual entry remains the fallback). A currency the provider
+ * claims to support but omits from the payload is a defect: reject the whole
+ * run so the last successful data is preserved.
  */
-export function validateCoverage(
-  plan: FxImportPlan,
-  options: { allowPartial?: boolean } = {},
-): { ok: boolean; reason?: string } {
+export function validateCoverage(plan: FxImportPlan): { ok: boolean; reason?: string } {
   if (plan.requested.length === 0) return { ok: true };
-  if (plan.planned.length === 0) {
+  if (plan.missing.length > 0) {
+    return { ok: false, reason: `incomplete_payload:${plan.missing.join(",")}` };
+  }
+  if (plan.planned.length === 0 && plan.unsupported.length < plan.requested.length) {
     return { ok: false, reason: "provider_returned_no_usable_rates" };
   }
-  if (!options.allowPartial && plan.missing.length > 0) {
-    return { ok: false, reason: `unsupported_currencies:${plan.missing.join(",")}` };
-  }
+
   return { ok: true };
 }
