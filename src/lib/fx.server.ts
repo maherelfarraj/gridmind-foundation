@@ -123,6 +123,7 @@ export interface FxAdminData {
 export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
   const sb = ctx.supabase as never as {
     from: (t: string) => any;
+    rpc: (fn: string, args?: Record<string, unknown>) => any;
   };
 
   const userId = ctx.user?.id ?? null;
@@ -133,7 +134,11 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
 
   const [settingsRes, runsRes, ratesRes, currenciesRes, alertRes] = await Promise.all([
     sb.from("fx_provider_settings").select("*").eq("id", true).maybeSingle(),
-    sb.from("fx_import_runs").select("*").order("started_at", { ascending: false }).limit(25),
+    // GC-06: the feed is global (cron runs carry company_id = NULL), while the
+    // table policy is strictly company-scoped. This definer routine applies the
+    // same finance/company-admin gate and returns global + own-company runs.
+    sb.rpc("fx_import_runs_recent", { p_limit: 25 }),
+
     sb
       .from("fx_rates")
       .select(

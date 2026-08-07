@@ -205,9 +205,7 @@ function VersionsView() {
             {data.focusPeriod.slice(0, 7)}
           </Button>
           <div className="min-w-64 flex-1">
-            <Label htmlFor="explanation">
-              {t("financeMod.costing.versions.explanationLabel")}
-            </Label>
+            <Label htmlFor="explanation">{t("financeMod.costing.versions.explanationLabel")}</Label>
             <Textarea
               id="explanation"
               rows={2}
@@ -267,63 +265,63 @@ function VersionsView() {
                       </Button>
                       {data.canClose ? (
                         <>
-                        {v.status === "working" ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => refresh.mutate(v.id)}
-                              disabled={refresh.isPending}
-                            >
-                              <RefreshCw className="size-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                act.mutate({
-                                  versionId: v.id,
-                                  action: "submit",
-                                  expectedRowVersion: v.row_version,
-                                })
-                              }
-                              disabled={act.isPending}
-                            >
-                              {t("financeMod.costing.versions.submit")}
-                            </Button>
-                          </>
-                        ) : null}
-                        {v.status === "submitted" ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                act.mutate({
-                                  versionId: v.id,
-                                  action: "recall",
-                                  expectedRowVersion: v.row_version,
-                                })
-                              }
-                              disabled={act.isPending}
-                            >
-                              {t("financeMod.costing.versions.recall")}
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                act.mutate({
-                                  versionId: v.id,
-                                  action: "approve",
-                                  expectedRowVersion: v.row_version,
-                                })
-                              }
-                              disabled={act.isPending}
-                            >
-                              {t("financeMod.costing.versions.approve")}
-                            </Button>
-                          </>
-                        ) : null}
+                          {v.status === "working" ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => refresh.mutate(v.id)}
+                                disabled={refresh.isPending}
+                              >
+                                <RefreshCw className="size-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  act.mutate({
+                                    versionId: v.id,
+                                    action: "submit",
+                                    expectedRowVersion: v.row_version,
+                                  })
+                                }
+                                disabled={act.isPending}
+                              >
+                                {t("financeMod.costing.versions.submit")}
+                              </Button>
+                            </>
+                          ) : null}
+                          {v.status === "submitted" ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  act.mutate({
+                                    versionId: v.id,
+                                    action: "recall",
+                                    expectedRowVersion: v.row_version,
+                                  })
+                                }
+                                disabled={act.isPending}
+                              >
+                                {t("financeMod.costing.versions.recall")}
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  act.mutate({
+                                    versionId: v.id,
+                                    action: "approve",
+                                    expectedRowVersion: v.row_version,
+                                  })
+                                }
+                                disabled={act.isPending}
+                              >
+                                {t("financeMod.costing.versions.approve")}
+                              </Button>
+                            </>
+                          ) : null}
                         </>
                       ) : null}
                     </div>

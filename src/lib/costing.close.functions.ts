@@ -99,7 +99,9 @@ export const createForecastVersion = createServerFn({ method: "POST" })
 
 export const refreshForecastVersion = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) => forecastVersionCompareSchema.pick({ toVersionId: true }).parse(input))
+  .inputValidator((input: unknown) =>
+    forecastVersionCompareSchema.pick({ toVersionId: true }).parse(input),
+  )
   .handler(async ({ data, context }): Promise<{ lines: number }> => {
     requireSupabaseAuth(context);
     if (!(await hasCloseRole(context))) costingHttpError(403, "forbidden");
@@ -117,7 +119,9 @@ export const actOnForecastVersion = createServerFn({ method: "POST" })
 
 export const getForecastVersionDetail = createServerFn({ method: "GET" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) => forecastVersionCompareSchema.pick({ toVersionId: true }).parse(input))
+  .inputValidator((input: unknown) =>
+    forecastVersionCompareSchema.pick({ toVersionId: true }).parse(input),
+  )
   .handler(async ({ data, context }): Promise<{ lines: ForecastSnapshotLine[] }> => {
     requireSupabaseAuth(context);
     await loadForecastVersion(context, data.toVersionId);
@@ -129,6 +133,9 @@ export const compareForecastVersions = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => forecastVersionCompareSchema.parse(input))
   .handler(async ({ data, context }): Promise<ForecastDiff> => {
     requireSupabaseAuth(context);
-    await loadCostingSettings(context, (await loadCostingProject(context, data.projectId)).company_id);
+    await loadCostingSettings(
+      context,
+      (await loadCostingProject(context, data.projectId)).company_id,
+    );
     return compareVersions(context, data.fromVersionId ?? null, data.toVersionId);
   });

@@ -244,8 +244,7 @@ export function pickBaselineVersion<
     .filter((v) => v.status === "approved" || v.status === "superseded")
     .slice()
     .sort(
-      (x, y) =>
-        x.reporting_period.localeCompare(y.reporting_period) || x.version_no - y.version_no,
+      (x, y) => x.reporting_period.localeCompare(y.reporting_period) || x.version_no - y.version_no,
     );
   return approved[0] ?? null;
 }
@@ -253,7 +252,11 @@ export function pickBaselineVersion<
 export function pickCurrentApproved<T extends { status: string; version_no: number }>(
   versions: readonly T[],
 ): T | null {
-  return versions.filter((v) => v.status === "approved").sort((x, y) => y.version_no - x.version_no)[0] ?? null;
+  return (
+    versions
+      .filter((v) => v.status === "approved")
+      .sort((x, y) => y.version_no - x.version_no)[0] ?? null
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -22,7 +22,6 @@ const TABS: Tab[] = [
   { label: "Close", to: "/costing/close" },
 ];
 
-
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing")({
   component: CostingLayout,
 });

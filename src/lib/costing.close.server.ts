@@ -138,26 +138,38 @@ export async function assertCostingPeriodOpen(
   });
 
   if (!verdict.allowed) {
-    await costingAudit(ctx, "costing.period.blocked", opts.entity ?? "costing_periods", opts.entityId ?? null, {
+    await costingAudit(
+      ctx,
+      "costing.period.blocked",
+      opts.entity ?? "costing_periods",
+      opts.entityId ?? null,
+      {
+        company_id: companyId,
+        project_id: projectId ?? null,
+        period,
+        state,
+        attempted_date: date,
+        code: verdict.code,
+      },
+    );
+    costingHttpError(409, verdict.code!, verdict.message);
+  }
+
+  // An allowed soft-lock adjustment is always audited with its reason.
+  await costingAudit(
+    ctx,
+    "costing.period.adjustment",
+    opts.entity ?? "costing_periods",
+    opts.entityId ?? null,
+    {
       company_id: companyId,
       project_id: projectId ?? null,
       period,
       state,
       attempted_date: date,
-      code: verdict.code,
-    });
-    costingHttpError(409, verdict.code!, verdict.message);
-  }
-
-  // An allowed soft-lock adjustment is always audited with its reason.
-  await costingAudit(ctx, "costing.period.adjustment", opts.entity ?? "costing_periods", opts.entityId ?? null, {
-    company_id: companyId,
-    project_id: projectId ?? null,
-    period,
-    state,
-    attempted_date: date,
-    reason: String(opts.adjustmentReason ?? "").trim(),
-  });
+      reason: String(opts.adjustmentReason ?? "").trim(),
+    },
+  );
 }
 
 /**
@@ -637,15 +649,15 @@ export async function transitionPeriod(
   if (error) {
     const message = String(error.message ?? "");
     const code =
-      message.match(
-        /(costing_period_[a-z_]+|forbidden)/,
-      )?.[1] ?? "costing_period_transition_failed";
+      message.match(/(costing_period_[a-z_]+|forbidden)/)?.[1] ??
+      "costing_period_transition_failed";
     costingHttpError(code === "forbidden" ? 403 : 409, code, message.replace(/^.*?:\s*/, ""));
   }
 
-  const row = (Array.isArray(data) ? data[0] : data) as
-    | { state: CostingPeriodState; row_version: number }
-    | null;
+  const row = (Array.isArray(data) ? data[0] : data) as {
+    state: CostingPeriodState;
+    row_version: number;
+  } | null;
   const state = row?.state ?? input.target;
   const rowVersion = Number(row?.row_version ?? 1);
 

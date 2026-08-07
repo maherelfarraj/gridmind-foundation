@@ -94,7 +94,11 @@ function CloseView() {
         },
       }),
     onSuccess: async (r) => {
-      toast.success(t("financeMod.costing.close.transitioned", { state: t(`financeMod.costing.close.state.${r.state}`) }));
+      toast.success(
+        t("financeMod.costing.close.transitioned", {
+          state: t(`financeMod.costing.close.state.${r.state}`),
+        }),
+      );
       setReason("");
       await invalidate();
     },
@@ -279,9 +283,7 @@ function CloseView() {
           {t("financeMod.costing.close.history")}
         </h3>
         {data.periods.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t("financeMod.costing.close.noPeriods")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("financeMod.costing.close.noPeriods")}</p>
         ) : (
           <Table>
             <TableHeader>
