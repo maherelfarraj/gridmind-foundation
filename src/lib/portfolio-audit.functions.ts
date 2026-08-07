@@ -27,7 +27,9 @@ export const getPortfolioAuditCsv = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ filename: string; csv: string }> => {
     requireSupabaseAuth(context);
     const companyId = await requirePortfolioAuditAccess(context);
-    const payload = await loadPortfolioAudit(context, { ...data, page_size: 200 });
+    // Export always starts at the first page of the *filtered* set so the CSV
+    // is not silently scoped to whichever page the operator was viewing.
+    const payload = await loadPortfolioAudit(context, { ...data, page: 1, page_size: 200 });
     await auditExportLogged(context, companyId, "csv", {
       rows: payload.events.length,
       period: data.period ?? null,
