@@ -1645,6 +1645,81 @@
         "event": "Event",
         "from": "From",
         "to": "To"
+      },
+      "appendix": {
+        "title": "Revenue & WIP appendix",
+        "description": "Governed percentage-of-completion evidence — non-posting; no journal entries are created.",
+        "basis": {
+          "approved": "Approved basis",
+          "indicative": "Indicative basis"
+        },
+        "watermarkFrozen": "Frozen",
+        "watermarkWorking": "Working",
+        "project": "Project",
+        "billingCutoff": "Billing cut-off",
+        "method": "Method",
+        "policyVersion": "Policy version",
+        "version": "Version",
+        "currency": "Reporting currency",
+        "periodRevenue": "Period revenue",
+        "fxSource": "FX source",
+        "adjustments": "Manual adjustments",
+        "noAdjustments": "No manual adjustments.",
+        "preparedAt": "Prepared",
+        "submittedAt": "Submitted",
+        "approvedAt": "Approved",
+        "portfolioTitle": "Portfolio revenue & WIP appendix",
+        "portfolioDescription": "Consolidated recognition roll-up across projects.",
+        "nonPosting": "Non-posting"
+      },
+      "manage": {
+        "lockedHint": "This period is frozen or locked — policy, obligations and adjustments are read-only.",
+        "toast": {
+          "settingsSaved": "Recognition policy saved.",
+          "obligationSaved": "Performance obligation saved.",
+          "adjustmentSaved": "Adjustment submitted for authorisation.",
+          "adjustmentDecided": "Adjustment decision recorded."
+        },
+        "policy": {
+          "title": "Recognition policy",
+          "hint": "Method, constraint and inclusion rules applied when the next snapshot is built.",
+          "method": "Default method",
+          "version": "Policy version",
+          "constraint": "Constraint %",
+          "retention": "Retention %",
+          "advance": "Advance recovery %",
+          "variations": "Include unapproved variations",
+          "claims": "Include unapproved claims",
+          "lossProvision": "Recognise loss provisions",
+          "capProgress": "Cap progress at 100%",
+          "allowReversal": "Allow revenue reversal",
+          "save": "Save policy"
+        },
+        "obligations": {
+          "title": "Performance obligations",
+          "hint": "Allocate the transaction price; allocation must reconcile to standalone values.",
+          "allocation": "Allocated {{allocated}} vs standalone {{standalone}}",
+          "basis": "Progress basis",
+          "actions": "Actions",
+          "edit": "Edit",
+          "name": "Name",
+          "standalone": "Standalone value",
+          "create": "Add obligation",
+          "update": "Update obligation",
+          "cancel": "Cancel"
+        },
+        "adjustments": {
+          "title": "Manual adjustments",
+          "hint": "Non-posting adjustments require separate authorisation and evidence.",
+          "kind": "Kind",
+          "amount": "Amount",
+          "reason": "Reason",
+          "evidence": "Evidence reference",
+          "status": "Status",
+          "authorize": "Authorise",
+          "void": "Void",
+          "create": "Submit adjustment"
+        }
       }
     }
   }

@@ -1437,3 +1437,93 @@ export async function loadRecognitionAppendix(
     })),
   };
 }
+
+// ---------------------------------------------------------------------------
+// GC-15 — Alert feed for the shared portfolio alert register
+//
+// Read-only. It reports the latest recognition snapshot per project together
+// with the governance signals the alert families need. No figure is recomputed
+// here: every number comes from the frozen snapshot totals.
+// ---------------------------------------------------------------------------
+export async function loadRecognitionAlertRows(
+  ctx: AuthContext,
+  companyId: string,
+  period?: string,
+): Promise<PortfolioProjectInput[]> {
+  let builder = (ctx.supabase as any)
+    .from("recognition_snapshots")
+    .select(
+      "id, project_id, period_month, data_date, billing_cutoff, status, method, reporting_currency, totals, quality, fx_provenance, contract_basis, submitted_at, version_no",
+    )
+    .eq("company_id", companyId)
+    .order("period_month", { ascending: false })
+    .order("version_no", { ascending: false })
+    .limit(500);
+  if (period) builder = builder.eq("period_month", period);
+  const snaps = await safeRows<any>(() => builder);
+
+  const latest = new Map<string, any>();
+  for (const s of snaps) if (!latest.has(s.project_id)) latest.set(s.project_id, s);
+  const projectIds = [...latest.keys()];
+  if (projectIds.length === 0) return [];
+
+  const [projects, drafts, billings] = await Promise.all([
+    safeRows<any>(() =>
+      (ctx.supabase as any).from("projects").select("id, name, client_name").in("id", projectIds),
+    ),
+    safeRows<any>(() =>
+      (ctx.supabase as any)
+        .from("recognition_adjustments")
+        .select("project_id")
+        .eq("company_id", companyId)
+        .eq("status", "draft")
+        .in("project_id", projectIds),
+    ),
+    safeRows<any>(() =>
+      (ctx.supabase as any)
+        .from("invoices")
+        .select("project_id, issue_date")
+        .eq("company_id", companyId)
+        .eq("direction", "outbound")
+        .in("project_id", projectIds)
+        .order("issue_date", { ascending: false })
+        .limit(1000),
+    ),
+  ]);
+
+  const projectById = new Map(projects.map((p: any) => [p.id as string, p]));
+  const pendingByProject = new Map<string, number>();
+  for (const d of drafts)
+    pendingByProject.set(d.project_id, (pendingByProject.get(d.project_id) ?? 0) + 1);
+  const lastBilling = new Map<string, string>();
+  for (const b of billings) {
+    if (!b.issue_date) continue;
+    const prev = lastBilling.get(b.project_id);
+    if (!prev || b.issue_date > prev) lastBilling.set(b.project_id, b.issue_date as string);
+  }
+
+  return [...latest.values()].map((s) => {
+    const quality = (s.quality ?? {}) as Record<string, unknown>;
+    const fx = (s.fx_provenance ?? {}) as Record<string, unknown>;
+    const basis = (s.contract_basis ?? {}) as Record<string, unknown>;
+    const missing = Array.isArray(fx["missing"]) ? (fx["missing"] as unknown[]) : [];
+    const p = projectById.get(s.project_id);
+    return {
+      project_id: s.project_id as string,
+      project_name: (p?.name as string) ?? (s.project_id as string),
+      customer: (p?.client_name as string) ?? null,
+      currency_code: (s.reporting_currency as string) ?? "USD",
+      method: s.method as RecognitionMethod,
+      status: s.status as RecognitionStatus,
+      period_month: s.period_month as string,
+      data_date: s.data_date as string,
+      totals: (s.totals ?? {}) as RecognitionTotals,
+      fx_missing: quality["fx_missing"] === true || missing.length > 0,
+      reconciliation_ok: quality["reconciled"] !== false,
+      pending_adjustments: pendingByProject.get(s.project_id) ?? 0,
+      last_billing_date: lastBilling.get(s.project_id) ?? null,
+      retention_due_date: (basis["retention_due_date"] as string | undefined) ?? null,
+      submitted_at: (s.submitted_at as string | null) ?? null,
+    } satisfies PortfolioProjectInput;
+  });
+}

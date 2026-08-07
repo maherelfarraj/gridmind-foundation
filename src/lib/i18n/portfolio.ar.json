@@ -501,7 +501,20 @@
         "audit_gap": "فجوة تدقيق",
         "liquidity_shortfall": "توقع عجز نقدي",
         "funding_headroom": "هامش التمويل",
-        "covenant_breach": "مخالفة تعهد تمويلي"
+        "covenant_breach": "مخالفة تعهد تمويلي",
+        "revenue_margin_erosion": "تآكل هامش الربح",
+        "revenue_loss_making": "عقد خاسر",
+        "recognition_basis_stale": "أساس اعتراف قديم",
+        "recognition_fx_missing": "سعر صرف مفقود للاعتراف",
+        "revenue_reversal_material": "عكس جوهري للإيراد",
+        "wip_underbilling_age": "أعمال تحت التنفيذ غير مفوترة متقادمة",
+        "contract_liability_movement": "حركة التزام تعاقدي",
+        "unapproved_variation_exposure": "انكشاف تغييرات غير معتمدة",
+        "retention_release_overdue": "تأخر الإفراج عن المحتجزات",
+        "recognition_billing_lag": "تأخر الفوترة",
+        "recognition_reconciliation_failed": "فشل تسوية الاعتراف",
+        "recognition_adjustment_pending": "تسوية يدوية بانتظار الاعتماد",
+        "recognition_approval_delay": "تأخر اعتماد الاعتراف"
       },
       "filters": {
         "legend": "تصفية التنبيهات المالية",

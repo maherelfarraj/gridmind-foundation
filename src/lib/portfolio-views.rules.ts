@@ -29,6 +29,8 @@ export const SAVED_VIEW_SORTS = ["code", "eac", "vac", "variance", "close"] as c
 export const savedViewConfigSchema = z
   .object({
     version: z.literal(SAVED_VIEW_CONFIG_VERSION).default(SAVED_VIEW_CONFIG_VERSION),
+    /** Which dashboard the view belongs to; older rows default to cost & close. */
+    scope: z.enum(["costing", "revenue_wip"]).default("costing"),
     period: z
       .string()
       .regex(/^\d{4}-\d{2}-01$/)
@@ -50,8 +52,14 @@ export const savedViewConfigSchema = z
     materiality_abs: z.number().min(0).nullable().default(null),
     sort: z.enum(SAVED_VIEW_SORTS).default("code"),
     columns: z.array(z.enum(SAVED_VIEW_COLUMNS)).max(SAVED_VIEW_COLUMNS.length).default([]),
+    // --- Revenue & WIP filters (labels only; never computed balances) --------
+    rec_status: z.string().max(24).nullable().default(null),
+    rec_method: z.string().max(48).nullable().default(null),
+    rec_customer: z.string().max(200).nullable().default(null),
+    rec_project: z.string().max(200).nullable().default(null),
   })
   .strict();
+
 
 export type SavedViewConfig = z.infer<typeof savedViewConfigSchema>;
 
@@ -167,4 +175,51 @@ export function resolveEntrySearch(
 /** Shared views may be copied but never mutated by a non-owner. */
 export function canMutateView(view: SavedView, userId: string): boolean {
   return view.owner_id === userId;
+}
+
+// ---------------------------------------------------------------------------
+// GC-15 — Revenue & WIP saved views
+//
+// The same per-user framework, scoped so a cost & close view never appears in
+// the revenue picker (and vice versa). Only filter state is stored.
+// ---------------------------------------------------------------------------
+export interface RevenueWipSearch {
+  period?: string;
+  status?: string;
+  method?: string;
+  customer?: string;
+  project?: string;
+}
+
+export function revenueWipConfigToSearch(config: SavedViewConfig): RevenueWipSearch {
+  const out: RevenueWipSearch = {};
+  if (config.period) out.period = config.period;
+  if (config.rec_status) out.status = config.rec_status;
+  if (config.rec_method) out.method = config.rec_method;
+  if (config.rec_customer) out.customer = config.rec_customer;
+  if (config.rec_project) out.project = config.rec_project;
+  return out;
+}
+
+export function revenueWipSearchToConfig(
+  search: RevenueWipSearch,
+  base: SavedViewConfig = DEFAULT_SAVED_VIEW_CONFIG,
+): SavedViewConfig {
+  return savedViewConfigSchema.parse({
+    ...base,
+    scope: "revenue_wip",
+    period: search.period ?? null,
+    rec_status: search.status ?? null,
+    rec_method: search.method ?? null,
+    rec_customer: search.customer ?? null,
+    rec_project: search.project ?? null,
+  });
+}
+
+/** Views are listed once per company; each dashboard shows only its own scope. */
+export function viewsInScope(
+  views: readonly SavedView[],
+  scope: SavedViewConfig["scope"],
+): SavedView[] {
+  return views.filter((v) => v.config.scope === scope);
 }

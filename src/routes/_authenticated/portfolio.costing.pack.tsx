@@ -8,6 +8,8 @@ import { z } from "zod";
 
 import { PortfolioCashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { PortfolioEvmAppendixCard } from "@/components/evm/evm-appendix";
+import { PortfolioRecognitionAppendixCard } from "@/components/recognition/recognition-appendix";
+import { portfolioRecognitionQueryOptions } from "@/lib/recognition.query";
 import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
 import { CostingConsolidationTable } from "@/components/portfolio/costing-consolidation-table";
@@ -188,6 +190,10 @@ function PackView() {
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <PortfolioRecognitionAppendix period={data.period} />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
@@ -210,6 +216,18 @@ function PortfolioCashAppendix({ period, currency }: { period: string; currency:
   return (
     <section className="space-y-3">
       <PortfolioCashAppendixCard data={data} />
+    </section>
+  );
+}
+
+/** GC-15 — consolidated revenue / WIP appendix for the period. */
+function PortfolioRecognitionAppendix({ period }: { period: string }) {
+  const { data } = useSuspenseQuery(
+    portfolioRecognitionQueryOptions({ period_month: period, status: "all" }),
+  );
+  return (
+    <section className="space-y-3">
+      <PortfolioRecognitionAppendixCard data={data} />
     </section>
   );
 }

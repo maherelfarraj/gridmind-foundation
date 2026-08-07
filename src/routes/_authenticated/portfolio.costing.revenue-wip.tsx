@@ -5,7 +5,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { AlertTriangle, Coins, Gauge, Layers, TrendingDown, Wallet } from "lucide-react";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { z } from "zod";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -27,6 +27,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, formatNumber } from "@/lib/i18n/format";
 import type { Locale } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/locale-provider";
+import { SavedViewsBar } from "@/components/portfolio/saved-views-bar";
+import {
+  revenueWipConfigToSearch,
+  revenueWipSearchToConfig,
+  type RevenueWipSearch,
+} from "@/lib/portfolio-views.rules";
 import { portfolioRecognitionQueryOptions } from "@/lib/recognition.query";
 import {
   ageWip,
@@ -199,6 +205,16 @@ function PortfolioRevenueWipPage() {
           {t(`${K}.basis.note`, { pct: pctText(approvedShare, locale) })} {RECOGNITION_DISCLAIMER}
         </AlertDescription>
       </Alert>
+
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <SavedViewsBar<RevenueWipSearch>
+          scope="revenue_wip"
+          search={search}
+          onApply={(next) => void navigate({ search: () => next })}
+          toSearch={revenueWipConfigToSearch}
+          fromSearch={revenueWipSearchToConfig}
+        />
+      </Suspense>
 
       <Card className="flex flex-wrap items-end gap-4 p-4">
         <div className="space-y-1">

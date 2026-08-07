@@ -1,0 +1,13 @@
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'revenue_margin_erosion';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'revenue_loss_making';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_basis_stale';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_fx_missing';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'revenue_reversal_material';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'wip_underbilling_age';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'contract_liability_movement';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'unapproved_variation_exposure';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'retention_release_overdue';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_billing_lag';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_reconciliation_failed';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_adjustment_pending';
+ALTER TYPE public.portfolio_alert_rule_type ADD VALUE IF NOT EXISTS 'recognition_approval_delay';

@@ -27179,6 +27179,13 @@ export type Database = {
         | "wip_underbilling_age"
         | "contract_liability_movement"
         | "unapproved_variation_exposure"
+        | "recognition_fx_missing"
+        | "revenue_reversal_material"
+        | "retention_release_overdue"
+        | "recognition_billing_lag"
+        | "recognition_reconciliation_failed"
+        | "recognition_adjustment_pending"
+        | "recognition_approval_delay"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       portfolio_scenario_driver:
@@ -28182,6 +28189,13 @@ export const Constants = {
         "wip_underbilling_age",
         "contract_liability_movement",
         "unapproved_variation_exposure",
+        "recognition_fx_missing",
+        "revenue_reversal_material",
+        "retention_release_overdue",
+        "recognition_billing_lag",
+        "recognition_reconciliation_failed",
+        "recognition_adjustment_pending",
+        "recognition_approval_delay",
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],

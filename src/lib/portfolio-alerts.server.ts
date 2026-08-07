@@ -25,9 +25,11 @@ import {
   type AlertRuleConfig,
   type AlertRuleType,
   type AlertSummary,
+  recognitionAlertCandidates,
   type LiquidityAlertRow,
   type OpenException,
 } from "@/lib/portfolio-alerts.rules";
+import { loadRecognitionAlertRows } from "@/lib/recognition.server";
 import { specOf } from "@/lib/portfolio-audit.rules";
 import { buildPortfolioCosting, currentCompanyId } from "@/lib/portfolio-costing.server";
 
@@ -225,6 +227,13 @@ export async function evaluateCompanyAlerts(
     audit_gaps,
     liquidity,
   });
+
+  // GC-15 — governed revenue / WIP findings join the same register, so they
+  // share deduplication, acknowledgement, escalation and auto-resolution.
+  const recognitionRows = await loadRecognitionAlertRows(ctx, companyId, period);
+  candidates.push(
+    ...recognitionAlertCandidates({ rows: recognitionRows, asOf: data.today, configs }),
+  );
 
   const existing = await rows<ExistingRow>(
     sbOf(ctx).from("portfolio_alerts").select(ALERT_COLUMNS).eq("company_id", companyId),

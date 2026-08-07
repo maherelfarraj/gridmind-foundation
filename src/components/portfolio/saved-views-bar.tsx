@@ -49,22 +49,36 @@ import {
 import {
   configToSearch,
   searchToConfig,
+  viewsInScope,
   type PortfolioCostingSearch,
   type SavedView,
+  type SavedViewConfig,
 } from "@/lib/portfolio-views.rules";
 
 const K = "portfolioMod.costing.views";
 
-export function SavedViewsBar({
+/**
+ * One saved-view framework, several dashboards. `scope` keeps each dashboard's
+ * views separate, and the two mappers translate between that dashboard's URL
+ * filters and the stored config.
+ */
+export function SavedViewsBar<S extends object = PortfolioCostingSearch>({
   search,
   onApply,
+  scope = "costing",
+  toSearch = configToSearch as unknown as (config: SavedViewConfig) => S,
+  fromSearch = searchToConfig as unknown as (search: S) => SavedViewConfig,
 }: {
-  search: PortfolioCostingSearch;
-  onApply: (next: PortfolioCostingSearch) => void;
+  search: S;
+  onApply: (next: S) => void;
+  scope?: SavedViewConfig["scope"];
+  toSearch?: (config: SavedViewConfig) => S;
+  fromSearch?: (search: S) => SavedViewConfig;
 }) {
   const { t } = useI18n();
   const qc = useQueryClient();
-  const { data: views } = useSuspenseQuery(savedViewsQueryOptions());
+  const { data: allViews } = useSuspenseQuery(savedViewsQueryOptions());
+  const views = viewsInScope(allViews, scope);
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
   const [renameOpen, setRenameOpen] = useState(false);
@@ -84,7 +98,7 @@ export function SavedViewsBar({
         data: {
           name,
           description: null,
-          config: searchToConfig(search),
+          config: fromSearch(search),
           is_shared: false,
           is_default: false,
         },
@@ -104,7 +118,7 @@ export function SavedViewsBar({
       name?: string;
       is_shared?: boolean;
       is_default?: boolean;
-      config?: ReturnType<typeof searchToConfig>;
+      config?: SavedViewConfig;
     }) => update({ data: input }),
     onSuccess: () => {
       setRenameOpen(false);
@@ -147,7 +161,7 @@ export function SavedViewsBar({
           onValueChange={(id) => {
             setSelectedId(id);
             const view = views.find((v) => v.id === id);
-            if (view) onApply(configToSearch(view.config));
+            if (view) onApply(toSearch(view.config));
           }}
         >
           <SelectTrigger id="saved-view" className="w-64">
@@ -215,7 +229,7 @@ export function SavedViewsBar({
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    patchMutation.mutate({ id: selected.id, config: searchToConfig(search) })
+                    patchMutation.mutate({ id: selected.id, config: fromSearch(search) })
                   }
                 >
                   <Check className="size-4" /> {t(`${K}.updateFromFilters`)}

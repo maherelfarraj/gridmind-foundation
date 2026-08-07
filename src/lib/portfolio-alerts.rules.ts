@@ -9,6 +9,12 @@
 import { z } from "zod";
 
 import type { PortfolioProjectRow } from "@/lib/portfolio-costing.rules";
+import {
+  evaluateRecognitionAlerts,
+  type AlertThresholds as RecognitionThresholds,
+  type PortfolioProjectInput,
+  type RecognitionAlert,
+} from "@/lib/recognition.rules";
 
 // ---------------------------------------------------------------------------
 // Vocabulary
@@ -29,7 +35,23 @@ export const ALERT_RULE_TYPES = [
   "liquidity_shortfall",
   "funding_headroom",
   "covenant_breach",
+  // GC-15 — governed revenue / WIP recognition families. They are evaluated
+  // from approved recognition snapshots and never re-derive money here.
+  "revenue_margin_erosion",
+  "revenue_loss_making",
+  "recognition_basis_stale",
+  "recognition_fx_missing",
+  "revenue_reversal_material",
+  "wip_underbilling_age",
+  "contract_liability_movement",
+  "unapproved_variation_exposure",
+  "retention_release_overdue",
+  "recognition_billing_lag",
+  "recognition_reconciliation_failed",
+  "recognition_adjustment_pending",
+  "recognition_approval_delay",
 ] as const;
+
 export type AlertRuleType = (typeof ALERT_RULE_TYPES)[number];
 
 export const ALERT_SEVERITIES = ["critical", "high", "medium", "low"] as const;
@@ -85,6 +107,34 @@ export const DEFAULT_ALERT_CONFIGS: Record<AlertRuleType, AlertRuleConfig> = {
   liquidity_shortfall: mk("liquidity_shortfall", "critical", 0, "currency", 0, 24),
   funding_headroom: mk("funding_headroom", "high", 0.9, "ratio", 0, 48),
   covenant_breach: mk("covenant_breach", "critical", 0, "count", 0, 24),
+  revenue_margin_erosion: mk("revenue_margin_erosion", "high", 0.05, "percent", 0, 48),
+  revenue_loss_making: mk("revenue_loss_making", "critical", 0, "currency", 0, 24),
+  recognition_basis_stale: mk("recognition_basis_stale", "high", 45, "days", 5, 48),
+  recognition_fx_missing: mk("recognition_fx_missing", "critical", 0, "count", 0, 24),
+  revenue_reversal_material: mk("revenue_reversal_material", "critical", 50000, "currency", 0, 24),
+  wip_underbilling_age: mk("wip_underbilling_age", "high", 60, "days", 0, 48),
+  contract_liability_movement: mk("contract_liability_movement", "medium", 0.2, "percent", 0, 72),
+  unapproved_variation_exposure: mk(
+    "unapproved_variation_exposure",
+    "medium",
+    100000,
+    "currency",
+    0,
+    72,
+  ),
+  retention_release_overdue: mk("retention_release_overdue", "medium", 0, "days", 0, 72),
+  recognition_billing_lag: mk("recognition_billing_lag", "medium", 60, "days", 0, 72),
+  recognition_reconciliation_failed: mk(
+    "recognition_reconciliation_failed",
+    "critical",
+    0,
+    "count",
+    0,
+    24,
+  ),
+  recognition_adjustment_pending: mk("recognition_adjustment_pending", "medium", 0, "count", 0, 72),
+  recognition_approval_delay: mk("recognition_approval_delay", "high", 7, "days", 0, 48),
+
 };
 
 function mk(
@@ -1025,4 +1075,92 @@ export function buildAlertCsv(
     );
   }
   return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// GC-15 — Recognition alert bridge
+//
+// Recognition families are evaluated by the recognition engine against frozen
+// snapshots. This adapter only *routes* those findings into the shared alert
+// register: it re-derives no money, and it namespaces fingerprints so a
+// recognition finding can never collide with a costing one.
+// ---------------------------------------------------------------------------
+export const RECOGNITION_ALERT_PREFIX = "recognition";
+
+/** Numeric reading each recognition family reports, for threshold display. */
+function recognitionValue(alert: RecognitionAlert): number | null {
+  const c = alert.context;
+  const first = [
+    c["margin_pct"],
+    c["loss_provision"],
+    c["days"],
+    c["period_revenue"],
+    c["contract_asset"],
+    c["contract_liability"],
+    c["retention_receivable"],
+    c["constrained"],
+    c["pending"],
+  ].find((v) => typeof v === "number");
+  return typeof first === "number" ? first : null;
+}
+
+export function recognitionThresholds(
+  configs: Record<AlertRuleType, AlertRuleConfig>,
+): RecognitionThresholds {
+  const num = (rule: AlertRuleType, fallback: number): number =>
+    configs[rule]?.threshold_value ?? fallback;
+  return {
+    // Configs store percentages as fractions; the recognition engine uses points.
+    margin_floor_pct: num("revenue_margin_erosion", 0.05) * 100,
+    liability_movement_pct: num("contract_liability_movement", 0.2) * 100,
+    wip_age_days: num("wip_underbilling_age", 60),
+    basis_stale_days: num("recognition_basis_stale", 45),
+    exposure_amount: num("unapproved_variation_exposure", 100_000),
+    reversal_amount: num("revenue_reversal_material", 50_000),
+    billing_lag_days: num("recognition_billing_lag", 60),
+    approval_delay_days: num("recognition_approval_delay", 7),
+  };
+}
+
+export function recognitionAlertCandidates(input: {
+  rows: readonly PortfolioProjectInput[];
+  asOf: string;
+  configs: Record<AlertRuleType, AlertRuleConfig>;
+}): AlertCandidate[] {
+  const thresholds = recognitionThresholds(input.configs);
+  const found = evaluateRecognitionAlerts(input.rows, input.asOf, thresholds);
+  const currencyOf = new Map(input.rows.map((r) => [r.project_id, r.currency_code]));
+  const periodOf = new Map(input.rows.map((r) => [r.project_id, r.period_month]));
+  const projectOf = (a: RecognitionAlert): string | null => {
+    const parts = a.fingerprint.split(":");
+    const id = parts[1] ?? null;
+    return id && currencyOf.has(id) ? id : null;
+  };
+
+  const out: AlertCandidate[] = [];
+  for (const a of found) {
+    const rule = a.rule_type as AlertRuleType;
+    const cfg = input.configs[rule];
+    if (cfg && !cfg.enabled) continue;
+    const projectId = projectOf(a);
+    out.push({
+      rule_type: rule,
+      project_id: projectId,
+      period_month: projectId ? (periodOf.get(projectId) ?? null) : null,
+      fingerprint: `${RECOGNITION_ALERT_PREFIX}:${a.fingerprint}`,
+      severity: cfg?.severity ?? (a.severity === "critical" ? "critical" : "medium"),
+      current_value: recognitionValue(a),
+      threshold_value: cfg?.threshold_value ?? null,
+      value_unit: cfg?.threshold_unit ?? "count",
+      currency_code: projectId ? (currencyOf.get(projectId) ?? null) : null,
+      entity_table: "recognition_snapshots",
+      entity_id: null,
+      title: a.title,
+      detail: a.detail,
+      deep_link: a.evidence_url,
+      owner_id: null,
+      context: a.context as AlertContext,
+    });
+  }
+  return out;
 }
