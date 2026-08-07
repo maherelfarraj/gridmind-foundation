@@ -92,9 +92,9 @@ d("finance-close tables — policy shape", () => {
   });
 
   it.each(TABLES)("%s exposes a SELECT policy", (t) => {
-    expect(policies.filter((p) => p.table === t).some((p) => ["SELECT", "ALL"].includes(p.cmd))).toBe(
-      true,
-    );
+    expect(
+      policies.filter((p) => p.table === t).some((p) => ["SELECT", "ALL"].includes(p.cmd)),
+    ).toBe(true);
   });
 
   it("gives every UPDATE policy both a USING and a WITH CHECK clause", () => {
@@ -114,9 +114,7 @@ d("finance-close tables — policy shape", () => {
   });
 
   it("ties a snapshot line to a working version in the SAME company (GC-05)", () => {
-    const fvl = policies.filter(
-      (p) => p.table === "forecast_version_lines" && p.cmd !== "SELECT",
-    );
+    const fvl = policies.filter((p) => p.table === "forecast_version_lines" && p.cmd !== "SELECT");
     expect(fvl.length).toBe(2);
     for (const p of fvl) {
       const expr = `${p.qual} ${p.check}`;
@@ -134,9 +132,9 @@ d("finance-close — concurrency and lookup indexes", () => {
   const has = (re: RegExp) => idx.some((s) => re.test(s));
 
   it("allows at most one costing period row per company month and per project month", () => {
-    expect(has(/UNIQUE INDEX .*costing_periods .*\(company_id, period_month\).*project_id IS NULL/s)).toBe(
-      true,
-    );
+    expect(
+      has(/UNIQUE INDEX .*costing_periods .*\(company_id, period_month\).*project_id IS NULL/s),
+    ).toBe(true);
     expect(
       has(/UNIQUE INDEX .*costing_periods .*\(project_id, period_month\).*project_id IS NOT NULL/s),
     ).toBe(true);

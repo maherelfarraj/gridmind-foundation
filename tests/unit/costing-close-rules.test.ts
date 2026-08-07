@@ -295,7 +295,10 @@ describe("forecast versions", () => {
   });
 
   it("rolls snapshot totals as actual + accruals + ETC", () => {
-    const t = snapshotTotals([line(), line({ cost_code_key: "cc-2", cost_code_id: "cc-2" })], "USD");
+    const t = snapshotTotals(
+      [line(), line({ cost_code_key: "cc-2", cost_code_id: "cc-2" })],
+      "USD",
+    );
     expect(t.actual).toBe(3000);
     expect(t.accruals).toBe(500);
     expect(t.etc).toBe(2000);

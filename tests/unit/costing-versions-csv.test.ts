@@ -40,7 +40,10 @@ const header = {
 
 describe("forecast version CSV", () => {
   it("writes one row per line plus a TOTAL row at the frozen rates", () => {
-    const lines = [line(), line({ cost_code_id: null, cost_code_key: "__unassigned__", cost_code: null })];
+    const lines = [
+      line(),
+      line({ cost_code_id: null, cost_code_key: "__unassigned__", cost_code: null }),
+    ];
     const csv = buildForecastVersionCsv(header, lines, snapshotTotals(lines, "USD"));
     const rows = csv.trim().split("\n");
     expect(rows).toHaveLength(4); // header + 2 lines + TOTAL

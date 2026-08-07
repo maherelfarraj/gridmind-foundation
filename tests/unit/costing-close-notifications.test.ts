@@ -198,6 +198,8 @@ describe("next open period for a reversal", () => {
       },
     } as never;
     void ctx;
-    await expect(findNextOpenPeriod(ctxAllClosed, COMPANY, PROJECT, "2026-03-01", 6)).resolves.toBeNull();
+    await expect(
+      findNextOpenPeriod(ctxAllClosed, COMPANY, PROJECT, "2026-03-01", 6),
+    ).resolves.toBeNull();
   });
 });
