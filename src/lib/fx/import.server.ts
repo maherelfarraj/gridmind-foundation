@@ -58,7 +58,7 @@ async function distinct(admin: Admin, table: string, column: string): Promise<st
   const { data, error } = await admin.from(table).select(column).limit(20_000);
   if (error) return [];
   const out = new Set<string>();
-  for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+  for (const row of (data ?? []) as unknown as Array<Record<string, unknown>>) {
     const v = row[column];
     if (typeof v === "string" && /^[A-Za-z]{3}$/.test(v)) out.add(v.toUpperCase());
   }
