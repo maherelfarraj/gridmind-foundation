@@ -66,16 +66,22 @@ d("contracts & claims tables — grants and RLS", () => {
     expect(cmds).not.toContain("DELETE");
   });
 
-  it("makes frozen snapshot lines un-updatable", () => {
+  it("makes snapshot line values immutable (no UPDATE privilege)", () => {
     expect(acl.get("contract_claim_snapshot_lines")!).not.toMatch(/authenticated=[a-v x-z]*w/);
-    const cmds = q(
-      `select cmd from pg_policies where schemaname='public' and tablename='contract_claim_snapshot_lines'`,
-    ).map(([c]) => c);
-    expect(cmds).not.toContain("UPDATE");
   });
 
-  it("never allows deleting a claim snapshot", () => {
-    expect(acl.get("contract_claim_snapshots")!).not.toMatch(/authenticated=[a-z]*d/);
+  it("keeps claim valuations append-only", () => {
+    const grants = acl.get("contract_claim_valuations")!;
+    expect(grants).not.toMatch(/authenticated=[a-v x-z]*w/);
+    expect(grants).not.toMatch(/authenticated=[a-z]*d/);
+  });
+
+  it("only allows deleting a snapshot while it is still working", () => {
+    const [[qual]] = q(
+      `select coalesce(qual::text,'') from pg_policies
+        where schemaname='public' and tablename='contract_claim_snapshots' and cmd='DELETE'`,
+    );
+    expect(qual).toMatch(/status = 'working'/);
   });
 });
 
