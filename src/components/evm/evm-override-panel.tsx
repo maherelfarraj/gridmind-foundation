@@ -84,8 +84,7 @@ export function EvmOverridePanel({
     const w = catalog.wbs.find((x) => x.id === id);
     return w ? `${w.code} ${w.name}` : null;
   };
-  const taskLabel = (id: string | null) =>
-    catalog.tasks.find((x) => x.id === id)?.name ?? null;
+  const taskLabel = (id: string | null) => catalog.tasks.find((x) => x.id === id)?.name ?? null;
 
   const valid =
     draft !== null &&
@@ -100,9 +99,7 @@ export function EvmOverridePanel({
           <h2 className="text-sm font-semibold text-foreground">
             {t(`${K}.mapping.overridesTitle`)}
           </h2>
-          <p className="text-xs text-muted-foreground">
-            {t(`${K}.mapping.overridesDescription`)}
-          </p>
+          <p className="text-xs text-muted-foreground">{t(`${K}.mapping.overridesDescription`)}</p>
         </div>
         {canWrite ? (
           <Button size="sm" onClick={() => setDraft(emptyDraft())}>

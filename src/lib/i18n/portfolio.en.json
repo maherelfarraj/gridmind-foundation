@@ -715,7 +715,8 @@
         "empty": "No prior-period comparison available.",
         "cpi": "CPI Δ",
         "spi": "SPI Δ"
-      }
+      },
+      "notFound": "No portfolio earned value data found."
     }
   }
 }

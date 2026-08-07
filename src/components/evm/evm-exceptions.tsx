@@ -83,7 +83,9 @@ export function EvmExceptionTable({
               <TableRow key={`${e.code}-${e.title}`}>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="text-foreground">{t(`${K}.exception.${e.code}`, { defaultValue: e.title })}</span>
+                    <span className="text-foreground">
+                      {t(`${K}.exception.${e.code}`, { defaultValue: e.title })}
+                    </span>
                     {e.detail ? (
                       <span className="text-xs text-muted-foreground">{e.detail}</span>
                     ) : null}
@@ -95,7 +97,9 @@ export function EvmExceptionTable({
                     label={t(`${K}.severity.${e.severity}`)}
                   />
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{formatValue(e, currency)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatValue(e, currency)}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {e.threshold_value === null
                     ? "—"

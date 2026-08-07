@@ -13,11 +13,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EvmDetailTable } from "@/components/evm/evm-detail-table";
 import { EvmExceptionTable, EvmGateSummary } from "@/components/evm/evm-exceptions";
-import {
-  EvmBasisCard,
-  EvmFormulaCard,
-  EvmLifecycleCard,
-} from "@/components/evm/evm-governance";
+import { EvmBasisCard, EvmFormulaCard, EvmLifecycleCard } from "@/components/evm/evm-governance";
 import { EvmKpiGrid } from "@/components/evm/evm-kpi-grid";
 import { EvmTrend } from "@/components/evm/evm-trend";
 import { money } from "@/components/evm/evm-format";
@@ -71,9 +67,14 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId/costin
   errorComponent: ({ error }) => (
     <Card className="p-6 text-sm text-destructive">{costingErrorMessage(error)}</Card>
   ),
-  notFoundComponent: () => <Card className="p-6 text-sm">Project not found.</Card>,
+  notFoundComponent: EvmNotFound,
   component: EvmCockpit,
 });
+
+function EvmNotFound() {
+  const { t } = useI18n();
+  return <Card className="p-6 text-sm">{t(`${K}.notFound`)}</Card>;
+}
 
 function EvmCockpit() {
   const { t } = useI18n();
@@ -225,7 +226,9 @@ function EvmCockpit() {
               <h2 className="text-sm font-semibold text-foreground">{t(`${K}.detail.title`)}</h2>
               <p className="text-xs text-muted-foreground">
                 {t(`${K}.detail.reconciliation`, {
-                  status: c.reconciliation.ok ? t(`${K}.detail.tiesOut`) : t(`${K}.detail.mismatch`),
+                  status: c.reconciliation.ok
+                    ? t(`${K}.detail.tiesOut`)
+                    : t(`${K}.detail.mismatch`),
                   difference: money(c.reconciliation.difference, currency),
                 })}
               </p>
@@ -315,14 +318,18 @@ function EvmCockpit() {
 
             <Card className="flex flex-col gap-2 p-4">
               <h2 className="text-sm font-semibold text-foreground">{t(`${K}.history.title`)}</h2>
-              <Label className="text-xs text-muted-foreground">{t(`${K}.history.description`)}</Label>
+              <Label className="text-xs text-muted-foreground">
+                {t(`${K}.history.description`)}
+              </Label>
               <ul className="flex flex-col gap-1 text-sm">
                 {data.events.length === 0 ? (
                   <li className="text-muted-foreground">{t(`${K}.history.empty`)}</li>
                 ) : (
                   data.events.map((e) => (
                     <li key={e.id} className="flex flex-wrap gap-2 text-muted-foreground">
-                      <span className="tabular-nums">{e.created_at.slice(0, 16).replace("T", " ")}</span>
+                      <span className="tabular-nums">
+                        {e.created_at.slice(0, 16).replace("T", " ")}
+                      </span>
                       <span className="text-foreground">
                         {t(`${K}.event.${e.event_type}`, { defaultValue: e.event_type })}
                       </span>

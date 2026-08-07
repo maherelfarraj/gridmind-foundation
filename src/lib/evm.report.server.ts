@@ -213,7 +213,11 @@ async function activeMappingVersion(
   projectId: string,
 ): Promise<MappingVersionRow | null> {
   const versions = await listMappingVersions(ctx, projectId);
-  return versions.find((v) => v.status === "approved") ?? versions.find((v) => v.status === "draft") ?? null;
+  return (
+    versions.find((v) => v.status === "approved") ??
+    versions.find((v) => v.status === "draft") ??
+    null
+  );
 }
 
 export async function listMappings(
@@ -286,7 +290,11 @@ export async function approveMappingVersion(ctx: AuthContext, versionId: string)
   const { reconcileAllocations } = await import("@/lib/evm.report.rules");
   const issues = reconcileAllocations(mappings).filter((a) => !a.ok);
   if (issues.length > 0) {
-    costingHttpError(422, "evm_allocation_unreconciled", `${issues.length} scope item(s) do not total 100%.`);
+    costingHttpError(
+      422,
+      "evm_allocation_unreconciled",
+      `${issues.length} scope item(s) do not total 100%.`,
+    );
   }
 
   const prior = (await listMappingVersions(ctx, version!.project_id)).filter(
@@ -419,9 +427,12 @@ export async function saveProgressOverride(
     .eq("period_month", period);
   const wbsId = (rest["wbs_item_id"] as string | null) ?? null;
   const taskId = (rest["schedule_task_id"] as string | null) ?? null;
-  const scoped = (wbsId ? scopeQuery.eq("wbs_item_id", wbsId) : scopeQuery.is("wbs_item_id", null));
+  const scoped = wbsId ? scopeQuery.eq("wbs_item_id", wbsId) : scopeQuery.is("wbs_item_id", null);
   const existing = await one<{ id: string }>(
-    (taskId ? scoped.eq("schedule_task_id", taskId) : scoped.is("schedule_task_id", null)).maybeSingle(),
+    (taskId
+      ? scoped.eq("schedule_task_id", taskId)
+      : scoped.is("schedule_task_id", null)
+    ).maybeSingle(),
   );
 
   const payload = {
@@ -457,12 +468,17 @@ export async function saveProgressOverride(
   return saved?.id ?? "";
 }
 
-
 export async function deleteProgressOverride(ctx: AuthContext, overrideId: string): Promise<void> {
   await requireEvmWrite(ctx);
   const { error } = await sbOf(ctx).from("evm_progress_overrides").delete().eq("id", overrideId);
   if (error) throw error;
-  await costingAudit(ctx, "evm.progress.override_removed", "evm_progress_overrides", overrideId, {});
+  await costingAudit(
+    ctx,
+    "evm.progress.override_removed",
+    "evm_progress_overrides",
+    overrideId,
+    {},
+  );
 }
 
 /** Read the overrides recorded for one project period (management UI). */
@@ -519,7 +535,6 @@ export async function loadEvmScopeCatalog(
   };
 }
 
-
 // ---------------------------------------------------------------------------
 // Period locks
 // ---------------------------------------------------------------------------
@@ -563,8 +578,6 @@ async function assertReportOpen(ctx: AuthContext, projectId: string, period: str
     );
   }
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Authoritative compute
@@ -812,7 +825,11 @@ export async function computeEvm(
   const finishes = baselineDates.map((t) => t.end_date).filter(Boolean) as string[];
 
   return {
-    project: { id: project.id, code: (project as { code?: string }).code ?? "", name: (project as { name?: string }).name ?? "" },
+    project: {
+      id: project.id,
+      code: (project as { code?: string }).code ?? "",
+      name: (project as { name?: string }).name ?? "",
+    },
     period_month: period,
     data_date,
     project_currency,
@@ -910,17 +927,19 @@ async function logEvent(
   event_type: string,
   extra: Record<string, unknown> = {},
 ): Promise<void> {
-  const { error } = await sbOf(ctx).from("evm_events").insert({
-    company_id: report.company_id,
-    project_id: report.project_id,
-    report_id: report.id,
-    event_type,
-    actor_id: ctx.user?.id ?? null,
-    from_status: (extra["from_status"] as string | null) ?? null,
-    to_status: (extra["to_status"] as string | null) ?? null,
-    reason: (extra["reason"] as string | null) ?? null,
-    context: extra,
-  });
+  const { error } = await sbOf(ctx)
+    .from("evm_events")
+    .insert({
+      company_id: report.company_id,
+      project_id: report.project_id,
+      report_id: report.id,
+      event_type,
+      actor_id: ctx.user?.id ?? null,
+      from_status: (extra["from_status"] as string | null) ?? null,
+      to_status: (extra["to_status"] as string | null) ?? null,
+      reason: (extra["reason"] as string | null) ?? null,
+      context: extra,
+    });
   if (error && !isMissingObject(error)) throw error;
 }
 
@@ -944,7 +963,11 @@ export async function saveEvmReport(
       .maybeSingle(),
   );
   if (existing && existing.status !== "working") {
-    costingHttpError(409, "evm_report_frozen", "Withdraw or supersede the report before recalculating.");
+    costingHttpError(
+      409,
+      "evm_report_frozen",
+      "Withdraw or supersede the report before recalculating.",
+    );
   }
 
   const payload = {
@@ -982,9 +1005,7 @@ export async function saveEvmReport(
     ? await one<EvmReportRow>(
         sbOf(ctx).from("evm_reports").update(payload).eq("id", existing.id).select("*").single(),
       )
-    : await one<EvmReportRow>(
-        sbOf(ctx).from("evm_reports").insert(payload).select("*").single(),
-      );
+    : await one<EvmReportRow>(sbOf(ctx).from("evm_reports").insert(payload).select("*").single());
   if (!saved) costingHttpError(500, "evm_report_save_failed");
 
   // Freeze the line detail alongside the header.
@@ -1050,7 +1071,11 @@ export async function saveEvmReport(
     ctx,
     { id: saved!.id, company_id: project.company_id, project_id: input.project_id },
     "calculated",
-    { period_month: computed.period_month, data_date: computed.data_date, lines: computed.nodes.length },
+    {
+      period_month: computed.period_month,
+      data_date: computed.data_date,
+      lines: computed.nodes.length,
+    },
   );
   await costingAudit(ctx, "evm.report.calculated", "evm_reports", saved!.id, {
     project_id: input.project_id,
@@ -1073,7 +1098,8 @@ export async function transitionEvmReport(
     costingHttpError(409, EVM_VERSION_CONFLICT, "The report changed since it was loaded.");
   }
 
-  const locked = (await periodState(ctx, report!.project_id, report!.period_month)) === "hard_closed";
+  const locked =
+    (await periodState(ctx, report!.project_id, report!.period_month)) === "hard_closed";
   const check = checkTransition({
     from: report!.status,
     to: input.to,
@@ -1166,7 +1192,10 @@ export async function supersedeEvmReport(
       .single(),
   );
   if (created) {
-    await sbOf(ctx).from("evm_reports").update({ superseded_by_id: created.id }).eq("id", report!.id);
+    await sbOf(ctx)
+      .from("evm_reports")
+      .update({ superseded_by_id: created.id })
+      .eq("id", report!.id);
     await logEvent(ctx, report!, "superseded", {
       from_status: "approved",
       to_status: "superseded",
@@ -1281,7 +1310,8 @@ async function frozenComputed(
   }));
 
   const total =
-    totals?.project ?? computeMeasures({ bac: 0, pv: null, ev: null, ac: null, bottom_up_etc: null });
+    totals?.project ??
+    computeMeasures({ bac: 0, pv: null, ev: null, ac: null, bottom_up_etc: null });
   return {
     project: {
       id: report.project_id,
@@ -1296,7 +1326,8 @@ async function frozenComputed(
     ac_basis: report.ac_basis,
     eac_method: report.official_eac_method,
     cost_basis: report.cost_basis,
-    mapping_version_id: (report as { mapping_version_id?: string | null }).mapping_version_id ?? null,
+    mapping_version_id:
+      (report as { mapping_version_id?: string | null }).mapping_version_id ?? null,
     schedule_baseline_id:
       (report as { schedule_baseline_id?: string | null }).schedule_baseline_id ?? null,
     nodes,
@@ -1346,7 +1377,6 @@ export async function loadEvmWorkspace(
     ? await frozenComputed(ctx, report, await loadEvmSettings(ctx, input.project_id))
     : await computeEvm(ctx, input);
   const state = await periodState(ctx, input.project_id, computed.period_month);
-
 
   const trend: TrendPoint[] = history
     .filter((h) => h.status === "approved" || h.status === "submitted")
@@ -1454,9 +1484,7 @@ export async function loadPortfolioEvm(
   const currencies = [
     ...new Set(reports.map((r) => String(r["project_currency"] ?? "USD").toUpperCase())),
   ];
-  const reporting_currency = (
-    filter.currency ?? currencies[0] ?? "USD"
-  ).toUpperCase();
+  const reporting_currency = (filter.currency ?? currencies[0] ?? "USD").toUpperCase();
   const fxByCurrency = new Map<string, EvmFx>();
   await Promise.all(
     currencies.map(async (c) => {
@@ -1477,7 +1505,11 @@ export async function loadPortfolioEvm(
       stale: false,
       missing: true,
     };
-    const quality = (r["quality"] ?? {}) as { blockers?: number; warnings?: number; unmapped_pct?: number };
+    const quality = (r["quality"] ?? {}) as {
+      blockers?: number;
+      warnings?: number;
+      unmapped_pct?: number;
+    };
     const priorM = priorByProject.get(projectId) ?? null;
     return {
       project_id: projectId,
@@ -1544,7 +1576,11 @@ export async function loadPortfolioEvm(
 // ---------------------------------------------------------------------------
 export async function loadEvmCsv(
   ctx: AuthContext,
-  input: { project_id: string; period?: string; kind: "detail" | "trend" | "mappings" | "exceptions" | "formulas" },
+  input: {
+    project_id: string;
+    period?: string;
+    kind: "detail" | "trend" | "mappings" | "exceptions" | "formulas";
+  },
 ): Promise<{ filename: string; csv: string }> {
   const data = await loadEvmWorkspace(ctx, input);
   const stamp = `${data.computed.period_month.slice(0, 7)}`;
@@ -1616,7 +1652,13 @@ export async function loadEvmAppendix(
  */
 export async function loadEvmDetail(
   ctx: AuthContext,
-  input: { report_id: string; page: number; page_size: number; cost_code_id?: string; wbs_item_id?: string },
+  input: {
+    report_id: string;
+    page: number;
+    page_size: number;
+    cost_code_id?: string;
+    wbs_item_id?: string;
+  },
 ): Promise<{ rows: Record<string, Json>[]; total: number; page: number; page_size: number }> {
   const from = (input.page - 1) * input.page_size;
   let q = sbOf(ctx)

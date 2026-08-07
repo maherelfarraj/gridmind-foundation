@@ -715,7 +715,8 @@
         "empty": "No prior-period comparison available.",
         "cpi": "CPI Δ",
         "spi": "SPI Δ"
-      }
+      },
+      "notFound": "لا توجد بيانات القيمة المكتسبة للمحفظة."
     }
   }
 }
