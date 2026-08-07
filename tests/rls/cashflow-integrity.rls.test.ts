@@ -57,7 +57,6 @@ function script(sql: string): string[] {
     .map((l) => l.slice(3));
 }
 
-
 const TABLES = [
   "cashflow_settings",
   "cashflow_snapshots",
@@ -382,7 +381,6 @@ d("cash flow invariants — authoritative data is never touched", () => {
     return [lines[0] ?? "before-missing", lines[1] ?? "after-missing"];
   };
 
-
   it("declares no cash-flow routine that writes an authoritative table", () => {
     const routines = q(
       `select p.proname, ${flat("p.prosrc")} from pg_proc p
@@ -451,7 +449,6 @@ d("cash flow invariants — authoritative data is never touched", () => {
       expect(after).toBe(before);
     },
   );
-
 
   it("cannot mutate frozen snapshots or history from an unprivileged session", () => {
     for (const sql of [
