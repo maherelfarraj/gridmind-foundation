@@ -9,6 +9,8 @@ import { z } from "zod";
 import { PortfolioCashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { PortfolioEvmAppendixCard } from "@/components/evm/evm-appendix";
 import { PortfolioRecognitionAppendixCard } from "@/components/recognition/recognition-appendix";
+import { PortfolioClaimsAppendixCard } from "@/components/contracts-claims/contracts-claims-appendix";
+import { portfolioClaimsQueryOptions } from "@/lib/contracts-claims.query";
 import { portfolioRecognitionQueryOptions } from "@/lib/recognition.query";
 import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
@@ -194,6 +196,10 @@ function PackView() {
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <PortfolioClaimsAppendix period={data.period} currency={cur} />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
@@ -228,6 +234,18 @@ function PortfolioRecognitionAppendix({ period }: { period: string }) {
   return (
     <section className="space-y-3">
       <PortfolioRecognitionAppendixCard data={data} />
+    </section>
+  );
+}
+
+/** GC-16 — consolidated contract & claims appendix for the period. */
+function PortfolioClaimsAppendix({ period, currency }: { period: string; currency: string }) {
+  const { data } = useSuspenseQuery(
+    portfolioClaimsQueryOptions({ period_month: period, status: "all" }),
+  );
+  return (
+    <section className="space-y-3">
+      <PortfolioClaimsAppendixCard data={data} currency={currency} />
     </section>
   );
 }
