@@ -93,8 +93,10 @@ describe("segregation of duties and delegation", () => {
 
   it("enforces the delegation bands", () => {
     const low = DEFAULT_DELEGATION[0]!;
-    expect(withinDelegation(low.max_amount, [low.role], DEFAULT_DELEGATION)).toBe(true);
-    expect(withinDelegation(low.max_amount + 1, [low.role], DEFAULT_DELEGATION)).toBe(false);
+    expect(withinDelegation(low.limit, [low.role], DEFAULT_DELEGATION)).toBe(true);
+    expect(withinDelegation(low.limit + 1, [low.role], DEFAULT_DELEGATION)).toBe(false);
+    expect(withinDelegation(low.limit + 1, ["finance_admin"], DEFAULT_DELEGATION)).toBe(true);
+    expect(withinDelegation(1, [], DEFAULT_DELEGATION)).toBe(false);
   });
 });
 
@@ -114,13 +116,23 @@ describe("deadline calendar arithmetic", () => {
   });
 
   it("computes a due date from a trigger and notice window", () => {
-    const due = computeDueDate({
-      trigger_date: "2026-03-01",
-      days: 28,
-      basis: "calendar",
-      calendar: DEFAULT_CALENDAR,
-    } as never);
-    expect(due).toBe("2026-03-29");
+    expect(
+      computeDueDate({
+        kind: "notice",
+        trigger_date: "2026-03-01",
+        duration_days: 28,
+        calendar: "calendar",
+      }),
+    ).toBe("2026-03-29");
+    expect(
+      computeDueDate({
+        kind: "notice",
+        trigger_date: "2026-03-05",
+        duration_days: 1,
+        calendar: "business",
+        workCalendar: MENA_CALENDAR,
+      }),
+    ).toBe("2026-03-08");
   });
 
   it("counts days until deterministically", () => {
@@ -136,19 +148,44 @@ describe("deadline calendar arithmetic", () => {
     expect(state.overdue).toBe(true);
   });
 
-  it("never flags a met deadline as overdue", () => {
+  it("never flags a satisfied deadline as overdue", () => {
     const state = evaluateDeadline(
-      { due_date: "2026-02-01", status: "met" } as never,
+      { due_date: "2026-02-01", status: "open", satisfied_at: "2026-01-20" },
       "2026-03-01",
     );
+    expect(state.overdue).toBe(false);
+    expect(state.status).toBe("met");
+  });
+
+  it("records a late satisfaction as missed but not overdue", () => {
+    const state = evaluateDeadline(
+      { due_date: "2026-02-01", status: "open", satisfied_at: "2026-02-10" },
+      "2026-03-01",
+    );
+    expect(state.status).toBe("missed");
     expect(state.overdue).toBe(false);
   });
 });
 
 describe("exposure math", () => {
-  it("treats unapproved asserted value as live exposure", () => {
+  it("holds asserted-but-unapproved value outside live exposure", () => {
     const e = claimExposure(claim({ asserted_amount: 100_000, approved_amount: 0 }));
-    expect(e.exposure).toBeGreaterThan(0);
+    expect(e.unapproved).toBe(100_000);
+    expect(e.exposure).toBe(0);
+  });
+
+  it("counts approved-but-uncertified and certified-but-unpaid as exposure", () => {
+    const e = claimExposure(
+      claim({ approved_amount: 100_000, certified_amount: 60_000, paid_amount: 20_000 }),
+    );
+    expect(e.exposure).toBe(80_000);
+    expect(e.recoverable).toBe(40_000);
+  });
+
+  it("zeroes exposure once a claim is settled", () => {
+    const e = claimExposure(claim({ status: "withdrawn", approved_amount: 100_000 }));
+    expect(e.settled).toBe(true);
+    expect(e.exposure).toBe(0);
   });
 
   it("rolls up claims without float drift", () => {
@@ -165,11 +202,20 @@ describe("exposure math", () => {
     expect(rollupClaims([])).toEqual(emptyTotals());
   });
 
-  it("produces a waterfall whose last cumulative equals live exposure", () => {
-    const totals = rollupClaims([claim({ approved_amount: 40_000 })]);
+  it("produces a waterfall ending at certified less paid", () => {
+    const totals = rollupClaims([
+      claim({
+        asserted_amount: 100_000,
+        submitted_amount: 100_000,
+        assessed_amount: 80_000,
+        approved_amount: 70_000,
+        certified_amount: 50_000,
+        paid_amount: 20_000,
+      }),
+    ]);
     const steps = exposureWaterfall(totals);
-    expect(steps.length).toBeGreaterThan(0);
-    expect(steps.at(-1)!.cumulative).toBeCloseTo(totals.live_exposure, 2);
+    expect(steps[0]!.key).toBe("asserted");
+    expect(steps.at(-1)!.cumulative).toBeCloseTo(totals.certified - totals.paid, 2);
   });
 });
 
