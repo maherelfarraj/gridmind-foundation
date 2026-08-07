@@ -210,6 +210,7 @@ import { Route as AuthenticatedPortfolioCostingRevenueWipRouteImport } from './r
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedPortfolioCostingFundingRouteImport } from './routes/_authenticated/portfolio.costing.funding'
 import { Route as AuthenticatedPortfolioCostingEvmRouteImport } from './routes/_authenticated/portfolio.costing.evm'
+import { Route as AuthenticatedPortfolioCostingContractsClaimsRouteImport } from './routes/_authenticated/portfolio.costing.contracts-claims'
 import { Route as AuthenticatedPortfolioCostingCashFlowRouteImport } from './routes/_authenticated/portfolio.costing.cash-flow'
 import { Route as AuthenticatedPortfolioCostingAuditRouteImport } from './routes/_authenticated/portfolio.costing.audit'
 import { Route as AuthenticatedPortfolioCostingAlertsRouteImport } from './routes/_authenticated/portfolio.costing.alerts'
@@ -1455,6 +1456,12 @@ const AuthenticatedPortfolioCostingEvmRoute =
     path: '/evm',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
+const AuthenticatedPortfolioCostingContractsClaimsRoute =
+  AuthenticatedPortfolioCostingContractsClaimsRouteImport.update({
+    id: '/contracts-claims',
+    path: '/contracts-claims',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedPortfolioCostingCashFlowRoute =
   AuthenticatedPortfolioCostingCashFlowRouteImport.update({
     id: '/cash-flow',
@@ -2155,6 +2162,7 @@ export interface FileRoutesByFullPath {
   '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
+  '/portfolio/costing/contracts-claims': typeof AuthenticatedPortfolioCostingContractsClaimsRoute
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
@@ -2432,6 +2440,7 @@ export interface FileRoutesByTo {
   '/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
+  '/portfolio/costing/contracts-claims': typeof AuthenticatedPortfolioCostingContractsClaimsRoute
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
@@ -2720,6 +2729,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio/costing/alerts': typeof AuthenticatedPortfolioCostingAlertsRoute
   '/_authenticated/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/_authenticated/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
+  '/_authenticated/portfolio/costing/contracts-claims': typeof AuthenticatedPortfolioCostingContractsClaimsRoute
   '/_authenticated/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
   '/_authenticated/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
@@ -3011,6 +3021,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/cash-flow'
+    | '/portfolio/costing/contracts-claims'
     | '/portfolio/costing/evm'
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
@@ -3288,6 +3299,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/alerts'
     | '/portfolio/costing/audit'
     | '/portfolio/costing/cash-flow'
+    | '/portfolio/costing/contracts-claims'
     | '/portfolio/costing/evm'
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
@@ -3575,6 +3587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio/costing/alerts'
     | '/_authenticated/portfolio/costing/audit'
     | '/_authenticated/portfolio/costing/cash-flow'
+    | '/_authenticated/portfolio/costing/contracts-claims'
     | '/_authenticated/portfolio/costing/evm'
     | '/_authenticated/portfolio/costing/funding'
     | '/_authenticated/portfolio/costing/pack'
@@ -5156,6 +5169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioCostingEvmRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
+    '/_authenticated/portfolio/costing/contracts-claims': {
+      id: '/_authenticated/portfolio/costing/contracts-claims'
+      path: '/contracts-claims'
+      fullPath: '/portfolio/costing/contracts-claims'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingContractsClaimsRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/portfolio/costing/cash-flow': {
       id: '/_authenticated/portfolio/costing/cash-flow'
       path: '/cash-flow'
@@ -5836,6 +5856,7 @@ interface AuthenticatedPortfolioCostingRouteChildren {
   AuthenticatedPortfolioCostingAlertsRoute: typeof AuthenticatedPortfolioCostingAlertsRoute
   AuthenticatedPortfolioCostingAuditRoute: typeof AuthenticatedPortfolioCostingAuditRoute
   AuthenticatedPortfolioCostingCashFlowRoute: typeof AuthenticatedPortfolioCostingCashFlowRoute
+  AuthenticatedPortfolioCostingContractsClaimsRoute: typeof AuthenticatedPortfolioCostingContractsClaimsRoute
   AuthenticatedPortfolioCostingEvmRoute: typeof AuthenticatedPortfolioCostingEvmRoute
   AuthenticatedPortfolioCostingFundingRoute: typeof AuthenticatedPortfolioCostingFundingRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
@@ -5851,6 +5872,8 @@ const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingR
       AuthenticatedPortfolioCostingAuditRoute,
     AuthenticatedPortfolioCostingCashFlowRoute:
       AuthenticatedPortfolioCostingCashFlowRoute,
+    AuthenticatedPortfolioCostingContractsClaimsRoute:
+      AuthenticatedPortfolioCostingContractsClaimsRoute,
     AuthenticatedPortfolioCostingEvmRoute:
       AuthenticatedPortfolioCostingEvmRoute,
     AuthenticatedPortfolioCostingFundingRoute:
