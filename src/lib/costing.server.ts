@@ -13,7 +13,6 @@ import {
   type CostingRollup,
 } from "@/lib/costing.rules";
 
-
 export function costingHttpError(status: number, code: string, message?: string): never {
   throw Object.assign(new Error(message ?? code), {
     statusCode: status,
@@ -176,7 +175,6 @@ export interface CostingWorkspaceData {
   forecasts: CostingForecastRow[];
   costCodes: { id: string; code: string; name: string; parent_id: string | null }[];
 }
-
 
 // ---------------------------------------------------------------------------
 // Loader
@@ -492,7 +490,9 @@ export async function loadCostingWorkspace(
       forecasts.filter((f) => f.currency_code === code).map((f) => f.etc_amount_base),
     ),
     accrual_txn: sumMoney(
-      accruals.filter((a) => a.currency_code === code && a.status === "approved").map((a) => a.amount),
+      accruals
+        .filter((a) => a.currency_code === code && a.status === "approved")
+        .map((a) => a.amount),
     ),
     accrual_base: sumMoney(
       accruals
@@ -537,7 +537,6 @@ export async function loadCostingWorkspace(
       parent_id: (c.parent_id as string | null) ?? null,
     })),
   };
-
 }
 
 // ---------------------------------------------------------------------------
