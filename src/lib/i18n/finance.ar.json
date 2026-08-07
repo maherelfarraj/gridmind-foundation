@@ -1724,6 +1724,135 @@
           "create": "إرسال التسوية"
         }
       }
+    },
+    "contractsClaims": {
+      "title": "العقود والمطالبات",
+      "subtitle": "استحقاق المطالبات والمبالغ وتمديد المدة والمواعيد التعاقدية المحكومة لهذا المشروع.",
+      "disclaimerTitle": "سجل غير مُرحَّل",
+      "filters": {
+        "period": "الفترة",
+        "dataDate": "تاريخ البيانات"
+      },
+      "actions": {
+        "newClaim": "مطالبة جديدة",
+        "save": "حفظ",
+        "submit": "تقديم",
+        "approve": "اعتماد",
+        "build": "إنشاء لقطة",
+        "refreshAlerts": "تحديث التنبيهات",
+        "acknowledge": "إقرار",
+        "resolve": "إغلاق"
+      },
+      "sections": {
+        "register": "سجل المطالبات",
+        "deadlines": "المواعيد التعاقدية",
+        "alerts": "التنبيهات",
+        "timeline": "الخط الزمني",
+        "appendix": "ملحق حزمة الإقفال"
+      },
+      "totals": {
+        "asserted": "المُدّعى",
+        "approved": "المعتمد",
+        "certified": "المُصدَّق",
+        "liveExposure": "التعرض القائم",
+        "unapproved": "تعرض غير معتمد",
+        "ld": "تعرض غرامات التأخير",
+        "eot": "أيام التمديد المعتمدة",
+        "claims": "المطالبات"
+      },
+      "table": {
+        "ref": "المرجع",
+        "title": "العنوان",
+        "kind": "النوع",
+        "status": "الحالة",
+        "currency": "العملة",
+        "clause": "البند",
+        "entitlement": "أساس الاستحقاق",
+        "deadline": "الموعد",
+        "due": "الاستحقاق",
+        "actions": "إجراءات"
+      },
+      "appendix": {
+        "title": "ملحق العقود والمطالبات",
+        "description": "دليل تعرض المطالبات للقراءة فقط لفترة التقرير.",
+        "waterfall": "شلال التعرض",
+        "step": "الخطوة",
+        "movement": "الحركة",
+        "cumulative": "التراكمي",
+        "topClaims": "أكبر المطالبات",
+        "deadlines": "المواعيد القادمة",
+        "reconciliation": "فروقات المطابقة"
+      },
+      "empty": {
+        "claims": "لا توجد مطالبات مسجلة.",
+        "claimsHint": "سجّل مطالبة لبدء تتبع الاستحقاق والمبالغ.",
+        "deadlines": "لا توجد مواعيد تعاقدية مسجلة.",
+        "alerts": "لا توجد تنبيهات مفتوحة.",
+        "timeline": "لا توجد أحداث بعد."
+      },
+      "toast": {
+        "saved": "تم حفظ المطالبة.",
+        "transitioned": "تم تحديث حالة المطالبة.",
+        "built": "تم إنشاء اللقطة.",
+        "snapshot": "تم تحديث اللقطة.",
+        "alert": "تم تحديث التنبيه.",
+        "alertsRefreshed": "تمت إعادة تقييم التنبيهات."
+      },
+      "status": {
+        "working": "قيد العمل",
+        "submitted": "مُقدَّم",
+        "approved": "معتمد",
+        "superseded": "مُستبدل",
+        "none": "لا يوجد"
+      },
+      "claimStatus": {
+        "draft": "مسودة",
+        "notified": "مُخطر به",
+        "submitted": "مُقدَّم",
+        "under_assessment": "قيد التقييم",
+        "assessed": "مُقيَّم",
+        "negotiation": "تفاوض",
+        "approved": "معتمد",
+        "rejected": "مرفوض",
+        "certified": "مُصدَّق",
+        "paid": "مدفوع",
+        "closed": "مغلق",
+        "withdrawn": "مسحوب"
+      },
+      "claimKind": {
+        "variation": "أمر تغييري",
+        "eot": "تمديد المدة",
+        "prolongation": "إطالة المدة",
+        "disruption": "إعاقة",
+        "acceleration": "تسريع",
+        "ld_defence": "دفاع غرامات التأخير",
+        "termination": "إنهاء",
+        "other": "أخرى"
+      },
+      "deadlineKind": {
+        "notice": "إخطار",
+        "submission": "تقديم",
+        "response": "رد",
+        "determination": "بت",
+        "instrument_expiry": "انتهاء الضمان",
+        "limitation": "تقادم",
+        "retention_release": "الإفراج عن المحتجزات",
+        "back_to_back": "ظهير لظهير"
+      },
+      "deadlineStatus": {
+        "open": "مفتوح",
+        "met": "مُستوفى",
+        "missed": "فائت",
+        "waived": "متنازل عنه",
+        "superseded": "مُستبدل"
+      },
+      "alertState": {
+        "open": "مفتوح",
+        "acknowledged": "مُقَر به",
+        "snoozed": "مؤجل",
+        "escalated": "مُصعَّد",
+        "resolved": "مُغلق"
+      }
     }
   }
 }

@@ -886,6 +886,67 @@
         "title": "Revenue roll-up unavailable",
         "description": "The portfolio recognition roll-up could not be loaded. Retry in a moment."
       }
+    },
+    "contractsClaims": {
+      "title": "Portfolio contracts & claims",
+      "subtitle": "Consolidated claim exposure, entitlement and contractual deadline risk across projects.",
+      "link": "Contracts & claims",
+      "back": "Back to Cost & Close",
+      "basis": {
+        "clear": "No critical claim alerts",
+        "attention": "Critical claim alerts open",
+        "note": "{{projects}} projects in scope with {{alerts}} open alerts."
+      },
+      "filters": {
+        "period": "Period",
+        "status": "Snapshot status",
+        "project": "Project",
+        "search": "Search",
+        "all": "All"
+      },
+      "kpi": {
+        "liveExposure": "Live exposure",
+        "claims": "{{count}} claims",
+        "approved": "Approved entitlement",
+        "unapproved": "Unapproved exposure",
+        "unapprovedHint": "Asserted but not yet approved",
+        "overdueDeadlines": "Overdue deadlines",
+        "eot": "{{days}} EOT days approved",
+        "ld": "LD exposure",
+        "openAlerts": "{{count}} open alerts"
+      },
+      "waterfall": {
+        "title": "Exposure waterfall"
+      },
+      "table": {
+        "title": "Projects",
+        "project": "Project",
+        "claims": "Claims",
+        "asserted": "Asserted",
+        "approved": "Approved",
+        "unapproved": "Unapproved",
+        "exposure": "Live exposure",
+        "eot": "EOT days",
+        "overdue": "Overdue",
+        "alerts": "Alerts"
+      },
+      "concentration": {
+        "title": "Concentration",
+        "byExposure": "Top projects by live exposure",
+        "byUnapproved": "Top projects by unapproved exposure"
+      },
+      "alerts": {
+        "title": "Open alerts",
+        "empty": "No open alerts."
+      },
+      "empty": {
+        "title": "No claim exposure",
+        "description": "No project in scope has a recorded contract claim."
+      },
+      "error": {
+        "title": "Contracts & claims unavailable",
+        "description": "The consolidated claim exposure could not be loaded. Try again."
+      }
     }
   }
 }

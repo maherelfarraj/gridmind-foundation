@@ -98,6 +98,51 @@ const PROBES: Probe[] = [
            where snapshot_id = md5('gc15-perf::rs::${PROBE_PROJECT}::${PROBE_PERIOD}::${PROBE_VERSION}')::uuid
            order by sort_order`,
   },
+  {
+    key: "claims_latest_snapshot",
+    title: "GC-16 latest contract-claim snapshot by project / period / version",
+    relation: "contract_claim_snapshots",
+    allowedIndexes: [
+      "contract_claim_snapshots_project_idx",
+      "contract_claim_snapshots_active_idx",
+    ],
+    budgetMs: 50,
+    sql: `select id, period_month, version_no, status
+            from public.contract_claim_snapshots
+           where project_id = md5('gc15-perf::project::${PROBE_PROJECT}')::uuid
+           order by period_month desc, version_no desc
+           limit 1`,
+  },
+  {
+    key: "claims_line_drilldown",
+    title: "GC-16 contract-claim snapshot-line drilldown",
+    relation: "contract_claim_snapshot_lines",
+    allowedIndexes: ["contract_claim_lines_snapshot_idx", "contract_claim_lines_claim_idx"],
+    budgetMs: 50,
+    sql: `select label, kind, status, approved_amount, exposure_reporting, sort_order
+            from public.contract_claim_snapshot_lines
+           where snapshot_id = md5('gc16-perf::ccs::${PROBE_PROJECT}::${PROBE_PERIOD}::${PROBE_VERSION}')::uuid
+           order by sort_order`,
+  },
+  {
+    key: "claims_project_register",
+    title: "GC-16 open contract-claim register by project",
+    relation: "contract_claims",
+    allowedIndexes: [
+      "contract_claims_project_idx",
+      "contract_claims_company_idx",
+      // The planner may prefer the narrower unique (project_id, claim_ref)
+      // index for this predicate; either choice is index-backed.
+      "contract_claims_project_id_claim_ref_key",
+    ],
+    budgetMs: 50,
+    sql: `select claim_ref, status, approved_amount, at_risk_amount, updated_at
+            from public.contract_claims
+           where project_id = md5('gc15-perf::project::${PROBE_PROJECT}')::uuid
+             and status in ('submitted','assessed','approved')
+           order by updated_at desc
+           limit 50`,
+  },
 ];
 
 const SEED_SQL = path.resolve(__dirname, "seed.sql");
@@ -129,6 +174,9 @@ explain (analyze, buffers) ${p.sql};
     "cashflow_snapshot_lines",
     "recognition_snapshots",
     "recognition_snapshot_lines",
+    "contract_claims",
+    "contract_claim_snapshots",
+    "contract_claim_snapshot_lines",
   ]
     .map((t) => `select 'COUNT:${t}:' || count(*) from public.${t};`)
     .join("\n");
@@ -199,6 +247,9 @@ d("GC-15 seeded-volume hot-path performance", () => {
     expect(result.counts.recognition_snapshots).toBe(allSnapshots);
     expect(result.counts.cashflow_snapshot_lines).toBe(lines);
     expect(result.counts.recognition_snapshot_lines).toBe(lines);
+    expect(result.counts.contract_claim_snapshots).toBe(allSnapshots);
+    expect(result.counts.contract_claim_snapshot_lines).toBe(lines);
+    expect(result.counts.contract_claims).toBe(SEED.projects * SEED.buckets);
     expect(lines).toBeGreaterThan(50_000);
   });
 
@@ -237,6 +288,10 @@ d("GC-15 seeded-volume hot-path performance", () => {
          + (select count(*) from public.cashflow_snapshots s
               join public.companies c on c.id = s.company_id where c.slug = 'gc15-perf-fixture')
          + (select count(*) from public.recognition_snapshots s
+              join public.companies c on c.id = s.company_id where c.slug = 'gc15-perf-fixture')
+         + (select count(*) from public.contract_claims cl
+              join public.companies c on c.id = cl.company_id where c.slug = 'gc15-perf-fixture')
+         + (select count(*) from public.contract_claim_snapshots s
               join public.companies c on c.id = s.company_id where c.slug = 'gc15-perf-fixture')`,
       ],
       { encoding: "utf8" },

@@ -200,6 +200,12 @@ function PortfolioCostingPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/contracts-claims" search={{}}>
+                <ScrollText className="size-4" /> {t(`${K}.contractsClaims.link`)}
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/funding" search={{}}>
                 <Landmark className="size-4" /> {t(`${K}.funding.link`)}
               </Link>

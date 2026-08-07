@@ -1721,6 +1721,135 @@
           "create": "Submit adjustment"
         }
       }
+    },
+    "contractsClaims": {
+      "title": "Contracts & claims",
+      "subtitle": "Governed claim entitlement, quantum, EOT and contractual deadlines for this project.",
+      "disclaimerTitle": "Non-posting record",
+      "filters": {
+        "period": "Period",
+        "dataDate": "Data date"
+      },
+      "actions": {
+        "newClaim": "New claim",
+        "save": "Save",
+        "submit": "Submit",
+        "approve": "Approve",
+        "build": "Build snapshot",
+        "refreshAlerts": "Refresh alerts",
+        "acknowledge": "Acknowledge",
+        "resolve": "Resolve"
+      },
+      "sections": {
+        "register": "Claim register",
+        "deadlines": "Contractual deadlines",
+        "alerts": "Alerts",
+        "timeline": "Timeline",
+        "appendix": "Close-pack appendix"
+      },
+      "totals": {
+        "asserted": "Asserted",
+        "approved": "Approved",
+        "certified": "Certified",
+        "liveExposure": "Live exposure",
+        "unapproved": "Unapproved exposure",
+        "ld": "LD exposure",
+        "eot": "EOT days approved",
+        "claims": "Claims"
+      },
+      "table": {
+        "ref": "Reference",
+        "title": "Title",
+        "kind": "Type",
+        "status": "Status",
+        "currency": "Currency",
+        "clause": "Clause",
+        "entitlement": "Entitlement basis",
+        "deadline": "Deadline",
+        "due": "Due",
+        "actions": "Actions"
+      },
+      "appendix": {
+        "title": "Contract & claims appendix",
+        "description": "Read-only claim exposure evidence for the reporting period.",
+        "waterfall": "Exposure waterfall",
+        "step": "Step",
+        "movement": "Movement",
+        "cumulative": "Cumulative",
+        "topClaims": "Largest claims",
+        "deadlines": "Upcoming deadlines",
+        "reconciliation": "Reconciliation breaks"
+      },
+      "empty": {
+        "claims": "No claims recorded.",
+        "claimsHint": "Register a claim to begin tracking entitlement and quantum.",
+        "deadlines": "No contractual deadlines recorded.",
+        "alerts": "No open alerts.",
+        "timeline": "No events yet."
+      },
+      "toast": {
+        "saved": "Claim saved.",
+        "transitioned": "Claim status updated.",
+        "built": "Snapshot built.",
+        "snapshot": "Snapshot updated.",
+        "alert": "Alert updated.",
+        "alertsRefreshed": "Alerts re-evaluated."
+      },
+      "status": {
+        "working": "Working",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "superseded": "Superseded",
+        "none": "None"
+      },
+      "claimStatus": {
+        "draft": "Draft",
+        "notified": "Notified",
+        "submitted": "Submitted",
+        "under_assessment": "Under assessment",
+        "assessed": "Assessed",
+        "negotiation": "Negotiation",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "certified": "Certified",
+        "paid": "Paid",
+        "closed": "Closed",
+        "withdrawn": "Withdrawn"
+      },
+      "claimKind": {
+        "variation": "Variation",
+        "eot": "Extension of time",
+        "prolongation": "Prolongation",
+        "disruption": "Disruption",
+        "acceleration": "Acceleration",
+        "ld_defence": "LD defence",
+        "termination": "Termination",
+        "other": "Other"
+      },
+      "deadlineKind": {
+        "notice": "Notice",
+        "submission": "Submission",
+        "response": "Response",
+        "determination": "Determination",
+        "instrument_expiry": "Instrument expiry",
+        "limitation": "Limitation",
+        "retention_release": "Retention release",
+        "back_to_back": "Back-to-back"
+      },
+      "deadlineStatus": {
+        "open": "Open",
+        "met": "Met",
+        "missed": "Missed",
+        "waived": "Waived",
+        "superseded": "Superseded"
+      },
+      "alertState": {
+        "open": "Open",
+        "acknowledged": "Acknowledged",
+        "snoozed": "Snoozed",
+        "escalated": "Escalated",
+        "resolved": "Resolved"
+      }
     }
   }
 }
