@@ -215,6 +215,39 @@ export function revenueWipSearchToConfig(
   });
 }
 
+// ---------------------------------------------------------------------------
+// GC-16 — Contract & claims saved views
+//
+// Same per-user framework, scoped to the contracts-claims dashboard. Only
+// filter state is stored — never computed exposure.
+// ---------------------------------------------------------------------------
+export interface ContractsClaimsSearch {
+  period?: string;
+  status?: string;
+  search?: string;
+}
+
+export function contractsClaimsConfigToSearch(config: SavedViewConfig): ContractsClaimsSearch {
+  const out: ContractsClaimsSearch = {};
+  if (config.period) out.period = config.period;
+  if (config.rec_status) out.status = config.rec_status;
+  if (config.rec_project) out.search = config.rec_project;
+  return out;
+}
+
+export function contractsClaimsSearchToConfig(
+  search: ContractsClaimsSearch,
+  base: SavedViewConfig = DEFAULT_SAVED_VIEW_CONFIG,
+): SavedViewConfig {
+  return savedViewConfigSchema.parse({
+    ...base,
+    scope: "contracts_claims",
+    period: search.period ?? null,
+    rec_status: search.status ?? null,
+    rec_project: search.search ?? null,
+  });
+}
+
 /** Views are listed once per company; each dashboard shows only its own scope. */
 export function viewsInScope(
   views: readonly SavedView[],
