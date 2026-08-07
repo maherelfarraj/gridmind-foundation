@@ -6,6 +6,8 @@ import {
   getEvmDetail,
   getEvmMappings,
   getEvmMappingVersions,
+  getEvmOverrides,
+  getEvmScopeCatalog,
   getEvmWorkspace,
   getPortfolioEvm,
   getPortfolioEvmAppendix,
@@ -83,5 +85,21 @@ export function portfolioEvmAppendixQueryOptions(filter: { period?: string; curr
     queryKey: ["evm", "portfolio-appendix", filter],
     queryFn: () => getPortfolioEvmAppendix({ data: filter }),
     staleTime: 60_000,
+  });
+}
+
+export function evmScopeCatalogQueryOptions(projectId: string) {
+  return queryOptions({
+    queryKey: ["evm", "scope-catalog", projectId],
+    queryFn: () => getEvmScopeCatalog({ data: { project_id: projectId } }),
+    staleTime: 60_000,
+  });
+}
+
+export function evmOverridesQueryOptions(projectId: string, period: string) {
+  return queryOptions({
+    queryKey: ["evm", "overrides", projectId, period],
+    queryFn: () => getEvmOverrides({ data: { project_id: projectId, period } }),
+    staleTime: 15_000,
   });
 }

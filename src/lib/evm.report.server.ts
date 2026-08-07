@@ -465,6 +465,61 @@ export async function deleteProgressOverride(ctx: AuthContext, overrideId: strin
   await costingAudit(ctx, "evm.progress.override_removed", "evm_progress_overrides", overrideId, {});
 }
 
+/** Read the overrides recorded for one project period (management UI). */
+export async function listProgressOverrides(
+  ctx: AuthContext,
+  projectId: string,
+  period: string,
+): Promise<(OverrideRow & { scope_key: string })[]> {
+  const map = await loadOverrides(ctx, projectId, period);
+  return [...map.entries()]
+    .map(([scope_key, row]) => ({ ...row, scope_key }))
+    .sort((a, b) => a.scope_key.localeCompare(b.scope_key));
+}
+
+// ---------------------------------------------------------------------------
+// Scope catalogue (WBS / tasks / cost codes) for the mapping editor
+// ---------------------------------------------------------------------------
+export interface EvmScopeCatalog {
+  wbs: { id: string; code: string; name: string; parent_id: string | null }[];
+  tasks: { id: string; name: string; wbs_item_id: string | null; is_milestone: boolean }[];
+  cost_codes: { id: string; code: string; name: string }[];
+}
+
+export async function loadEvmScopeCatalog(
+  ctx: AuthContext,
+  projectId: string,
+): Promise<EvmScopeCatalog> {
+  const [workspace, wbs, tasks] = await Promise.all([
+    loadCostingWorkspace(ctx, projectId),
+    rows<{ id: string; parent_id: string | null; code: string; name: string }>(
+      sbOf(ctx)
+        .from("wbs_items")
+        .select("id, parent_id, code, name")
+        .eq("project_id", projectId)
+        .order("code", { ascending: true }),
+    ),
+    rows<{ id: string; wbs_item_id: string | null; name: string; is_milestone: boolean | null }>(
+      sbOf(ctx)
+        .from("schedule_tasks")
+        .select("id, wbs_item_id, name, is_milestone")
+        .eq("project_id", projectId)
+        .order("name", { ascending: true }),
+    ),
+  ]);
+  return {
+    wbs: wbs.map((w) => ({ id: w.id, code: w.code, name: w.name, parent_id: w.parent_id })),
+    tasks: tasks.map((t) => ({
+      id: t.id,
+      name: t.name,
+      wbs_item_id: t.wbs_item_id,
+      is_milestone: Boolean(t.is_milestone),
+    })),
+    cost_codes: workspace.costCodes.map((c) => ({ id: c.id, code: c.code, name: c.name })),
+  };
+}
+
+
 // ---------------------------------------------------------------------------
 // Period locks
 // ---------------------------------------------------------------------------

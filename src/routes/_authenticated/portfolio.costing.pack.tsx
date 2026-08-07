@@ -6,6 +6,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { Suspense } from "react";
 import { z } from "zod";
 
+import { PortfolioEvmAppendixCard } from "@/components/evm/evm-appendix";
 import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
 import { CostingConsolidationTable } from "@/components/portfolio/costing-consolidation-table";
@@ -26,6 +27,7 @@ import { useI18n } from "@/lib/i18n/locale-provider";
 import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
 import { portfolioAlertAppendixQueryOptions } from "@/lib/portfolio-alerts.query";
 import { portfolioAuditQueryOptions } from "@/lib/portfolio-governance.query";
+import { portfolioEvmAppendixQueryOptions } from "@/lib/evm.report.query";
 
 const K = "portfolioMod.costing";
 
@@ -176,9 +178,23 @@ function PackView() {
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <PortfolioEvmAppendix period={data.period} currency={cur} />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
+  );
+}
+
+/** GC-12 — consolidated earned value appendix for the period. */
+function PortfolioEvmAppendix({ period, currency }: { period: string; currency: string }) {
+  const { data } = useSuspenseQuery(portfolioEvmAppendixQueryOptions({ period, currency }));
+  return (
+    <section className="space-y-3">
+      <PortfolioEvmAppendixCard data={data} />
+    </section>
   );
 }
 

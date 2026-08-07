@@ -1,6 +1,7 @@
 // GC-07 — Printable close pack: checklist, exceptions, evidence and audit evidence for a period.
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
 import { Printer } from "lucide-react";
 import { z } from "zod";
 
@@ -17,7 +18,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EvmAppendixCard } from "@/components/evm/evm-appendix";
 import { checklistProgress, groupByCategory } from "@/lib/costing.checklist";
+import { evmAppendixQueryOptions } from "@/lib/evm.report.query";
 import { closeCockpitQueryOptions } from "@/lib/costing.checklist.query";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
@@ -176,6 +179,10 @@ function ClosePackView() {
         )}
       </Card>
 
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <EvmAppendixSection projectId={projectId} period={data.close.focusPeriod} />
+      </Suspense>
+
       <Card className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-semibold text-foreground">{t(`${K}.auditTitle`)}</h2>
         <ol className="flex flex-col gap-1 text-sm">
@@ -192,6 +199,12 @@ function ClosePackView() {
       </Card>
     </div>
   );
+}
+
+/** GC-12 — earned value appendix for the period being closed. */
+function EvmAppendixSection({ projectId, period }: { projectId: string; period: string }) {
+  const { data } = useSuspenseQuery(evmAppendixQueryOptions(projectId, period));
+  return <EvmAppendixCard appendix={data} />;
 }
 
 function Field({ label, value }: { label: string; value: string }) {
