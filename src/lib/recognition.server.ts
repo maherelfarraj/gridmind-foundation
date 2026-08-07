@@ -116,7 +116,6 @@ async function projectContext(
   };
 }
 
-
 async function logEvent(
   ctx: AuthContext,
   row: {
@@ -182,7 +181,12 @@ export async function saveSettings(
   const { data, error } = await (ctx.supabase as any)
     .from("recognition_settings")
     .upsert(
-      { ...input, company_id, created_by: ctx.user?.id ?? null, updated_at: new Date().toISOString() },
+      {
+        ...input,
+        company_id,
+        created_by: ctx.user?.id ?? null,
+        updated_at: new Date().toISOString(),
+      },
       { onConflict: "project_id" },
     )
     .select("id")
@@ -443,7 +447,12 @@ async function buildObligationInputs(
 
   const fxFor = async (
     currency: string,
-  ): Promise<{ rate: number | null; date: string | null; source: string | null; stale: boolean }> => {
+  ): Promise<{
+    rate: number | null;
+    date: string | null;
+    source: string | null;
+    stale: boolean;
+  }> => {
     const res = await resolveCostingFx(ctx, projectId, currency, dataDate);
     return {
       rate: res.fx_rate,
@@ -613,12 +622,7 @@ export async function buildSnapshot(
 ): Promise<{ id: string }> {
   await requireWrite(ctx);
   const settings = await loadSettings(ctx, input.project_id);
-  const basis = await gatherBasis(
-    ctx,
-    input.project_id,
-    input.period_month,
-    input.billing_cutoff,
-  );
+  const basis = await gatherBasis(ctx, input.project_id, input.period_month, input.billing_cutoff);
   const reporting = (
     input.reporting_currency ??
     settings?.reporting_currency ??
@@ -771,19 +775,17 @@ export async function buildSnapshot(
   }
 
   if (exceptions.length > 0) {
-    const { error: exError } = await (ctx.supabase as any)
-      .from("recognition_exceptions")
-      .insert(
-        exceptions.map((e) => ({
-          company_id: basis.company_id,
-          snapshot_id: snapshotId,
-          project_id: input.project_id,
-          code: e.code,
-          severity: e.severity,
-          message: e.message,
-          context: e.context,
-        })),
-      );
+    const { error: exError } = await (ctx.supabase as any).from("recognition_exceptions").insert(
+      exceptions.map((e) => ({
+        company_id: basis.company_id,
+        snapshot_id: snapshotId,
+        project_id: input.project_id,
+        code: e.code,
+        severity: e.severity,
+        message: e.message,
+        context: e.context,
+      })),
+    );
     if (exError) throw exError;
   }
 
@@ -1105,7 +1107,8 @@ function lineFromRow(row: Record<string, any>): RecognitionLine {
     currency_code: row.currency_code as string,
     method: row.method as RecognitionMethod,
     progress_basis: (prov.progress_basis as any) ?? "cost",
-    base_price: n(row.transaction_price) - n(row.approved_variations) - n(row.constrained_consideration),
+    base_price:
+      n(row.transaction_price) - n(row.approved_variations) - n(row.constrained_consideration),
     approved_variations: n(row.approved_variations),
     constrained_consideration: n(row.constrained_consideration),
     transaction_price: n(row.transaction_price),
@@ -1201,7 +1204,7 @@ export async function loadRecognitionWorkspace(
     project_name: p.name,
     project_currency: p.currency,
     reporting_currency: snapshot?.reporting_currency ?? settings?.reporting_currency ?? p.currency,
-    period_month: snapshot?.period_month ?? (periodMonth ?? ""),
+    period_month: snapshot?.period_month ?? periodMonth ?? "",
     settings,
     policy,
     snapshot,
@@ -1380,7 +1383,6 @@ export interface RecognitionAppendix {
   inclusion_rules: JsonRecord;
   adjustments: { kind: string; amount: number; reason: string; status: string }[];
 }
-
 
 export async function loadRecognitionAppendix(
   ctx: AuthContext,

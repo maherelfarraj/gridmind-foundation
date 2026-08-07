@@ -36,7 +36,10 @@ import {
 
 const workspaceInput = z.object({
   project_id: z.string().uuid(),
-  period_month: z.string().regex(/^\d{4}-\d{2}-01$/).optional(),
+  period_month: z
+    .string()
+    .regex(/^\d{4}-\d{2}-01$/)
+    .optional(),
 });
 
 export const getRecognitionAccess = createServerFn({ method: "GET" })

@@ -775,6 +775,104 @@
         "scenario": "Stressed",
         "delta": "Delta"
       }
+    },
+    "revenue": {
+      "title": "Portfolio revenue & WIP",
+      "subtitle": "Consolidated recognized revenue, margin, contract asset and contract liability across projects.",
+      "back": "Back to Cost & Close",
+      "basis": {
+        "approved": "Approved basis",
+        "indicative": "Indicative basis",
+        "note": "{{pct}} of projects in scope are on an approved recognition snapshot."
+      },
+      "filters": {
+        "period": "Period",
+        "status": "Status",
+        "method": "Method",
+        "customer": "Customer",
+        "project": "Project",
+        "all": "All"
+      },
+      "kpi": {
+        "revenue": "Recognized revenue",
+        "periodRevenue": "This period: {{value}}",
+        "margin": "Gross margin",
+        "contractAsset": "Contract asset (WIP)",
+        "underbilled": "Under-billed",
+        "contractLiability": "Contract liability",
+        "overbilled": "Over-billed",
+        "lossProvision": "Loss provision",
+        "lossProjects": "{{count}} loss-making projects"
+      },
+      "curves": {
+        "title": "Recognized vs billed vs cash",
+        "recognized": "Recognized",
+        "billed": "Billed",
+        "cash": "Cash received"
+      },
+      "bridge": {
+        "title": "Current-period movement",
+        "opening": "Opening recognized",
+        "period": "Period recognition",
+        "lossProvision": "Loss provision",
+        "closing": "Closing recognized"
+      },
+      "aging": {
+        "title": "WIP / under-billing ageing",
+        "bucket": "Age bucket",
+        "amount": "Amount",
+        "share": "Share",
+        "d0_30": "0–30 days",
+        "d31_60": "31–60 days",
+        "d61_90": "61–90 days",
+        "d90_plus": "90+ days"
+      },
+      "table": {
+        "title": "Projects",
+        "project": "Project",
+        "customer": "Customer",
+        "method": "Method",
+        "status": "Status",
+        "revenue": "Revenue",
+        "billed": "Billed",
+        "asset": "Contract asset",
+        "liability": "Contract liability",
+        "margin": "Margin"
+      },
+      "methods": {
+        "cost_to_cost": "Cost-to-cost",
+        "milestone": "Milestone",
+        "output": "Output",
+        "straight_line": "Straight line",
+        "completed_contract": "Completed contract",
+        "manual": "Manual"
+      },
+      "deterioration": {
+        "title": "Margin deterioration & loss-making",
+        "none": "No projects below the margin floor."
+      },
+      "concentration": {
+        "title": "Concentration",
+        "customer": "By customer",
+        "project": "By project"
+      },
+      "alerts": {
+        "title": "Recognition alerts",
+        "none": "No open recognition alerts.",
+        "evidence": "Evidence"
+      },
+      "stale": {
+        "title": "Stale or unapproved basis",
+        "body": "{{count}} projects are not on an approved recognition snapshot for this period."
+      },
+      "empty": {
+        "title": "No recognition snapshots",
+        "description": "Build a recognition snapshot on a project to populate the portfolio roll-up."
+      },
+      "error": {
+        "title": "Revenue roll-up unavailable",
+        "description": "The portfolio recognition roll-up could not be loaded. Retry in a moment."
+      }
     }
   }
 }
