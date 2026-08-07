@@ -156,7 +156,9 @@ export interface FxPlannedRate {
 export interface FxImportPlan {
   requested: string[];
   planned: FxPlannedRate[];
-  /** Requested currencies the provider cannot serve. */
+  /** Requested currencies the provider does not list at all (expected gap). */
+  unsupported: string[];
+  /** Supported currencies absent/unusable in this payload (payload defect). */
   missing: string[];
 }
 
@@ -176,7 +178,7 @@ export function planRequestedCurrencies(
 
 /**
  * Build the ledger rows for an observation. Atomic by design: the caller
- * commits only when `missing` is acceptable — nothing is invented here.
+ * commits only when coverage validates — nothing is invented here.
  */
 export function buildImportPlan(
   req: FxImportRequest,
@@ -187,13 +189,14 @@ export function buildImportPlan(
   const requested = planRequestedCurrencies(req.transactionCurrencies, quote);
 
   const planned: FxPlannedRate[] = [];
+  const unsupported: string[] = [];
   const missing: string[] = [];
 
   const quoteServable = supported.has(quote) || observation.anchor.toUpperCase() === quote;
 
   for (const code of requested) {
     if (!supported.has(code) || !quoteServable) {
-      missing.push(code);
+      unsupported.push(code);
       continue;
     }
     const rate = crossRate(code, quote, observation.anchor, observation.rates);
@@ -204,8 +207,9 @@ export function buildImportPlan(
     planned.push({ base_code: code, quote_code: quote, rate });
   }
 
-  return { requested, planned, missing };
+  return { requested, planned, unsupported, missing };
 }
+
 
 // ---------------------------------------------------------------------------
 // Business-day aware staleness
