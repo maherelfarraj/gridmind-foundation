@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AlertTriangle, CheckCircle2, Lock, LockOpen, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
+import { CloseCockpit } from "@/components/costing/close-cockpit";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -357,6 +358,7 @@ function CloseView() {
           </div>
         </Card>
       ) : null}
+      <CloseCockpit projectId={projectId} {...(period ? { period } : {})} />
     </div>
   );
 }
