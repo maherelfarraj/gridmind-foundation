@@ -9,6 +9,7 @@ import {
   Coins,
   Download,
   FileText,
+  Landmark,
   Gauge,
   LineChart,
   ScrollText,
@@ -191,6 +192,11 @@ function PortfolioCostingPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/cash-flow" search={{}}>
                 <Wallet className="size-4" /> {t(`${K}.cashFlow.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/funding" search={{}}>
+                <Landmark className="size-4" /> {t(`${K}.funding.link`)}
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">

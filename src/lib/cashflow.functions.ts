@@ -34,6 +34,7 @@ import {
   saveCashflowAdjustment,
   saveCashflowSettings,
   saveCashflowSnapshot,
+  loadFundingWorkspace,
   saveFundingAllocation,
   saveFundingFacility,
   supersedeCashflowSnapshot,
@@ -44,6 +45,7 @@ import {
   type CashflowSettings,
   type CashflowWorkspaceData,
   type FacilityRow,
+  type FundingWorkspace,
   type PortfolioCashData,
 } from "@/lib/cashflow.server";
 
@@ -54,6 +56,7 @@ export type {
   CashflowSettings,
   CashflowWorkspaceData,
   FacilityRow,
+  FundingWorkspace,
   PortfolioCashData,
 };
 
@@ -134,6 +137,13 @@ export const getFundingFacilities = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<FacilityRow[]> => {
     requireSupabaseAuth(context);
     return listFundingFacilities(context);
+  });
+
+export const getFundingWorkspace = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<FundingWorkspace> => {
+    requireSupabaseAuth(context);
+    return loadFundingWorkspace(context);
   });
 
 export const saveFundingFacilityFn = createServerFn({ method: "POST" })

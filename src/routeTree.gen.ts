@@ -207,6 +207,7 @@ import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedPortfolioCostingScenariosRouteImport } from './routes/_authenticated/portfolio.costing.scenarios'
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
+import { Route as AuthenticatedPortfolioCostingFundingRouteImport } from './routes/_authenticated/portfolio.costing.funding'
 import { Route as AuthenticatedPortfolioCostingEvmRouteImport } from './routes/_authenticated/portfolio.costing.evm'
 import { Route as AuthenticatedPortfolioCostingCashFlowRouteImport } from './routes/_authenticated/portfolio.costing.cash-flow'
 import { Route as AuthenticatedPortfolioCostingAuditRouteImport } from './routes/_authenticated/portfolio.costing.audit'
@@ -1433,6 +1434,12 @@ const AuthenticatedPortfolioCostingPackRoute =
     path: '/pack',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
+const AuthenticatedPortfolioCostingFundingRoute =
+  AuthenticatedPortfolioCostingFundingRouteImport.update({
+    id: '/funding',
+    path: '/funding',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedPortfolioCostingEvmRoute =
   AuthenticatedPortfolioCostingEvmRouteImport.update({
     id: '/evm',
@@ -2128,6 +2135,7 @@ export interface FileRoutesByFullPath {
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
+  '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2401,6 +2409,7 @@ export interface FileRoutesByTo {
   '/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
   '/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
+  '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2685,6 +2694,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio/costing/audit': typeof AuthenticatedPortfolioCostingAuditRoute
   '/_authenticated/portfolio/costing/cash-flow': typeof AuthenticatedPortfolioCostingCashFlowRoute
   '/_authenticated/portfolio/costing/evm': typeof AuthenticatedPortfolioCostingEvmRoute
+  '/_authenticated/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/_authenticated/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
@@ -2972,6 +2982,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/audit'
     | '/portfolio/costing/cash-flow'
     | '/portfolio/costing/evm'
+    | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
@@ -3245,6 +3256,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/audit'
     | '/portfolio/costing/cash-flow'
     | '/portfolio/costing/evm'
+    | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
@@ -3528,6 +3540,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio/costing/audit'
     | '/_authenticated/portfolio/costing/cash-flow'
     | '/_authenticated/portfolio/costing/evm'
+    | '/_authenticated/portfolio/costing/funding'
     | '/_authenticated/portfolio/costing/pack'
     | '/_authenticated/portfolio/costing/scenarios'
     | '/_authenticated/procurement/matches/$matchId'
@@ -5083,6 +5096,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioCostingPackRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
+    '/_authenticated/portfolio/costing/funding': {
+      id: '/_authenticated/portfolio/costing/funding'
+      path: '/funding'
+      fullPath: '/portfolio/costing/funding'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingFundingRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/portfolio/costing/evm': {
       id: '/_authenticated/portfolio/costing/evm'
       path: '/evm'
@@ -5757,6 +5777,7 @@ interface AuthenticatedPortfolioCostingRouteChildren {
   AuthenticatedPortfolioCostingAuditRoute: typeof AuthenticatedPortfolioCostingAuditRoute
   AuthenticatedPortfolioCostingCashFlowRoute: typeof AuthenticatedPortfolioCostingCashFlowRoute
   AuthenticatedPortfolioCostingEvmRoute: typeof AuthenticatedPortfolioCostingEvmRoute
+  AuthenticatedPortfolioCostingFundingRoute: typeof AuthenticatedPortfolioCostingFundingRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
   AuthenticatedPortfolioCostingScenariosRoute: typeof AuthenticatedPortfolioCostingScenariosRoute
 }
@@ -5771,6 +5792,8 @@ const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingR
       AuthenticatedPortfolioCostingCashFlowRoute,
     AuthenticatedPortfolioCostingEvmRoute:
       AuthenticatedPortfolioCostingEvmRoute,
+    AuthenticatedPortfolioCostingFundingRoute:
+      AuthenticatedPortfolioCostingFundingRoute,
     AuthenticatedPortfolioCostingPackRoute:
       AuthenticatedPortfolioCostingPackRoute,
     AuthenticatedPortfolioCostingScenariosRoute:
@@ -6620,13 +6643,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -8,6 +8,7 @@ import {
   getCashflowSettings,
   getCashflowWorkspace,
   getFundingFacilities,
+  getFundingWorkspace,
   getPortfolioCashflow,
   getPortfolioCashflowAppendix,
 } from "@/lib/cashflow.functions";
@@ -79,5 +80,13 @@ export function portfolioCashflowAppendixQueryOptions(filter: PortfolioCashFilte
     queryKey: ["cashflow", "portfolio-appendix", filter],
     queryFn: () => getPortfolioCashflowAppendix({ data: filter }),
     staleTime: 30_000,
+  });
+}
+
+export function fundingWorkspaceQueryOptions() {
+  return queryOptions({
+    queryKey: ["cashflow", "funding-workspace"],
+    queryFn: () => getFundingWorkspace(),
+    staleTime: 15_000,
   });
 }

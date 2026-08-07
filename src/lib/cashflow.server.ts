@@ -1288,21 +1288,42 @@ export async function saveFundingFacility(
     created_by: ctx.user?.id ?? null,
     updated_at: new Date().toISOString(),
   };
-  const saved = input.id
-    ? await one<{ id: string }>(
-        sbOf(ctx)
-          .from("funding_facilities")
-          .update(payload)
-          .eq("id", input.id)
-          .select("id")
-          .single(),
-      )
-    : await one<{ id: string }>(
-        sbOf(ctx).from("funding_facilities").insert(payload).select("id").single(),
+  let saved: { id: string } | null = null;
+  if (input.id) {
+    // Optimistic concurrency: the caller must echo the row_version it read.
+    if (typeof input.row_version !== "number") {
+      costingHttpError(
+        409,
+        "row_version_required",
+        "Reload the facility before saving — its version is unknown.",
       );
+    }
+    const updated = await rows<{ id: string }>(
+      sbOf(ctx)
+        .from("funding_facilities")
+        .update({ ...payload, row_version: input.row_version! + 1 })
+        .eq("id", input.id)
+        .eq("row_version", input.row_version!)
+        .select("id"),
+    );
+    if (updated.length === 0) {
+      costingHttpError(
+        409,
+        "facility_version_conflict",
+        "This facility changed since you loaded it. Reload and reapply your edit.",
+      );
+    }
+    saved = updated[0]!;
+  } else {
+    saved = await one<{ id: string }>(
+      sbOf(ctx).from("funding_facilities").insert(payload).select("id").single(),
+    );
+  }
   if (!saved) costingHttpError(500, "funding_facility_save_failed");
   await costingAudit(ctx, "cashflow.facility.saved", "funding_facilities", saved!.id, {
     name: input.name,
+    mode: input.id ? "update" : "create",
+    ...(input.id ? { row_version: input.row_version } : {}),
   });
   return { id: saved!.id };
 }
@@ -1350,6 +1371,63 @@ export async function deleteFundingAllocation(ctx: AuthContext, id: string): Pro
   const { error } = await sbOf(ctx).from("funding_allocations").delete().eq("id", id);
   if (error) throw error;
   await costingAudit(ctx, "cashflow.allocation.deleted", "funding_allocations", id, {});
+}
+
+// --- Funding management workspace (facilities + allocations + audit trail) ---
+export interface AllocationRow {
+  id: string;
+  facility_id: string;
+  project_id: string;
+  allocated_amount: number;
+  currency_code: string;
+  effective_from: string | null;
+  effective_to: string | null;
+  notes: string | null;
+  updated_at: string | null;
+}
+
+export interface FundingAuditRow {
+  id: string;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  created_at: string;
+  metadata: Record<string, string | number | boolean | null> | null;
+}
+
+export interface FundingWorkspace {
+  facilities: FacilityRow[];
+  allocations: AllocationRow[];
+  projects: { id: string; name: string; code: string }[];
+  audit: FundingAuditRow[];
+  access: { canWrite: boolean };
+}
+
+export async function loadFundingWorkspace(ctx: AuthContext): Promise<FundingWorkspace> {
+  const canWrite = await hasAnyCostingRole(ctx, COSTING_WRITE_ROLES);
+  const [facilities, allocations, projects, audit] = await Promise.all([
+    listFundingFacilities(ctx),
+    rows<AllocationRow>(
+      sbOf(ctx)
+        .from("funding_allocations")
+        .select(
+          "id, facility_id, project_id, allocated_amount, currency_code, effective_from, effective_to, notes, updated_at",
+        )
+        .order("updated_at", { ascending: false }),
+    ),
+    rows<{ id: string; name: string; code: string }>(
+      sbOf(ctx).from("projects").select("id, name, code").order("name", { ascending: true }),
+    ),
+    rows<FundingAuditRow>(
+      sbOf(ctx)
+        .from("audit_logs")
+        .select("id, action, entity, entity_id, created_at, metadata")
+        .in("entity", ["funding_facilities", "funding_allocations"])
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ),
+  ]);
+  return { facilities, allocations, projects, audit, access: { canWrite } };
 }
 
 async function currentCompanyId(ctx: AuthContext): Promise<string> {
