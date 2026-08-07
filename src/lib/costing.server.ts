@@ -577,7 +577,10 @@ export async function resolveCostingFx(
       .eq("quote_code", base)
       .lte("as_of", onDate)
       .order("as_of", { ascending: false })
+      // FX-01 — manual rows outrank imported rows for the same pair + date.
+      .order("source_priority", { ascending: true })
       .limit(1);
+
     const row = (data ?? [])[0];
     if (row) tableRate = { rate: Number(row.rate), as_of: row.as_of as string };
   }
