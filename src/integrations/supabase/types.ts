@@ -17450,6 +17450,790 @@ export type Database = {
         }
         Relationships: []
       }
+      recognition_adjustments: {
+        Row: {
+          amount: number
+          authorized_at: string | null
+          authorized_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          effective_period: string
+          evidence_reference: string | null
+          id: string
+          kind: string
+          obligation_id: string | null
+          prepared_by: string | null
+          project_id: string
+          reason: string
+          row_version: number
+          status: Database["public"]["Enums"]["recognition_adjustment_status"]
+          supersedes_id: string | null
+          updated_at: string
+          version_no: number
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          authorized_at?: string | null
+          authorized_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          effective_period: string
+          evidence_reference?: string | null
+          id?: string
+          kind?: string
+          obligation_id?: string | null
+          prepared_by?: string | null
+          project_id: string
+          reason: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["recognition_adjustment_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version_no?: number
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          authorized_at?: string | null
+          authorized_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          effective_period?: string
+          evidence_reference?: string | null
+          id?: string
+          kind?: string
+          obligation_id?: string | null
+          prepared_by?: string | null
+          project_id?: string
+          reason?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["recognition_adjustment_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version_no?: number
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_adjustments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_adjustments_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "recognition_adjustments_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_obligations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_adjustments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_adjustments_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_adjustments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognition_events: {
+        Row: {
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          entity_id: string | null
+          entity_type: string
+          event_type: string
+          from_status: string | null
+          id: string
+          project_id: string | null
+          snapshot_id: string | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          project_id?: string | null
+          snapshot_id?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          project_id?: string | null
+          snapshot_id?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_events_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognition_exceptions: {
+        Row: {
+          code: string
+          company_id: string
+          context: Json
+          created_at: string
+          id: string
+          message: string
+          project_id: string
+          severity: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id: string
+        }
+        Insert: {
+          code: string
+          company_id: string
+          context?: Json
+          created_at?: string
+          id?: string
+          message: string
+          project_id: string
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id: string
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          context?: Json
+          created_at?: string
+          id?: string
+          message?: string
+          project_id?: string
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_exceptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_exceptions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_exceptions_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognition_obligations: {
+        Row: {
+          advance_amount: number
+          advance_recovery_pct: number
+          allocation_amount: number
+          code: string
+          company_id: string
+          constraint_pct: number
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          end_date: string | null
+          id: string
+          is_loss_making: boolean
+          method: Database["public"]["Enums"]["recognition_method"]
+          milestones: Json
+          name: string
+          notes: string | null
+          progress_basis: string
+          project_id: string
+          retention_pct: number
+          row_version: number
+          standalone_value: number | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["recognition_obligation_status"]
+          supersedes_id: string | null
+          tax_treatment: string
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          advance_amount?: number
+          advance_recovery_pct?: number
+          allocation_amount?: number
+          code: string
+          company_id: string
+          constraint_pct?: number
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          end_date?: string | null
+          id?: string
+          is_loss_making?: boolean
+          method?: Database["public"]["Enums"]["recognition_method"]
+          milestones?: Json
+          name: string
+          notes?: string | null
+          progress_basis?: string
+          project_id: string
+          retention_pct?: number
+          row_version?: number
+          standalone_value?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["recognition_obligation_status"]
+          supersedes_id?: string | null
+          tax_treatment?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          advance_amount?: number
+          advance_recovery_pct?: number
+          allocation_amount?: number
+          code?: string
+          company_id?: string
+          constraint_pct?: number
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          end_date?: string | null
+          id?: string
+          is_loss_making?: boolean
+          method?: Database["public"]["Enums"]["recognition_method"]
+          milestones?: Json
+          name?: string
+          notes?: string | null
+          progress_basis?: string
+          project_id?: string
+          retention_pct?: number
+          row_version?: number
+          standalone_value?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["recognition_obligation_status"]
+          supersedes_id?: string | null
+          tax_treatment?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_obligations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_obligations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_obligations_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "recognition_obligations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_obligations_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_obligations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognition_settings: {
+        Row: {
+          advance_recovery_pct: number
+          allow_revenue_reversal: boolean
+          cap_progress_at_100: boolean
+          company_id: string
+          constraint_pct: number
+          created_at: string
+          created_by: string | null
+          default_method: Database["public"]["Enums"]["recognition_method"]
+          id: string
+          include_unapproved_claims: boolean
+          include_unapproved_variations: boolean
+          loss_provision_enabled: boolean
+          policy_version: string
+          project_id: string
+          reporting_currency: string | null
+          retention_pct: number
+          updated_at: string
+        }
+        Insert: {
+          advance_recovery_pct?: number
+          allow_revenue_reversal?: boolean
+          cap_progress_at_100?: boolean
+          company_id: string
+          constraint_pct?: number
+          created_at?: string
+          created_by?: string | null
+          default_method?: Database["public"]["Enums"]["recognition_method"]
+          id?: string
+          include_unapproved_claims?: boolean
+          include_unapproved_variations?: boolean
+          loss_provision_enabled?: boolean
+          policy_version?: string
+          project_id: string
+          reporting_currency?: string | null
+          retention_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          advance_recovery_pct?: number
+          allow_revenue_reversal?: boolean
+          cap_progress_at_100?: boolean
+          company_id?: string
+          constraint_pct?: number
+          created_at?: string
+          created_by?: string | null
+          default_method?: Database["public"]["Enums"]["recognition_method"]
+          id?: string
+          include_unapproved_claims?: boolean
+          include_unapproved_variations?: boolean
+          loss_provision_enabled?: boolean
+          policy_version?: string
+          project_id?: string
+          reporting_currency?: string | null
+          retention_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_settings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_settings_reporting_currency_fkey"
+            columns: ["reporting_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      recognition_snapshot_lines: {
+        Row: {
+          advance_balance: number
+          approved_variations: number
+          billed_to_date: number
+          cash_received: number
+          company_id: string
+          constrained_consideration: number
+          contract_asset: number
+          contract_asset_reporting: number
+          contract_id: string | null
+          contract_liability: number
+          contract_liability_reporting: number
+          cost_code_id: string | null
+          cost_incurred: number
+          cost_to_complete: number
+          created_at: string
+          cumulative_revenue: number
+          cumulative_revenue_reporting: number
+          currency_code: string
+          eac: number
+          fx_rate: number | null
+          fx_rate_date: string | null
+          fx_source: string | null
+          fx_stale: boolean
+          gross_profit: number
+          id: string
+          label: string
+          loss_provision: number
+          method: Database["public"]["Enums"]["recognition_method"]
+          obligation_id: string | null
+          period_revenue: number
+          period_revenue_reporting: number
+          prior_revenue: number
+          progress_pct: number
+          provenance: Json
+          remaining_revenue: number
+          retention_receivable: number
+          snapshot_id: string
+          sort_order: number
+          transaction_price: number
+          unbilled_receivable: number
+        }
+        Insert: {
+          advance_balance?: number
+          approved_variations?: number
+          billed_to_date?: number
+          cash_received?: number
+          company_id: string
+          constrained_consideration?: number
+          contract_asset?: number
+          contract_asset_reporting?: number
+          contract_id?: string | null
+          contract_liability?: number
+          contract_liability_reporting?: number
+          cost_code_id?: string | null
+          cost_incurred?: number
+          cost_to_complete?: number
+          created_at?: string
+          cumulative_revenue?: number
+          cumulative_revenue_reporting?: number
+          currency_code: string
+          eac?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          gross_profit?: number
+          id?: string
+          label: string
+          loss_provision?: number
+          method?: Database["public"]["Enums"]["recognition_method"]
+          obligation_id?: string | null
+          period_revenue?: number
+          period_revenue_reporting?: number
+          prior_revenue?: number
+          progress_pct?: number
+          provenance?: Json
+          remaining_revenue?: number
+          retention_receivable?: number
+          snapshot_id: string
+          sort_order?: number
+          transaction_price?: number
+          unbilled_receivable?: number
+        }
+        Update: {
+          advance_balance?: number
+          approved_variations?: number
+          billed_to_date?: number
+          cash_received?: number
+          company_id?: string
+          constrained_consideration?: number
+          contract_asset?: number
+          contract_asset_reporting?: number
+          contract_id?: string | null
+          contract_liability?: number
+          contract_liability_reporting?: number
+          cost_code_id?: string | null
+          cost_incurred?: number
+          cost_to_complete?: number
+          created_at?: string
+          cumulative_revenue?: number
+          cumulative_revenue_reporting?: number
+          currency_code?: string
+          eac?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          gross_profit?: number
+          id?: string
+          label?: string
+          loss_provision?: number
+          method?: Database["public"]["Enums"]["recognition_method"]
+          obligation_id?: string | null
+          period_revenue?: number
+          period_revenue_reporting?: number
+          prior_revenue?: number
+          progress_pct?: number
+          provenance?: Json
+          remaining_revenue?: number
+          retention_receivable?: number
+          snapshot_id?: string
+          sort_order?: number
+          transaction_price?: number
+          unbilled_receivable?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_snapshot_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshot_lines_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshot_lines_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshot_lines_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "recognition_snapshot_lines_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_obligations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshot_lines_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognition_snapshots: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          billing_cutoff: string
+          company_id: string
+          contract_basis: Json
+          correction_reason: string | null
+          created_at: string
+          created_by: string | null
+          data_date: string
+          evm_report_id: string | null
+          forecast_version_id: string | null
+          fx_provenance: Json
+          id: string
+          inclusion_rules: Json
+          method: Database["public"]["Enums"]["recognition_method"]
+          period_month: string
+          policy_version: string
+          prepared_at: string | null
+          prepared_by: string | null
+          project_currency: string
+          project_id: string
+          quality: Json
+          reporting_currency: string
+          row_version: number
+          status: Database["public"]["Enums"]["recognition_snapshot_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          supersedes_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_cutoff: string
+          company_id: string
+          contract_basis?: Json
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date: string
+          evm_report_id?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          id?: string
+          inclusion_rules?: Json
+          method?: Database["public"]["Enums"]["recognition_method"]
+          period_month: string
+          policy_version?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency: string
+          project_id: string
+          quality?: Json
+          reporting_currency: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["recognition_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_cutoff?: string
+          company_id?: string
+          contract_basis?: Json
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date?: string
+          evm_report_id?: string | null
+          forecast_version_id?: string | null
+          fx_provenance?: Json
+          id?: string
+          inclusion_rules?: Json
+          method?: Database["public"]["Enums"]["recognition_method"]
+          period_month?: string
+          policy_version?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          project_currency?: string
+          project_id?: string
+          quality?: Json
+          reporting_currency?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["recognition_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognition_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_evm_report_id_fkey"
+            columns: ["evm_report_id"]
+            isOneToOne: false
+            referencedRelation: "evm_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_forecast_version_id_fkey"
+            columns: ["forecast_version_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_project_currency_fkey"
+            columns: ["project_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_reporting_currency_fkey"
+            columns: ["reporting_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognition_snapshots_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "recognition_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_plans: {
         Row: {
           actions: Json
@@ -26389,6 +27173,12 @@ export type Database = {
         | "liquidity_shortfall"
         | "funding_headroom"
         | "covenant_breach"
+        | "revenue_margin_erosion"
+        | "revenue_loss_making"
+        | "recognition_basis_stale"
+        | "wip_underbilling_age"
+        | "contract_liability_movement"
+        | "unapproved_variation_exposure"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       portfolio_scenario_driver:
@@ -26489,6 +27279,20 @@ export type Database = {
       qaqc_discipline: "civil" | "mechanical" | "electrical"
       qaqc_result: "pending" | "pass" | "fail" | "conditional"
       ra_status: "draft" | "active" | "archived"
+      recognition_adjustment_status: "draft" | "approved" | "void"
+      recognition_method:
+        | "cost_to_cost"
+        | "milestone"
+        | "output"
+        | "straight_line"
+        | "completed_contract"
+        | "manual"
+      recognition_obligation_status: "draft" | "active" | "closed"
+      recognition_snapshot_status:
+        | "working"
+        | "submitted"
+        | "approved"
+        | "superseded"
       recovery_plan_status: "draft" | "active" | "achieved" | "abandoned"
       reservation_status: "active" | "fulfilled" | "cancelled"
       rfq_bid_status:
@@ -27372,6 +28176,12 @@ export const Constants = {
         "liquidity_shortfall",
         "funding_headroom",
         "covenant_breach",
+        "revenue_margin_erosion",
+        "revenue_loss_making",
+        "recognition_basis_stale",
+        "wip_underbilling_age",
+        "contract_liability_movement",
+        "unapproved_variation_exposure",
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],
@@ -27483,6 +28293,22 @@ export const Constants = {
       qaqc_discipline: ["civil", "mechanical", "electrical"],
       qaqc_result: ["pending", "pass", "fail", "conditional"],
       ra_status: ["draft", "active", "archived"],
+      recognition_adjustment_status: ["draft", "approved", "void"],
+      recognition_method: [
+        "cost_to_cost",
+        "milestone",
+        "output",
+        "straight_line",
+        "completed_contract",
+        "manual",
+      ],
+      recognition_obligation_status: ["draft", "active", "closed"],
+      recognition_snapshot_status: [
+        "working",
+        "submitted",
+        "approved",
+        "superseded",
+      ],
       recovery_plan_status: ["draft", "active", "achieved", "abandoned"],
       reservation_status: ["active", "fulfilled", "cancelled"],
       rfq_bid_status: [
