@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/public/cron/portfolio-alerts")({
             continue;
           }
           try {
-            results.push(await evaluateCompanyAlerts(ctx, c.id, { actorId: null }));
+            results.push({ ...(await evaluateCompanyAlerts(ctx, c.id, { actorId: null })) });
           } catch (err) {
             console.error(
               JSON.stringify({

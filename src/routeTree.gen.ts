@@ -169,6 +169,7 @@ import { Route as ApiPublicHooksEchoRouteImport } from './routes/api/public/hook
 import { Route as ApiPublicCronWebhookDispatchRouteImport } from './routes/api/public/cron/webhook-dispatch'
 import { Route as ApiPublicCronStorageCheckRouteImport } from './routes/api/public/cron/storage-check'
 import { Route as ApiPublicCronScheduledReportsRouteImport } from './routes/api/public/cron/scheduled-reports'
+import { Route as ApiPublicCronPortfolioAlertsRouteImport } from './routes/api/public/cron/portfolio-alerts'
 import { Route as ApiPublicCronPmWorkOrdersRouteImport } from './routes/api/public/cron/pm-work-orders'
 import { Route as ApiPublicCronIngestionRetryRouteImport } from './routes/api/public/cron/ingestion-retry'
 import { Route as ApiPublicCronFxRatesRouteImport } from './routes/api/public/cron/fx-rates'
@@ -1199,6 +1200,12 @@ const ApiPublicCronScheduledReportsRoute =
     path: '/api/public/cron/scheduled-reports',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPortfolioAlertsRoute =
+  ApiPublicCronPortfolioAlertsRouteImport.update({
+    id: '/api/public/cron/portfolio-alerts',
+    path: '/api/public/cron/portfolio-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPmWorkOrdersRoute =
   ApiPublicCronPmWorkOrdersRouteImport.update({
     id: '/api/public/cron/pm-work-orders',
@@ -2098,6 +2105,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2360,6 +2368,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2637,6 +2646,7 @@ export interface FileRoutesById {
   '/api/public/cron/fx-rates': typeof ApiPublicCronFxRatesRoute
   '/api/public/cron/ingestion-retry': typeof ApiPublicCronIngestionRetryRoute
   '/api/public/cron/pm-work-orders': typeof ApiPublicCronPmWorkOrdersRoute
+  '/api/public/cron/portfolio-alerts': typeof ApiPublicCronPortfolioAlertsRoute
   '/api/public/cron/scheduled-reports': typeof ApiPublicCronScheduledReportsRoute
   '/api/public/cron/storage-check': typeof ApiPublicCronStorageCheckRoute
   '/api/public/cron/webhook-dispatch': typeof ApiPublicCronWebhookDispatchRoute
@@ -2915,6 +2925,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3177,6 +3188,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3453,6 +3465,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/fx-rates'
     | '/api/public/cron/ingestion-retry'
     | '/api/public/cron/pm-work-orders'
+    | '/api/public/cron/portfolio-alerts'
     | '/api/public/cron/scheduled-reports'
     | '/api/public/cron/storage-check'
     | '/api/public/cron/webhook-dispatch'
@@ -3565,6 +3578,7 @@ export interface RootRouteChildren {
   ApiPublicCronFxRatesRoute: typeof ApiPublicCronFxRatesRoute
   ApiPublicCronIngestionRetryRoute: typeof ApiPublicCronIngestionRetryRoute
   ApiPublicCronPmWorkOrdersRoute: typeof ApiPublicCronPmWorkOrdersRoute
+  ApiPublicCronPortfolioAlertsRoute: typeof ApiPublicCronPortfolioAlertsRoute
   ApiPublicCronScheduledReportsRoute: typeof ApiPublicCronScheduledReportsRoute
   ApiPublicCronStorageCheckRoute: typeof ApiPublicCronStorageCheckRoute
   ApiPublicCronWebhookDispatchRoute: typeof ApiPublicCronWebhookDispatchRoute
@@ -4697,6 +4711,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/scheduled-reports'
       fullPath: '/api/public/cron/scheduled-reports'
       preLoaderRoute: typeof ApiPublicCronScheduledReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/portfolio-alerts': {
+      id: '/api/public/cron/portfolio-alerts'
+      path: '/api/public/cron/portfolio-alerts'
+      fullPath: '/api/public/cron/portfolio-alerts'
+      preLoaderRoute: typeof ApiPublicCronPortfolioAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/pm-work-orders': {
@@ -6400,6 +6421,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronFxRatesRoute: ApiPublicCronFxRatesRoute,
   ApiPublicCronIngestionRetryRoute: ApiPublicCronIngestionRetryRoute,
   ApiPublicCronPmWorkOrdersRoute: ApiPublicCronPmWorkOrdersRoute,
+  ApiPublicCronPortfolioAlertsRoute: ApiPublicCronPortfolioAlertsRoute,
   ApiPublicCronScheduledReportsRoute: ApiPublicCronScheduledReportsRoute,
   ApiPublicCronStorageCheckRoute: ApiPublicCronStorageCheckRoute,
   ApiPublicCronWebhookDispatchRoute: ApiPublicCronWebhookDispatchRoute,
