@@ -1135,7 +1135,96 @@ export function evaluateRecognitionAlerts(
         evidence_url: url,
         context: { constrained: t.constrained_consideration },
       });
+
+    // --- FX: a missing or unusable rate is a condition to alert on, never a
+    // reason to substitute a rate. Money is left untranslated upstream.
+    if (r.fx_missing === true)
+      push({
+        rule_type: "recognition_fx_missing",
+        severity: "critical",
+        fingerprint: fingerprint(["fx", r.project_id, r.period_month]),
+        title: `Missing FX rate — ${r.project_name}`,
+        detail: `No usable rate to translate ${r.currency_code} for ${r.period_month}.`,
+        evidence_url: url,
+        context: { currency_code: r.currency_code, period: r.period_month },
+      });
+
+    if (t.period_revenue < 0 && Math.abs(t.period_revenue) >= thresholds.reversal_amount)
+      push({
+        rule_type: "revenue_reversal_material",
+        severity: "critical",
+        fingerprint: fingerprint(["reversal", r.project_id, r.period_month]),
+        title: `Material revenue reversal — ${r.project_name}`,
+        detail: `Period revenue of ${t.period_revenue} reverses previously recognised revenue.`,
+        evidence_url: url,
+        context: { period_revenue: t.period_revenue },
+      });
+
+    if (r.retention_due_date && t.retention_receivable > 0 && r.retention_due_date < asOf)
+      push({
+        rule_type: "retention_release_overdue",
+        severity: "warning",
+        fingerprint: fingerprint(["retention", r.project_id, r.period_month]),
+        title: `Retention release overdue — ${r.project_name}`,
+        detail: `Retention of ${t.retention_receivable} was due on ${r.retention_due_date}.`,
+        evidence_url: url,
+        context: {
+          retention_receivable: t.retention_receivable,
+          due_date: r.retention_due_date,
+        },
+      });
+
+    if (r.last_billing_date) {
+      const lag = daysBetweenIso(r.last_billing_date, asOf);
+      if (lag > thresholds.billing_lag_days && t.contract_asset > 0)
+        push({
+          rule_type: "recognition_billing_lag",
+          severity: "warning",
+          fingerprint: fingerprint(["billing-lag", r.project_id, r.period_month]),
+          title: `Billing lag — ${r.project_name}`,
+          detail: `No client billing for ${lag} days while ${t.contract_asset} remains unbilled.`,
+          evidence_url: url,
+          context: { days: lag, last_billing_date: r.last_billing_date },
+        });
+    }
+
+    if (r.reconciliation_ok === false)
+      push({
+        rule_type: "recognition_reconciliation_failed",
+        severity: "critical",
+        fingerprint: fingerprint(["reconciliation", r.project_id, r.period_month]),
+        title: `Recognition reconciliation failed — ${r.project_name}`,
+        detail: `Snapshot identities did not balance for ${r.period_month}.`,
+        evidence_url: url,
+        context: { period: r.period_month },
+      });
+
+    if ((r.pending_adjustments ?? 0) > 0)
+      push({
+        rule_type: "recognition_adjustment_pending",
+        severity: "warning",
+        fingerprint: fingerprint(["adjustment", r.project_id, r.period_month]),
+        title: `Manual adjustments awaiting authorisation — ${r.project_name}`,
+        detail: `${r.pending_adjustments} manual adjustment(s) are still in draft.`,
+        evidence_url: url,
+        context: { pending: r.pending_adjustments ?? 0 },
+      });
+
+    if (r.status === "submitted" && r.submitted_at) {
+      const waiting = daysBetweenIso(r.submitted_at.slice(0, 10), asOf);
+      if (waiting > thresholds.approval_delay_days)
+        push({
+          rule_type: "recognition_approval_delay",
+          severity: "warning",
+          fingerprint: fingerprint(["approval", r.project_id, r.period_month]),
+          title: `Recognition approval delayed — ${r.project_name}`,
+          detail: `Snapshot has been awaiting approval for ${waiting} days.`,
+          evidence_url: url,
+          context: { days: waiting, submitted_at: r.submitted_at },
+        });
+    }
   }
+
   return out;
 }
 
