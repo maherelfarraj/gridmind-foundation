@@ -27,9 +27,10 @@ function money(value: number | null | undefined, currency: string): string {
   }).format(value);
 }
 
+/** Recognition percentages are stored 0-100, so they are formatted verbatim. */
 function pct(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(1)}%`;
+  return `${value.toFixed(1)}%`;
 }
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -278,7 +279,7 @@ export function PortfolioRecognitionAppendixCard({ data }: { data: PortfolioReco
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <Field
           label={t(`${K}.kpi.cumulativeRevenue`)}
-          value={money(totals.cumulative_revenue, currency)}
+          value={money(totals.revenue, currency)}
         />
         <Field
           label={t(`${K}.appendix.periodRevenue`)}
