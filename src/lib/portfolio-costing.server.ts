@@ -586,7 +586,6 @@ export async function buildPortfolioCosting(
     });
   }
 
-
   return {
     company_id: companyId,
     period,

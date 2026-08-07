@@ -10,6 +10,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { AlertConfigPanel } from "@/components/portfolio/alert-config-panel";
 import { AlertsTable } from "@/components/portfolio/alerts-table";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -30,10 +31,16 @@ import {
   acknowledgePortfolioAlert,
   evaluatePortfolioAlertsNow,
   getPortfolioAlertsCsv,
+  savePortfolioAlertConfig,
   snoozePortfolioAlert,
 } from "@/lib/portfolio-alerts.functions";
 import { portfolioAlertsQueryOptions } from "@/lib/portfolio-alerts.query";
-import { ALERT_RULE_TYPES, ALERT_SEVERITIES, ALERT_STATUSES } from "@/lib/portfolio-alerts.rules";
+import {
+  ALERT_RULE_TYPES,
+  ALERT_SEVERITIES,
+  ALERT_STATUSES,
+  type AlertConfigUpdate,
+} from "@/lib/portfolio-alerts.rules";
 
 const K = "portfolioMod.costing.alerts";
 const ALL = "__all__";
@@ -119,8 +126,11 @@ function AlertsPage() {
   const acknowledge = useServerFn(acknowledgePortfolioAlert);
   const snooze = useServerFn(snoozePortfolioAlert);
   const evaluate = useServerFn(evaluatePortfolioAlertsNow);
+  const saveConfig = useServerFn(savePortfolioAlertConfig);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
+  const [busyRule, setBusyRule] = useState<string | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
 
   const setSearch = (patch: Partial<typeof search>) =>
     void navigate({ search: (prev) => ({ ...prev, page: 1, ...patch }) });
@@ -183,6 +193,19 @@ function AlertsPage() {
       toast.error(t(`${K}.exportFailed`));
     } finally {
       setWorking(false);
+    }
+  }
+
+  async function onSaveConfig(update: AlertConfigUpdate) {
+    setBusyRule(update.rule_type);
+    try {
+      await saveConfig({ data: update });
+      await refresh();
+      toast.success(t(`${K}.config.saved`));
+    } catch {
+      toast.error(t(`${K}.actionFailed`));
+    } finally {
+      setBusyRule(null);
     }
   }
 
@@ -388,6 +411,35 @@ function AlertsPage() {
           />
         </Card>
       )}
+
+      {data.can_configure ? (
+        <section className="space-y-3 print:hidden" aria-labelledby="alert-config-heading">
+          <div className="flex items-center justify-between">
+            <h2 id="alert-config-heading" className="text-lg font-semibold">
+              {t(`${K}.config.heading`)}
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              aria-expanded={showConfig}
+              aria-controls="alert-config-panel"
+              onClick={() => setShowConfig((v) => !v)}
+            >
+              {t(showConfig ? `${K}.config.hide` : `${K}.config.show`)}
+            </Button>
+          </div>
+          {showConfig ? (
+            <Card id="alert-config-panel" className="overflow-x-auto p-0">
+              <AlertConfigPanel
+                configs={data.configs}
+                busyRule={busyRule}
+                onSave={(u) => void onSaveConfig(u)}
+                onInvalid={(m) => toast.error(m)}
+              />
+            </Card>
+          ) : null}
+        </section>
+      ) : null}
 
       <nav aria-label={t(`${K}.pagination.label`)} className="flex items-center justify-between">
         <p className="text-muted-foreground text-xs">

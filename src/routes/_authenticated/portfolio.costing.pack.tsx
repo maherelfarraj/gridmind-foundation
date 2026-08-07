@@ -24,6 +24,7 @@ import {
 import { formatCurrency, formatDate, formatNumber } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
+import { portfolioAlertAppendixQueryOptions } from "@/lib/portfolio-alerts.query";
 import { portfolioAuditQueryOptions } from "@/lib/portfolio-governance.query";
 
 const K = "portfolioMod.costing";
@@ -171,9 +172,67 @@ function PackView() {
       </section>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <AlertAppendix period={data.period} />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
+  );
+}
+
+/** Unresolved critical/high finance alerts standing against the period. */
+function AlertAppendix({ period }: { period: string }) {
+  const { t, locale } = useI18n();
+  const { data } = useSuspenseQuery(portfolioAlertAppendixQueryOptions(period));
+  const A = `${K}.alerts`;
+  return (
+    <section className="space-y-3">
+      <SectionHeader
+        title={t(`${A}.appendixHeading`)}
+        description={t(`${A}.appendixDescription`, {
+          open: formatNumber(data.summary.open, locale),
+          critical: formatNumber(
+            data.summary.by_severity.critical + data.summary.by_severity.high,
+            locale,
+          ),
+          projects: formatNumber(data.summary.projects_affected, locale),
+        })}
+      />
+      {data.critical.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{t(`${A}.empty.title`)}</p>
+      ) : (
+        <Card className="overflow-x-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col">{t(`${A}.col.severity`)}</TableHead>
+                <TableHead scope="col">{t(`${A}.col.rule`)}</TableHead>
+                <TableHead scope="col">{t(`${A}.col.scope`)}</TableHead>
+                <TableHead scope="col">{t(`${A}.col.value`)}</TableHead>
+                <TableHead scope="col">{t(`${A}.col.age`)}</TableHead>
+                <TableHead scope="col">{t(`${A}.col.status`)}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.critical.map((a) => (
+                <TableRow key={a.id}>
+                  <TableCell>{t(`${A}.severity.${a.severity}`)}</TableCell>
+                  <TableCell>{t(`${A}.rule.${a.rule_type}`)}</TableCell>
+                  <TableCell>{a.project_code ?? t(`${A}.companyScope`)}</TableCell>
+                  <TableCell>{a.title}</TableCell>
+                  <TableCell>
+                    {t(`${A}.ageDays`, { days: formatNumber(a.age_days, locale) })}
+                  </TableCell>
+                  <TableCell>{t(`${A}.status.${a.effective_status}`)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+    </section>
   );
 }
 

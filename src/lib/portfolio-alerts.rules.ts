@@ -141,16 +141,19 @@ export const alertConfigUpdateSchema = z
     }
     const bounds = UNIT_BOUNDS[unit];
     if (cfg.threshold_value < bounds.min || cfg.threshold_value > bounds.max) {
-      ctx.addIssue({ code: "custom", path: ["threshold_value"], message: "threshold_out_of_range" });
+      ctx.addIssue({
+        code: "custom",
+        path: ["threshold_value"],
+        message: "threshold_out_of_range",
+      });
     }
   });
 
 export type AlertConfigUpdate = z.infer<typeof alertConfigUpdateSchema>;
 
-export function mergeConfigs(rows: readonly Partial<AlertRuleConfig>[]): Record<
-  AlertRuleType,
-  AlertRuleConfig
-> {
+export function mergeConfigs(
+  rows: readonly Partial<AlertRuleConfig>[],
+): Record<AlertRuleType, AlertRuleConfig> {
   const out = { ...DEFAULT_ALERT_CONFIGS };
   for (const row of rows) {
     const key = row.rule_type;
@@ -695,7 +698,10 @@ export function ackDueAt(fromIso: string, slaHours: number): string {
 }
 
 /** True when an open alert has blown its acknowledgement SLA. */
-export function isAckOverdue(a: Pick<AlertRecord, "status" | "ack_due_at">, nowIso: string): boolean {
+export function isAckOverdue(
+  a: Pick<AlertRecord, "status" | "ack_due_at">,
+  nowIso: string,
+): boolean {
   return a.status === "open" && !!a.ack_due_at && a.ack_due_at < nowIso;
 }
 

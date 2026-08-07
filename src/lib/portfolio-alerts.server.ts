@@ -85,7 +85,7 @@ export interface EvaluationResult {
   locked_out?: boolean;
 }
 
-interface ExistingRow extends AlertRecord {}
+type ExistingRow = AlertRecord;
 
 const ALERT_COLUMNS =
   "id, company_id, project_id, period_month, rule_type, fingerprint, severity, status, escalation_tier, entity_table, entity_id, current_value, threshold_value, value_unit, currency_code, owner_id, title, detail, deep_link, context, first_seen_at, last_seen_at, occurrence_count, reopen_count, ack_due_at, acknowledged_by, acknowledged_at, snoozed_until, escalated_at, resolved_at";
@@ -301,7 +301,10 @@ export async function evaluateCompanyAlerts(
       .from("portfolio_alerts")
       .select("id, fingerprint, rule_type")
       .eq("company_id", companyId)
-      .in("fingerprint", candidates.length > 0 ? candidates.map((c) => c.fingerprint) : ["__none__"]),
+      .in(
+        "fingerprint",
+        candidates.length > 0 ? candidates.map((c) => c.fingerprint) : ["__none__"],
+      ),
   );
   const idByFingerprint = new Map(persisted.map((p) => [p.fingerprint, p.id]));
 
@@ -407,6 +410,12 @@ async function dispatchNotifications(
     cfg.escalate_roles.forEach((r) => notifyRoles.add(r));
   }
 
+  // Project scope is derived from this company's own candidates, so the
+  // membership read can never reach another tenant's rows even when the
+  // evaluator runs with elevated (cron) credentials.
+  const projectIds = [
+    ...new Set(args.created.map((c) => c.candidate.project_id).filter((p): p is string => !!p)),
+  ];
   const [roleRows, memberRows] = await Promise.all([
     rows<{ user_id: string; role: string }>(
       sbOf(ctx)
@@ -415,9 +424,14 @@ async function dispatchNotifications(
         .eq("company_id", companyId)
         .in("role", [...notifyRoles]),
     ),
-    rows<{ user_id: string; project_id: string }>(
-      sbOf(ctx).from("project_members").select("user_id, project_id"),
-    ),
+    projectIds.length === 0
+      ? Promise.resolve([] as { user_id: string; project_id: string }[])
+      : rows<{ user_id: string; project_id: string }>(
+          sbOf(ctx)
+            .from("project_members")
+            .select("user_id, project_id")
+            .in("project_id", projectIds),
+        ),
   ]);
 
   const usersByRole = new Map<string, string[]>();
@@ -469,7 +483,8 @@ async function dispatchNotifications(
     if (candidate.owner_id && inCompany.has(candidate.owner_id)) recipients.add(candidate.owner_id);
     if (candidate.project_id) {
       const members = membersByProject.get(candidate.project_id);
-      if (candidate.owner_id && members?.has(candidate.owner_id)) recipients.add(candidate.owner_id);
+      if (candidate.owner_id && members?.has(candidate.owner_id))
+        recipients.add(candidate.owner_id);
     }
     const value =
       candidate.current_value === null
@@ -603,12 +618,19 @@ export interface PortfolioAlertsData {
 
 export async function requireAlertAccess(ctx: AuthContext): Promise<string> {
   if (!(await hasCloseRole(ctx))) {
-    costingHttpError(403, "forbidden", "Portfolio finance alerts are restricted to finance leadership.");
+    costingHttpError(
+      403,
+      "forbidden",
+      "Portfolio finance alerts are restricted to finance leadership.",
+    );
   }
   return currentCompanyId(ctx);
 }
 
-function decorate(a: AlertRecord, nowIso: string): Omit<PortfolioAlertRow, "project_code" | "project_name" | "owner_name"> {
+function decorate(
+  a: AlertRecord,
+  nowIso: string,
+): Omit<PortfolioAlertRow, "project_code" | "project_name" | "owner_name"> {
   const status = effectiveStatus(a, nowIso);
   return {
     ...a,
@@ -729,7 +751,11 @@ export function buildTrend(
   const days: { date: string; opened: number; resolved: number }[] = [];
   const end = Date.parse(nowIso.slice(0, 10) + "T00:00:00Z");
   for (let i = 13; i >= 0; i -= 1) {
-    days.push({ date: new Date(end - i * 86_400_000).toISOString().slice(0, 10), opened: 0, resolved: 0 });
+    days.push({
+      date: new Date(end - i * 86_400_000).toISOString().slice(0, 10),
+      opened: 0,
+      resolved: 0,
+    });
   }
   const index = new Map(days.map((d, i) => [d.date, i]));
   for (const a of alerts) {
@@ -823,14 +849,16 @@ export async function acknowledgeAlert(
     .eq("id", alertId)
     .eq("company_id", companyId);
   if (error) throw error;
-  await sbOf(ctx).from("portfolio_alert_events").insert({
-    alert_id: alertId,
-    company_id: companyId,
-    event_type: "acknowledged",
-    actor_id: ctx.user?.id ?? null,
-    severity: alert.severity,
-    metadata: { rule_type: alert.rule_type },
-  });
+  await sbOf(ctx)
+    .from("portfolio_alert_events")
+    .insert({
+      alert_id: alertId,
+      company_id: companyId,
+      event_type: "acknowledged",
+      actor_id: ctx.user?.id ?? null,
+      severity: alert.severity,
+      metadata: { rule_type: alert.rule_type },
+    });
   await writeAudit(ctx, companyId, "costing.portfolio.alert_acknowledged", alertId, {
     alert_id: alertId,
     rule_type: alert.rule_type,
@@ -860,14 +888,16 @@ export async function snoozeAlert(
     .eq("id", alertId)
     .eq("company_id", companyId);
   if (error) throw error;
-  await sbOf(ctx).from("portfolio_alert_events").insert({
-    alert_id: alertId,
-    company_id: companyId,
-    event_type: "snoozed",
-    actor_id: ctx.user?.id ?? null,
-    severity: alert.severity,
-    metadata: { snoozed_until: iso },
-  });
+  await sbOf(ctx)
+    .from("portfolio_alert_events")
+    .insert({
+      alert_id: alertId,
+      company_id: companyId,
+      event_type: "snoozed",
+      actor_id: ctx.user?.id ?? null,
+      severity: alert.severity,
+      metadata: { snoozed_until: iso },
+    });
   await writeAudit(ctx, companyId, "costing.portfolio.alert_snoozed", alertId, {
     alert_id: alertId,
     rule_type: alert.rule_type,
@@ -911,10 +941,7 @@ export async function updateAlertConfig(
 }
 
 /** On-demand evaluation from an authorized finance session. */
-export async function evaluateNow(
-  ctx: AuthContext,
-  period?: string,
-): Promise<EvaluationResult> {
+export async function evaluateNow(ctx: AuthContext, period?: string): Promise<EvaluationResult> {
   const companyId = await requireAlertAccess(ctx);
   return evaluateCompanyAlerts(ctx, companyId, {
     period,

@@ -534,7 +534,36 @@
         "description": "التنبيهات المالية مقتصرة على قيادة المالية، أو تعذّرت قراءة التقييم."
       },
       "appendixHeading": "ملحق — التنبيهات المالية",
-      "appendixDescription": "{{open}} تنبيه مفتوح ({{critical}} حرج أو مرتفع) عبر {{projects}} مشروع."
+      "appendixDescription": "{{open}} تنبيه مفتوح ({{critical}} حرج أو مرتفع) عبر {{projects}} مشروع.",
+      "config": {
+        "heading": "إعدادات التنبيهات",
+        "caption": "حدود الشركة ومُهل الإنذار المسبق ومدد الإقرار لكل قاعدة تنبيه.",
+        "show": "ضبط الحدود",
+        "hide": "إخفاء الإعدادات",
+        "enabled": "مُفعّل",
+        "enabledFor": "تفعيل قاعدة التنبيه: {{rule}}",
+        "severityFor": "درجة الخطورة لـ {{rule}}",
+        "threshold": "الحد",
+        "thresholdFor": "الحد لـ {{rule}} بوحدة {{unit}}",
+        "leadDays": "أيام الإنذار المسبق",
+        "leadDaysFor": "أيام الإنذار المسبق لـ {{rule}}",
+        "slaHours": "مهلة الإقرار (ساعة)",
+        "slaHoursFor": "مهلة الإقرار بالساعات لـ {{rule}}",
+        "save": "حفظ",
+        "saveFor": "حفظ إعدادات {{rule}}",
+        "saved": "تم حفظ إعدادات التنبيهات.",
+        "unit": {
+          "percent": "٪",
+          "ratio": "نسبة",
+          "days": "أيام",
+          "count": "عدد",
+          "currency": "عملة"
+        },
+        "invalid": {
+          "threshold_required": "تحتاج هذه القاعدة إلى قيمة حد.",
+          "threshold_out_of_range": "القيمة خارج النطاق المسموح."
+        }
+      }
     }
   }
 }

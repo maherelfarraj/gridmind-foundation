@@ -163,7 +163,45 @@ a short window, often from a single upstream cause.
    notify Operations Owner — do not suppress alerts to "clear the noise."
 5. Do not bulk-dismiss alerts without recording the reason in `audit_logs` context.
 
+### 4.x — Portfolio finance alerts evaluator (GC-10)
+
+**Endpoint:** `POST /api/public/cron/portfolio-alerts` (cron-only caller; the public-hook guard
+rejects anything else). **Suggested schedule:** daily at 06:35 UTC, after the FX import.
+
+Register once with pg_cron (substitute the project's publishable key at registration time — never
+commit it):
+
+```sql
+select cron.schedule(
+  'cron-portfolio-alerts', '35 6 * * *',
+  $$
+  select net.http_post(
+    url:='https://<project-host>/api/public/cron/portfolio-alerts',
+    headers:='{"Content-Type":"application/json","apikey":"<SUPABASE_PUBLISHABLE_KEY>"}'::jsonb,
+    body:='{}'::jsonb
+  );
+  $$
+);
+```
+
+**Signal:** `/portfolio/costing/alerts` shows no new occurrences, or `audit_logs` has no recent
+`cron.portfolio_alerts` row.
+
+1. Check the last run: `select * from audit_logs where action = 'cron.portfolio_alerts'
+   order by created_at desc limit 5;` — `metadata.companies` is the number of tenants evaluated.
+2. A `locked_out: true` result for a company means an overlapping run held the advisory lock. This is
+   safe and self-correcting; only investigate if it repeats across consecutive runs.
+3. Evaluation is idempotent — alerts are keyed by a stable per-company fingerprint, so a manual
+   re-run updates existing occurrences instead of creating duplicates or resending notifications.
+   Re-running to confirm health is safe.
+4. Thresholds, lead times, severities and acknowledgement SLAs are company-configurable from
+   **Portfolio → Cost & Close → Alerts → Configuration** (finance/company admins only). Change them
+   there, never by editing rows directly; UI changes are recorded as audit events.
+5. Do not resolve alerts to silence them — acknowledge or snooze with a reason so the escalation SLA
+   and occurrence history stay intact.
+
 ---
+
 
 ## 5 — Rollback Procedures
 

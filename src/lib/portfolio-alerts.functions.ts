@@ -76,3 +76,18 @@ export const evaluatePortfolioAlertsNow = createServerFn({ method: "POST" })
     requireSupabaseAuth(context);
     return evaluateNow(context, data.period);
   });
+
+export const getPortfolioAlertAppendix = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        period: z.string().regex(/^\d{4}-\d{2}-01$/),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    requireSupabaseAuth(context);
+    const { loadAlertAppendix } = await import("@/lib/portfolio-alerts.server");
+    return loadAlertAppendix(context, data.period);
+  });
