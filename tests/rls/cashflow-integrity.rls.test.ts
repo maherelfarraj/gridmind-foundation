@@ -350,17 +350,38 @@ d("cash flow live schema — constraints and index coverage", () => {
 // Invariants
 // ---------------------------------------------------------------------------
 d("cash flow invariants — authoritative data is never touched", () => {
-  const fingerprint = () =>
-    q(
-      PROTECTED.map(
-        (t) =>
-          `select '${t}'::text as t, count(*)::text as n, coalesce(md5(string_agg(x, ',' order by x)),'-') as h
-             from (select id::text as x from public.${t}) s`,
-      ).join(" union all "),
-    )
-      .map((r) => r.join("|"))
-      .sort()
-      .join("\n");
+  // Whole-row (not id-only) checksum of every authoritative table.
+  const FINGERPRINT_SQL = `select 'FP:' || string_agg(t || '|' || n || '|' || h, ' ~ ' order by t) from (
+    ${PROTECTED.map(
+      (t) =>
+        `select '${t}'::text as t, count(*)::text as n, coalesce(md5(string_agg(x, ',' order by x)),'-') as h
+           from (select r::text as x from public.${t} r) s_${t}`,
+    ).join(" union all ")}
+  ) z`;
+
+  /**
+   * Take the checksum, attempt `sql`, roll it back, and take the checksum
+   * again — all inside ONE REPEATABLE READ transaction. The stable snapshot
+   * means writes committed by other suites running against the same database
+   * cannot forge a difference, so any divergence is genuinely caused by the
+   * probed operation. Nothing is relaxed: the assertion is still byte
+   * equality of the full-row checksum of all 13 authoritative tables.
+   */
+  const probe = (sql: string): [string, string] => {
+    const lines = script(
+      [
+        "begin isolation level repeatable read;",
+        FINGERPRINT_SQL + ";",
+        "savepoint probe;",
+        sql.trim().replace(/;?$/, ";"),
+        "rollback to savepoint probe;",
+        FINGERPRINT_SQL + ";",
+        "rollback;",
+      ].join("\n"),
+    );
+    return [lines[0] ?? "before-missing", lines[1] ?? "after-missing"];
+  };
+
 
   it("declares no cash-flow routine that writes an authoritative table", () => {
     const routines = q(
