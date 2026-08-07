@@ -285,4 +285,3 @@ describe.skipIf(!HAS_DB)("document supersedure chains (live schema)", () => {
     }
   });
 });
-});
