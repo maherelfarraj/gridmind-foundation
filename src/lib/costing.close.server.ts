@@ -549,3 +549,95 @@ export async function notifyPeriodTransition(
     return 0;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Period transitions
+// ---------------------------------------------------------------------------
+export interface PeriodTransitionResult {
+  state: CostingPeriodState;
+  rowVersion: number;
+  notified: number;
+}
+
+/**
+ * Move a costing period between states. Idempotent, optimistic-concurrency
+ * checked, reason-bearing on reopen, and blocked by the readiness checklist on
+ * a hard close. The database function performs the same authorization and
+ * transition validation, so this is defence in depth, not the only guard.
+ */
+export async function transitionPeriod(
+  ctx: AuthContext,
+  input: {
+    companyId: string;
+    projectId?: string | null;
+    period: string;
+    target: CostingPeriodState;
+    reason?: string | null;
+    expectedVersion?: number | null;
+  },
+): Promise<PeriodTransitionResult> {
+  const sb = ctx.supabase as any;
+  const projectId = input.projectId ?? null;
+
+  let projectName: string | null = null;
+  if (projectId) {
+    const project = await loadCostingProject(ctx, projectId);
+    if (project.company_id !== input.companyId) costingHttpError(403, "forbidden");
+    projectName = project.name;
+
+    if (input.target === "hard_closed") {
+      const close = await loadCostingClose(ctx, projectId, input.period);
+      const blockers = close.readiness.items.filter((i) => i.severity === "blocker");
+      if (blockers.length > 0) {
+        costingHttpError(
+          409,
+          "costing_period_not_ready",
+          `Resolve ${blockers.length} blocking item(s) before hard closing ${input.period.slice(0, 7)}.`,
+        );
+      }
+    }
+  }
+
+  const { data, error } = await sb.rpc("transition_costing_period", {
+    p_company_id: input.companyId,
+    p_project_id: projectId,
+    p_period_month: input.period,
+    p_target: input.target,
+    p_reason: input.reason ?? null,
+    p_expected_version: input.expectedVersion ?? null,
+  });
+  if (error) {
+    const message = String(error.message ?? "");
+    const code =
+      message.match(
+        /(costing_period_[a-z_]+|forbidden)/,
+      )?.[1] ?? "costing_period_transition_failed";
+    costingHttpError(code === "forbidden" ? 403 : 409, code, message.replace(/^.*?:\s*/, ""));
+  }
+
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { state: CostingPeriodState; row_version: number }
+    | null;
+  const state = row?.state ?? input.target;
+  const rowVersion = Number(row?.row_version ?? 1);
+
+  await costingAudit(ctx, `costing.period.${input.target}`, "costing_periods", null, {
+    company_id: input.companyId,
+    project_id: projectId,
+    period: input.period,
+    state,
+    reason: input.reason ?? null,
+    row_version: rowVersion,
+  });
+
+  const notified = await notifyPeriodTransition(ctx, {
+    companyId: input.companyId,
+    projectId,
+    projectName,
+    period: input.period,
+    state,
+    reason: input.reason ?? null,
+  });
+
+  return { state, rowVersion, notified };
+}
