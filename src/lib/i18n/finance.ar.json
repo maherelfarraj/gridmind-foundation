@@ -887,6 +887,156 @@
         "evidence": "المستندات",
         "resolvedBy": "عالجه"
       }
+    },
+    "evm": {
+      "title": "Earned value management",
+      "description": "Governed EVM snapshots from approved baselines and posted actuals.",
+      "actions": {
+        "recalculate": "Recalculate",
+        "exportDetail": "Export detail",
+        "exportTrend": "Export trend",
+        "exportExceptions": "Export exceptions"
+      },
+      "tabs": {
+        "detail": "Detail",
+        "quality": "Quality gates",
+        "trend": "Trend",
+        "governance": "Governance"
+      },
+      "kpi": {
+        "bac": "BAC",
+        "pv": "PV",
+        "ev": "EV",
+        "ac": "AC",
+        "cpi": "CPI",
+        "spi": "SPI",
+        "sv": "SV",
+        "cv": "CV",
+        "eac": "EAC",
+        "etc": "ETC",
+        "vac": "VAC",
+        "tcpi": "TCPI",
+        "delay": "Earned delay (days)"
+      },
+      "status": {
+        "working": "Working",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "superseded": "Superseded"
+      },
+      "acBasis": {
+        "actual_only": "Actuals only",
+        "actual_plus_accrual": "Actuals plus accruals"
+      },
+      "method": {
+        "bottom_up": "Bottom-up",
+        "cpi": "BAC / CPI",
+        "cpi_spi": "CPI × SPI",
+        "ac_plus_remaining": "AC + remaining"
+      },
+      "progressMethod": {
+        "physical": "Physical %",
+        "milestone": "Milestone weighted",
+        "units": "Units complete",
+        "fixed_0_100": "0/100",
+        "fixed_50_50": "50/50",
+        "level_of_effort": "Level of effort",
+        "apportioned": "Apportioned"
+      },
+      "basis": {
+        "title": "Calculation basis",
+        "period": "Period",
+        "dataDate": "Data date",
+        "status": "Status",
+        "version": "Version",
+        "costBasis": "Cost basis",
+        "acBasis": "AC basis",
+        "eacMethod": "Official EAC",
+        "baseline": "Schedule baseline",
+        "currency": "Currency",
+        "fx": "FX rate",
+        "fxMissing": "Rate missing",
+        "fxStale": "stale",
+        "source": "Source",
+        "frozen": "Frozen snapshot",
+        "live": "Live calculation",
+        "periodState": "Period state"
+      },
+      "detail": {
+        "title": "WBS / CBS detail",
+        "caption": "Earned value by scope",
+        "scope": "Scope",
+        "method": "Method",
+        "allocation": "Allocation",
+        "progress": "Progress",
+        "toggle": "Toggle {{scope}}",
+        "overridden": "Override",
+        "emptyTitle": "No mapped scope",
+        "emptyBody": "Map WBS or tasks to cost codes to calculate earned value.",
+        "reconciliation": "Reconciliation: {{status}} ({{difference}})",
+        "tiesOut": "ties out",
+        "mismatch": "mismatch"
+      },
+      "gates": {
+        "title": "Quality gates",
+        "blockers": "Blockers",
+        "warnings": "Warnings",
+        "unmapped": "Unmapped",
+        "ready": "Ready to approve",
+        "notReady": "Not ready",
+        "clear": "No issues raised.",
+        "issue": "Issue",
+        "severity": "Severity",
+        "current": "Current",
+        "threshold": "Threshold",
+        "action": "Corrective action",
+        "dataTitle": "Data quality",
+        "dataDescription": "Blockers must clear before approval.",
+        "performanceTitle": "Performance alerts",
+        "performanceDescription": "Cost and schedule alert families for this period."
+      },
+      "severity": {
+        "blocker": "Blocker",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "corrective": {
+        "default": "Review the underlying mapping, progress or cost data."
+      },
+      "lifecycle": {
+        "title": "Lifecycle",
+        "description": "Working snapshots may be recalculated; submitted and approved snapshots are frozen.",
+        "readOnly": "You do not have permission to change this snapshot.",
+        "submit": "Submit",
+        "approve": "Approve",
+        "return": "Return to working",
+        "supersede": "Supersede",
+        "reason": "Reason",
+        "reasonPlaceholder": "Explain the change",
+        "reasonHint": "Recorded in the append-only EVM event history.",
+        "blocked": "{{count}} blocker(s) must clear before approval."
+      },
+      "formula": {
+        "title": "EAC comparison",
+        "description": "Compare EAC formulas and select the official method."
+      },
+      "trend": {
+        "title": "Period trend",
+        "empty": "No prior periods yet."
+      },
+      "history": {
+        "title": "Event history",
+        "description": "Append-only record of lifecycle and calculation events.",
+        "empty": "No events recorded."
+      },
+      "toast": {
+        "recalculated": "EVM recalculated",
+        "submitted": "Snapshot submitted",
+        "approved": "Snapshot approved",
+        "returned": "Snapshot returned to working",
+        "superseded": "Snapshot superseded",
+        "settingsSaved": "Settings saved"
+      }
     }
   }
 }
