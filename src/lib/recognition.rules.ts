@@ -769,7 +769,21 @@ export interface PortfolioProjectInput {
   period_month: string;
   data_date: string;
   totals: RecognitionTotals;
+  // ---- optional governance signals (alerting only; never used in money math)
+  /** True when at least one line could not be translated to reporting currency. */
+  fx_missing?: boolean;
+  /** Date the retention release became contractually due, if any. */
+  retention_due_date?: string | null;
+  /** Date of the most recent client billing document. */
+  last_billing_date?: string | null;
+  /** False when the snapshot's reconciliation identities did not balance. */
+  reconciliation_ok?: boolean;
+  /** Manual adjustments still awaiting authorisation. */
+  pending_adjustments?: number;
+  /** When the snapshot entered `submitted`, used for approval-delay ageing. */
+  submitted_at?: string | null;
 }
+
 
 export interface PortfolioRecognitionRollup {
   projects: number;
