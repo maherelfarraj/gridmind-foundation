@@ -992,7 +992,7 @@ export function applySensitivity(
 // Alerts (deduplicated fingerprints, routed through the alert framework)
 // ---------------------------------------------------------------------------
 export interface RecognitionAlert {
-  rule_type: string;
+  rule_type: RecognitionAlertRule;
   severity: ExceptionSeverity;
   fingerprint: string;
   title: string;
