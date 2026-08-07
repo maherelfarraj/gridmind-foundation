@@ -1648,6 +1648,32 @@
         "event": "الحدث",
         "from": "من",
         "to": "إلى"
+      },
+      "appendix": {
+        "title": "ملحق الإيرادات والأعمال تحت التنفيذ",
+        "description": "أدلة اعتراف محوكمة بنسبة الإنجاز — غير مُرحّلة محاسبياً.",
+        "basis": {
+          "approved": "أساس معتمد",
+          "indicative": "أساس استرشادي"
+        },
+        "watermarkFrozen": "مجمّد",
+        "watermarkWorking": "قيد العمل",
+        "project": "المشروع",
+        "billingCutoff": "تاريخ إقفال الفوترة",
+        "method": "الطريقة",
+        "policyVersion": "إصدار السياسة",
+        "version": "الإصدار",
+        "currency": "عملة التقرير",
+        "periodRevenue": "إيراد الفترة",
+        "fxSource": "مصدر سعر الصرف",
+        "adjustments": "تسويات يدوية",
+        "noAdjustments": "لا توجد تسويات يدوية.",
+        "preparedAt": "أُعد",
+        "submittedAt": "قُدّم",
+        "approvedAt": "اعتُمد",
+        "portfolioTitle": "ملحق إيرادات المحفظة والأعمال تحت التنفيذ",
+        "portfolioDescription": "تجميع الاعتراف عبر المشاريع.",
+        "nonPosting": "غير مُرحّل"
       }
     }
   }

@@ -1645,6 +1645,32 @@
         "event": "Event",
         "from": "From",
         "to": "To"
+      },
+      "appendix": {
+        "title": "Revenue & WIP appendix",
+        "description": "Governed percentage-of-completion evidence — non-posting; no journal entries are created.",
+        "basis": {
+          "approved": "Approved basis",
+          "indicative": "Indicative basis"
+        },
+        "watermarkFrozen": "Frozen",
+        "watermarkWorking": "Working",
+        "project": "Project",
+        "billingCutoff": "Billing cut-off",
+        "method": "Method",
+        "policyVersion": "Policy version",
+        "version": "Version",
+        "currency": "Reporting currency",
+        "periodRevenue": "Period revenue",
+        "fxSource": "FX source",
+        "adjustments": "Manual adjustments",
+        "noAdjustments": "No manual adjustments.",
+        "preparedAt": "Prepared",
+        "submittedAt": "Submitted",
+        "approvedAt": "Approved",
+        "portfolioTitle": "Portfolio revenue & WIP appendix",
+        "portfolioDescription": "Consolidated recognition roll-up across projects.",
+        "nonPosting": "Non-posting"
       }
     }
   }
