@@ -1328,7 +1328,6 @@ export async function saveFundingFacility(
   return { id: saved!.id };
 }
 
-
 export async function saveFundingAllocation(
   ctx: AuthContext,
   input: FundingAllocationInput,
@@ -1430,8 +1429,6 @@ export async function loadFundingWorkspace(ctx: AuthContext): Promise<FundingWor
   ]);
   return { facilities, allocations, projects, audit, access: { canWrite } };
 }
-
-
 
 async function currentCompanyId(ctx: AuthContext): Promise<string> {
   const row = await one<{ company_id: string }>(

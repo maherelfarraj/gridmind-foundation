@@ -394,9 +394,7 @@ function FundingManagement() {
                 min="0"
                 step="0.01"
                 value={allocDraft.allocated_amount}
-                onChange={(e) =>
-                  setAllocDraft({ ...allocDraft, allocated_amount: e.target.value })
-                }
+                onChange={(e) => setAllocDraft({ ...allocDraft, allocated_amount: e.target.value })}
                 required
               />
             </div>
