@@ -59,9 +59,12 @@ export const Route = createFileRoute("/api/public/cron/portfolio-alerts")({
         for (const c of (companies ?? []) as { id: string }[]) {
           // Advisory lock: a concurrent run for the same company is skipped
           // rather than duplicating evaluation work.
-          const { data: locked } = await admin.rpc("portfolio_alerts_try_lock" as never, {
-            p_company_id: c.id,
-          } as never);
+          const { data: locked } = await admin.rpc(
+            "portfolio_alerts_try_lock" as never,
+            {
+              p_company_id: c.id,
+            } as never,
+          );
           if (locked === false) {
             results.push({ company_id: c.id, locked_out: true });
             continue;

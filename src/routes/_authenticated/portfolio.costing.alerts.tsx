@@ -33,11 +33,7 @@ import {
   snoozePortfolioAlert,
 } from "@/lib/portfolio-alerts.functions";
 import { portfolioAlertsQueryOptions } from "@/lib/portfolio-alerts.query";
-import {
-  ALERT_RULE_TYPES,
-  ALERT_SEVERITIES,
-  ALERT_STATUSES,
-} from "@/lib/portfolio-alerts.rules";
+import { ALERT_RULE_TYPES, ALERT_SEVERITIES, ALERT_STATUSES } from "@/lib/portfolio-alerts.rules";
 
 const K = "portfolioMod.costing.alerts";
 const ALL = "__all__";

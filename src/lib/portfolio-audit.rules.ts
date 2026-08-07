@@ -293,7 +293,6 @@ export const AUDIT_METADATA_ALLOWLIST = [
   "notified",
 ] as const;
 
-
 const ALLOWED = new Set<string>(AUDIT_METADATA_ALLOWLIST);
 
 const isScalar = (v: unknown): v is string | number | boolean =>
