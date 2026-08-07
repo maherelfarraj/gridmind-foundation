@@ -176,3 +176,50 @@ export function resolveEntrySearch(
 export function canMutateView(view: SavedView, userId: string): boolean {
   return view.owner_id === userId;
 }
+
+// ---------------------------------------------------------------------------
+// GC-15 — Revenue & WIP saved views
+//
+// The same per-user framework, scoped so a cost & close view never appears in
+// the revenue picker (and vice versa). Only filter state is stored.
+// ---------------------------------------------------------------------------
+export interface RevenueWipSearch {
+  period?: string;
+  status?: string;
+  method?: string;
+  customer?: string;
+  project?: string;
+}
+
+export function revenueWipConfigToSearch(config: SavedViewConfig): RevenueWipSearch {
+  const out: RevenueWipSearch = {};
+  if (config.period) out.period = config.period;
+  if (config.rec_status) out.status = config.rec_status;
+  if (config.rec_method) out.method = config.rec_method;
+  if (config.rec_customer) out.customer = config.rec_customer;
+  if (config.rec_project) out.project = config.rec_project;
+  return out;
+}
+
+export function revenueWipSearchToConfig(
+  search: RevenueWipSearch,
+  base: SavedViewConfig = DEFAULT_SAVED_VIEW_CONFIG,
+): SavedViewConfig {
+  return savedViewConfigSchema.parse({
+    ...base,
+    scope: "revenue_wip",
+    period: search.period ?? null,
+    rec_status: search.status ?? null,
+    rec_method: search.method ?? null,
+    rec_customer: search.customer ?? null,
+    rec_project: search.project ?? null,
+  });
+}
+
+/** Views are listed once per company; each dashboard shows only its own scope. */
+export function viewsInScope(
+  views: readonly SavedView[],
+  scope: SavedViewConfig["scope"],
+): SavedView[] {
+  return views.filter((v) => v.config.scope === scope);
+}
