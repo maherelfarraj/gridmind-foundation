@@ -20,11 +20,7 @@ import {
 } from "@/lib/contingency.rules";
 import { audit, hasAnyRole, httpError } from "@/lib/payments.server";
 
-export const CONTINGENCY_WRITE_ROLES = [
-  "finance_admin",
-  "project_admin",
-  "company_admin",
-] as const;
+export const CONTINGENCY_WRITE_ROLES = ["finance_admin", "project_admin", "company_admin"] as const;
 export const CONTINGENCY_APPROVE_ROLES = ["finance_admin", "company_admin"] as const;
 
 export interface ContingencyAccess {
@@ -120,9 +116,11 @@ export async function loadContingencyWorkspace(
     ...m,
     amount: Number(m.amount),
   }));
-  const quantifications = ((quantRes.data ?? []) as unknown as (RiskQuantInput & {
-    risks: { title: string; status: RiskQuantInput["risk_status"] } | null;
-  })[]).map((q) => {
+  const quantifications = (
+    (quantRes.data ?? []) as unknown as (RiskQuantInput & {
+      risks: { title: string; status: RiskQuantInput["risk_status"] } | null;
+    })[]
+  ).map((q) => {
     const normalized: RiskQuantInput = {
       risk_id: q.risk_id,
       currency_code: q.currency_code,

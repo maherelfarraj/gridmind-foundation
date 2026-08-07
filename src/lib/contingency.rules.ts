@@ -206,7 +206,8 @@ export function rollupPools(states: PoolState[]): {
     balance: fromMinor(balance),
     committed_balance: fromMinor(sumMinor(states.map((s) => s.committed_balance))),
     pending_draw: fromMinor(sumMinor(states.map((s) => s.pending_draw))),
-    utilization_pct: original > 0 ? roundMoney(((drawn + out - released) / original) * 100, 1) : null,
+    utilization_pct:
+      original > 0 ? roundMoney(((drawn + out - released) / original) * 100, 1) : null,
   };
 }
 
@@ -223,12 +224,10 @@ export function drawdownCurve(
     buckets.set(period, (buckets.get(period) ?? 0) + signed);
   }
   let running = 0;
-  return [...buckets.keys()]
-    .sort()
-    .map((period) => {
-      running += buckets.get(period)!;
-      return { period, net: fromMinor(buckets.get(period)!), cumulative: fromMinor(running) };
-    });
+  return [...buckets.keys()].sort().map((period) => {
+    running += buckets.get(period)!;
+    return { period, net: fromMinor(buckets.get(period)!), cumulative: fromMinor(running) };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -308,7 +307,10 @@ export function utilizationTone(pct: number | null): "good" | "warning" | "neutr
 // Schemas
 // ---------------------------------------------------------------------------
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use ISO date YYYY-MM-DD");
-const currency = z.string().trim().regex(/^[A-Z]{3}$/, "3-letter ISO code");
+const currency = z
+  .string()
+  .trim()
+  .regex(/^[A-Z]{3}$/, "3-letter ISO code");
 const money = z.number().min(0).max(1_000_000_000_000);
 
 export const poolWritableSchema = z.object({

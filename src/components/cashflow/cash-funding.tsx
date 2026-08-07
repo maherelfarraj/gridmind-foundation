@@ -26,8 +26,6 @@ export function CashFacilityTable({
 }) {
   const { t } = useI18n();
 
-
-
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div>
@@ -97,9 +95,6 @@ export function CashFacilityTable({
 export function CashCovenantTable({ covenants }: { covenants: CovenantCheck[] }) {
   const { t } = useI18n();
   const hasBreach = covenants.some((c) => c.breached);
-
-
-
 
   return (
     <Card className="flex flex-col gap-3 p-4">
