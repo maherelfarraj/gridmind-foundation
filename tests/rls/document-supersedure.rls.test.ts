@@ -227,4 +227,62 @@ describe.skipIf(!HAS_DB)("document supersedure chains (live schema)", () => {
     expect(checks.current_from_root).toBe("C/false");
     expect(checks.current_from_head).toBe("C/true");
   });
+
+  // Source parity: the probe walks the lineage links itself (the restricted
+  // exec role holds no EXECUTE on routines, by platform design). These checks
+  // pin the shipped routines to that same traversal and to member-only access.
+  it("implements the same up/down traversal inside document_history", () => {
+    const src = execFileSync(
+      "psql",
+      ["-At", "-c", "select prosrc from pg_proc where proname='document_history'"],
+      { encoding: "utf8" },
+    );
+    expect(src).toMatch(/with recursive up as/);
+    expect(src).toMatch(/join up u on p\.id = u\.supersedes_id/);
+    expect(src).toMatch(/join down dn on c\.id = dn\.superseded_by_id/);
+    expect(src).toMatch(/is_company_member/);
+    expect(src).toMatch(/is_external_viewer/);
+  });
+
+  it("walks superseded_by_id to the head inside document_current_in_lineage", () => {
+    const src = execFileSync(
+      "psql",
+      ["-At", "-c", "select prosrc from pg_proc where proname='document_current_in_lineage'"],
+      { encoding: "utf8" },
+    );
+    expect(src).toMatch(/superseded_by_id into v_next/);
+    expect(src).toMatch(/exit when v_next is null/);
+    expect(src).toMatch(/d\.id = p_doc_id/);
+    expect(src).toMatch(/is_company_member/);
+  });
+
+  it("keeps the lineage routines definer-guarded and authenticated-only", () => {
+    const rows = execFileSync(
+      "psql",
+      [
+        "-At",
+        "-F",
+        "|",
+        "-c",
+        `select p.oid::regprocedure::text, p.prosecdef::text,
+                coalesce(array_to_string(p.proacl, ' '), '')
+           from pg_proc p
+          where p.pronamespace = 'public'::regnamespace
+            and p.proname in ('document_history','document_current_in_lineage')`,
+      ],
+      { encoding: "utf8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      const [sig, secdef, acl] = row.split("|");
+      expect(secdef, `${sig} security definer`).toBe("true");
+      expect(acl, `${sig} authenticated execute`).toMatch(/authenticated=X\//);
+      expect(acl, `${sig} anon execute`).not.toMatch(/\banon=X/);
+      expect(acl, `${sig} PUBLIC execute`).not.toMatch(/(^|\s)=X\//);
+    }
+  });
+});
 });
