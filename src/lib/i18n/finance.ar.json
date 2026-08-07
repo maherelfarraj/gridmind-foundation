@@ -1349,7 +1349,26 @@
         "description": "الأساس والمصدر والمطابقة والاستثناءات والاعتمادات وراء وضع السيولة المعروض.",
         "project": "المشروع",
         "watermarkFrozen": "لقطة مجمّدة",
-        "watermarkWorking": "قيد العمل / استرشادي"
+        "watermarkWorking": "قيد العمل / استرشادي",
+        "basis": {
+          "approved": "أساس معتمد",
+          "indicative": "أساس استرشادي"
+        },
+        "scenarioWatermark": "لم يُطبَّق أي سيناريو",
+        "version": "إصدار اللقطة",
+        "periodState": "حالة الفترة",
+        "dataDate": "تاريخ البيانات",
+        "horizon": "الأفق",
+        "preparedBy": "أعدّها",
+        "submittedBy": "قدّمها",
+        "approvedBy": "اعتمدها",
+        "forecastVersion": "إصدار التوقعات",
+        "precedence": "أولوية المصادر",
+        "lineCounts": "البنود حسب المصدر",
+        "suppressed": "بنود مستبعدة",
+        "fxMissing": "أسعار صرف مفقودة",
+        "correctionReason": "سبب التصحيح",
+        "coverage": "التغطية"
       }
     },
     "contingency": {

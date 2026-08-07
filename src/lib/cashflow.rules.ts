@@ -794,6 +794,150 @@ export function consolidatePortfolio(rows: readonly PortfolioCashRow[]): Portfol
   };
 }
 
+/**
+ * Consolidated portfolio cash curve. Projects without a usable rate are
+ * excluded (they are reported separately) so no figure is ever silently
+ * re-rated. Bucket frames are unioned by start date and cumulative/closing
+ * balances are recomputed from the consolidated opening cash.
+ */
+export function aggregatePortfolioCurve(rows: readonly PortfolioCashRow[]): CashBucket[] {
+  const cells = new Map<string, { end: string; in: number; out: number }>();
+  let openingMinor = 0;
+  for (const r of rows) {
+    if (r.fx_missing || r.fx_rate == null) continue;
+    openingMinor += toMinor(r.measures.opening_cash);
+    for (const b of r.buckets) {
+      const cell = cells.get(b.start) ?? { end: b.end, in: 0, out: 0 };
+      cell.in += toMinor(b.inflow);
+      cell.out += toMinor(b.outflow);
+      cells.set(b.start, cell);
+    }
+  }
+  let cumulative = 0;
+  return [...cells.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([start, cell]) => {
+      const net = cell.in - cell.out;
+      cumulative += net;
+      return {
+        start,
+        end: cell.end,
+        inflow: fromMinor(cell.in),
+        outflow: fromMinor(cell.out),
+        net: fromMinor(net),
+        cumulative: fromMinor(cumulative),
+        closing_cash: fromMinor(openingMinor + cumulative),
+      };
+    });
+}
+
+export interface PortfolioStressAssumptions {
+  /** Whole buckets by which every receipt slips to the right. */
+  receipt_delay_buckets?: number;
+  /** Percentage uplift applied to every outflow bucket. */
+  outflow_uplift_pct?: number;
+  /** Symmetric FX shock applied to both directions. */
+  fx_shock_pct?: number;
+  /** Percentage change in available committed funding. */
+  facility_change_pct?: number;
+}
+
+/**
+ * Non-posting portfolio stress overlay. Operates on a COPY of the consolidated
+ * curve; governed snapshots, lines and facilities are never touched.
+ */
+export function stressPortfolioCurve(
+  curve: readonly CashBucket[],
+  a: PortfolioStressAssumptions,
+  openingCash = 0,
+): CashBucket[] {
+  const shock = 1 + (a.fx_shock_pct ?? 0) / 100;
+  const uplift = 1 + (a.outflow_uplift_pct ?? 0) / 100;
+  const shift = Math.trunc(a.receipt_delay_buckets ?? 0);
+  const n = curve.length;
+  const inflow = new Array<number>(n).fill(0);
+  const outflow = new Array<number>(n).fill(0);
+
+  curve.forEach((b, i) => {
+    const target = Math.min(n - 1, Math.max(0, i + shift));
+    if (n > 0) inflow[target] = (inflow[target] ?? 0) + Math.round(toMinor(b.inflow) * shock);
+    outflow[i] = (outflow[i] ?? 0) + Math.round(toMinor(b.outflow) * shock * uplift);
+  });
+
+  const openingMinor = toMinor(openingCash);
+  let cumulative = 0;
+  return curve.map((b, i) => {
+    const inMinor = inflow[i] ?? 0;
+    const outMinor = outflow[i] ?? 0;
+    const net = inMinor - outMinor;
+    cumulative += net;
+    return {
+      start: b.start,
+      end: b.end,
+      inflow: fromMinor(inMinor),
+      outflow: fromMinor(outMinor),
+      net: fromMinor(net),
+      cumulative: fromMinor(cumulative),
+      closing_cash: fromMinor(openingMinor + cumulative),
+    };
+  });
+}
+
+export interface PortfolioStressResult {
+  basis_curve: CashBucket[];
+  stressed_curve: CashBucket[];
+  comparison: ScenarioComparison[];
+}
+
+/** Compare the governed portfolio curve against a stressed copy of itself. */
+export function portfolioStress(
+  rows: readonly PortfolioCashRow[],
+  available: number,
+  a: PortfolioStressAssumptions,
+): PortfolioStressResult {
+  const included = rows.filter((r) => !r.fx_missing && r.fx_rate != null);
+  const opening = fromMinor(included.reduce((s, r) => s + toMinor(r.measures.opening_cash), 0));
+  const basisCurve = aggregatePortfolioCurve(included);
+  const stressedCurve = stressPortfolioCurve(basisCurve, a, opening);
+  const basisMeasures = computeLiquidity(basisCurve, opening);
+  const stressMeasures = computeLiquidity(stressedCurve, opening);
+  const stressedAvailable = fromMinor(
+    Math.round(toMinor(available) * (1 + (a.facility_change_pct ?? 0) / 100)),
+  );
+  const pool = (amount: number): FacilityState[] => [
+    {
+      id: "portfolio-pool",
+      name: "portfolio-pool",
+      currency_code: "",
+      committed_reporting: amount,
+      allocated_reporting: 0,
+      drawn_reporting: 0,
+      repaid_reporting: 0,
+      outstanding_reporting: amount,
+      headroom_reporting: amount,
+      utilization_pct: null,
+      available: true,
+      expires_in_days: null,
+      refinancing_window: false,
+      fx_missing: false,
+    },
+  ];
+  return {
+    basis_curve: basisCurve,
+    stressed_curve: stressedCurve,
+    comparison: compareScenario(
+      {
+        measures: basisMeasures,
+        funding: fundingPosition(basisMeasures.peak_funding_need, pool(available)),
+      },
+      {
+        measures: stressMeasures,
+        funding: fundingPosition(stressMeasures.peak_funding_need, pool(stressedAvailable)),
+      },
+    ),
+  };
+}
+
 export interface ConcentrationRow {
   key: string;
   amount: number;

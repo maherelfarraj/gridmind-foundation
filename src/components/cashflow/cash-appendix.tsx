@@ -30,7 +30,7 @@ function Field({ label, value }: { label: string; value: string }) {
 export function CashAppendixCard({ appendix }: { appendix: CashflowAppendix }) {
   const { t } = useI18n();
   const currency = appendix.reporting_currency;
-  const frozen = appendix.status === "approved" || appendix.status === "submitted";
+  const frozen = appendix.frozen;
   const blockers = appendix.exceptions.filter((e) => e.severity === "blocker");
   const warnings = appendix.exceptions.filter((e) => e.severity === "warning");
 
@@ -41,10 +41,21 @@ export function CashAppendixCard({ appendix }: { appendix: CashflowAppendix }) {
           <h2 className="text-sm font-semibold text-foreground">{t(`${K}.appendix.title`)}</h2>
           <p className="text-xs text-muted-foreground">{t(`${K}.appendix.description`)}</p>
         </div>
-        <StatusBadge
-          status={frozen ? "approved" : "draft"}
-          label={frozen ? t(`${K}.appendix.watermarkFrozen`) : t(`${K}.appendix.watermarkWorking`)}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge
+            status={appendix.basis === "approved" ? "approved" : "draft"}
+            label={t(`${K}.appendix.basis.${appendix.basis}`)}
+          />
+          <StatusBadge
+            status={frozen ? "approved" : "draft"}
+            label={
+              frozen ? t(`${K}.appendix.watermarkFrozen`) : t(`${K}.appendix.watermarkWorking`)
+            }
+          />
+          <span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
+            {t(`${K}.appendix.scenarioWatermark`)}
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -100,6 +111,69 @@ export function CashAppendixCard({ appendix }: { appendix: CashflowAppendix }) {
                   .join(", ")
           }
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <Field
+          label={t(`${K}.appendix.version`)}
+          value={appendix.version_no == null ? "—" : `v${appendix.version_no}`}
+        />
+        <Field label={t(`${K}.appendix.periodState`)} value={appendix.period_state} />
+        <Field label={t(`${K}.appendix.dataDate`)} value={appendix.provenance.data_date} />
+        <Field
+          label={t(`${K}.appendix.horizon`)}
+          value={`${appendix.provenance.horizon_buckets} × ${appendix.provenance.granularity}`}
+        />
+        <Field
+          label={t(`${K}.appendix.preparedBy`)}
+          value={appendix.approvals.prepared_by ?? "—"}
+        />
+        <Field
+          label={t(`${K}.appendix.submittedBy`)}
+          value={appendix.approvals.submitted_by ?? "—"}
+        />
+        <Field
+          label={t(`${K}.appendix.approvedBy`)}
+          value={
+            appendix.approvals.approved_by
+              ? `${appendix.approvals.approved_by} · ${(appendix.approvals.approved_at ?? "").slice(0, 10)}`
+              : "—"
+          }
+        />
+        <Field
+          label={t(`${K}.appendix.forecastVersion`)}
+          value={appendix.provenance.forecast_version_id ?? "—"}
+        />
+        <Field
+          label={t(`${K}.appendix.precedence`)}
+          value={appendix.provenance.source_precedence.join(" > ")}
+        />
+        <Field
+          label={t(`${K}.appendix.lineCounts`)}
+          value={
+            Object.entries(appendix.provenance.line_counts)
+              .map(([k, v]) => `${k}:${v}`)
+              .join(", ") || "—"
+          }
+        />
+        <Field
+          label={t(`${K}.appendix.suppressed`)}
+          value={String(appendix.provenance.suppressed_lines)}
+        />
+        <Field
+          label={t(`${K}.appendix.fxMissing`)}
+          value={
+            appendix.provenance.fx_missing.length === 0
+              ? t(`${K}.basis.fxNone`)
+              : appendix.provenance.fx_missing.join(", ")
+          }
+        />
+        {appendix.approvals.correction_reason && (
+          <Field
+            label={t(`${K}.appendix.correctionReason`)}
+            value={appendix.approvals.correction_reason}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -197,11 +271,26 @@ export function PortfolioCashAppendixCard({ data }: { data: PortfolioCashAppendi
 
   return (
     <Card className="flex flex-col gap-4 p-4">
-      <div>
-        <h2 className="text-sm font-semibold text-foreground">
-          {t(`${K}.appendix.portfolioTitle`)}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t(`${K}.appendix.description`)}</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">
+            {t(`${K}.appendix.portfolioTitle`)}
+          </h2>
+          <p className="text-xs text-muted-foreground">{t(`${K}.appendix.description`)}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge
+            status={
+              totals.approved_projects === totals.projects && totals.projects > 0
+                ? "approved"
+                : "draft"
+            }
+            label={`${t(`${K}.appendix.coverage`)}: ${totals.approved_projects}/${totals.projects}`}
+          />
+          <span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
+            {t(`${K}.appendix.scenarioWatermark`)}
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
