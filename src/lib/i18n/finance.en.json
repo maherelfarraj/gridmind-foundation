@@ -1439,6 +1439,81 @@
         "cancel": "Cancel"
       },
       "readOnly": "You have view-only access to contingency governance."
+    },
+    "funding": {
+      "link": "Funding",
+      "title": "Funding facilities & allocations",
+      "description": "Company funding lines, covenants and project allocations. Edits are role-gated, version-checked and audited.",
+      "readOnly": "You have view-only access to funding management.",
+      "facilities": {
+        "title": "Facilities",
+        "caption": "Funding facilities with lender, committed amount, currency, availability and status",
+        "name": "Facility",
+        "lender": "Lender",
+        "kind": "Type",
+        "committed": "Committed",
+        "currency": "Currency",
+        "from": "Available from",
+        "expiry": "Expiry",
+        "status": "Status",
+        "allocated": "Allocated",
+        "actions": "Actions",
+        "empty": "No funding facilities recorded yet.",
+        "new": "New facility",
+        "edit": "Edit",
+        "saved": "Facility saved.",
+        "conflict": "This facility changed since you loaded it. Reload and reapply your edit."
+      },
+      "allocations": {
+        "title": "Project allocations",
+        "caption": "Facility allocations by project with amount and effective window",
+        "facility": "Facility",
+        "project": "Project",
+        "amount": "Allocated",
+        "from": "Effective from",
+        "to": "Effective to",
+        "notes": "Notes",
+        "actions": "Actions",
+        "empty": "No allocations recorded yet.",
+        "new": "New allocation",
+        "saved": "Allocation saved.",
+        "removed": "Allocation removed.",
+        "remove": "Remove",
+        "confirmRemove": "Remove this allocation?"
+      },
+      "audit": {
+        "title": "Audit history",
+        "caption": "Recent funding facility and allocation changes",
+        "when": "When",
+        "action": "Action",
+        "entity": "Record",
+        "empty": "No funding changes recorded yet."
+      },
+      "form": {
+        "name": "Facility name",
+        "lender": "Lender",
+        "kind": "Type",
+        "committed": "Committed amount",
+        "currency": "Currency",
+        "from": "Available from",
+        "expiry": "Expiry date",
+        "status": "Status",
+        "notes": "Notes",
+        "amount": "Allocated amount",
+        "project": "Project",
+        "facility": "Facility",
+        "save": "Save",
+        "cancel": "Cancel",
+        "reason": "Reason for change",
+        "invalidRange": "The expiry date must fall after the availability date.",
+        "invalidAmount": "Enter an amount of zero or more."
+      },
+      "status": {
+        "planned": "Planned",
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      }
     }
   }
 }
