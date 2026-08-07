@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
   cashScenarioSchema,
+  cashflowAdjustmentDecisionSchema,
   cashflowAdjustmentSchema,
   cashflowCalculateSchema,
   cashflowCsvSchema,
@@ -122,21 +123,10 @@ export const saveCashflowAdjustmentFn = createServerFn({ method: "POST" })
 
 export const decideCashflowAdjustmentFn = createServerFn({ method: "POST" })
   .middleware([attachSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    cashflowIdSchema
-      .extend(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        {},
-      )
-      .parse(input),
-  )
+  .inputValidator((input: unknown) => cashflowAdjustmentDecisionSchema.parse(input))
   .handler(async ({ data, context }) => {
     requireSupabaseAuth(context);
-    return decideCashflowAdjustment(context, {
-      id: data.id,
-      decision: (data as unknown as { decision: "authorize" | "void" }).decision,
-      reason: (data as unknown as { reason?: string }).reason,
-    });
+    return decideCashflowAdjustment(context, data);
   });
 
 export const getFundingFacilities = createServerFn({ method: "GET" })

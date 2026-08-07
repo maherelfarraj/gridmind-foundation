@@ -86,11 +86,19 @@ export type CashflowExceptionCode = (typeof CASHFLOW_EXCEPTION_CODES)[number];
 
 export type ExceptionSeverity = "blocker" | "warning" | "info";
 
+export type CashJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | CashJsonValue[]
+  | { [key: string]: CashJsonValue };
+
 export interface CashflowException {
   code: CashflowExceptionCode;
   severity: ExceptionSeverity;
   message: string;
-  context: Record<string, unknown>;
+  context: Record<string, CashJsonValue>;
 }
 
 export const CASHFLOW_SNAPSHOT_FROZEN = "cashflow_snapshot_frozen";
@@ -928,7 +936,7 @@ export function assessCashQuality(f: QualityFacts): CashflowException[] {
     code: CashflowExceptionCode,
     severity: ExceptionSeverity,
     message: string,
-    context: Record<string, unknown> = {},
+    context: Record<string, CashJsonValue> = {},
   ) => out.push({ code, severity, message, context });
 
   if (f.fxMissingCurrencies.length > 0)
@@ -969,12 +977,18 @@ export function assessCashQuality(f: QualityFacts): CashflowException[] {
       headroom: f.funding.headroom,
     });
   for (const c of f.covenants) {
+    const covenantCtx: Record<string, CashJsonValue> = {
+      facility_id: c.facility_id,
+      code: c.code,
+      metric: c.metric,
+      operator: c.operator,
+      threshold: c.threshold,
+      value: c.value,
+    };
     if (c.breached)
-      push("covenant_breach", "blocker", `Covenant ${c.code} is breached.`, { covenant: c });
+      push("covenant_breach", "blocker", `Covenant ${c.code} is breached.`, covenantCtx);
     else if (c.near_breach)
-      push("covenant_breach", "warning", `Covenant ${c.code} is close to its threshold.`, {
-        covenant: c,
-      });
+      push("covenant_breach", "warning", `Covenant ${c.code} is close to its threshold.`, covenantCtx);
   }
   for (const s of f.facilities) {
     if (s.refinancing_window)
@@ -1138,6 +1152,12 @@ export const cashflowSupersedeSchema = z.object({
 });
 
 export const cashflowIdSchema = z.object({ id: z.string().uuid() });
+
+export const cashflowAdjustmentDecisionSchema = z.object({
+  id: z.string().uuid(),
+  decision: z.enum(["authorize", "void"]),
+  reason: z.string().trim().max(2000).optional(),
+});
 
 export const cashflowAdjustmentSchema = z.object({
   id: z.string().uuid().optional(),

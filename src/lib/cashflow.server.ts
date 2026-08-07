@@ -1469,7 +1469,7 @@ async function replayFrozenSnapshot(
     code: e.code as CashflowException["code"],
     severity: e.severity as CashflowException["severity"],
     message: e.message,
-    context: (e.context ?? {}) as Record<string, unknown>,
+    context: (e.context ?? {}) as Record<string, import("@/lib/cashflow.rules").CashJsonValue>,
   }));
 
   return {
