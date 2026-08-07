@@ -357,6 +357,7 @@ function CloseView() {
           </div>
         </Card>
       ) : null}
+      <CloseCockpit projectId={projectId} {...(period ? { period } : {})} />
     </div>
   );
 }
