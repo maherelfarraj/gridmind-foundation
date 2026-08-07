@@ -254,16 +254,19 @@ function FxRatesSettings() {
               onClick={() =>
                 downloadCsv(
                   "fx-rates.csv",
-                  rates.map((r) => ({
-                    base: r.base_code,
-                    quote: r.quote_code,
-                    rate: r.rate,
-                    as_of: r.as_of,
-                    source: r.source,
-                    provider: r.provider ?? "",
-                    observed_on: r.provider_observed_on ?? "",
-                  })),
+                  objectsToCsv(
+                    rates.map((r) => ({
+                      base: r.base_code,
+                      quote: r.quote_code,
+                      rate: r.rate,
+                      as_of: r.as_of,
+                      source: r.source,
+                      provider: r.provider ?? "",
+                      observed_on: r.provider_observed_on ?? "",
+                    })),
+                  ),
                 )
+
               }
             >
               <Download className="size-4" aria-hidden />
