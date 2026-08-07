@@ -90,7 +90,7 @@ const ruleTypes = (out: { rule_type: string }[]) => out.map((c) => c.rule_type);
 
 describe("alert configuration", () => {
   it("ships a safe default for every rule family", () => {
-    expect(ALERT_RULE_TYPES).toHaveLength(12);
+    expect(ALERT_RULE_TYPES).toHaveLength(15);
     for (const r of ALERT_RULE_TYPES) {
       const cfg = DEFAULT_ALERT_CONFIGS[r];
       expect(cfg.enabled).toBe(true);
@@ -584,5 +584,103 @@ describe("summary, filters and CSV", () => {
     expect(buildAlertCsv([{ ...record(), project_code: null }])).toBe(
       buildAlertCsv([{ ...record(), project_code: null }]),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GC-13 — liquidity families
+// ---------------------------------------------------------------------------
+function liq(over: Record<string, unknown> = {}): any {
+  return {
+    project_id: "11111111-1111-1111-1111-111111111111",
+    code: "EAM-001",
+    snapshot_id: "44444444-4444-4444-4444-444444444444",
+    currency_code: "USD",
+    first_shortfall_bucket: null,
+    minimum_liquidity: 1000,
+    unfunded_requirement: 0,
+    utilization_pct: 10,
+    breached_covenants: [],
+    ...over,
+  };
+}
+
+describe("liquidity alert families", () => {
+  it("stays quiet on a funded, positive position", () => {
+    expect(ruleTypes(evaluatePortfolioAlerts(input({ liquidity: [liq()] })))).toEqual([]);
+  });
+
+  it("raises a cash shortfall when closing cash turns negative", () => {
+    const out = evaluatePortfolioAlerts(
+      input({
+        liquidity: [liq({ first_shortfall_bucket: "2026-07-01", minimum_liquidity: -500 })],
+      }),
+    );
+    const hit = out.find((c) => c.rule_type === "liquidity_shortfall")!;
+    expect(hit.severity).toBe("critical");
+    expect(hit.current_value).toBe(-500);
+    expect(hit.entity_table).toBe("cashflow_snapshots");
+    expect(hit.deep_link).toContain("/costing/cash-flow");
+  });
+
+  it("escalates an unfunded requirement above a headroom warning", () => {
+    const out = evaluatePortfolioAlerts(input({ liquidity: [liq({ unfunded_requirement: 250 })] }));
+    const hit = out.find((c) => c.rule_type === "funding_headroom")!;
+    expect(hit.severity).toBe("critical");
+    expect(hit.context["unfunded_requirement"]).toBe(250);
+  });
+
+  it("warns at the utilisation threshold and not below it", () => {
+    expect(
+      ruleTypes(evaluatePortfolioAlerts(input({ liquidity: [liq({ utilization_pct: 89.9 })] }))),
+    ).toEqual([]);
+    expect(
+      ruleTypes(evaluatePortfolioAlerts(input({ liquidity: [liq({ utilization_pct: 90 })] }))),
+    ).toEqual(["funding_headroom"]);
+  });
+
+  it("reports covenant breaches with a stable fingerprint per breach set", () => {
+    const rows = [
+      liq({
+        breached_covenants: [
+          { facility_id: "f2", code: "DSCR" },
+          { facility_id: "f1", code: "GEARING" },
+        ],
+      }),
+    ];
+    const a = evaluatePortfolioAlerts(input({ liquidity: rows }));
+    const b = evaluatePortfolioAlerts(input({ liquidity: rows }));
+    const hit = a.find((c) => c.rule_type === "covenant_breach")!;
+    expect(hit.current_value).toBe(2);
+    expect(hit.fingerprint).toBe(b.find((c) => c.rule_type === "covenant_breach")!.fingerprint);
+  });
+
+  it("dedupes to one occurrence per project and family across re-evaluations", () => {
+    const rows = [liq({ first_shortfall_bucket: "2026-07-01", unfunded_requirement: 100 })];
+    const first = evaluatePortfolioAlerts(input({ liquidity: rows }));
+    const second = evaluatePortfolioAlerts(input({ liquidity: rows }));
+    expect(first.map((c) => c.fingerprint)).toEqual(second.map((c) => c.fingerprint));
+    expect(new Set(first.map((c) => c.fingerprint)).size).toBe(first.length);
+  });
+
+  it("honours the disabled switch for every liquidity family", () => {
+    const off = configs({
+      liquidity_shortfall: { enabled: false },
+      funding_headroom: { enabled: false },
+      covenant_breach: { enabled: false },
+    });
+    const out = evaluatePortfolioAlerts(
+      input({
+        configs: off,
+        liquidity: [
+          liq({
+            first_shortfall_bucket: "2026-07-01",
+            unfunded_requirement: 100,
+            breached_covenants: [{ facility_id: "f1", code: "DSCR" }],
+          }),
+        ],
+      }),
+    );
+    expect(ruleTypes(out)).toEqual([]);
   });
 });

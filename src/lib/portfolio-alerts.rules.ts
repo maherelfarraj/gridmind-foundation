@@ -26,6 +26,9 @@ export const ALERT_RULE_TYPES = [
   "close_readiness",
   "period_reopened",
   "audit_gap",
+  "liquidity_shortfall",
+  "funding_headroom",
+  "covenant_breach",
 ] as const;
 export type AlertRuleType = (typeof ALERT_RULE_TYPES)[number];
 
@@ -79,6 +82,9 @@ export const DEFAULT_ALERT_CONFIGS: Record<AlertRuleType, AlertRuleConfig> = {
   close_readiness: mk("close_readiness", "high", null, "count", 5, 48),
   period_reopened: mk("period_reopened", "critical", null, "count", 0, 24),
   audit_gap: mk("audit_gap", "medium", 0, "count", 0, 72),
+  liquidity_shortfall: mk("liquidity_shortfall", "critical", 0, "currency", 0, 24),
+  funding_headroom: mk("funding_headroom", "high", 0.9, "ratio", 0, 48),
+  covenant_breach: mk("covenant_breach", "critical", 0, "count", 0, 24),
 };
 
 function mk(
@@ -237,6 +243,21 @@ export interface EvaluationInput {
   reopened: readonly { project_id: string | null; period_month: string; at: string }[];
   /** Count of unreconciled portfolio audit events for the period. */
   audit_gaps: number;
+  /** GC-13 — governed cash-flow snapshots feeding the liquidity families. */
+  liquidity?: readonly LiquidityAlertRow[];
+}
+
+/** One project's governed liquidity position, already in reporting currency. */
+export interface LiquidityAlertRow {
+  project_id: string;
+  code: string;
+  snapshot_id: string | null;
+  currency_code: string;
+  first_shortfall_bucket: string | null;
+  minimum_liquidity: number;
+  unfunded_requirement: number;
+  utilization_pct: number | null;
+  breached_covenants: readonly { facility_id: string; code: string }[];
 }
 
 const DAY_MS = 86_400_000;
@@ -648,6 +669,121 @@ export function evaluatePortfolioAlerts(input: EvaluationInput): AlertCandidate[
       deep_link: `/portfolio/costing/audit?period=${period}`,
       context: { gaps: input.audit_gaps },
     });
+  }
+
+  // --- GC-13 liquidity families ---------------------------------------------
+  for (const liq of input.liquidity ?? []) {
+    const evidence = `/projects/${liq.project_id}/costing/cash-flow?period=${period}`;
+
+    if (on("liquidity_shortfall") && liq.first_shortfall_bucket !== null) {
+      const cfg = configs.liquidity_shortfall;
+      out.push({
+        rule_type: "liquidity_shortfall",
+        project_id: liq.project_id,
+        period_month: period,
+        fingerprint: fingerprintOf({
+          rule_type: "liquidity_shortfall",
+          project_id: liq.project_id,
+          period_month: period,
+        }),
+        severity: cfg.severity,
+        current_value: liq.minimum_liquidity,
+        threshold_value: cfg.threshold_value ?? 0,
+        value_unit: "currency",
+        currency_code: liq.currency_code,
+        entity_table: "cashflow_snapshots",
+        entity_id: liq.snapshot_id,
+        owner_id: null,
+        title: `Cash shortfall forecast on ${liq.code}`,
+        detail:
+          `Closing cash turns negative in bucket ${liq.first_shortfall_bucket} ` +
+          `(minimum ${Math.round(liq.minimum_liquidity).toLocaleString()} ${liq.currency_code}). ` +
+          `Draw funding, re-phase payments or escalate to treasury.`,
+        deep_link: evidence,
+        context: {
+          first_shortfall_bucket: liq.first_shortfall_bucket,
+          minimum_liquidity: liq.minimum_liquidity,
+          snapshot_id: liq.snapshot_id,
+        },
+      });
+    }
+
+    if (on("funding_headroom")) {
+      const cfg = configs.funding_headroom;
+      const limit = cfg.threshold_value ?? 0.9;
+      const util = liq.utilization_pct === null ? null : liq.utilization_pct / 100;
+      const unfunded = liq.unfunded_requirement > 0;
+      if (unfunded || (util !== null && util >= limit)) {
+        out.push({
+          rule_type: "funding_headroom",
+          project_id: liq.project_id,
+          period_month: period,
+          fingerprint: fingerprintOf({
+            rule_type: "funding_headroom",
+            project_id: liq.project_id,
+            period_month: period,
+          }),
+          severity: unfunded ? "critical" : cfg.severity,
+          current_value: util,
+          threshold_value: limit,
+          value_unit: "ratio",
+          currency_code: liq.currency_code,
+          entity_table: "cashflow_snapshots",
+          entity_id: liq.snapshot_id,
+          owner_id: null,
+          title: unfunded
+            ? `Unfunded requirement on ${liq.code}`
+            : `Facility utilisation at ${pct(util ?? 0)} on ${liq.code}`,
+          detail: unfunded
+            ? `${Math.round(liq.unfunded_requirement).toLocaleString()} ${liq.currency_code} of ` +
+              `peak funding need is not covered by available facilities. Secure or reallocate ` +
+              `facility capacity.`
+            : `Committed facility utilisation reached ${pct(util ?? 0)} against a threshold of ` +
+              `${pct(limit)}. Review headroom before the next drawdown.`,
+          deep_link: evidence,
+          context: {
+            unfunded_requirement: liq.unfunded_requirement,
+            utilization_pct: liq.utilization_pct,
+            snapshot_id: liq.snapshot_id,
+          },
+        });
+      }
+    }
+
+    if (on("covenant_breach") && liq.breached_covenants.length > 0) {
+      const cfg = configs.covenant_breach;
+      out.push({
+        rule_type: "covenant_breach",
+        project_id: liq.project_id,
+        period_month: period,
+        fingerprint: fingerprintOf({
+          rule_type: "covenant_breach",
+          project_id: liq.project_id,
+          period_month: period,
+          discriminator: liq.breached_covenants
+            .map((c) => `${c.facility_id}:${c.code}`)
+            .sort()
+            .join(","),
+        }),
+        severity: cfg.severity,
+        current_value: liq.breached_covenants.length,
+        threshold_value: cfg.threshold_value ?? 0,
+        value_unit: "count",
+        currency_code: liq.currency_code,
+        entity_table: "funding_facilities",
+        entity_id: liq.breached_covenants[0]?.facility_id ?? null,
+        owner_id: null,
+        title: `${liq.breached_covenants.length} covenant breach(es) on ${liq.code}`,
+        detail:
+          `Facility covenants ${liq.breached_covenants.map((c) => c.code).join(", ")} are ` +
+          `breached against the current liquidity position. Notify the lender and remediate.`,
+        deep_link: evidence,
+        context: {
+          covenants: liq.breached_covenants.map((c) => `${c.facility_id}:${c.code}`),
+          snapshot_id: liq.snapshot_id,
+        },
+      });
+    }
   }
 
   return out.sort(

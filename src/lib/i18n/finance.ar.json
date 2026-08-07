@@ -1342,7 +1342,15 @@
         "adjustmentSaved": "Adjustment saved.",
         "adjustmentDecided": "Adjustment updated."
       },
-      "exception": {}
+      "exception": {},
+      "appendix": {
+        "title": "ملحق التدفق النقدي والسيولة",
+        "portfolioTitle": "ملحق التدفق النقدي والسيولة للمحفظة",
+        "description": "الأساس والمصدر والمطابقة والاستثناءات والاعتمادات وراء وضع السيولة المعروض.",
+        "project": "المشروع",
+        "watermarkFrozen": "لقطة مجمّدة",
+        "watermarkWorking": "قيد العمل / استرشادي"
+      }
     }
   }
 }

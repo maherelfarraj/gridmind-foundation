@@ -498,7 +498,10 @@
         "evidence_missing": "Missing approval evidence",
         "close_readiness": "Close readiness at risk",
         "period_reopened": "Period reopened",
-        "audit_gap": "Audit gap"
+        "audit_gap": "Audit gap",
+        "liquidity_shortfall": "Cash shortfall forecast",
+        "funding_headroom": "Funding headroom",
+        "covenant_breach": "Covenant breach"
       },
       "filters": {
         "legend": "Filter portfolio finance alerts",
@@ -717,6 +720,40 @@
         "spi": "SPI Δ"
       },
       "notFound": "No portfolio earned value data found."
+    },
+    "cashFlow": {
+      "link": "Cash flow",
+      "title": "Portfolio cash flow & liquidity",
+      "description": "Consolidated funding need, headroom, concentration and facility maturities across the portfolio.",
+      "notFound": "This portfolio cash-flow view is not available.",
+      "back": "Back to portfolio",
+      "export": "Export CSV",
+      "coverage": "{{approved}} of {{projects}} projects approved.",
+      "fxMissing": "{{count}} project(s) excluded from money totals because a reporting rate is missing.",
+      "heatmap": {
+        "title": "Funding heatmap",
+        "description": "Projects ranked by peak funding need, with relative intensity."
+      },
+      "concentration": {
+        "title": "Funding concentration",
+        "description": "Share of unfunded requirement by project.",
+        "share": "Share",
+        "empty": "No unfunded requirement."
+      },
+      "risks": {
+        "title": "Top liquidity risks",
+        "description": "Open exceptions raised on project cash-flow snapshots.",
+        "empty": "No open liquidity exceptions."
+      },
+      "table": {
+        "project": "Project",
+        "risk": "Intensity",
+        "noSnapshot": "No snapshot"
+      },
+      "empty": {
+        "title": "No cash-flow snapshots",
+        "body": "Calculate a project cash-flow snapshot to consolidate liquidity."
+      }
     }
   }
 }

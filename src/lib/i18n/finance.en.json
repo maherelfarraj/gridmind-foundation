@@ -1339,7 +1339,15 @@
         "adjustmentSaved": "Adjustment saved.",
         "adjustmentDecided": "Adjustment updated."
       },
-      "exception": {}
+      "exception": {},
+      "appendix": {
+        "title": "Cash flow & liquidity appendix",
+        "portfolioTitle": "Portfolio cash flow & liquidity appendix",
+        "description": "Basis, provenance, reconciliation, exceptions and approvals behind the reported liquidity position.",
+        "project": "Project",
+        "watermarkFrozen": "Frozen snapshot",
+        "watermarkWorking": "Working / indicative"
+      }
     }
   }
 }

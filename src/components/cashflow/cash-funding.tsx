@@ -26,6 +26,8 @@ export function CashFacilityTable({
 }) {
   const { t } = useI18n();
 
+  const hasBreach = covenants.some((c) => c.breached);
+
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div>
@@ -98,7 +100,7 @@ export function CashCovenantTable({ covenants }: { covenants: CovenantCheck[] })
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div className="flex items-start gap-2">
-        {covenants.some((c) => c.breached) ? (
+        {hasBreach ? (
           <AlertTriangle className="mt-0.5 size-4 text-destructive" aria-hidden="true" />
         ) : (
           <CheckCircle2 className="mt-0.5 size-4 text-accent" aria-hidden="true" />

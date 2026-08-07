@@ -189,6 +189,11 @@ function PortfolioCostingPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/cash-flow" search={{}}>
+                <Wallet className="size-4" /> {t(`${K}.cashFlow.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/pack" search={search}>
                 <FileText className="size-4" /> {t(`${K}.export.pack`)}
               </Link>
