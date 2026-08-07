@@ -3346,6 +3346,113 @@ export type Database = {
           },
         ]
       }
+      costing_periods: {
+        Row: {
+          company_id: string
+          created_at: string
+          hard_closed_at: string | null
+          hard_closed_by: string | null
+          id: string
+          period_month: string
+          project_id: string | null
+          reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          row_version: number
+          soft_locked_at: string | null
+          soft_locked_by: string | null
+          state: Database["public"]["Enums"]["costing_period_state"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          hard_closed_at?: string | null
+          hard_closed_by?: string | null
+          id?: string
+          period_month: string
+          project_id?: string | null
+          reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          row_version?: number
+          soft_locked_at?: string | null
+          soft_locked_by?: string | null
+          state?: Database["public"]["Enums"]["costing_period_state"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          hard_closed_at?: string | null
+          hard_closed_by?: string | null
+          id?: string
+          period_month?: string
+          project_id?: string | null
+          reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          row_version?: number
+          soft_locked_at?: string | null
+          soft_locked_by?: string | null
+          state?: Database["public"]["Enums"]["costing_period_state"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "costing_periods_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costing_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          materiality_abs: number
+          materiality_pct: number
+          reporting_timezone: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          materiality_abs?: number
+          materiality_pct?: number
+          reporting_timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          materiality_abs?: number
+          materiality_pct?: number
+          reporting_timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costing_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_assignments: {
         Row: {
           assignment_date: string
@@ -6792,6 +6899,223 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_version_lines: {
+        Row: {
+          accruals: number
+          actual: number
+          base_currency_code: string
+          budget_current: number
+          committed: number
+          company_id: string
+          cost_code: string | null
+          cost_code_id: string | null
+          cost_code_key: string
+          cost_code_name: string | null
+          created_at: string
+          currency_code: string
+          eac: number
+          etc_amount: number
+          etc_amount_base: number
+          fx_override_reason: string | null
+          fx_rate: number
+          fx_rate_date: string | null
+          fx_source: string
+          id: string
+          project_id: string
+          provenance: Json
+          vac: number
+          version_id: string
+        }
+        Insert: {
+          accruals?: number
+          actual?: number
+          base_currency_code?: string
+          budget_current?: number
+          committed?: number
+          company_id: string
+          cost_code?: string | null
+          cost_code_id?: string | null
+          cost_code_key: string
+          cost_code_name?: string | null
+          created_at?: string
+          currency_code?: string
+          eac?: number
+          etc_amount?: number
+          etc_amount_base?: number
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
+          id?: string
+          project_id: string
+          provenance?: Json
+          vac?: number
+          version_id: string
+        }
+        Update: {
+          accruals?: number
+          actual?: number
+          base_currency_code?: string
+          budget_current?: number
+          committed?: number
+          company_id?: string
+          cost_code?: string | null
+          cost_code_id?: string | null
+          cost_code_key?: string
+          cost_code_name?: string | null
+          created_at?: string
+          currency_code?: string
+          eac?: number
+          etc_amount?: number
+          etc_amount_base?: number
+          fx_override_reason?: string | null
+          fx_rate?: number
+          fx_rate_date?: string | null
+          fx_source?: string
+          id?: string
+          project_id?: string
+          provenance?: Json
+          vac?: number
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_version_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_version_lines_cost_code_id_fkey"
+            columns: ["cost_code_id"]
+            isOneToOne: false
+            referencedRelation: "cost_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_version_lines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_version_lines_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          base_currency_code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          materiality_explanation: string | null
+          previous_version_id: string | null
+          project_id: string
+          provenance: Json
+          replace_reason: string | null
+          reporting_period: string
+          row_version: number
+          status: Database["public"]["Enums"]["forecast_version_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          base_currency_code?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          materiality_explanation?: string | null
+          previous_version_id?: string | null
+          project_id: string
+          provenance?: Json
+          replace_reason?: string | null
+          reporting_period: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["forecast_version_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          base_currency_code?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          materiality_explanation?: string | null
+          previous_version_id?: string | null
+          project_id?: string
+          provenance?: Json
+          replace_reason?: string | null
+          reporting_period?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["forecast_version_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_versions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_versions_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_versions_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_versions"
             referencedColumns: ["id"]
           },
         ]
@@ -21349,11 +21673,54 @@ export type Database = {
         Args: { p_co_id: string; p_note?: string }
         Returns: Json
       }
+      approve_forecast_version: {
+        Args: { p_expected_row_version?: number; p_version_id: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          base_currency_code: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          materiality_explanation: string | null
+          previous_version_id: string | null
+          project_id: string
+          provenance: Json
+          replace_reason: string | null
+          reporting_period: string
+          row_version: number
+          status: Database["public"]["Enums"]["forecast_version_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "forecast_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assert_can_grant_role: {
         Args: {
           p_company_id: string
           p_role: Database["public"]["Enums"]["app_role"]
           p_target_user_id: string
+        }
+        Returns: undefined
+      }
+      assert_costing_period_open: {
+        Args: {
+          p_adjustment?: boolean
+          p_company_id: string
+          p_date: string
+          p_project_id: string
         }
         Returns: undefined
       }
@@ -21455,6 +21822,10 @@ export type Database = {
           status: string
           title: string
         }[]
+      }
+      costing_period_state: {
+        Args: { p_company_id: string; p_date: string; p_project_id: string }
+        Returns: string
       }
       create_impact_assessment: {
         Args: {
@@ -22247,6 +22618,39 @@ export type Database = {
         Args: { p_id: string; p_payload?: Json; p_to: string }
         Returns: Json
       }
+      transition_costing_period: {
+        Args: {
+          p_company_id: string
+          p_expected_version?: number
+          p_period_month: string
+          p_project_id: string
+          p_reason?: string
+          p_target: Database["public"]["Enums"]["costing_period_state"]
+        }
+        Returns: {
+          company_id: string
+          created_at: string
+          hard_closed_at: string | null
+          hard_closed_by: string | null
+          id: string
+          period_month: string
+          project_id: string | null
+          reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          row_version: number
+          soft_locked_at: string | null
+          soft_locked_by: string | null
+          state: Database["public"]["Enums"]["costing_period_state"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "costing_periods"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       vendor_portal_accept_invites: { Args: never; Returns: number }
       vendor_portal_acknowledge_po: {
         Args: { p_comment?: string; p_decision: string; p_po_id: string }
@@ -22567,6 +22971,7 @@ export type Database = {
         | "other"
       controlled_copy_status: "issued" | "returned" | "recalled" | "destroyed"
       cost_accrual_status: "draft" | "approved" | "reversed"
+      costing_period_state: "open" | "soft_locked" | "hard_closed"
       cwp_status:
         | "draft"
         | "planned"
@@ -22720,6 +23125,11 @@ export type Database = {
         | "payment_unmatched_days"
       finance_alert_status: "open" | "acknowledged" | "dismissed"
       finance_period_status: "open" | "closing" | "closed"
+      forecast_version_status:
+        | "working"
+        | "submitted"
+        | "approved"
+        | "superseded"
       gl_event_type:
         | "invoice_receivable_issued"
         | "invoice_payable_received"
@@ -23408,6 +23818,7 @@ export const Constants = {
       ],
       controlled_copy_status: ["issued", "returned", "recalled", "destroyed"],
       cost_accrual_status: ["draft", "approved", "reversed"],
+      costing_period_state: ["open", "soft_locked", "hard_closed"],
       cwp_status: [
         "draft",
         "planned",
@@ -23577,6 +23988,12 @@ export const Constants = {
       ],
       finance_alert_status: ["open", "acknowledged", "dismissed"],
       finance_period_status: ["open", "closing", "closed"],
+      forecast_version_status: [
+        "working",
+        "submitted",
+        "approved",
+        "superseded",
+      ],
       gl_event_type: [
         "invoice_receivable_issued",
         "invoice_payable_received",

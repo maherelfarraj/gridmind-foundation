@@ -18,7 +18,10 @@ const TABS: Tab[] = [
   { label: "Change orders", to: "/finance/change-orders" },
   { label: "Invoices & payments", to: "/costing/invoices" },
   { label: "Forecast", to: "/costing/forecast" },
+  { label: "Versions", to: "/costing/versions" },
+  { label: "Close", to: "/costing/close" },
 ];
+
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing")({
   component: CostingLayout,

@@ -504,7 +504,9 @@
       "contracts": "Contracts",
       "changeOrders": "Change orders",
       "invoicesPayments": "Invoices & payments",
-      "forecast": "Forecast"
+      "forecast": "Forecast",
+      "close": "Close",
+      "versions": "Versions"
     },
     "nav": {
       "sections": "Costing sections",
@@ -672,6 +674,106 @@
       "usingOverride": "Using manual rate {{rate}} into {{base}}",
       "locked": "Locked @ {{rate}}",
       "indicative": "Indicative @ {{rate}}"
+    },
+    "close": {
+      "tab": "Close",
+      "title": "Costing period close",
+      "description": "Lock a reporting month once the cost position is agreed. Soft lock pauses routine posting; hard close stops it entirely.",
+      "focusPeriod": "Reporting period",
+      "currentPeriod": "Current period",
+      "state": {
+        "open": "Open",
+        "soft_locked": "Soft locked",
+        "hard_closed": "Hard closed"
+      },
+      "stateHint": {
+        "open": "Everything posts normally.",
+        "soft_locked": "Routine posting is blocked. A finance admin may post an audited adjustment with a reason.",
+        "hard_closed": "Nothing posts. Corrections belong in {{next}}."
+      },
+      "actions": {
+        "softLock": "Soft lock",
+        "hardClose": "Hard close",
+        "reopen": "Reopen"
+      },
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Why is this period being reopened or locked?",
+      "reasonRequired": "A reason is required to reopen a locked period.",
+      "readinessTitle": "Close readiness",
+      "ready": "All blocking checks are clear.",
+      "blockers": "{{count}} blocking",
+      "warnings": "{{count}} advisory",
+      "checks": {
+        "draft_accruals": "{{count}} draft accrual(s) still to approve or discard",
+        "missing_fx": "{{count}} row(s) without an exchange rate ({{currencies}})",
+        "pending_forecast_versions": "{{count}} forecast version(s) awaiting approval",
+        "no_approved_forecast": "No approved forecast version for this period",
+        "uncoded_actuals": "{{count}} booked invoice(s) without a cost code",
+        "working_forecast_versions": "{{count}} working forecast version(s) not submitted"
+      },
+      "previewTitle": "Live position preview",
+      "history": "Period history",
+      "settingsTitle": "Reporting settings",
+      "timezone": "Reporting timezone",
+      "timezoneHint": "Decides which calendar month is \"current\". Business dates themselves are never shifted.",
+      "materialityAbs": "Materiality threshold ({{currency}})",
+      "materialityPct": "Materiality threshold (%)",
+      "materialityHint": "An EAC movement at or above either threshold requires a written explanation before a forecast version can be approved.",
+      "save": "Save settings",
+      "saved": "Reporting settings saved",
+      "transitioned": "Period is now {{state}}",
+      "noPeriods": "No period locks recorded yet."
+    },
+    "versions": {
+      "tab": "Versions",
+      "title": "Forecast versions",
+      "description": "Immutable snapshots of the cost position. Approved versions never re-rate, so every comparison is like for like.",
+      "create": "Snapshot current position",
+      "refresh": "Refresh from live",
+      "submit": "Submit for approval",
+      "recall": "Recall to working",
+      "approve": "Approve",
+      "created": "Version {{version}} created",
+      "refreshed": "Snapshot refreshed",
+      "acted": "Version is now {{status}}",
+      "status": {
+        "working": "Working",
+        "submitted": "Submitted",
+        "approved": "Approved",
+        "superseded": "Superseded"
+      },
+      "versionNo": "Version",
+      "period": "Period",
+      "eac": "EAC",
+      "vac": "VAC",
+      "etc": "ETC",
+      "budget": "Budget",
+      "committed": "Committed",
+      "actual": "Actual",
+      "accruals": "Accruals",
+      "compare": "Compare",
+      "compareFrom": "From",
+      "compareTo": "To",
+      "baseline": "Baseline (first approved)",
+      "currentApproved": "Current approved",
+      "none": "Nothing (empty)",
+      "noVersions": "No forecast versions yet",
+      "noVersionsBody": "Snapshot the current cost position to start a version history for this project.",
+      "explanationLabel": "Materiality explanation",
+      "explanationPlaceholder": "Explain what drives the EAC movement (minimum 10 characters).",
+      "diffTitle": "Movement",
+      "kind": {
+        "added": "Added",
+        "removed": "Removed",
+        "changed": "Changed",
+        "unchanged": "Unchanged"
+      },
+      "drivers": "Drivers",
+      "changedCount": "{{count}} line(s) moved",
+      "costCode": "Cost code",
+      "unassigned": "Unassigned",
+      "deltaEac": "Δ EAC",
+      "deltaEtc": "Δ ETC"
     }
   }
 }

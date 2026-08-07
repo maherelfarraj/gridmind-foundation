@@ -507,7 +507,9 @@
       "contracts": "العقود",
       "changeOrders": "أوامر التغيير",
       "invoicesPayments": "الفواتير والمدفوعات",
-      "forecast": "التوقعات"
+      "forecast": "التوقعات",
+      "close": "الإقفال",
+      "versions": "النسخ"
     },
     "nav": {
       "sections": "أقسام التكاليف",
@@ -675,6 +677,106 @@
       "usingOverride": "استخدام سعر يدوي {{rate}} إلى {{base}}",
       "locked": "مثبّت @ {{rate}}",
       "indicative": "إرشادي @ {{rate}}"
+    },
+    "close": {
+      "tab": "الإقفال",
+      "title": "إقفال فترة التكلفة",
+      "description": "أقفل شهر التقرير بعد اعتماد وضع التكلفة. الإقفال المبدئي يوقف الترحيل الاعتيادي، والإقفال النهائي يوقفه كلياً.",
+      "focusPeriod": "فترة التقرير",
+      "currentPeriod": "الفترة الحالية",
+      "state": {
+        "open": "مفتوحة",
+        "soft_locked": "مقفلة مبدئياً",
+        "hard_closed": "مقفلة نهائياً"
+      },
+      "stateHint": {
+        "open": "الترحيل يتم بشكل طبيعي.",
+        "soft_locked": "الترحيل الاعتيادي متوقف. يمكن لمسؤول المالية ترحيل تسوية موثقة مع ذكر السبب.",
+        "hard_closed": "لا يمكن الترحيل. التصحيحات تُرحّل في {{next}}."
+      },
+      "actions": {
+        "softLock": "إقفال مبدئي",
+        "hardClose": "إقفال نهائي",
+        "reopen": "إعادة الفتح"
+      },
+      "reasonLabel": "السبب",
+      "reasonPlaceholder": "لماذا تتم إعادة فتح أو إقفال هذه الفترة؟",
+      "reasonRequired": "يلزم ذكر سبب لإعادة فتح فترة مقفلة.",
+      "readinessTitle": "جاهزية الإقفال",
+      "ready": "لا توجد بنود مانعة.",
+      "blockers": "{{count}} مانع",
+      "warnings": "{{count}} تنبيه",
+      "checks": {
+        "draft_accruals": "{{count}} استحقاق مسودة بحاجة إلى اعتماد أو إلغاء",
+        "missing_fx": "{{count}} سطر بدون سعر صرف ({{currencies}})",
+        "pending_forecast_versions": "{{count}} نسخة تنبؤ بانتظار الاعتماد",
+        "no_approved_forecast": "لا توجد نسخة تنبؤ معتمدة لهذه الفترة",
+        "uncoded_actuals": "{{count}} فاتورة مرحّلة بدون رمز تكلفة",
+        "working_forecast_versions": "{{count}} نسخة تنبؤ قيد العمل لم تُقدَّم"
+      },
+      "previewTitle": "معاينة الوضع الحالي",
+      "history": "سجل الفترات",
+      "settingsTitle": "إعدادات التقارير",
+      "timezone": "المنطقة الزمنية للتقارير",
+      "timezoneHint": "تحدد الشهر الحالي فقط. تواريخ العمليات لا تتغير.",
+      "materialityAbs": "حد الأهمية النسبية ({{currency}})",
+      "materialityPct": "حد الأهمية النسبية (%)",
+      "materialityHint": "أي تغير في التكلفة عند الإنجاز يبلغ أياً من الحدين يتطلب تفسيراً مكتوباً قبل اعتماد نسخة التنبؤ.",
+      "save": "حفظ الإعدادات",
+      "saved": "تم حفظ إعدادات التقارير",
+      "transitioned": "أصبحت الفترة {{state}}",
+      "noPeriods": "لا توجد إقفالات مسجلة بعد."
+    },
+    "versions": {
+      "tab": "النسخ",
+      "title": "نسخ التنبؤ",
+      "description": "لقطات ثابتة لوضع التكلفة. النسخ المعتمدة لا يُعاد تسعيرها، فتبقى المقارنات متكافئة.",
+      "create": "التقاط الوضع الحالي",
+      "refresh": "تحديث من البيانات الحية",
+      "submit": "تقديم للاعتماد",
+      "recall": "إرجاع إلى قيد العمل",
+      "approve": "اعتماد",
+      "created": "تم إنشاء النسخة {{version}}",
+      "refreshed": "تم تحديث اللقطة",
+      "acted": "أصبحت النسخة {{status}}",
+      "status": {
+        "working": "قيد العمل",
+        "submitted": "مقدَّمة",
+        "approved": "معتمدة",
+        "superseded": "مستبدلة"
+      },
+      "versionNo": "النسخة",
+      "period": "الفترة",
+      "eac": "التكلفة عند الإنجاز",
+      "vac": "الانحراف عند الإنجاز",
+      "etc": "التكلفة المتبقية",
+      "budget": "الموازنة",
+      "committed": "الالتزامات",
+      "actual": "الفعلي",
+      "accruals": "الاستحقاقات",
+      "compare": "مقارنة",
+      "compareFrom": "من",
+      "compareTo": "إلى",
+      "baseline": "خط الأساس (أول اعتماد)",
+      "currentApproved": "المعتمدة الحالية",
+      "none": "لا شيء (فارغ)",
+      "noVersions": "لا توجد نسخ تنبؤ بعد",
+      "noVersionsBody": "التقط وضع التكلفة الحالي لبدء سجل النسخ لهذا المشروع.",
+      "explanationLabel": "تفسير الأهمية النسبية",
+      "explanationPlaceholder": "اشرح أسباب تغير التكلفة عند الإنجاز (10 أحرف على الأقل).",
+      "diffTitle": "الحركة",
+      "kind": {
+        "added": "مضاف",
+        "removed": "محذوف",
+        "changed": "متغير",
+        "unchanged": "دون تغيير"
+      },
+      "drivers": "المسببات",
+      "changedCount": "{{count}} سطر تغير",
+      "costCode": "رمز التكلفة",
+      "unassigned": "غير مخصص",
+      "deltaEac": "Δ التكلفة عند الإنجاز",
+      "deltaEtc": "Δ التكلفة المتبقية"
     }
   }
 }
