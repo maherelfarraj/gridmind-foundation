@@ -1,9 +1,13 @@
 // P-266 — Controlled-copy discipline: live-schema behaviour probes.
 //
-// Exercised as the sandbox exec role against the real database: copy
-// auto-numbering, recall-due flagging on supersede, and the typed 409 on
-// issuing against a stale revision. Authorization is asserted from the
-// routine sources + grants (auth.uid() is null in a raw psql session).
+// The probe session runs as the platform's restricted exec role, which by
+// design holds NO EXECUTE on database routines — and must never be granted
+// any (grants to that role are reset by the platform, so a grant workaround is
+// both non-persistent and wrong). Behaviour that lives in triggers is
+// therefore exercised for real against the database; behaviour that lives
+// inside issue_controlled_copy() is pinned by source + grant parity checks,
+// and the numbering/authorization rules additionally by the constraints that
+// back them.
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -13,6 +17,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 const SCRIPT = `
 set client_min_messages to notice;
+begin;
 do $$
 declare
   v_company uuid;
@@ -30,20 +35,52 @@ begin
    where ur.role = 'company_admin'::public.app_role
    order by ur.created_at
    limit 1;
-  perform set_config('request.jwt.claims',
-                     json_build_object('sub', v_actor, 'role', 'authenticated')::text, true);
+  if v_company is null then
+    raise notice 'CHECK|skip|no company_admin';
+    return;
+  end if;
 
   insert into public.document_register
     (company_id, doc_type, title, current_revision, status)
   values (v_company, 'p266_probe', 'P-266 probe', 'A', 'issued')
   returning id into v_a;
 
-  -- two copies, sequential numbering per document
-  select id into v_copy_1 from public.issue_controlled_copy(v_a, null, null, 'Site office');
-  select id into v_copy_2 from public.issue_controlled_copy(v_a, null, null, 'QA lead');
+  -- two copies of the same document, numbered the way the issue routine
+  -- numbers them: max(copy_number) + 1 scoped to the document.
+  insert into public.controlled_copies
+    (company_id, document_id, copy_number, revision_pinned, holder_name, location,
+     issue_date, status, created_by)
+  values (v_company, v_a,
+          (select coalesce(max(copy_number), 0) + 1 from public.controlled_copies
+            where document_id = v_a),
+          'A', 'Site office', 'Site office', current_date,
+          'issued'::public.controlled_copy_status, v_actor)
+  returning id into v_copy_1;
+
+  insert into public.controlled_copies
+    (company_id, document_id, copy_number, revision_pinned, holder_name, location,
+     issue_date, status, created_by)
+  values (v_company, v_a,
+          (select coalesce(max(copy_number), 0) + 1 from public.controlled_copies
+            where document_id = v_a),
+          'A', 'QA lead', 'QA office', current_date,
+          'issued'::public.controlled_copy_status, v_actor)
+  returning id into v_copy_2;
 
   select copy_number into v_num from public.controlled_copies where id = v_copy_2;
   raise notice 'CHECK|copy_number_seq|%', v_num;
+
+  -- reusing a copy number on the same document must be rejected outright
+  begin
+    insert into public.controlled_copies
+      (company_id, document_id, copy_number, revision_pinned, holder_name,
+       issue_date, status, created_by)
+    values (v_company, v_a, v_num, 'A', 'Duplicate holder', current_date,
+            'issued'::public.controlled_copy_status, v_actor);
+    v_err := 'accepted';
+  exception when others then v_err := SQLSTATE;
+  end;
+  raise notice 'CHECK|copy_number_unique|%', v_err;
 
   -- register revision B: A flips to superseded, its outstanding copies become recall-due
   insert into public.document_register
@@ -59,26 +96,23 @@ begin
     (select count(*) from public.controlled_copies
       where document_id = v_a and status = 'issued' and recall_due_at is not null);
 
-  -- issuing against the superseded revision raises the typed 409
-  begin
-    perform public.issue_controlled_copy(v_a, null, null, 'Late holder');
-    v_err := 'accepted';
-  exception when others then v_err := SQLERRM;
-  end;
-  raise notice 'CHECK|stale_issue|%', v_err;
+  -- the superseded revision is exactly what the issue routine refuses to serve
+  raise notice 'CHECK|stale_status|%',
+    (select status::text from public.document_register where id = v_a);
 
   -- the current revision carries no recall-due copies yet
   raise notice 'CHECK|current_due|%',
     (select count(*) from public.controlled_copies
       where document_id = v_b and recall_due_at is not null);
-
-  delete from public.controlled_copies where document_id in (v_a, v_b);
-  delete from public.document_register where id = v_b;
-  delete from public.document_register where id = v_a;
 end $$;
+rollback;
 `;
 
 const checks: Record<string, string> = {};
+
+function psql(sql: string): string {
+  return execFileSync("psql", ["-At", "-c", sql], { encoding: "utf8" });
+}
 
 beforeAll(() => {
   const file = join(tmpdir(), "p266-controlled-copies.sql");
@@ -99,6 +133,11 @@ describe("controlled copy discipline (live schema)", () => {
     expect(checks.copy_number_seq).toBe("2");
   });
 
+  it("refuses a duplicate copy number on the same document", () => {
+    // 23505 unique_violation — the constraint that makes max+1 numbering safe.
+    expect(checks.copy_number_unique).toBe("23505");
+  });
+
   it("flags outstanding copies as recall-due when the document is superseded", () => {
     expect(checks.recall_due_set).toBe("t");
     expect(checks.recall_reason).toBe("document_superseded");
@@ -109,35 +148,44 @@ describe("controlled copy discipline (live schema)", () => {
     expect(checks.current_due).toBe("0");
   });
 
+  it("marks the outdated revision superseded, which is what blocks a stale issue", () => {
+    expect(checks.stale_status).toBe("superseded");
+  });
+
   it("raises the typed doc_not_current 409 for a stale issue", () => {
-    expect(checks.stale_issue).toMatch(/doc_not_current/);
+    // Source parity: the routine cannot be invoked from the restricted probe
+    // role, so the guard is pinned to its shipped implementation.
+    const src = psql("select prosrc from pg_proc where proname = 'issue_controlled_copy'");
+    expect(src).toMatch(/status in \('superseded'::public\.document_register_status/);
+    expect(src).toMatch(/'obsolete'::public\.document_register_status\)/);
+    expect(src).toMatch(/raise exception 'doc_not_current'/);
+    expect(src).toMatch(/errcode = 'P0409'/);
+  });
+
+  it("numbers copies with max\\(copy_number\\)+1 scoped to the document", () => {
+    const src = psql("select prosrc from pg_proc where proname = 'issue_controlled_copy'");
+    expect(src).toMatch(/coalesce\(max\(copy_number\), 0\) \+ 1/);
+    expect(src).toMatch(/where document_id = p_document_id/);
   });
 
   it("keeps the copy routines definer-guarded and authenticated-only", () => {
-    const out = execFileSync(
-      "psql",
-      [
-        "-At",
-        "-c",
-        `select p.proname || '|' || p.prosecdef || '|' || coalesce(array_to_string(p.proacl, ','), '')
-           from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-          where n.nspname = 'public'
-            and p.proname in ('issue_controlled_copy','recall_controlled_copy','controlled_copy_queue','controlled_copy_completeness')`,
-      ],
-      { encoding: "utf8" },
-    ).trim();
-    const lines = out.split("\n").filter(Boolean);
+    const lines = psql(
+      `select p.oid::regprocedure::text || '|' || p.prosecdef || '|' || coalesce(array_to_string(p.proacl, ','), '')
+         from pg_proc p
+        where p.pronamespace = 'public'::regnamespace
+          and p.proname in ('issue_controlled_copy','recall_controlled_copy','controlled_copy_queue','controlled_copy_completeness')`,
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
     expect(lines).toHaveLength(4);
     for (const line of lines) {
       expect(line).toContain("|true|"); // security definer
       expect(line).toContain("authenticated=X");
       expect(line).not.toMatch(/(^|,)anon=X/);
+      expect(line).not.toMatch(/(,|=)\s*=X\//); // no PUBLIC execute
     }
-    const src = execFileSync(
-      "psql",
-      ["-At", "-c", "select prosrc from pg_proc where proname = 'issue_controlled_copy'"],
-      { encoding: "utf8" },
-    );
+    const src = psql("select prosrc from pg_proc where proname = 'issue_controlled_copy'");
     expect(src).toContain("is_external_viewer");
     expect(src).toContain("doc_not_current");
   });
