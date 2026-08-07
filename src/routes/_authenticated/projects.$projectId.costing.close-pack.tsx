@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/table";
 import { CashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { EvmAppendixCard } from "@/components/evm/evm-appendix";
+import { RecognitionAppendixCard } from "@/components/recognition/recognition-appendix";
+import { recognitionAppendixQueryOptions } from "@/lib/recognition.query";
 import { checklistProgress, groupByCategory } from "@/lib/costing.checklist";
 import { cashflowAppendixQueryOptions } from "@/lib/cashflow.query";
 import { evmAppendixQueryOptions } from "@/lib/evm.report.query";
@@ -189,6 +191,10 @@ function ClosePackView() {
         <CashAppendixSection projectId={projectId} period={data.close.focusPeriod} />
       </Suspense>
 
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <RecognitionAppendixSection projectId={projectId} period={data.close.focusPeriod} />
+      </Suspense>
+
       <Card className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-semibold text-foreground">{t(`${K}.auditTitle`)}</h2>
         <ol className="flex flex-col gap-1 text-sm">
@@ -217,6 +223,12 @@ function EvmAppendixSection({ projectId, period }: { projectId: string; period: 
 function CashAppendixSection({ projectId, period }: { projectId: string; period: string }) {
   const { data } = useSuspenseQuery(cashflowAppendixQueryOptions(projectId, period));
   return <CashAppendixCard appendix={data} />;
+}
+
+/** GC-15 — governed revenue / WIP appendix for the period being closed. */
+function RecognitionAppendixSection({ projectId, period }: { projectId: string; period: string }) {
+  const { data } = useSuspenseQuery(recognitionAppendixQueryOptions(projectId, period));
+  return <RecognitionAppendixCard appendix={data} />;
 }
 
 function Field({ label, value }: { label: string; value: string }) {
