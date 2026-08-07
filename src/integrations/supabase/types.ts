@@ -6796,11 +6796,121 @@ export type Database = {
           },
         ]
       }
+      fx_alert_settings: {
+        Row: {
+          alert_missing_currency: boolean
+          company_id: string
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          failure_threshold: number
+          id: string
+          large_move_pct: number | null
+          notify_role: Database["public"]["Enums"]["app_role"]
+          stale_business_days: number
+          updated_at: string
+        }
+        Insert: {
+          alert_missing_currency?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          failure_threshold?: number
+          id?: string
+          large_move_pct?: number | null
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          stale_business_days?: number
+          updated_at?: string
+        }
+        Update: {
+          alert_missing_currency?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          failure_threshold?: number
+          id?: string
+          large_move_pct?: number | null
+          notify_role?: Database["public"]["Enums"]["app_role"]
+          stale_business_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fx_alert_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fx_health_state: {
+        Row: {
+          company_id: string
+          consecutive_failures: number
+          created_at: string
+          details: Json
+          id: string
+          last_notified_at: string | null
+          last_notified_status: string | null
+          last_run_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          consecutive_failures?: number
+          created_at?: string
+          details?: Json
+          id?: string
+          last_notified_at?: string | null
+          last_notified_status?: string | null
+          last_run_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          consecutive_failures?: number
+          created_at?: string
+          details?: Json
+          id?: string
+          last_notified_at?: string | null
+          last_notified_status?: string | null
+          last_run_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fx_health_state_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fx_health_state_last_run_id_fkey"
+            columns: ["last_run_id"]
+            isOneToOne: false
+            referencedRelation: "fx_import_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fx_import_runs: {
         Row: {
+          actor_kind: string
+          base_currency: string | null
+          company_id: string | null
           created_at: string
+          diagnostics: Json
           duration_ms: number | null
+          error_code: string | null
           error_summary: string | null
+          failed_count: number
           finished_at: string | null
           id: string
           imported_count: number
@@ -6808,6 +6918,7 @@ export type Database = {
           observation_date: string | null
           provider: string
           requested_count: number
+          requested_currencies: string[]
           skipped_count: number
           started_at: string
           status: string
@@ -6816,9 +6927,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actor_kind?: string
+          base_currency?: string | null
+          company_id?: string | null
           created_at?: string
+          diagnostics?: Json
           duration_ms?: number | null
+          error_code?: string | null
           error_summary?: string | null
+          failed_count?: number
           finished_at?: string | null
           id?: string
           imported_count?: number
@@ -6826,6 +6943,7 @@ export type Database = {
           observation_date?: string | null
           provider: string
           requested_count?: number
+          requested_currencies?: string[]
           skipped_count?: number
           started_at?: string
           status: string
@@ -6834,9 +6952,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actor_kind?: string
+          base_currency?: string | null
+          company_id?: string | null
           created_at?: string
+          diagnostics?: Json
           duration_ms?: number | null
+          error_code?: string | null
           error_summary?: string | null
+          failed_count?: number
           finished_at?: string | null
           id?: string
           imported_count?: number
@@ -6844,6 +6968,7 @@ export type Database = {
           observation_date?: string | null
           provider?: string
           requested_count?: number
+          requested_currencies?: string[]
           skipped_count?: number
           started_at?: string
           status?: string
@@ -6851,7 +6976,15 @@ export type Database = {
           triggered_by?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fx_import_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fx_provider_settings: {
         Row: {

@@ -6,7 +6,15 @@
 // approval-locked forecast/accrual snapshots (those store their own rate).
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { evaluateAndAlertAll, localIsoDate } from "@/lib/fx/alerts.server";
+import {
+  completeFxRun,
+  openFxRun,
+  toStructuredError,
+  type FxActorKind,
+} from "@/lib/fx/audit.server";
 import { FrankfurterProvider } from "@/lib/fx/frankfurter.server";
+import { detectLargeMoves, type FxLargeMove } from "@/lib/fx/health";
 import {
   FX_IMPORT_SOURCE,
   FxProviderError,
@@ -126,63 +134,109 @@ export interface FxImportResult {
   requested: number;
   imported: number;
   skipped: number;
+  failed: number;
   missing: string[];
   durationMs: number;
+  errorCode: string | null;
   error: string | null;
+  largeMoves: FxLargeMove[];
 }
 
 export interface RunFxImportOptions {
   trigger: "scheduled" | "manual";
   triggeredBy?: string | null;
+  /** Organization scope for the audit row (manual syncs). */
+  companyId?: string | null;
+  actorKind?: FxActorKind;
   provider?: FxRateProvider;
+  /** Evaluate feed health and emit alerts after the run. Default: true. */
+  evaluateHealth?: boolean;
 }
 
 export async function runFxImport(admin: Admin, opts: RunFxImportOptions): Promise<FxImportResult> {
   const startedAt = Date.now();
   const settings = await loadFxSettings(admin);
   const provider = opts.provider ?? new FrankfurterProvider();
+  const actorKind: FxActorKind = opts.actorKind ?? (opts.trigger === "manual" ? "user" : "cron");
 
-  const { data: runRow } = await admin
-    .from("fx_import_runs")
-    .insert({
-      provider: provider.name,
-      trigger: opts.trigger,
-      status: "running",
-      triggered_by: opts.triggeredBy ?? null,
-    })
-    .select("id")
-    .single();
-  const runId = (runRow?.id as string | undefined) ?? null;
+  const open = {
+    companyId: opts.companyId ?? null,
+    provider: provider.name,
+    trigger: opts.trigger,
+    actorKind,
+    triggeredBy: opts.triggeredBy ?? null,
+    baseCurrency: settings.base_currency,
+    requestedCurrencies: [] as string[],
+  };
+
+  // Opened BEFORE the provider is contacted so a provider or database failure
+  // still leaves a useful failed-run record.
+  const runId = await openFxRun(admin, open);
 
   const finish = async (
     result: Omit<FxImportResult, "runId" | "durationMs">,
+    extra: { requestedCurrencies?: string[]; diagnostics?: unknown } = {},
   ): Promise<FxImportResult> => {
     const durationMs = Date.now() - startedAt;
-    if (runId) {
-      await admin
-        .from("fx_import_runs")
-        .update({
+    const finalRunId = await completeFxRun(admin, runId, open, {
+      status: result.status,
+      observationDate: result.observationDate,
+      baseCurrency: settings.base_currency,
+      requestedCurrencies: extra.requestedCurrencies ?? open.requestedCurrencies,
+      requestedCount: result.requested,
+      importedCount: result.imported,
+      skippedCount: result.skipped,
+      failedCount: result.failed,
+      missingCodes: result.missing,
+      errorCode: result.errorCode,
+      errorMessage: result.error,
+      diagnostics: extra.diagnostics,
+      durationMs,
+    });
+
+    try {
+      await admin.from("audit_logs").insert({
+        company_id: opts.companyId ?? null,
+        actor_id: opts.triggeredBy ?? null,
+        action: `fx.import.${result.status}`,
+        entity: "fx_import_runs",
+        entity_id: finalRunId,
+        metadata: {
           status: result.status,
+          trigger: opts.trigger,
+          actor_kind: actorKind,
+          provider: provider.name,
           observation_date: result.observationDate,
-          requested_count: result.requested,
-          imported_count: result.imported,
-          skipped_count: result.skipped,
-          missing_codes: result.missing,
-          error_summary: result.error,
+          requested: result.requested,
+          imported: result.imported,
+          skipped: result.skipped,
+          failed: result.failed,
+          missing: result.missing,
+          error_code: result.errorCode,
           duration_ms: durationMs,
-          finished_at: new Date().toISOString(),
-        })
-        .eq("id", runId);
+        },
+      } as never);
+    } catch {
+      /* audit_logs must never mask the import outcome */
     }
-    await admin.from("audit_logs").insert({
-      company_id: null,
-      actor_id: opts.triggeredBy ?? null,
-      action: `fx.import.${result.status}`,
-      entity: "fx_import_runs",
-      entity_id: runId,
-      metadata: { ...result, duration_ms: durationMs, provider: provider.name },
-    } as never);
-    return { ...result, runId, durationMs };
+
+    if (opts.evaluateHealth !== false) {
+      try {
+        await evaluateAndAlertAll(admin, {
+          today: localIsoDate(settings.schedule_timezone),
+        });
+      } catch (err) {
+        console.warn(
+          JSON.stringify({
+            scope: "fx.import",
+            event: "health_eval_failed",
+            ...toStructuredError(err),
+          }),
+        );
+      }
+    }
+
+    return { ...result, runId: finalRunId, durationMs };
   };
 
   if (!settings.enabled && opts.trigger === "scheduled") {
@@ -192,13 +246,21 @@ export async function runFxImport(admin: Admin, opts: RunFxImportOptions): Promi
       requested: 0,
       imported: 0,
       skipped: 0,
+      failed: 0,
       missing: [],
+      errorCode: "provider_disabled",
       error: "provider_disabled",
+      largeMoves: [],
     });
   }
 
+  let requestedCurrencies: string[] = [];
+
   try {
     const scope = await collectCurrencyScope(admin, settings);
+    requestedCurrencies = scope.transactions;
+    open.requestedCurrencies = requestedCurrencies;
+
     const supported = await provider.supportedCurrencies();
     const anchor = supported.includes(settings.base_currency) ? settings.base_currency : "EUR";
     const observation = await provider.latest(anchor, scope.transactions);
@@ -238,6 +300,15 @@ export async function runFxImport(admin: Admin, opts: RunFxImportOptions): Promi
       provider.name,
     );
 
+    // Large-move detection compares against the most recent prior imported
+    // value for the same pair (never against a manual override).
+    const largeMoves = await detectMovesAgainstPrior(
+      admin,
+      decision.upserts,
+      asOf,
+      await loadLargeMoveThreshold(admin),
+    );
+
     if (decision.upserts.length > 0) {
       const nowIso = new Date().toISOString();
       const { error } = await admin.from("fx_rates").upsert(
@@ -253,31 +324,110 @@ export async function runFxImport(admin: Admin, opts: RunFxImportOptions): Promi
         })),
         { onConflict: "base_code,quote_code,as_of,source" },
       );
-      if (error) throw new Error(`ledger_write_failed: ${error.message}`);
+      if (error) throw Object.assign(new Error(error.message), { code: "ledger_write_failed" });
     }
 
-    return finish({
-      status: "success",
-      observationDate: asOf,
-      requested,
-      imported: decision.upserts.length,
-      skipped: decision.skipped.length,
-      missing: Array.from(unsupported).sort(),
-      error: null,
-    });
+    return finish(
+      {
+        status: "success",
+        observationDate: asOf,
+        requested,
+        imported: decision.upserts.length,
+        skipped: decision.skipped.length,
+        failed: 0,
+        missing: Array.from(unsupported).sort(),
+        errorCode: null,
+        error: null,
+        largeMoves,
+      },
+      {
+        requestedCurrencies,
+        diagnostics: {
+          anchor: observation.anchor,
+          supported_count: supported.length,
+          unsupported_codes: Array.from(unsupported).sort(),
+          quote_currencies: scope.quotes,
+          attempted_pairs: allPlanned.length,
+          skipped_reasons: Array.from(new Set(decision.skipped.map((s) => s.reason))).sort(),
+          large_moves: largeMoves,
+        },
+      },
+    );
   } catch (err) {
-    const message =
+    const structured =
       err instanceof FxProviderError
-        ? `${err.code}: ${err.message}`
-        : ((err as Error)?.message ?? "unknown_error");
-    return finish({
-      status: "failed",
-      observationDate: null,
-      requested: 0,
-      imported: 0,
-      skipped: 0,
-      missing: [],
-      error: message.slice(0, 500),
-    });
+        ? { code: err.code, message: err.message }
+        : toStructuredError(err);
+    return finish(
+      {
+        status: "failed",
+        observationDate: null,
+        requested: 0,
+        imported: 0,
+        skipped: 0,
+        failed: 1,
+        missing: [],
+        errorCode: structured.code,
+        error: structured.message,
+        largeMoves: [],
+      },
+      { requestedCurrencies, diagnostics: { provider_status: structured.code } },
+    );
+  }
+}
+
+/** Compare each planned rate against the newest prior imported value. */
+async function detectMovesAgainstPrior(
+  admin: Admin,
+  planned: ReadonlyArray<{ base_code: string; quote_code: string; rate: number }>,
+  asOf: string,
+  thresholdPct: number | null,
+): Promise<FxLargeMove[]> {
+  if (thresholdPct == null || planned.length === 0) return [];
+  try {
+    const { data } = await admin
+      .from("fx_rates")
+      .select("base_code, quote_code, rate, as_of")
+      .eq("source", FX_IMPORT_SOURCE)
+      .lt("as_of", asOf)
+      .order("as_of", { ascending: false })
+      .limit(2000);
+    const prior = new Map<string, number>();
+    for (const r of (data ?? []) as Array<{
+      base_code: string;
+      quote_code: string;
+      rate: number;
+    }>) {
+      const k = `${r.base_code}|${r.quote_code}`;
+      if (!prior.has(k)) prior.set(k, Number(r.rate));
+    }
+    const pairs = planned
+      .map((p) => ({
+        base_code: p.base_code,
+        quote_code: p.quote_code,
+        previous: prior.get(`${p.base_code}|${p.quote_code}`) ?? NaN,
+        next: p.rate,
+      }))
+      .filter((p) => Number.isFinite(p.previous));
+    return detectLargeMoves(pairs, thresholdPct);
+  } catch {
+    return [];
+  }
+}
+
+/** Tightest configured large-move threshold across organizations, if any. */
+async function loadLargeMoveThreshold(admin: Admin): Promise<number | null> {
+  try {
+    const { data } = await admin
+      .from("fx_alert_settings")
+      .select("large_move_pct")
+      .not("large_move_pct", "is", null)
+      .limit(1000);
+    const values = ((data ?? []) as Array<{ large_move_pct: number | null }>)
+      .map((r) => Number(r.large_move_pct))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return values.length > 0 ? Math.min(...values) : null;
+  } catch {
+    return null;
   }
 }

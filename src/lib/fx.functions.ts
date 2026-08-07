@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
+  fxAlertSettingsSchema,
   fxHttpError,
   fxSettingsSchema,
   hasFxAdminRole,
@@ -25,12 +26,62 @@ export const syncFxRatesNow = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     requireSupabaseAuth(context);
     if (!(await hasFxAdminRole(context))) fxHttpError(403, "forbidden");
+    const userId = (context as { user: { id: string } }).user.id;
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("company_id")
+      .eq("id", userId)
+      .maybeSingle();
     const { createServiceRoleClient } = await import("@/integrations/supabase/admin");
     const { runFxImport } = await import("@/lib/fx/import.server");
-    return runFxImport(createServiceRoleClient() as never, {
+    const result = await runFxImport(createServiceRoleClient() as never, {
       trigger: "manual",
-      triggeredBy: (context as { user: { id: string } }).user.id,
+      actorKind: "user",
+      triggeredBy: userId,
+      companyId: (profile?.company_id as string | undefined) ?? null,
     });
+    return {
+      runId: result.runId,
+      status: result.status,
+      observationDate: result.observationDate,
+      requested: result.requested,
+      imported: result.imported,
+      skipped: result.skipped,
+      failed: result.failed,
+      missing: result.missing,
+      durationMs: result.durationMs,
+      errorCode: result.errorCode,
+      error: result.error,
+    };
+  });
+
+export const updateFxAlertSettings = createServerFn({ method: "POST" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => fxAlertSettingsSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    requireSupabaseAuth(context);
+    if (!(await hasFxAdminRole(context))) fxHttpError(403, "forbidden");
+    const userId = (context as { user: { id: string } }).user.id;
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("company_id")
+      .eq("id", userId)
+      .maybeSingle();
+    const companyId = (profile?.company_id as string | undefined) ?? null;
+    if (!companyId) fxHttpError(400, "no_company", "No organization on your profile.");
+
+    const { error } = await (context.supabase as never as { from: (t: string) => any })
+      .from("fx_alert_settings")
+      .upsert({ company_id: companyId, created_by: userId, ...data }, { onConflict: "company_id" });
+    if (error) fxHttpError(400, "alert_settings_write_failed", error.message);
+
+    await context.supabase.rpc("write_audit_log", {
+      p_action: "fx.alerts.settings_update",
+      p_entity: "fx_alert_settings",
+      p_entity_id: null as never,
+      p_metadata: data as never,
+    });
+    return { ok: true };
   });
 
 export const upsertManualFxRate = createServerFn({ method: "POST" })

@@ -2,7 +2,14 @@
 import { z } from "zod";
 
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
-import { assessFreshness, type FxFreshness } from "@/lib/fx/provider";
+import {
+  withAlertDefaults,
+  localIsoDate,
+  timezoneOffsetMinutes,
+  type FxAlertSettings,
+} from "@/lib/fx/alerts.server";
+import { evaluateFxHealth, nextScheduledRun, type FxHealthStatus } from "@/lib/fx/health";
+import { type FxFreshness } from "@/lib/fx/provider";
 import { FX_SETTINGS_FALLBACK, type FxProviderSettings } from "@/lib/fx/import.server";
 
 export const FX_ADMIN_ROLES = ["finance_admin", "company_admin"] as const;
@@ -30,6 +37,15 @@ export const manualRateSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
+export const fxAlertSettingsSchema = z.object({
+  enabled: z.boolean(),
+  notify_role: z.enum(["finance_admin", "company_admin", "billing_admin"]),
+  failure_threshold: z.number().int().min(1).max(20),
+  stale_business_days: z.number().int().min(1).max(30),
+  alert_missing_currency: z.boolean(),
+  large_move_pct: z.number().positive().max(100).nullable(),
+});
+
 export const fxSettingsSchema = z.object({
   enabled: z.boolean(),
   base_currency: z.string().trim().length(3),
@@ -52,6 +68,15 @@ export interface FxRateRow {
   is_manual: boolean;
 }
 
+export type FxDiagnosticValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Array<string | number>
+  | Array<Record<string, string | number>>;
+export type FxDiagnostics = Record<string, FxDiagnosticValue>;
+
 export interface FxRunRow {
   id: string;
   provider: string;
@@ -63,6 +88,12 @@ export interface FxRunRow {
   skipped_count: number;
   missing_codes: string[];
   error_summary: string | null;
+  error_code: string | null;
+  actor_kind: string;
+  base_currency: string | null;
+  requested_currencies: string[];
+  failed_count: number;
+  diagnostics: FxDiagnostics;
   duration_ms: number | null;
   started_at: string;
   finished_at: string | null;
@@ -78,6 +109,15 @@ export interface FxAdminData {
   rates: FxRateRow[];
   currencies: Array<{ code: string; name: string; minor_unit: number }>;
   missingCurrencies: string[];
+  health: {
+    status: FxHealthStatus;
+    reasons: string[];
+    consecutiveFailures: number;
+    lastAttemptAt: string | null;
+    nextScheduledRun: string | null;
+  };
+  alertSettings: Omit<FxAlertSettings, "company_id">;
+  companyId: string | null;
 }
 
 export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
@@ -85,7 +125,13 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
     from: (t: string) => any;
   };
 
-  const [settingsRes, runsRes, ratesRes, currenciesRes] = await Promise.all([
+  const userId = ctx.user?.id ?? null;
+  const profileRes = userId
+    ? await sb.from("profiles").select("company_id").eq("id", userId).maybeSingle()
+    : { data: null };
+  const companyId = (profileRes.data?.company_id as string | undefined) ?? null;
+
+  const [settingsRes, runsRes, ratesRes, currenciesRes, alertRes] = await Promise.all([
     sb.from("fx_provider_settings").select("*").eq("id", true).maybeSingle(),
     sb.from("fx_import_runs").select("*").order("started_at", { ascending: false }).limit(25),
     sb
@@ -96,6 +142,9 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
       .order("as_of", { ascending: false })
       .limit(500),
     sb.from("currencies").select("code, name, minor_unit").order("code"),
+    companyId
+      ? sb.from("fx_alert_settings").select("*").eq("company_id", companyId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const s = settingsRes.data;
@@ -115,6 +164,10 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
   const runs = ((runsRes.data ?? []) as FxRunRow[]).map((r) => ({
     ...r,
     missing_codes: r.missing_codes ?? [],
+    requested_currencies: r.requested_currencies ?? [],
+    diagnostics: (r.diagnostics ?? {}) as FxDiagnostics,
+    failed_count: r.failed_count ?? 0,
+    actor_kind: r.actor_kind ?? "system",
   }));
   const lastSuccess = runs.find((r) => r.status === "success") ?? null;
   const lastFailure = runs.find((r) => r.status === "failed") ?? null;
@@ -125,14 +178,52 @@ export async function loadFxAdminData(ctx: AuthContext): Promise<FxAdminData> {
     is_manual: r.source === "manual",
   }));
 
-  const today = new Date().toISOString().slice(0, 10);
+  const alertSettings = withAlertDefaults(companyId ?? "", alertRes.data ?? null);
+  const today = localIsoDate(settings.schedule_timezone);
   const lastObservationDate = lastSuccess?.observation_date ?? null;
+
+  const attempts = runs.filter((r) => r.status === "success" || r.status === "failed");
+  let consecutiveFailures = 0;
+  for (const r of attempts) {
+    if (r.status === "failed") consecutiveFailures += 1;
+    else break;
+  }
+
+  const health = evaluateFxHealth({
+    lastObservationDate,
+    lastAttemptStatus: (attempts[0]?.status ?? null) as never,
+    consecutiveFailures,
+    missingCurrencies: lastSuccess?.missing_codes ?? [],
+    today,
+    stalenessBusinessDays: alertSettings.stale_business_days,
+    failureThreshold: alertSettings.failure_threshold,
+    alertMissingCurrency: alertSettings.alert_missing_currency,
+  });
 
   return {
     canManage: await hasFxAdminRole(ctx),
     settings,
+    companyId,
+    alertSettings: {
+      enabled: alertSettings.enabled,
+      notify_role: alertSettings.notify_role,
+      failure_threshold: alertSettings.failure_threshold,
+      stale_business_days: alertSettings.stale_business_days,
+      alert_missing_currency: alertSettings.alert_missing_currency,
+      large_move_pct: alertSettings.large_move_pct,
+    },
+    health: {
+      status: health.status,
+      reasons: health.reasons,
+      consecutiveFailures,
+      lastAttemptAt: attempts[0]?.started_at ?? null,
+      nextScheduledRun: nextScheduledRun(
+        settings.schedule_time,
+        timezoneOffsetMinutes(settings.schedule_timezone),
+      ),
+    },
     freshness: {
-      ...assessFreshness(lastObservationDate, today, settings.staleness_business_days),
+      ...health.freshness,
       lastObservationDate,
     },
     lastSuccess,
