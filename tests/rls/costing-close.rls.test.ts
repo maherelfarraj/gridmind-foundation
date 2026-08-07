@@ -7,6 +7,9 @@ import { describe, expect, it } from "vitest";
 const HAS_DB = Boolean(process.env.PGHOST);
 const d = HAS_DB ? describe : describe.skip;
 
+/** Collapse newlines so every psql row stays on one line. */
+const flat = (col: string) => `regexp_replace(coalesce(${col}::text,''), '\\s+', ' ', 'g')`;
+
 function q(sql: string): string[][] {
   return execFileSync("psql", ["-At", "-F", "\u0001", "-c", sql], {
     encoding: "utf8",
@@ -31,7 +34,7 @@ const list = TABLES.map((t) => `'${t}'`).join(",");
 d("finance-close tables — grants and RLS", () => {
   const acl = new Map(
     q(
-      `select relname, coalesce(array_to_string(relacl,' '),'') || '|' || relrowsecurity
+      `select relname, ${flat("array_to_string(relacl,' ')")} || '|' || relrowsecurity
          from pg_class where relnamespace='public'::regnamespace and relname in (${list})`,
     ).map(([n, v]) => [n, v]),
   );
@@ -76,7 +79,7 @@ d("finance-close tables — grants and RLS", () => {
 
 d("finance-close tables — policy shape", () => {
   const policies = q(
-    `select tablename, policyname, cmd, coalesce(qual,''), coalesce(with_check,'')
+    `select tablename, policyname, cmd, ${flat("qual")}, ${flat("with_check")}
        from pg_policies where schemaname='public' and tablename in (${list})`,
   ).map(([table, name, cmd, qual, check]) => ({ table, name, cmd, qual, check }));
 
@@ -126,7 +129,7 @@ d("finance-close tables — policy shape", () => {
 
 d("finance-close — concurrency and lookup indexes", () => {
   const idx = q(
-    `select indexdef from pg_indexes where schemaname='public' and tablename in (${list})`,
+    `select ${flat("indexdef")} from pg_indexes where schemaname='public' and tablename in (${list})`,
   ).map(([s]) => s);
   const has = (re: RegExp) => idx.some((s) => re.test(s));
 
@@ -163,7 +166,7 @@ d("finance-close — enforcement functions", () => {
     q(
       `select p.proname,
               p.prosecdef::text || '|' || coalesce(array_to_string(p.proconfig,','),'') || '|' ||
-              coalesce(array_to_string(p.proacl,' '),'PUBLIC')
+              coalesce(${flat("array_to_string(p.proacl,' ')")}, 'PUBLIC')
          from pg_proc p
         where p.pronamespace='public'::regnamespace
           and p.proname in ('assert_costing_period_open','costing_period_state',
