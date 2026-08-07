@@ -168,6 +168,9 @@ export function mergeConfigs(rows: readonly Partial<AlertRuleConfig>[]): Record<
 // ---------------------------------------------------------------------------
 // Candidates
 // ---------------------------------------------------------------------------
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+export type AlertContext = { [k: string]: JsonValue };
+
 export interface AlertCandidate {
   rule_type: AlertRuleType;
   project_id: string | null;
@@ -184,7 +187,7 @@ export interface AlertCandidate {
   detail: string;
   deep_link: string;
   owner_id: string | null;
-  context: Record<string, unknown>;
+  context: AlertContext;
 }
 
 /**
@@ -674,7 +677,7 @@ export interface AlertRecord {
   title: string;
   detail: string | null;
   deep_link: string | null;
-  context: Record<string, unknown>;
+  context: AlertContext;
   first_seen_at: string;
   last_seen_at: string;
   occurrence_count: number;
