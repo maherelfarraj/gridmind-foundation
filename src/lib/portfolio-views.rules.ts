@@ -29,6 +29,8 @@ export const SAVED_VIEW_SORTS = ["code", "eac", "vac", "variance", "close"] as c
 export const savedViewConfigSchema = z
   .object({
     version: z.literal(SAVED_VIEW_CONFIG_VERSION).default(SAVED_VIEW_CONFIG_VERSION),
+    /** Which dashboard the view belongs to; older rows default to cost & close. */
+    scope: z.enum(["costing", "revenue_wip"]).default("costing"),
     period: z
       .string()
       .regex(/^\d{4}-\d{2}-01$/)
@@ -50,8 +52,14 @@ export const savedViewConfigSchema = z
     materiality_abs: z.number().min(0).nullable().default(null),
     sort: z.enum(SAVED_VIEW_SORTS).default("code"),
     columns: z.array(z.enum(SAVED_VIEW_COLUMNS)).max(SAVED_VIEW_COLUMNS.length).default([]),
+    // --- Revenue & WIP filters (labels only; never computed balances) --------
+    rec_status: z.string().max(24).nullable().default(null),
+    rec_method: z.string().max(48).nullable().default(null),
+    rec_customer: z.string().max(200).nullable().default(null),
+    rec_project: z.string().max(200).nullable().default(null),
   })
   .strict();
+
 
 export type SavedViewConfig = z.infer<typeof savedViewConfigSchema>;
 
