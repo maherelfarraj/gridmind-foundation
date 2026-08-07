@@ -1393,7 +1393,7 @@ export interface FundingAuditRow {
   entity: string;
   entity_id: string | null;
   created_at: string;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, string | number | boolean | null> | null;
 }
 
 export interface FundingWorkspace {
