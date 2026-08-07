@@ -775,6 +775,115 @@
       "deltaEac": "Δ EAC",
       "deltaEtc": "Δ ETC",
       "exportCsv": "Export CSV"
+    },
+    "cockpit": {
+      "emptyTitle": "No close checklist yet",
+      "emptyBody": "The checklist is created when the period is soft locked.",
+      "gateTitle": "Hard close gate — {{period}}",
+      "gateReadyTitle": "Ready to hard close",
+      "gateReadyBody": "Every required item is complete and no blocker exception is open.",
+      "gateBlockedTitle": "Hard close is blocked",
+      "criticalPath": "Critical path",
+      "checklistTitle": "Close checklist",
+      "exceptionsTitle": "Exception register",
+      "auditTitle": "Close audit trail",
+      "noAudit": "No close activity recorded yet.",
+      "noExceptions": "No open exceptions for this period.",
+      "noMatches": "No checklist items match these filters.",
+      "itemUpdated": "Checklist item updated",
+      "exceptionUpdated": "Exception updated",
+      "evidenceRemoved": "Evidence unlinked",
+      "removeEvidence": "Remove evidence",
+      "manageEvidence": "Find documents",
+      "noEvidence": "No evidence attached",
+      "evidenceRequired": "Evidence required",
+      "required": "Required",
+      "overdue": "Overdue",
+      "assignee": "Owner",
+      "unassigned": "Unassigned",
+      "noteLabel": "Note",
+      "notePlaceholder": "Add a preparer note or waiver reason",
+      "saveNote": "Save note",
+      "waiverReasonRequired": "Enter a waiver reason in the note field first.",
+      "waivedBy": "Waived by {{who}} — {{reason}}",
+      "signedOff": "Prepared by {{preparer}} · reviewed by {{reviewer}}",
+      "exportChecklist": "Checklist CSV",
+      "exportExceptions": "Exceptions CSV",
+      "closePack": "Close pack",
+      "kpi": {
+        "progress": "Checklist progress",
+        "progressHint": "{{done}} of {{total}} items done",
+        "requiredOutstanding": "Required outstanding",
+        "requiredOutstandingHint": "Required items not complete or waived",
+        "overdue": "Overdue items",
+        "overdueHint": "Past their due date and not done",
+        "blockers": "Close blockers",
+        "blockersHint": "Conditions preventing hard close"
+      },
+      "filters": {
+        "status": "Status",
+        "owner": "Owner",
+        "category": "Category",
+        "all": "All",
+        "outstanding": "Outstanding"
+      },
+      "status": {
+        "pending": "Pending",
+        "in_progress": "In progress",
+        "ready_for_review": "Ready for review",
+        "completed": "Completed",
+        "waived": "Waived"
+      },
+      "category": {
+        "actuals": "Actuals",
+        "accruals": "Accruals",
+        "commitments": "Commitments",
+        "fx": "FX",
+        "forecast": "Forecast",
+        "review": "Review",
+        "exceptions": "Exceptions",
+        "signoff": "Sign-off",
+        "general": "General"
+      },
+      "severity": {
+        "blocker": "Blocker",
+        "warning": "Warning"
+      },
+      "exceptionStatus": {
+        "open": "Open",
+        "in_progress": "In progress",
+        "resolved": "Resolved",
+        "accepted_risk": "Accept risk"
+      },
+      "exception": {
+        "title": "Exception",
+        "severity": "Severity",
+        "status": "Status",
+        "reopened": "Reopened",
+        "resolution": "Resolution",
+        "notePlaceholder": "Explain how this was resolved or why the risk is accepted"
+      },
+      "blockers": {
+        "incomplete_required_items": "{{count}} required checklist item(s) not complete",
+        "missing_evidence": "{{count}} completed item(s) missing required evidence",
+        "unresolved_blocker_exceptions": "{{count}} blocker exception(s) still open",
+        "unresolved_warning_exceptions": "{{count}} warning exception(s) still open",
+        "unexplained_material_movement": "{{count}} material forecast movement(s) without an explanation"
+      },
+      "pack": {
+        "title": "Close pack — {{period}}",
+        "description": "Checklist sign-offs, exception register, evidence and audit trail for this period.",
+        "print": "Print",
+        "project": "Project",
+        "period": "Period",
+        "state": "Period state",
+        "generated": "Generated",
+        "item": "Item",
+        "preparer": "Prepared by",
+        "reviewer": "Reviewed by",
+        "evidence": "Evidence",
+        "resolvedBy": "Resolved by"
+      }
     }
   }
 }

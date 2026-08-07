@@ -778,6 +778,115 @@
       "deltaEac": "Δ التكلفة عند الإنجاز",
       "deltaEtc": "Δ التكلفة المتبقية",
       "exportCsv": "تصدير CSV"
+    },
+    "cockpit": {
+      "emptyTitle": "لا توجد قائمة إقفال بعد",
+      "emptyBody": "تُنشأ قائمة الإقفال عند القفل المبدئي للفترة.",
+      "gateTitle": "بوابة الإقفال النهائي — {{period}}",
+      "gateReadyTitle": "جاهزة للإقفال النهائي",
+      "gateReadyBody": "كل البنود المطلوبة مكتملة ولا يوجد استثناء مانع مفتوح.",
+      "gateBlockedTitle": "الإقفال النهائي محجوب",
+      "criticalPath": "المسار الحرج",
+      "checklistTitle": "قائمة الإقفال",
+      "exceptionsTitle": "سجل الاستثناءات",
+      "auditTitle": "سجل تدقيق الإقفال",
+      "noAudit": "لم تُسجَّل أي أنشطة إقفال بعد.",
+      "noExceptions": "لا توجد استثناءات مفتوحة لهذه الفترة.",
+      "noMatches": "لا توجد بنود مطابقة لعوامل التصفية.",
+      "itemUpdated": "تم تحديث بند القائمة",
+      "exceptionUpdated": "تم تحديث الاستثناء",
+      "evidenceRemoved": "تم إلغاء ربط المستند",
+      "removeEvidence": "إزالة المستند",
+      "manageEvidence": "البحث في المستندات",
+      "noEvidence": "لا توجد مستندات مرفقة",
+      "evidenceRequired": "يتطلب مستنداً",
+      "required": "مطلوب",
+      "overdue": "متأخر",
+      "assignee": "المسؤول",
+      "unassigned": "غير مُسند",
+      "noteLabel": "ملاحظة",
+      "notePlaceholder": "أضف ملاحظة المُعِد أو سبب الإعفاء",
+      "saveNote": "حفظ الملاحظة",
+      "waiverReasonRequired": "أدخل سبب الإعفاء في حقل الملاحظة أولاً.",
+      "waivedBy": "أُعفي بواسطة {{who}} — {{reason}}",
+      "signedOff": "أعدّه {{preparer}} · راجعه {{reviewer}}",
+      "exportChecklist": "قائمة الإقفال CSV",
+      "exportExceptions": "الاستثناءات CSV",
+      "closePack": "حزمة الإقفال",
+      "kpi": {
+        "progress": "تقدم القائمة",
+        "progressHint": "{{done}} من {{total}} بنداً منجزاً",
+        "requiredOutstanding": "مطلوب ومعلّق",
+        "requiredOutstandingHint": "بنود مطلوبة غير مكتملة أو معفاة",
+        "overdue": "بنود متأخرة",
+        "overdueHint": "تجاوزت تاريخ الاستحقاق ولم تُنجز",
+        "blockers": "موانع الإقفال",
+        "blockersHint": "شروط تمنع الإقفال النهائي"
+      },
+      "filters": {
+        "status": "الحالة",
+        "owner": "المسؤول",
+        "category": "الفئة",
+        "all": "الكل",
+        "outstanding": "المعلّق"
+      },
+      "status": {
+        "pending": "قيد الانتظار",
+        "in_progress": "قيد التنفيذ",
+        "ready_for_review": "جاهز للمراجعة",
+        "completed": "مكتمل",
+        "waived": "معفى"
+      },
+      "category": {
+        "actuals": "الفعلي",
+        "accruals": "الاستحقاقات",
+        "commitments": "الالتزامات",
+        "fx": "أسعار الصرف",
+        "forecast": "التنبؤ",
+        "review": "المراجعة",
+        "exceptions": "الاستثناءات",
+        "signoff": "الاعتماد",
+        "general": "عام"
+      },
+      "severity": {
+        "blocker": "مانع",
+        "warning": "تحذير"
+      },
+      "exceptionStatus": {
+        "open": "مفتوح",
+        "in_progress": "قيد المعالجة",
+        "resolved": "مُعالج",
+        "accepted_risk": "قبول المخاطرة"
+      },
+      "exception": {
+        "title": "الاستثناء",
+        "severity": "الخطورة",
+        "status": "الحالة",
+        "reopened": "أُعيد فتحه",
+        "resolution": "المعالجة",
+        "notePlaceholder": "وضّح كيف عولج الاستثناء أو سبب قبول المخاطرة"
+      },
+      "blockers": {
+        "incomplete_required_items": "{{count}} بند مطلوب غير مكتمل",
+        "missing_evidence": "{{count}} بند مكتمل بدون المستند المطلوب",
+        "unresolved_blocker_exceptions": "{{count}} استثناء مانع ما زال مفتوحاً",
+        "unresolved_warning_exceptions": "{{count}} استثناء تحذيري ما زال مفتوحاً",
+        "unexplained_material_movement": "{{count}} تغيّر جوهري في التنبؤ بدون تفسير"
+      },
+      "pack": {
+        "title": "حزمة الإقفال — {{period}}",
+        "description": "اعتمادات القائمة وسجل الاستثناءات والمستندات وسجل التدقيق لهذه الفترة.",
+        "print": "طباعة",
+        "project": "المشروع",
+        "period": "الفترة",
+        "state": "حالة الفترة",
+        "generated": "تاريخ الإصدار",
+        "item": "البند",
+        "preparer": "أعدّه",
+        "reviewer": "راجعه",
+        "evidence": "المستندات",
+        "resolvedBy": "عالجه"
+      }
     }
   }
 }

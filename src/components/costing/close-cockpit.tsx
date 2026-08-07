@@ -367,10 +367,7 @@ export function CloseCockpit({ projectId, period }: CloseCockpitProps) {
                     >
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-foreground">{item.title}</span>
-                        <StatusBadge
-                          status={item.status}
-                          label={t(`${K}.status.${item.status}`)}
-                        />
+                        <StatusBadge status={item.status} label={t(`${K}.status.${item.status}`)} />
                         {item.is_required ? (
                           <StatusBadge
                             status="required"
@@ -512,9 +509,7 @@ export function CloseCockpit({ projectId, period }: CloseCockpitProps) {
                           ))
                         )}
                         <Button asChild size="sm" variant="ghost" className="h-6 px-2">
-                          <Link to="/documents/search">
-                            {t(`${K}.manageEvidence`)}
-                          </Link>
+                          <Link to="/documents/search">{t(`${K}.manageEvidence`)}</Link>
                         </Button>
                       </div>
 
