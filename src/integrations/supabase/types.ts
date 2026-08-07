@@ -12314,6 +12314,63 @@ export type Database = {
           },
         ]
       }
+      portfolio_saved_views: {
+        Row: {
+          company_id: string
+          config: Json
+          config_version: number
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean
+          is_shared: boolean
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          config?: Json
+          config_version?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          config?: Json
+          config_version?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_saved_views_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_saved_views_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppa_terms: {
         Row: {
           annual_energy_mwh: number | null

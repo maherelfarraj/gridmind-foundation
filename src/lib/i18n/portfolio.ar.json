@@ -293,6 +293,140 @@
       "budget": "الموازنة {{value}}",
       "movement": "حركة الفترة",
       "materiality": "حد الجوهرية: {{pct}} أو {{abs}}"
+    },
+    "audit": {
+      "title": "سجل تدقيق المحفظة",
+      "subtitle": "سجل غير قابل للتعديل لكل اعتماد واختيار سعر صرف وانتقال إغلاق وتصدير خلف الوضع الموحّد.",
+      "link": "سجل التدقيق",
+      "back": "العودة إلى المحفظة",
+      "heading": "أحدث نشاط حوكمي",
+      "description": "أحدث الأحداث غير القابلة للتعديل لفترة التقرير هذه.",
+      "none": "لا يوجد نشاط مسجل لهذه الفترة بعد.",
+      "exportCsv": "تصدير CSV",
+      "exportFailed": "تعذّر إنشاء ملف تصدير التدقيق.",
+      "unattributed": "النظام",
+      "companyScope": "على مستوى الشركة",
+      "appendixHeading": "ملحق — سجل التدقيق",
+      "appendixDescription": "أُنشئ في {{generated}}. فجوات التدقيق غير المحلولة: {{gaps}}.",
+      "col": {
+        "when": "الوقت",
+        "actor": "المنفذ",
+        "action": "الإجراء",
+        "severity": "الخطورة",
+        "scope": "النطاق",
+        "change": "التغيير"
+      },
+      "severity": {
+        "critical": "حرج",
+        "warning": "تحذير",
+        "info": "معلوماتي"
+      },
+      "group": {
+        "forecast": "التوقعات",
+        "snapshot": "اللقطة",
+        "fx": "الصرف",
+        "period": "الفترة",
+        "checklist": "قائمة الإغلاق",
+        "exception": "الاستثناءات",
+        "evidence": "الأدلة",
+        "policy": "السياسة",
+        "export": "التصدير",
+        "view": "العرض المحفوظ"
+      },
+      "action": {
+        "costing_forecast_version_create": "إنشاء لقطة",
+        "costing_forecast_version_refresh": "تحديث اللقطة",
+        "costing_forecast_version_submit": "تقديم التوقعات",
+        "costing_forecast_version_recall": "سحب التوقعات",
+        "costing_forecast_version_approve": "اعتماد التوقعات",
+        "costing_forecast_upsert": "حفظ بند التوقعات",
+        "costing_forecast_delete": "حذف بند التوقعات",
+        "fx_rate_manual_upsert": "تعيين سعر صرف يدويًا",
+        "fx_import": "استيراد أسعار الصرف",
+        "fx_settings_update": "تغيير إعدادات الصرف",
+        "fx_alerts_settings_update": "تغيير إعدادات تنبيهات الصرف",
+        "period_close": "إغلاق الفترة",
+        "period_reopen": "إعادة فتح الفترة",
+        "costing_period_adjustment": "تسوية أثناء الإغلاق المرن",
+        "costing_period_blocked": "منع القيد بسبب بوابة الفترة",
+        "costing_close_ready": "تحديد الجاهزية للإغلاق",
+        "costing_settings_update": "تغيير سياسة التكاليف",
+        "costing_checklist_assigned": "إسناد بند في قائمة الإغلاق",
+        "costing_checklist_ready": "إنجاز بند في قائمة الإغلاق",
+        "costing_exception_updated": "تحديث استثناء",
+        "costing_checklist_evidence_linked": "إرفاق دليل",
+        "costing_checklist_evidence_unlinked": "إزالة دليل",
+        "costing_accrual_create": "تسجيل استحقاق",
+        "costing_accrual_reverse": "عكس استحقاق",
+        "costing_portfolio_view": "عرض المحفظة",
+        "costing_portfolio_export": "تصدير المحفظة",
+        "costing_portfolio_pack": "إنشاء حزمة الإدارة",
+        "costing_portfolio_view_saved": "إنشاء عرض محفوظ",
+        "costing_portfolio_view_updated": "تحديث عرض محفوظ",
+        "costing_portfolio_view_shared": "تغيير مشاركة عرض محفوظ",
+        "costing_portfolio_view_default": "تغيير العرض الافتراضي",
+        "costing_portfolio_view_deleted": "حذف عرض محفوظ"
+      },
+      "gap": {
+        "unknown_project": "المشروع المشار إليه لم يعد متاحًا",
+        "missing_entity": "الحدث بلا مرجع كيان",
+        "unattributed": "لم يُسجَّل منفذ مسجّل الدخول"
+      },
+      "filters": {
+        "from": "من",
+        "to": "إلى",
+        "actor": "المنفذ",
+        "group": "المجال",
+        "severity": "الخطورة",
+        "project": "المشروع",
+        "correlation": "معرف الارتباط",
+        "any": "الكل"
+      },
+      "kpi": {
+        "total": "الأحداث المطابقة",
+        "onPage": "في هذه الصفحة",
+        "actors": "عدد المنفذين",
+        "gaps": "فجوات التدقيق"
+      },
+      "pagination": {
+        "status": "صفحة {{page}} من {{pages}}",
+        "prev": "السابق",
+        "next": "التالي"
+      },
+      "empty": {
+        "title": "لا توجد أحداث تدقيق",
+        "description": "لا توجد أحداث مطابقة للمرشحات الحالية."
+      },
+      "error": {
+        "title": "سجل التدقيق غير متاح",
+        "description": "قد لا تملك دور المالية المطلوب لقراءة سجل التدقيق."
+      }
+    },
+    "views": {
+      "label": "العرض المحفوظ",
+      "placeholder": "اختر عرضًا محفوظًا",
+      "none": "لا توجد عروض محفوظة",
+      "save": "حفظ العرض",
+      "saved": "تم حفظ العرض.",
+      "updated": "تم تحديث العرض.",
+      "deleted": "تم حذف العرض.",
+      "duplicated": "تم نسخ العرض.",
+      "failed": "تعذّر حفظ التغيير.",
+      "updateFromFilters": "تحديث من المرشحات",
+      "setDefault": "تعيين كافتراضي",
+      "unsetDefault": "إلغاء الافتراضي",
+      "share": "مشاركة مع الشركة",
+      "unshare": "جعله خاصًا",
+      "delete": "حذف",
+      "duplicate": "نسخ",
+      "defaultBadge": "افتراضي",
+      "sharedBadge": "مشترك",
+      "ownedBy": "مملوك لـ {{name}}",
+      "someone": "مستخدم آخر",
+      "copyOf": "نسخة من {{name}}",
+      "dialogTitle": "حفظ هذا العرض",
+      "dialogDescription": "يحفظ فترة التقرير والعملة وأساس السعر الحالي. خاص بك حتى تقوم بمشاركته.",
+      "nameLabel": "اسم العرض"
     }
   }
 }

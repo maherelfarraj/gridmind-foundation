@@ -3,8 +3,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
+import { Suspense } from "react";
 import { z } from "zod";
 
+import { AuditTrailTable } from "@/components/portfolio/audit-trail-table";
 import { CostingCloseMatrix } from "@/components/portfolio/costing-close-matrix";
 import { CostingConsolidationTable } from "@/components/portfolio/costing-consolidation-table";
 import { Button } from "@/components/ui/button";
@@ -19,9 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatNumber } from "@/lib/i18n/format";
+import { formatCurrency, formatDate, formatNumber } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import { portfolioCostingQueryOptions } from "@/lib/portfolio-costing.query";
+import { portfolioAuditQueryOptions } from "@/lib/portfolio-governance.query";
 
 const K = "portfolioMod.costing";
 
@@ -166,6 +169,10 @@ function PackView() {
           <CostingCloseMatrix rows={data.rows} period={data.period} />
         </Card>
       </section>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <AuditAppendix period={data.period} />
+      </Suspense>
     </div>
   );
 }
@@ -176,5 +183,28 @@ function Field({ label, value }: { label: string; value: string }) {
       <div className="text-muted-foreground text-xs">{label}</div>
       <div className="font-medium">{value}</div>
     </div>
+  );
+}
+
+function AuditAppendix({ period }: { period: string }) {
+  const { t, locale } = useI18n();
+  const { data } = useSuspenseQuery(portfolioAuditQueryOptions({ period, page: 1, page_size: 25 }));
+  return (
+    <section className="space-y-3">
+      <SectionHeader
+        title={t(`${K}.audit.appendixHeading`)}
+        description={t(`${K}.audit.appendixDescription`, {
+          generated: formatDate(new Date(), locale, { dateStyle: "medium", timeStyle: "short" }),
+          gaps: formatNumber(data.reconciliation.gaps, locale),
+        })}
+      />
+      {data.events.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{t(`${K}.audit.none`)}</p>
+      ) : (
+        <Card className="overflow-x-auto p-0">
+          <AuditTrailTable events={data.events} period={period} />
+        </Card>
+      )}
+    </section>
   );
 }
