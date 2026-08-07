@@ -56,11 +56,7 @@ export function sumMoney(
 }
 
 /** Equality on money — never use `===` on floats. */
-export function moneyEquals(
-  a: number,
-  b: number,
-  minorUnit: number = DEFAULT_MINOR_UNIT,
-): boolean {
+export function moneyEquals(a: number, b: number, minorUnit: number = DEFAULT_MINOR_UNIT): boolean {
   return toMinor(a, minorUnit) === toMinor(b, minorUnit);
 }
 

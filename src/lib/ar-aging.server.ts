@@ -44,8 +44,11 @@ export async function loadFxRates(
     .in("base_code", needed)
     .eq("quote_code", base)
     .lte("as_of", onDate)
-    .order("as_of", { ascending: false });
+    .order("as_of", { ascending: false })
+    // FX-01 — manual rows outrank imported rows for the same pair + date.
+    .order("source_priority", { ascending: true });
   if (error) return map;
+
   for (const r of (data ?? []) as { base_code: string; rate: number }[]) {
     if (!map.has(r.base_code)) map.set(r.base_code, Number(r.rate));
   }

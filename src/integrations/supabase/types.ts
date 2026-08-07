@@ -6796,33 +6796,152 @@ export type Database = {
           },
         ]
       }
+      fx_import_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error_summary: string | null
+          finished_at: string | null
+          id: string
+          imported_count: number
+          missing_codes: string[]
+          observation_date: string | null
+          provider: string
+          requested_count: number
+          skipped_count: number
+          started_at: string
+          status: string
+          trigger: string
+          triggered_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          imported_count?: number
+          missing_codes?: string[]
+          observation_date?: string | null
+          provider: string
+          requested_count?: number
+          skipped_count?: number
+          started_at?: string
+          status: string
+          trigger: string
+          triggered_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          imported_count?: number
+          missing_codes?: string[]
+          observation_date?: string | null
+          provider?: string
+          requested_count?: number
+          skipped_count?: number
+          started_at?: string
+          status?: string
+          trigger?: string
+          triggered_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fx_provider_settings: {
+        Row: {
+          base_currency: string
+          created_at: string
+          enabled: boolean
+          id: boolean
+          provider: string
+          schedule_time: string
+          schedule_timezone: string
+          staleness_business_days: number
+          treasury_currencies: string[]
+          updated_at: string
+        }
+        Insert: {
+          base_currency?: string
+          created_at?: string
+          enabled?: boolean
+          id?: boolean
+          provider?: string
+          schedule_time?: string
+          schedule_timezone?: string
+          staleness_business_days?: number
+          treasury_currencies?: string[]
+          updated_at?: string
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string
+          enabled?: boolean
+          id?: boolean
+          provider?: string
+          schedule_time?: string
+          schedule_timezone?: string
+          staleness_business_days?: number
+          treasury_currencies?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fx_provider_settings_base_currency_fkey"
+            columns: ["base_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       fx_rates: {
         Row: {
           as_of: string
           base_code: string
           created_at: string
           id: string
+          imported_at: string | null
+          provider: string | null
+          provider_observed_on: string | null
           quote_code: string
           rate: number
           source: string
+          source_priority: number | null
+          updated_at: string
         }
         Insert: {
           as_of: string
           base_code: string
           created_at?: string
           id?: string
+          imported_at?: string | null
+          provider?: string | null
+          provider_observed_on?: string | null
           quote_code: string
           rate: number
           source?: string
+          source_priority?: number | null
+          updated_at?: string
         }
         Update: {
           as_of?: string
           base_code?: string
           created_at?: string
           id?: string
+          imported_at?: string | null
+          provider?: string | null
+          provider_observed_on?: string | null
           quote_code?: string
           rate?: number
           source?: string
+          source_priority?: number | null
+          updated_at?: string
         }
         Relationships: [
           {
