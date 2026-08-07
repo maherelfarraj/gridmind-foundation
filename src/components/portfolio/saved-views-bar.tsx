@@ -200,10 +200,7 @@ export function SavedViewsBar({
                 />
               </div>
               <DialogFooter>
-                <Button
-                  type="submit"
-                  disabled={name.trim().length === 0 || saveMutation.isPending}
-                >
+                <Button type="submit" disabled={name.trim().length === 0 || saveMutation.isPending}>
                   {t(`${K}.save`)}
                 </Button>
               </DialogFooter>

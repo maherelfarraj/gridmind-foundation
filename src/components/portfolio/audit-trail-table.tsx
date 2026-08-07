@@ -94,7 +94,9 @@ export function AuditTrailTable({
                 ) : (
                   <span className="text-muted-foreground">{t(`${K}.companyScope`)}</span>
                 )}
-                <div className="text-muted-foreground">{(e.period ?? period)?.slice(0, 7) ?? "—"}</div>
+                <div className="text-muted-foreground">
+                  {(e.period ?? period)?.slice(0, 7) ?? "—"}
+                </div>
               </TableCell>
               <TableCell className="text-xs">
                 {e.diff.length > 0 ? (

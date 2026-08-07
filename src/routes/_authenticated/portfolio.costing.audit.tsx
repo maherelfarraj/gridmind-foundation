@@ -163,117 +163,117 @@ function AuditPage() {
       <Card className="p-4">
         <fieldset className="flex flex-wrap items-end gap-4">
           <legend className="sr-only">{t(`${K}.filters.legend`)}</legend>
-        <div className="space-y-1">
-          <Label htmlFor="from">{t(`${K}.filters.from`)}</Label>
-          <Input
-            id="from"
-            type="date"
-            className="w-40"
-            value={search.from ?? ""}
-            onChange={(e) => setSearch({ from: e.target.value || undefined })}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="to">{t(`${K}.filters.to`)}</Label>
-          <Input
-            id="to"
-            type="date"
-            className="w-40"
-            value={search.to ?? ""}
-            onChange={(e) => setSearch({ to: e.target.value || undefined })}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="actor">{t(`${K}.filters.actor`)}</Label>
-          <Select
-            value={search.actor ?? ALL}
-            onValueChange={(v) => setSearch({ actor: v === ALL ? undefined : v })}
-          >
-            <SelectTrigger id="actor" className="w-52">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
-              {data.actors.map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="group">{t(`${K}.filters.group`)}</Label>
-          <Select
-            value={search.group ?? ALL}
-            onValueChange={(v) =>
-              setSearch({ group: v === ALL ? undefined : (v as (typeof AUDIT_GROUPS)[number]) })
-            }
-          >
-            <SelectTrigger id="group" className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
-              {AUDIT_GROUPS.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {t(`${K}.group.${g}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="severity">{t(`${K}.filters.severity`)}</Label>
-          <Select
-            value={search.severity ?? ALL}
-            onValueChange={(v) =>
-              setSearch({
-                severity: v === ALL ? undefined : (v as (typeof AUDIT_SEVERITIES)[number]),
-              })
-            }
-          >
-            <SelectTrigger id="severity" className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
-              {AUDIT_SEVERITIES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`${K}.severity.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="project">{t(`${K}.filters.project`)}</Label>
-          <Select
-            value={search.project_id ?? ALL}
-            onValueChange={(v) => setSearch({ project_id: v === ALL ? undefined : v })}
-          >
-            <SelectTrigger id="project" className="w-52">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
-              {data.projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="correlation">{t(`${K}.filters.correlation`)}</Label>
-          <Input
-            id="correlation"
-            className="w-52"
-            value={search.correlation_id ?? ""}
-            onChange={(e) => setSearch({ correlation_id: e.target.value || undefined })}
-          />
-        </div>
+          <div className="space-y-1">
+            <Label htmlFor="from">{t(`${K}.filters.from`)}</Label>
+            <Input
+              id="from"
+              type="date"
+              className="w-40"
+              value={search.from ?? ""}
+              onChange={(e) => setSearch({ from: e.target.value || undefined })}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="to">{t(`${K}.filters.to`)}</Label>
+            <Input
+              id="to"
+              type="date"
+              className="w-40"
+              value={search.to ?? ""}
+              onChange={(e) => setSearch({ to: e.target.value || undefined })}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="actor">{t(`${K}.filters.actor`)}</Label>
+            <Select
+              value={search.actor ?? ALL}
+              onValueChange={(v) => setSearch({ actor: v === ALL ? undefined : v })}
+            >
+              <SelectTrigger id="actor" className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
+                {data.actors.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="group">{t(`${K}.filters.group`)}</Label>
+            <Select
+              value={search.group ?? ALL}
+              onValueChange={(v) =>
+                setSearch({ group: v === ALL ? undefined : (v as (typeof AUDIT_GROUPS)[number]) })
+              }
+            >
+              <SelectTrigger id="group" className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
+                {AUDIT_GROUPS.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {t(`${K}.group.${g}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="severity">{t(`${K}.filters.severity`)}</Label>
+            <Select
+              value={search.severity ?? ALL}
+              onValueChange={(v) =>
+                setSearch({
+                  severity: v === ALL ? undefined : (v as (typeof AUDIT_SEVERITIES)[number]),
+                })
+              }
+            >
+              <SelectTrigger id="severity" className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
+                {AUDIT_SEVERITIES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {t(`${K}.severity.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="project">{t(`${K}.filters.project`)}</Label>
+            <Select
+              value={search.project_id ?? ALL}
+              onValueChange={(v) => setSearch({ project_id: v === ALL ? undefined : v })}
+            >
+              <SelectTrigger id="project" className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t(`${K}.filters.any`)}</SelectItem>
+                {data.projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="correlation">{t(`${K}.filters.correlation`)}</Label>
+            <Input
+              id="correlation"
+              className="w-52"
+              value={search.correlation_id ?? ""}
+              onChange={(e) => setSearch({ correlation_id: e.target.value || undefined })}
+            />
+          </div>
         </fieldset>
       </Card>
 
