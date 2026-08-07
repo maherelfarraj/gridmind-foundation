@@ -56,8 +56,8 @@ describe("calculateProgress", () => {
   });
 
   it("physical_pct clamps and rounds reported progress", () => {
-    expect(calculateProgress({ method: "physical_pct", physical_pct: 43.4567 }).calculated_pct).toBe(
-      43.457,
+    expect(calculateProgress({ method: "physical_pct", physical_pct: 43.45678 }).calculated_pct).toBe(
+      43.4568,
     );
     expect(calculateProgress({ method: "physical_pct", physical_pct: 140 }).calculated_pct).toBe(100);
     expect(calculateProgress({ method: "physical_pct", physical_pct: -5 }).calculated_pct).toBe(0);
