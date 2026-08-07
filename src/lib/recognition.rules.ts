@@ -1005,10 +1005,18 @@ export const RECOGNITION_ALERT_RULES = [
   "revenue_margin_erosion",
   "revenue_loss_making",
   "recognition_basis_stale",
+  "recognition_fx_missing",
+  "revenue_reversal_material",
   "wip_underbilling_age",
   "contract_liability_movement",
   "unapproved_variation_exposure",
+  "retention_release_overdue",
+  "recognition_billing_lag",
+  "recognition_reconciliation_failed",
+  "recognition_adjustment_pending",
+  "recognition_approval_delay",
 ] as const;
+export type RecognitionAlertRule = (typeof RECOGNITION_ALERT_RULES)[number];
 
 export interface AlertThresholds {
   margin_floor_pct: number;
@@ -1016,6 +1024,12 @@ export interface AlertThresholds {
   basis_stale_days: number;
   liability_movement_pct: number;
   exposure_amount: number;
+  /** Absolute period reversal (negative revenue) considered material. */
+  reversal_amount: number;
+  /** Days since the last client billing before the lag is flagged. */
+  billing_lag_days: number;
+  /** Days a submitted snapshot may wait for approval. */
+  approval_delay_days: number;
 }
 
 export const DEFAULT_ALERT_THRESHOLDS: AlertThresholds = {
@@ -1024,7 +1038,11 @@ export const DEFAULT_ALERT_THRESHOLDS: AlertThresholds = {
   basis_stale_days: 45,
   liability_movement_pct: 20,
   exposure_amount: 100_000,
+  reversal_amount: 50_000,
+  billing_lag_days: 60,
+  approval_delay_days: 7,
 };
+
 
 export function fingerprint(parts: readonly (string | number)[]): string {
   return parts.map((p) => String(p).toLowerCase().replace(/\s+/g, "-")).join(":");
