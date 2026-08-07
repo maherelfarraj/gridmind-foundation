@@ -3571,6 +3571,845 @@ export type Database = {
           },
         ]
       }
+      contract_claim_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          claim_id: string | null
+          company_id: string
+          context: Json
+          created_at: string
+          deadline_id: string | null
+          dedupe_key: string
+          due_at: string | null
+          escalated_at: string | null
+          evidence_link: string | null
+          id: string
+          kind: string
+          last_seen_at: string
+          message: string
+          occurrences: number
+          owner_id: string | null
+          project_id: string | null
+          reopened_at: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          row_version: number
+          severity: Database["public"]["Enums"]["costing_exception_severity"]
+          snoozed_until: string | null
+          state: Database["public"]["Enums"]["cc_alert_state"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          claim_id?: string | null
+          company_id: string
+          context?: Json
+          created_at?: string
+          deadline_id?: string | null
+          dedupe_key: string
+          due_at?: string | null
+          escalated_at?: string | null
+          evidence_link?: string | null
+          id?: string
+          kind: string
+          last_seen_at?: string
+          message: string
+          occurrences?: number
+          owner_id?: string | null
+          project_id?: string | null
+          reopened_at?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_version?: number
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snoozed_until?: string | null
+          state?: Database["public"]["Enums"]["cc_alert_state"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          claim_id?: string | null
+          company_id?: string
+          context?: Json
+          created_at?: string
+          deadline_id?: string | null
+          dedupe_key?: string
+          due_at?: string | null
+          escalated_at?: string | null
+          evidence_link?: string | null
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          message?: string
+          occurrences?: number
+          owner_id?: string | null
+          project_id?: string | null
+          reopened_at?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_version?: number
+          severity?: Database["public"]["Enums"]["costing_exception_severity"]
+          snoozed_until?: string | null
+          state?: Database["public"]["Enums"]["cc_alert_state"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claim_alerts_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_alerts_deadline_id_fkey"
+            columns: ["deadline_id"]
+            isOneToOne: false
+            referencedRelation: "contract_deadlines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_alerts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_claim_events: {
+        Row: {
+          actor_id: string | null
+          claim_id: string | null
+          company_id: string
+          created_at: string
+          detail: Json
+          entity_id: string | null
+          entity_type: string
+          event_type: string
+          from_status: string | null
+          id: string
+          occurred_at: string
+          project_id: string | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          claim_id?: string | null
+          company_id: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          occurred_at?: string
+          project_id?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          claim_id?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: Json
+          entity_id?: string | null
+          entity_type?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          occurred_at?: string
+          project_id?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claim_events_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_claim_snapshot_lines: {
+        Row: {
+          approved_amount: number
+          asserted_amount: number
+          assessed_amount: number
+          at_risk_amount: number
+          certified_amount: number
+          claim_id: string | null
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          currency_code: string
+          eot_days_approved: number
+          exposure_amount: number
+          exposure_reporting: number
+          forecast_amount: number
+          fx_rate: number | null
+          fx_rate_date: string | null
+          fx_source: string | null
+          fx_stale: boolean
+          id: string
+          kind: Database["public"]["Enums"]["cc_claim_kind"]
+          label: string
+          paid_amount: number
+          provenance: Json
+          snapshot_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["cc_claim_status"]
+          submitted_amount: number
+        }
+        Insert: {
+          approved_amount?: number
+          asserted_amount?: number
+          assessed_amount?: number
+          at_risk_amount?: number
+          certified_amount?: number
+          claim_id?: string | null
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          currency_code: string
+          eot_days_approved?: number
+          exposure_amount?: number
+          exposure_reporting?: number
+          forecast_amount?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          id?: string
+          kind?: Database["public"]["Enums"]["cc_claim_kind"]
+          label: string
+          paid_amount?: number
+          provenance?: Json
+          snapshot_id: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["cc_claim_status"]
+          submitted_amount?: number
+        }
+        Update: {
+          approved_amount?: number
+          asserted_amount?: number
+          assessed_amount?: number
+          at_risk_amount?: number
+          certified_amount?: number
+          claim_id?: string | null
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          currency_code?: string
+          eot_days_approved?: number
+          exposure_amount?: number
+          exposure_reporting?: number
+          forecast_amount?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          fx_stale?: boolean
+          id?: string
+          kind?: Database["public"]["Enums"]["cc_claim_kind"]
+          label?: string
+          paid_amount?: number
+          provenance?: Json
+          snapshot_id?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["cc_claim_status"]
+          submitted_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claim_snapshot_lines_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshot_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshot_lines_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshot_lines_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshot_lines_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claim_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_claim_snapshots: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          checksum: string | null
+          company_id: string
+          correction_reason: string | null
+          created_at: string
+          created_by: string | null
+          data_date: string
+          fx_provenance: Json
+          id: string
+          period_month: string
+          policy_version: string
+          prepared_by: string | null
+          project_currency: string
+          project_id: string
+          quality: Json
+          reporting_currency: string
+          row_version: number
+          status: Database["public"]["Enums"]["cc_snapshot_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          superseded_at: string | null
+          superseded_by_id: string | null
+          supersedes_id: string | null
+          totals: Json
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checksum?: string | null
+          company_id: string
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date: string
+          fx_provenance?: Json
+          id?: string
+          period_month: string
+          policy_version?: string
+          prepared_by?: string | null
+          project_currency: string
+          project_id: string
+          quality?: Json
+          reporting_currency: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["cc_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checksum?: string | null
+          company_id?: string
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_date?: string
+          fx_provenance?: Json
+          id?: string
+          period_month?: string
+          policy_version?: string
+          prepared_by?: string | null
+          project_currency?: string
+          project_id?: string
+          quality?: Json
+          reporting_currency?: string
+          row_version?: number
+          status?: Database["public"]["Enums"]["cc_snapshot_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          supersedes_id?: string | null
+          totals?: Json
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claim_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshots_project_currency_fkey"
+            columns: ["project_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshots_reporting_currency_fkey"
+            columns: ["reporting_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshots_superseded_by_id_fkey"
+            columns: ["superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claim_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_snapshots_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claim_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_claim_valuations: {
+        Row: {
+          amount: number
+          basis: string
+          claim_id: string
+          company_id: string
+          created_at: string
+          currency_code: string
+          effective_period: string
+          expected_amount: number
+          fx_rate: number | null
+          fx_rate_date: string | null
+          fx_source: string | null
+          id: string
+          prepared_by: string | null
+          probability_pct: number
+          project_id: string
+          reason: string
+          valuation_no: number
+        }
+        Insert: {
+          amount?: number
+          basis?: string
+          claim_id: string
+          company_id: string
+          created_at?: string
+          currency_code: string
+          effective_period: string
+          expected_amount?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          id?: string
+          prepared_by?: string | null
+          probability_pct?: number
+          project_id: string
+          reason: string
+          valuation_no?: number
+        }
+        Update: {
+          amount?: number
+          basis?: string
+          claim_id?: string
+          company_id?: string
+          created_at?: string
+          currency_code?: string
+          effective_period?: string
+          expected_amount?: number
+          fx_rate?: number | null
+          fx_rate_date?: string | null
+          fx_source?: string | null
+          id?: string
+          prepared_by?: string | null
+          probability_pct?: number
+          project_id?: string
+          reason?: string
+          valuation_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claim_valuations_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_valuations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claim_valuations_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_claim_valuations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_claims: {
+        Row: {
+          approved_amount: number
+          approved_at: string | null
+          approved_by: string | null
+          asserted_amount: number
+          assessed_amount: number
+          at_risk_amount: number
+          awareness_date: string | null
+          back_to_back_ref: string | null
+          cause: string | null
+          certified_amount: number
+          certified_at: string | null
+          certified_by: string | null
+          claim_ref: string
+          clause_ref: string | null
+          closed_at: string | null
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          effect: string | null
+          entitlement_basis: string | null
+          eot_days_approved: number
+          eot_days_assessed: number
+          eot_days_claimed: number
+          event_date: string | null
+          evidence: Json
+          forecast_amount: number
+          id: string
+          is_back_to_back: boolean
+          kind: Database["public"]["Enums"]["cc_claim_kind"]
+          ld_exposure: number
+          limitation_at: string | null
+          mitigation: string | null
+          notice_due_at: string | null
+          notice_served_at: string | null
+          owner_id: string | null
+          paid_amount: number
+          project_id: string
+          provenance: Json
+          quantum_basis: string | null
+          responded_at: string | null
+          response_due_at: string | null
+          row_version: number
+          status: Database["public"]["Enums"]["cc_claim_status"]
+          submission_due_at: string | null
+          submitted_amount: number
+          submitted_at: string | null
+          supersedes_id: string | null
+          title: string
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          approved_amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          asserted_amount?: number
+          assessed_amount?: number
+          at_risk_amount?: number
+          awareness_date?: string | null
+          back_to_back_ref?: string | null
+          cause?: string | null
+          certified_amount?: number
+          certified_at?: string | null
+          certified_by?: string | null
+          claim_ref: string
+          clause_ref?: string | null
+          closed_at?: string | null
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code: string
+          effect?: string | null
+          entitlement_basis?: string | null
+          eot_days_approved?: number
+          eot_days_assessed?: number
+          eot_days_claimed?: number
+          event_date?: string | null
+          evidence?: Json
+          forecast_amount?: number
+          id?: string
+          is_back_to_back?: boolean
+          kind?: Database["public"]["Enums"]["cc_claim_kind"]
+          ld_exposure?: number
+          limitation_at?: string | null
+          mitigation?: string | null
+          notice_due_at?: string | null
+          notice_served_at?: string | null
+          owner_id?: string | null
+          paid_amount?: number
+          project_id: string
+          provenance?: Json
+          quantum_basis?: string | null
+          responded_at?: string | null
+          response_due_at?: string | null
+          row_version?: number
+          status?: Database["public"]["Enums"]["cc_claim_status"]
+          submission_due_at?: string | null
+          submitted_amount?: number
+          submitted_at?: string | null
+          supersedes_id?: string | null
+          title: string
+          updated_at?: string
+          version_no?: number
+        }
+        Update: {
+          approved_amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          asserted_amount?: number
+          assessed_amount?: number
+          at_risk_amount?: number
+          awareness_date?: string | null
+          back_to_back_ref?: string | null
+          cause?: string | null
+          certified_amount?: number
+          certified_at?: string | null
+          certified_by?: string | null
+          claim_ref?: string
+          clause_ref?: string | null
+          closed_at?: string | null
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          effect?: string | null
+          entitlement_basis?: string | null
+          eot_days_approved?: number
+          eot_days_assessed?: number
+          eot_days_claimed?: number
+          event_date?: string | null
+          evidence?: Json
+          forecast_amount?: number
+          id?: string
+          is_back_to_back?: boolean
+          kind?: Database["public"]["Enums"]["cc_claim_kind"]
+          ld_exposure?: number
+          limitation_at?: string | null
+          mitigation?: string | null
+          notice_due_at?: string | null
+          notice_served_at?: string | null
+          owner_id?: string | null
+          paid_amount?: number
+          project_id?: string
+          provenance?: Json
+          quantum_basis?: string | null
+          responded_at?: string | null
+          response_due_at?: string | null
+          row_version?: number
+          status?: Database["public"]["Enums"]["cc_claim_status"]
+          submission_due_at?: string | null
+          submitted_amount?: number
+          submitted_at?: string | null
+          supersedes_id?: string | null
+          title?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_claims_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claims_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claims_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_claims_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_claims_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_deadlines: {
+        Row: {
+          calendar: string
+          claim_id: string | null
+          clause_ref: string | null
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string
+          duration_days: number
+          evidence_reference: string | null
+          id: string
+          kind: Database["public"]["Enums"]["cc_deadline_kind"]
+          label: string
+          owner_id: string | null
+          project_id: string
+          row_version: number
+          satisfied_at: string | null
+          status: Database["public"]["Enums"]["cc_deadline_status"]
+          timezone: string
+          trigger_date: string
+          updated_at: string
+        }
+        Insert: {
+          calendar?: string
+          claim_id?: string | null
+          clause_ref?: string | null
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date: string
+          duration_days?: number
+          evidence_reference?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["cc_deadline_kind"]
+          label: string
+          owner_id?: string | null
+          project_id: string
+          row_version?: number
+          satisfied_at?: string | null
+          status?: Database["public"]["Enums"]["cc_deadline_status"]
+          timezone?: string
+          trigger_date: string
+          updated_at?: string
+        }
+        Update: {
+          calendar?: string
+          claim_id?: string | null
+          clause_ref?: string | null
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string
+          duration_days?: number
+          evidence_reference?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["cc_deadline_kind"]
+          label?: string
+          owner_id?: string | null
+          project_id?: string
+          row_version?: number
+          satisfied_at?: string | null
+          status?: Database["public"]["Enums"]["cc_deadline_status"]
+          timezone?: string
+          trigger_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_deadlines_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "contract_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_deadlines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_deadlines_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_deadlines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_obligations: {
         Row: {
           clause_ref: string | null
@@ -26744,6 +27583,45 @@ export type Database = {
         | "advance"
         | "tax"
         | "adjustment"
+      cc_alert_state:
+        | "open"
+        | "acknowledged"
+        | "snoozed"
+        | "escalated"
+        | "resolved"
+      cc_claim_kind:
+        | "variation"
+        | "eot"
+        | "prolongation"
+        | "disruption"
+        | "acceleration"
+        | "ld_defence"
+        | "termination"
+        | "other"
+      cc_claim_status:
+        | "draft"
+        | "notified"
+        | "submitted"
+        | "under_assessment"
+        | "assessed"
+        | "negotiation"
+        | "approved"
+        | "rejected"
+        | "certified"
+        | "paid"
+        | "closed"
+        | "withdrawn"
+      cc_deadline_kind:
+        | "notice"
+        | "submission"
+        | "response"
+        | "determination"
+        | "instrument_expiry"
+        | "limitation"
+        | "retention_release"
+        | "back_to_back"
+      cc_deadline_status: "open" | "met" | "missed" | "waived" | "superseded"
+      cc_snapshot_status: "working" | "submitted" | "approved" | "superseded"
       change_order_status:
         | "draft"
         | "submitted"
@@ -27186,6 +28064,19 @@ export type Database = {
         | "recognition_reconciliation_failed"
         | "recognition_adjustment_pending"
         | "recognition_approval_delay"
+        | "claim_notice_approaching"
+        | "claim_notice_missed"
+        | "claim_response_overdue"
+        | "claim_aging"
+        | "claim_quantum_movement"
+        | "claim_entitlement_gap"
+        | "claim_eot_ld_conflict"
+        | "contract_instrument_expiring"
+        | "contract_retention_release_due"
+        | "contract_back_to_back_gap"
+        | "contract_fx_materiality"
+        | "contract_reconciliation_break"
+        | "contract_sod_exception"
       portfolio_alert_severity: "critical" | "high" | "medium" | "low"
       portfolio_alert_state: "open" | "acknowledged" | "snoozed" | "resolved"
       portfolio_scenario_driver:
@@ -27708,6 +28599,49 @@ export const Constants = {
         "tax",
         "adjustment",
       ],
+      cc_alert_state: [
+        "open",
+        "acknowledged",
+        "snoozed",
+        "escalated",
+        "resolved",
+      ],
+      cc_claim_kind: [
+        "variation",
+        "eot",
+        "prolongation",
+        "disruption",
+        "acceleration",
+        "ld_defence",
+        "termination",
+        "other",
+      ],
+      cc_claim_status: [
+        "draft",
+        "notified",
+        "submitted",
+        "under_assessment",
+        "assessed",
+        "negotiation",
+        "approved",
+        "rejected",
+        "certified",
+        "paid",
+        "closed",
+        "withdrawn",
+      ],
+      cc_deadline_kind: [
+        "notice",
+        "submission",
+        "response",
+        "determination",
+        "instrument_expiry",
+        "limitation",
+        "retention_release",
+        "back_to_back",
+      ],
+      cc_deadline_status: ["open", "met", "missed", "waived", "superseded"],
+      cc_snapshot_status: ["working", "submitted", "approved", "superseded"],
       change_order_status: [
         "draft",
         "submitted",
@@ -28196,6 +29130,19 @@ export const Constants = {
         "recognition_reconciliation_failed",
         "recognition_adjustment_pending",
         "recognition_approval_delay",
+        "claim_notice_approaching",
+        "claim_notice_missed",
+        "claim_response_overdue",
+        "claim_aging",
+        "claim_quantum_movement",
+        "claim_entitlement_gap",
+        "claim_eot_ld_conflict",
+        "contract_instrument_expiring",
+        "contract_retention_release_due",
+        "contract_back_to_back_gap",
+        "contract_fx_materiality",
+        "contract_reconciliation_break",
+        "contract_sod_exception",
       ],
       portfolio_alert_severity: ["critical", "high", "medium", "low"],
       portfolio_alert_state: ["open", "acknowledged", "snoozed", "resolved"],
