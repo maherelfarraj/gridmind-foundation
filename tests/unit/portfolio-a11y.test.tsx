@@ -16,10 +16,7 @@ vi.mock("@tanstack/react-router", () => ({
     params?: Record<string, string>;
     children?: React.ReactNode;
   } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-    const href = Object.entries(params ?? {}).reduce(
-      (acc, [k, v]) => acc.replace(`$${k}`, v),
-      to,
-    );
+    const href = Object.entries(params ?? {}).reduce((acc, [k, v]) => acc.replace(`$${k}`, v), to);
     return (
       <a href={href} {...rest}>
         {children}
@@ -62,7 +59,9 @@ const event = (over: Partial<AuditEvent> = {}): AuditEvent => ({
 });
 
 const render = (node: React.ReactNode, locale?: "en" | "ar") =>
-  renderToStaticMarkup(<LocaleProvider {...(locale ? { initialLocale: locale } : {})}>{node}</LocaleProvider>);
+  renderToStaticMarkup(
+    <LocaleProvider {...(locale ? { initialLocale: locale } : {})}>{node}</LocaleProvider>,
+  );
 
 describe("audit trail table accessibility semantics", () => {
   it("captions the table and scopes every column header", () => {
@@ -79,7 +78,7 @@ describe("audit trail table accessibility semantics", () => {
 
   it("names the destination of each project scope link", () => {
     const html = render(<AuditTrailTable events={[event()]} />);
-    expect(html).toContain("aria-label=\"Open costing close for project GSI-EAM-001\"");
+    expect(html).toContain('aria-label="Open costing close for project GSI-EAM-001"');
   });
 
   it("prefixes audit gaps with a screen-reader label", () => {
@@ -94,7 +93,7 @@ describe("audit trail table accessibility semantics", () => {
 
   it("renders right-to-left in Arabic without losing semantics", () => {
     const html = render(<AuditTrailTable events={[event()]} />, "ar");
-    expect(html).toContain("scope=\"col\"");
+    expect(html).toContain('scope="col"');
     expect(html).toContain("GSI-EAM-001");
   });
 });
