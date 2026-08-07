@@ -76,10 +76,7 @@ export async function loadCompanyPeople(
   }));
 }
 
-export async function loadClosePolicy(
-  ctx: AuthContext,
-  companyId: string,
-): Promise<ClosePolicy> {
+export async function loadClosePolicy(ctx: AuthContext, companyId: string): Promise<ClosePolicy> {
   const { data, error } = await sbOf(ctx)
     .from("costing_settings")
     .select("allow_self_review, block_on_warnings")
@@ -139,7 +136,9 @@ export async function loadChecklist(
       .order("seq", { ascending: true }),
     sb
       .from("costing_checklist_evidence")
-      .select("id, item_id, document_id, label, uploaded_by, created_at, documents(title, file_name)")
+      .select(
+        "id, item_id, document_id, label, uploaded_by, created_at, documents(title, file_name)",
+      )
       .eq("project_id", projectId)
       .order("created_at", { ascending: true }),
   ]);
@@ -590,18 +589,23 @@ export async function resolveException(
 
   let notified = 0;
   if (exception.severity === "blocker" && exception.status !== "open") {
-    notified += await notifyUsers(ctx, row.company_id, await closeRoleHolders(ctx, row.company_id), {
-      type: "costing.exception.updated",
-      title: "Close blocker updated",
-      body: `${exception.title} — ${exception.status}`,
-      link: cockpitLink(row.project_id),
-      metadata: {
-        period: row.period_month,
-        project_id: row.project_id,
-        exception_id: exception.id,
-        row_version: exception.row_version,
+    notified += await notifyUsers(
+      ctx,
+      row.company_id,
+      await closeRoleHolders(ctx, row.company_id),
+      {
+        type: "costing.exception.updated",
+        title: "Close blocker updated",
+        body: `${exception.title} — ${exception.status}`,
+        link: cockpitLink(row.project_id),
+        metadata: {
+          period: row.period_month,
+          project_id: row.project_id,
+          exception_id: exception.id,
+          row_version: exception.row_version,
+        },
       },
-    });
+    );
   }
   notified += await notifyCloseReady(ctx, row.company_id, row.project_id, row.period_month);
   return { exception, notified };
@@ -662,19 +666,22 @@ export async function linkEvidence(
     .maybeSingle();
   if (error) rpcError(error, "costing_evidence_link_failed");
 
-  await costingAudit(ctx, "costing.checklist.evidence.linked", "costing_checklist_items", input.itemId, {
-    company_id: itemQ.data.company_id,
-    project_id: itemQ.data.project_id,
-    period: itemQ.data.period_month,
-    document_id: input.documentId,
-  });
+  await costingAudit(
+    ctx,
+    "costing.checklist.evidence.linked",
+    "costing_checklist_items",
+    input.itemId,
+    {
+      company_id: itemQ.data.company_id,
+      project_id: itemQ.data.project_id,
+      period: itemQ.data.period_month,
+      document_id: input.documentId,
+    },
+  );
   return { id: (data?.id as string) ?? "" };
 }
 
-export async function unlinkEvidence(
-  ctx: AuthContext,
-  evidenceId: string,
-): Promise<{ ok: true }> {
+export async function unlinkEvidence(ctx: AuthContext, evidenceId: string): Promise<{ ok: true }> {
   const sb = sbOf(ctx);
   const row = await sb
     .from("costing_checklist_evidence")

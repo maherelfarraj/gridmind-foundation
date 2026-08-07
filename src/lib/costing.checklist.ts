@@ -180,7 +180,11 @@ export function filterChecklist(
   filter: ChecklistFilter,
 ): ChecklistItem[] {
   return items.filter((i) => {
-    if (filter.status === "outstanding" ? isDone(i) : filter.status !== "all" && i.status !== filter.status) {
+    if (
+      filter.status === "outstanding"
+        ? isDone(i)
+        : filter.status !== "all" && i.status !== filter.status
+    ) {
       return false;
     }
     if (filter.ownerId !== "all" && i.assignee_id !== filter.ownerId) return false;
@@ -200,10 +204,7 @@ const ALLOWED_NEXT: Record<ChecklistItemStatus, readonly ChecklistItemStatus[]> 
   waived: ["pending", "in_progress"],
 };
 
-export function canTransitionItem(
-  from: ChecklistItemStatus,
-  to: ChecklistItemStatus,
-): boolean {
+export function canTransitionItem(from: ChecklistItemStatus, to: ChecklistItemStatus): boolean {
   if (from === to) return true;
   return ALLOWED_NEXT[from].includes(to);
 }
@@ -490,10 +491,7 @@ export const exceptionResolveSchema = z
       .optional(),
   })
   .superRefine((v, ctx) => {
-    if (
-      (v.status === "resolved" || v.status === "accepted_risk") &&
-      !String(v.note ?? "").trim()
-    ) {
+    if ((v.status === "resolved" || v.status === "accepted_risk") && !String(v.note ?? "").trim()) {
       ctx.addIssue({ code: "custom", path: ["note"], message: "A resolution note is required." });
     }
   });
