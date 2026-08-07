@@ -55,17 +55,7 @@ function fakeSupabase(rows = [LOG], count = 137) {
     const builder: Record<string, unknown> = {
       then: (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve),
     };
-    for (const op of [
-      "select",
-      "eq",
-      "in",
-      "gte",
-      "lte",
-      "order",
-      "range",
-      "contains",
-      "limit",
-    ]) {
+    for (const op of ["select", "eq", "in", "gte", "lte", "order", "range", "contains", "limit"]) {
       builder[op] = (...args: unknown[]) => {
         call.ops.push({ op, args });
         return builder;
