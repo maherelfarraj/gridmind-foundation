@@ -11,7 +11,6 @@ import {
   loadCostingSettings,
   loadForecastVersion,
   loadVersionLines,
-  refreshVersionSnapshot,
   transitionPeriod,
   type CostingCloseData,
 } from "@/lib/costing.close.server";
@@ -25,6 +24,7 @@ import { costingAudit, costingHttpError, loadCostingProject } from "@/lib/costin
 import {
   applyVersionAction,
   createVersionFromLive,
+  refreshVersionSnapshot,
 } from "@/lib/costing.versions.server";
 import {
   forecastVersionActionSchema,
