@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { costingErrorMessage } from "@/lib/costing-errors";
+import { costingErrorMessage } from "@/lib/costing.query";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   decideRecognitionAdjustment,
