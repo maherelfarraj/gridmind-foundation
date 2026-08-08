@@ -59,6 +59,28 @@ export function AlertRegister({
   now?: Date;
 }) {
   const { t } = useI18n();
+  // A governed action unmounts the control that triggered it (Acknowledge
+  // disappears once the alert is acknowledged), which would drop focus onto
+  // <body>. Keep focus in the acting row's action group instead.
+  const groups = useRef(new Map<string, HTMLDivElement | null>());
+  const lastActed = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const id = lastActed.current;
+    if (!id) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.tagName !== "HTML") return;
+    const group = groups.current.get(id);
+    if (!group) return;
+    const next = group.querySelector<HTMLElement>("button:not([disabled])") ?? group;
+    next.focus();
+    lastActed.current = null;
+  }, [alerts, busy]);
+
+  const decide = (decision: AlertDecision) => {
+    lastActed.current = decision.id;
+    onDecide(decision);
+  };
+
   if (alerts.length === 0) {
     return <EmptyState title={t(`${K}.alerts.title`)} description={t(`${K}.alerts.empty`)} />;
   }
