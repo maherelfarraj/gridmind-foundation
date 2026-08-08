@@ -81,6 +81,23 @@ export default defineConfig({
           hookTimeout: 60_000,
         },
       },
+      {
+        // Live-UI suites: render React against the shared database. Same small
+        // worker pool as `all-db` so they cannot starve GoTrue or Postgres.
+        resolve: { alias },
+        test: {
+          name: "all-dom-db",
+          environment: "jsdom",
+          globals: true,
+          include: ["tests/e2e/**/*.test.tsx"],
+          maxWorkers: 2,
+          minWorkers: 1,
+          sequence: { groupOrder: 1 },
+          maxConcurrency: 2,
+          testTimeout: 90_000,
+          hookTimeout: 180_000,
+        },
+      },
     ],
   },
 });

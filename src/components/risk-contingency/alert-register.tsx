@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/locale-provider";
-import type { AlertStatus } from "@/lib/risk-sim.rules";
+import { snoozeUntil, type AlertStatus } from "@/lib/risk-sim.rules";
 
 const K = "financeMod.costing.riskContingency";
 
@@ -39,11 +39,6 @@ export interface AlertDecision {
   row_version: number;
   snoozed_until?: string | null;
   escalate?: boolean;
-}
-
-/** ISO date a snooze defers an alert to (7 days) — deterministic per call. */
-export function snoozeUntil(from: Date, days = 7): string {
-  return new Date(from.getTime() + days * 86_400_000).toISOString().slice(0, 10);
 }
 
 export function AlertRegister({
