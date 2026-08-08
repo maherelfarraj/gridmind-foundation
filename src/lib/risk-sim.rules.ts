@@ -720,6 +720,11 @@ export const ALERT_TRANSITIONS: Record<AlertStatus, AlertStatus[]> = {
   resolved: ["open"],
 };
 
+/** ISO date a snooze defers an alert to — deterministic, no ambient clock. */
+export function snoozeUntil(from: Date, days = 7): string {
+  return new Date(from.getTime() + days * 86_400_000).toISOString().slice(0, 10);
+}
+
 export function canTransitionAlert(from: AlertStatus, to: AlertStatus): boolean {
   return (ALERT_TRANSITIONS[from] ?? []).includes(to);
 }
