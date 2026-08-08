@@ -246,9 +246,8 @@ export function CalendarPolicyAdmin({
   const canApprove = data.access.canApprove;
 
   return (
-    <section className="space-y-6" aria-labelledby="calendar-policy-heading">
+    <section className="space-y-6" aria-label={t(`${K}.title`)}>
       <SectionHeader
-        id="calendar-policy-heading"
         title={t(`${K}.title`)}
         description={t(`${K}.subtitle`)}
       />
@@ -290,9 +289,10 @@ export function CalendarPolicyAdmin({
               <div>
                 <dt className="text-xs text-muted-foreground">{t(`${K}.validation`)}</dt>
                 <dd className="text-sm font-medium">
-                  <StatusBadge status={data.coverage.ok ? "approved" : "pending"}>
-                    {data.coverage.ok ? t(`${K}.valid`) : t(`${K}.coverageMissing`)}
-                  </StatusBadge>
+                  <StatusBadge
+                    status={data.coverage.ok ? "approved" : "pending"}
+                    label={data.coverage.ok ? t(`${K}.valid`) : t(`${K}.coverageMissing`)}
+                  />
                 </dd>
               </div>
             </dl>
@@ -477,7 +477,7 @@ export function CalendarPolicyAdmin({
                   <TableCell>{`${c.to_calendar_id} · ${c.to_timezone}`}</TableCell>
                   <TableCell>{c.requested_at.slice(0, 10)}</TableCell>
                   <TableCell>
-                    <StatusBadge status="pending">{t(`${K}.status.${c.status}`)}</StatusBadge>
+                    <StatusBadge status="pending" label={t(`${K}.status.${c.status}`)} />
                   </TableCell>
                   <TableCell className="space-x-2 whitespace-nowrap">
                     <Button
@@ -647,9 +647,10 @@ export function CalendarPolicyAdmin({
                     <TableCell>{s.version}</TableCell>
                     <TableCell>{s.dates.length}</TableCell>
                     <TableCell>
-                      <StatusBadge status={s.status === "approved" ? "approved" : "pending"}>
-                        {t(`${K}.status.${s.status}`)}
-                      </StatusBadge>
+                      <StatusBadge
+                        status={s.status === "approved" ? "approved" : "pending"}
+                        label={t(`${K}.status.${s.status}`)}
+                      />
                     </TableCell>
                     <TableCell className="space-x-2 whitespace-nowrap">
                       <Button
