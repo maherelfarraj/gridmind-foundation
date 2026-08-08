@@ -262,6 +262,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport }
 import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
 import { Route as AuthenticatedProjectsProjectIdCostingVersionsRouteImport } from './routes/_authenticated/projects.$projectId.costing.versions'
+import { Route as AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport } from './routes/_authenticated/projects.$projectId.costing.risk-contingency'
 import { Route as AuthenticatedProjectsProjectIdCostingRevenueRouteImport } from './routes/_authenticated/projects.$projectId.costing.revenue'
 import { Route as AuthenticatedProjectsProjectIdCostingInvoicesRouteImport } from './routes/_authenticated/projects.$projectId.costing.invoices'
 import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } from './routes/_authenticated/projects.$projectId.costing.forecast'
@@ -1771,6 +1772,12 @@ const AuthenticatedProjectsProjectIdCostingVersionsRoute =
     path: '/versions',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
+const AuthenticatedProjectsProjectIdCostingRiskContingencyRoute =
+  AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport.update({
+    id: '/risk-contingency',
+    path: '/risk-contingency',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdCostingRevenueRoute =
   AuthenticatedProjectsProjectIdCostingRevenueRouteImport.update({
     id: '/revenue',
@@ -2264,6 +2271,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2541,6 +2549,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2833,6 +2842,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/_authenticated/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/_authenticated/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/_authenticated/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/_authenticated/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -3126,6 +3136,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/revenue'
+    | '/projects/$projectId/costing/risk-contingency'
     | '/projects/$projectId/costing/versions'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3403,6 +3414,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/revenue'
+    | '/projects/$projectId/costing/risk-contingency'
     | '/projects/$projectId/costing/versions'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3694,6 +3706,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/costing/forecast'
     | '/_authenticated/projects/$projectId/costing/invoices'
     | '/_authenticated/projects/$projectId/costing/revenue'
+    | '/_authenticated/projects/$projectId/costing/risk-contingency'
     | '/_authenticated/projects/$projectId/costing/versions'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/civil-features'
@@ -5546,6 +5559,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/risk-contingency': {
+      id: '/_authenticated/projects/$projectId/costing/risk-contingency'
+      path: '/risk-contingency'
+      fullPath: '/projects/$projectId/costing/risk-contingency'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/revenue': {
       id: '/_authenticated/projects/$projectId/costing/revenue'
       path: '/revenue'
@@ -6062,6 +6082,7 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingForecastRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   AuthenticatedProjectsProjectIdCostingInvoicesRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   AuthenticatedProjectsProjectIdCostingRevenueRoute: typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  AuthenticatedProjectsProjectIdCostingRiskContingencyRoute: typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   AuthenticatedProjectsProjectIdCostingVersionsRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   AuthenticatedProjectsProjectIdCostingIndexRoute: typeof AuthenticatedProjectsProjectIdCostingIndexRoute
 }
@@ -6092,6 +6113,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingInvoicesRoute,
     AuthenticatedProjectsProjectIdCostingRevenueRoute:
       AuthenticatedProjectsProjectIdCostingRevenueRoute,
+    AuthenticatedProjectsProjectIdCostingRiskContingencyRoute:
+      AuthenticatedProjectsProjectIdCostingRiskContingencyRoute,
     AuthenticatedProjectsProjectIdCostingVersionsRoute:
       AuthenticatedProjectsProjectIdCostingVersionsRoute,
     AuthenticatedProjectsProjectIdCostingIndexRoute:
@@ -6758,13 +6781,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
