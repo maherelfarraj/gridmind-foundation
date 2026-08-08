@@ -351,8 +351,8 @@ d("GC-16d invariant — authoritative sources are untouched", () => {
         returning id into v_set;
 
         insert into public.calendar_holiday_dates
-          (set_id, observed_date, label_en, label_ar, kind)
-        values (v_set, '2199-03-20', 'GC16D probe', 'اختبار', 'public_holiday');
+          (set_id, company_id, observed_date, label_en, label_ar, kind)
+        values (v_set, v_company, '2199-03-20', 'GC16D probe', 'اختبار', 'public_holiday');
 
         insert into public.calendar_policy_changes
           (company_id, scope, contract_id, to_calendar_id, to_timezone, material,
