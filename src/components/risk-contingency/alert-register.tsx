@@ -2,6 +2,8 @@
 // Used by both the project cockpit and the portfolio dashboard so the register,
 // its lifecycle actions and its accessibility behaviour are identical.
 import { Link } from "@tanstack/react-router";
+import { useLayoutEffect, useRef } from "react";
+
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
