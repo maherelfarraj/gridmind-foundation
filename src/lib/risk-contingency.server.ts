@@ -778,8 +778,7 @@ export async function loadRiskContingencyWorkspace(
     (sum, a) => sum + num(a.allocated_amount),
     0,
   );
-  const fundingGap =
-    allocated > 0 ? Math.max(0, workingOpening + reserveOpening - allocated) : 0;
+  const fundingGap = allocated > 0 ? Math.max(0, workingOpening + reserveOpening - allocated) : 0;
 
   const escalatedRisks = riskRows
     .filter((r) => r.escalated && r.status !== "closed")
