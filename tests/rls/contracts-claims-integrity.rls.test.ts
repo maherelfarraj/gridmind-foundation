@@ -367,16 +367,19 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
         returning id into v_claim;
 
         insert into public.contract_claim_events
-          (company_id, project_id, claim_id, event_type, payload)
+          (company_id, project_id, claim_id, event_type, detail)
         values (v_company, v_project, v_claim, 'transition:invariant', '{}'::jsonb);
 
         insert into public.contract_deadlines
-          (company_id, project_id, claim_id, kind, label, due_date)
-        values (v_company, v_project, v_claim, 'notice', 'invariant probe', current_date + 7);
+          (company_id, project_id, claim_id, kind, label, trigger_date, due_date)
+        values (v_company, v_project, v_claim, 'notice', 'invariant probe',
+                current_date, current_date + 7);
 
         insert into public.contract_claim_snapshots
-          (company_id, project_id, period_month, status, checksum)
-        values (v_company, v_project, date_trunc('month', now())::date, 'working', 'probe');
+          (company_id, project_id, period_month, data_date, status,
+           reporting_currency, project_currency, checksum)
+        values (v_company, v_project, date_trunc('month', now())::date, current_date,
+                'working', 'USD', 'USD', 'probe');
       end $$;
 
       rollback to savepoint gc16;
