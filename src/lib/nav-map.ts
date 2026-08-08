@@ -827,6 +827,12 @@ export const NAV_GROUPS: NavGroup[] = [
         url: "/settings/fx-rates",
         icon: Receipt,
       },
+      {
+        moduleKey: "admin",
+        label: "Calendar policy",
+        url: "/settings/calendar-policy",
+        icon: CalendarClock,
+      },
 
       {
         moduleKey: "engineering",

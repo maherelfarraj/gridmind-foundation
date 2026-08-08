@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ContractsClaimsAppendixCard } from "@/components/contracts-claims/contracts-claims-appendix";
+import { ProjectCalendarPolicySection } from "@/components/contracts-claims/project-calendar-policy";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { calendarGovernanceQueryOptions } from "@/lib/calendar-governance.query";
 import { costingErrorMessage } from "@/lib/costing.query";
 import {
   actOnClaimAlert,
@@ -66,8 +68,12 @@ const K = "financeMod.costing.contractsClaims";
 export const Route = createFileRoute(
   "/_authenticated/projects/$projectId/costing/contracts-claims",
 )({
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(claimsWorkspaceQueryOptions(params.projectId)),
+  loader: ({ context, params }) => {
+    context.queryClient.ensureQueryData(
+      calendarGovernanceQueryOptions({ project_id: params.projectId }),
+    );
+    return context.queryClient.ensureQueryData(claimsWorkspaceQueryOptions(params.projectId));
+  },
   head: () => ({
     meta: [
       { title: "Contract & claims control — GridMind" },
@@ -616,6 +622,10 @@ function ContractsClaimsCockpit() {
             })}
           </Card>
         )}
+      </section>
+
+      <section>
+        <ProjectCalendarPolicySection projectId={projectId} />
       </section>
 
       <section>
