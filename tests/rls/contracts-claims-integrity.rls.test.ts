@@ -312,7 +312,7 @@ d("GC-16 live schema — triggers and routines", () => {
     const v = fns.get(fn);
     expect(v, `${fn} is not deployed`).toBeDefined();
     const [secdef, config] = v!.split("|");
-    expect(secdef).toBe("t");
+    expect(secdef).toBe("true");
     expect(config).toMatch(/search_path=/);
   });
 
@@ -361,7 +361,7 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
         if v_project is null then return; end if;
 
         insert into public.contract_claims
-          (company_id, project_id, claim_ref, title, claim_kind, currency_code, claimed_amount)
+          (company_id, project_id, claim_ref, title, kind, currency_code, asserted_amount)
         values (v_company, v_project, 'GC16-INV-'||substr(md5(random()::text),1,8),
                 'invariant probe', 'variation', 'USD', 1000)
         returning id into v_claim;
