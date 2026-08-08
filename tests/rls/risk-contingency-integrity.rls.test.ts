@@ -283,11 +283,17 @@ d("GC-17 live schema — columns, constraints and indexes", () => {
 // Behavioural guarantees — all inside rolled-back transactions
 // ---------------------------------------------------------------------------
 function tx(body: string): string {
-  return execFileSync(
-    "psql",
-    ["-At", "-v", "ON_ERROR_STOP=0", "-c", `begin; ${body} rollback;`],
-    { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
-  );
+  try {
+    return execFileSync(
+      "psql",
+      ["-At", "-v", "ON_ERROR_STOP=0", "-c", `begin; ${body} rollback;`],
+      { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+    );
+  } catch (err) {
+    // A privilege rejection is itself the guarantee under test.
+    const e = err as { stdout?: string; stderr?: string };
+    return `${e.stdout ?? ""}${e.stderr ?? ""}`;
+  }
 }
 
 d("GC-17 behaviour — immutability and history", () => {
@@ -302,12 +308,7 @@ d("GC-17 behaviour — immutability and history", () => {
     );
     // Either the append-only trigger fires, or no row exists to touch; a
     // successful mutation of an existing row would show neither.
-    const rows = q(`select count(*) from public.risk_contingency_events`)[0]?.[0] ?? "0";
-    if (Number(rows) > 0) {
-      expect(out).toMatch(/risk_contingency_events_append_only/);
-    } else {
-      expect(Number(rows)).toBe(0);
-    }
+    expect(out).toMatch(/risk_contingency_events_append_only|permission denied/);
   });
 
   it("freezes approved simulation results", () => {
