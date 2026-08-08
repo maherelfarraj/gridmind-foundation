@@ -195,6 +195,11 @@ function PortfolioCostingPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/risk-contingency">
+                <ShieldAlert className="size-4" /> {t(`${K}.riskContingency.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/revenue-wip" search={{}}>
                 <Coins className="size-4" /> {t(`${K}.revenue.title`)}
               </Link>
