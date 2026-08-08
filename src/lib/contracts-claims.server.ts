@@ -283,6 +283,20 @@ export async function transitionClaim(
   if (requiresApprovalRole(input.to)) await requireApprove(ctx);
   else await requireWrite(ctx);
 
+  // Idempotency — a replayed transition is a no-op, not a second event.
+  if (input.idempotency_key) {
+    const prior = await safeRows<{ id: string }>(() =>
+      db(ctx)
+        .from("contract_claim_events")
+        .select("id")
+        .eq("claim_id", input.claim_id)
+        .eq("event_type", `transition:${input.idempotency_key}`)
+        .limit(1),
+    );
+    if (prior.length)
+      return { id: input.claim_id, status: from, row_version: Number(row.row_version) };
+  }
+
   if (row.row_version !== input.row_version)
     httpError(409, "stale_write", "This claim changed since it was loaded. Reload and retry.");
 
@@ -314,20 +328,6 @@ export async function transitionClaim(
       : [];
   if (requiresApprovalRole(input.to) && !withinDelegation(value, roles))
     httpError(403, "delegation_exceeded", "This value exceeds your delegated authority.");
-
-  // Idempotency — a replayed transition is a no-op, not a second event.
-  if (input.idempotency_key) {
-    const prior = await safeRows<{ id: string }>(() =>
-      db(ctx)
-        .from("contract_claim_events")
-        .select("id")
-        .eq("claim_id", input.claim_id)
-        .eq("event_type", `transition:${input.idempotency_key}`)
-        .limit(1),
-    );
-    if (prior.length)
-      return { id: input.claim_id, status: from, row_version: Number(row.row_version) };
-  }
 
   const patch: Record<string, unknown> = { status: input.to, row_version: row.row_version };
   const now = new Date().toISOString();
@@ -695,7 +695,10 @@ export async function loadClaimsWorkspace(
     exceptions,
     alerts: alertRows.map((a) => ({
       ...(a as JsonRecord),
-      effective_state: effectiveAlertState(a as { state: AlertState; snoozed_until?: string }, today),
+      effective_state: effectiveAlertState(
+        a as { state: AlertState; snoozed_until?: string },
+        today,
+      ),
     })) as JsonRecord[],
     snapshot: (snapshotRows[0] as JsonRecord) ?? null,
     timeline: timeline as unknown as JsonRecord[],
@@ -823,9 +826,7 @@ export async function buildClaimSnapshot(
   if (lines.length) {
     const { error } = await db(ctx)
       .from("contract_claim_snapshot_lines")
-      .insert(
-        lines.map((l) => ({ ...l, company_id: proj.company_id, snapshot_id: snapshotId })),
-      );
+      .insert(lines.map((l) => ({ ...l, company_id: proj.company_id, snapshot_id: snapshotId })));
     if (error) throw error;
   }
 
@@ -859,11 +860,7 @@ export async function transitionClaimSnapshot(
   if (input.to === "approved") {
     await requireApprove(ctx);
     if (snap.submitted_by && snap.submitted_by === ctx.user?.id)
-      httpError(
-        403,
-        "segregation_of_duties",
-        "The submitter of a snapshot cannot approve it.",
-      );
+      httpError(403, "segregation_of_duties", "The submitter of a snapshot cannot approve it.");
     const quality = (snap.quality ?? {}) as { checks?: ReconciliationCheck[] };
     const blockers = approvalBlockers(
       deriveExceptions([], (quality.checks ?? []) as ReconciliationCheck[]),
@@ -903,10 +900,16 @@ export async function transitionClaimSnapshot(
     to_status: input.to,
     detail: { reason: input.reason ?? null },
   });
-  await audit(ctx, "contract_claim_snapshot.transition", "contract_claim_snapshots", input.snapshot_id, {
-    from,
-    to: input.to,
-  });
+  await audit(
+    ctx,
+    "contract_claim_snapshot.transition",
+    "contract_claim_snapshots",
+    input.snapshot_id,
+    {
+      from,
+      to: input.to,
+    },
+  );
   return {
     id: data.id as string,
     status: data.status as SnapshotStatus,
@@ -935,7 +938,8 @@ async function persistAlerts(
       .in("claim_id", claims.map((c) => c.id).slice(0, 500)),
   );
   const priorApproved: Record<string, number> = {};
-  for (const l of priorLines) if (l.claim_id) priorApproved[l.claim_id as string] = n(l.approved_amount);
+  for (const l of priorLines)
+    if (l.claim_id) priorApproved[l.claim_id as string] = n(l.approved_amount);
 
   const alerts = evaluateClaimAlerts({
     project_id: projectId,
@@ -948,27 +952,25 @@ async function persistAlerts(
   });
 
   for (const a of alerts) {
-    const { error } = await db(ctx)
-      .from("contract_claim_alerts")
-      .upsert(
-        {
-          company_id: companyId,
-          project_id: projectId,
-          claim_id: a.claim_id,
-          deadline_id: a.deadline_id,
-          dedupe_key: a.dedupe_key,
-          kind: a.kind,
-          severity: a.severity,
-          title: a.title,
-          message: a.message,
-          owner_id: a.owner_id,
-          due_at: a.due_at,
-          evidence_link: a.evidence_link,
-          context: a.context,
-          last_seen_at: new Date().toISOString(),
-        },
-        { onConflict: "company_id,dedupe_key", ignoreDuplicates: false },
-      );
+    const { error } = await db(ctx).from("contract_claim_alerts").upsert(
+      {
+        company_id: companyId,
+        project_id: projectId,
+        claim_id: a.claim_id,
+        deadline_id: a.deadline_id,
+        dedupe_key: a.dedupe_key,
+        kind: a.kind,
+        severity: a.severity,
+        title: a.title,
+        message: a.message,
+        owner_id: a.owner_id,
+        due_at: a.due_at,
+        evidence_link: a.evidence_link,
+        context: a.context,
+        last_seen_at: new Date().toISOString(),
+      },
+      { onConflict: "company_id,dedupe_key", ignoreDuplicates: false },
+    );
     if (error) throw error;
   }
   return alerts;
@@ -997,7 +999,10 @@ export async function actOnAlert(
 
   const to = alertActionToState(input.action);
   if (!to) httpError(422, "invalid_action", "Unsupported alert action.");
-  const from = effectiveAlertState(alert as { state: AlertState; snoozed_until?: string }, todayIso());
+  const from = effectiveAlertState(
+    alert as { state: AlertState; snoozed_until?: string },
+    todayIso(),
+  );
   if (!canTransitionAlert(from, to))
     httpError(422, "invalid_transition", `An alert cannot move from ${from} to ${to}.`);
 
@@ -1084,9 +1089,7 @@ export async function loadPortfolioClaims(
     db(ctx).from("projects").select("id, name, status").order("name", { ascending: true }),
   );
   const filtered = query.search
-    ? projects.filter((p) =>
-        String(p.name).toLowerCase().includes(query.search!.toLowerCase()),
-      )
+    ? projects.filter((p) => String(p.name).toLowerCase().includes(query.search!.toLowerCase()))
     : projects;
 
   const claimRows = await safeRows<any>(() => db(ctx).from("contract_claims").select("*"));
@@ -1154,7 +1157,10 @@ export async function loadPortfolioClaims(
     waterfall: exposureWaterfall(totals),
     alerts: alertRows.map((a) => ({
       ...(a as JsonRecord),
-      effective_state: effectiveAlertState(a as { state: AlertState; snoozed_until?: string }, today),
+      effective_state: effectiveAlertState(
+        a as { state: AlertState; snoozed_until?: string },
+        today,
+      ),
     })) as JsonRecord[],
     access: await resolveClaimsAccess(ctx),
     disclaimer: CONTRACTS_CLAIMS_DISCLAIMER,

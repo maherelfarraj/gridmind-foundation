@@ -25,7 +25,6 @@ const TABS: Tab[] = [
   { label: "Contingency", to: "/costing/contingency" },
   { label: "Contracts & claims", to: "/costing/contracts-claims" },
   { label: "Revenue & WIP", to: "/costing/revenue" },
-
 ];
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId/costing")({

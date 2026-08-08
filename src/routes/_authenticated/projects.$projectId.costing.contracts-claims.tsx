@@ -138,9 +138,12 @@ function ContractsClaimsCockpit() {
   const refresh = useServerFn(refreshClaimAlerts);
 
   const currency = data.project.currency;
-  const snapshot = data.snapshot as
-    | { id: string; status: string; row_version: number; period_month: string }
-    | null;
+  const snapshot = data.snapshot as {
+    id: string;
+    status: string;
+    row_version: number;
+    period_month: string;
+  } | null;
   const frozen = snapshot?.status === "approved";
 
   const [period, setPeriod] = useState(snapshot?.period_month ?? monthStart(todayIso()));
@@ -337,7 +340,9 @@ function ContractsClaimsCockpit() {
                   <DialogFooter>
                     <Button
                       onClick={() => saveMutation.mutate()}
-                      disabled={saveMutation.isPending || !draft.claim_ref || draft.title.length < 3}
+                      disabled={
+                        saveMutation.isPending || !draft.claim_ref || draft.title.length < 3
+                      }
                     >
                       {t(`${K}.actions.save`)}
                     </Button>
@@ -412,7 +417,11 @@ function ContractsClaimsCockpit() {
             </Button>
           ) : null}
           {snapshot && data.access.canWrite && snapshot.status === "working" ? (
-            <Button size="sm" variant="outline" onClick={() => snapshotMutation.mutate("submitted")}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => snapshotMutation.mutate("submitted")}
+            >
               {t(`${K}.actions.submit`)}
             </Button>
           ) : null}
@@ -422,10 +431,7 @@ function ContractsClaimsCockpit() {
             </Button>
           ) : null}
           {snapshot ? (
-            <StatusBadge
-              status={snapshot.status}
-              label={t(`${K}.status.${snapshot.status}`)}
-            />
+            <StatusBadge status={snapshot.status} label={t(`${K}.status.${snapshot.status}`)} />
           ) : null}
         </div>
       </Card>
