@@ -34,9 +34,16 @@ export const Route = createFileRoute("/_authenticated/settings/calendar-policy")
       {error.message}
     </div>
   ),
-  notFoundComponent: () => <div className="p-6 text-sm">Calendar policy not found.</div>,
+  notFoundComponent: CalendarPolicyMissing,
   component: CalendarPolicySettings,
 });
+
+function CalendarPolicyMissing() {
+  const { t } = useI18n();
+  return (
+    <div className="p-6 text-sm">{t("financeMod.costing.calendarPolicy.empty.changes")}</div>
+  );
+}
 
 function CalendarPolicySettings() {
   const { t } = useI18n();
