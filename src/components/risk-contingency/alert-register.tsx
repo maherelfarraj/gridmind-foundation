@@ -131,14 +131,22 @@ export function AlertRegister({
             <TableCell>{a.due_date ?? a.snoozed_until ?? "—"}</TableCell>
             <TableCell>
               {canWrite ? (
-                <div className="flex flex-wrap gap-2">
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  tabIndex={-1}
+                  aria-label={`${t(`${K}.alerts.actions`)}: ${a.title}`}
+                  ref={(el) => {
+                    groups.current.set(a.id, el);
+                  }}
+                >
                   {a.status === "open" ? (
                     <Button
                       size="sm"
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "acknowledged", row_version: a.row_version })
+                        decide({ id: a.id, target: "acknowledged", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.acknowledge`)}
@@ -150,7 +158,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: "open",
                           row_version: a.row_version,
@@ -166,7 +174,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: "snoozed",
                           row_version: a.row_version,
@@ -183,7 +191,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: a.status,
                           row_version: a.row_version,
@@ -200,7 +208,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "open", row_version: a.row_version })
+                        decide({ id: a.id, target: "open", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.reopen`)}
@@ -210,7 +218,7 @@ export function AlertRegister({
                       size="sm"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "resolved", row_version: a.row_version })
+                        decide({ id: a.id, target: "resolved", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.resolve`)}
