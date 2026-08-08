@@ -247,10 +247,7 @@ export function CalendarPolicyAdmin({
 
   return (
     <section className="space-y-6" aria-label={t(`${K}.title`)}>
-      <SectionHeader
-        title={t(`${K}.title`)}
-        description={t(`${K}.subtitle`)}
-      />
+      <SectionHeader title={t(`${K}.title`)} description={t(`${K}.subtitle`)} />
 
       {data.resolution_error ? (
         <Alert variant="destructive">
@@ -314,7 +311,10 @@ export function CalendarPolicyAdmin({
                     <TableCell>{step.timezone ?? t(`${K}.notSet`)}</TableCell>
                     <TableCell>
                       {step.applied ? (
-                        <CheckCircle2 className="size-4 text-primary" aria-label={t(`${K}.applied`)} />
+                        <CheckCircle2
+                          className="size-4 text-primary"
+                          aria-label={t(`${K}.applied`)}
+                        />
                       ) : null}
                     </TableCell>
                   </TableRow>
@@ -621,7 +621,10 @@ export function CalendarPolicyAdmin({
             </div>
           </div>
           <div className="mt-3">
-            <Button onClick={() => saveSetMut.mutate()} disabled={!canApprove || saveSetMut.isPending}>
+            <Button
+              onClick={() => saveSetMut.mutate()}
+              disabled={!canApprove || saveSetMut.isPending}
+            >
               {t(`${K}.actions.newSet`)}
             </Button>
           </div>
@@ -677,7 +680,9 @@ export function CalendarPolicyAdmin({
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={!canApprove || s.status === "superseded" || decideSetMut.isPending}
+                        disabled={
+                          !canApprove || s.status === "superseded" || decideSetMut.isPending
+                        }
                         onClick={() =>
                           decideSetMut.mutate({
                             id: s.id,
