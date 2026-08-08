@@ -43,12 +43,12 @@ function auditTable(page: Page): Locator {
 
 async function gotoProject(page: Page) {
   await page.goto(PROJECT_ROUTE, { waitUntil: "domcontentloaded" });
-  await expect(rowFor(page, "high_exposure")).toBeVisible();
+  await expect(rowFor(page, "new_top_contributor")).toBeVisible();
 }
 
 async function gotoPortfolio(page: Page) {
   await page.goto(PORTFOLIO_ROUTE, { waitUntil: "domcontentloaded" });
-  await expect(rowFor(page, "high_exposure")).toBeVisible();
+  await expect(rowFor(page, "new_top_contributor")).toBeVisible();
 }
 
 /** Clicks a lifecycle control, waits for the success announcement, asserts new state. */
@@ -87,7 +87,7 @@ test.describe("GC-17 alert register — writer, English", () => {
     }
     const register = page
       .locator("table")
-      .filter({ has: page.getByText(`GC17 high_exposure ${fixture.suffix}`) });
+      .filter({ has: page.getByText(`GC17 new_top_contributor ${fixture.suffix}`) });
     await expect(register.locator("thead th")).toHaveCount(7);
     await expect(register.locator("caption")).toHaveText("Alerts");
   });

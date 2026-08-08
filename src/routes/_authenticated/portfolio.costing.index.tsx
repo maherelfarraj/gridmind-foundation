@@ -64,7 +64,7 @@ const searchSchema = z.object({
   basis: z.enum(["period_end", "latest"]).optional(),
 });
 
-export const Route = createFileRoute("/_authenticated/portfolio/costing")({
+export const Route = createFileRoute("/_authenticated/portfolio/costing/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
