@@ -127,7 +127,8 @@ function RiskContingencyCockpit() {
   });
 
   const currency = data.reporting_currency;
-  const results = (data.approved_run?.results ?? null) as SimResult | null;
+  const run = data.approved_run;
+  const results = (run && "cost" in run.results ? (run.results as SimResult) : null) ?? null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -168,7 +169,11 @@ function RiskContingencyCockpit() {
         onDecide={(v) => decisionMutation.mutate(v)}
       />
 
-      <RangesSection results={results} currency={currency} />
+      <RangesSection
+        results={results}
+        currency={currency}
+        precision={run?.diagnostics.relative_precision ?? null}
+      />
       <TornadoSection results={results} currency={currency} />
       <ReconciliationSection workspace={data} currency={currency} />
       <RegisterSection workspace={data} />
@@ -355,7 +360,15 @@ function RunSection({
   );
 }
 
-function RangesSection({ results, currency }: { results: SimResult | null; currency: string }) {
+function RangesSection({
+  results,
+  currency,
+  precision,
+}: {
+  results: SimResult | null;
+  currency: string;
+  precision: number | null;
+}) {
   const { t } = useI18n();
   return (
     <Card className="flex flex-col gap-4 p-4">
@@ -417,7 +430,7 @@ function RangesSection({ results, currency }: { results: SimResult | null; curre
           </div>
           <div>
             <dt>{t(`${K}.run.precision`)}</dt>
-            <dd>{percent(results.cost.relative_precision * 100)}</dd>
+            <dd>{percent(precision === null ? null : precision * 100)}</dd>
           </div>
         </dl>
       ) : null}
@@ -479,7 +492,7 @@ function ReconciliationSection({
   const r = workspace.contingency.reconciliation;
   const lines: [string, number][] = [
     [`${K}.reconciliation.opening`, r.opening],
-    [`${K}.reconciliation.transfersIn`, r.transfers_in],
+    [`${K}.reconciliation.transfersIn`, r.transfers_in + r.additions],
     [`${K}.reconciliation.transfersOut`, -r.transfers_out],
     [`${K}.reconciliation.drawdowns`, -r.drawdowns],
     [`${K}.reconciliation.releases`, -r.releases],
