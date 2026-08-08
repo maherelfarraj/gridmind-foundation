@@ -43,7 +43,12 @@ const set = (over: Partial<HolidaySetRecord> = {}): HolidaySetRecord => ({
   created_by: over.created_by ?? "requester",
   row_version: over.row_version ?? 1,
   dates: over.dates ?? [
-    { observed_date: "2026-03-20", label_en: "Eid al-Fitr", label_ar: "عيد الفطر", kind: "public_holiday" },
+    {
+      observed_date: "2026-03-20",
+      label_en: "Eid al-Fitr",
+      label_ar: "عيد الفطر",
+      kind: "public_holiday",
+    },
   ],
 });
 
@@ -92,9 +97,9 @@ describe("resolveCalendarPolicy — request → contract → company", () => {
   });
 
   it("rejects an unknown calendar identifier", () => {
-    expect(() => resolveCalendarPolicy({ request: { calendar_id: "made-up", timezone: null } })).toThrow(
-      CalendarConfigError,
-    );
+    expect(() =>
+      resolveCalendarPolicy({ request: { calendar_id: "made-up", timezone: null } }),
+    ).toThrow(CalendarConfigError);
   });
 
   it("rejects a timezone that is not governed for the calendar", () => {
@@ -104,8 +109,18 @@ describe("resolveCalendarPolicy — request → contract → company", () => {
   });
 
   it("treats a calendar change as material and a timezone-only change as not", () => {
-    expect(isMaterialPolicyChange({ calendar_id: "iso-std", timezone: "UTC" }, { calendar_id: "mena-jo", timezone: "Asia/Amman" })).toBe(true);
-    expect(isMaterialPolicyChange({ calendar_id: "mena-jo", timezone: "Asia/Amman" }, { calendar_id: "mena-jo", timezone: "Asia/Amman" })).toBe(false);
+    expect(
+      isMaterialPolicyChange(
+        { calendar_id: "iso-std", timezone: "UTC" },
+        { calendar_id: "mena-jo", timezone: "Asia/Amman" },
+      ),
+    ).toBe(true);
+    expect(
+      isMaterialPolicyChange(
+        { calendar_id: "mena-jo", timezone: "Asia/Amman" },
+        { calendar_id: "mena-jo", timezone: "Asia/Amman" },
+      ),
+    ).toBe(false);
     expect(isMaterialPolicyChange(null, { calendar_id: "iso-std", timezone: "UTC" })).toBe(true);
   });
 });
@@ -125,8 +140,21 @@ describe("effectiveCalendar — approved sets only", () => {
 
   it("ignores draft and superseded versions", () => {
     const eff = effectiveCalendar(base, [
-      set({ id: "d", status: "draft", dates: [{ observed_date: "2026-05-05", label_en: "x", label_ar: "س", kind: "public_holiday" }] }),
-      set({ id: "s", status: "superseded", version: "0", dates: [{ observed_date: "2026-06-06", label_en: "y", label_ar: "ص", kind: "public_holiday" }] }),
+      set({
+        id: "d",
+        status: "draft",
+        dates: [
+          { observed_date: "2026-05-05", label_en: "x", label_ar: "س", kind: "public_holiday" },
+        ],
+      }),
+      set({
+        id: "s",
+        status: "superseded",
+        version: "0",
+        dates: [
+          { observed_date: "2026-06-06", label_en: "y", label_ar: "ص", kind: "public_holiday" },
+        ],
+      }),
     ]);
     expect(eff.holidays).not.toContain("2026-05-05");
     expect(eff.holidays).not.toContain("2026-06-06");
@@ -140,8 +168,20 @@ describe("effectiveCalendar — approved sets only", () => {
 
   it("lets the later approved version win for the same year", () => {
     const eff = effectiveCalendar(base, [
-      set({ id: "v1", version: "1", dates: [{ observed_date: "2026-05-04", label_en: "a", label_ar: "أ", kind: "public_holiday" }] }),
-      set({ id: "v2", version: "2", dates: [{ observed_date: "2026-03-21", label_en: "b", label_ar: "ب", kind: "public_holiday" }] }),
+      set({
+        id: "v1",
+        version: "1",
+        dates: [
+          { observed_date: "2026-05-04", label_en: "a", label_ar: "أ", kind: "public_holiday" },
+        ],
+      }),
+      set({
+        id: "v2",
+        version: "2",
+        dates: [
+          { observed_date: "2026-03-21", label_en: "b", label_ar: "ب", kind: "public_holiday" },
+        ],
+      }),
     ]);
     expect(eff.holiday_set_versions).toEqual(["mena-jo@2026:2"]);
     expect(eff.holidays).toContain("2026-03-21");
@@ -171,7 +211,13 @@ describe("holiday coverage", () => {
   it("passes when every touched year is covered", () => {
     const eff = effectiveCalendar(GOVERNED_CALENDARS["mena-jo"], [
       set({ year: 2026 }),
-      set({ id: "s27", year: 2027, dates: [{ observed_date: "2027-03-10", label_en: "e", label_ar: "ع", kind: "public_holiday" }] }),
+      set({
+        id: "s27",
+        year: 2027,
+        dates: [
+          { observed_date: "2027-03-10", label_en: "e", label_ar: "ع", kind: "public_holiday" },
+        ],
+      }),
     ]);
     expect(checkHolidayCoverage(eff, [2026, 2027]).ok).toBe(true);
     expect(() => assertHolidayCoverage(eff, [2026, 2027])).not.toThrow();
@@ -206,7 +252,16 @@ describe("business-day arithmetic under governed calendars", () => {
 
   it("skips an approved observed holiday", () => {
     const withEid = effectiveCalendar(GOVERNED_CALENDARS["mena-jo"], [
-      set({ dates: [{ observed_date: "2026-01-11", label_en: "Closure", label_ar: "إغلاق", kind: "exceptional_closure" }] }),
+      set({
+        dates: [
+          {
+            observed_date: "2026-01-11",
+            label_en: "Closure",
+            label_ar: "إغلاق",
+            kind: "exceptional_closure",
+          },
+        ],
+      }),
     ]);
     expect(addBusinessDays("2026-01-08", 1, withEid)).toBe("2026-01-12");
   });
@@ -285,7 +340,12 @@ describe("previewRecalculation", () => {
 // Holiday import validation
 // ---------------------------------------------------------------------------
 describe("validateHolidayImport", () => {
-  const good = { observed_date: "2026-03-20", label_en: "Eid", label_ar: "عيد", kind: "public_holiday" as const };
+  const good = {
+    observed_date: "2026-03-20",
+    label_en: "Eid",
+    label_ar: "عيد",
+    kind: "public_holiday" as const,
+  };
 
   it("accepts a clean import and sorts it", () => {
     const r = validateHolidayImport([{ ...good, observed_date: "2026-04-01" }, good], 2026);
@@ -302,13 +362,15 @@ describe("validateHolidayImport", () => {
   });
 
   it("rejects a date outside the set year", () => {
-    expect(validateHolidayImport([{ ...good, observed_date: "2027-03-20" }], 2026).issues[0]!.code).toBe(
-      "year_mismatch",
-    );
+    expect(
+      validateHolidayImport([{ ...good, observed_date: "2027-03-20" }], 2026).issues[0]!.code,
+    ).toBe("year_mismatch");
   });
 
   it("requires both EN and AR labels", () => {
-    expect(validateHolidayImport([{ ...good, label_ar: "  " }], 2026).issues[0]!.code).toBe("missing_label");
+    expect(validateHolidayImport([{ ...good, label_ar: "  " }], 2026).issues[0]!.code).toBe(
+      "missing_label",
+    );
   });
 
   it("rejects an ungoverned holiday kind", () => {
@@ -335,7 +397,9 @@ describe("validateHolidayImport", () => {
 // ---------------------------------------------------------------------------
 describe("governed API schemas", () => {
   it("requires a reason and idempotency-friendly identity on a policy change request", () => {
-    expect(() => policyChangeRequestSchema.parse({ scope: "company", to_calendar_id: "mena-jo" })).toThrow();
+    expect(() =>
+      policyChangeRequestSchema.parse({ scope: "company", to_calendar_id: "mena-jo" }),
+    ).toThrow();
     const ok = policyChangeRequestSchema.parse({
       scope: "company",
       to_calendar_id: "mena-jo",
@@ -347,9 +411,19 @@ describe("governed API schemas", () => {
   });
 
   it("constrains a decision to approve/reject and carries optimistic concurrency", () => {
-    expect(() => policyChangeDecisionSchema.parse({ id: crypto.randomUUID(), decision: "maybe", row_version: 1 })).toThrow();
+    expect(() =>
+      policyChangeDecisionSchema.parse({
+        id: crypto.randomUUID(),
+        decision: "maybe",
+        row_version: 1,
+      }),
+    ).toThrow();
     expect(
-      policyChangeDecisionSchema.parse({ id: crypto.randomUUID(), decision: "approve", row_version: 1 }).decision,
+      policyChangeDecisionSchema.parse({
+        id: crypto.randomUUID(),
+        decision: "approve",
+        row_version: 1,
+      }).decision,
     ).toBe("approve");
   });
 

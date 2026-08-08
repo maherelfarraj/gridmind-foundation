@@ -524,8 +524,6 @@ async function holidaySetsEnforced(ctx: AuthContext, companyId: string): Promise
   return Boolean(rows[0]?.holiday_sets_enforced);
 }
 
-
-
 export async function saveDeadline(
   ctx: AuthContext,
   input: DeadlineInputSchema,
@@ -549,9 +547,8 @@ export async function saveDeadline(
   // base calendar. Missing coverage is a governed warning, or a hard 422 when
   // the company enforces holiday sets. There is never a silent fallback.
   const { loadEffectiveCalendar } = await import("@/lib/calendar-governance.server");
-  const { checkHolidayCoverage, requiredHolidayYears } = await import(
-    "@/lib/calendar-governance.rules"
-  );
+  const { checkHolidayCoverage, requiredHolidayYears } =
+    await import("@/lib/calendar-governance.rules");
   const effective = await loadEffectiveCalendar(ctx, proj.company_id, governed.calendar_id);
   const coverage =
     input.calendar === "business"
@@ -559,7 +556,12 @@ export async function saveDeadline(
           effective,
           requiredHolidayYears(input.trigger_date, input.duration_days),
         )
-      : { ok: true, missing_years: [] as number[], applied_versions: [] as string[], message: null };
+      : {
+          ok: true,
+          missing_years: [] as number[],
+          applied_versions: [] as string[],
+          message: null,
+        };
   if (!coverage.ok) {
     const enforced = await holidaySetsEnforced(ctx, proj.company_id);
     if (enforced) httpError(422, "holiday_set_missing", coverage.message!);
@@ -588,7 +590,6 @@ export async function saveDeadline(
     calendar_source: governed.calendar_source,
     timezone: governed.timezone,
     holiday_set_versions: effective.holiday_set_versions,
-
 
     due_date: due,
     owner_id: input.owner_id ?? null,

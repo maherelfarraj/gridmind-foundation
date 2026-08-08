@@ -40,9 +40,7 @@ export const Route = createFileRoute("/_authenticated/settings/calendar-policy")
 
 function CalendarPolicyMissing() {
   const { t } = useI18n();
-  return (
-    <div className="p-6 text-sm">{t("financeMod.costing.calendarPolicy.empty.changes")}</div>
-  );
+  return <div className="p-6 text-sm">{t("financeMod.costing.calendarPolicy.empty.changes")}</div>;
 }
 
 function CalendarPolicySettings() {

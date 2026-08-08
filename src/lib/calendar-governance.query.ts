@@ -1,10 +1,7 @@
 // GC-16d — Query options for calendar policy governance.
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getCalendarGovernance,
-  getCalendarAccess,
-} from "@/lib/calendar-governance.functions";
+import { getCalendarGovernance, getCalendarAccess } from "@/lib/calendar-governance.functions";
 import type { CalendarGovernanceQuery } from "@/lib/calendar-governance.rules";
 
 export function calendarGovernanceQueryOptions(query: Partial<CalendarGovernanceQuery> = {}) {

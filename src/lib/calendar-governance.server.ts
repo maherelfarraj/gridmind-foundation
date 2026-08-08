@@ -37,11 +37,7 @@ import {
 import { addBusinessDays } from "@/lib/contracts-claims.rules";
 import { audit, hasAnyRole, httpError } from "@/lib/payments.server";
 
-export const CALENDAR_REQUEST_ROLES = [
-  "finance_admin",
-  "project_admin",
-  "company_admin",
-] as const;
+export const CALENDAR_REQUEST_ROLES = ["finance_admin", "project_admin", "company_admin"] as const;
 export const CALENDAR_APPROVE_ROLES = ["finance_admin", "company_admin"] as const;
 
 type AnySupabase = {
@@ -96,7 +92,11 @@ async function companyOfUser(ctx: AuthContext): Promise<string> {
   const { data, error } = await ctx.supabase.rpc("current_company_id" as never);
   if (!error && typeof data === "string" && data) return data;
   const rows = await safeRows<{ company_id: string }>(() =>
-    db(ctx).from("profiles").select("company_id").eq("id", ctx.user?.id ?? "").limit(1),
+    db(ctx)
+      .from("profiles")
+      .select("company_id")
+      .eq("id", ctx.user?.id ?? "")
+      .limit(1),
   );
   const companyId = rows[0]?.company_id;
   if (!companyId) httpError(403, "company_unresolved", "No company context for this user.");
@@ -161,7 +161,8 @@ export async function loadEffectiveCalendar(
   calendarId: string,
 ): Promise<EffectiveCalendar> {
   const base = GOVERNED_CALENDARS[calendarId as keyof typeof GOVERNED_CALENDARS];
-  if (!base) httpError(422, "deadline_calendar_invalid", `Unknown governed calendar "${calendarId}".`);
+  if (!base)
+    httpError(422, "deadline_calendar_invalid", `Unknown governed calendar "${calendarId}".`);
   const sets = await loadHolidaySets(ctx, companyId, calendarId);
   return effectiveCalendar(base, sets);
 }
@@ -205,10 +206,7 @@ export async function saveHolidaySet(
     httpError(409, "holiday_set_immutable", "Only draft holiday sets can be edited.");
   if (input.row_version !== undefined && input.row_version !== current[0]!.row_version)
     httpError(409, "stale_write", "This holiday set changed since it was loaded.");
-  const { error } = await db(ctx)
-    .from("calendar_holiday_sets")
-    .update(payload)
-    .eq("id", input.id);
+  const { error } = await db(ctx).from("calendar_holiday_sets").update(payload).eq("id", input.id);
   if (error) throw error;
   await audit(ctx, "calendar.holiday_set.updated", "calendar_holiday_sets", input.id, payload);
   return { id: input.id };
@@ -426,7 +424,11 @@ async function upcomingDeadlines(
 export interface CalendarGovernanceView {
   access: CalendarAccess;
   company_id: string;
-  company_policy: { calendar_id: string | null; timezone: string | null; holiday_sets_enforced: boolean };
+  company_policy: {
+    calendar_id: string | null;
+    timezone: string | null;
+    holiday_sets_enforced: boolean;
+  };
   contract_policy: { calendar_id: string | null; timezone: string | null } | null;
   resolution: {
     calendar_id: string;
@@ -443,7 +445,13 @@ export interface CalendarGovernanceView {
   pending_changes: PolicyChangeRecord[];
   recent_changes: PolicyChangeRecord[];
   affected_deadlines: RecalcDeadline[];
-  calendars: { id: string; label: string; version: string; timezones: readonly string[]; requires_observed: boolean }[];
+  calendars: {
+    id: string;
+    label: string;
+    version: string;
+    timezones: readonly string[];
+    requires_observed: boolean;
+  }[];
 }
 
 export async function loadCalendarGovernance(
@@ -575,7 +583,11 @@ async function applyPolicy(
 ): Promise<void> {
   if (change.scope === "company") {
     const existing = await safeRows<any>(() =>
-      db(ctx).from("costing_settings").select("company_id").eq("company_id", change.company_id).limit(1),
+      db(ctx)
+        .from("costing_settings")
+        .select("company_id")
+        .eq("company_id", change.company_id)
+        .limit(1),
     );
     const patch = {
       deadline_calendar_id: change.to_calendar_id,
@@ -627,9 +639,7 @@ export async function requestPolicyChange(ctx: AuthContext, input: PolicyChangeR
   const material = isMaterialPolicyChange(from, to);
 
   // Validate the target pair before anything is persisted.
-  guard(() =>
-    resolveCalendarPolicy({ request: to, contract: null, company: null }),
-  );
+  guard(() => resolveCalendarPolicy({ request: to, contract: null, company: null }));
 
   const preview = await impactPreview(
     ctx,
@@ -798,7 +808,11 @@ export async function recalculateDeadlines(ctx: AuthContext, input: RecalcInput)
 
   await requireApprove(ctx);
   if (!input.reason || input.reason.trim().length < 8)
-    httpError(422, "reason_required", "A recalculation reason of at least 8 characters is required.");
+    httpError(
+      422,
+      "reason_required",
+      "A recalculation reason of at least 8 characters is required.",
+    );
 
   const { assertCostingPeriodOpen } = await import("@/lib/costing.close.server");
   const byId = new Map(deadlines.map((d) => [d.id, d]));
@@ -837,7 +851,9 @@ export async function recalculateDeadlines(ctx: AuthContext, input: RecalcInput)
     reason: input.reason,
     idempotency_key: input.idempotency_key ?? null,
     before_after: applied,
-    frozen_skipped: preview.rows.filter((r) => r.frozen).map((r) => ({ id: r.id, reason: r.frozen_reason })),
+    frozen_skipped: preview.rows
+      .filter((r) => r.frozen)
+      .map((r) => ({ id: r.id, reason: r.frozen_reason })),
   });
 
   return {
@@ -849,9 +865,4 @@ export async function recalculateDeadlines(ctx: AuthContext, input: RecalcInput)
   };
 }
 
-export {
-  assertHolidayCoverage,
-  addBusinessDays,
-  checkHolidayCoverage,
-  requiredHolidayYears,
-};
+export { assertHolidayCoverage, addBusinessDays, checkHolidayCoverage, requiredHolidayYears };

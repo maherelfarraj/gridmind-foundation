@@ -184,7 +184,12 @@ export function checkHolidayCoverage(
   years: readonly number[],
 ): CoverageResult {
   if (!requiresObservedHolidays(cal.id))
-    return { ok: true, missing_years: [], applied_versions: [...cal.holiday_set_versions], message: null };
+    return {
+      ok: true,
+      missing_years: [],
+      applied_versions: [...cal.holiday_set_versions],
+      message: null,
+    };
   const missing = years.filter((y) => !cal.covered_years.includes(y));
   return {
     ok: missing.length === 0,
@@ -228,12 +233,14 @@ export interface ResolvedPolicy {
 
 /** Deterministic request → contract → company resolution. Never falls back. */
 export function resolveCalendarPolicy(input: PolicyChainInput): ResolvedPolicy {
-  const order: { source: PolicyChainStep["source"]; rec: CalendarPolicyRecord | null | undefined }[] =
-    [
-      { source: "request", rec: input.request },
-      { source: "contract_policy", rec: input.contract },
-      { source: "company_policy", rec: input.company },
-    ];
+  const order: {
+    source: PolicyChainStep["source"];
+    rec: CalendarPolicyRecord | null | undefined;
+  }[] = [
+    { source: "request", rec: input.request },
+    { source: "contract_policy", rec: input.contract },
+    { source: "company_policy", rec: input.company },
+  ];
 
   let chosen: { source: PolicyChainStep["source"]; calendarId: string } | null = null;
   const chain: PolicyChainStep[] = [];
@@ -323,7 +330,12 @@ const dayDiff = (a: string, b: string): number =>
  */
 export function frozenReason(d: RecalcDeadline): string | null {
   if (d.satisfied_at) return "satisfied";
-  if (d.status === "met" || d.status === "waived" || d.status === "superseded" || d.status === "missed")
+  if (
+    d.status === "met" ||
+    d.status === "waived" ||
+    d.status === "superseded" ||
+    d.status === "missed"
+  )
     return d.status;
   if (d.period_locked) return "period_locked";
   return null;
@@ -352,7 +364,9 @@ export function previewRecalculation(
       frozen_reason: frozen,
     });
   }
-  rows.sort((a, b) => a.before_due_date.localeCompare(b.before_due_date) || a.id.localeCompare(b.id));
+  rows.sort(
+    (a, b) => a.before_due_date.localeCompare(b.before_due_date) || a.id.localeCompare(b.id),
+  );
   return {
     rows,
     changed_count: rows.filter((r) => r.changed).length,
@@ -409,7 +423,11 @@ export function validateHolidayImport(
     const idx = i + 1;
     const date = String(raw.observed_date ?? "").slice(0, 10);
     if (!isRealIsoDay(date)) {
-      issues.push({ row: idx, code: "invalid_date", message: `Row ${idx}: "${date}" is not a valid YYYY-MM-DD date.` });
+      issues.push({
+        row: idx,
+        code: "invalid_date",
+        message: `Row ${idx}: "${date}" is not a valid YYYY-MM-DD date.`,
+      });
       return;
     }
     if (Number(date.slice(0, 4)) !== year) {

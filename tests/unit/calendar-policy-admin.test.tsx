@@ -40,7 +40,11 @@ const view = {
     covered_years: [2026],
   },
   resolution_error: null,
-  coverage: { ok: false, missing_years: [2027], message: "No approved observed-holiday set for 2027." },
+  coverage: {
+    ok: false,
+    missing_years: [2027],
+    message: "No approved observed-holiday set for 2027.",
+  },
   holiday_sets: [
     {
       id: "s-1",
@@ -105,7 +109,13 @@ const view = {
     },
   ],
   calendars: [
-    { id: "iso-std", label: "ISO standard", version: "2026.1", timezones: ["UTC"], requires_observed: false },
+    {
+      id: "iso-std",
+      label: "ISO standard",
+      version: "2026.1",
+      timezones: ["UTC"],
+      requires_observed: false,
+    },
     {
       id: "mena-jo",
       label: "Jordan",
@@ -128,9 +138,8 @@ vi.mock("@/lib/calendar-governance.functions", () => ({
   recalculateContractDeadlines: vi.fn(),
 }));
 
-const { CalendarPolicyAdmin, parseHolidayLines } = await import(
-  "@/components/contracts-claims/calendar-policy-admin"
-);
+const { CalendarPolicyAdmin, parseHolidayLines } =
+  await import("@/components/contracts-claims/calendar-policy-admin");
 
 // ---------------------------------------------------------------------------
 // Catalog parity
@@ -254,7 +263,9 @@ describe.each(["en", "ar"] as const)("CalendarPolicyAdmin (%s)", (locale) => {
 // ---------------------------------------------------------------------------
 describe("parseHolidayLines", () => {
   it("parses pipe-delimited observed dates", () => {
-    expect(parseHolidayLines("2026-03-20 | Eid | عيد\n2026-05-01|Labour|العمال|exceptional_closure")).toEqual([
+    expect(
+      parseHolidayLines("2026-03-20 | Eid | عيد\n2026-05-01|Labour|العمال|exceptional_closure"),
+    ).toEqual([
       { observed_date: "2026-03-20", label_en: "Eid", label_ar: "عيد", kind: "public_holiday" },
       {
         observed_date: "2026-05-01",
