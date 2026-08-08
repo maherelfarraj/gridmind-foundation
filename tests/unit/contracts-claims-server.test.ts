@@ -66,21 +66,66 @@ function seed(): Tables {
 interface CtxOptions {
   roles?: string[];
   user?: string;
-  tables?: Tables;
+}
+
+const ALL_ROLES = ["finance_admin", "project_admin", "company_admin"];
+
+/**
+ * Emulates the database `row_version` trigger: new rows start at 1 and every
+ * UPDATE bumps the version the caller echoed back, so optimistic-concurrency
+ * behaviour matches Postgres instead of silently passing.
+ */
+function withRowVersionTrigger(client: ReturnType<typeof createFakeSupabase>) {
+  const from = client.from.bind(client);
+  client.from = (table: string) => {
+    const q = from(table);
+    const insert = q.insert.bind(q);
+    const update = q.update.bind(q);
+    q.insert = (payload: Row | Row[]) =>
+      insert(
+        Array.isArray(payload)
+          ? payload.map((r) => ({ row_version: 1, ...r }))
+          : { row_version: 1, ...payload },
+      );
+    q.update = (payload: Row) =>
+      update({ ...payload, row_version: Number(payload["row_version"] ?? 0) + 1 });
+    return q;
+  };
+  return client;
 }
 
 function makeCtx(opts: CtxOptions = {}) {
-  const roles = opts.roles ?? ["finance_admin", "project_admin", "company_admin"];
-  const tables = opts.tables ?? seed();
-  const client = createFakeSupabase(tables, {
-    rpc: {
-      has_company_role: (args: Row) => roles.includes(String(args["p_role"])),
-      write_audit_log: () => null,
-    },
-  });
+  const roles = opts.roles ?? ALL_ROLES;
+  const client = withRowVersionTrigger(
+    createFakeSupabase(seed(), {
+      rpc: {
+        has_company_role: (args: Row) => roles.includes(String(args["p_role"])),
+        write_audit_log: () => null,
+      },
+    }),
+  );
   const ctx = { user: { id: opts.user ?? PREPARER }, supabase: client } as unknown as AuthContext;
-  return { ctx, client, tables };
+  return { ctx, client, tables: client.db as Tables };
 }
+
+/** A second identity over the SAME in-memory database. */
+function asUser(
+  base: ReturnType<typeof createFakeSupabase>,
+  user: string,
+  roles: string[] = ALL_ROLES,
+): AuthContext {
+  const supabase = {
+    db: base.db,
+    from: (table: string) => base.from(table),
+    rpc: async (name: string, args: Row = {}) => ({
+      data: name === "has_company_role" ? roles.includes(String(args["p_role"])) : null,
+      error: null,
+    }),
+    rpcCalls: base.rpcCalls,
+  };
+  return { user: { id: user }, supabase } as unknown as AuthContext;
+}
+
 
 async function expectHttp(fn: () => Promise<unknown>, code: string, status?: number) {
   let caught: unknown;
