@@ -225,7 +225,7 @@ describe("GC-16 close-pack appendix rendering", () => {
   });
 
   it("renders the portfolio pack appendix from the same governed basis", () => {
-    renderIn("en", <PortfolioClaimsAppendixCard view={portfolioView()} />);
+    renderIn("en", <PortfolioClaimsAppendixCard data={portfolioView()} />);
     expect(screen.getByText(CONTRACTS_CLAIMS_DISCLAIMER)).toBeTruthy();
     expect(screen.getAllByRole("row").length).toBeGreaterThan(1);
   });
