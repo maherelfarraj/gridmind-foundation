@@ -108,7 +108,7 @@ describe("distribution quantiles", () => {
   it("normal centres on the most likely value", () => {
     const d = dist({ kind: "normal", most_likely: 100, sigma: 10 });
     expect(quantile(d, 0.5)).toBeCloseTo(100, 6);
-    expect(quantile(d, 0.8416212335729143 > 0 ? 0.8 : 0.8)).toBeCloseTo(108.416, 2);
+    expect(quantile(d, 0.8)).toBeCloseTo(108.416, 2);
   });
   it("lognormal is strictly positive", () => {
     const d = dist({ kind: "lognormal", most_likely: 50, sigma: 0.5 });
