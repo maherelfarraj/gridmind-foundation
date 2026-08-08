@@ -16,7 +16,11 @@ import {
   resolveGovernedTimezone,
   zonedTodayIso,
 } from "@/lib/contracts-claims.rules";
-import { loadClaimsAppendix, loadClaimsWorkspace, saveDeadline } from "@/lib/contracts-claims.server";
+import {
+  loadClaimsAppendix,
+  loadClaimsWorkspace,
+  saveDeadline,
+} from "@/lib/contracts-claims.server";
 
 const COMPANY = "11111111-1111-4111-8111-111111111111";
 const PROJECT = "22222222-2222-4222-8222-222222222222";
@@ -147,7 +151,11 @@ describe("GC-16c governed calendar registry", () => {
 describe("GC-16c calendar resolution chain", () => {
   it("honours an explicit request calendar with provenance 'request'", async () => {
     const { ctx, tables } = makeCtx();
-    const res = await saveDeadline(ctx, { ...BASE, calendar_id: "mena-jo", timezone: "Asia/Amman" });
+    const res = await saveDeadline(ctx, {
+      ...BASE,
+      calendar_id: "mena-jo",
+      timezone: "Asia/Amman",
+    });
     expect(res.calendar_id).toBe("mena-jo");
     expect(res.calendar_source).toBe("request");
     expect(res.calendar_version).toBe(GOVERNED_CALENDAR_VERSION);
@@ -258,7 +266,11 @@ describe("GC-16c persistence, concurrency and replay", () => {
   });
 
   it("is idempotent on replay of an identical payload", async () => {
-    const created = await saveDeadline(ctx, { ...BASE, calendar_id: "mena-jo", timezone: "Asia/Amman" });
+    const created = await saveDeadline(ctx, {
+      ...BASE,
+      calendar_id: "mena-jo",
+      timezone: "Asia/Amman",
+    });
     const version = Number(tables.contract_deadlines![0]!["row_version"]);
     const replay = await saveDeadline(ctx, {
       ...BASE,

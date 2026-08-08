@@ -448,7 +448,11 @@ export async function saveValuation(
 export async function resolveDeadlineCalendar(
   ctx: AuthContext,
   companyId: string,
-  input: { calendar_id?: string | undefined; timezone?: string | undefined; contract_id?: string | null | undefined },
+  input: {
+    calendar_id?: string | undefined;
+    timezone?: string | undefined;
+    contract_id?: string | null | undefined;
+  },
 ): Promise<{
   calendar: GovernedCalendar;
   calendar_id: string;
@@ -574,10 +578,10 @@ export async function saveDeadline(
         kind: input.kind,
         due_date: due,
         calendar: input.calendar,
-      calendar_id: governed.calendar_id,
-      calendar_version: governed.calendar_version,
-      calendar_source: governed.calendar_source,
-      timezone: governed.timezone,
+        calendar_id: governed.calendar_id,
+        calendar_version: governed.calendar_version,
+        calendar_source: governed.calendar_source,
+        timezone: governed.timezone,
       },
     });
     return {
@@ -684,7 +688,9 @@ async function loadDeadlines(ctx: AuthContext, projectId: string): Promise<Deadl
   const rows = await safeRows<any>(() =>
     db(ctx)
       .from("contract_deadlines")
-      .select("id, claim_id, contract_id, kind, label, due_date, status, satisfied_at, owner_id, calendar, calendar_id, calendar_version, calendar_source, timezone, trigger_date, duration_days, row_version")
+      .select(
+        "id, claim_id, contract_id, kind, label, due_date, status, satisfied_at, owner_id, calendar, calendar_id, calendar_version, calendar_source, timezone, trigger_date, duration_days, row_version",
+      )
       .eq("project_id", projectId)
       .order("due_date", { ascending: true }),
   );
@@ -1226,7 +1232,9 @@ export async function loadPortfolioClaims(
 
   const claimRows = await safeRows<any>(() => db(ctx).from("contract_claims").select("*"));
   const deadlineRows = await safeRows<any>(() =>
-    db(ctx).from("contract_deadlines").select("project_id, due_date, status, satisfied_at, timezone"),
+    db(ctx)
+      .from("contract_deadlines")
+      .select("project_id, due_date, status, satisfied_at, timezone"),
   );
   const alertRows = await safeRows<any>(() =>
     db(ctx)

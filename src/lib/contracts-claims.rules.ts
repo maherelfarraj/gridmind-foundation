@@ -376,7 +376,6 @@ export function computeDueDate(input: DeadlineInput): string {
   return addBusinessDays(input.trigger_date, days, cal);
 }
 
-
 export function daysUntil(dueIso: string, todayIso: string): number {
   return Math.round((parseIso(dueIso).getTime() - parseIso(todayIso).getTime()) / DAY_MS);
 }
@@ -830,7 +829,6 @@ export interface DeadlineRecord {
   timezone?: string;
 }
 
-
 export interface AlertEvaluationInput {
   project_id: string;
   today: string;
@@ -861,7 +859,6 @@ export function calendarProvenance(d: DeadlineRecord): JsonRecord {
     timezone: d.timezone ?? null,
   };
 }
-
 
 /** Deterministic, de-duplicated alert set. Identical input ⇒ identical output. */
 export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
@@ -923,7 +920,6 @@ export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
         due_at: d.due_date,
         evidence_link: link(d.claim_id),
         context: { days_remaining: state.days_remaining, ...calendarProvenance(d) },
-
       });
     }
   }
