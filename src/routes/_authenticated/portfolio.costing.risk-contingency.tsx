@@ -77,7 +77,9 @@ function PortfolioRiskContingency() {
     mutationFn: (input: AlertDecision) => decideAlertFn({ data: input }),
     onSuccess: async () => {
       toast.success(t(`${K}.alerts.updated`));
-      await queryClient.invalidateQueries({ queryKey: ["portfolio-risk-contingency"] });
+      // Must match the query key in `portfolioRiskContingencyQueryOptions`,
+      // otherwise the register keeps rendering the pre-decision snapshot.
+      await queryClient.invalidateQueries({ queryKey: ["risk-contingency"] });
     },
     onError: (error: unknown) => toast.error((error as Error).message),
   });
