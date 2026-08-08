@@ -15,6 +15,8 @@ import {
   approvalBlockers,
   assertClaimTransition,
   canTransitionAlert,
+  calendarProvenance,
+  CalendarConfigError,
   canTransitionSnapshot,
   claimExposure,
   concentrationBy,
@@ -28,6 +30,9 @@ import {
   isFrozen,
   reconcile,
   requiresApprovalRole,
+  resolveGovernedCalendar,
+  zonedTodayIso,
+  resolveGovernedTimezone,
   rollupClaims,
   rollupPortfolio,
   snapshotChecksum,
@@ -47,6 +52,7 @@ import {
   type DeadlineInputSchema,
   type DeadlineRecord,
   type ExposureTotals,
+  type GovernedCalendar,
   type JsonRecord,
   type PortfolioClaimsQuery,
   type PortfolioProjectExposure,
@@ -431,17 +437,106 @@ export async function saveValuation(
 // ---------------------------------------------------------------------------
 // Deadlines
 // ---------------------------------------------------------------------------
+/**
+ * GC-16c — resolve the governed calendar/timezone for a deadline.
+ *
+ * Precedence: explicit request → contract policy → company costing policy.
+ * There is no silent fallback: an unresolved or invalid configuration raises a
+ * governed 422 so the operator fixes the policy instead of inheriting an
+ * accidental Sat/Sun weekend on a MENA contract.
+ */
+export async function resolveDeadlineCalendar(
+  ctx: AuthContext,
+  companyId: string,
+  input: {
+    calendar_id?: string | undefined;
+    timezone?: string | undefined;
+    contract_id?: string | null | undefined;
+  },
+): Promise<{
+  calendar: GovernedCalendar;
+  calendar_id: string;
+  calendar_version: string;
+  calendar_source: "request" | "contract_policy" | "company_policy";
+  timezone: string;
+}> {
+  let calendarId: string | null | undefined = input.calendar_id;
+  let timezone: string | null | undefined = input.timezone;
+  let source: "request" | "contract_policy" | "company_policy" = "request";
+
+  if (!calendarId && input.contract_id) {
+    const rows = await safeRows<{
+      deadline_calendar_id: string | null;
+      deadline_timezone: string | null;
+    }>(() =>
+      (ctx.supabase as never as AnySupabase)
+        .from("contracts")
+        .select("deadline_calendar_id, deadline_timezone")
+        .eq("id", input.contract_id),
+    );
+    if (rows[0]?.deadline_calendar_id) {
+      calendarId = rows[0].deadline_calendar_id;
+      timezone = timezone ?? rows[0].deadline_timezone;
+      source = "contract_policy";
+    }
+  }
+  if (!calendarId) {
+    const rows = await safeRows<{
+      deadline_calendar_id: string | null;
+      deadline_timezone: string | null;
+    }>(() =>
+      (ctx.supabase as never as AnySupabase)
+        .from("costing_settings")
+        .select("deadline_calendar_id, deadline_timezone")
+        .eq("company_id", companyId),
+    );
+    if (rows[0]?.deadline_calendar_id) {
+      calendarId = rows[0].deadline_calendar_id;
+      timezone = timezone ?? rows[0].deadline_timezone;
+      source = "company_policy";
+    }
+  }
+
+  try {
+    const calendar = resolveGovernedCalendar(calendarId);
+    const tz = resolveGovernedTimezone(calendar, timezone ?? calendar.timezones[0]);
+    return {
+      calendar,
+      calendar_id: calendar.id,
+      calendar_version: calendar.version,
+      calendar_source: source,
+      timezone: tz,
+    };
+  } catch (err) {
+    if (err instanceof CalendarConfigError) httpError(422, err.code, err.message);
+    throw err;
+  }
+}
+
 export async function saveDeadline(
   ctx: AuthContext,
   input: DeadlineInputSchema,
-): Promise<{ id: string; due_date: string }> {
+): Promise<{
+  id: string;
+  due_date: string;
+  calendar_id: string;
+  calendar_version: string;
+  calendar_source: string;
+  timezone: string;
+}> {
   await requireWrite(ctx);
   const proj = await projectContext(ctx, input.project_id);
+  const governed = await resolveDeadlineCalendar(ctx, proj.company_id, {
+    calendar_id: input.calendar_id,
+    timezone: input.timezone,
+    contract_id: input.contract_id ?? null,
+  });
   const due = computeDueDate({
     kind: input.kind,
     trigger_date: input.trigger_date,
     duration_days: input.duration_days,
     calendar: input.calendar,
+    workCalendar: governed.calendar,
   });
   const payload = {
     company_id: proj.company_id,
@@ -454,7 +549,11 @@ export async function saveDeadline(
     trigger_date: input.trigger_date,
     duration_days: input.duration_days,
     calendar: input.calendar,
-    timezone: input.timezone,
+    calendar_id: governed.calendar_id,
+    calendar_version: governed.calendar_version,
+    calendar_source: governed.calendar_source,
+    timezone: governed.timezone,
+
     due_date: due,
     owner_id: input.owner_id ?? null,
     evidence_reference: input.evidence_reference ?? null,
@@ -475,9 +574,24 @@ export async function saveDeadline(
       entity_type: "deadline",
       entity_id: data.id,
       event_type: "deadline_created",
-      detail: { kind: input.kind, due_date: due },
+      detail: {
+        kind: input.kind,
+        due_date: due,
+        calendar: input.calendar,
+        calendar_id: governed.calendar_id,
+        calendar_version: governed.calendar_version,
+        calendar_source: governed.calendar_source,
+        timezone: governed.timezone,
+      },
     });
-    return { id: data.id as string, due_date: data.due_date as string };
+    return {
+      id: data.id as string,
+      due_date: data.due_date as string,
+      calendar_id: governed.calendar_id,
+      calendar_version: governed.calendar_version,
+      calendar_source: governed.calendar_source,
+      timezone: governed.timezone,
+    };
   }
   const current = await safeRows<{ row_version: number; status: string }>(() =>
     db(ctx).from("contract_deadlines").select("row_version, status").eq("id", input.id).limit(1),
@@ -499,9 +613,24 @@ export async function saveDeadline(
     entity_type: "deadline",
     entity_id: input.id,
     event_type: "deadline_updated",
-    detail: { kind: input.kind, due_date: data.due_date },
+    detail: {
+      kind: input.kind,
+      due_date: data.due_date,
+      calendar: input.calendar,
+      calendar_id: governed.calendar_id,
+      calendar_version: governed.calendar_version,
+      calendar_source: governed.calendar_source,
+      timezone: governed.timezone,
+    },
   });
-  return { id: data.id as string, due_date: data.due_date as string };
+  return {
+    id: data.id as string,
+    due_date: data.due_date as string,
+    calendar_id: governed.calendar_id,
+    calendar_version: governed.calendar_version,
+    calendar_source: governed.calendar_source,
+    timezone: governed.timezone,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -559,7 +688,9 @@ async function loadDeadlines(ctx: AuthContext, projectId: string): Promise<Deadl
   const rows = await safeRows<any>(() =>
     db(ctx)
       .from("contract_deadlines")
-      .select("id, claim_id, kind, label, due_date, status, satisfied_at, owner_id")
+      .select(
+        "id, claim_id, contract_id, kind, label, due_date, status, satisfied_at, owner_id, calendar, calendar_id, calendar_version, calendar_source, timezone, trigger_date, duration_days, row_version",
+      )
       .eq("project_id", projectId)
       .order("due_date", { ascending: true }),
   );
@@ -677,12 +808,18 @@ export async function loadClaimsWorkspace(
   });
   const exceptions = deriveExceptions(claims, checks);
   const today = todayIso();
+  const nowMs = Date.now();
 
   return {
     project: { id: projectId, name: proj.name, currency: proj.currency },
     period_month: period,
     claims: claims.map((c) => ({ ...c, exposure: claimExposure(c) })),
-    deadlines: deadlines.map((d) => ({ ...d, state: evaluateDeadline(d, today) })),
+    // GC-16c: each deadline is evaluated against "today" in its own governed
+    // timezone so DST/zone offsets never shift a contractual day.
+    deadlines: deadlines.map((d) => ({
+      ...d,
+      state: evaluateDeadline(d, d.timezone ? zonedTodayIso(d.timezone, nowMs) : today),
+    })),
     totals,
     waterfall: exposureWaterfall(totals),
     contract_basis: {
@@ -949,6 +1086,7 @@ async function persistAlerts(
     exceptions,
     instruments,
     priorApproved,
+    nowMs: Date.now(),
   });
 
   for (const a of alerts) {
@@ -1094,7 +1232,9 @@ export async function loadPortfolioClaims(
 
   const claimRows = await safeRows<any>(() => db(ctx).from("contract_claims").select("*"));
   const deadlineRows = await safeRows<any>(() =>
-    db(ctx).from("contract_deadlines").select("project_id, due_date, status, satisfied_at"),
+    db(ctx)
+      .from("contract_deadlines")
+      .select("project_id, due_date, status, satisfied_at, timezone"),
   );
   const alertRows = await safeRows<any>(() =>
     db(ctx)
@@ -1105,6 +1245,7 @@ export async function loadPortfolioClaims(
       .limit(300),
   );
   const today = todayIso();
+  const portfolioNowMs = Date.now();
 
   const rows: PortfolioProjectExposure[] = filtered
     .map((p) => {
@@ -1135,7 +1276,10 @@ export async function loadPortfolioClaims(
       const overdue = deadlineRows.filter(
         (d) =>
           d.project_id === p.id &&
-          evaluateDeadline(d as DeadlineRecord & { due_date: string }, today).overdue,
+          evaluateDeadline(
+            d as DeadlineRecord & { due_date: string },
+            d.timezone ? zonedTodayIso(String(d.timezone), portfolioNowMs) : today,
+          ).overdue,
       ).length;
       return {
         project_id: p.id as string,
@@ -1185,7 +1329,16 @@ export interface ClaimsAppendix {
     approved_amount: number;
     exposure: number;
   }>;
-  upcoming_deadlines: Array<{ label: string; kind: string; due_date: string; days: number }>;
+  upcoming_deadlines: Array<{
+    label: string;
+    kind: string;
+    due_date: string;
+    days: number;
+    calendar: string;
+    calendar_id: string;
+    calendar_version: string;
+    timezone: string;
+  }>;
   open_alerts: Array<{ kind: string; severity: string; title: string; due_at: string | null }>;
   checks: ReconciliationCheck[];
   disclaimer: string;
@@ -1224,6 +1377,10 @@ export async function loadClaimsAppendix(
         kind: d.kind,
         due_date: d.due_date,
         days: d.state.days_remaining,
+        calendar: d.calendar ?? "calendar",
+        calendar_id: d.calendar_id ?? "",
+        calendar_version: d.calendar_version ?? "",
+        timezone: d.timezone ?? "",
       })),
     open_alerts: (ws.alerts as JsonRecord[])
       .filter((a) => a["effective_state"] !== "resolved")

@@ -1767,7 +1767,9 @@
         "entitlement": "Entitlement basis",
         "deadline": "Deadline",
         "due": "Due",
-        "actions": "Actions"
+        "actions": "Actions",
+        "calendar": "Calendar",
+        "calendarSource": "Calendar source"
       },
       "appendix": {
         "title": "Contract & claims appendix",
@@ -1849,6 +1851,17 @@
         "snoozed": "Snoozed",
         "escalated": "Escalated",
         "resolved": "Resolved"
+      },
+      "calendarId": {
+        "iso-std": "Standard (Sat/Sun)",
+        "mena-jo": "Jordan (Fri/Sat)",
+        "mena-gulf": "Gulf (Fri/Sat)",
+        "mena-eg": "Egypt (Fri/Sat)"
+      },
+      "calendarSource": {
+        "request": "Explicit",
+        "contract_policy": "Contract policy",
+        "company_policy": "Company policy"
       }
     }
   }

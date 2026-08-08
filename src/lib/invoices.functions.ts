@@ -359,7 +359,7 @@ export const billMilestone = createServerFn({ method: "POST" })
         .maybeSingle();
       if (cErr) throw cErr;
       if (!cRaw) httpError(404, "contract_not_found");
-      const contract = cRaw as ContractRow;
+      const contract = cRaw as unknown as ContractRow;
 
       // Gate on the contract's project so a project-scoped costing lock applies.
       await assertPeriodOpen(context.supabase, companyId, new Date().toISOString().slice(0, 10), {

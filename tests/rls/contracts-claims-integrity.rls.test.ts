@@ -377,9 +377,11 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
         values (v_company, v_project, v_claim, 'transition:invariant', '{}'::jsonb);
 
         insert into public.contract_deadlines
-          (company_id, project_id, claim_id, kind, label, trigger_date, due_date)
+          (company_id, project_id, claim_id, kind, label, trigger_date, due_date,
+           calendar_id, calendar_version, calendar_source, timezone)
         values (v_company, v_project, v_claim, 'notice', 'invariant probe',
-                current_date, current_date + 7);
+                current_date, current_date + 7,
+                'mena-jo', '2026.1', 'request', 'Asia/Amman');
 
         insert into public.contract_claim_snapshots
           (company_id, project_id, period_month, data_date, status,
@@ -494,5 +496,61 @@ d("GC-16 invariants — persisted data", () => {
           group by 1,2 having count(*) > 1) x`,
     );
     expect(Number(n)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GC-16c — governed deadline calendar provenance
+// ---------------------------------------------------------------------------
+d("GC-16c governed calendar columns and constraints", () => {
+  it("stores calendar id, version and source on every deadline", () => {
+    const cols = new Map(
+      q(
+        `select column_name, is_nullable from information_schema.columns
+          where table_schema='public' and table_name='contract_deadlines'
+            and column_name in ('calendar_id','calendar_version','calendar_source','timezone')`,
+      ).map(([c, n]) => [c, n]),
+    );
+    for (const c of ["calendar_id", "calendar_version", "calendar_source", "timezone"]) {
+      expect(cols.has(c), `contract_deadlines.${c} must exist`).toBe(true);
+    }
+  });
+
+  it("constrains calendar identifiers and provenance sources", () => {
+    const checks = q(
+      `select conname, ${flat("pg_get_constraintdef(oid)")} from pg_constraint
+        where conrelid='public.contract_deadlines'::regclass and contype='c'`,
+    )
+      .map(([, def]) => def)
+      .join(" ");
+    expect(checks).toMatch(/iso-std/);
+    expect(checks).toMatch(/mena-jo/);
+    expect(checks).toMatch(/contract_policy/);
+    expect(checks).toMatch(/company_policy/);
+  });
+
+  it("carries the governing calendar policy on contracts and company settings", () => {
+    const rows = q(
+      `select table_name, column_name from information_schema.columns
+        where table_schema='public'
+          and column_name in ('deadline_calendar_id','deadline_timezone')
+          and table_name in ('contracts','costing_settings')`,
+    ).map((r) => r.join("."));
+    for (const expected of [
+      "contracts.deadline_calendar_id",
+      "contracts.deadline_timezone",
+      "costing_settings.deadline_calendar_id",
+      "costing_settings.deadline_timezone",
+    ]) {
+      expect(rows).toContain(expected);
+    }
+  });
+
+  it("never leaves a persisted deadline without recorded calendar provenance", () => {
+    const [[bad]] = q(
+      `select count(*) from public.contract_deadlines
+        where calendar_id is not null and (calendar_version is null or calendar_source is null)`,
+    );
+    expect(Number(bad)).toBe(0);
   });
 });

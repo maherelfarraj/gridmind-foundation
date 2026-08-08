@@ -528,6 +528,7 @@ function ContractsClaimsCockpit() {
                   <TableHead scope="col">{t(`${K}.table.deadline`)}</TableHead>
                   <TableHead scope="col">{t(`${K}.table.kind`)}</TableHead>
                   <TableHead scope="col">{t(`${K}.table.due`)}</TableHead>
+                  <TableHead scope="col">{t(`${K}.table.calendar`)}</TableHead>
                   <TableHead scope="col">{t(`${K}.table.status`)}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -538,6 +539,14 @@ function ContractsClaimsCockpit() {
                     <TableCell>{t(`${K}.deadlineKind.${d.kind}`)}</TableCell>
                     <TableCell className="tabular-nums">
                       {d.due_date} · {d.state.days_remaining}d
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {d.calendar_id ? t(`${K}.calendarId.${d.calendar_id}`) : "—"}
+                      {d.calendar_version ? ` v${d.calendar_version}` : ""}
+                      {d.timezone ? ` · ${d.timezone}` : ""}
+                      {d.calendar_source
+                        ? ` · ${t(`${K}.calendarSource.${d.calendar_source}`)}`
+                        : ""}
                     </TableCell>
                     <TableCell>
                       <StatusBadge

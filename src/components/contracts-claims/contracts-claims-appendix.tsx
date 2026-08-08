@@ -168,6 +168,10 @@ export function ContractsClaimsAppendixCard({
                 <span className="text-foreground">{d.label}</span>
                 <span className="tabular-nums text-muted-foreground">
                   {d.due_date} · {d.days}d
+                  {d.calendar_id
+                    ? ` · ${t(`${K}.calendarId.${d.calendar_id}`)} v${d.calendar_version}`
+                    : ""}
+                  {d.timezone ? ` · ${d.timezone}` : ""}
                 </span>
               </li>
             ))}

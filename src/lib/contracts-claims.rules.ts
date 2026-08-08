@@ -224,20 +224,156 @@ export function addBusinessDays(
   return cursor;
 }
 
+// ---------------------------------------------------------------------------
+// GC-16c — governed calendar registry (deterministic id + version, no fallback)
+// ---------------------------------------------------------------------------
+export interface GovernedCalendar extends WorkCalendar {
+  id: GovernedCalendarId;
+  version: string;
+  label: string;
+  /** Timezones a contract may govern this calendar with. */
+  timezones: readonly string[];
+}
+
+export const GOVERNED_CALENDAR_IDS = ["iso-std", "mena-jo", "mena-gulf", "mena-eg"] as const;
+export type GovernedCalendarId = (typeof GOVERNED_CALENDAR_IDS)[number];
+
+export const GOVERNED_CALENDAR_VERSION = "2026.1";
+
+/**
+ * Holidays are contractual working-day exclusions, expressed as fixed Gregorian
+ * dates for the governed version. Bumping a calendar's holiday set REQUIRES a
+ * new `version`; deadlines record the version applied so historical due dates
+ * remain reproducible.
+ */
+export const GOVERNED_CALENDARS: Readonly<Record<GovernedCalendarId, GovernedCalendar>> = {
+  "iso-std": {
+    id: "iso-std",
+    version: GOVERNED_CALENDAR_VERSION,
+    label: "Standard (Sat/Sun weekend)",
+    weekend: [6, 0],
+    holidays: [],
+    timezones: ["UTC", "Europe/London", "Europe/Berlin", "Asia/Amman", "Asia/Dubai"],
+  },
+  "mena-jo": {
+    id: "mena-jo",
+    version: GOVERNED_CALENDAR_VERSION,
+    label: "Jordan (Fri/Sat weekend)",
+    weekend: [5, 6],
+    holidays: ["2026-01-01", "2026-03-20", "2026-03-21", "2026-05-01", "2026-05-25", "2026-12-25"],
+    timezones: ["Asia/Amman", "UTC"],
+  },
+  "mena-gulf": {
+    id: "mena-gulf",
+    version: GOVERNED_CALENDAR_VERSION,
+    label: "Gulf (Fri/Sat weekend)",
+    weekend: [5, 6],
+    holidays: ["2026-01-01", "2026-03-20", "2026-03-21", "2026-12-02"],
+    timezones: ["Asia/Dubai", "Asia/Riyadh", "Asia/Qatar", "UTC"],
+  },
+  "mena-eg": {
+    id: "mena-eg",
+    version: GOVERNED_CALENDAR_VERSION,
+    label: "Egypt (Fri/Sat weekend)",
+    weekend: [5, 6],
+    holidays: ["2026-01-01", "2026-01-07", "2026-04-25", "2026-07-23", "2026-10-06"],
+    timezones: ["Africa/Cairo", "UTC"],
+  },
+};
+
+/** Governed validation error — surfaced as a 422 by the server layer. */
+export class CalendarConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "CalendarConfigError";
+    this.code = code;
+  }
+}
+
+export function isGovernedCalendarId(id: unknown): id is GovernedCalendarId {
+  return typeof id === "string" && (GOVERNED_CALENDAR_IDS as readonly string[]).includes(id);
+}
+
+/** Resolve a governed calendar. Never falls back silently. */
+export function resolveGovernedCalendar(id: unknown): GovernedCalendar {
+  if (id === null || id === undefined || id === "")
+    throw new CalendarConfigError(
+      "deadline_calendar_unresolved",
+      "No governed work calendar is configured for this deadline. Set a calendar on the contract or in company costing settings, or supply one explicitly.",
+    );
+  if (!isGovernedCalendarId(id))
+    throw new CalendarConfigError(
+      "deadline_calendar_invalid",
+      `Unknown governed work calendar "${String(id)}". Allowed: ${GOVERNED_CALENDAR_IDS.join(", ")}.`,
+    );
+  return GOVERNED_CALENDARS[id];
+}
+
+/** Validate the timezone against the IANA database AND the calendar's governed set. */
+export function resolveGovernedTimezone(cal: GovernedCalendar, tz: unknown): string {
+  if (tz === null || tz === undefined || tz === "")
+    throw new CalendarConfigError(
+      "deadline_timezone_unresolved",
+      "No governed timezone is configured for this deadline.",
+    );
+  if (typeof tz !== "string" || !isValidIanaTimezone(tz))
+    throw new CalendarConfigError(
+      "deadline_timezone_invalid",
+      `"${String(tz)}" is not a valid IANA timezone.`,
+    );
+  if (!cal.timezones.includes(tz))
+    throw new CalendarConfigError(
+      "deadline_timezone_not_governed",
+      `Timezone "${tz}" is not governed for calendar "${cal.id}". Allowed: ${cal.timezones.join(", ")}.`,
+    );
+  return tz;
+}
+
+export function isValidIanaTimezone(tz: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * DST-safe "today" in a governed timezone. Uses the IANA zone's wall clock so a
+ * deadline never flips a day early/late across a DST boundary.
+ */
+export function zonedTodayIso(tz: string, nowMs: number = Date.now()): string {
+  if (!isValidIanaTimezone(tz))
+    throw new CalendarConfigError(
+      "deadline_timezone_invalid",
+      `"${tz}" is not a valid IANA timezone.`,
+    );
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(nowMs));
+  return parts.slice(0, 10);
+}
+
 export interface DeadlineInput {
   kind: DeadlineKind;
   trigger_date: string;
   duration_days: number;
   calendar: "calendar" | "business";
+  /** Governed calendar identifier. Required — no silent default. */
+  calendar_id?: GovernedCalendarId | string | null;
   workCalendar?: WorkCalendar;
 }
 
 /** Deterministic due date for any contractual clock. */
 export function computeDueDate(input: DeadlineInput): string {
   const days = Math.max(0, Math.trunc(input.duration_days));
-  return input.calendar === "business"
-    ? addBusinessDays(input.trigger_date, days, input.workCalendar ?? DEFAULT_CALENDAR)
-    : addCalendarDays(input.trigger_date, days);
+  if (input.calendar !== "business") return addCalendarDays(input.trigger_date, days);
+  const cal = input.workCalendar ?? resolveGovernedCalendar(input.calendar_id);
+  return addBusinessDays(input.trigger_date, days, cal);
 }
 
 export function daysUntil(dueIso: string, todayIso: string): number {
@@ -685,6 +821,12 @@ export interface DeadlineRecord {
   status: DeadlineStatus;
   satisfied_at?: string | null;
   owner_id?: string | null;
+  /** GC-16c governed calendar provenance carried through to alerts and packs. */
+  calendar?: "calendar" | "business";
+  calendar_id?: GovernedCalendarId | string;
+  calendar_version?: string;
+  calendar_source?: string;
+  timezone?: string;
 }
 
 export interface AlertEvaluationInput {
@@ -697,10 +839,26 @@ export interface AlertEvaluationInput {
   agingDays?: number;
   quantumMovementPct?: number;
   priorApproved?: Record<string, number>;
+  /**
+   * GC-16c: when supplied, each deadline is evaluated against "today" in its own
+   * governed timezone (DST-safe) instead of the portfolio-wide `today`.
+   */
+  nowMs?: number;
 }
 
 const dedupe = (parts: readonly (string | null | undefined)[]): string =>
   parts.filter(Boolean).join("|");
+
+/** GC-16c: calendar provenance carried into every deadline-derived alert. */
+export function calendarProvenance(d: DeadlineRecord): JsonRecord {
+  return {
+    calendar: d.calendar ?? null,
+    calendar_id: d.calendar_id ?? null,
+    calendar_version: d.calendar_version ?? null,
+    calendar_source: d.calendar_source ?? null,
+    timezone: d.timezone ?? null,
+  };
+}
 
 /** Deterministic, de-duplicated alert set. Identical input ⇒ identical output. */
 export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
@@ -713,9 +871,12 @@ export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
   };
   const link = (claimId: string | null) =>
     claimId ? `/projects/${input.project_id}/costing/contracts-claims?claim=${claimId}` : null;
+  const todayFor = (d: DeadlineRecord): string =>
+    input.nowMs !== undefined && d.timezone ? zonedTodayIso(d.timezone, input.nowMs) : today;
 
   for (const d of input.deadlines) {
-    const state = evaluateDeadline(d, today);
+    const state = evaluateDeadline(d, todayFor(d));
+
     if (state.status === "met" || state.status === "waived" || state.status === "superseded")
       continue;
     if (state.overdue) {
@@ -740,7 +901,11 @@ export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
         owner_id: d.owner_id ?? null,
         due_at: d.due_date,
         evidence_link: link(d.claim_id),
-        context: { days_overdue: Math.abs(state.days_remaining), kind: d.kind },
+        context: {
+          days_overdue: Math.abs(state.days_remaining),
+          kind: d.kind,
+          ...calendarProvenance(d),
+        },
       });
     } else if (state.approaching && d.kind === "notice") {
       push({
@@ -754,7 +919,7 @@ export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
         owner_id: d.owner_id ?? null,
         due_at: d.due_date,
         evidence_link: link(d.claim_id),
-        context: { days_remaining: state.days_remaining },
+        context: { days_remaining: state.days_remaining, ...calendarProvenance(d) },
       });
     }
   }
@@ -1080,7 +1245,10 @@ export const deadlineSchema = z.object({
   trigger_date: isoDay,
   duration_days: z.number().int().min(0).max(3650),
   calendar: z.enum(["calendar", "business"]).default("calendar"),
-  timezone: z.string().max(64).default("UTC"),
+  /** GC-16c: explicit governed calendar/timezone. Omitted ⇒ resolved from policy. */
+  calendar_id: z.enum(GOVERNED_CALENDAR_IDS).optional(),
+  timezone: z.string().max(64).optional(),
+
   owner_id: uuid.nullable().optional(),
   evidence_reference: z.string().max(400).nullable().optional(),
   status: z.enum(DEADLINE_STATUSES).optional(),

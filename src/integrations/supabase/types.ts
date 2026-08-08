@@ -4312,6 +4312,9 @@ export type Database = {
       contract_deadlines: {
         Row: {
           calendar: string
+          calendar_id: string
+          calendar_source: string
+          calendar_version: string
           claim_id: string | null
           clause_ref: string | null
           company_id: string
@@ -4335,6 +4338,9 @@ export type Database = {
         }
         Insert: {
           calendar?: string
+          calendar_id: string
+          calendar_source: string
+          calendar_version: string
           claim_id?: string | null
           clause_ref?: string | null
           company_id: string
@@ -4358,6 +4364,9 @@ export type Database = {
         }
         Update: {
           calendar?: string
+          calendar_id?: string
+          calendar_source?: string
+          calendar_version?: string
           claim_id?: string | null
           clause_ref?: string | null
           company_id?: string
@@ -4496,6 +4505,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency_code: string | null
+          deadline_calendar_id: string | null
+          deadline_timezone: string | null
           effective_date: string | null
           expiry_date: string | null
           file_path: string | null
@@ -4517,6 +4528,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
+          deadline_calendar_id?: string | null
+          deadline_timezone?: string | null
           effective_date?: string | null
           expiry_date?: string | null
           file_path?: string | null
@@ -4538,6 +4551,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
+          deadline_calendar_id?: string | null
+          deadline_timezone?: string | null
           effective_date?: string | null
           expiry_date?: string | null
           file_path?: string | null
@@ -5520,6 +5535,8 @@ export type Database = {
           block_on_warnings: boolean
           company_id: string
           created_at: string
+          deadline_calendar_id: string | null
+          deadline_timezone: string | null
           id: string
           materiality_abs: number
           materiality_pct: number
@@ -5531,6 +5548,8 @@ export type Database = {
           block_on_warnings?: boolean
           company_id: string
           created_at?: string
+          deadline_calendar_id?: string | null
+          deadline_timezone?: string | null
           id?: string
           materiality_abs?: number
           materiality_pct?: number
@@ -5542,6 +5561,8 @@ export type Database = {
           block_on_warnings?: boolean
           company_id?: string
           created_at?: string
+          deadline_calendar_id?: string | null
+          deadline_timezone?: string | null
           id?: string
           materiality_abs?: number
           materiality_pct?: number
