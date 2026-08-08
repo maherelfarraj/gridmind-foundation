@@ -108,9 +108,9 @@ function PortfolioRiskContingency() {
             }
           >
             <option value="all">{t(`${K}.filters.allBands`)}</option>
-            <option value="adequate">adequate</option>
-            <option value="tight">tight</option>
-            <option value="inadequate">inadequate</option>
+            <option value="healthy">{t(`${K}.bands.healthy`)}</option>
+            <option value="watch">{t(`${K}.bands.watch`)}</option>
+            <option value="inadequate">{t(`${K}.bands.inadequate`)}</option>
           </select>
         </div>
         <div className="space-y-1">

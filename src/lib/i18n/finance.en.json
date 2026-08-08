@@ -2045,7 +2045,8 @@
         "sd": "Standard deviation",
         "probBudget": "Probability over budget",
         "probFinish": "Probability over finish date",
-        "empty": "Approve a simulation run to publish quantitative ranges."
+        "empty": "Approve a simulation run to publish quantitative ranges.",
+        "metric": "Metric"
       },
       "tornado": {
         "title": "Sensitivity (tornado)",
@@ -2117,6 +2118,33 @@
         "lastRun": "Last approved run",
         "open": "Open project",
         "empty": "No projects with quantified risk or contingency."
+      },
+      "filters": {
+        "band": "Adequacy band",
+        "allBands": "All bands",
+        "search": "Project search"
+      },
+      "bands": {
+        "healthy": "Healthy",
+        "watch": "Watch",
+        "inadequate": "Inadequate"
+      },
+      "appendix": {
+        "title": "Appendix — risk & contingency",
+        "portfolioTitle": "Appendix — portfolio risk & contingency",
+        "approvedBasis": "Approved run",
+        "checksum": "Input checksum",
+        "engine": "Engine",
+        "seed": "Seed",
+        "iterations": "Iterations",
+        "fxDate": "FX rate date",
+        "approvedAt": "Approved at",
+        "assumptions": "Assumptions",
+        "exclusions": "Exclusions",
+        "rangesCaption": "Simulated cost and schedule ranges",
+        "coverP80": "Cover at P80",
+        "openAlerts": "Open alerts",
+        "total": "Total"
       }
     }
   }
