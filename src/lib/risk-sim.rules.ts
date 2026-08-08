@@ -113,10 +113,10 @@ export function normInv(p: number): number {
     );
   }
   q = p - 0.5;
-  r = q * q;
+  const rc = q * q;
   return (
-    ((((((a[0]! * r + a[1]!) * r + a[2]!) * r + a[3]!) * r + a[4]!) * r + a[5]!) * q) /
-    (((((b[0]! * r + b[1]!) * r + b[2]!) * r + b[3]!) * r + b[4]!) * r + 1)
+    ((((((a[0]! * rc + a[1]!) * rc + a[2]!) * rc + a[3]!) * rc + a[4]!) * rc + a[5]!) * q) /
+    (((((b[0]! * rc + b[1]!) * rc + b[2]!) * rc + b[3]!) * rc + b[4]!) * rc + 1)
   );
 }
 
