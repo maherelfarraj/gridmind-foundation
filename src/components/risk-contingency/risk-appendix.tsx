@@ -68,13 +68,13 @@ export function RiskContingencyAppendixCard({
           <TableRow>
             <TableHead scope="col">{t(`${K}.ranges.metric`)}</TableHead>
             <TableHead scope="col" className="text-right">
-              P50
+              {t(`${K}.kpi.p50`)}
             </TableHead>
             <TableHead scope="col" className="text-right">
-              P80
+              {t(`${K}.kpi.p80`)}
             </TableHead>
             <TableHead scope="col" className="text-right">
-              P90
+              {t(`${K}.kpi.p90`)}
             </TableHead>
           </TableRow>
         </TableHeader>
