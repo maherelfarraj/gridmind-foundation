@@ -6,7 +6,7 @@
 // In-memory Supabase double — no database, no network.
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { createFakeSupabase, type Row, type Tables } from "tests/helpers/fake-supabase";
+import { createFakeSupabase, type Row, type Tables } from "../helpers/fake-supabase";
 import type { AuthContext } from "@/integrations/supabase/auth-attacher";
 import {
   actOnAlert,
