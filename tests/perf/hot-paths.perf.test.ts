@@ -140,6 +140,42 @@ const PROBES: Probe[] = [
            order by updated_at desc
            limit 50`,
   },
+  {
+    key: "risk_latest_run",
+    title: "GC-17 latest approved simulation run by project",
+    relation: "risk_sim_runs",
+    allowedIndexes: ["risk_sim_runs_project_idx", "risk_sim_runs_company_status_idx"],
+    budgetMs: 50,
+    sql: `select id, status, seed, iterations, input_checksum, created_at
+            from public.risk_sim_runs
+           where project_id = md5('gc15-perf::project::${PROBE_PROJECT}')::uuid
+           order by created_at desc
+           limit 1`,
+  },
+  {
+    key: "risk_event_history",
+    title: "GC-17 append-only event history by entity",
+    relation: "risk_contingency_events",
+    allowedIndexes: ["risk_contingency_events_entity_idx", "risk_contingency_events_project_idx"],
+    budgetMs: 50,
+    sql: `select action, created_at
+            from public.risk_contingency_events
+           where project_id = md5('gc15-perf::project::${PROBE_PROJECT}')::uuid
+           order by created_at desc
+           limit 100`,
+  },
+  {
+    key: "risk_open_alerts",
+    title: "GC-17 open alert register by project",
+    relation: "risk_contingency_alerts",
+    allowedIndexes: ["risk_contingency_alerts_project_idx", "risk_contingency_alerts_dedupe_idx"],
+    budgetMs: 50,
+    sql: `select family, severity, title
+            from public.risk_contingency_alerts
+           where project_id = md5('gc15-perf::project::${PROBE_PROJECT}')::uuid
+             and status = 'open'
+           limit 50`,
+  },
 ];
 
 const SEED_SQL = path.resolve(__dirname, "seed.sql");
@@ -174,6 +210,9 @@ explain (analyze, buffers) ${p.sql};
     "contract_claims",
     "contract_claim_snapshots",
     "contract_claim_snapshot_lines",
+    "risk_sim_runs",
+    "risk_contingency_events",
+    "risk_contingency_alerts",
   ]
     .map((t) => `select 'COUNT:${t}:' || count(*) from public.${t};`)
     .join("\n");
