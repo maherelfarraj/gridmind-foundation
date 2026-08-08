@@ -9,6 +9,8 @@ import { z } from "zod";
 import { PortfolioCashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { PortfolioEvmAppendixCard } from "@/components/evm/evm-appendix";
 import { PortfolioRecognitionAppendixCard } from "@/components/recognition/recognition-appendix";
+import { PortfolioRiskAppendixCard } from "@/components/risk-contingency/risk-appendix";
+import { portfolioRiskAppendixQueryOptions } from "@/lib/risk-contingency.query";
 import { PortfolioClaimsAppendixCard } from "@/components/contracts-claims/contracts-claims-appendix";
 import { portfolioClaimsQueryOptions } from "@/lib/contracts-claims.query";
 import { portfolioRecognitionQueryOptions } from "@/lib/recognition.query";
@@ -200,6 +202,10 @@ function PackView() {
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <PortfolioRiskAppendix />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
         <AuditAppendix period={data.period} />
       </Suspense>
     </div>
@@ -234,6 +240,16 @@ function PortfolioRecognitionAppendix({ period }: { period: string }) {
   return (
     <section className="space-y-3">
       <PortfolioRecognitionAppendixCard data={data} />
+    </section>
+  );
+}
+
+/** GC-17 — consolidated risk & contingency appendix. */
+function PortfolioRiskAppendix() {
+  const { data } = useSuspenseQuery(portfolioRiskAppendixQueryOptions());
+  return (
+    <section className="space-y-3">
+      <PortfolioRiskAppendixCard data={data} />
     </section>
   );
 }

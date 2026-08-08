@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/table";
 import { CashAppendixCard } from "@/components/cashflow/cash-appendix";
 import { EvmAppendixCard } from "@/components/evm/evm-appendix";
+import { riskContingencyAppendixQueryOptions } from "@/lib/risk-contingency.query";
 import { RecognitionAppendixCard } from "@/components/recognition/recognition-appendix";
+import { RiskContingencyAppendixCard } from "@/components/risk-contingency/risk-appendix";
 import { ContractsClaimsAppendixCard } from "@/components/contracts-claims/contracts-claims-appendix";
 import { claimsAppendixQueryOptions } from "@/lib/contracts-claims.query";
 import { recognitionAppendixQueryOptions } from "@/lib/recognition.query";
@@ -201,6 +203,10 @@ function ClosePackView() {
         <ClaimsAppendixSection projectId={projectId} period={data.close.focusPeriod} />
       </Suspense>
 
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <RiskAppendixSection projectId={projectId} />
+      </Suspense>
+
       <Card className="flex flex-col gap-3 p-4">
         <h2 className="text-sm font-semibold text-foreground">{t(`${K}.auditTitle`)}</h2>
         <ol className="flex flex-col gap-1 text-sm">
@@ -235,6 +241,12 @@ function CashAppendixSection({ projectId, period }: { projectId: string; period:
 function RecognitionAppendixSection({ projectId, period }: { projectId: string; period: string }) {
   const { data } = useSuspenseQuery(recognitionAppendixQueryOptions(projectId, period));
   return <RecognitionAppendixCard appendix={data} />;
+}
+
+/** GC-17 — governed risk & contingency appendix for the period being closed. */
+function RiskAppendixSection({ projectId }: { projectId: string }) {
+  const { data } = useSuspenseQuery(riskContingencyAppendixQueryOptions(projectId));
+  return <RiskContingencyAppendixCard appendix={data} />;
 }
 
 /** GC-16 — governed contract & claims appendix for the period being closed. */
