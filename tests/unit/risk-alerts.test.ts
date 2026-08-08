@@ -119,12 +119,17 @@ describe("GC-17 alert families", () => {
   });
 
   it("emits every family at once with unique de-duplication keys", () => {
+    // Adequacy bands are mutually exclusive, so cover them in two passes.
     const input = baseInput();
     for (const family of ALERT_FAMILIES) TRIGGERS[family](input);
-    const alerts = evaluateAlerts(input);
+    const watch = baseInput();
+    TRIGGERS.high_exposure(watch);
+    const alerts = [...evaluateAlerts(input), ...evaluateAlerts(watch)];
     const families = new Set(alerts.map((a) => a.family));
     for (const family of ALERT_FAMILIES) expect(families).toContain(family);
-    const keys = alerts.map((a) => alertDedupeKey(a.family, a.project_id, a.subject));
+    const keys = evaluateAlerts(input).map((a) =>
+      alertDedupeKey(a.family, a.project_id, a.subject),
+    );
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys[0]).toMatch(/^gc17:/);
   });
