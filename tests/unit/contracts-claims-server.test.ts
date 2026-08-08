@@ -218,8 +218,8 @@ describe("GC-16 claim CRUD and lifecycle", () => {
   });
 
   it("walks the full lifecycle draft → submitted → assessed → approved → certified → paid → closed", async () => {
-    const { ctx, tables } = makeCtx();
-    const approver = makeCtx({ tables, user: APPROVER });
+    const { ctx, tables, client } = makeCtx();
+    const approverCtx = asUser(client, APPROVER);
     const { id } = await saveClaim(ctx, CLAIM);
 
     const version = () => Number(tables.contract_claims![0]!["row_version"]);
@@ -229,12 +229,12 @@ describe("GC-16 claim CRUD and lifecycle", () => {
     expect(r.status).toBe("assessed");
 
     // Approval-grade steps are taken by a different user (segregation of duties).
-    r = await transitionClaim(approver.ctx, { claim_id: id, to: "approved", row_version: version() });
+    r = await transitionClaim(approverCtx, { claim_id: id, to: "approved", row_version: version() });
     expect(r.status).toBe("approved");
     expect(tables.contract_claims![0]!["approved_by"]).toBe(APPROVER);
-    r = await transitionClaim(approver.ctx, { claim_id: id, to: "certified", row_version: version() });
+    r = await transitionClaim(approverCtx, { claim_id: id, to: "certified", row_version: version() });
     expect(tables.contract_claims![0]!["certified_by"]).toBe(APPROVER);
-    r = await transitionClaim(approver.ctx, { claim_id: id, to: "paid", row_version: version() });
+    r = await transitionClaim(approverCtx, { claim_id: id, to: "paid", row_version: version() });
     expect(r.status).toBe("paid");
     expect(tables.contract_claims![0]!["closed_at"]).toBeFalsy();
 
@@ -272,9 +272,9 @@ describe("GC-16 claim CRUD and lifecycle", () => {
     const v = () => Number(tables.contract_claims![0]!["row_version"]);
     await transitionClaim(ctx, { claim_id: id, to: "submitted", row_version: v() });
     await transitionClaim(ctx, { claim_id: id, to: "assessed", row_version: v() });
-    const pm = makeCtx({ tables, roles: ["project_admin"], user: APPROVER });
+    const pmCtx = asUser(client, APPROVER, ["project_admin"]);
     await expectHttp(
-      () => transitionClaim(pm.ctx, { claim_id: id, to: "approved", row_version: v() }),
+      () => transitionClaim(pmCtx, { claim_id: id, to: "approved", row_version: v() }),
       "forbidden",
       403,
     );
@@ -286,9 +286,9 @@ describe("GC-16 claim CRUD and lifecycle", () => {
     const v = () => Number(tables.contract_claims![0]!["row_version"]);
     await transitionClaim(ctx, { claim_id: id, to: "submitted", row_version: v() });
     await transitionClaim(ctx, { claim_id: id, to: "assessed", row_version: v() });
-    const approver = makeCtx({ tables, user: APPROVER });
+    const approverCtx = asUser(client, APPROVER);
     await expectHttp(
-      () => transitionClaim(approver.ctx, { claim_id: id, to: "approved", row_version: v() }),
+      () => transitionClaim(approverCtx, { claim_id: id, to: "approved", row_version: v() }),
       "delegation_exceeded",
       403,
     );
@@ -505,8 +505,8 @@ describe("GC-16 snapshots", () => {
     const v = () => Number(snap()["row_version"]);
 
     await transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "submitted", row_version: v() });
-    const approver = makeCtx({ tables, user: APPROVER });
-    await transitionClaimSnapshot(approver.ctx, {
+    const approverCtx = asUser(client, APPROVER);
+    await transitionClaimSnapshot(approverCtx, {
       snapshot_id: built.snapshot_id,
       to: "approved",
       row_version: v(),
@@ -515,7 +515,7 @@ describe("GC-16 snapshots", () => {
 
     await expectHttp(() => buildClaimSnapshot(ctx, BUILD), "snapshot_frozen", 409);
 
-    await transitionClaimSnapshot(approver.ctx, {
+    await transitionClaimSnapshot(approverCtx, {
       snapshot_id: built.snapshot_id,
       to: "superseded",
       row_version: v(),
