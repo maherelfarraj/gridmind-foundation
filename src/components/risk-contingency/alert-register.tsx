@@ -106,7 +106,9 @@ export function AlertRegister({
             <TableCell>
               <StatusBadge status={a.status} />
             </TableCell>
-            <TableCell>{a.owner_id ? a.owner_id.slice(0, 8) : t(`${K}.alerts.unassigned`)}</TableCell>
+            <TableCell>
+              {a.owner_id ? a.owner_id.slice(0, 8) : t(`${K}.alerts.unassigned`)}
+            </TableCell>
             <TableCell>{a.due_date ?? a.snoozed_until ?? "—"}</TableCell>
             <TableCell>
               {canWrite ? (
