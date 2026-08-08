@@ -50,7 +50,7 @@ function seed(): Tables {
         base_code: "EUR",
         quote_code: "USD",
         rate: 1.1,
-        as_of: "2026-06-28",
+        as_of: "2026-05-28",
         source_priority: 1,
       },
     ],
@@ -90,12 +90,20 @@ function withRowVersionTrigger(client: ReturnType<typeof createFakeSupabase>) {
     const q = from(table);
     const insert = q.insert.bind(q);
     const update = q.update.bind(q);
+    const upsert = q.upsert.bind(q);
     const defaults: Row = { row_version: 1, ...(COLUMN_DEFAULTS[table] ?? {}) };
     q.insert = (payload: Row | Row[]) =>
       insert(
         Array.isArray(payload)
           ? payload.map((r) => ({ ...defaults, ...r }))
           : { ...defaults, ...payload },
+      );
+    q.upsert = (payload: Row | Row[], o?: { onConflict?: string; ignoreDuplicates?: boolean }) =>
+      upsert(
+        Array.isArray(payload)
+          ? payload.map((r) => ({ ...defaults, ...r }))
+          : { ...defaults, ...payload },
+        o,
       );
     q.update = (payload: Row) =>
       update({ ...payload, row_version: Number(payload["row_version"] ?? 0) + 1 });
@@ -157,8 +165,8 @@ const CLAIM = {
   kind: "eot" as const,
   currency_code: "USD",
   asserted_amount: 900_000,
-  submitted_amount: 800_000,
-  assessed_amount: 600_000,
+  submitted_amount: 400_000,
+  assessed_amount: 400_000,
   approved_amount: 0,
   eot_days_claimed: 45,
   event_date: "2026-05-02",
@@ -390,7 +398,7 @@ describe("GC-16 valuations and FX provenance", () => {
     expect(rows.map((r) => r["valuation_no"])).toEqual([1, 2]);
     expect(rows[0]!["expected_amount"]).toBe(240_000);
     expect(rows[0]!["fx_rate"]).toBe(1.1);
-    expect(rows[0]!["fx_rate_date"]).toBe("2026-06-28");
+    expect(rows[0]!["fx_rate_date"]).toBe("2026-05-28");
     expect(rows[0]!["fx_source"]).toBe("table");
   });
 
@@ -465,10 +473,13 @@ describe("GC-16 deadlines", () => {
     // The Gulf/Levant working week is Sun–Thu. NOTE: saveDeadline currently
     // always applies DEFAULT_CALENDAR, so MENA weekends are proven here at the
     // rules layer only — see the residual gap note in the GC-16 report.
-    const mena = addBusinessDays("2026-06-01", 5, MENA_CALENDAR);
+    // Thursday 2026-06-04 + 1 business day: Fri under a Sat/Sun weekend,
+    // Sunday under the MENA Fri/Sat weekend.
+    const mena = addBusinessDays("2026-06-04", 1, MENA_CALENDAR);
     const dow = new Date(`${mena}T00:00:00Z`).getUTCDay();
     expect(MENA_CALENDAR.weekend).not.toContain(dow);
-    expect(mena).not.toBe(addBusinessDays("2026-06-01", 5, DEFAULT_CALENDAR));
+    expect(mena).toBe("2026-06-07");
+    expect(addBusinessDays("2026-06-04", 1, DEFAULT_CALENDAR)).toBe("2026-06-05");
   });
 
   it("rejects a stale deadline update", async () => {
@@ -528,6 +539,9 @@ describe("GC-16 snapshots", () => {
 
   it("freezes an approved snapshot against rebuild until it is superseded", async () => {
     const { ctx, tables, client } = makeCtx();
+    // A clean reconciliation is a precondition of approval; the blocked path is
+    // covered separately below.
+    tables.change_orders = [];
     await saveClaim(ctx, CLAIM);
     const built = await buildClaimSnapshot(ctx, BUILD);
     const snap = () => tables.contract_claim_snapshots![0]!;
