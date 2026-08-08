@@ -70,6 +70,14 @@ interface CtxOptions {
 
 const ALL_ROLES = ["finance_admin", "project_admin", "company_admin"];
 
+// Column defaults the database applies on INSERT.
+const COLUMN_DEFAULTS: Record<string, Row> = {
+  contract_claims: { status: "draft" },
+  contract_deadlines: { status: "open" },
+  contract_claim_snapshots: { status: "working", version_no: 1 },
+  contract_claim_alerts: { state: "open" },
+};
+
 /**
  * Emulates the database `row_version` trigger: new rows start at 1 and every
  * UPDATE bumps the version the caller echoed back, so optimistic-concurrency
@@ -81,11 +89,12 @@ function withRowVersionTrigger(client: ReturnType<typeof createFakeSupabase>) {
     const q = from(table);
     const insert = q.insert.bind(q);
     const update = q.update.bind(q);
+    const defaults: Row = { row_version: 1, ...(COLUMN_DEFAULTS[table] ?? {}) };
     q.insert = (payload: Row | Row[]) =>
       insert(
         Array.isArray(payload)
-          ? payload.map((r) => ({ row_version: 1, ...r }))
-          : { row_version: 1, ...payload },
+          ? payload.map((r) => ({ ...defaults, ...r }))
+          : { ...defaults, ...payload },
       );
     q.update = (payload: Row) =>
       update({ ...payload, row_version: Number(payload["row_version"] ?? 0) + 1 });
