@@ -2,7 +2,9 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import {
+  getPortfolioRiskAppendix,
   getPortfolioRiskContingency,
+  getRiskContingencyAppendix,
   getRiskContingencyAccess,
   getRiskContingencyWorkspace,
 } from "@/lib/risk-contingency.functions";
@@ -20,6 +22,22 @@ export function riskContingencyAccessQueryOptions() {
     queryKey: ["risk-contingency", "access"],
     queryFn: () => getRiskContingencyAccess(),
     staleTime: 60_000,
+  });
+}
+
+export function riskContingencyAppendixQueryOptions(projectId: string) {
+  return queryOptions({
+    queryKey: ["risk-contingency", "appendix", projectId],
+    queryFn: () => getRiskContingencyAppendix({ data: { project_id: projectId } }),
+    staleTime: 30_000,
+  });
+}
+
+export function portfolioRiskAppendixQueryOptions() {
+  return queryOptions({
+    queryKey: ["risk-contingency", "portfolio-appendix"],
+    queryFn: () => getPortfolioRiskAppendix(),
+    staleTime: 30_000,
   });
 }
 

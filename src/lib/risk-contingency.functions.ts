@@ -5,6 +5,11 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
+  loadPortfolioRiskAppendix,
+  loadRiskContingencyAppendix,
+  type RiskContingencyAppendix,
+} from "@/lib/risk-appendix.server";
+import {
   createSimRun,
   decideAlert,
   decideSimRun,
@@ -56,6 +61,21 @@ export const getPortfolioRiskContingency = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<PortfolioRiskSummary> => {
     requireSupabaseAuth(context);
     return loadPortfolioRiskContingency(context);
+  });
+
+export const getRiskContingencyAppendix = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => projectInput.parse(input))
+  .handler(async ({ data, context }): Promise<RiskContingencyAppendix> => {
+    requireSupabaseAuth(context);
+    return loadRiskContingencyAppendix(context, data.project_id);
+  });
+
+export const getPortfolioRiskAppendix = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<PortfolioRiskSummary> => {
+    requireSupabaseAuth(context);
+    return loadPortfolioRiskAppendix(context);
   });
 
 export const runRiskSimulation = createServerFn({ method: "POST" })

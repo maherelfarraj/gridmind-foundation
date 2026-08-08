@@ -30,7 +30,7 @@ export const savedViewConfigSchema = z
   .object({
     version: z.literal(SAVED_VIEW_CONFIG_VERSION).default(SAVED_VIEW_CONFIG_VERSION),
     /** Which dashboard the view belongs to; older rows default to cost & close. */
-    scope: z.enum(["costing", "revenue_wip", "contracts_claims"]).default("costing"),
+    scope: z.enum(["costing", "revenue_wip", "contracts_claims", "risk_contingency"]).default("costing"),
     period: z
       .string()
       .regex(/^\d{4}-\d{2}-01$/)
@@ -244,6 +244,36 @@ export function contractsClaimsSearchToConfig(
     scope: "contracts_claims",
     period: search.period ?? null,
     rec_status: search.status ?? null,
+    rec_project: search.search ?? null,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// GC-17 — Risk & contingency saved views
+//
+// Filter state only (adequacy band + project search); exposure figures are
+// never stored in a view.
+// ---------------------------------------------------------------------------
+export interface RiskContingencySearch {
+  band?: string;
+  search?: string;
+}
+
+export function riskContingencyConfigToSearch(config: SavedViewConfig): RiskContingencySearch {
+  const out: RiskContingencySearch = {};
+  if (config.rec_status) out.band = config.rec_status;
+  if (config.rec_project) out.search = config.rec_project;
+  return out;
+}
+
+export function riskContingencySearchToConfig(
+  search: RiskContingencySearch,
+  base: SavedViewConfig = DEFAULT_SAVED_VIEW_CONFIG,
+): SavedViewConfig {
+  return savedViewConfigSchema.parse({
+    ...base,
+    scope: "risk_contingency",
+    rec_status: search.band ?? null,
     rec_project: search.search ?? null,
   });
 }
