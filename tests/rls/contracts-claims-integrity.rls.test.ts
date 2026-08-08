@@ -382,6 +382,10 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
                 'working', 'USD', 'USD', 'probe');
       end $$;
 
+      -- Non-vacuity: prove the probe really wrote GC-16 rows before rollback.
+      select 'PROBE:' || (select count(*)::text from public.contract_claims
+                           where claim_ref like 'GC16-INV-%');
+
       rollback to savepoint gc16;
 
       select b.tbl
@@ -390,10 +394,14 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
        where b.sum is distinct from a.sum;
       rollback;
     `);
-    const mutated = out
+    const lines = out
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l !== "" && !/^(BEGIN|SELECT|ROLLBACK|DO|INSERT|CREATE|SAVEPOINT)/i.test(l));
+    const probe = lines.find((l) => l.startsWith("PROBE:"));
+    expect(probe, "probe never ran — the invariant would be vacuous").toBeDefined();
+    expect(Number(probe!.slice(6)), "probe wrote no claim rows").toBeGreaterThan(0);
+    const mutated = lines.filter((l) => !l.startsWith("PROBE:"));
     expect(mutated, `mutated authoritative tables: ${mutated.join(", ")}`).toEqual([]);
   });
 
