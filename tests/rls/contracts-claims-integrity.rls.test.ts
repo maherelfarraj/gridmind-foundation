@@ -341,7 +341,7 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
   // the suite cannot make this pass or fail spuriously. The GC-16 writes are
   // performed against a savepoint and rolled back, leaving zero residue.
   const checksum = (t: string) =>
-    `select '${t}', coalesce(md5(string_agg(h, '' order by h)), 'empty')
+    `select '${t}'::text as tbl, coalesce(md5(string_agg(h, '' order by h)), 'empty') as sum
        from (select md5(x.*::text) h from public.${t} x) s`;
 
   it("leaves every protected table byte-identical across a full claim lifecycle", () => {
@@ -384,10 +384,10 @@ d("GC-16 invariants — authoritative sources are never mutated", () => {
 
       rollback to savepoint gc16;
 
-      select b.f1 || ':' || (b.f2 is distinct from a.f2)::text
+      select b.tbl
         from gc16_before b
-        join (${before}) a(f1, f2) on a.f1 = b.f1
-       where b.f2 is distinct from a.f2;
+        join (${before}) a on a.tbl = b.tbl
+       where b.sum is distinct from a.sum;
       rollback;
     `);
     const mutated = out
