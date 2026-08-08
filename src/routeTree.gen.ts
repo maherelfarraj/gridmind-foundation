@@ -63,6 +63,7 @@ import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsFxRatesRouteImport } from './routes/_authenticated/settings.fx-rates'
 import { Route as AuthenticatedSettingsDepartmentsRouteImport } from './routes/_authenticated/settings.departments'
 import { Route as AuthenticatedSettingsCompanyRouteImport } from './routes/_authenticated/settings.company'
+import { Route as AuthenticatedSettingsCalendarPolicyRouteImport } from './routes/_authenticated/settings.calendar-policy'
 import { Route as AuthenticatedSettingsApprovalRulesRouteImport } from './routes/_authenticated/settings.approval-rules'
 import { Route as AuthenticatedSettingsApiKeysRouteImport } from './routes/_authenticated/settings.api-keys'
 import { Route as AuthenticatedQualityTestRecordsRouteImport } from './routes/_authenticated/quality.test-records'
@@ -589,6 +590,12 @@ const AuthenticatedSettingsCompanyRoute =
   AuthenticatedSettingsCompanyRouteImport.update({
     id: '/settings/company',
     path: '/settings/company',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettingsCalendarPolicyRoute =
+  AuthenticatedSettingsCalendarPolicyRouteImport.update({
+    id: '/settings/calendar-policy',
+    path: '/settings/calendar-policy',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsApprovalRulesRoute =
@@ -2104,6 +2111,7 @@ export interface FileRoutesByFullPath {
   '/quality/test-records': typeof AuthenticatedQualityTestRecordsRoute
   '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
+  '/settings/calendar-policy': typeof AuthenticatedSettingsCalendarPolicyRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
@@ -2382,6 +2390,7 @@ export interface FileRoutesByTo {
   '/quality/test-records': typeof AuthenticatedQualityTestRecordsRoute
   '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
+  '/settings/calendar-policy': typeof AuthenticatedSettingsCalendarPolicyRoute
   '/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
@@ -2671,6 +2680,7 @@ export interface FileRoutesById {
   '/_authenticated/quality/test-records': typeof AuthenticatedQualityTestRecordsRoute
   '/_authenticated/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/_authenticated/settings/approval-rules': typeof AuthenticatedSettingsApprovalRulesRoute
+  '/_authenticated/settings/calendar-policy': typeof AuthenticatedSettingsCalendarPolicyRoute
   '/_authenticated/settings/company': typeof AuthenticatedSettingsCompanyRoute
   '/_authenticated/settings/departments': typeof AuthenticatedSettingsDepartmentsRoute
   '/_authenticated/settings/fx-rates': typeof AuthenticatedSettingsFxRatesRoute
@@ -2963,6 +2973,7 @@ export interface FileRouteTypes {
     | '/quality/test-records'
     | '/settings/api-keys'
     | '/settings/approval-rules'
+    | '/settings/calendar-policy'
     | '/settings/company'
     | '/settings/departments'
     | '/settings/fx-rates'
@@ -3241,6 +3252,7 @@ export interface FileRouteTypes {
     | '/quality/test-records'
     | '/settings/api-keys'
     | '/settings/approval-rules'
+    | '/settings/calendar-policy'
     | '/settings/company'
     | '/settings/departments'
     | '/settings/fx-rates'
@@ -3529,6 +3541,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quality/test-records'
     | '/_authenticated/settings/api-keys'
     | '/_authenticated/settings/approval-rules'
+    | '/_authenticated/settings/calendar-policy'
     | '/_authenticated/settings/company'
     | '/_authenticated/settings/departments'
     | '/_authenticated/settings/fx-rates'
@@ -4138,6 +4151,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/company'
       fullPath: '/settings/company'
       preLoaderRoute: typeof AuthenticatedSettingsCompanyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings/calendar-policy': {
+      id: '/_authenticated/settings/calendar-policy'
+      path: '/settings/calendar-policy'
+      fullPath: '/settings/calendar-policy'
+      preLoaderRoute: typeof AuthenticatedSettingsCalendarPolicyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/approval-rules': {
@@ -6402,6 +6422,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQualityTestRecordsRoute: typeof AuthenticatedQualityTestRecordsRoute
   AuthenticatedSettingsApiKeysRoute: typeof AuthenticatedSettingsApiKeysRoute
   AuthenticatedSettingsApprovalRulesRoute: typeof AuthenticatedSettingsApprovalRulesRoute
+  AuthenticatedSettingsCalendarPolicyRoute: typeof AuthenticatedSettingsCalendarPolicyRoute
   AuthenticatedSettingsCompanyRoute: typeof AuthenticatedSettingsCompanyRoute
   AuthenticatedSettingsDepartmentsRoute: typeof AuthenticatedSettingsDepartmentsRoute
   AuthenticatedSettingsFxRatesRoute: typeof AuthenticatedSettingsFxRatesRoute
@@ -6561,6 +6582,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsApiKeysRoute: AuthenticatedSettingsApiKeysRoute,
   AuthenticatedSettingsApprovalRulesRoute:
     AuthenticatedSettingsApprovalRulesRoute,
+  AuthenticatedSettingsCalendarPolicyRoute:
+    AuthenticatedSettingsCalendarPolicyRoute,
   AuthenticatedSettingsCompanyRoute: AuthenticatedSettingsCompanyRoute,
   AuthenticatedSettingsDepartmentsRoute: AuthenticatedSettingsDepartmentsRoute,
   AuthenticatedSettingsFxRatesRoute: AuthenticatedSettingsFxRatesRoute,
