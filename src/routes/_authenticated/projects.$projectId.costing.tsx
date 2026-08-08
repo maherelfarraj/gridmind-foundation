@@ -23,6 +23,7 @@ const TABS: Tab[] = [
   { label: "Earned value", to: "/costing/evm" },
   { label: "Cash flow", to: "/costing/cash-flow" },
   { label: "Contingency", to: "/costing/contingency" },
+  { label: "Risk & drawdown", to: "/costing/risk-contingency" },
   { label: "Contracts & claims", to: "/costing/contracts-claims" },
   { label: "Revenue & WIP", to: "/costing/revenue" },
 ];

@@ -3660,9 +3660,11 @@ export type Database = {
           created_by: string | null
           currency_code: string
           id: string
+          is_management_reserve: boolean
           name: string
           original_amount: number
           project_id: string
+          reserve_expires_on: string | null
           status: Database["public"]["Enums"]["contingency_pool_status"]
           updated_at: string
         }
@@ -3674,9 +3676,11 @@ export type Database = {
           created_by?: string | null
           currency_code: string
           id?: string
+          is_management_reserve?: boolean
           name: string
           original_amount?: number
           project_id: string
+          reserve_expires_on?: string | null
           status?: Database["public"]["Enums"]["contingency_pool_status"]
           updated_at?: string
         }
@@ -3688,9 +3692,11 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           id?: string
+          is_management_reserve?: boolean
           name?: string
           original_amount?: number
           project_id?: string
+          reserve_expires_on?: string | null
           status?: Database["public"]["Enums"]["contingency_pool_status"]
           updated_at?: string
         }
@@ -20045,56 +20051,233 @@ export type Database = {
           },
         ]
       }
+      risk_contingency_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          company_id: string
+          created_at: string
+          dedupe_key: string
+          detail: string | null
+          due_date: string | null
+          evidence_entity_id: string | null
+          evidence_entity_type: string | null
+          family: string
+          id: string
+          owner_id: string | null
+          payload: Json
+          project_id: string | null
+          resolved_at: string | null
+          row_version: number
+          severity: string
+          snoozed_until: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id: string
+          created_at?: string
+          dedupe_key: string
+          detail?: string | null
+          due_date?: string | null
+          evidence_entity_id?: string | null
+          evidence_entity_type?: string | null
+          family: string
+          id?: string
+          owner_id?: string | null
+          payload?: Json
+          project_id?: string | null
+          resolved_at?: string | null
+          row_version?: number
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id?: string
+          created_at?: string
+          dedupe_key?: string
+          detail?: string | null
+          due_date?: string | null
+          evidence_entity_id?: string | null
+          evidence_entity_type?: string | null
+          family?: string
+          id?: string
+          owner_id?: string | null
+          payload?: Json
+          project_id?: string | null
+          resolved_at?: string | null
+          row_version?: number
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_contingency_alerts_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contingency_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contingency_alerts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contingency_alerts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_contingency_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          payload: Json
+          project_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          payload?: Json
+          project_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          payload?: Json
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_contingency_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contingency_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contingency_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_quantifications: {
         Row: {
           company_id: string
+          correlation_group: string | null
           cost_high: number
           cost_low: number
           cost_most_likely: number
           created_at: string
           created_by: string | null
           currency_code: string
+          discrete_points: Json | null
+          dist_sigma: number | null
           distribution: Database["public"]["Enums"]["risk_distribution"]
+          distribution_kind: string
           id: string
           notes: string | null
           probability_pct: number
           project_id: string
           risk_id: string
+          schedule_days_high: number
           schedule_days_impact: number
+          schedule_days_low: number
           updated_at: string
         }
         Insert: {
           company_id: string
+          correlation_group?: string | null
           cost_high?: number
           cost_low?: number
           cost_most_likely?: number
           created_at?: string
           created_by?: string | null
           currency_code: string
+          discrete_points?: Json | null
+          dist_sigma?: number | null
           distribution?: Database["public"]["Enums"]["risk_distribution"]
+          distribution_kind?: string
           id?: string
           notes?: string | null
           probability_pct?: number
           project_id: string
           risk_id: string
+          schedule_days_high?: number
           schedule_days_impact?: number
+          schedule_days_low?: number
           updated_at?: string
         }
         Update: {
           company_id?: string
+          correlation_group?: string | null
           cost_high?: number
           cost_low?: number
           cost_most_likely?: number
           created_at?: string
           created_by?: string | null
           currency_code?: string
+          discrete_points?: Json | null
+          dist_sigma?: number | null
           distribution?: Database["public"]["Enums"]["risk_distribution"]
+          distribution_kind?: string
           id?: string
           notes?: string | null
           probability_pct?: number
           project_id?: string
           risk_id?: string
+          schedule_days_high?: number
           schedule_days_impact?: number
+          schedule_days_low?: number
           updated_at?: string
         }
         Relationships: [
@@ -20135,6 +20318,136 @@ export type Database = {
           },
         ]
       }
+      risk_sim_runs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          assumptions: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          diagnostics: Json
+          engine: string
+          engine_version: string
+          exclusions: string | null
+          fx_provenance: Json
+          fx_rate_date: string | null
+          id: string
+          idempotency_key: string | null
+          input_checksum: string
+          inputs: Json
+          iterations: number
+          project_id: string
+          reporting_currency: string
+          results: Json
+          row_version: number
+          scope: string
+          seed: number
+          status: string
+          superseded_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          assumptions?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          diagnostics?: Json
+          engine?: string
+          engine_version?: string
+          exclusions?: string | null
+          fx_provenance?: Json
+          fx_rate_date?: string | null
+          id?: string
+          idempotency_key?: string | null
+          input_checksum: string
+          inputs?: Json
+          iterations: number
+          project_id: string
+          reporting_currency: string
+          results?: Json
+          row_version?: number
+          scope?: string
+          seed: number
+          status?: string
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          assumptions?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          diagnostics?: Json
+          engine?: string
+          engine_version?: string
+          exclusions?: string | null
+          fx_provenance?: Json
+          fx_rate_date?: string | null
+          id?: string
+          idempotency_key?: string | null
+          input_checksum?: string
+          inputs?: Json
+          iterations?: number
+          project_id?: string
+          reporting_currency?: string
+          results?: Json
+          row_version?: number
+          scope?: string
+          seed?: number
+          status?: string
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_sim_runs_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_sim_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_sim_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_sim_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_sim_runs_reporting_currency_fkey"
+            columns: ["reporting_currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "risk_sim_runs_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "risk_sim_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string
@@ -20145,17 +20458,25 @@ export type Database = {
           created_by: string | null
           currency_code: string | null
           description: string | null
+          escalated: boolean
           id: string
           identified_at: string
           impact: number
           mitigation: string | null
+          next_review_date: string | null
           owner_id: string | null
           probability: number
           project_id: string
+          proximity: string | null
+          residual_impact: number | null
+          residual_probability: number | null
+          response_strategy: string | null
+          review_cadence_days: number | null
           score: number | null
           status: Database["public"]["Enums"]["risk_status"]
           target_close_date: string | null
           title: string
+          trigger_condition: string | null
           updated_at: string
         }
         Insert: {
@@ -20167,17 +20488,25 @@ export type Database = {
           created_by?: string | null
           currency_code?: string | null
           description?: string | null
+          escalated?: boolean
           id?: string
           identified_at?: string
           impact: number
           mitigation?: string | null
+          next_review_date?: string | null
           owner_id?: string | null
           probability: number
           project_id: string
+          proximity?: string | null
+          residual_impact?: number | null
+          residual_probability?: number | null
+          response_strategy?: string | null
+          review_cadence_days?: number | null
           score?: number | null
           status?: Database["public"]["Enums"]["risk_status"]
           target_close_date?: string | null
           title: string
+          trigger_condition?: string | null
           updated_at?: string
         }
         Update: {
@@ -20189,17 +20518,25 @@ export type Database = {
           created_by?: string | null
           currency_code?: string | null
           description?: string | null
+          escalated?: boolean
           id?: string
           identified_at?: string
           impact?: number
           mitigation?: string | null
+          next_review_date?: string | null
           owner_id?: string | null
           probability?: number
           project_id?: string
+          proximity?: string | null
+          residual_impact?: number | null
+          residual_probability?: number | null
+          response_strategy?: string | null
+          review_cadence_days?: number | null
           score?: number | null
           status?: Database["public"]["Enums"]["risk_status"]
           target_close_date?: string | null
           title?: string
+          trigger_condition?: string | null
           updated_at?: string
         }
         Relationships: [

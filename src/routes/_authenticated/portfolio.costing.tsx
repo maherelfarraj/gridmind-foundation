@@ -13,6 +13,7 @@ import {
   Gauge,
   LineChart,
   ScrollText,
+  ShieldAlert,
   TrendingUp,
   Wallet,
 } from "lucide-react";
@@ -192,6 +193,11 @@ function PortfolioCostingPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/portfolio/costing/cash-flow" search={{}}>
                 <Wallet className="size-4" /> {t(`${K}.cashFlow.link`)}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/portfolio/costing/risk-contingency">
+                <ShieldAlert className="size-4" /> {t(`${K}.riskContingency.link`)}
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">

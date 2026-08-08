@@ -207,6 +207,7 @@ import { Route as AuthenticatedProcurementPosPoIdRouteImport } from './routes/_a
 import { Route as AuthenticatedProcurementMatchesNewRouteImport } from './routes/_authenticated/procurement.matches.new'
 import { Route as AuthenticatedProcurementMatchesMatchIdRouteImport } from './routes/_authenticated/procurement.matches.$matchId'
 import { Route as AuthenticatedPortfolioCostingScenariosRouteImport } from './routes/_authenticated/portfolio.costing.scenarios'
+import { Route as AuthenticatedPortfolioCostingRiskContingencyRouteImport } from './routes/_authenticated/portfolio.costing.risk-contingency'
 import { Route as AuthenticatedPortfolioCostingRevenueWipRouteImport } from './routes/_authenticated/portfolio.costing.revenue-wip'
 import { Route as AuthenticatedPortfolioCostingPackRouteImport } from './routes/_authenticated/portfolio.costing.pack'
 import { Route as AuthenticatedPortfolioCostingFundingRouteImport } from './routes/_authenticated/portfolio.costing.funding'
@@ -262,6 +263,7 @@ import { Route as AuthenticatedProjectsProjectIdEngineeringDrawingsRouteImport }
 import { Route as AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRouteImport } from './routes/_authenticated/projects.$projectId.engineering.civil-features'
 import { Route as AuthenticatedProjectsProjectIdEngineeringBomRouteImport } from './routes/_authenticated/projects.$projectId.engineering.bom'
 import { Route as AuthenticatedProjectsProjectIdCostingVersionsRouteImport } from './routes/_authenticated/projects.$projectId.costing.versions'
+import { Route as AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport } from './routes/_authenticated/projects.$projectId.costing.risk-contingency'
 import { Route as AuthenticatedProjectsProjectIdCostingRevenueRouteImport } from './routes/_authenticated/projects.$projectId.costing.revenue'
 import { Route as AuthenticatedProjectsProjectIdCostingInvoicesRouteImport } from './routes/_authenticated/projects.$projectId.costing.invoices'
 import { Route as AuthenticatedProjectsProjectIdCostingForecastRouteImport } from './routes/_authenticated/projects.$projectId.costing.forecast'
@@ -1439,6 +1441,12 @@ const AuthenticatedPortfolioCostingScenariosRoute =
     path: '/scenarios',
     getParentRoute: () => AuthenticatedPortfolioCostingRoute,
   } as any)
+const AuthenticatedPortfolioCostingRiskContingencyRoute =
+  AuthenticatedPortfolioCostingRiskContingencyRouteImport.update({
+    id: '/risk-contingency',
+    path: '/risk-contingency',
+    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+  } as any)
 const AuthenticatedPortfolioCostingRevenueWipRoute =
   AuthenticatedPortfolioCostingRevenueWipRouteImport.update({
     id: '/revenue-wip',
@@ -1769,6 +1777,12 @@ const AuthenticatedProjectsProjectIdCostingVersionsRoute =
   AuthenticatedProjectsProjectIdCostingVersionsRouteImport.update({
     id: '/versions',
     path: '/versions',
+    getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
+  } as any)
+const AuthenticatedProjectsProjectIdCostingRiskContingencyRoute =
+  AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport.update({
+    id: '/risk-contingency',
+    path: '/risk-contingency',
     getParentRoute: () => AuthenticatedProjectsProjectIdCostingRoute,
   } as any)
 const AuthenticatedProjectsProjectIdCostingRevenueRoute =
@@ -2175,6 +2189,7 @@ export interface FileRoutesByFullPath {
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
+  '/portfolio/costing/risk-contingency': typeof AuthenticatedPortfolioCostingRiskContingencyRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2264,6 +2279,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2454,6 +2470,7 @@ export interface FileRoutesByTo {
   '/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
+  '/portfolio/costing/risk-contingency': typeof AuthenticatedPortfolioCostingRiskContingencyRoute
   '/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2541,6 +2558,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -2744,6 +2762,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio/costing/funding': typeof AuthenticatedPortfolioCostingFundingRoute
   '/_authenticated/portfolio/costing/pack': typeof AuthenticatedPortfolioCostingPackRoute
   '/_authenticated/portfolio/costing/revenue-wip': typeof AuthenticatedPortfolioCostingRevenueWipRoute
+  '/_authenticated/portfolio/costing/risk-contingency': typeof AuthenticatedPortfolioCostingRiskContingencyRoute
   '/_authenticated/portfolio/costing/scenarios': typeof AuthenticatedPortfolioCostingScenariosRoute
   '/_authenticated/procurement/matches/$matchId': typeof AuthenticatedProcurementMatchesMatchIdRoute
   '/_authenticated/procurement/matches/new': typeof AuthenticatedProcurementMatchesNewRoute
@@ -2833,6 +2852,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId/costing/forecast': typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   '/_authenticated/projects/$projectId/costing/invoices': typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   '/_authenticated/projects/$projectId/costing/revenue': typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  '/_authenticated/projects/$projectId/costing/risk-contingency': typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   '/_authenticated/projects/$projectId/costing/versions': typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   '/_authenticated/projects/$projectId/engineering/bom': typeof AuthenticatedProjectsProjectIdEngineeringBomRoute
   '/_authenticated/projects/$projectId/engineering/civil-features': typeof AuthenticatedProjectsProjectIdEngineeringCivilFeaturesRoute
@@ -3037,6 +3057,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
     | '/portfolio/costing/revenue-wip'
+    | '/portfolio/costing/risk-contingency'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -3126,6 +3147,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/revenue'
+    | '/projects/$projectId/costing/risk-contingency'
     | '/projects/$projectId/costing/versions'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3316,6 +3338,7 @@ export interface FileRouteTypes {
     | '/portfolio/costing/funding'
     | '/portfolio/costing/pack'
     | '/portfolio/costing/revenue-wip'
+    | '/portfolio/costing/risk-contingency'
     | '/portfolio/costing/scenarios'
     | '/procurement/matches/$matchId'
     | '/procurement/matches/new'
@@ -3403,6 +3426,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/costing/forecast'
     | '/projects/$projectId/costing/invoices'
     | '/projects/$projectId/costing/revenue'
+    | '/projects/$projectId/costing/risk-contingency'
     | '/projects/$projectId/costing/versions'
     | '/projects/$projectId/engineering/bom'
     | '/projects/$projectId/engineering/civil-features'
@@ -3605,6 +3629,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio/costing/funding'
     | '/_authenticated/portfolio/costing/pack'
     | '/_authenticated/portfolio/costing/revenue-wip'
+    | '/_authenticated/portfolio/costing/risk-contingency'
     | '/_authenticated/portfolio/costing/scenarios'
     | '/_authenticated/procurement/matches/$matchId'
     | '/_authenticated/procurement/matches/new'
@@ -3694,6 +3719,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId/costing/forecast'
     | '/_authenticated/projects/$projectId/costing/invoices'
     | '/_authenticated/projects/$projectId/costing/revenue'
+    | '/_authenticated/projects/$projectId/costing/risk-contingency'
     | '/_authenticated/projects/$projectId/costing/versions'
     | '/_authenticated/projects/$projectId/engineering/bom'
     | '/_authenticated/projects/$projectId/engineering/civil-features'
@@ -5161,6 +5187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioCostingScenariosRouteImport
       parentRoute: typeof AuthenticatedPortfolioCostingRoute
     }
+    '/_authenticated/portfolio/costing/risk-contingency': {
+      id: '/_authenticated/portfolio/costing/risk-contingency'
+      path: '/risk-contingency'
+      fullPath: '/portfolio/costing/risk-contingency'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingRiskContingencyRouteImport
+      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+    }
     '/_authenticated/portfolio/costing/revenue-wip': {
       id: '/_authenticated/portfolio/costing/revenue-wip'
       path: '/revenue-wip'
@@ -5546,6 +5579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRouteImport
       parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
     }
+    '/_authenticated/projects/$projectId/costing/risk-contingency': {
+      id: '/_authenticated/projects/$projectId/costing/risk-contingency'
+      path: '/risk-contingency'
+      fullPath: '/projects/$projectId/costing/risk-contingency'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdCostingRoute
+    }
     '/_authenticated/projects/$projectId/costing/revenue': {
       id: '/_authenticated/projects/$projectId/costing/revenue'
       path: '/revenue'
@@ -5881,6 +5921,7 @@ interface AuthenticatedPortfolioCostingRouteChildren {
   AuthenticatedPortfolioCostingFundingRoute: typeof AuthenticatedPortfolioCostingFundingRoute
   AuthenticatedPortfolioCostingPackRoute: typeof AuthenticatedPortfolioCostingPackRoute
   AuthenticatedPortfolioCostingRevenueWipRoute: typeof AuthenticatedPortfolioCostingRevenueWipRoute
+  AuthenticatedPortfolioCostingRiskContingencyRoute: typeof AuthenticatedPortfolioCostingRiskContingencyRoute
   AuthenticatedPortfolioCostingScenariosRoute: typeof AuthenticatedPortfolioCostingScenariosRoute
 }
 
@@ -5902,6 +5943,8 @@ const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingR
       AuthenticatedPortfolioCostingPackRoute,
     AuthenticatedPortfolioCostingRevenueWipRoute:
       AuthenticatedPortfolioCostingRevenueWipRoute,
+    AuthenticatedPortfolioCostingRiskContingencyRoute:
+      AuthenticatedPortfolioCostingRiskContingencyRoute,
     AuthenticatedPortfolioCostingScenariosRoute:
       AuthenticatedPortfolioCostingScenariosRoute,
   }
@@ -6062,6 +6105,7 @@ interface AuthenticatedProjectsProjectIdCostingRouteChildren {
   AuthenticatedProjectsProjectIdCostingForecastRoute: typeof AuthenticatedProjectsProjectIdCostingForecastRoute
   AuthenticatedProjectsProjectIdCostingInvoicesRoute: typeof AuthenticatedProjectsProjectIdCostingInvoicesRoute
   AuthenticatedProjectsProjectIdCostingRevenueRoute: typeof AuthenticatedProjectsProjectIdCostingRevenueRoute
+  AuthenticatedProjectsProjectIdCostingRiskContingencyRoute: typeof AuthenticatedProjectsProjectIdCostingRiskContingencyRoute
   AuthenticatedProjectsProjectIdCostingVersionsRoute: typeof AuthenticatedProjectsProjectIdCostingVersionsRoute
   AuthenticatedProjectsProjectIdCostingIndexRoute: typeof AuthenticatedProjectsProjectIdCostingIndexRoute
 }
@@ -6092,6 +6136,8 @@ const AuthenticatedProjectsProjectIdCostingRouteChildren: AuthenticatedProjectsP
       AuthenticatedProjectsProjectIdCostingInvoicesRoute,
     AuthenticatedProjectsProjectIdCostingRevenueRoute:
       AuthenticatedProjectsProjectIdCostingRevenueRoute,
+    AuthenticatedProjectsProjectIdCostingRiskContingencyRoute:
+      AuthenticatedProjectsProjectIdCostingRiskContingencyRoute,
     AuthenticatedProjectsProjectIdCostingVersionsRoute:
       AuthenticatedProjectsProjectIdCostingVersionsRoute,
     AuthenticatedProjectsProjectIdCostingIndexRoute:

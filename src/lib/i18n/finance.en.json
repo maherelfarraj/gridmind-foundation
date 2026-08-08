@@ -1991,6 +1991,133 @@
         "setApproved": "Holiday set approved.",
         "setSuperseded": "Holiday set superseded."
       }
+    },
+    "riskContingency": {
+      "title": "Risk & contingency drawdown",
+      "description": "Seeded quantitative risk simulation, contingency adequacy and governed drawdown. Nothing here mutates approved cost, forecast, EVM, cash-flow or claim data.",
+      "portfolioTitle": "Portfolio risk & contingency",
+      "portfolioDescription": "Cross-project quantitative exposure, contingency adequacy and drawdown velocity.",
+      "kpi": {
+        "p50": "P50 exposure",
+        "p80": "P80 exposure",
+        "p90": "P90 exposure",
+        "available": "Available contingency",
+        "cover": "Cover ratio at P80",
+        "coverHelp": "Available contingency divided by the approved P80 exposure. Below 1.00 the project is under-funded.",
+        "shortfall": "Shortfall at P80",
+        "reserve": "Management reserve",
+        "burn": "Drawdown per day",
+        "projects": "Projects in scope",
+        "totalP80": "Total P80 exposure",
+        "totalShortfall": "Total shortfall"
+      },
+      "run": {
+        "title": "Simulation runs",
+        "description": "Seeded Monte Carlo runs are immutable once approved and can only be replaced by a newer approved run.",
+        "new": "Run simulation",
+        "seed": "Seed",
+        "iterations": "Iterations",
+        "currency": "Reporting currency",
+        "budget": "Budget threshold",
+        "scheduleThreshold": "Finish threshold (days)",
+        "assumptions": "Assumptions",
+        "exclusions": "Exclusions",
+        "submit": "Run",
+        "approve": "Approve",
+        "reject": "Reject",
+        "status": "Status",
+        "checksum": "Input checksum",
+        "engine": "Engine",
+        "created": "Created",
+        "started": "Simulation queued",
+        "succeeded": "Simulation completed",
+        "decided": "Run updated",
+        "empty": "No simulation has been run for this project yet.",
+        "precision": "Relative precision",
+        "convergence": "Convergence"
+      },
+      "ranges": {
+        "title": "Quantitative ranges",
+        "description": "Cost and schedule percentiles from the approved run.",
+        "cost": "Cost",
+        "schedule": "Schedule (days)",
+        "mean": "Mean",
+        "sd": "Standard deviation",
+        "probBudget": "Probability over budget",
+        "probFinish": "Probability over finish date",
+        "empty": "Approve a simulation run to publish quantitative ranges."
+      },
+      "tornado": {
+        "title": "Sensitivity (tornado)",
+        "description": "Risks ranked by correlation with the simulated total cost.",
+        "risk": "Risk",
+        "correlation": "Correlation",
+        "contribution": "Mean contribution",
+        "share": "Share"
+      },
+      "register": {
+        "title": "Risk register",
+        "description": "Governed register with owner, score, review date and quantification coverage.",
+        "risk": "Risk",
+        "category": "Category",
+        "score": "Score",
+        "owner": "Owner",
+        "review": "Next review",
+        "quantified": "Quantified",
+        "escalated": "Escalated",
+        "empty": "No risks recorded for this project."
+      },
+      "reconciliation": {
+        "title": "Contingency reconciliation",
+        "description": "Opening + transfers in − transfers out − drawdowns − releases = closing balance.",
+        "opening": "Opening",
+        "transfersIn": "Transfers in",
+        "transfersOut": "Transfers out",
+        "drawdowns": "Drawdowns",
+        "releases": "Releases",
+        "closing": "Closing",
+        "balanced": "Balanced",
+        "unbalanced": "Out of balance"
+      },
+      "alerts": {
+        "title": "Alerts",
+        "description": "De-duplicated risk and contingency alert register with acknowledgement and escalation.",
+        "alert": "Alert",
+        "severity": "Severity",
+        "status": "Status",
+        "due": "Due",
+        "acknowledge": "Acknowledge",
+        "resolve": "Resolve",
+        "reopen": "Reopen",
+        "updated": "Alert updated",
+        "empty": "No open alerts."
+      },
+      "events": {
+        "title": "Audit timeline",
+        "description": "Append-only history of every governed action.",
+        "action": "Action",
+        "entity": "Entity",
+        "when": "When",
+        "empty": "No governed activity yet."
+      },
+      "problems": {
+        "title": "Input quality",
+        "fx": "Missing FX rates to the reporting currency — no silent fallback is applied.",
+        "empty": "Inputs are valid."
+      },
+      "table": {
+        "project": "Project",
+        "exposure": "P80 exposure",
+        "available": "Available",
+        "cover": "Cover",
+        "shortfall": "Shortfall",
+        "burn": "Burn/day",
+        "alerts": "Alerts",
+        "top": "Top contributor",
+        "lastRun": "Last approved run",
+        "open": "Open project",
+        "empty": "No projects with quantified risk or contingency."
+      }
     }
   }
 }
