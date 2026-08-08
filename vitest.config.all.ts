@@ -32,8 +32,15 @@ const DB_INCLUDE = [
   "tests/portfolio/**/*.test.ts",
   "tests/subcontracts/**/*.test.ts",
   "tests/documents/**/*.test.ts",
-  "tests/perf/**/*.test.ts",
 ];
+
+// Seeded-volume performance probes. They plant representative row volumes and
+// run EXPLAIN/ANALYZE, so they are the single most expensive DB consumer in
+// the repository. GC-18 root-caused the transient gate flake to `57014`
+// statement timeouts caused by DB-suite groups overlapping each other on one
+// shared Postgres — so the perf probes now own their own sequence group and
+// never run beside the RLS/integrity suites the CI gates depend on.
+const PERF_INCLUDE = ["tests/perf/**/*.test.ts"];
 
 export default defineConfig({
   resolve: { alias },
@@ -69,6 +76,22 @@ export default defineConfig({
         },
       },
       {
+        resolve: { alias },
+        test: {
+          name: "all-perf",
+          environment: "node",
+          globals: true,
+          include: PERF_INCLUDE,
+          maxWorkers: 1,
+          minWorkers: 1,
+          fileParallelism: false,
+          sequence: { groupOrder: 3 },
+          maxConcurrency: 1,
+          testTimeout: 120_000,
+          hookTimeout: 180_000,
+        },
+      },
+      {
         // .tsx suites render React components — they need a DOM.
         resolve: { alias },
         test: {
@@ -92,7 +115,9 @@ export default defineConfig({
           include: ["tests/e2e/**/*.test.tsx"],
           maxWorkers: 2,
           minWorkers: 1,
-          sequence: { groupOrder: 1 },
+          // Own group: live-UI suites must not share Postgres/GoTrue with the
+          // `all-db` group (overlapping groups were the flake trigger).
+          sequence: { groupOrder: 2 },
           maxConcurrency: 2,
           testTimeout: 90_000,
           hookTimeout: 180_000,

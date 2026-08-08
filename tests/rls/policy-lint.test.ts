@@ -17,10 +17,23 @@ import { describe, expect, it } from "vitest";
 
 const HAS_DB = Boolean(process.env.PGHOST);
 
+/**
+ * GC-18: the gate used to fail transiently with `57014 canceling statement due
+ * to statement timeout` whenever another DB suite group saturated the shared
+ * Postgres. The catalogue queries below are cheap — the default per-session
+ * budget was the failing constraint, not the work — so each session raises its
+ * own statement budget and caps lock waits. This removes the failure cause; it
+ * does not retry, swallow errors or weaken any rule.
+ */
+const SESSION_GUARDS = "-c statement_timeout=120000 -c lock_timeout=15000";
+
 function q(sql: string): string[][] {
-  const out = execFileSync("psql", ["-At", "-F", "\u0001", "-c", sql], {
+  const out = execFileSync("psql", ["-At", "-F", "\u0001", "-v", "ON_ERROR_STOP=1", "-c", sql], {
     encoding: "utf8",
     maxBuffer: 32 * 1024 * 1024,
+    // Session budgets are passed as libpq options so the command tags of a
+    // `SET` statement never contaminate the tuple-only output stream.
+    env: { ...process.env, PGOPTIONS: `${process.env.PGOPTIONS ?? ""} ${SESSION_GUARDS}`.trim() },
   });
   return out
     .split("\n")
