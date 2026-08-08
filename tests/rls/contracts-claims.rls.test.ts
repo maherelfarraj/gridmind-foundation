@@ -100,10 +100,9 @@ d("contracts & claims tables — policy shape", () => {
   it("scopes every policy to the caller's company", () => {
     for (const [table, name, , qual, check] of policies) {
       const expr = `${qual} ${check}`;
-      expect(
-        /company_id/.test(expr),
-        `${table}.${name} must be company-scoped, got: ${expr}`,
-      ).toBe(true);
+      expect(/company_id/.test(expr), `${table}.${name} must be company-scoped, got: ${expr}`).toBe(
+        true,
+      );
     }
   });
 

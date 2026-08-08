@@ -244,9 +244,7 @@ describe("GC-16 appendix in Arabic / RTL", () => {
 
     // The heading is the Arabic catalog value, not the raw key or the English string.
     const heading = container.querySelector("h2")!;
-    const arTitle = (
-      subtree(financeAr) as { appendix: { title: string } }
-    ).appendix.title;
+    const arTitle = (subtree(financeAr) as { appendix: { title: string } }).appendix.title;
     expect(heading.textContent).toBe(arTitle);
     expect(heading.textContent).not.toContain("financeMod.");
   });
@@ -272,7 +270,7 @@ describe("GC-16 appendix in Arabic / RTL", () => {
       <ContractsClaimsAppendixCard appendix={appendix()} currency="USD" />,
     );
     const focusable = container.querySelectorAll(
-      'a[href], button, input, select, textarea, [tabindex]',
+      "a[href], button, input, select, textarea, [tabindex]",
     );
     // The appendix is read-only evidence: nothing steals focus with a positive
     // tabindex, and any control that exists stays in natural document order.

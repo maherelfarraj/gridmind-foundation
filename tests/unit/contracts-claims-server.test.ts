@@ -144,7 +144,6 @@ function asUser(
   return { user: { id: user }, supabase } as unknown as AuthContext;
 }
 
-
 async function expectHttp(fn: () => Promise<unknown>, code: string, status?: number) {
   let caught: unknown;
   try {
@@ -195,12 +194,25 @@ describe("GC-16 access resolution", () => {
     const { ctx } = makeCtx({ roles: [] });
     await expectHttp(() => saveClaim(ctx, CLAIM), "forbidden", 403);
     await expectHttp(
-      () => saveValuation(ctx, { claim_id: "x", effective_period: "2026-06-01", basis: "assessed", amount: 1, probability_pct: 50, reason: "r" }),
+      () =>
+        saveValuation(ctx, {
+          claim_id: "x",
+          effective_period: "2026-06-01",
+          basis: "assessed",
+          amount: 1,
+          probability_pct: 50,
+          reason: "r",
+        }),
       "forbidden",
       403,
     );
     await expectHttp(
-      () => buildClaimSnapshot(ctx, { project_id: PROJECT, period_month: "2026-06-01", data_date: "2026-06-30" }),
+      () =>
+        buildClaimSnapshot(ctx, {
+          project_id: PROJECT,
+          period_month: "2026-06-01",
+          data_date: "2026-06-30",
+        }),
       "forbidden",
       403,
     );
@@ -547,7 +559,11 @@ describe("GC-16 snapshots", () => {
     const snap = () => tables.contract_claim_snapshots![0]!;
     const v = () => Number(snap()["row_version"]);
 
-    await transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "submitted", row_version: v() });
+    await transitionClaimSnapshot(ctx, {
+      snapshot_id: built.snapshot_id,
+      to: "submitted",
+      row_version: v(),
+    });
     const approverCtx = asUser(client, APPROVER);
     await transitionClaimSnapshot(approverCtx, {
       snapshot_id: built.snapshot_id,
@@ -573,9 +589,18 @@ describe("GC-16 snapshots", () => {
     await saveClaim(ctx, CLAIM);
     const built = await buildClaimSnapshot(ctx, BUILD);
     const v = () => Number(tables.contract_claim_snapshots![0]!["row_version"]);
-    await transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "submitted", row_version: v() });
+    await transitionClaimSnapshot(ctx, {
+      snapshot_id: built.snapshot_id,
+      to: "submitted",
+      row_version: v(),
+    });
     await expectHttp(
-      () => transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "approved", row_version: v() }),
+      () =>
+        transitionClaimSnapshot(ctx, {
+          snapshot_id: built.snapshot_id,
+          to: "approved",
+          row_version: v(),
+        }),
       "segregation_of_duties",
       403,
     );
@@ -587,12 +612,22 @@ describe("GC-16 snapshots", () => {
     const built = await buildClaimSnapshot(ctx, BUILD);
     const v = Number(tables.contract_claim_snapshots![0]!["row_version"]);
     await expectHttp(
-      () => transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "approved", row_version: v }),
+      () =>
+        transitionClaimSnapshot(ctx, {
+          snapshot_id: built.snapshot_id,
+          to: "approved",
+          row_version: v,
+        }),
       "invalid_transition",
       422,
     );
     await expectHttp(
-      () => transitionClaimSnapshot(ctx, { snapshot_id: built.snapshot_id, to: "submitted", row_version: v + 9 }),
+      () =>
+        transitionClaimSnapshot(ctx, {
+          snapshot_id: built.snapshot_id,
+          to: "submitted",
+          row_version: v + 9,
+        }),
       "stale_write",
       409,
     );
@@ -713,7 +748,11 @@ describe("GC-16 persisted alert register", () => {
 
   it("404s on an alert the caller cannot read", async () => {
     await expectHttp(
-      () => actOnAlert(ctx, { alert_id: "00000000-0000-4000-8000-000000000000", action: "acknowledge" }),
+      () =>
+        actOnAlert(ctx, {
+          alert_id: "00000000-0000-4000-8000-000000000000",
+          action: "acknowledge",
+        }),
       "alert_not_found",
       404,
     );

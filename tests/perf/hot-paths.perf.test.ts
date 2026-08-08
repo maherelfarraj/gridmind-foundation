@@ -102,10 +102,7 @@ const PROBES: Probe[] = [
     key: "claims_latest_snapshot",
     title: "GC-16 latest contract-claim snapshot by project / period / version",
     relation: "contract_claim_snapshots",
-    allowedIndexes: [
-      "contract_claim_snapshots_project_idx",
-      "contract_claim_snapshots_active_idx",
-    ],
+    allowedIndexes: ["contract_claim_snapshots_project_idx", "contract_claim_snapshots_active_idx"],
     budgetMs: 50,
     sql: `select id, period_month, version_no, status
             from public.contract_claim_snapshots

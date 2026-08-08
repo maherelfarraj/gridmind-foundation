@@ -121,8 +121,7 @@ export function canTransitionClaim(from: ClaimStatus, to: ClaimStatus): boolean 
 }
 
 export function assertClaimTransition(from: ClaimStatus, to: ClaimStatus): void {
-  if (!canTransitionClaim(from, to))
-    throw new Error(`claim_transition_invalid:${from}->${to}`);
+  if (!canTransitionClaim(from, to)) throw new Error(`claim_transition_invalid:${from}->${to}`);
 }
 
 /** Transitions that require the approval role (segregation of duties applies). */
@@ -211,7 +210,11 @@ function isWorkingDay(iso: string, cal: WorkCalendar): boolean {
   return !cal.holidays.includes(iso);
 }
 
-export function addBusinessDays(iso: string, days: number, cal: WorkCalendar = DEFAULT_CALENDAR): string {
+export function addBusinessDays(
+  iso: string,
+  days: number,
+  cal: WorkCalendar = DEFAULT_CALENDAR,
+): string {
   let cursor = iso.slice(0, 10);
   let remaining = Math.max(0, Math.trunc(days));
   while (remaining > 0) {
@@ -464,9 +467,7 @@ export function remainingContractValue(input: {
   approved_variations: number;
   certified_to_date: number;
 }): number {
-  return roundMoney(
-    input.original_value + input.approved_variations - input.certified_to_date,
-  );
+  return roundMoney(input.original_value + input.approved_variations - input.certified_to_date);
 }
 
 /** Liquidated-damages exposure honouring the contractual cap. */
@@ -477,11 +478,19 @@ export function ldExposure(input: {
   cap_pct: number;
   contract_value: number;
 }): { chargeable_days: number; gross: number; capped: number; at_cap: boolean } {
-  const chargeable = Math.max(0, Math.trunc(input.delay_days) - Math.trunc(input.eot_days_approved));
+  const chargeable = Math.max(
+    0,
+    Math.trunc(input.delay_days) - Math.trunc(input.eot_days_approved),
+  );
   const gross = roundMoney(chargeable * Math.max(0, input.rate_per_day));
   const cap = roundMoney((Math.max(0, input.cap_pct) / 100) * Math.max(0, input.contract_value));
   const capped = cap > 0 ? Math.min(gross, cap) : gross;
-  return { chargeable_days: chargeable, gross, capped: roundMoney(capped), at_cap: cap > 0 && gross >= cap };
+  return {
+    chargeable_days: chargeable,
+    gross,
+    capped: roundMoney(capped),
+    at_cap: cap > 0 && gross >= cap,
+  };
 }
 
 /** Back-to-back gap: head-contract entitlement not passed down to a subcontract. */
@@ -492,9 +501,12 @@ export function backToBackGap(input: {
   sub_due: string | null;
 }): { amount_gap: number; timing_gap_days: number; has_gap: boolean } {
   const amountGap = roundMoney(Math.max(0, input.head_amount - input.sub_amount));
-  const timingGap =
-    input.head_due && input.sub_due ? daysUntil(input.head_due, input.sub_due) : 0;
-  return { amount_gap: amountGap, timing_gap_days: timingGap, has_gap: amountGap > 0 || timingGap < 0 };
+  const timingGap = input.head_due && input.sub_due ? daysUntil(input.head_due, input.sub_due) : 0;
+  return {
+    amount_gap: amountGap,
+    timing_gap_days: timingGap,
+    has_gap: amountGap > 0 || timingGap < 0,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -704,7 +716,8 @@ export function evaluateClaimAlerts(input: AlertEvaluationInput): ClaimAlert[] {
 
   for (const d of input.deadlines) {
     const state = evaluateDeadline(d, today);
-    if (state.status === "met" || state.status === "waived" || state.status === "superseded") continue;
+    if (state.status === "met" || state.status === "waived" || state.status === "superseded")
+      continue;
     if (state.overdue) {
       const kind: ClaimAlertKind =
         d.kind === "notice"
@@ -979,7 +992,8 @@ export function concentrationBy(
       project_id: r.project_id,
       project_name: r.project_name,
       value: roundMoney(r.totals[metric] as number),
-      share_pct: total === 0 ? 0 : Number((((r.totals[metric] as number) / total) * 100).toFixed(3)),
+      share_pct:
+        total === 0 ? 0 : Number((((r.totals[metric] as number) / total) * 100).toFixed(3)),
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, top);

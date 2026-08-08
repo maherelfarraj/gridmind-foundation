@@ -163,7 +163,10 @@ d("GC-16 live schema — indexes and constraints", () => {
 
   it.each(TABLES)("%s has a primary key and at least one lookup index", (t) => {
     const own = idx.filter((r) => r[0] === t);
-    expect(own.some((r) => r[1]!.endsWith("_pkey")), `${t} has no pkey`).toBe(true);
+    expect(
+      own.some((r) => r[1]!.endsWith("_pkey")),
+      `${t} has no pkey`,
+    ).toBe(true);
     expect(own.length).toBeGreaterThan(1);
   });
 
@@ -202,9 +205,9 @@ d("GC-16 live schema — indexes and constraints", () => {
       `select conrelid::regclass::text, ${flat("pg_get_constraintdef(oid)")}
          from pg_constraint where contype='c' and conrelid::regclass::text in (${list})`,
     ).map((r) => `${r[0]}:${r[1]}`);
-    expect(checks.some((c) => c.startsWith("contract_claim_snapshots:") && /date_trunc/.test(c))).toBe(
-      true,
-    );
+    expect(
+      checks.some((c) => c.startsWith("contract_claim_snapshots:") && /date_trunc/.test(c)),
+    ).toBe(true);
     expect(
       checks.some((c) => c.startsWith("contract_claim_valuations:") && /date_trunc/.test(c)),
     ).toBe(true);
@@ -216,7 +219,10 @@ d("GC-16 live schema — indexes and constraints", () => {
         where contype='c' and conrelid='public.contract_claims'::regclass`,
     ).map((r) => r[0]!);
     for (const col of ["eot_days_claimed", "eot_days_assessed", "eot_days_approved"]) {
-      expect(checks.some((c) => c.includes(col) && c.includes(">= 0")), col).toBe(true);
+      expect(
+        checks.some((c) => c.includes(col) && c.includes(">= 0")),
+        col,
+      ).toBe(true);
     }
   });
 });
