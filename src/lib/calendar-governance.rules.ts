@@ -235,7 +235,6 @@ export function resolveCalendarPolicy(input: PolicyChainInput): ResolvedPolicy {
     ];
 
   let chosen: { source: PolicyChainStep["source"]; calendarId: string } | null = null;
-  let timezone: string | null = null;
   const chain: PolicyChainStep[] = [];
 
   for (const step of order) {
@@ -243,9 +242,17 @@ export function resolveCalendarPolicy(input: PolicyChainInput): ResolvedPolicy {
     const tz = step.rec?.timezone ?? null;
     const applies = !chosen && Boolean(calendarId);
     if (applies) chosen = { source: step.source, calendarId: calendarId! };
-    if (!timezone && tz && (applies || chosen?.source === step.source || !chosen)) timezone = tz;
     chain.push({ source: step.source, calendar_id: calendarId, timezone: tz, applied: applies });
   }
+
+  // Timezone precedence mirrors the calendar chain: explicit request wins, then
+  // the layer that supplied the calendar, then any lower layer.
+  const chosenIndex = chain.findIndex((c) => c.applied);
+  const timezone =
+    chain[0]?.timezone ??
+    (chosenIndex >= 0 ? chain[chosenIndex]?.timezone : null) ??
+    chain.slice(Math.max(0, chosenIndex)).find((c) => c.timezone)?.timezone ??
+    null;
 
   const calendar = resolveGovernedCalendar(chosen?.calendarId ?? null);
   const tz = resolveGovernedTimezone(calendar, timezone ?? calendar.timezones[0]);
