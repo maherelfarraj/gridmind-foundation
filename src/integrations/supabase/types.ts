@@ -1498,6 +1498,225 @@ export type Database = {
           },
         ]
       }
+      calendar_holiday_dates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          label_ar: string
+          label_en: string
+          observed_date: string
+          set_id: string
+          source_reference: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          label_ar: string
+          label_en: string
+          observed_date: string
+          set_id: string
+          source_reference?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          label_ar?: string
+          label_en?: string
+          observed_date?: string
+          set_id?: string
+          source_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_holiday_dates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_holiday_dates_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_holiday_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_holiday_sets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          calendar_id: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          jurisdiction: string
+          label: string
+          notes: string | null
+          row_version: number
+          source_reference: string | null
+          status: string
+          updated_at: string
+          version: string
+          year: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          calendar_id: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jurisdiction: string
+          label: string
+          notes?: string | null
+          row_version?: number
+          source_reference?: string | null
+          status?: string
+          updated_at?: string
+          version: string
+          year: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          calendar_id?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          jurisdiction?: string
+          label?: string
+          notes?: string | null
+          row_version?: number
+          source_reference?: string | null
+          status?: string
+          updated_at?: string
+          version?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_holiday_sets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_policy_changes: {
+        Row: {
+          applied_at: string | null
+          company_id: string
+          contract_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          from_calendar_id: string | null
+          from_timezone: string | null
+          id: string
+          idempotency_key: string
+          impact: Json
+          material: boolean
+          project_id: string | null
+          reason: string
+          requested_at: string
+          requested_by: string | null
+          row_version: number
+          scope: string
+          status: string
+          to_calendar_id: string
+          to_timezone: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          company_id: string
+          contract_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_calendar_id?: string | null
+          from_timezone?: string | null
+          id?: string
+          idempotency_key: string
+          impact?: Json
+          material?: boolean
+          project_id?: string | null
+          reason: string
+          requested_at?: string
+          requested_by?: string | null
+          row_version?: number
+          scope: string
+          status?: string
+          to_calendar_id: string
+          to_timezone: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          company_id?: string
+          contract_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          from_calendar_id?: string | null
+          from_timezone?: string | null
+          id?: string
+          idempotency_key?: string
+          impact?: Json
+          material?: boolean
+          project_id?: string | null
+          reason?: string
+          requested_at?: string
+          requested_by?: string | null
+          row_version?: number
+          scope?: string
+          status?: string
+          to_calendar_id?: string
+          to_timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_policy_changes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_policy_changes_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_policy_changes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calibration_records: {
         Row: {
           cal_date: string
@@ -4312,6 +4531,7 @@ export type Database = {
       contract_deadlines: {
         Row: {
           calendar: string
+          calendar_frozen: boolean
           calendar_id: string
           calendar_source: string
           calendar_version: string
@@ -4324,6 +4544,7 @@ export type Database = {
           due_date: string
           duration_days: number
           evidence_reference: string | null
+          holiday_set_versions: Json
           id: string
           kind: Database["public"]["Enums"]["cc_deadline_kind"]
           label: string
@@ -4338,6 +4559,7 @@ export type Database = {
         }
         Insert: {
           calendar?: string
+          calendar_frozen?: boolean
           calendar_id: string
           calendar_source: string
           calendar_version: string
@@ -4350,6 +4572,7 @@ export type Database = {
           due_date: string
           duration_days?: number
           evidence_reference?: string | null
+          holiday_set_versions?: Json
           id?: string
           kind: Database["public"]["Enums"]["cc_deadline_kind"]
           label: string
@@ -4364,6 +4587,7 @@ export type Database = {
         }
         Update: {
           calendar?: string
+          calendar_frozen?: boolean
           calendar_id?: string
           calendar_source?: string
           calendar_version?: string
@@ -4376,6 +4600,7 @@ export type Database = {
           due_date?: string
           duration_days?: number
           evidence_reference?: string | null
+          holiday_set_versions?: Json
           id?: string
           kind?: Database["public"]["Enums"]["cc_deadline_kind"]
           label?: string
@@ -5537,6 +5762,7 @@ export type Database = {
           created_at: string
           deadline_calendar_id: string | null
           deadline_timezone: string | null
+          holiday_sets_enforced: boolean
           id: string
           materiality_abs: number
           materiality_pct: number
@@ -5550,6 +5776,7 @@ export type Database = {
           created_at?: string
           deadline_calendar_id?: string | null
           deadline_timezone?: string | null
+          holiday_sets_enforced?: boolean
           id?: string
           materiality_abs?: number
           materiality_pct?: number
@@ -5563,6 +5790,7 @@ export type Database = {
           created_at?: string
           deadline_calendar_id?: string | null
           deadline_timezone?: string | null
+          holiday_sets_enforced?: boolean
           id?: string
           materiality_abs?: number
           materiality_pct?: number

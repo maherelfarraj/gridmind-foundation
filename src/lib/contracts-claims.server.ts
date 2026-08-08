@@ -513,6 +513,19 @@ export async function resolveDeadlineCalendar(
   }
 }
 
+/** GC-16d — company switch that turns missing holiday-set coverage into a 422. */
+async function holidaySetsEnforced(ctx: AuthContext, companyId: string): Promise<boolean> {
+  const rows = await safeRows<{ holiday_sets_enforced: boolean | null }>(() =>
+    (ctx.supabase as never as AnySupabase)
+      .from("costing_settings")
+      .select("holiday_sets_enforced")
+      .eq("company_id", companyId),
+  );
+  return Boolean(rows[0]?.holiday_sets_enforced);
+}
+
+
+
 export async function saveDeadline(
   ctx: AuthContext,
   input: DeadlineInputSchema,
@@ -531,12 +544,33 @@ export async function saveDeadline(
     timezone: input.timezone,
     contract_id: input.contract_id ?? null,
   });
+
+  // GC-16d — fold the APPROVED observed-holiday set versions into the governed
+  // base calendar. Missing coverage is a governed warning, or a hard 422 when
+  // the company enforces holiday sets. There is never a silent fallback.
+  const { loadEffectiveCalendar } = await import("@/lib/calendar-governance.server");
+  const { checkHolidayCoverage, requiredHolidayYears } = await import(
+    "@/lib/calendar-governance.rules"
+  );
+  const effective = await loadEffectiveCalendar(ctx, proj.company_id, governed.calendar_id);
+  const coverage =
+    input.calendar === "business"
+      ? checkHolidayCoverage(
+          effective,
+          requiredHolidayYears(input.trigger_date, input.duration_days),
+        )
+      : { ok: true, missing_years: [] as number[], applied_versions: [] as string[], message: null };
+  if (!coverage.ok) {
+    const enforced = await holidaySetsEnforced(ctx, proj.company_id);
+    if (enforced) httpError(422, "holiday_set_missing", coverage.message!);
+  }
+
   const due = computeDueDate({
     kind: input.kind,
     trigger_date: input.trigger_date,
     duration_days: input.duration_days,
     calendar: input.calendar,
-    workCalendar: governed.calendar,
+    workCalendar: effective,
   });
   const payload = {
     company_id: proj.company_id,
@@ -553,6 +587,8 @@ export async function saveDeadline(
     calendar_version: governed.calendar_version,
     calendar_source: governed.calendar_source,
     timezone: governed.timezone,
+    holiday_set_versions: effective.holiday_set_versions,
+
 
     due_date: due,
     owner_id: input.owner_id ?? null,

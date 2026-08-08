@@ -1863,6 +1863,134 @@
         "contract_policy": "Contract policy",
         "company_policy": "Company policy"
       }
+    },
+    "calendarPolicy": {
+      "title": "Deadline calendar policy",
+      "subtitle": "Governed work calendars, observed holiday sets and the approval trail behind every contractual due date.",
+      "effective": "Effective resolution",
+      "chain": "Resolution chain",
+      "applied": "Applied",
+      "notSet": "Not set",
+      "source": {
+        "request": "Request override",
+        "contract_policy": "Contract policy",
+        "company_policy": "Company policy"
+      },
+      "calendar": "Calendar",
+      "timezone": "Timezone",
+      "version": "Version",
+      "calendarVersion": "Calendar version",
+      "holidaySets": "Observed holiday sets",
+      "holidaySetVersions": "Applied holiday-set versions",
+      "coveredYears": "Covered years",
+      "validation": "Validation status",
+      "valid": "Valid",
+      "invalid": "Unresolved",
+      "coverageOk": "Approved observed-holiday coverage is complete.",
+      "coverageMissing": "Missing approved observed-holiday sets",
+      "affected": "Upcoming affected deadlines",
+      "impact": "Impact preview",
+      "pending": "Pending policy changes",
+      "history": "Decision history",
+      "actions": {
+        "preview": "Preview impact",
+        "request": "Request change",
+        "approve": "Approve",
+        "reject": "Reject",
+        "recalcPreview": "Preview recalculation",
+        "recalcApply": "Apply recalculation",
+        "newSet": "New holiday set",
+        "import": "Import dates",
+        "previewImport": "Validate import",
+        "approveSet": "Approve set",
+        "supersedeSet": "Supersede",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "fields": {
+        "scope": "Scope",
+        "targetCalendar": "Target calendar",
+        "targetTimezone": "Target timezone",
+        "reason": "Reason",
+        "jurisdiction": "Jurisdiction",
+        "year": "Year",
+        "setVersion": "Set version",
+        "label": "Label",
+        "sourceRef": "Source reference",
+        "note": "Note",
+        "observedDate": "Observed date",
+        "labelEn": "Label (EN)",
+        "labelAr": "Label (AR)",
+        "kind": "Kind",
+        "rows": "Observed dates (one per line: YYYY-MM-DD | EN | AR)"
+      },
+      "scope": {
+        "company": "Company default",
+        "contract": "Contract override"
+      },
+      "table": {
+        "deadline": "Deadline",
+        "before": "Before",
+        "after": "After",
+        "shift": "Shift (days)",
+        "state": "State",
+        "requester": "Requested by",
+        "requested": "Requested",
+        "decided": "Decided",
+        "status": "Status",
+        "dates": "Dates",
+        "calendar": "Calendar",
+        "from": "From",
+        "to": "To"
+      },
+      "state": {
+        "changed": "Changes",
+        "unchanged": "Unchanged",
+        "frozen": "Frozen"
+      },
+      "frozenReason": {
+        "satisfied": "Satisfied",
+        "met": "Met",
+        "missed": "Missed",
+        "waived": "Waived",
+        "superseded": "Superseded",
+        "period_locked": "Period locked"
+      },
+      "status": {
+        "draft": "Draft",
+        "approved": "Approved",
+        "superseded": "Superseded",
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "applied": "Applied"
+      },
+      "kind": {
+        "public_holiday": "Public holiday",
+        "exceptional_closure": "Exceptional closure"
+      },
+      "empty": {
+        "sets": "No observed-holiday sets recorded.",
+        "changes": "No policy changes recorded.",
+        "deadlines": "No upcoming deadlines are affected.",
+        "impact": "Run a preview to see the impact."
+      },
+      "hint": {
+        "material": "Changing the calendar is a material change and needs a second approver.",
+        "minor": "A timezone-only change applies immediately for approvers.",
+        "frozen": "Approved, satisfied and period-locked deadlines are never recalculated.",
+        "observed": "Lunar and variable holidays must be imported from an official source — they are never calculated."
+      },
+      "toast": {
+        "requested": "Policy change submitted for approval.",
+        "applied": "Policy change applied.",
+        "rejected": "Policy change rejected.",
+        "recalculated": "Deadlines recalculated.",
+        "imported": "Observed dates imported.",
+        "previewed": "Preview generated.",
+        "setSaved": "Holiday set saved.",
+        "setApproved": "Holiday set approved.",
+        "setSuperseded": "Holiday set superseded."
+      }
     }
   }
 }
