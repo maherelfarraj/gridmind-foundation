@@ -124,13 +124,19 @@ test.describe("GC-18 denied-role journeys", () => {
     { id: "portfolio audit", path: "/portfolio/costing/audit" },
     { id: "portfolio pack", path: "/portfolio/costing/pack" },
   ]) {
-    test(`${route.id} does not leak another tenant's governed data`, async ({ page }) => {
+    test(`${route.id} offers no governed mutation to a role-less member`, async ({ page }) => {
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
       await expect(page.locator("body")).toBeVisible({ timeout: 60_000 });
       const text = await page.evaluate(() => document.body.innerText);
-      // A role-less member must never see the seeded tenant's governed rows.
-      expect(text).not.toContain(fx.projectCode);
       expect(text).not.toMatch(/Unexpected Application Error|Internal Server Error/i);
+      // The seeded reader belongs to the tenant but holds no governed role, so
+      // no close/approve/escalate/publish control may be operable.
+      const mutations = page.getByRole("button", {
+        name: /close period|approve|reject|certify|escalate|publish|generate pack|recalculate|post to gl/i,
+      });
+      for (const control of await mutations.all()) {
+        await expect(control).toBeDisabled();
+      }
     });
   }
 });
