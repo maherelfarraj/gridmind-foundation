@@ -283,6 +283,20 @@ export async function transitionClaim(
   if (requiresApprovalRole(input.to)) await requireApprove(ctx);
   else await requireWrite(ctx);
 
+  // Idempotency — a replayed transition is a no-op, not a second event.
+  if (input.idempotency_key) {
+    const prior = await safeRows<{ id: string }>(() =>
+      db(ctx)
+        .from("contract_claim_events")
+        .select("id")
+        .eq("claim_id", input.claim_id)
+        .eq("event_type", `transition:${input.idempotency_key}`)
+        .limit(1),
+    );
+    if (prior.length)
+      return { id: input.claim_id, status: from, row_version: Number(row.row_version) };
+  }
+
   if (row.row_version !== input.row_version)
     httpError(409, "stale_write", "This claim changed since it was loaded. Reload and retry.");
 
@@ -314,20 +328,6 @@ export async function transitionClaim(
       : [];
   if (requiresApprovalRole(input.to) && !withinDelegation(value, roles))
     httpError(403, "delegation_exceeded", "This value exceeds your delegated authority.");
-
-  // Idempotency — a replayed transition is a no-op, not a second event.
-  if (input.idempotency_key) {
-    const prior = await safeRows<{ id: string }>(() =>
-      db(ctx)
-        .from("contract_claim_events")
-        .select("id")
-        .eq("claim_id", input.claim_id)
-        .eq("event_type", `transition:${input.idempotency_key}`)
-        .limit(1),
-    );
-    if (prior.length)
-      return { id: input.claim_id, status: from, row_version: Number(row.row_version) };
-  }
 
   const patch: Record<string, unknown> = { status: input.to, row_version: row.row_version };
   const now = new Date().toISOString();
