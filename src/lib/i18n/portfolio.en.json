@@ -947,6 +947,9 @@
         "title": "Contracts & claims unavailable",
         "description": "The consolidated claim exposure could not be loaded. Try again."
       }
+    },
+    "riskContingency": {
+      "link": "Risk & contingency"
     }
   }
 }
