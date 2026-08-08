@@ -108,7 +108,7 @@ describe("distribution quantiles", () => {
   it("normal centres on the most likely value", () => {
     const d = dist({ kind: "normal", most_likely: 100, sigma: 10 });
     expect(quantile(d, 0.5)).toBeCloseTo(100, 6);
-    expect(quantile(d, 0.8416212335729143 > 0 ? 0.8 : 0.8)).toBeCloseTo(108.416, 2);
+    expect(quantile(d, 0.8)).toBeCloseTo(108.416, 2);
   });
   it("lognormal is strictly positive", () => {
     const d = dist({ kind: "lognormal", most_likely: 50, sigma: 0.5 });
@@ -317,16 +317,31 @@ describe("validateSimInputs", () => {
 describe("contingency adequacy", () => {
   it("bands healthy / watch / inadequate", () => {
     expect(
-      assessContingencyAdequacy({ available: 120, management_reserve: 0, p50: 50, p80: 100, p90: 130 })
-        .band,
+      assessContingencyAdequacy({
+        available: 120,
+        management_reserve: 0,
+        p50: 50,
+        p80: 100,
+        p90: 130,
+      }).band,
     ).toBe("healthy");
     expect(
-      assessContingencyAdequacy({ available: 80, management_reserve: 0, p50: 50, p80: 100, p90: 130 })
-        .band,
+      assessContingencyAdequacy({
+        available: 80,
+        management_reserve: 0,
+        p50: 50,
+        p80: 100,
+        p90: 130,
+      }).band,
     ).toBe("watch");
     expect(
-      assessContingencyAdequacy({ available: 50, management_reserve: 0, p50: 50, p80: 100, p90: 130 })
-        .band,
+      assessContingencyAdequacy({
+        available: 50,
+        management_reserve: 0,
+        p50: 50,
+        p80: 100,
+        p90: 130,
+      }).band,
     ).toBe("inadequate");
   });
   it("reports headroom and shortfall", () => {
@@ -342,7 +357,13 @@ describe("contingency adequacy", () => {
     expect(a.cover_p80_with_reserve).toBeCloseTo(1.1, 9);
   });
   it("treats a zero exposure as healthy with null cover", () => {
-    const a = assessContingencyAdequacy({ available: 10, management_reserve: 0, p50: 0, p80: 0, p90: 0 });
+    const a = assessContingencyAdequacy({
+      available: 10,
+      management_reserve: 0,
+      p50: 0,
+      p80: 0,
+      p90: 0,
+    });
     expect(a.cover_p80).toBeNull();
     expect(a.band).toBe("healthy");
   });

@@ -186,3 +186,58 @@ from public.contract_claim_snapshots s,
      generate_series(0, :lines_per_bucket - 1) k
 where s.company_id = (select company_id from perf_ids)
   and s.status = 'submitted';
+
+-- ---------------------------------------------------------------------------
+-- GC-17 risk & contingency: seeded simulation runs, append-only history and
+-- the deduplicated alert register, at a volume where the planner has a real
+-- choice between the project/company indexes and a sequential scan.
+-- ---------------------------------------------------------------------------
+insert into public.risk_sim_runs (
+  id, company_id, project_id, scope, status, seed, iterations, input_checksum,
+  reporting_currency, fx_rate_date, inputs, results, diagnostics, created_at
+)
+select md5('gc17-perf::run::' || g || '::' || v)::uuid,
+       p.company_id,
+       md5('gc15-perf::project::' || g)::uuid,
+       (array['cost','schedule','joint'])[1 + (g + v) % 3],
+       case when v = 1 then 'approved' else 'superseded' end,
+       100000 + g * 31 + v,
+       10000,
+       md5('gc17-perf::checksum::' || g || '::' || v),
+       'USD',
+       date '2025-01-31',
+       '[]'::jsonb,
+       jsonb_build_object('cost', jsonb_build_object('p50', 100000 + g, 'p80', 180000 + g, 'p90', 220000 + g)),
+       jsonb_build_object('converged', true),
+       now() - ((g * 7 + v) || ' days')::interval
+from perf_ids p, generate_series(1, :projects) g, generate_series(1, 30) v;
+
+insert into public.risk_contingency_events (
+  company_id, project_id, entity_type, entity_id, action, payload, created_at
+)
+select p.company_id,
+       md5('gc15-perf::project::' || g)::uuid,
+       (array['risk','quantification','pool','movement','sim_run','alert'])[1 + (g + e) % 6],
+       md5('gc17-perf::entity::' || g || '::' || (e % 25))::uuid,
+       (array['run','approved','rejected','draw','release'])[1 + (g * 3 + e) % 5],
+       '{}'::jsonb,
+       now() - ((e) || ' hours')::interval
+from perf_ids p, generate_series(1, :projects) g, generate_series(1, 200) e;
+
+insert into public.risk_contingency_alerts (
+  company_id, project_id, family, severity, status, dedupe_key, title, created_at
+)
+select p.company_id,
+       md5('gc15-perf::project::' || g)::uuid,
+       (array['high_exposure','contingency_inadequacy','burn_rate_spike','unlinked_drawdown',
+              'overdue_mitigation','stale_simulation','input_quality','fx_materiality'])[1 + (g + a) % 8],
+       (array['info','warning','critical'])[1 + (g + a) % 3],
+       (array['open','acknowledged','snoozed','resolved'])[1 + (g * 2 + a) % 4],
+       'gc17-perf::' || g || '::' || a,
+       'GC17 perf alert ' || g || '-' || a,
+       now() - ((a) || ' days')::interval
+from perf_ids p, generate_series(1, :projects) g, generate_series(1, 40) a;
+
+analyze public.risk_sim_runs;
+analyze public.risk_contingency_events;
+analyze public.risk_contingency_alerts;

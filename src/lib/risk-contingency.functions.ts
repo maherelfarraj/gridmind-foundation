@@ -5,6 +5,11 @@ import { z } from "zod";
 
 import { attachSupabaseAuth, requireSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import {
+  loadPortfolioRiskAppendix,
+  loadRiskContingencyAppendix,
+  type RiskContingencyAppendix,
+} from "@/lib/risk-appendix.server";
+import {
   createSimRun,
   decideAlert,
   decideSimRun,
@@ -31,9 +36,17 @@ const alertDecisionSchema = z.object({
   id: z.string().uuid(),
   target: z.enum(ALERT_STATUSES),
   row_version: z.number().int().min(1),
-  snoozed_until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  snoozed_until: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   owner_id: z.string().uuid().nullable().optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 
 export const getRiskContingencyAccess = createServerFn({ method: "GET" })
@@ -56,6 +69,21 @@ export const getPortfolioRiskContingency = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<PortfolioRiskSummary> => {
     requireSupabaseAuth(context);
     return loadPortfolioRiskContingency(context);
+  });
+
+export const getRiskContingencyAppendix = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .inputValidator((input: unknown) => projectInput.parse(input))
+  .handler(async ({ data, context }): Promise<RiskContingencyAppendix> => {
+    requireSupabaseAuth(context);
+    return loadRiskContingencyAppendix(context, data.project_id);
+  });
+
+export const getPortfolioRiskAppendix = createServerFn({ method: "GET" })
+  .middleware([attachSupabaseAuth])
+  .handler(async ({ context }): Promise<PortfolioRiskSummary> => {
+    requireSupabaseAuth(context);
+    return loadPortfolioRiskAppendix(context);
   });
 
 export const runRiskSimulation = createServerFn({ method: "POST" })

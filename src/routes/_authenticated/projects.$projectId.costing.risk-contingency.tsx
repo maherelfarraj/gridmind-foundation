@@ -24,7 +24,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/locale-provider";
-import { decideRiskAlert, decideRiskSimulation, runRiskSimulation } from "@/lib/risk-contingency.functions";
+import {
+  decideRiskAlert,
+  decideRiskSimulation,
+  runRiskSimulation,
+} from "@/lib/risk-contingency.functions";
 import {
   riskContingencyErrorMessage,
   riskContingencyWorkspaceQueryOptions,
@@ -322,9 +326,7 @@ function RunSection({
                 <TableCell>{r.iterations}</TableCell>
                 <TableCell className="font-mono text-xs">{r.input_checksum}</TableCell>
                 <TableCell className="text-xs">
-                  {r.engine}
-                  {" "}
-                  {r.engine_version}
+                  {r.engine} {r.engine_version}
                 </TableCell>
                 <TableCell className="text-right">
                   {workspace.access.canApprove && r.status === "draft" ? (
