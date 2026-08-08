@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AlertRegister, type AlertDecision } from "@/components/risk-contingency/alert-register";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   decideRiskAlert,
@@ -118,11 +119,7 @@ function RiskContingencyCockpit() {
   });
 
   const alertMutation = useMutation({
-    mutationFn: (input: {
-      id: string;
-      target: "acknowledged" | "resolved" | "open";
-      row_version: number;
-    }) => decideAlertFn({ data: input }),
+    mutationFn: (input: AlertDecision) => decideAlertFn({ data: input }),
     onSuccess: async () => {
       toast.success(t(`${K}.alerts.updated`));
       await invalidate();
@@ -581,90 +578,17 @@ function AlertsSection({
 }: {
   workspace: RiskContingencyWorkspace;
   busy: boolean;
-  onDecide: (v: {
-    id: string;
-    target: "acknowledged" | "resolved" | "open";
-    row_version: number;
-  }) => void;
+  onDecide: (v: AlertDecision) => void;
 }) {
-  const { t } = useI18n();
   return (
     <Card className="flex flex-col gap-4 p-4">
       <SectionHead titleKey={`${K}.alerts.title`} descKey={`${K}.alerts.description`} />
-      {workspace.alerts.length === 0 ? (
-        <EmptyState title={t(`${K}.alerts.title`)} description={t(`${K}.alerts.empty`)} />
-      ) : (
-        <Table>
-          <caption className="sr-only">{t(`${K}.alerts.title`)}</caption>
-          <TableHeader>
-            <TableRow>
-              <TableHead scope="col">{t(`${K}.alerts.alert`)}</TableHead>
-              <TableHead scope="col">{t(`${K}.alerts.severity`)}</TableHead>
-              <TableHead scope="col">{t(`${K}.alerts.status`)}</TableHead>
-              <TableHead scope="col">{t(`${K}.alerts.due`)}</TableHead>
-              <TableHead scope="col" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {workspace.alerts.map((a) => (
-              <TableRow key={a.id}>
-                <TableCell>{a.title}</TableCell>
-                <TableCell>
-                  <StatusBadge status={a.severity} />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={a.status} />
-                </TableCell>
-                <TableCell>{a.due_date ?? "—"}</TableCell>
-                <TableCell className="text-right">
-                  {workspace.access.canWrite ? (
-                    <div className="flex justify-end gap-2">
-                      {a.status === "open" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy}
-                          onClick={() =>
-                            onDecide({
-                              id: a.id,
-                              target: "acknowledged",
-                              row_version: a.row_version,
-                            })
-                          }
-                        >
-                          {t(`${K}.alerts.acknowledge`)}
-                        </Button>
-                      ) : null}
-                      {a.status === "resolved" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy}
-                          onClick={() =>
-                            onDecide({ id: a.id, target: "open", row_version: a.row_version })
-                          }
-                        >
-                          {t(`${K}.alerts.reopen`)}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          disabled={busy}
-                          onClick={() =>
-                            onDecide({ id: a.id, target: "resolved", row_version: a.row_version })
-                          }
-                        >
-                          {t(`${K}.alerts.resolve`)}
-                        </Button>
-                      )}
-                    </div>
-                  ) : null}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <AlertRegister
+        alerts={workspace.alerts}
+        canWrite={workspace.access.canWrite}
+        busy={busy}
+        onDecide={onDecide}
+      />
     </Card>
   );
 }

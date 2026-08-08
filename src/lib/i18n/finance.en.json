@@ -2091,7 +2091,16 @@
         "resolve": "Resolve",
         "reopen": "Reopen",
         "updated": "Alert updated",
-        "empty": "No open alerts."
+        "empty": "No open alerts.",
+        "family": "Family",
+        "owner": "Owner",
+        "actions": "Actions",
+        "unassigned": "Unassigned",
+        "snooze": "Snooze",
+        "unsnooze": "Unsnooze",
+        "escalate": "Escalate",
+        "evidence": "Open evidence",
+        "readOnly": "View only"
       },
       "events": {
         "title": "Audit timeline",
@@ -2145,6 +2154,24 @@
         "coverP80": "Cover at P80",
         "openAlerts": "Open alerts",
         "total": "Total"
+      },
+      "families": {
+        "burn_rate_spike": "Burn-rate spike",
+        "contingency_inadequacy": "Contingency inadequacy",
+        "double_count": "Double count",
+        "funding_mismatch": "Funding mismatch",
+        "fx_materiality": "FX materiality",
+        "high_exposure": "High exposure",
+        "input_quality": "Input quality",
+        "new_top_contributor": "New top contributor",
+        "overdue_mitigation": "Overdue mitigation",
+        "p80_budget_breach": "P80 budget breach",
+        "p90_schedule_breach": "P90 schedule breach",
+        "probability_impact_increase": "Probability or impact increase",
+        "reserve_expiry": "Reserve expiry",
+        "sod_exception": "SoD exception",
+        "stale_simulation": "Stale simulation",
+        "unlinked_drawdown": "Unlinked drawdown"
       }
     }
   }

@@ -2094,7 +2094,16 @@
         "resolve": "إغلاق",
         "reopen": "إعادة فتح",
         "updated": "تم تحديث التنبيه",
-        "empty": "لا توجد تنبيهات مفتوحة."
+        "empty": "لا توجد تنبيهات مفتوحة.",
+        "family": "العائلة",
+        "owner": "المالك",
+        "actions": "الإجراءات",
+        "unassigned": "غير مُسند",
+        "snooze": "تأجيل",
+        "unsnooze": "إلغاء التأجيل",
+        "escalate": "تصعيد",
+        "evidence": "فتح الدليل",
+        "readOnly": "عرض فقط"
       },
       "events": {
         "title": "سجل التدقيق",
@@ -2148,6 +2157,24 @@
         "coverP80": "التغطية عند P80",
         "openAlerts": "تنبيهات مفتوحة",
         "total": "الإجمالي"
+      },
+      "families": {
+        "burn_rate_spike": "ارتفاع معدل الاستهلاك",
+        "contingency_inadequacy": "عدم كفاية الاحتياطي",
+        "double_count": "ازدواج احتساب",
+        "funding_mismatch": "عدم تطابق التمويل",
+        "fx_materiality": "أهمية سعر الصرف",
+        "high_exposure": "تعرّض مرتفع",
+        "input_quality": "جودة المدخلات",
+        "new_top_contributor": "مساهم رئيسي جديد",
+        "overdue_mitigation": "إجراء تخفيف متأخر",
+        "p80_budget_breach": "تجاوز موازنة P80",
+        "p90_schedule_breach": "تجاوز جدول P90",
+        "probability_impact_increase": "ارتفاع الاحتمال أو الأثر",
+        "reserve_expiry": "انتهاء الاحتياطي",
+        "sod_exception": "استثناء فصل المهام",
+        "stale_simulation": "محاكاة قديمة",
+        "unlinked_drawdown": "سحب غير مرتبط"
       }
     }
   }

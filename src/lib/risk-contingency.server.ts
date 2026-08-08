@@ -481,12 +481,14 @@ export async function decideAlert(
     snoozed_until?: string | null;
     owner_id?: string | null;
     due_date?: string | null;
+    /** Raise severity one band without changing the lifecycle status. */
+    escalate?: boolean;
   },
 ): Promise<void> {
   await requireWrite(ctx);
   const { data, error } = await ctx.supabase
     .from("risk_contingency_alerts")
-    .select("id, company_id, project_id, status, row_version")
+    .select("id, company_id, project_id, status, severity, row_version")
     .eq("id", input.id)
     .maybeSingle();
   if (error) throw error;
@@ -496,10 +498,39 @@ export async function decideAlert(
     company_id: string;
     project_id: string | null;
     status: AlertStatus;
+    severity: string;
     row_version: number;
   };
   if (alert.row_version !== input.row_version) {
     httpError(409, "stale_row", "This alert changed since you loaded it.");
+  }
+  if (input.escalate && alert.status === input.target) {
+    const ladder = ["info", "warning", "critical"];
+    const next = ladder[Math.min(ladder.indexOf(alert.severity) + 1, ladder.length - 1)]!;
+    if (next === alert.severity) {
+      httpError(422, "already_critical", "This alert is already at the highest severity.");
+    }
+    const { error: escErr } = await ctx.supabase
+      .from("risk_contingency_alerts")
+      .update({ severity: next, row_version: alert.row_version + 1 } as never)
+      .eq("id", alert.id)
+      .eq("row_version", alert.row_version);
+    if (escErr) throw escErr;
+    if (alert.project_id) {
+      await logEvent(ctx, {
+        company_id: alert.company_id,
+        project_id: alert.project_id,
+        entity_type: "alert",
+        entity_id: alert.id,
+        action: "escalated",
+        payload: { from: alert.severity, to: next },
+      });
+    }
+    await audit(ctx, "risk_alert.escalated", "risk_contingency_alerts", alert.id, {
+      from: alert.severity,
+      to: next,
+    });
+    return;
   }
   if (!canTransitionAlert(alert.status, input.target)) {
     httpError(422, "invalid_transition", `Cannot move ${alert.status} → ${input.target}.`);
@@ -514,6 +545,8 @@ export async function decideAlert(
     patch["acknowledged_at"] = new Date().toISOString();
   }
   if (input.target === "snoozed") patch["snoozed_until"] = input.snoozed_until ?? null;
+  // Un-snoozing clears the deferral date so re-evaluation sees a live alert.
+  if (alert.status === "snoozed" && input.target !== "snoozed") patch["snoozed_until"] = null;
   if (input.target === "resolved") patch["resolved_at"] = new Date().toISOString();
   if (input.target === "open") patch["resolved_at"] = null;
   if (input.owner_id !== undefined) patch["owner_id"] = input.owner_id;
@@ -726,8 +759,37 @@ export async function loadRiskContingencyWorkspace(
       Date.parse(p.reserve_expires_on) - today.getTime() < 60 * 86_400_000,
   ).length;
 
+  // Segregation-of-duties exceptions: same person submitted and approved a run.
+  const sodExceptions = runs
+    .filter(
+      (r) =>
+        (r.status === "approved" || r.status === "superseded") &&
+        r.approved_by !== null &&
+        (r as unknown as { created_by: string | null }).created_by === r.approved_by,
+    )
+    .map((r) => ({ run_id: r.id }));
+
+  // Committed funding allocated to this project against approved contingency.
+  const { data: allocRows } = await ctx.supabase
+    .from("funding_allocations")
+    .select("allocated_amount")
+    .eq("project_id", projectId);
+  const allocated = ((allocRows ?? []) as { allocated_amount: number | string }[]).reduce(
+    (sum, a) => sum + num(a.allocated_amount),
+    0,
+  );
+  const fundingGap =
+    allocated > 0 ? Math.max(0, workingOpening + reserveOpening - allocated) : 0;
+
+  const escalatedRisks = riskRows
+    .filter((r) => r.escalated && r.status !== "closed")
+    .map((r) => ({ risk_id: r.id, title: r.title }));
+
   const candidates = evaluateAlerts({
     project_id: projectId,
+    escalated_risks: escalatedRisks,
+    funding_gap: fundingGap,
+    sod_exceptions: sodExceptions,
     adequacy,
     sim: {
       ran_at: approved?.approved_at ?? null,
@@ -814,6 +876,7 @@ export interface PortfolioRiskSummary {
   rows: PortfolioRiskRow[];
   totals: { p80: number; available: number; shortfall: number; projects: number };
   alerts: AlertRow[];
+  access: Awaited<ReturnType<typeof resolveRcAccess>>;
 }
 
 export async function loadPortfolioRiskContingency(
@@ -939,5 +1002,6 @@ export async function loadPortfolioRiskContingency(
       projects: rows.length,
     },
     alerts,
+    access: await resolveRcAccess(ctx),
   };
 }

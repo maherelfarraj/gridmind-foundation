@@ -762,6 +762,12 @@ export interface AlertEvaluationInput {
   input_problems: number;
   missing_fx: number;
   reserve_expiring: number;
+  /** Risks whose probability or impact rose since the last approved run. */
+  escalated_risks?: { risk_id: string; title: string }[];
+  /** Approved contingency that is not covered by committed funding, reporting ccy. */
+  funding_gap?: number;
+  /** Simulation runs submitted and approved by the same person. */
+  sod_exceptions?: { run_id: string }[];
   now: Date;
 }
 
@@ -904,6 +910,41 @@ export function evaluateAlerts(input: AlertEvaluationInput): AlertCandidate[] {
       severity: "critical",
       title: "Missing FX rates",
       detail: `${input.missing_fx} risk(s) have no rate to the reporting currency — no silent fallback applied.`,
+    });
+  }
+  for (const r of input.escalated_risks ?? []) {
+    push({
+      family: "probability_impact_increase",
+      project_id: pid,
+      subject: r.risk_id,
+      severity: "warning",
+      title: `Risk exposure increased: ${r.title}`,
+      detail: "Probability or impact rose since the last approved quantification.",
+      evidence_entity_type: "risk",
+      evidence_entity_id: r.risk_id,
+    });
+  }
+  if ((input.funding_gap ?? 0) > 0) {
+    push({
+      family: "funding_mismatch",
+      project_id: pid,
+      subject: "funding",
+      severity: "critical",
+      title: "Contingency exceeds committed funding",
+      detail: `Approved contingency exceeds available funding by ${(input.funding_gap ?? 0).toFixed(2)}.`,
+      payload: { funding_gap: input.funding_gap ?? 0 },
+    });
+  }
+  for (const x of input.sod_exceptions ?? []) {
+    push({
+      family: "sod_exception",
+      project_id: pid,
+      subject: x.run_id,
+      severity: "critical",
+      title: "Segregation of duties exception",
+      detail: "A simulation run was submitted and approved by the same person.",
+      evidence_entity_type: "sim_run",
+      evidence_entity_id: x.run_id,
     });
   }
   if (input.reserve_expiring > 0) {
