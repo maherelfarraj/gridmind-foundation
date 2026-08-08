@@ -267,7 +267,7 @@ describe("GC-16 claim CRUD and lifecycle", () => {
   });
 
   it("requires an approver role for approval-grade transitions", async () => {
-    const { ctx, tables } = makeCtx();
+    const { ctx, tables, client } = makeCtx();
     const { id } = await saveClaim(ctx, CLAIM);
     const v = () => Number(tables.contract_claims![0]!["row_version"]);
     await transitionClaim(ctx, { claim_id: id, to: "submitted", row_version: v() });
@@ -281,7 +281,7 @@ describe("GC-16 claim CRUD and lifecycle", () => {
   });
 
   it("stops an approval above the actor's delegated authority", async () => {
-    const { ctx, tables } = makeCtx();
+    const { ctx, tables, client } = makeCtx();
     const { id } = await saveClaim(ctx, { ...CLAIM, assessed_amount: 250_000_000 });
     const v = () => Number(tables.contract_claims![0]!["row_version"]);
     await transitionClaim(ctx, { claim_id: id, to: "submitted", row_version: v() });
@@ -498,7 +498,7 @@ describe("GC-16 snapshots", () => {
   });
 
   it("freezes an approved snapshot against rebuild until it is superseded", async () => {
-    const { ctx, tables } = makeCtx();
+    const { ctx, tables, client } = makeCtx();
     await saveClaim(ctx, CLAIM);
     const built = await buildClaimSnapshot(ctx, BUILD);
     const snap = () => tables.contract_claim_snapshots![0]!;
