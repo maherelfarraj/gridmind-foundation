@@ -13,6 +13,7 @@ import {
   Gauge,
   LineChart,
   ScrollText,
+  ShieldAlert,
   TrendingUp,
   Wallet,
 } from "lucide-react";
