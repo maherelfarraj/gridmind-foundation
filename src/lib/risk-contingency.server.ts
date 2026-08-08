@@ -227,7 +227,7 @@ export interface SimRunRow {
   input_checksum: string;
   reporting_currency: string;
   fx_rate_date: string | null;
-  fx_provenance: Record<string, unknown>;
+  fx_provenance: Record<string, { rate: number; date: string | null; source: string }>;
   assumptions: string | null;
   exclusions: string | null;
   results: SimResult | Record<string, never>;

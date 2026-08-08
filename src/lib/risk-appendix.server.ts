@@ -31,7 +31,7 @@ export interface RiskContingencyAppendix {
     engine_version: string | null;
     input_checksum: string | null;
     fx_rate_date: string | null;
-    fx_provenance: Record<string, unknown>;
+    fx_provenance: Record<string, { rate: number; date: string | null; source: string }>;
     approved_at: string | null;
     approved_by: string | null;
     assumptions: string | null;
@@ -44,7 +44,7 @@ export interface RiskContingencyAppendix {
     prob_exceeds_finish: number | null;
     converged: boolean | null;
   };
-  top_contributors: { risk_id: string; title: string; contribution: number }[];
+  top_contributors: { risk_id: string; title: string; contribution: number; share_pct: number }[];
   adequacy: AdequacyResult;
   contingency: {
     available: number;
@@ -82,7 +82,7 @@ export async function loadRiskContingencyAppendix(
       engine_version: run?.engine_version ?? null,
       input_checksum: run?.input_checksum ?? null,
       fx_rate_date: run?.fx_rate_date ?? null,
-      fx_provenance: (run?.fx_provenance ?? {}) as Record<string, unknown>,
+      fx_provenance: run?.fx_provenance ?? {},
       approved_at: run?.approved_at ?? null,
       approved_by: run?.approved_by ?? null,
       assumptions: run?.assumptions ?? null,
@@ -112,7 +112,8 @@ export async function loadRiskContingencyAppendix(
     top_contributors: (results?.tornado ?? []).slice(0, 10).map((t) => ({
       risk_id: t.risk_id,
       title: t.title,
-      contribution: t.contribution,
+      contribution: t.mean_contribution,
+      share_pct: t.share_pct,
     })),
     adequacy: ws.adequacy,
     contingency: {
