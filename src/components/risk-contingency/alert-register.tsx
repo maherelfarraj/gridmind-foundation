@@ -2,6 +2,7 @@
 // Used by both the project cockpit and the portfolio dashboard so the register,
 // its lifecycle actions and its accessibility behaviour are identical.
 import { Link } from "@tanstack/react-router";
+import { useLayoutEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -57,6 +58,28 @@ export function AlertRegister({
   now?: Date;
 }) {
   const { t } = useI18n();
+  // A governed action unmounts the control that triggered it (Acknowledge
+  // disappears once the alert is acknowledged), which would drop focus onto
+  // <body>. Keep focus in the acting row's action group instead.
+  const groups = useRef(new Map<string, HTMLDivElement | null>());
+  const lastActed = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const id = lastActed.current;
+    if (!id) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.tagName !== "HTML") return;
+    const group = groups.current.get(id);
+    if (!group) return;
+    const next = group.querySelector<HTMLElement>("button:not([disabled])") ?? group;
+    next.focus();
+    lastActed.current = null;
+  }, [alerts, busy]);
+
+  const decide = (decision: AlertDecision) => {
+    lastActed.current = decision.id;
+    onDecide(decision);
+  };
+
   if (alerts.length === 0) {
     return <EmptyState title={t(`${K}.alerts.title`)} description={t(`${K}.alerts.empty`)} />;
   }
@@ -107,14 +130,22 @@ export function AlertRegister({
             <TableCell>{a.due_date ?? a.snoozed_until ?? "—"}</TableCell>
             <TableCell>
               {canWrite ? (
-                <div className="flex flex-wrap gap-2">
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  tabIndex={-1}
+                  aria-label={`${t(`${K}.alerts.actions`)}: ${a.title}`}
+                  ref={(el) => {
+                    groups.current.set(a.id, el);
+                  }}
+                >
                   {a.status === "open" ? (
                     <Button
                       size="sm"
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "acknowledged", row_version: a.row_version })
+                        decide({ id: a.id, target: "acknowledged", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.acknowledge`)}
@@ -126,7 +157,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: "open",
                           row_version: a.row_version,
@@ -142,7 +173,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: "snoozed",
                           row_version: a.row_version,
@@ -159,7 +190,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({
+                        decide({
                           id: a.id,
                           target: a.status,
                           row_version: a.row_version,
@@ -176,7 +207,7 @@ export function AlertRegister({
                       variant="outline"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "open", row_version: a.row_version })
+                        decide({ id: a.id, target: "open", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.reopen`)}
@@ -186,7 +217,7 @@ export function AlertRegister({
                       size="sm"
                       disabled={busy}
                       onClick={() =>
-                        onDecide({ id: a.id, target: "resolved", row_version: a.row_version })
+                        decide({ id: a.id, target: "resolved", row_version: a.row_version })
                       }
                     >
                       {t(`${K}.alerts.resolve`)}

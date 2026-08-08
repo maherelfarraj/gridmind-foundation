@@ -86,7 +86,6 @@ import { Route as AuthenticatedProcurementPriceAlertsRouteImport } from './route
 import { Route as AuthenticatedProcurementPosRouteImport } from './routes/_authenticated/procurement.pos'
 import { Route as AuthenticatedProcurementMatchesRouteImport } from './routes/_authenticated/procurement.matches'
 import { Route as AuthenticatedProcurementExpeditingRouteImport } from './routes/_authenticated/procurement.expediting'
-import { Route as AuthenticatedPortfolioCostingRouteImport } from './routes/_authenticated/portfolio.costing'
 import { Route as AuthenticatedOmWorkOrdersRouteImport } from './routes/_authenticated/om.work-orders'
 import { Route as AuthenticatedOmWarrantiesRouteImport } from './routes/_authenticated/om.warranties'
 import { Route as AuthenticatedOmServiceTicketsRouteImport } from './routes/_authenticated/om.service-tickets'
@@ -149,6 +148,7 @@ import { Route as AuthenticatedProcurementRfqsIndexRouteImport } from './routes/
 import { Route as AuthenticatedProcurementReceiptsIndexRouteImport } from './routes/_authenticated/procurement.receipts.index'
 import { Route as AuthenticatedProcurementPosIndexRouteImport } from './routes/_authenticated/procurement.pos.index'
 import { Route as AuthenticatedProcurementMatchesIndexRouteImport } from './routes/_authenticated/procurement.matches.index'
+import { Route as AuthenticatedPortfolioCostingIndexRouteImport } from './routes/_authenticated/portfolio.costing.index'
 import { Route as AuthenticatedOmScadaIndexRouteImport } from './routes/_authenticated/om.scada.index'
 import { Route as AuthenticatedHseIncidentsIndexRouteImport } from './routes/_authenticated/hse.incidents.index'
 import { Route as AuthenticatedFinanceGlExportIndexRouteImport } from './routes/_authenticated/finance.gl-export.index'
@@ -730,12 +730,6 @@ const AuthenticatedProcurementExpeditingRoute =
     path: '/procurement/expediting',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPortfolioCostingRoute =
-  AuthenticatedPortfolioCostingRouteImport.update({
-    id: '/costing',
-    path: '/costing',
-    getParentRoute: () => AuthenticatedPortfolioRoute,
-  } as any)
 const AuthenticatedOmWorkOrdersRoute =
   AuthenticatedOmWorkOrdersRouteImport.update({
     id: '/om/work-orders',
@@ -1101,6 +1095,12 @@ const AuthenticatedProcurementMatchesIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProcurementMatchesRoute,
   } as any)
+const AuthenticatedPortfolioCostingIndexRoute =
+  AuthenticatedPortfolioCostingIndexRouteImport.update({
+    id: '/costing/',
+    path: '/costing/',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
+  } as any)
 const AuthenticatedOmScadaIndexRoute =
   AuthenticatedOmScadaIndexRouteImport.update({
     id: '/om/scada/',
@@ -1437,63 +1437,63 @@ const AuthenticatedProcurementMatchesMatchIdRoute =
   } as any)
 const AuthenticatedPortfolioCostingScenariosRoute =
   AuthenticatedPortfolioCostingScenariosRouteImport.update({
-    id: '/scenarios',
-    path: '/scenarios',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/scenarios',
+    path: '/costing/scenarios',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingRiskContingencyRoute =
   AuthenticatedPortfolioCostingRiskContingencyRouteImport.update({
-    id: '/risk-contingency',
-    path: '/risk-contingency',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/risk-contingency',
+    path: '/costing/risk-contingency',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingRevenueWipRoute =
   AuthenticatedPortfolioCostingRevenueWipRouteImport.update({
-    id: '/revenue-wip',
-    path: '/revenue-wip',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/revenue-wip',
+    path: '/costing/revenue-wip',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingPackRoute =
   AuthenticatedPortfolioCostingPackRouteImport.update({
-    id: '/pack',
-    path: '/pack',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/pack',
+    path: '/costing/pack',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingFundingRoute =
   AuthenticatedPortfolioCostingFundingRouteImport.update({
-    id: '/funding',
-    path: '/funding',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/funding',
+    path: '/costing/funding',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingEvmRoute =
   AuthenticatedPortfolioCostingEvmRouteImport.update({
-    id: '/evm',
-    path: '/evm',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/evm',
+    path: '/costing/evm',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingContractsClaimsRoute =
   AuthenticatedPortfolioCostingContractsClaimsRouteImport.update({
-    id: '/contracts-claims',
-    path: '/contracts-claims',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/contracts-claims',
+    path: '/costing/contracts-claims',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingCashFlowRoute =
   AuthenticatedPortfolioCostingCashFlowRouteImport.update({
-    id: '/cash-flow',
-    path: '/cash-flow',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/cash-flow',
+    path: '/costing/cash-flow',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingAuditRoute =
   AuthenticatedPortfolioCostingAuditRouteImport.update({
-    id: '/audit',
-    path: '/audit',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/audit',
+    path: '/costing/audit',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedPortfolioCostingAlertsRoute =
   AuthenticatedPortfolioCostingAlertsRouteImport.update({
-    id: '/alerts',
-    path: '/alerts',
-    getParentRoute: () => AuthenticatedPortfolioCostingRoute,
+    id: '/costing/alerts',
+    path: '/costing/alerts',
+    getParentRoute: () => AuthenticatedPortfolioRoute,
   } as any)
 const AuthenticatedOmScadaMappingsRoute =
   AuthenticatedOmScadaMappingsRouteImport.update({
@@ -2102,7 +2102,6 @@ export interface FileRoutesByFullPath {
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
-  '/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2248,6 +2247,7 @@ export interface FileRoutesByFullPath {
   '/finance/gl-export/': typeof AuthenticatedFinanceGlExportIndexRoute
   '/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/om/scada/': typeof AuthenticatedOmScadaIndexRoute
+  '/portfolio/costing/': typeof AuthenticatedPortfolioCostingIndexRoute
   '/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -2390,7 +2390,6 @@ export interface FileRoutesByTo {
   '/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
-  '/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/procurement/price-alerts': typeof AuthenticatedProcurementPriceAlertsRoute
   '/procurement/receiving': typeof AuthenticatedProcurementReceivingRoute
@@ -2527,6 +2526,7 @@ export interface FileRoutesByTo {
   '/finance/gl-export': typeof AuthenticatedFinanceGlExportIndexRoute
   '/hse/incidents': typeof AuthenticatedHseIncidentsIndexRoute
   '/om/scada': typeof AuthenticatedOmScadaIndexRoute
+  '/portfolio/costing': typeof AuthenticatedPortfolioCostingIndexRoute
   '/procurement/matches': typeof AuthenticatedProcurementMatchesIndexRoute
   '/procurement/pos': typeof AuthenticatedProcurementPosIndexRoute
   '/procurement/receipts': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -2675,7 +2675,6 @@ export interface FileRoutesById {
   '/_authenticated/om/service-tickets': typeof AuthenticatedOmServiceTicketsRoute
   '/_authenticated/om/warranties': typeof AuthenticatedOmWarrantiesRoute
   '/_authenticated/om/work-orders': typeof AuthenticatedOmWorkOrdersRoute
-  '/_authenticated/portfolio/costing': typeof AuthenticatedPortfolioCostingRouteWithChildren
   '/_authenticated/procurement/expediting': typeof AuthenticatedProcurementExpeditingRoute
   '/_authenticated/procurement/matches': typeof AuthenticatedProcurementMatchesRouteWithChildren
   '/_authenticated/procurement/pos': typeof AuthenticatedProcurementPosRouteWithChildren
@@ -2821,6 +2820,7 @@ export interface FileRoutesById {
   '/_authenticated/finance/gl-export/': typeof AuthenticatedFinanceGlExportIndexRoute
   '/_authenticated/hse/incidents/': typeof AuthenticatedHseIncidentsIndexRoute
   '/_authenticated/om/scada/': typeof AuthenticatedOmScadaIndexRoute
+  '/_authenticated/portfolio/costing/': typeof AuthenticatedPortfolioCostingIndexRoute
   '/_authenticated/procurement/matches/': typeof AuthenticatedProcurementMatchesIndexRoute
   '/_authenticated/procurement/pos/': typeof AuthenticatedProcurementPosIndexRoute
   '/_authenticated/procurement/receipts/': typeof AuthenticatedProcurementReceiptsIndexRoute
@@ -2970,7 +2970,6 @@ export interface FileRouteTypes {
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
-    | '/portfolio/costing'
     | '/procurement/expediting'
     | '/procurement/matches'
     | '/procurement/pos'
@@ -3116,6 +3115,7 @@ export interface FileRouteTypes {
     | '/finance/gl-export/'
     | '/hse/incidents/'
     | '/om/scada/'
+    | '/portfolio/costing/'
     | '/procurement/matches/'
     | '/procurement/pos/'
     | '/procurement/receipts/'
@@ -3258,7 +3258,6 @@ export interface FileRouteTypes {
     | '/om/service-tickets'
     | '/om/warranties'
     | '/om/work-orders'
-    | '/portfolio/costing'
     | '/procurement/expediting'
     | '/procurement/price-alerts'
     | '/procurement/receiving'
@@ -3395,6 +3394,7 @@ export interface FileRouteTypes {
     | '/finance/gl-export'
     | '/hse/incidents'
     | '/om/scada'
+    | '/portfolio/costing'
     | '/procurement/matches'
     | '/procurement/pos'
     | '/procurement/receipts'
@@ -3542,7 +3542,6 @@ export interface FileRouteTypes {
     | '/_authenticated/om/service-tickets'
     | '/_authenticated/om/warranties'
     | '/_authenticated/om/work-orders'
-    | '/_authenticated/portfolio/costing'
     | '/_authenticated/procurement/expediting'
     | '/_authenticated/procurement/matches'
     | '/_authenticated/procurement/pos'
@@ -3688,6 +3687,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance/gl-export/'
     | '/_authenticated/hse/incidents/'
     | '/_authenticated/om/scada/'
+    | '/_authenticated/portfolio/costing/'
     | '/_authenticated/procurement/matches/'
     | '/_authenticated/procurement/pos/'
     | '/_authenticated/procurement/receipts/'
@@ -4340,13 +4340,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementExpeditingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/portfolio/costing': {
-      id: '/_authenticated/portfolio/costing'
-      path: '/costing'
-      fullPath: '/portfolio/costing'
-      preLoaderRoute: typeof AuthenticatedPortfolioCostingRouteImport
-      parentRoute: typeof AuthenticatedPortfolioRoute
-    }
     '/_authenticated/om/work-orders': {
       id: '/_authenticated/om/work-orders'
       path: '/om/work-orders'
@@ -4781,6 +4774,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProcurementMatchesIndexRouteImport
       parentRoute: typeof AuthenticatedProcurementMatchesRoute
     }
+    '/_authenticated/portfolio/costing/': {
+      id: '/_authenticated/portfolio/costing/'
+      path: '/costing'
+      fullPath: '/portfolio/costing/'
+      preLoaderRoute: typeof AuthenticatedPortfolioCostingIndexRouteImport
+      parentRoute: typeof AuthenticatedPortfolioRoute
+    }
     '/_authenticated/om/scada/': {
       id: '/_authenticated/om/scada/'
       path: '/om/scada'
@@ -5182,73 +5182,73 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/portfolio/costing/scenarios': {
       id: '/_authenticated/portfolio/costing/scenarios'
-      path: '/scenarios'
+      path: '/costing/scenarios'
       fullPath: '/portfolio/costing/scenarios'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingScenariosRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/risk-contingency': {
       id: '/_authenticated/portfolio/costing/risk-contingency'
-      path: '/risk-contingency'
+      path: '/costing/risk-contingency'
       fullPath: '/portfolio/costing/risk-contingency'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingRiskContingencyRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/revenue-wip': {
       id: '/_authenticated/portfolio/costing/revenue-wip'
-      path: '/revenue-wip'
+      path: '/costing/revenue-wip'
       fullPath: '/portfolio/costing/revenue-wip'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingRevenueWipRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/pack': {
       id: '/_authenticated/portfolio/costing/pack'
-      path: '/pack'
+      path: '/costing/pack'
       fullPath: '/portfolio/costing/pack'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingPackRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/funding': {
       id: '/_authenticated/portfolio/costing/funding'
-      path: '/funding'
+      path: '/costing/funding'
       fullPath: '/portfolio/costing/funding'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingFundingRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/evm': {
       id: '/_authenticated/portfolio/costing/evm'
-      path: '/evm'
+      path: '/costing/evm'
       fullPath: '/portfolio/costing/evm'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingEvmRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/contracts-claims': {
       id: '/_authenticated/portfolio/costing/contracts-claims'
-      path: '/contracts-claims'
+      path: '/costing/contracts-claims'
       fullPath: '/portfolio/costing/contracts-claims'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingContractsClaimsRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/cash-flow': {
       id: '/_authenticated/portfolio/costing/cash-flow'
-      path: '/cash-flow'
+      path: '/costing/cash-flow'
       fullPath: '/portfolio/costing/cash-flow'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingCashFlowRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/audit': {
       id: '/_authenticated/portfolio/costing/audit'
-      path: '/audit'
+      path: '/costing/audit'
       fullPath: '/portfolio/costing/audit'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingAuditRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/portfolio/costing/alerts': {
       id: '/_authenticated/portfolio/costing/alerts'
-      path: '/alerts'
+      path: '/costing/alerts'
       fullPath: '/portfolio/costing/alerts'
       preLoaderRoute: typeof AuthenticatedPortfolioCostingAlertsRouteImport
-      parentRoute: typeof AuthenticatedPortfolioCostingRoute
+      parentRoute: typeof AuthenticatedPortfolioRoute
     }
     '/_authenticated/om/scada/mappings': {
       id: '/_authenticated/om/scada/mappings'
@@ -5912,7 +5912,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedPortfolioCostingRouteChildren {
+interface AuthenticatedPortfolioRouteChildren {
+  AuthenticatedPortfolioIndexRoute: typeof AuthenticatedPortfolioIndexRoute
   AuthenticatedPortfolioCostingAlertsRoute: typeof AuthenticatedPortfolioCostingAlertsRoute
   AuthenticatedPortfolioCostingAuditRoute: typeof AuthenticatedPortfolioCostingAuditRoute
   AuthenticatedPortfolioCostingCashFlowRoute: typeof AuthenticatedPortfolioCostingCashFlowRoute
@@ -5923,10 +5924,12 @@ interface AuthenticatedPortfolioCostingRouteChildren {
   AuthenticatedPortfolioCostingRevenueWipRoute: typeof AuthenticatedPortfolioCostingRevenueWipRoute
   AuthenticatedPortfolioCostingRiskContingencyRoute: typeof AuthenticatedPortfolioCostingRiskContingencyRoute
   AuthenticatedPortfolioCostingScenariosRoute: typeof AuthenticatedPortfolioCostingScenariosRoute
+  AuthenticatedPortfolioCostingIndexRoute: typeof AuthenticatedPortfolioCostingIndexRoute
 }
 
-const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingRouteChildren =
+const AuthenticatedPortfolioRouteChildren: AuthenticatedPortfolioRouteChildren =
   {
+    AuthenticatedPortfolioIndexRoute: AuthenticatedPortfolioIndexRoute,
     AuthenticatedPortfolioCostingAlertsRoute:
       AuthenticatedPortfolioCostingAlertsRoute,
     AuthenticatedPortfolioCostingAuditRoute:
@@ -5947,23 +5950,8 @@ const AuthenticatedPortfolioCostingRouteChildren: AuthenticatedPortfolioCostingR
       AuthenticatedPortfolioCostingRiskContingencyRoute,
     AuthenticatedPortfolioCostingScenariosRoute:
       AuthenticatedPortfolioCostingScenariosRoute,
-  }
-
-const AuthenticatedPortfolioCostingRouteWithChildren =
-  AuthenticatedPortfolioCostingRoute._addFileChildren(
-    AuthenticatedPortfolioCostingRouteChildren,
-  )
-
-interface AuthenticatedPortfolioRouteChildren {
-  AuthenticatedPortfolioCostingRoute: typeof AuthenticatedPortfolioCostingRouteWithChildren
-  AuthenticatedPortfolioIndexRoute: typeof AuthenticatedPortfolioIndexRoute
-}
-
-const AuthenticatedPortfolioRouteChildren: AuthenticatedPortfolioRouteChildren =
-  {
-    AuthenticatedPortfolioCostingRoute:
-      AuthenticatedPortfolioCostingRouteWithChildren,
-    AuthenticatedPortfolioIndexRoute: AuthenticatedPortfolioIndexRoute,
+    AuthenticatedPortfolioCostingIndexRoute:
+      AuthenticatedPortfolioCostingIndexRoute,
   }
 
 const AuthenticatedPortfolioRouteWithChildren =
