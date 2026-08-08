@@ -10,7 +10,8 @@ import { createI18n, type Locale } from "@/lib/i18n";
 import financeEn from "@/lib/i18n/finance.en.json";
 import financeAr from "@/lib/i18n/finance.ar.json";
 
-vi.mock("@tanstack/react-start", () => ({
+vi.mock(import("@tanstack/react-start"), async (importOriginal) => ({
+  ...(await importOriginal()),
   useServerFn: (fn: unknown) => fn,
 }));
 
