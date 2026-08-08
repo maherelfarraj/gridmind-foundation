@@ -1,0 +1,12 @@
+REVOKE ALL ON FUNCTION public.costing_close_blockers(uuid,uuid,date) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.ensure_costing_checklist_template(uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.ensure_costing_checklist(uuid,uuid,date) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.resolve_costing_exception(uuid,integer,costing_exception_status,text,uuid,date) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.update_costing_checklist_item(uuid,integer,costing_checklist_item_status,uuid,uuid,text,text,boolean) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.upsert_costing_exception(uuid,uuid,date,text,text,costing_exception_severity,text,text,jsonb,text,uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.costing_close_blockers(uuid,uuid,date) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.ensure_costing_checklist_template(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.ensure_costing_checklist(uuid,uuid,date) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.resolve_costing_exception(uuid,integer,costing_exception_status,text,uuid,date) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.update_costing_checklist_item(uuid,integer,costing_checklist_item_status,uuid,uuid,text,text,boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.upsert_costing_exception(uuid,uuid,date,text,text,costing_exception_severity,text,text,jsonb,text,uuid) TO authenticated;
