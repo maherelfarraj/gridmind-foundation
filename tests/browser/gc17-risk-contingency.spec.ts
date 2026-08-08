@@ -41,14 +41,19 @@ function auditTable(page: Page): Locator {
   return page.locator("table").filter({ has: page.locator("caption", { hasText: EN.audit }) });
 }
 
+// The dev server compiles a route on first request, so the very first render of
+// a cold route can outlast the default expect timeout. Give the sentinel row a
+// navigation-sized budget; every later assertion keeps the strict default.
+const FIRST_PAINT = { timeout: 60_000 };
+
 async function gotoProject(page: Page) {
   await page.goto(PROJECT_ROUTE, { waitUntil: "domcontentloaded" });
-  await expect(rowFor(page, "new_top_contributor")).toBeVisible();
+  await expect(rowFor(page, "new_top_contributor")).toBeVisible(FIRST_PAINT);
 }
 
 async function gotoPortfolio(page: Page) {
   await page.goto(PORTFOLIO_ROUTE, { waitUntil: "domcontentloaded" });
-  await expect(rowFor(page, "new_top_contributor")).toBeVisible();
+  await expect(rowFor(page, "new_top_contributor")).toBeVisible(FIRST_PAINT);
 }
 
 /** Clicks a lifecycle control, waits for the success announcement, asserts new state. */
@@ -270,7 +275,7 @@ test.describe("GC-17 alert register — Arabic RTL", () => {
     const family = "stale_simulation";
     await page.goto(PROJECT_ROUTE, { waitUntil: "domcontentloaded" });
     const row = rowFor(page, family);
-    await expect(row).toBeVisible();
+    await expect(row).toBeVisible(FIRST_PAINT);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     // Direction is honoured by the computed layout, not only the attribute.
@@ -280,6 +285,9 @@ test.describe("GC-17 alert register — Arabic RTL", () => {
     await expect(ack).toBeVisible();
     await ack.press("Enter"); // keyboard activation avoids RTL pointer interception
     await page.reload({ waitUntil: "domcontentloaded" });
+    // Wait for the re-render before reading the document: domcontentloaded
+    // resolves before hydration, when body.innerText is still empty.
+    await expect(rowFor(page, family)).toBeVisible(FIRST_PAINT);
     expect((await alertRow(family)).status).toBe("acknowledged");
 
     // Arabic labels render; no raw i18n keys leak into the register.
