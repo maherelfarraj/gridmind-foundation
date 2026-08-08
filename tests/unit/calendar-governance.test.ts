@@ -140,12 +140,12 @@ describe("effectiveCalendar — approved sets only", () => {
 
   it("lets the later approved version win for the same year", () => {
     const eff = effectiveCalendar(base, [
-      set({ id: "v1", version: "1", dates: [{ observed_date: "2026-03-20", label_en: "a", label_ar: "أ", kind: "public_holiday" }] }),
+      set({ id: "v1", version: "1", dates: [{ observed_date: "2026-05-04", label_en: "a", label_ar: "أ", kind: "public_holiday" }] }),
       set({ id: "v2", version: "2", dates: [{ observed_date: "2026-03-21", label_en: "b", label_ar: "ب", kind: "public_holiday" }] }),
     ]);
     expect(eff.holiday_set_versions).toEqual(["mena-jo@2026:2"]);
     expect(eff.holidays).toContain("2026-03-21");
-    expect(eff.holidays).not.toContain("2026-03-20");
+    expect(eff.holidays).not.toContain("2026-05-04");
   });
 
   it("produces a stable version key", () => {
@@ -341,6 +341,7 @@ describe("governed API schemas", () => {
       to_calendar_id: "mena-jo",
       to_timezone: "Asia/Amman",
       reason: "Adopt Jordanian official calendar",
+      idempotency_key: crypto.randomUUID(),
     });
     expect(ok.scope).toBe("company");
   });
