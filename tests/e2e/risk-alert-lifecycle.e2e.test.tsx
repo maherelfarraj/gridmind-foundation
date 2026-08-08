@@ -100,6 +100,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
     const user = userEvent.setup();
     let error: unknown = null;
     let settled: Promise<void> = Promise.resolve();
+    cleanup();
     render(
       <I18nextProvider i18n={createI18n(locale)}>
         <AlertRegister
@@ -219,7 +220,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
   });
 
   it("writes an append-only event row for every UI-driven transition", async () => {
-    const id = await seedAlert("cover_ratio_breach");
+    const id = await seedAlert("contingency_inadequacy");
     await clickAction(writerCtx, id, "Acknowledge");
     await clickAction(writerCtx, id, "Resolve");
 
@@ -249,6 +250,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
 
     // At the top of the ladder the UI stops offering the control.
     const top = await fetchRow(writerCtx, id);
+    cleanup();
     render(
       <I18nextProvider i18n={createI18n("en")}>
         <AlertRegister
@@ -277,6 +279,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
     const user = userEvent.setup();
     let err: unknown = null;
     let settled: Promise<void> = Promise.resolve();
+    cleanup();
     render(
       <I18nextProvider i18n={createI18n("en")}>
         <AlertRegister
@@ -306,6 +309,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
     const access = await resolveRcAccess(readerCtx);
     expect(access.canWrite).toBe(false);
 
+    cleanup();
     render(
       <I18nextProvider i18n={createI18n("en")}>
         <AlertRegister
@@ -329,7 +333,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
   });
 
   it("keeps the register empty for a signed-in user of another tenant", async () => {
-    await seedAlert("shared_register_drift");
+    await seedAlert("double_count");
     const otherSuffix = crypto.randomUUID().slice(0, 8);
     const { data: co } = await svc
       .from("companies")
@@ -358,6 +362,7 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
       .eq("project_id", state.projectId!);
     expect(visible ?? []).toHaveLength(0);
 
+    cleanup();
     render(
       <I18nextProvider i18n={createI18n("en")}>
         <AlertRegister
@@ -376,13 +381,14 @@ describe.skipIf(!canRun)("GC-17 live UI — alert lifecycle end to end", () => {
   });
 
   it("drives the Arabic RTL register through the same persisted transition", async () => {
-    const id = await seedAlert("stale_quantification");
+    const id = await seedAlert("stale_simulation");
     document.documentElement.setAttribute("dir", "rtl");
     const row = await fetchRow(writerCtx, id);
     const access = await resolveRcAccess(writerCtx);
     const i18n = createI18n("ar");
     const user = userEvent.setup();
     let settled: Promise<void> = Promise.resolve();
+    cleanup();
     const { container } = render(
       <I18nextProvider i18n={i18n}>
         <AlertRegister
