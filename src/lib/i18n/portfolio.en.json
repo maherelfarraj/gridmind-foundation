@@ -950,6 +950,9 @@
     },
     "riskContingency": {
       "link": "Risk & contingency"
+    },
+    "funding": {
+      "link": "Funding & liquidity"
     }
   }
 }
