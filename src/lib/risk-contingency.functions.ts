@@ -47,6 +47,7 @@ const alertDecisionSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .nullable()
     .optional(),
+  escalate: z.boolean().optional(),
 });
 
 export const getRiskContingencyAccess = createServerFn({ method: "GET" })

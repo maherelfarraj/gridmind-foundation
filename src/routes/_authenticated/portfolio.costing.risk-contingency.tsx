@@ -1,6 +1,8 @@
 // GC-17 — Portfolio risk & contingency dashboard.
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { ShieldAlert, Wallet } from "lucide-react";
 import { Suspense } from "react";
 import { z } from "zod";
@@ -23,12 +25,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AlertRegister, type AlertDecision } from "@/components/risk-contingency/alert-register";
 import { useI18n } from "@/lib/i18n/locale-provider";
 import {
   riskContingencyConfigToSearch,
   riskContingencySearchToConfig,
   type RiskContingencySearch,
 } from "@/lib/portfolio-views.rules";
+import { decideRiskAlert } from "@/lib/risk-contingency.functions";
 import { portfolioRiskContingencyQueryOptions } from "@/lib/risk-contingency.query";
 
 const K = "financeMod.costing.riskContingency";
@@ -67,6 +71,16 @@ function PortfolioRiskContingency() {
   const navigate = useNavigate({ from: Route.fullPath });
   const search = Route.useSearch();
   const { data } = useSuspenseQuery(portfolioRiskContingencyQueryOptions());
+  const queryClient = useQueryClient();
+  const decideAlertFn = useServerFn(decideRiskAlert);
+  const alertMutation = useMutation({
+    mutationFn: (input: AlertDecision) => decideAlertFn({ data: input }),
+    onSuccess: async () => {
+      toast.success(t(`${K}.alerts.updated`));
+      await queryClient.invalidateQueries({ queryKey: ["portfolio-risk-contingency"] });
+    },
+    onError: (error: unknown) => toast.error((error as Error).message),
+  });
   const currency = data.rows[0]?.reporting_currency ?? "USD";
   const term = (search.search ?? "").trim().toLowerCase();
   const rows = data.rows.filter(
@@ -217,6 +231,20 @@ function PortfolioRiskContingency() {
             </TableBody>
           </Table>
         )}
+      </Card>
+
+      <Card className="flex flex-col gap-4 p-4">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">{t(`${K}.alerts.title`)}</h2>
+          <p className="text-xs text-muted-foreground">{t(`${K}.alerts.description`)}</p>
+        </div>
+        <AlertRegister
+          alerts={data.alerts}
+          canWrite={data.access.canWrite}
+          busy={alertMutation.isPending}
+          onDecide={(v) => alertMutation.mutate(v)}
+          showProject
+        />
       </Card>
     </div>
   );
