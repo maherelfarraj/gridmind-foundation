@@ -513,6 +513,19 @@ export async function resolveDeadlineCalendar(
   }
 }
 
+/** GC-16d — company switch that turns missing holiday-set coverage into a 422. */
+async function holidaySetsEnforced(ctx: AuthContext, companyId: string): Promise<boolean> {
+  const rows = await safeRows<{ holiday_sets_enforced: boolean | null }>(() =>
+    (ctx.supabase as never as AnySupabase)
+      .from("costing_settings")
+      .select("holiday_sets_enforced")
+      .eq("company_id", companyId),
+  );
+  return Boolean(rows[0]?.holiday_sets_enforced);
+}
+
+
+
 export async function saveDeadline(
   ctx: AuthContext,
   input: DeadlineInputSchema,
