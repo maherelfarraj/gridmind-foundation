@@ -36,9 +36,17 @@ const alertDecisionSchema = z.object({
   id: z.string().uuid(),
   target: z.enum(ALERT_STATUSES),
   row_version: z.number().int().min(1),
-  snoozed_until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  snoozed_until: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   owner_id: z.string().uuid().nullable().optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 
 export const getRiskContingencyAccess = createServerFn({ method: "GET" })

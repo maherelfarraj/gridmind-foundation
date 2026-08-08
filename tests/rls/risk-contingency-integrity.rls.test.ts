@@ -79,8 +79,7 @@ d("GC-17 live schema — tables, RLS and least privilege", () => {
   });
 
   it("keeps the risk & contingency event log append-only", () => {
-    const priv =
-      /authenticated=([a-zA-Z]+)\//.exec(acl.get("risk_contingency_events")!)?.[1] ?? "";
+    const priv = /authenticated=([a-zA-Z]+)\//.exec(acl.get("risk_contingency_events")!)?.[1] ?? "";
     expect(priv).toBe("ar");
     const cmds = q(
       `select cmd from pg_policies where schemaname='public' and tablename='risk_contingency_events'`,
@@ -173,13 +172,13 @@ d("GC-17 live schema — columns, constraints and indexes", () => {
          from pg_constraint where contype in ('c','u')
           and conrelid::regclass::text in (${list})`,
     ).map((r) => `${r[0]}:${r[1]}`);
-    expect(defs.some((x) => x.includes("iterations >= 1000") || x.includes("iterations BETWEEN"))).toBe(
+    expect(
+      defs.some((x) => x.includes("iterations >= 1000") || x.includes("iterations BETWEEN")),
+    ).toBe(true);
+    expect(defs.some((x) => x.startsWith("risk_sim_runs:") && x.includes("seed >= 0"))).toBe(true);
+    expect(defs.some((x) => x.startsWith("risk_sim_runs:") && x.includes("'superseded'"))).toBe(
       true,
     );
-    expect(defs.some((x) => x.startsWith("risk_sim_runs:") && x.includes("seed >= 0"))).toBe(true);
-    expect(
-      defs.some((x) => x.startsWith("risk_sim_runs:") && x.includes("'superseded'")),
-    ).toBe(true);
     expect(defs.some((x) => x.includes("'joint'"))).toBe(true);
   });
 
@@ -312,9 +311,7 @@ d("GC-17 behaviour — immutability and history", () => {
   });
 
   it("freezes approved simulation results", () => {
-    const rows = q(
-      `select id from public.risk_sim_runs where status='approved' limit 1`,
-    );
+    const rows = q(`select id from public.risk_sim_runs where status='approved' limit 1`);
     if (rows.length === 0) {
       // No approved run deployed yet: assert the guard exists instead.
       const src =

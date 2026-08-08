@@ -79,10 +79,7 @@ function PortfolioRiskContingency() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title={t(`${K}.portfolioTitle`)}
-        description={t(`${K}.portfolioDescription`)}
-      />
+      <PageHeader title={t(`${K}.portfolioTitle`)} description={t(`${K}.portfolioDescription`)} />
 
       <Suspense fallback={<Skeleton className="h-24 w-full" />}>
         <SavedViewsBar<RiskContingencySearch>
@@ -103,7 +100,10 @@ function PortfolioRiskContingency() {
             value={search.band ?? "all"}
             onChange={(e) =>
               void navigate({
-                search: (prev) => ({ ...prev, band: e.target.value === "all" ? undefined : e.target.value }),
+                search: (prev) => ({
+                  ...prev,
+                  band: e.target.value === "all" ? undefined : e.target.value,
+                }),
               })
             }
           >

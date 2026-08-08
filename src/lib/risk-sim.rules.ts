@@ -93,9 +93,7 @@ export function normInv(p: number): number {
     -7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838, -2.549732539343734,
     4.374664141464968, 2.938163982698783,
   ];
-  const d = [
-    7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996, 3.754408661907416,
-  ];
+  const d = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996, 3.754408661907416];
   const pLow = 0.02425;
   const pHigh = 1 - pLow;
   let q: number;
@@ -244,7 +242,9 @@ export function distributionMean(dist: Distribution): number {
     case "normal":
       return dist.most_likely;
     case "lognormal":
-      return Math.exp(Math.log(Math.max(dist.most_likely, Number.EPSILON)) + (dist.sigma ?? 0) ** 2 / 2);
+      return Math.exp(
+        Math.log(Math.max(dist.most_likely, Number.EPSILON)) + (dist.sigma ?? 0) ** 2 / 2,
+      );
     case "discrete": {
       const pts = dist.points ?? [];
       const total = pts.reduce((s, p) => s + p.weight, 0) || 1;
@@ -288,10 +288,18 @@ export const simRiskInputSchema = z.object({
 export const simRequestSchema = z.object({
   project_id: z.string().uuid(),
   scope: z.enum(SIM_SCOPES).default("joint"),
-  seed: z.number().int().min(0).max(2 ** 31 - 1),
+  seed: z
+    .number()
+    .int()
+    .min(0)
+    .max(2 ** 31 - 1),
   iterations: z.number().int().min(MIN_ITERATIONS).max(MAX_ITERATIONS).default(DEFAULT_ITERATIONS),
   reporting_currency: z.string().regex(/^[A-Z]{3}$/),
-  fx_rate_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
+  fx_rate_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .default(null),
   budget_threshold: z.number().finite().nonnegative().nullable().default(null),
   schedule_threshold_days: z.number().finite().nonnegative().nullable().default(null),
   assumptions: z.string().max(4000).default(""),
@@ -643,13 +651,15 @@ export function reconcileContingency(
     line.transfers_out -
     line.drawdowns -
     line.releases;
-  const balanced =
-    reportedClosing === undefined || Math.abs(closing - reportedClosing) < 0.005;
+  const balanced = reportedClosing === undefined || Math.abs(closing - reportedClosing) < 0.005;
   return { ...line, closing, balanced };
 }
 
 /** Drawdown velocity: approved drawdown per elapsed day over the window. */
-export function burnRate(drawdowns: { effective_date: string; amount: number }[], asOf: Date): {
+export function burnRate(
+  drawdowns: { effective_date: string; amount: number }[],
+  asOf: Date,
+): {
   total: number;
   per_day: number;
   spike: boolean;
@@ -824,9 +834,7 @@ export function evaluateAlerts(input: AlertEvaluationInput): AlertCandidate[] {
       detail: "Quantitative ranges have never been approved for this project.",
     });
   } else {
-    const ageDays = Math.floor(
-      (input.now.getTime() - Date.parse(input.sim.ran_at)) / 86_400_000,
-    );
+    const ageDays = Math.floor((input.now.getTime() - Date.parse(input.sim.ran_at)) / 86_400_000);
     if (ageDays > SIM_STALE_DAYS) {
       push({
         family: "stale_simulation",

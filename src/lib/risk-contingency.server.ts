@@ -161,7 +161,6 @@ export async function assembleSimInputs(
       continue;
     }
     fxProvenance[code] = { rate, date: fx.fx_rate_date, source: fx.fx_source };
-
   }
 
   const risks: SimRiskInput[] = [];
@@ -202,7 +201,12 @@ export async function assembleSimInputs(
     });
   }
 
-  return { risks, problems: validateSimInputs(risks), missing_fx: missingFx, fx_provenance: fxProvenance };
+  return {
+    risks,
+    problems: validateSimInputs(risks),
+    missing_fx: missingFx,
+    fx_provenance: fxProvenance,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -236,7 +240,6 @@ export interface SimRunRow {
   approved_by: string | null;
   approved_at: string | null;
   created_at: string;
-
 }
 
 export async function createSimRun(ctx: AuthContext, input: SimRequest): Promise<SimRunRow> {
@@ -255,12 +258,7 @@ export async function createSimRun(ctx: AuthContext, input: SimRequest): Promise
     if (existing) return existing as unknown as SimRunRow;
   }
 
-  const assembly = await assembleSimInputs(
-    ctx,
-    req.project_id,
-    req.reporting_currency,
-    onDate,
-  );
+  const assembly = await assembleSimInputs(ctx, req.project_id, req.reporting_currency, onDate);
   if (assembly.missing_fx.length > 0) {
     httpError(
       422,
@@ -372,7 +370,11 @@ export async function decideSimRun(
   }
   // Segregation of duties: the requester cannot approve their own run.
   if (input.target === "approved" && run.created_by && run.created_by === ctx.user?.id) {
-    httpError(403, "sod_violation", "A simulation must be approved by someone other than its author.");
+    httpError(
+      403,
+      "sod_violation",
+      "A simulation must be approved by someone other than its author.",
+    );
   }
 
   const patch: Record<string, unknown> = { status: input.target };
@@ -594,11 +596,7 @@ export async function loadRiskContingencyWorkspace(
       .order("created_at", { ascending: false })
       .limit(50),
     ctx.supabase.from("contingency_pools").select("*").eq("project_id", projectId).limit(200),
-    ctx.supabase
-      .from("contingency_movements")
-      .select("*")
-      .eq("project_id", projectId)
-      .limit(2000),
+    ctx.supabase.from("contingency_movements").select("*").eq("project_id", projectId).limit(2000),
     ctx.supabase
       .from("risks")
       .select(
@@ -708,7 +706,12 @@ export async function loadRiskContingencyWorkspace(
   const riskRows = (risksRes.data ?? []) as unknown as RiskRow[];
   const quantifiedIds = new Set((results?.tornado ?? []).map((t) => t.risk_id));
 
-  const assembly = await assembleSimInputs(ctx, projectId, approved?.reporting_currency ?? "USD", onDate);
+  const assembly = await assembleSimInputs(
+    ctx,
+    projectId,
+    approved?.reporting_currency ?? "USD",
+    onDate,
+  );
 
   const overdue = riskRows.filter((r) => {
     if (r.status === "closed") return false;

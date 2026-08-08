@@ -25,11 +25,7 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function RiskContingencyAppendixCard({
-  appendix,
-}: {
-  appendix: RiskContingencyAppendix;
-}) {
+export function RiskContingencyAppendixCard({ appendix }: { appendix: RiskContingencyAppendix }) {
   const { t } = useI18n();
   const cur = appendix.reporting_currency;
   const p = appendix.provenance;
@@ -107,10 +103,7 @@ export function RiskContingencyAppendixCard({
       </Table>
 
       <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Field
-          label={t(`${K}.reconciliation.opening`)}
-          value={money(rec.opening, cur)}
-        />
+        <Field label={t(`${K}.reconciliation.opening`)} value={money(rec.opening, cur)} />
         <Field label={t(`${K}.reconciliation.drawdowns`)} value={money(rec.drawdowns, cur)} />
         <Field label={t(`${K}.reconciliation.closing`)} value={money(rec.closing, cur)} />
         <Field
@@ -150,9 +143,7 @@ export function PortfolioRiskAppendixCard({ data }: { data: PortfolioRiskSummary
   const cur = data.rows[0]?.reporting_currency ?? "USD";
   return (
     <Card className="flex flex-col gap-3 p-4">
-      <h2 className="text-sm font-semibold text-foreground">
-        {t(`${K}.appendix.portfolioTitle`)}
-      </h2>
+      <h2 className="text-sm font-semibold text-foreground">{t(`${K}.appendix.portfolioTitle`)}</h2>
       <p className="text-xs text-muted-foreground">{RISK_APPENDIX_NOTE}</p>
       <Table>
         <caption className="sr-only">{t(`${K}.appendix.portfolioTitle`)}</caption>
@@ -189,7 +180,9 @@ export function PortfolioRiskAppendixCard({ data }: { data: PortfolioRiskSummary
           ))}
           <TableRow>
             <TableCell className="font-semibold">{t(`${K}.appendix.total`)}</TableCell>
-            <TableCell className="text-right font-semibold">{money(data.totals.p80, cur)}</TableCell>
+            <TableCell className="text-right font-semibold">
+              {money(data.totals.p80, cur)}
+            </TableCell>
             <TableCell className="text-right font-semibold">
               {money(data.totals.available, cur)}
             </TableCell>
