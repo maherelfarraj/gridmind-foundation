@@ -793,7 +793,6 @@ export async function recalculateDeadlines(ctx: AuthContext, input: RecalcInput)
       applied: false,
       calendar_id: resolved.calendar_id,
       timezone: resolved.timezone,
-      applied_versions: resolved.effective.holiday_set_versions,
       ...preview,
     };
 
@@ -845,7 +844,6 @@ export async function recalculateDeadlines(ctx: AuthContext, input: RecalcInput)
     applied: true,
     calendar_id: resolved.calendar_id,
     timezone: resolved.timezone,
-    applied_versions: resolved.effective.holiday_set_versions,
     ...preview,
     applied_rows: applied,
   };
