@@ -283,7 +283,7 @@ test.describe("GC-17 alert register — Arabic RTL", () => {
     expect((await alertRow(family)).status).toBe("acknowledged");
 
     // Arabic labels render; no raw i18n keys leak into the register.
-    const text = (await page.locator("body").textContent()) ?? "";
+    const text = await page.evaluate(() => document.body.innerText);
     expect(text).not.toContain("financeMod.costing.riskContingency.");
     expect(text).toContain(AR.resolve);
   });
