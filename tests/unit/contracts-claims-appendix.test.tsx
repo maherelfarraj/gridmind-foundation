@@ -286,9 +286,19 @@ describe("GC-16 appendix in Arabic / RTL", () => {
 describe("GC-16 appendix totals table", () => {
   it("renders each waterfall step exactly once with a cumulative column", () => {
     const t = totals();
-    renderIn("en", <ContractsClaimsAppendixCard appendix={appendix({ totals: t })} currency="USD" />);
+    const { container } = renderIn(
+      "en",
+      <ContractsClaimsAppendixCard appendix={appendix({ totals: t })} currency="USD" />,
+    );
+    const section = container.querySelector<HTMLElement>(
+      'section[aria-labelledby="cc-appendix-waterfall"]',
+    )!;
     for (const step of exposureWaterfall(t)) {
-      expect(screen.getAllByText(step.label).length, `step ${step.key}`).toBe(1);
+      expect(within(section).getAllByText(step.label).length, `step ${step.key}`).toBe(1);
+    }
+    // Each step row carries a movement and a cumulative cell.
+    for (const row of Array.from(section.querySelectorAll("tbody tr"))) {
+      expect(row.querySelectorAll("td.tabular-nums")).toHaveLength(2);
     }
   });
 
