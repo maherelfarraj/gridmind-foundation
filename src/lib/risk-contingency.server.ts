@@ -227,13 +227,16 @@ export interface SimRunRow {
   input_checksum: string;
   reporting_currency: string;
   fx_rate_date: string | null;
+  fx_provenance: Record<string, unknown>;
   assumptions: string | null;
   exclusions: string | null;
   results: SimResult | Record<string, never>;
   diagnostics: SimDiagnostics;
   row_version: number;
+  approved_by: string | null;
   approved_at: string | null;
   created_at: string;
+
 }
 
 export async function createSimRun(ctx: AuthContext, input: SimRequest): Promise<SimRunRow> {
