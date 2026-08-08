@@ -278,7 +278,7 @@ test.describe("GC-17 alert register — Arabic RTL", () => {
 
     const ack = row.getByRole("button", { name: AR.acknowledge, exact: true });
     await expect(ack).toBeVisible();
-    await ack.click();
+    await ack.press("Enter"); // keyboard activation avoids RTL pointer interception
     await page.reload({ waitUntil: "domcontentloaded" });
     expect((await alertRow(family)).status).toBe("acknowledged");
 
