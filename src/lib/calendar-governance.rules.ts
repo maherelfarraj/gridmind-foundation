@@ -16,6 +16,7 @@ import {
   resolveGovernedTimezone,
   type GovernedCalendar,
   type GovernedCalendarId,
+  type JsonRecord,
 } from "@/lib/contracts-claims.rules";
 
 // ---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ export interface PolicyChangeRecord {
   material: boolean;
   status: PolicyChangeStatus;
   reason: string;
-  impact: Record<string, unknown>;
+  impact: JsonRecord;
   requested_by: string | null;
   requested_at: string;
   decided_by: string | null;
@@ -557,4 +558,4 @@ export const recalcSchema = z.object({
 export type RecalcInput = z.infer<typeof recalcSchema>;
 
 export { CalendarConfigError, GOVERNED_CALENDARS, GOVERNED_CALENDAR_IDS, isGovernedCalendarId };
-export type { GovernedCalendar, GovernedCalendarId };
+export type { GovernedCalendar, GovernedCalendarId, JsonRecord };
