@@ -15,7 +15,11 @@ const NOW = new Date("2026-03-01T00:00:00.000Z");
 function baseInput(): AlertEvaluationInput {
   return {
     project_id: "p1",
-    adequacy: { band: "adequate", cover_p80: 1.5, shortfall_p80: 0 } as AlertEvaluationInput["adequacy"],
+    adequacy: {
+      band: "adequate",
+      cover_p80: 1.5,
+      shortfall_p80: 0,
+    } as AlertEvaluationInput["adequacy"],
     sim: {
       ran_at: "2026-02-25T00:00:00.000Z",
       prob_exceeds_budget: 0.01,
