@@ -1770,7 +1770,9 @@
         "entitlement": "أساس الاستحقاق",
         "deadline": "الموعد",
         "due": "الاستحقاق",
-        "actions": "إجراءات"
+        "actions": "إجراءات",
+        "calendar": "التقويم",
+        "calendarSource": "مصدر التقويم"
       },
       "appendix": {
         "title": "ملحق العقود والمطالبات",
@@ -1852,6 +1854,17 @@
         "snoozed": "مؤجل",
         "escalated": "مُصعَّد",
         "resolved": "مُغلق"
+      },
+      "calendarId": {
+        "iso-std": "قياسي (السبت/الأحد)",
+        "mena-jo": "الأردن (الجمعة/السبت)",
+        "mena-gulf": "الخليج (الجمعة/السبت)",
+        "mena-eg": "مصر (الجمعة/السبت)"
+      },
+      "calendarSource": {
+        "request": "صريح",
+        "contract_policy": "سياسة العقد",
+        "company_policy": "سياسة الشركة"
       }
     }
   }

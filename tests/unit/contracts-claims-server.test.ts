@@ -458,6 +458,7 @@ describe("GC-16 deadlines", () => {
       trigger_date: "2026-05-02",
       duration_days: 28,
       calendar: "calendar",
+      calendar_id: "mena-jo",
       timezone: "Asia/Amman",
     });
     expect(res.due_date).toBe("2026-05-30");
@@ -474,6 +475,7 @@ describe("GC-16 deadlines", () => {
       trigger_date: "2026-06-01",
       duration_days: 5,
       calendar: "business",
+      calendar_id: "iso-std",
       timezone: "Asia/Amman",
     });
     const dow = new Date(`${res.due_date}T00:00:00Z`).getUTCDay();
@@ -482,9 +484,6 @@ describe("GC-16 deadlines", () => {
   });
 
   it("keeps the MENA (Fri/Sat) weekend deterministic in the deadline engine", async () => {
-    // The Gulf/Levant working week is Sun–Thu. NOTE: saveDeadline currently
-    // always applies DEFAULT_CALENDAR, so MENA weekends are proven here at the
-    // rules layer only — see the residual gap note in the GC-16 report.
     // Thursday 2026-06-04 + 1 business day: Fri under a Sat/Sun weekend,
     // Sunday under the MENA Fri/Sat weekend.
     const mena = addBusinessDays("2026-06-04", 1, MENA_CALENDAR);
@@ -503,6 +502,7 @@ describe("GC-16 deadlines", () => {
       trigger_date: "2026-05-02",
       duration_days: 28,
       calendar: "calendar",
+      calendar_id: "mena-jo",
       timezone: "Asia/Amman",
     });
     const stale = Number(tables.contract_deadlines![0]!["row_version"]) + 5;
@@ -516,6 +516,7 @@ describe("GC-16 deadlines", () => {
           trigger_date: "2026-05-02",
           duration_days: 28,
           calendar: "calendar",
+          calendar_id: "mena-jo",
           timezone: "Asia/Amman",
           row_version: stale,
         }),
@@ -653,6 +654,7 @@ describe("GC-16 persisted alert register", () => {
       trigger_date: today,
       duration_days: 3,
       calendar: "calendar",
+      calendar_id: "mena-jo",
       timezone: "Asia/Amman",
     });
     void soon;
