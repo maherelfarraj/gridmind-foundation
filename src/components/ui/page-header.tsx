@@ -19,7 +19,9 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between",
+        // Stack on narrow viewports so a wide action cluster can never squeeze
+        // the title out of view (GC-18 mobile UAT).
+        "flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
         className,
       )}
     >
